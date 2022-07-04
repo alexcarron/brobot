@@ -1,0 +1,21 @@
+# Dependency directories
+node_modules/
+
+# IDE Settings
+.vscode
+
+# Bot Token
+config.json
+
+# Mac
+.DS_Store
+
+# Databases
+databases/
+
+# ESLint
+.eslintrc.json
+
+# Heroku
+Procfile
+procfile.js
