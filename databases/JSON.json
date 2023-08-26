@@ -1,0 +1,229 @@
+{
+  "official_rules": [
+    {
+      "description": "Those in Sandbox are either \"Hosts\" (those who do the command `/become-host name:`) or \"Contestants\" (LL), while all others are \"Outsiders.\"",
+      "proposer": {
+        "name": "LL",
+        "id": "276119804182659072"
+      },
+      "message": "1144784802214576198",
+      "number": 1
+    },
+    {
+      "description": "Contestants, Hosts, and Brobot must follow official rules 1-24 at all times. However, they only have to follow the rest of the official rules once they are \"finalized\". Outsiders cannot be compelled to follow any of these rules.",
+      "proposer": {
+        "name": "LL",
+        "id": "276119804182659072"
+      },
+      "message": "1144784802868908062",
+      "number": 2
+    },
+    {
+      "description": "Every official rule will be assigned a unique identifying number, which can be used for reference. This number cannot be changed even if the rule is modified or removed.",
+      "proposer": {
+        "name": "LL",
+        "id": "276119804182659072"
+      },
+      "message": "1144784803527397466",
+      "number": 3
+    },
+    {
+      "description": "Official rules cannot modify or take precedence over any official rules that come before it.",
+      "proposer": {
+        "name": "LL",
+        "id": "276119804182659072"
+      },
+      "message": "1144784804190093402",
+      "number": 4
+    },
+    {
+      "description": "If a host violates the rules or the rules state so, the contestants win. If a contestant or Brobot violates the rules or the rules state so, the host wins.",
+      "proposer": {
+        "name": "LL",
+        "id": "276119804182659072"
+      },
+      "message": "1144784823811068075",
+      "number": 5
+    },
+    {
+      "description": "Every 5 minutes, hosts have the ability to create a proposed rule which will either be to create, modify, or remove an official rule.",
+      "proposer": {
+        "name": "LL",
+        "id": "276119804182659072"
+      },
+      "message": "1144784824301789235",
+      "number": 6
+    },
+    {
+      "description": "To propose the creation, modification, or removal of a rule, hosts must run the respective subcommands of the command `/propose-rule`.",
+      "proposer": {
+        "name": "LL",
+        "id": "276119804182659072"
+      },
+      "message": "1144784825715269702",
+      "number": 7
+    },
+    {
+      "description": "When a host creates a proposed rule, the proposed rule will appear in #proposed-rules where hosts can vote either in favor of or against proposed rules by clicking on either the \"Approve\" or \"Disapprove\" button below each proposed rule in #proposed-rules.",
+      "proposer": {
+        "name": "LL",
+        "id": "276119804182659072"
+      },
+      "message": "1144784826474451115",
+      "number": 8
+    },
+    {
+      "description": "Each host may cast only one vote per proposed rule. They can change their vote on a proposed rule as long as the proposed rule still exists.",
+      "proposer": {
+        "name": "LL",
+        "id": "276119804182659072"
+      },
+      "message": "1144784827061649511",
+      "number": 9
+    },
+    {
+      "description": "Twenty-four hours after the creation of a proposed rule, it will be enacted if it gets more approve votes than dissapprove and over 50% of the hosts have voted on it.",
+      "proposer": {
+        "name": "LL",
+        "id": "276119804182659072"
+      },
+      "message": "1144784845885685853",
+      "number": 10
+    },
+    {
+      "description": "Twenty-four hours after the creation of a proposed rule, it can no longer be voted on and will turn into a discarded rule if it was not enacted.",
+      "proposer": {
+        "name": "LL",
+        "id": "276119804182659072"
+      },
+      "message": "1144784846623866970",
+      "number": 11
+    },
+    {
+      "description": "If more than two-thirds of the hosts vote to approve a proposed rule, over 50% of the hosts have voted on it, and it is approved by at least three hosts, it will immediately be enacted and turned into a discarded rule.",
+      "proposer": {
+        "name": "LL",
+        "id": "276119804182659072"
+      },
+      "message": "1144784847550816337",
+      "number": 12
+    },
+    {
+      "description": "When a proposed rule creation is enacted, it becomes an official rule, is given an identifying number that comes after the last official rule's number, and appears in #official-rules.",
+      "proposer": {
+        "name": "LL",
+        "id": "276119804182659072"
+      },
+      "message": "1144784848444203161",
+      "number": 13
+    },
+    {
+      "description": "When a proposed rule modification is enacted, the description of the specified official rule in #official-rules is edited to match the new description in the proposed rule.",
+      "proposer": {
+        "name": "LL",
+        "id": "276119804182659072"
+      },
+      "message": "1144784848918167554",
+      "number": 14
+    },
+    {
+      "description": "When a proposed rule removal is enacted, the specified official rule is removed from #official-rules.",
+      "proposer": {
+        "name": "LL",
+        "id": "276119804182659072"
+      },
+      "message": "1144784868249698314",
+      "number": 15
+    },
+    {
+      "description": "When a proposed rule is enacted, it is announced in #announcements.",
+      "proposer": {
+        "name": "LL",
+        "id": "276119804182659072"
+      },
+      "message": "1144784869117939782",
+      "number": 16
+    },
+    {
+      "description": "If official rules conflict with each other, the rule with the lowest identifying number will take precedence.",
+      "proposer": {
+        "name": "LL",
+        "id": "276119804182659072"
+      },
+      "message": "1144784869596070040",
+      "number": 17
+    },
+    {
+      "description": "When an official rule is created that states exactly, \"The official rules are finalized\", the official rules will be finalized.",
+      "proposer": {
+        "name": "LL",
+        "id": "276119804182659072"
+      },
+      "message": "1144784873291272202",
+      "number": 18
+    },
+    {
+      "description": "The first official rule created must contain the phrases, \"The theme for the game show is: \" and \"The location this game show takes place is: \". This rule must define the overall theme and location for the game.",
+      "proposer": {
+        "name": "LL",
+        "id": "276119804182659072"
+      },
+      "message": "1144784874230792404",
+      "number": 19
+    },
+    {
+      "description": "Once the rules are finalized, LL will choose a single official rule to modify or remove. They will officially modify or remove that rule from the official rules.",
+      "proposer": {
+        "name": "LL",
+        "id": "276119804182659072"
+      },
+      "message": "1144784875757523055",
+      "number": 20
+    },
+    {
+      "description": "The contestants will start with five lives when the official rules are finalized. If they lose enough lives to reach zero or less lives, they will lose the game.",
+      "proposer": {
+        "name": "LL",
+        "id": "276119804182659072"
+      },
+      "message": "1144784895760154635",
+      "number": 21
+    },
+    {
+      "description": "The contestants must participate in 10 challenges or tasks which require them to do something. All of these challenge must be defined in the official rules once they're finalized. Every challenge must have the ability to make the contestants lose a life, but not more than one.",
+      "proposer": {
+        "name": "LL",
+        "id": "276119804182659072"
+      },
+      "message": "1144784896322191401",
+      "number": 22
+    },
+    {
+      "description": "Once the rules are finalized, LL will choose the host with the most succesful rule proposals to become a contestant and play in the exact same game show. If that new contestant is the first to lose, the hosts lose, but if LL is the first to lose, the hosts win.",
+      "proposer": {
+        "name": "LL",
+        "id": "276119804182659072"
+      },
+      "message": "1144784896938746009",
+      "number": 23
+    },
+    {
+      "description": "Rules 1-24 cannot be modified or removed.",
+      "proposer": {
+        "name": "LL",
+        "id": "276119804182659072"
+      },
+      "message": "1144784901795758120",
+      "number": 24
+    }
+  ],
+  "proposed_rules": [
+  ],
+  "discarded_rules": [],
+  "hosts": [
+    {
+      "name": "MACAS FECK CRAAAA 🤡🥶🥶🤡😈",
+      "id": "401869228023742468"
+    }
+  ]
+}

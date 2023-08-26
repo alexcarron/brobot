@@ -1,0 +1,11 @@
+# Node JS Modules
+node_modules/
+
+# Stored Unused Files
+unused/
+
+# Local Only
+.eslintrc.json
+token.json
+.vscode
+.npm
