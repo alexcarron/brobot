@@ -1,0 +1,19 @@
+# Dependency directories
+node_modules/
+
+# IDE Settings
+.vscode
+
+# Mac
+.DS_Store
+
+# ESLint
+.eslintrc.json
+
+# Token
+token.json
+
+# Unused Files
+unused/
+
+render.js
