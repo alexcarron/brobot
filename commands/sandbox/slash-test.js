@@ -6,13 +6,13 @@ const wait = require('node:timers/promises').setTimeout;
 // const Parameters = {
 // 	Name: new Parameter({}),
 // }
-//
+
 // const command = new SlashCommand({
 // 	name: "join",
 // 	description: "Join a game of Rapid Discord Mafia and choose your name",
 // });
 // command.parameters = [
-// 	Parameters.Name,
+// 	// @ TODO: Add Parameters
 // ]
 // module.exports = command;
 
