@@ -91,33 +91,40 @@ command.execute = async function(interaction) {
 			return button_interaction.user.id === interaction.user.id;
 		};
 
-		const button_interaction = await message.awaitMessageComponent({ filter: collectorFilter, time: 75_000 });
+		let button_interaction;
 
-		if (button_interaction.customId === 'left') {
-			console.log("They clicked left");
-			if (current_page > 1) {
-				console.log("Previous Page");
-				current_page--;
+		try {
+			button_interaction = await message.awaitMessageComponent({ filter: collectorFilter, time: 60_000 });
+
+			if (button_interaction.customId === 'left') {
+				console.log("They clicked left");
+				if (current_page > 1) {
+					console.log("Previous Page");
+					current_page--;
+				}
+
+				const message_options = await createLeaderboardMessage(current_page);
+				await button_interaction.update(message_options);
+				await readButtonInteractions(message, current_page);
 			}
+			else if (button_interaction.customId === 'right') {
+				console.log("right");
+				if (current_page < NUM_PAGES - 1) {
+					console.log("Next Page");
+					current_page++;
+				}
 
-			const message_options = await createLeaderboardMessage(current_page);
-			await button_interaction.update(message_options);
-			await readButtonInteractions(message, current_page);
-		}
-		else if (button_interaction.customId === 'right') {
-			console.log("right");
-			if (current_page < NUM_PAGES - 1) {
-				console.log("Next Page");
-				current_page++;
+				const message_options = await createLeaderboardMessage(current_page);
+				await button_interaction.update(message_options);
+				await readButtonInteractions(message, current_page);
 			}
-
-			const message_options = await createLeaderboardMessage(current_page);
-			await button_interaction.update(message_options);
-			await readButtonInteractions(message, current_page);
+			else {
+				const new_leaderboard_embed = createLeaderboardEmbed(current_page);
+				await button_interaction.update({ embeds: [new_leaderboard_embed], components: [] });
+			}
 		}
-		else {
-			const new_leaderboard_embed = createLeaderboardEmbed(current_page);
-			await button_interaction.update({ embeds: [new_leaderboard_embed], components: [] });
+		catch {
+			console.log("Waited Too Long...")
 		}
 	}
 
