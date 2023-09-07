@@ -1,105 +1,127 @@
 const Discord = require('discord.js');
+const { deferInteraction } = require('../../modules/functions');
+const SlashCommand = require('../../modules/commands/SlashCommand');
+const { ButtonBuilder, ButtonStyle, ActionRowBuilder  } = require('discord.js');
 
-function createLeaderboardEmbed(sorted_viewers_for_page, current_page, NUM_PAGES, VIEWERS_PER_PAGE) {
-	// Create the leaderboard embed
-	const leaderboard_embed = new Discord.EmbedBuilder()
-		.setColor(0x1cc347)
-		.setTitle(`LL Point Leaderboard (Page ${current_page}/${NUM_PAGES})`)
-		.setDescription('Here are the top users based on their LL points:')
-		.setTimestamp();
+const command = new SlashCommand({
+	name: "leaderboard",
+	description: "See a leaderboard of everybody with LL Points",
+});
+command.execute = async function(interaction) {
+	await deferInteraction(interaction);
 
-	// Add each viewer to the leaderboard embed
-	let emebed_description = "";
-	for (let index in sorted_viewers_for_page) {
-		let viewer = sorted_viewers_for_page[index];
-		const rank = parseInt(index) + (current_page-1)*VIEWERS_PER_PAGE + 1;
-		const username = viewer.name;
-		const ll_points = viewer.ll_points;
+	let viewers = Object.fromEntries(global.LLPointManager.viewers);
+	const VIEWERS_PER_PAGE = 25;
+	const NUM_PAGES = Math.ceil(Object.keys(viewers).length / VIEWERS_PER_PAGE);
+	let current_page = 1;
+	const PAGES = [];
 
-		emebed_description += `\`#${rank}\` **${username}**: ${ll_points}` + "\n"
-	}
+	// Sort LL Point Manager based on LL points
+	const sorted_viewers =
+		Object.values(viewers)
+			.sort(
+				(a, b) => b.ll_points - a.ll_points
+			);
 
-	leaderboard_embed.setDescription(emebed_description);
+	for (let page_index = 0; page_index < NUM_PAGES; page_index++) {
+		const start_index = page_index * VIEWERS_PER_PAGE;
+		const end_index = start_index + VIEWERS_PER_PAGE;
+		const page_of_viewers = sorted_viewers.slice(start_index, end_index);
+		PAGES.push(page_of_viewers);
+	};
 
-	return leaderboard_embed;
-}
+	const createLeaderboardEmbed = async function(current_page) {
+		console.log(`Create Embed #${current_page}`);
 
-module.exports = {
-    name: 'leaderboard',
-	aliases: ['llleaderboard', 'llpointleaderboard'],
-	description: "See a leaderboard of everybody with LL Points.",
-	args: false,
+		// Create the leaderboard embed
+		const leaderboard_embed = new Discord.EmbedBuilder()
+			.setColor(0x1cc347)
+			.setTitle(`LL Point Leaderboard (Page ${current_page}/${NUM_PAGES})`)
+			.setDescription('Here are the top users based on their LL points:')
+			.setTimestamp();
 
-	async execute(message, args) {
+		const page = PAGES[current_page-1];
+		console.log({page});
 
-		let viewers = Object.fromEntries(global.LLPointManager.viewers);
-		const VIEWERS_PER_PAGE = 25;
-		const NUM_PAGES = Math.ceil(Object.keys(viewers).length / VIEWERS_PER_PAGE);
-		let current_page = 0;
-		const viewers_in_pages = [];
+		// Add each viewer to the leaderboard embed
+		let embed_description = "";
+		for (let index in page) {
+			let viewer = page[index];
+			const rank = parseInt(index) + (current_page-1)*VIEWERS_PER_PAGE + 1;
+			const username = viewer.name;
+			const ll_points = viewer.ll_points;
 
-		// Sort LL Point Manager based on LL points
-		const sorted_viewers =
-			Object.values(viewers)
-				.sort(
-					(a, b) => b.ll_points - a.ll_points
-				);
-
-		for (let page_index = 0; page_index < NUM_PAGES; page_index++) {
-			const start_index = page_index * VIEWERS_PER_PAGE;
-			const end_index = start_index + VIEWERS_PER_PAGE;
-			const viewers_in_page = sorted_viewers.slice(start_index, end_index);
-			viewers_in_pages.push(viewers_in_page);
+			embed_description += `\`#${rank}\` **${username}**: ${ll_points}` + "\n"
 		}
 
-		const leaderboard_embed = createLeaderboardEmbed(viewers_in_pages[current_page], current_page + 1, NUM_PAGES, VIEWERS_PER_PAGE);
-		message.channel.send({ embeds: [leaderboard_embed] })
-			.then(
-				async (message_sent) => {
-					await message_sent.react('⬅️');
-					await message_sent.react('➡️');
+		console.log({embed_description});
 
-					const filter = (reaction, user) => {
-						const isLeftArrow = reaction.emoji.name === '⬅️';
-						const isRightArrow = reaction.emoji.name === '➡️';
-						// Prevents others from messing with leaderboard
-						const isReactionFromAuthor = user.id === message.author.id;
-						return (isLeftArrow || isRightArrow) && isReactionFromAuthor;
-					};
+		leaderboard_embed.setDescription(embed_description);
 
-					const collector = message_sent.createReactionCollector( {
-						filter,
-						time: 75000,
-						dispose: true,
-					} );
+		return leaderboard_embed;
+	}
 
-					const changePageFromReaction = async (reaction) => {
-						console.log(`Collected a new ${reaction.emoji.name} reaction`);
-						if (reaction.emoji.name === '⬅️' && current_page > 0) {
-							current_page--;
-						}
-						else if (reaction.emoji.name === '➡️' && current_page < NUM_PAGES - 1) {
-							current_page++;
-						}
+	const createLeaderboardMessage = async function(current_page) {
+		const leaderboard_embed = await createLeaderboardEmbed(current_page);
+		const left_button = new ButtonBuilder()
+			.setCustomId('left')
+			.setLabel("👈")
+			.setStyle(ButtonStyle.Secondary);
 
-						const new_leaderboard_embed = createLeaderboardEmbed(viewers_in_pages[current_page], current_page + 1, NUM_PAGES, VIEWERS_PER_PAGE);
-						console.log({current_page, NUM_PAGES, new_leaderboard_embed});
-						await message_sent.edit( { embeds: [new_leaderboard_embed] } );
+		const right_button = new ButtonBuilder()
+			.setCustomId('right')
+			.setLabel("👉")
+			.setStyle(ButtonStyle.Secondary);
 
-					}
+		const action_row = new ActionRowBuilder()
+			.addComponents(left_button, right_button)
 
-					collector.on('collect', async (reaction) => {
-						changePageFromReaction(reaction);
-					});
+		return {
+			embeds: [leaderboard_embed],
+			components: [action_row],
+		};
+	}
 
-					collector.on('remove', async (reaction) => {
-						changePageFromReaction(reaction);
-					});
+	const message_options = await createLeaderboardMessage(current_page);
 
-					collector.on('end', (collected) => {
-						console.log(`We're done collecting reactions. Collected ${collected.size} items`);
-						message_sent.reactions.removeAll().catch(error => console.error('Failed to clear reactions: ', error));
-					});
-				});
-	},
-};
+	const leaderboard_msg = await interaction.editReply(message_options);
+
+	const readButtonInteractions = async function(message, current_page) {
+		const collectorFilter = function(button_interaction) {
+			return button_interaction.user.id === interaction.user.id;
+		};
+
+		const button_interaction = await message.awaitMessageComponent({ filter: collectorFilter, time: 75_000 });
+
+		if (button_interaction.customId === 'left') {
+			console.log("They clicked left");
+			if (current_page > 1) {
+				console.log("Previous Page");
+				current_page--;
+			}
+
+			const message_options = await createLeaderboardMessage(current_page);
+			await button_interaction.update(message_options);
+			await readButtonInteractions(message, current_page);
+		}
+		else if (button_interaction.customId === 'right') {
+			console.log("right");
+			if (current_page < NUM_PAGES - 1) {
+				console.log("Next Page");
+				current_page++;
+			}
+
+			const message_options = await createLeaderboardMessage(current_page);
+			await button_interaction.update(message_options);
+			await readButtonInteractions(message, current_page);
+		}
+		else {
+			const new_leaderboard_embed = createLeaderboardEmbed(current_page);
+			await button_interaction.update({ embeds: [new_leaderboard_embed], components: [] });
+		}
+	}
+
+	readButtonInteractions(leaderboard_msg, current_page);
+}
+
+module.exports = command;
