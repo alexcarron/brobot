@@ -1,4 +1,3 @@
-const Ability = require("./ability.js");
 const Types = require("./types.js");
 
 class Role {
@@ -11,10 +10,7 @@ class Role {
 		this.goal = goal;
 		this.isUnique = isUnique;
 		this.immunities = immunities;
-		this.abilities = [];
-		for (let ability of abilities) {
-			this.abilities.push( new Ability(ability) )
-		}
+		this.abilities = abilities
 		this.notes = notes;
 	}
 

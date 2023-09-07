@@ -1,8 +1,9 @@
 const Types = require("./types.js");
 
 class Arg {
-	constructor( { name, type, subtypes, value="" } ) {
+	constructor( { name, description, type, subtypes, value="" } ) {
 		this.name = name;
+		this.description = description;
 		this.type = type;
 		this.subtypes = subtypes;
 		this.value = value;

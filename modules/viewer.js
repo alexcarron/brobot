@@ -1,6 +1,6 @@
 const { LLPointTiers, LLPointThresholds, LLPointRewards, LLPointAccomplishments } = require("./enums.js");
 const ids = require("../databases/ids.json");
-const { getGuild, getGuildMember, getRoleById, addRole, removeRole } = require("./functions.js");
+const { getGuild, getGuildMember, getRoleById, addRole, removeRole, getUser } = require("./functions.js");
 
 class Viewer {
 	constructor({name, aliases=[], user_id, ll_points=0, isSubscribed=false, didUndertaleQuiz=false, didDeltaruneQuiz=false, games_participated_in=[]}) {
@@ -81,9 +81,11 @@ class Viewer {
 			console.log("There was an error assigning roles");
 		}
 
+		console.log("Done.");
+
 	}
 
-	giveReward(accomplishment, game_name=undefined) {
+	async giveReward(accomplishment, game_name=undefined) {
 
 		let accomplishments = Object.values(LLPointAccomplishments);
 		if (!accomplishments.includes(accomplishment)) {
@@ -131,14 +133,28 @@ class Viewer {
 				break;
 		}
 
-		this.ll_points += LLPointRewards[accomplishment_key];
+		await addLLPoints(LLPointRewards[accomplishment_key]);
 		return "Success";
 	}
 
-	addLLPoints(amount) {
+	async addLLPoints(amount) {
 		this.ll_points += amount;
-		this.tier = this.getTier();
-		this.setTierRole();
+		let old_tier = this.tier;
+		let new_tier = this.getTier();
+
+		if (new_tier !== old_tier) {
+			this.tier = new_tier;
+			await this.dmTierChange(old_tier, new_tier)
+			await this.setTierRole();
+		}
+	}
+
+	async dmTierChange(old_tier, new_tier) {
+		console.log({old_tier, new_tier});
+		console.log(this.user_id);
+		const user = await getUser(this.user_id);
+		console.log({user})
+		user.send(`You have been promoted from **${old_tier}** to **${new_tier}**. Congratulations!`);
 	}
 }
 

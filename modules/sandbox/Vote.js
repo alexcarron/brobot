@@ -3,11 +3,11 @@ const Host = require("./Host");
 
 class Vote {
 	constructor({
-		doesApprove = undefined,
+		vote = undefined,
 		voter_id = undefined,
 	}) {
-		console.log({doesApprove, voter_id})
-		this.doesApprove = doesApprove;
+		console.log({vote, voter_id})
+		this.vote = vote;
 		this.voter_id = voter_id;
 
 		if (!Vote.isVote(this)) {
@@ -17,10 +17,16 @@ class Vote {
 		}
 	}
 
+	static Votes = {
+		Approve: "Approve",
+		Disapprove: "Disapprove",
+		NoOpinion: "No Opinion",
+	}
+
 	static isVote(value) {
 		return (
 			validator.isObject(value) &&
-			validator.doesObjectHaveKeys(value, "doesApprove", "voter_id") &&
+			validator.doesObjectHaveKeys(value, "vote", "voter_id") &&
 			typeof value.voter_id === 'string'
 		)
 	}

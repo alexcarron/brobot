@@ -102,8 +102,8 @@ class LLPointManager {
 		return Array.from(this.viewers.values()).map(viewer => viewer.name);
 	}
 
-	getViewerById(user_id) {
-		return this.getArrayOfViewers().find(viewer => viewer.user_id === user_id);
+	async getViewerById(user_id) {
+		return await this.getArrayOfViewers().find(viewer => viewer.user_id === user_id);
 	}
 
 	addViewer(viewer) {
@@ -135,11 +135,42 @@ class LLPointManager {
 		return rank;
 	}
 
+	getViewersArray() {
+		return Array.from(this.viewers.values());
+	}
+
+	static async getViewersAutocompleteValues(interaction) {
+		let autocomplete_values;
+		const focused_param = await interaction.options.getFocused(true);
+
+		if (!focused_param) return;
+
+		const entered_value = focused_param.value;
+
+		autocomplete_values = global.LLPointManager.getViewersArray()
+			.map((viewer) => {return {name: viewer.name, value: viewer.name}})
+			.filter(autocomplete_entry => autocomplete_entry.value.toLowerCase().startsWith(entered_value.toLowerCase()));
+
+		if (Object.values(autocomplete_values).length <= 0) {
+			autocomplete_values = [{name: "Sorry, there are no viewers to choose from", value: "N/A"}];
+		}
+		else if (Object.values(autocomplete_values).length > 25) {
+			autocomplete_values.splice(25);
+		}
+
+		await interaction.respond(
+			autocomplete_values
+		);
+	}
+
 	async giveTiersToViewers() {
-		const viewers_with_id = this.getArrayOfViewers().filter(viewer => viewer.user_id);
+		this.getArrayOfViewers().forEach(viewer => viewer.tier = viewer.getTier());
+
+		const viewers_with_id = await this.getArrayOfViewers().filter(viewer => viewer.user_id);
 
 		for (const viewer of viewers_with_id) {
-			viewer.setTierRole();
+			viewer.tier = await viewer.getTier();
+			await viewer.setTierRole();
 			// let tier = viewer.tier;
 
 			// if (tier === LLPointTiers.LLViewer)

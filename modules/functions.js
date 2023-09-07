@@ -195,6 +195,10 @@ const functions = {
 		return await guild.members.fetch(user_id);
 	},
 
+	async getUser(user_id) {
+		return await client.users.fetch(user_id);
+	},
+
 	async getRole(guild, role_name) {
 		let all_roles = await guild.roles.fetch();
 
@@ -215,6 +219,18 @@ const functions = {
 
 	async setNickname(guild_member, nickname) {
 		await guild_member.setNickname(nickname).catch(console.error());
+	},
+
+	async deferInteraction(interaction) {
+		if (interaction) {
+			try {
+				await interaction.reply({content: "Running command...", ephemeral: true});
+			}
+			catch {
+				console.log("Failed Defer: Reply Already Exists");
+				await interaction.editReply({ content: "Running Command...", ephemeral: true});
+			}
+		}
 	},
 
 	logColor(message, color) {

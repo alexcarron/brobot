@@ -18,7 +18,7 @@ class Rule {
 		}
 	}
 
-
+	static NUM_STARTING_RULES = 24;
 
 	static Types = {
 		Creation: "Creation",

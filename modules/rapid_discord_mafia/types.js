@@ -1,4 +1,4 @@
-let enums = require("./enums.js");
+let enums = require("../enums.js");
 
 let Types = {
 	string: {base: "string"},

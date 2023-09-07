@@ -1,14 +1,11 @@
 
-const {Feedback, Phases, AbilityUses, ArgumentTypes, ArgumentSubtypes, Immunities} = require("./enums.js");
-const all_abilities = global.Game.all_abilities;
+const {Feedback, Phases, AbilityUses, ArgumentTypes, ArgumentSubtypes, Immunities} = require("../enums.js");
 const addAffect = function(ability_done, target_name) {
-	let ability = all_abilities[ability_done.name];
-
-	if (![0, -1].includes(ability.uses)) {
-		if (!global.Game.Players.get(ability_done.by).used[ability.name]) {
-			global.Game.Players.get(ability_done.by).used[ability.name] = 0;
+	if (![0, -1].includes(ability_done.uses)) {
+		if (!global.Game.Players.get(ability_done.by).used[ability_done.name]) {
+			global.Game.Players.get(ability_done.by).used[ability_done.name] = 0;
 		}
-		global.Game.Players.get(ability_done.by).used[ability.name] += 1;
+		global.Game.Players.get(ability_done.by).used[ability_done.name] += 1;
 	}
 
 	console.log("\nAdding uses...");
@@ -112,7 +109,7 @@ const perform = {
 	},
 	async order(ability_performed) {
 		const
-			player_killing_name = ability_performed.args[0],
+			player_killing_name = ability_performed.args["Player Killing"],
 			mafioso_player = global.Game.Players.getPlayerWithRole("Mafioso");
 
 		mafioso_player.visiting = player_killing_name;
@@ -244,7 +241,7 @@ const perform = {
 		if (player_evaluating.affected_by) {
 			for (let [index, affect] of player_evaluating.affected_by.entries()) {
 				console.log({affect});
-				if (all_abilities[affect.name].type === "manipulation") {
+				if (Abilities[affect.name].type === "manipulation") {
 					console.log("Found manipulation affect. Removing affect and reseting percieved.");
 
 					player_evaluating.affected_by.splice(index, 1);
@@ -314,8 +311,8 @@ const perform = {
 	async control(ability_performed) {
 		const
 			controller_player_name = ability_performed.by,
-			player_controlling_name = ability_performed.args[0],
-			player_controlling_into_name = ability_performed.args[1];
+			player_controlling_name = ability_performed.args["Player Controlling"],
+			player_controlling_into_name = ability_performed.args["Player Target Is Controlled Into"];
 
 		console.log({player_controlling_name, player_controlling_into_name,});
 
@@ -338,9 +335,8 @@ const perform = {
 
 		if (
 			!ability_controlling ||
-			ability_controlling.isLimboOnly ||
 			ability_controlling.uses === 0 ||
-			ability_controlling.activation_phase !== Phases.Night ||
+			!ability_controlling.phases_can_use.includes(Phases.Night) ||
 			(
 				player_controlling.used[ability_controlling.name] &&
 				ability_controlling.uses !== AbilityUses.Unlimited &&

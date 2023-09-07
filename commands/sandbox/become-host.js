@@ -1,10 +1,7 @@
 const { SlashCommandBuilder, ChannelType, PermissionFlagsBits, ButtonBuilder, ButtonStyle, ActionRowBuilder  } = require('discord.js');
-const ProposedCreatoinRule = require('../../modules/sandbox/ProposedCreationRule');
 const Host = require('../../modules/sandbox/Host');
 const { confirmAction } = require('../../modules/functions');
-const ProposedModificationRule = require('../../modules/sandbox/ProposedModificationRule');
-const ProposedRemovalRule = require('../../modules/sandbox/ProposedRemovalRule');
-const wait = require('node:timers/promises').setTimeout;
+const ids = require(`../../databases/ids.json`)
 
 const Parameters = {
 	Name: {
@@ -17,6 +14,7 @@ const Parameters = {
 
 module.exports = {
 	required_roles: ["Outsider"],
+	required_servers: [ids.servers.sandbox],
 	data: new SlashCommandBuilder()
 		.setName('become-host')
 		.setDescription('(Outsiders Only) Agree to become a host of Sandbox and follow all official rules.')

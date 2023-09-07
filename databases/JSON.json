@@ -215,15 +215,457 @@
       },
       "message": "1144784901795758120",
       "number": 24
+    },
+    {
+      "description": "We can now change our role colours",
+      "proposer": {
+        "name": "Azim",
+        "id": "657320138235838467"
+      },
+      "message": "1145202544356892694",
+      "number": 25
+    },
+    {
+      "description": "Contestants will be given opprounities to earn points to be spent on items at predetermined values or bartered with at the host's discressesion",
+      "proposer": {
+        "name": "Ramzi",
+        "id": "342312216881659924"
+      },
+      "message": "1145447805012418632",
+      "number": 26
+    },
+    {
+      "description": "MidnightBlast is banned from this server for the rest of eternity if he ever says “damn” again",
+      "proposer": {
+        "name": "MACAS FECK CRAAAA 🤡🥶🥶🤡😈",
+        "id": "401869228023742468"
+      },
+      "message": "1145498184605507694",
+      "number": 27
+    },
+    {
+      "description": "make everyone say among us daily if not they will lose a life",
+      "proposer": {
+        "name": "MidnightBlast",
+        "id": "648040905970024459"
+      },
+      "message": "1145498233347510426",
+      "number": 28
+    },
+    {
+      "description": "The setting is Brobot's secret hiding place and the theme is preventing brobot from GROUNDING GROUNDING GROUNDING you for 783987282988828766287236748582683976793984378 years!!",
+      "proposer": {
+        "name": "delerict madwoman",
+        "id": "705194437369790485"
+      },
+      "message": "1145498263068360834",
+      "number": 29
+    },
+    {
+      "description": "Any rule with faulty grammar or orthography can be disqualified after proposal as long as sufficient proof is provided",
+      "proposer": {
+        "name": "MACAS FECK CRAAAA 🤡🥶🥶🤡😈",
+        "id": "401869228023742468"
+      },
+      "message": "1145534937093636136",
+      "number": 30
+    },
+    {
+      "description": "no swear words guys!!! 🤓",
+      "proposer": {
+        "name": "MidnightBlast",
+        "id": "648040905970024459"
+      },
+      "message": "1145544560592822343",
+      "number": 31
+    },
+    {
+      "description": "All hosts must propose a new rule once a week, if not they will be a outsider",
+      "proposer": {
+        "name": "MidnightBlast",
+        "id": "648040905970024459"
+      },
+      "message": "1145585141369032717",
+      "number": 32
+    },
+    {
+      "description": "You can only propose up to 4 rules per day (Only because MidnightBlast makes one like every hour 😨)",
+      "proposer": {
+        "name": "seventy",
+        "id": "791740987172323338"
+      },
+      "message": "1145622031514206270",
+      "number": 33
+    },
+    {
+      "description": "You can finger beams once every turn, which deal moderate damage with decent range",
+      "proposer": {
+        "name": "Nitro",
+        "id": "415041949859315717"
+      },
+      "message": "1145712792234635314",
+      "number": 34
+    },
+    {
+      "description": "Everyone automatically loses if MidnightBlast says a swear word more than twice during a session 😨",
+      "proposer": {
+        "name": "seventy",
+        "id": "791740987172323338"
+      },
+      "message": "1145864423202881647",
+      "number": 35
+    },
+    {
+      "description": "The theme for this gameshow is: the beach, since this is sandbox and also a slight nod to SAND. The location for this game show is the country of Saint Lucia as they have beaches there 🥰",
+      "proposer": {
+        "name": "seventy",
+        "id": "791740987172323338"
+      },
+      "message": "1146171564220485762",
+      "number": 36
+    },
+    {
+      "description": "Whichever side has the most players left standing (loss of lives = out of the game) when LL says “ok gameshow is over” in those EXACT words wins",
+      "proposer": {
+        "name": "seventy",
+        "id": "791740987172323338"
+      },
+      "message": "1146274839867441172",
+      "number": 37
+    },
+    {
+      "description": "WELCOME TO THE BURN UNIT. WHO IS GOING TO GET BURNED? (Propose one person to get burned once a day)",
+      "proposer": {
+        "name": "seventy",
+        "id": "791740987172323338"
+      },
+      "message": "1146278614309011567",
+      "number": 38
+    },
+    {
+      "description": "no matter what the context is, you can't NEVER say the letter Q or Z",
+      "proposer": {
+        "name": "MidnightBlast",
+        "id": "648040905970024459"
+      },
+      "message": "1147645890258030594",
+      "number": 39
+    },
+    {
+      "description": "Luigi must fight and beat brobot in a turn-based, grid-based (on a 10x10 grid) game.",
+      "proposer": {
+        "name": "delerict madwoman",
+        "id": "705194437369790485"
+      },
+      "message": "1147646456065433741",
+      "number": 40
+    },
+    {
+      "description": "every round lasts for a day",
+      "proposer": {
+        "name": "MidnightBlast",
+        "id": "648040905970024459"
+      },
+      "message": "1147800233787539456",
+      "number": 41
+    },
+    {
+      "description": "Every five rounds, there is a challenge for Luigi that will give him a boost if he completes it and a penalty if he fails.",
+      "proposer": {
+        "name": "delerict madwoman",
+        "id": "705194437369790485"
+      },
+      "message": "1148202249437323284",
+      "number": 42
+    },
+    {
+      "description": "Rounds can also have optional challenges which can give extra rewards if you can successfully beat them.",
+      "proposer": {
+        "name": "Nitro",
+        "id": "415041949859315717"
+      },
+      "message": "1148270734657978378",
+      "number": 43
     }
   ],
-  "proposed_rules": [
+  "proposed_rules": [],
+  "discarded_rules": [
+    {
+      "description": "we already have a setting and theme for the game (rule 29)",
+      "proposer": {
+        "name": "delerict madwoman",
+        "id": "705194437369790485"
+      },
+      "votes": [
+        {
+          "vote": "Approve",
+          "voter_id": "705194437369790485"
+        },
+        {
+          "vote": "Approve",
+          "voter_id": "401869228023742468"
+        },
+        {
+          "vote": "Disapprove",
+          "voter_id": "791740987172323338"
+        }
+      ],
+      "type": "Removal",
+      "number": 41,
+      "message": "1147301303505145968",
+      "color": 6302000,
+      "judgement_time": "Sun Sep 03 2023 06:45:46 GMT+0200 (Central European Summer Time)"
+    },
+    {
+      "description": "every round lasts for a day",
+      "proposer": {
+        "name": "MidnightBlast",
+        "id": "648040905970024459"
+      },
+      "votes": [
+        {
+          "vote": "Approve",
+          "voter_id": "648040905970024459"
+        },
+        {
+          "vote": "Approve",
+          "voter_id": "705194437369790485"
+        },
+        {
+          "vote": "Approve",
+          "voter_id": "791740987172323338"
+        },
+        {
+          "vote": "No Opinion",
+          "voter_id": "415041949859315717"
+        }
+      ],
+      "type": "Creation",
+      "number": 47,
+      "message": "1147677344186773554",
+      "color": 15268576,
+      "judgement_time": "Sun Sep 03 2023 19:40:00 GMT-0400 (Eastern Daylight Time)"
+    },
+    {
+      "description": "because rule 31 exists, so it's useless",
+      "proposer": {
+        "name": "MidnightBlast",
+        "id": "648040905970024459"
+      },
+      "votes": [
+        {
+          "vote": "Approve",
+          "voter_id": "648040905970024459"
+        },
+        {
+          "vote": "Disapprove",
+          "voter_id": "401869228023742468"
+        },
+        {
+          "vote": "Approve",
+          "voter_id": "415041949859315717"
+        },
+        {
+          "vote": "Disapprove",
+          "voter_id": "791740987172323338"
+        },
+        {
+          "vote": "Disapprove",
+          "voter_id": "705194437369790485"
+        },
+        {
+          "vote": "Approve",
+          "voter_id": "342312216881659924"
+        }
+      ],
+      "type": "Removal",
+      "number": 44,
+      "message": "1147642368519045272",
+      "color": 11998533,
+      "judgement_time": "Sun Sep 03 2023 23:21:02 GMT+0200 (Central European Summer Time)"
+    },
+    {
+      "description": "Every turn, Luigi can move up to 10 times in any direction, including diagonals.",
+      "proposer": {
+        "name": "Nitro",
+        "id": "415041949859315717"
+      },
+      "votes": [
+        {
+          "vote": "Disapprove",
+          "voter_id": "648040905970024459"
+        },
+        {
+          "vote": "Approve",
+          "voter_id": "415041949859315717"
+        },
+        {
+          "vote": "Disapprove",
+          "voter_id": "791740987172323338"
+        },
+        {
+          "vote": "Disapprove",
+          "voter_id": "705194437369790485"
+        },
+        {
+          "vote": "Disapprove",
+          "voter_id": "342312216881659924"
+        }
+      ],
+      "type": "Creation",
+      "number": 45,
+      "message": "1147646321491193928",
+      "color": 7161937,
+      "judgement_time": "Sun Sep 03 2023 23:36:45 GMT+0200 (Central European Summer Time)"
+    },
+    {
+      "description": "Every turn, Luigi can move up to 2 times in any direction,",
+      "proposer": {
+        "name": "MidnightBlast",
+        "id": "648040905970024459"
+      },
+      "votes": [
+        {
+          "vote": "Approve",
+          "voter_id": "648040905970024459"
+        },
+        {
+          "vote": "Disapprove",
+          "voter_id": "415041949859315717"
+        },
+        {
+          "vote": "Disapprove",
+          "voter_id": "705194437369790485"
+        },
+        {
+          "vote": "Disapprove",
+          "voter_id": "791740987172323338"
+        }
+      ],
+      "type": "Creation",
+      "number": 46,
+      "message": "1147647055964151898",
+      "color": 534060,
+      "judgement_time": "Sun Sep 03 2023 23:39:40 GMT+0200 (Central European Summer Time)"
+    },
+    {
+      "description": "Every five rounds, there is a challenge for Luigi that will give him a boost if he completes it and a penalty if he fails.",
+      "proposer": {
+        "name": "delerict madwoman",
+        "id": "705194437369790485"
+      },
+      "votes": [
+        {
+          "vote": "No Opinion",
+          "voter_id": "705194437369790485"
+        },
+        {
+          "vote": "No Opinion",
+          "voter_id": "401869228023742468"
+        },
+        {
+          "vote": "Approve",
+          "voter_id": "791740987172323338"
+        },
+        {
+          "vote": "Approve",
+          "voter_id": "415041949859315717"
+        },
+        {
+          "vote": "Approve",
+          "voter_id": "648040905970024459"
+        }
+      ],
+      "type": "Creation",
+      "number": 47,
+      "message": "1148082810272350259",
+      "color": 9242317,
+      "judgement_time": "Mon Sep 04 2023 22:31:10 GMT-0400 (Eastern Daylight Time)"
+    },
+    {
+      "description": "Rounds can also have optional challenges which can give extra rewards if you can successfully beat them.",
+      "proposer": {
+        "name": "Nitro",
+        "id": "415041949859315717"
+      },
+      "votes": [
+        {
+          "vote": "Approve",
+          "voter_id": "648040905970024459"
+        },
+        {
+          "vote": "Approve",
+          "voter_id": "401869228023742468"
+        },
+        {
+          "vote": "Approve",
+          "voter_id": "705194437369790485"
+        },
+        {
+          "vote": "Approve",
+          "voter_id": "415041949859315717"
+        }
+      ],
+      "type": "Creation",
+      "number": 48,
+      "message": "1148207457403932735",
+      "color": 5533366,
+      "judgement_time": "Tue Sep 05 2023 06:46:28 GMT-0400 (Eastern Daylight Time)"
+    },
+    {
+      "description": "In the moving phases, the hosts will decide on a challenge to do.",
+      "proposer": {
+        "name": "delerict madwoman",
+        "id": "705194437369790485"
+      },
+      "votes": [
+        {
+          "vote": "Approve",
+          "voter_id": "705194437369790485"
+        },
+        {
+          "vote": "Approve",
+          "voter_id": "415041949859315717"
+        }
+      ],
+      "type": "Creation",
+      "number": 49,
+      "message": "1148455875032391700",
+      "color": 15872482,
+      "judgement_time": "Tue Sep 05 2023 23:13:37 GMT-0400 (Eastern Daylight Time)"
+    }
   ],
-  "discarded_rules": [],
   "hosts": [
     {
       "name": "MACAS FECK CRAAAA 🤡🥶🥶🤡😈",
       "id": "401869228023742468"
+    },
+    {
+      "name": "delerict madwoman",
+      "id": "705194437369790485"
+    },
+    {
+      "name": "Nitro",
+      "id": "415041949859315717"
+    },
+    {
+      "name": "MidnightBlast",
+      "id": "648040905970024459"
+    },
+    {
+      "name": "Azim",
+      "id": "657320138235838467"
+    },
+    {
+      "name": "Ramzi",
+      "id": "342312216881659924"
+    },
+    {
+      "name": "seventy",
+      "id": "791740987172323338"
     }
-  ]
+  ],
+  "phase": "Proposing",
+  "name": "",
+  "description": ""
 }

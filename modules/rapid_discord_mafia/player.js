@@ -1,14 +1,19 @@
+const { Abilities } = require("./ability");
+
 const
-	{ getGuildMember } = require("./functions"),
+	{ getGuildMember } = require("../functions"),
 	{ PermissionFlagsBits } = require('discord.js'),
-	rdm_ids = require("../databases/ids.json").rapid_discord_mafia;
+	rdm_ids = require("../../databases/ids.json").rapid_discord_mafia;
 
 class Player {
+	/** {name: AbilityNameStr, args: {[arg_name: ArgNameStr]: ArgValueStr}} */
+	ability_doing;
+
 	constructor({
 		id,
 		name,
-		channel_id="",
-		isAlive=true,
+		channel_id = "",
+		isAlive = true,
 		isInLimbo = false,
 		hasWon = false,
 		isRoleblocked = false,
@@ -68,15 +73,21 @@ class Player {
 		this.defense = 0;
 	}
 
+	async getGuildMember() {
+		const rdm_guild = await global.Game.getGuild();
+		const player_guild_member = await getGuildMember(rdm_guild, this.id);
+		return player_guild_member;
+	}
+
 	async createChannel() {
+		const rdm_guild = await global.Game.getGuild();
 		const channel_name =
 				"👤｜" +
 				this.name.toLowerCase()
 					.replace(' ', '-')
 					.replace(/[^a-zA-Z0-9 -]/g, "");
 
-		const rdm_guild = await global.Game.getGuild();
-		const player_guild_member = await getGuildMember(rdm_guild, this.id);
+		const player_guild_member = await this.getGuildMember();
 
 		console.log(player_guild_member);
 
@@ -103,10 +114,6 @@ class Player {
 			.then(msg => msg.pin());
 
 		this.channel_id = player_channel.id;
-	}
-
-	isDoingAbility() {
-		return Object.keys(this.ability_doing).length !== 0;
 	}
 
 	addFeedback(feedback) {
@@ -143,6 +150,10 @@ class Player {
 		this.defense = global.Roles[role].defense;
 	}
 
+	setVisiting(player_name) {
+		this.visiting = player_name;
+	}
+
 	addAlignment(alignment) {
 		this.alignment = alignment;
 	}
@@ -175,6 +186,23 @@ class Player {
 
 	resetPercieved() {
 		this.percieved = {};
+	}
+
+	/**
+	 * Sets what ability th eplayer is doing in the current phase
+	 *
+	 * @param {string} name Name of the ability
+	 * @param {{[arg_name: string]: string}} arg_values An obect with an entry for each argument with the key being the name and the value being the value of the arg
+	 */
+	setAbilityDoing(ability_name, arg_values) {
+		this.ability_doing = {
+			name: ability_name,
+			args: arg_values,
+		};
+
+		if (global.Game.Players.getPlayerList().every(player => player.ability_doing && player.ability_doing.name)) {
+			global.Game.startDay(global.Game.days_passed, undefined);
+		}
 	}
 }
 

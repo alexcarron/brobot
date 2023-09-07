@@ -15,22 +15,57 @@ class Sandbox {
 	proposed_rules;
 	discarded_rules;
 	hosts;
+	phase;
+	name;
+	description;
 
 	constructor({
 		official_rules = [],
 		proposed_rules = [],
 		discarded_rules = [],
-		hosts = []
+		hosts = [],
+		phase = "Brainstorming",
+		name,
+		description,
+		phase_change_date,
 	}) {
 		this.official_rules = official_rules;
 		this.proposed_rules = proposed_rules;
 		this.discarded_rules = discarded_rules;
 		this.hosts = hosts;
+		this.phase = phase;
+		this.name = name;
+		this.description = description;
+		this.phase_change_date = phase_change_date;
+
+		if (phase === Sandbox.Phases.Proposing || phase === Sandbox.Phases.Voting) {
+			let new_phase;
+			if (phase === Sandbox.Phases.Proposing) {
+				new_phase = Sandbox.Phases.Voting;
+			}
+			else {
+				new_phase = Sandbox.Phases.Proposing;
+			}
+
+			const cron_job = new cron.CronJob(
+				this.phase_change_date,
+				async function() {
+					await global.Sandbox.setPhase(new_phase)
+				},
+			);
+			cron_job.start();
+		}
 	}
 
 	static github_path = "sandbox-game.json";
-	static NUM_STARTING_RULES = 23;
-	static SECONDS_TILL_JUDGEMENT = 86400;
+	static SECONDS_TILL_JUDGEMENT = 86400 * 2;
+	static NUM_CHALLENGES = 10;
+	static PHASE_LENGTH_MIN = 60*24;
+	static Phases = {
+		Brainstorming: "Brainstorming",
+		Proposing: "Proposing",
+		Voting: "Voting",
+	}
 
 
 	resetSandbox() {
@@ -245,26 +280,37 @@ class Sandbox {
 
 		proposed_rule.setJudgementTime(judgement_date.toString());
 
-		const { ButtonBuilder, ButtonStyle, ActionRowBuilder } = require('discord.js');
+		const { ButtonBuilder, ButtonStyle, ActionRowBuilder, ThreadAutoArchiveDuration } = require('discord.js');
 
 		const approve_button = new ButtonBuilder()
-			.setCustomId(`Approve${proposed_rule.number}`)
-			.setLabel("Approve")
+			.setCustomId(`${Vote.Votes.Approve}${proposed_rule.number}`)
+			.setLabel(Vote.Votes.Approve)
 			.setStyle(ButtonStyle.Success);
 
 		const disapprove_button = new ButtonBuilder()
-			.setCustomId(`Disapprove${proposed_rule.number}`)
-			.setLabel("Disapprove")
+			.setCustomId(`${Vote.Votes.Disapprove}${proposed_rule.number}`)
+			.setLabel(Vote.Votes.Disapprove)
 			.setStyle(ButtonStyle.Danger);
 
+		const no_opinion_button = new ButtonBuilder()
+			.setCustomId(`${Vote.Votes.NoOpinion}${proposed_rule.number}`)
+			.setLabel(Vote.Votes.NoOpinion)
+			.setStyle(ButtonStyle.Secondary);
+
 		const action_row = new ActionRowBuilder()
-			.addComponents(approve_button, disapprove_button);
+			.addComponents(approve_button, disapprove_button, no_opinion_button);
 
 		const sandbox_guild = await getGuild(ids.servers.sandbox);
 		const proposed_rules_chnl = await getChannel(sandbox_guild, ids.sandbox.channels.proposed_rules);
 		const proposed_rule_message = await proposed_rules_chnl.send({
 			embeds: [await proposed_rule.toEmbed()],
 			components: [action_row],
+		});
+
+		const thread = await proposed_rule_message.startThread({
+			name: `Discuss Proposal #${proposed_rule.number}`,
+			autoArchiveDuration: ThreadAutoArchiveDuration.OneDay,
+			reason: `To discuss specifically proposal #${proposed_rule.number}`,
 		});
 
 		proposed_rule.message = proposed_rule_message.id;
@@ -274,12 +320,19 @@ class Sandbox {
 		await global.Sandbox.saveGameDataToDatabase();
 	}
 
-	discardProposedRule(proposed_rule) {
+	async discardProposedRule(proposed_rule) {
 		this.deleteProposedRule(proposed_rule.number);
 		const discarded_rule = new DiscardedRule(proposed_rule);
 		this.discarded_rules.push(discarded_rule);
 
-		console.log("Discarded Proposed Rule")
+		const sandbox_guild = await getGuild(ids.servers.sandbox);
+		const announce_chnl = await getChannel(sandbox_guild, ids.sandbox.channels.announcements);
+		await announce_chnl.send(
+			`Proposed Rule **#${proposed_rule.number}** has been discarded.\n` +
+			`https://discord.com/channels/${ids.servers.sandbox}/${ids.sandbox.channels.proposed_rules}/${proposed_rule.message}`
+		);
+
+		console.log("Discarded Proposed Rule");
 	}
 
 	async addOfficialRule(proposed_creation_rule) {
@@ -308,13 +361,15 @@ class Sandbox {
 	async editOfficialRule(proposed_modification_rule) {
 		console.log({proposed_modification_rule});
 
+		const sandbox_guild = await getGuild(ids.servers.sandbox);
+
 		const official_rule_modifying = await this.getOfficialRuleFromNum(proposed_modification_rule.num_rule_modifying);
 		official_rule_modifying.description = proposed_modification_rule.description;
 		await official_rule_modifying.updateMessage();
 
 		const announce_chnl = await getChannel(sandbox_guild, ids.sandbox.channels.announcements);
 		announce_chnl.send(
-			`Proposed Rule **#${proposed_creation_rule.number}** has modified Offical Rule **#${proposed_modification_rule.num_rule_modifying}**.\n` +
+			`Proposed Rule **#${proposed_modification_rule.number}** has modified Offical Rule **#${proposed_modification_rule.num_rule_modifying}**.\n` +
 			`https://discord.com/channels/${ids.servers.sandbox}/${ids.sandbox.channels.proposed_rules}/${proposed_modification_rule.message}`
 			);
 
@@ -325,11 +380,14 @@ class Sandbox {
 	}
 
 	async removeOfficialRule(proposed_removal_rule) {
+		const sandbox_guild = await getGuild(ids.servers.sandbox);
+
 		const official_rule_removing = await this.getOfficialRuleFromNum(proposed_removal_rule.num_rule_removing);
 		await official_rule_removing.deleteMessage();
 		this.official_rules.splice(proposed_removal_rule.num_rule_removing, 1);
+		const announce_chnl = await getChannel(sandbox_guild, ids.sandbox.channels.announcements);
 		announce_chnl.send(
-			`Proposed Rule **#${proposed_creation_rule.number}** has removed Offical Rule **#${proposed_removal_rule.num_rule_removing}**.\n` +
+			`Proposed Rule **#${proposed_removal_rule.number}** has removed Offical Rule **#${proposed_removal_rule.num_rule_removing}**.\n` +
 			`https://discord.com/channels/${ids.servers.sandbox}/${ids.sandbox.channels.proposed_rules}/${proposed_removal_rule.message}`
 		);
 
@@ -364,6 +422,44 @@ class Sandbox {
 		console.log({error_msg});
 	}
 
+	async setPhase(phase) {
+		this.phase = phase;
+
+		const sandbox_guild = await getGuild(ids.servers.sandbox);
+		const announce_chnl = await getChannel(sandbox_guild, ids.sandbox.channels.announcements);
+		await announce_chnl.send(`It is now the **${phase}** phase`);
+
+		if (phase === Sandbox.Phases.Proposing || phase === Sandbox.Phases.Voting) {
+			let new_phase;
+			if (phase === Sandbox.Phases.Proposing) {
+				new_phase = Sandbox.Phases.Voting;
+
+				global.Sandbox.proposed_rules.forEach(rule => {
+					rule.makeJudgement({isEarly: false});
+				})
+			}
+			else {
+				new_phase = Sandbox.Phases.Proposing;
+			}
+
+			const current_date = new Date();
+			const phase_change_date = new Date(current_date);
+
+			phase_change_date.setSeconds(current_date.getSeconds() + Sandbox.SECONDS_TILL_JUDGEMENT / 2);
+
+			const cron_job = new cron.CronJob(
+				phase_change_date,
+				async function() {
+					await global.Sandbox.setPhase(new_phase);
+				},
+			);
+			cron_job.start();
+
+			this.phase_change_date = phase_change_date.toString();
+
+			await this.saveGameDataToDatabase();
+		}
+	}
 }
 
 module.exports = Sandbox;

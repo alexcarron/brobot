@@ -1,43 +1,50 @@
+const Parameter = require("../../modules/commands/Paramater");
 const SlashCommand = require("../../modules/commands/SlashCommand");
 const { GameStates } = require("../../modules/enums");
-
-
 const
-	ids = require(`${global.paths.databases_dir}/ids.json`),
-	{ rdm_server_id, channels: channel_ids } = require("../../databases/ids.json").rapid_discord_mafia;
+	ids = require(`${global.paths.databases_dir}/ids.json`);
 
-module.exports = {
-	name: 'join',
-	usages: ['NAME'],
-	description: 'Join a game of Rapid Discord Mafia and choose your name',
-	hasCommaArgs: true,
-	isServerOnly: true,
-	comma_arg_count: 1,
-	required_servers: [rdm_server_id],
-	required_channels: [channel_ids.join_chat],
-    required_roles: ['Spectators'],
-	async execute(message, args, isTest=false) {
-    }
-};
 
-const command = new SlashCommand({})
-command.name = "join";
-command.description = "Join a game of Rapid Discord Mafia and choose your name";
+
+const command = new SlashCommand({
+	name: "join",
+	description: "Join a game of Rapid Discord Mafia and choose your name",
+});
+
 command.required_servers = [ids.servers.rapid_discord_mafia];
 command.required_channels = [ids.rapid_discord_mafia.channels.join_chat];
 command.required_roles = ['Spectators'];
-command.execute = async function execute(interaction) {
+command.parameters = [
+	new Parameter({
+		type: "string",
+		name: "name",
+		description: "What you want to be called during the game"
+	})
+]
+command.execute = async function execute(interaction, args, isTest) {
+	if (interaction) {
+		try {
+			await interaction.reply({content: "Starting Day...", ephemeral: true});
+		}
+		catch {
+			console.log("Failed Defer: Reply Already Exists");
+			await interaction.editReply({ content: "Sending Command...", ephemeral: true});
+		}
+	}
+
 	global.Game.logPlayers();
 
 	let player_id, player_name, isFakeUser;
 
 	if (!isTest) {
 		player_id = interaction.user.id;
-		player_name = args.join(" ");
+		player_name = interaction.options.getString(command.parameters[0].name);
 		isFakeUser = false;
 	}
 	else {
-		[player_id, player_name, isFakeUser] = args;
+		player_id = interaction.options.getString("player-id") ?? args[0];
+		player_name = interaction.options.getString("player-name") ?? args[1];
+		isFakeUser = interaction.options.getBoolean("fake-user") ?? args[2];
 
 		if (isFakeUser) {
 			isFakeUser = true;

@@ -1,3 +1,5 @@
+const { setNickname, getGuildMember } = require("../functions");
+
 class Players {
 	constructor(players = {}) {
 		this.players = players;
@@ -15,6 +17,10 @@ class Players {
 
 	getPlayerFromId(id) {
 		return this.getPlayerList().find(player => player.id === id);
+	}
+
+	getPlayerFromName(name) {
+		return this.getPlayerList().find(player => player.name === name);
 	}
 
 	/**
@@ -70,9 +76,11 @@ class Players {
 		return alive_players;
 	}
 
-	renamePlayer(old_name, new_name) {
+	async renamePlayer(old_name, new_name) {
 		this.players[new_name] = this.players[old_name];
 		delete this.players[old_name];
+		const player_guild_member = await this.players[new_name].getGuildMember();
+		await setNickname(player_guild_member, new_name);
 	}
 }
 

@@ -1,5 +1,6 @@
 const
-	{ ll_game_shows: llgs, } = require('../../databases/ids.json');
+	{ ll_game_shows: llgs, } = require('../../databases/ids.json'),
+	ids = require("../../databases/ids.json")
 
 
 
@@ -69,7 +70,13 @@ module.exports = {
 					controversial_question_index = Math.floor( Math.random() * global.messages.controversial_talk.length ),
 					controversial_question = global.messages.controversial_talk[controversial_question_index];
 
-				controversial_channel.send( controversial_question );
+
+				try {
+					await controversial_channel.send( controversial_question );
+				}
+				catch {
+					return await controversial_channel.send(`<@${ids.users.LL}> WARNING: We have run out of controversial questions! Blow up the server!`);
+				}
 
 				global.messages.controversial_talk.splice(controversial_question_index, 1);
 				updateMessagesDatabase();
@@ -83,7 +90,12 @@ module.exports = {
 					philosophy_question_index = Math.floor( Math.random() * global.messages.philosophy.length ),
 					philosophy_question = global.messages.philosophy[philosophy_question_index];
 
-				philosophy_channel.send( philosophy_question );
+				try {
+					await philosophy_channel.send( philosophy_question );
+				}
+				catch {
+					return await philosophy_channel.send(`<@${ids.users.LL}> WARNING: We have run out of philosophy questions! Blow up the server!`);
+				}
 
 				global.messages.philosophy.splice(philosophy_question_index, 1);
 				updateMessagesDatabase();

@@ -20,6 +20,15 @@ const Enums = {
 		},
 	},
 
+	Effects: {
+		Attack: {name: "attack"},
+		Defend: (defense_level) => {
+			if ( !Number.isInteger(defense_level) || defense_level <= 0 )
+				throw new Error(`Error: Invalid Defense Level ${defense_level}. Must be positive non-zero integer.`);
+			return {name: "defend", parameters: [defense_level]}
+		},
+	},
+
 	Factions: {
 		Mafia: "Mafia",
 		Town: "Town",
@@ -84,7 +93,7 @@ const Enums = {
 
 	ArgumentSubtypes: {
 		Visiting: "visiting",
-		Another: "another",
+		NotSelf: "not yourself",
 		NonMafia: "non-mafia",
 		None: "",
 	},
@@ -94,6 +103,7 @@ const Enums = {
 		Night: "night",
 		Voting: "voting",
 		Trial: "trial",
+		Limbo: "limbo",
 	},
 
 	Subphases: {
@@ -136,6 +146,9 @@ const Enums = {
 	},
 
 	LLPointTiers: {
+		LLWorshiper: "LL Worshiper!",
+		LLDevotee: "LL Devotee!",
+		LLAddict: "LL Addict!",
 		LLFanatic: "LL Fanatic!",
 		LLEnthusiast: "LL Enthusiast!",
 		LLFollower: "LL Follower!",
@@ -144,6 +157,9 @@ const Enums = {
 	},
 
 	LLPointThresholds: {
+		LLWorshiper: 50000,
+		LLDevotee: 10000,
+		LLAddict: 5000,
 		LLFanatic: 1000,
 		LLEnthusiast: 100,
 		LLFollower: 50,
@@ -176,8 +192,8 @@ const Enums = {
 
 	MessageDelays: {
 		Short: 1,
-		Normal: 6,
-		Long: 10
+		Normal: 2,
+		Long: 3
 	},
 
 	PhaseWaitTimes: {

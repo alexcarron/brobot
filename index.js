@@ -32,6 +32,8 @@ const paths = require("./utilities/path.js");
 const { addRole, getRole, getGuild } = require('./modules/functions.js');
 const { Collection } = require('discord.js');
 const SlashCommand = require('./modules/commands/SlashCommand.js');
+const Vote = require('./modules/sandbox/Vote.js');
+const Sandbox = require('./modules/sandbox/sandbox');
 global.paths = paths;
 
 // ! Store a list of command cooldowns
@@ -42,7 +44,8 @@ client.cooldowns = new Collection();
 global.client.commands = new Discord.Collection();
 global.client.slash_commands = new Discord.Collection();
 
-const slash_commands = [];
+const public_slash_commands = [];
+const private_slash_commands = {};
 const command_folders_path = `./commands`;
 const command_folders = fs.readdirSync(command_folders_path);
 
@@ -57,87 +60,105 @@ const command_folders = fs.readdirSync(command_folders_path);
 		for (const file of command_files) {
 			let command = await require(`${commands_path}/${file}`);
 
-			console.log(command instanceof SlashCommand)
 			if (command instanceof SlashCommand) {
-				console.log("Found Slash Command");
+				console.log(`Slash command ${file} found.`)
 				command = await command.getCommand();
 			}
 
 			if ("execute" in command) {
 				if ("data" in command) {
-					slash_commands.push(command.data.toJSON());
+					if (command.required_servers) {
+						for (const required_server of command.required_servers) {
+							if (!private_slash_commands[required_server])
+								private_slash_commands[required_server] = [command.data.toJSON()];
+							else
+								private_slash_commands[required_server].push(command.data.toJSON());
+						}
+					}
+					else {
+						public_slash_commands.push(command.data.toJSON());
+					}
 					global.client.commands.set(command.data.name, command);
 				} else
 					global.client.commands.set(command.name, command);
-
 			}
 			else {
 				console.log(`[WARNING] The command ${file} is missing a required "execute" property.`);
 			}
 		}
 	}
-})();
 
-// ! Deploy slash commands
-{
+	// ! Deploy slash commands
 	// Construct and prepare an instance of the REST module
 	const rest = new REST().setToken(discord_token);
 
-	(async () => {
-		try {
-			console.log(`Started refreshing ${slash_commands.length} application (/) commands.`);
+	try {
+		console.log(`Started refreshing application (/) commands.`);
 
-			// The put method is used to fully refresh all commands in the guild with the current set
-			const data = await rest.put(
-				Routes.applicationGuildCommands(ids.client, ids.servers.sandbox),
+		console.log(public_slash_commands.map(command => command.name));
+		Object.values(private_slash_commands).forEach(commands => {
+			console.log(commands.map(cmd => cmd.name))
+		})
+
+		// The put method is used to fully refresh all commands in the guild with the current set
+		for (const required_server_id in private_slash_commands) {
+			const slash_commands = private_slash_commands[required_server_id];
+
+			await rest.put(
+				Routes.applicationGuildCommands(ids.client, required_server_id),
 				{ body: slash_commands },
 			);
-
-			console.log(`Successfully reloaded ${data.length} application (/) commands.`);
-
-			// ! Delete Guild Command
-			// rest.delete(Routes.applicationGuildCommand(ids.client, ids.servers.sandbox, 'COMMAND ID'))
-			// .then(() => console.log('Successfully deleted guild command'))
-			// .catch(console.error);
-
-			// Delete Every Guild Command
-			// rest.put(Routes.applicationGuildCommands(ids.client, ids.servers.sandbox), { body: [] })
-			// .then(() => console.log('Successfully deleted all guild commands.'))
-			// .catch(console.error);
-
-			// ! Delete Global Commands
-			// rest.delete(Routes.applicationCommand(ids.client, 'COMMAND ID'))
-			// .then(() => console.log('Successfully deleted application command'))
-			// .catch(console.error);
-
-			// Delete Every Guild Command
-			// rest.put(Routes.applicationCommands(ids.client), { body: [] })
-			// .then(() => console.log('Successfully deleted all application commands.'))
-			// .catch(console.error);
-
-		} catch (error) {
-			// And of course, make sure you catch and log any errors!
-			console.error(error);
 		}
-	})();
-}
+		await rest.put(
+			Routes.applicationCommands(ids.client),
+			{ body: public_slash_commands },
+		);
+
+
+		console.log(`Successfully reloaded some application (/) commands.`);
+
+		// ! Delete Guild Command
+		// rest.delete(Routes.applicationGuildCommand(ids.client, ids.servers.rapid_discord_mafia, "1146264673470136350"))
+		// .then(() => console.log('Successfully deleted guild command'))
+		// .catch(console.error);
+
+		// ! Delete Every Guild Command
+		// rest.put(Routes.applicationGuildCommands(ids.client, ids.servers.rapid_discord_mafia), { body: [] })
+		// .then(() => console.log('Successfully deleted all guild commands.'))
+		// .catch(console.error);
+
+		// ! Delete Global Commands
+		// rest.delete(Routes.applicationCommand(ids.client, 'COMMAND ID'))
+		// .then(() => console.log('Successfully deleted application command'))
+		// .catch(console.error);
+
+		//! Delete Every Guild Command
+		// rest.put(Routes.applicationCommands(ids.client), { body: [] })
+		// .then(() => console.log('Successfully deleted all application commands.'))
+		// .catch(console.error);
+
+	} catch (error) {
+		// And of course, make sure you catch and log any errors!
+		console.error(error);
+	}
+})();
 
 // when the client is ready, run this code
 // this event will only trigger one time after logging in
 // ! Set up Brobot
 global.client.once(Events.ClientReady, async () => {
 	const
-		Game = require("./modules/game.js"),
-		Players = require("./modules/players.js"),
+		Game = require("./modules/rapid_discord_mafia/game.js"),
+		Players = require("./modules/rapid_discord_mafia/players.js"),
 		LLPointManager = require("./modules/llpointmanager.js"),
-		Sandbox = require("./modules/sandbox/Sandbox"),
+		Sandbox = require("./modules/sandbox/sandbox"),
 		config = require('./utilities/config.json');
 
 	config.isOn = true;
 	console.log("I'm turned on");
 	fs.writeFileSync("./utilities/config.json", JSON.stringify(config));
 
-	global.Roles = require("./modules/roles");
+	global.Roles = require("./modules/rapid_discord_mafia/roles");
 	global.Game = new Game( new Players() );
 	global.LLPointManager = new LLPointManager();
 	console.log("RDM Modules Built");
@@ -150,8 +171,6 @@ global.client.once(Events.ClientReady, async () => {
 
 	await global.Sandbox.loadGameDataFromDatabase();
 	console.log("Sandbox Data Updated From Database");
-	console.log("\nSANDBOX:");
-	console.log(global.Sandbox.proposed_rules);
 
 	global.client.user.setPresence({
 		status: 'online',
@@ -202,14 +221,14 @@ global.client.once(Events.ClientReady, async () => {
 	);
 
 	const daily_philosophy_msg = new cron.CronJob(
-		'00 00 10 */1 * *',
+		'00 00 11 */1 * *',
 		() => {
 			console.log("Philosophy Message Sending...");
 			sendmessage_cmd.execute(null, ["philosophy"]);
 		},
 		null,
 		true,
-		"America/Mexico_City"
+		"America/New_York"
 	);
 
 	daily_philosophy_msg.start();
@@ -431,11 +450,14 @@ global.client.on(Events.InteractionCreate, async (interaction) => {
 			});
 
 		// In The Required Channel?
-		if (command.required_channels && !command.required_channels.includes(interaction.channel.id))
+		if (command.required_channels && !command.required_channels.includes(interaction.channel.id)) {
+			console.log({command});
+			console.log(interaction.channel.id);
 			return interaction.reply({
 				content: `\`You aren't allowed to use this command in this channel.\``,
 				ephemeral: true
 			});
+		}
 
 		// In The Requried Category?
 		if (command.required_categories && !command.required_categories.includes(interaction.channel.parent.id))
@@ -517,13 +539,19 @@ global.client.on(Events.InteractionCreate, async (interaction) => {
 	}
 	// Button presses
 	else if (interaction.type = Discord.InteractionType.MessageComponent) {
-		if (interaction.customId.startsWith("Approve") || interaction.customId.startsWith("Disapprove")) {
+		if (Object.values(Vote.Votes).some(vote => interaction.customId.startsWith(vote))) {
 			(async () => {
+
+				if (global.Sandbox.phase === Sandbox.Phases.Proposing) {
+					return await interaction.reply({ content: `Sorry, we're in the proposing phase. You can't vote.`, components: [], ephemeral: true });
+				}
 
 				const host = await global.Sandbox.getHostByID(interaction.user.id);
 
 				console.log("Proposed Rule Clicked on by")
 				console.log({host})
+				console.log("Clicked on: ");
+				console.log(interaction.customId);
 
 				if (host === undefined) {
 					await interaction.reply({ content: `You are not allowed to vote on proposed rules if you're not a host!`, components: [], ephemeral: true });
@@ -531,24 +559,62 @@ global.client.on(Events.InteractionCreate, async (interaction) => {
 				}
 
 				let proposed_rule;
+				let vote;
 
-				if (interaction.customId.startsWith('Approve')) {
-					const proposed_rule_num = parseInt(interaction.customId.replace("Approve", ""));
+				if (interaction.customId.startsWith(Vote.Votes.Approve)) {
+					vote = Vote.Votes.Approve
+				}
+				else if (interaction.customId.startsWith(Vote.Votes.Disapprove)) {
+					vote = Vote.Votes.Disapprove
+				}
+				else if (interaction.customId.startsWith(Vote.Votes.NoOpinion)) {
+					vote = Vote.Votes.NoOpinion
+				}
+
+				if (vote === Vote.Votes.Approve) {
+					const proposed_rule_num = parseInt(interaction.customId.replace(Vote.Votes.Approve, ""));
 					console.log({proposed_rule_num});
+
 					proposed_rule = await global.Sandbox.getProposedRuleFromNum(proposed_rule_num);
 					console.log({proposed_rule});
+
+					if (!proposed_rule) {
+						return await interaction.reply({ content: `Something went wrong...`, components: [], ephemeral: true });
+					};
+
 					await interaction.reply({ content: `👍 You voted to approve proposal \`#${proposed_rule.number}\``, components: [], ephemeral: true });
 				}
-				else {
-					const proposed_rule_num = parseInt(interaction.customId.replace("Disapprove", ""));
+				else if (vote === Vote.Votes.Disapprove) {
+					const proposed_rule_num = parseInt(interaction.customId.replace(Vote.Votes.Disapprove, ""));
 					console.log({proposed_rule_num});
+
 					proposed_rule = await global.Sandbox.getProposedRuleFromNum(proposed_rule_num);
 					console.log({proposed_rule});
+
+
+					if (!proposed_rule) {
+						return await interaction.reply({ content: `Something went wrong...`, components: [], ephemeral: true });
+					};
+
 					await interaction.reply({ content: `👎 You voted to disapprove proposal \`#${proposed_rule.number}\``, components: [], ephemeral: true });
+				}
+				else  if (vote === Vote.Votes.NoOpinion) {
+					const proposed_rule_num = parseInt(interaction.customId.replace(Vote.Votes.NoOpinion, ""));
+					console.log({proposed_rule_num});
+
+					proposed_rule = await global.Sandbox.getProposedRuleFromNum(proposed_rule_num);
+					console.log({proposed_rule});
+
+
+					if (!proposed_rule) {
+						return await interaction.reply({ content: `Something went wrong...`, components: [], ephemeral: true });
+					};
+
+					await interaction.reply({ content: `You voted no opinion on proposal \`#${proposed_rule.number}\``, components: [], ephemeral: true });
 				}
 
 				proposed_rule.message = interaction.message.id;
-				proposed_rule.addVote(interaction.customId.startsWith('Approve'), host.id);
+				proposed_rule.addVote(vote, host.id);
 			})();
 		}
 	}

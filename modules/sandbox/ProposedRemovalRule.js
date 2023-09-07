@@ -31,7 +31,8 @@ class ProposedRemovalRule extends ProposedRule {
 		if (
 			!validator.isInteger(num_rule_removing)
 		) {
-			console.log({num_rule_modifying: num_rule_removing})
+			console.log(this)
+			console.log({num_rule_removing})
 			throw new Error("Invalid num_rule_removing argument for ProposedRemovalRule class.")
 		}
 

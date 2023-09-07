@@ -1,9 +1,7 @@
 const validator = require("../../utilities/validator");
 const { generateRandomHexColorNumber } = require("../functions");
-const Host = require("./Host");
 const ProposedRule = require("./ProposedRule");
 const Rule = require("./Rule");
-const Vote = require("./Vote");
 
 class ProposedModificationRule extends ProposedRule {
 	constructor({

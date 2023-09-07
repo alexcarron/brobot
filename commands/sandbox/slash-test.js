@@ -1,5 +1,34 @@
 const { SlashCommandBuilder, ChannelType, PermissionFlagsBits, ButtonBuilder, ButtonStyle, ActionRowBuilder  } = require('discord.js');
+const Parameter = require('../../modules/commands/Paramater');
 const wait = require('node:timers/promises').setTimeout;
+
+
+// const Parameters = {
+// 	Name: new Parameter({}),
+// }
+//
+// const command = new SlashCommand({
+// 	name: "join",
+// 	description: "Join a game of Rapid Discord Mafia and choose your name",
+// });
+// command.parameters = [
+// 	Parameters.Name,
+// ]
+// module.exports = command;
+
+// Move command properties out
+// Copy Paste Enums & command
+// SlashCommand Module
+// Set properties from command porperties
+// Set parameters
+// Move execute
+// message -> interaction
+// await deferInteraction(interaction);
+// interaction.author -> interaciton.user
+// interaction.channel.send -> interaction.editReply
+// Get args by
+// interaction.options.getString(Parameters.Phase.name);
+
 
 const Command = {
 	name: "slash-test",
@@ -21,14 +50,6 @@ const Parameters = {
 	AutocompleteStrOne: "query",
 	AutocompleteStrTwo: "version",
 }
-
-// SlashCommandBuilder, PermissionFlagsBits
-// Remove name:, alises:, isRestricedToMe:
-// message -> interaction
-// interactoin.author -> interaciton.user
-// interaction.channel.send -> interaction.editReply
-// Add await interaction.deferReply({ephemeral: false});
-// Get args by interaction.options.getString(Paramaters.Param.name)
 
 
 module.exports = {

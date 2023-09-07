@@ -5,6 +5,7 @@ const Rule = require("./Rule");
 const ids = require("../../databases/ids.json")
 const { EmbedBuilder } = require("discord.js");
 const { generateRandomHexColorNumber, getGuild, getChannel, getMessage } = require("../functions");
+const Sandbox = require("./sandbox");
 
 class ProposedRule extends Rule {
 	constructor({
@@ -40,6 +41,13 @@ class ProposedRule extends Rule {
 	static VOTE_HOST_RATIO = .5;
 	static MIN_APPROVE_VOTES_NEEDED = 3;
 	static RULE_NUM_INCREMEMENT = 1;
+	static REQUIRED_FIRST_RULE_PHRASES = [
+		"The theme for the game show is:",
+		"The location this game show takes place is:"
+	];
+	static FINALIZE_RULES_PHRASE = "The official rules are finalized"
+	static NAME_PHRASE = "The name of the game will be "
+	static DESCRIPTION_PHRASE = "The description of the game will be "
 
 	static async getProposedRuleChannel() {
 		const sandbox_guild = await getGuild(ids.servers.sandbox);
@@ -100,12 +108,8 @@ class ProposedRule extends Rule {
 		)
 	}
 
-	getNumApproveVotes() {
-		return this.votes.filter(vote => vote.doesApprove).length;
-	}
-
-	getNumDisapproveVotes() {
-		return this.votes.filter(vote => !vote.doesApprove).length;
+	getNumVotesOf(vote_value) {
+		return this.votes.filter(vote => vote.vote === vote_value).length;
 	}
 
 	async getMessage() {
@@ -113,17 +117,17 @@ class ProposedRule extends Rule {
 		return await getMessage(proposed_rule_chnl, this.message);
 	}
 
-	async addVote(doesApprove, voter_id) {
-		console.log({doesApprove, voter_id});
+	async addVote(vote_str, voter_id) {
+		console.log({vote_str, voter_id});
 
 		if (this.votes.some(vote => vote.voter_id === voter_id)) {
 			console.log("Changing Vote");
 			const vote_index = this.votes.findIndex(vote => vote.voter_id === voter_id);
-			this.votes[vote_index].doesApprove = doesApprove;
+			this.votes[vote_index].vote = vote_str;
 		}
 		else {
 			console.log("Adding Vote");
-			const vote = new Vote({doesApprove, voter_id});
+			const vote = new Vote({vote: vote_str, voter_id});
 			this.votes.push(vote);
 		}
 
@@ -138,6 +142,24 @@ class ProposedRule extends Rule {
 
 	async becomeOfficialRule() {
 		console.log(this.type);
+
+		if (
+			global.Sandbox.phrase === Sandbox.Phases.Brainstorming &&
+			((
+				this.description.includes(ProposedRule.NAME_PHRASE) &&
+				global.Sandbox.official_rules.some(rule =>
+					rule.description.includes(ProposedRule.DESCRIPTION_PHRASE)
+				)
+			) ||
+			(
+				this.description.includes(ProposedRule.DESCRIPTION_PHRASE) &&
+				global.Sandbox.official_rules.some(rule =>
+					rule.description.includes(ProposedRule.NAME_PHRASE)
+				)
+			))
+		) {
+			await global.Sandbox.setPhase(Sandbox.Phases.Proposing);
+		}
 
 		global.Sandbox.discardProposedRule(this);
 
@@ -174,6 +196,9 @@ class ProposedRule extends Rule {
 	}
 
 	async toEmbed() {
+		const vote_count = this.votes.length;
+		const host_count = global.Sandbox.hosts.length;
+		const perc_hosts_voted = Math.round((vote_count / host_count)*100);
 		const embed_msg = new EmbedBuilder()
 			.setColor(this.color)
 			.setTitle(`${this.number}) Proposed Rule ${this.type}`)
@@ -182,7 +207,7 @@ class ProposedRule extends Rule {
 				`**Proposer**: \`${this.proposer.name}\`\n`
 			)
 			.setFooter({
-				text: `${this.getNumApproveVotes()}👍     ${this.getNumDisapproveVotes()}👎`
+				text: `${this.getNumVotesOf(Vote.Votes.Approve)}👍     ${this.getNumVotesOf(Vote.Votes.NoOpinion)}🤷     ${this.getNumVotesOf(Vote.Votes.Disapprove)}👎     ${perc_hosts_voted}% Hosts Voted`
 			})
 
 		return embed_msg;
@@ -200,6 +225,7 @@ class ProposedRule extends Rule {
 		const judgement_date = new Date(judgement_date_str);
 
 		if (judgement_date < new Date()) {
+			console.log({judgement_date})
 			global.Sandbox.logError("Judgement Date has passed but proposed rule still exists");
 		}
 
@@ -224,13 +250,14 @@ class ProposedRule extends Rule {
 
 	async makeJudgement({isEarly}) {
 		const vote_count = this.votes.length;
-		const approve_vote_count = this.getNumApproveVotes();
+		const approve_vote_count = this.getNumVotesOf(Vote.Votes.Approve);
+		const approve_disapprove_vote_count = approve_vote_count + this.getNumVotesOf(Vote.Votes.Disapprove);
 		const host_count = global.Sandbox.hosts.length;
 		let becameOfficialRule = undefined;
 		let wasJudged = false;
 
 		console.log({host_count, vote_count, approve_vote_count, isEarly});
-		console.log(`Approve Vote Ratio: ${(approve_vote_count / vote_count)}`);
+		console.log(`Approve Vote Ratio: ${(approve_vote_count / approve_disapprove_vote_count)}`);
 		console.log(`Needed Approve Ratio: ${ProposedRule.APPROVE_VOTE_RATIO}`);
 		console.log(`Needed EARLY Approve Ratio: ${ProposedRule.EARLY_APPROVE_VOTE_RATIO}`);
 		console.log(`Vote to Host Ratio: ${(vote_count / host_count)}`);
@@ -241,13 +268,13 @@ class ProposedRule extends Rule {
 		if (
 			(
 				isEarly &&
-				(approve_vote_count / vote_count) >= (ProposedRule.EARLY_APPROVE_VOTE_RATIO) &&
+				(approve_vote_count / approve_disapprove_vote_count) > (ProposedRule.EARLY_APPROVE_VOTE_RATIO) &&
 				(vote_count / host_count) > (ProposedRule.VOTE_HOST_RATIO) &&
 				(approve_vote_count >= ProposedRule.MIN_APPROVE_VOTES_NEEDED)
 			) ||
 			(
 				!isEarly &&
-				(approve_vote_count / vote_count) >= (ProposedRule.APPROVE_VOTE_RATIO) &&
+				(approve_vote_count / approve_disapprove_vote_count) > (ProposedRule.APPROVE_VOTE_RATIO) &&
 				(vote_count / host_count) > (ProposedRule.VOTE_HOST_RATIO)
 			)
 		) {
@@ -285,6 +312,27 @@ class ProposedRule extends Rule {
 			const proposed_rule_msg = await this.getMessage();
 			proposed_rule_msg.edit({ embeds: [new_embed], components: [] });
 		}
+	}
+
+	/**
+	 * Validates whethere a rule description is allowed or not. Returns true if valid and an error message if invalid
+	 *
+	 * @returns true or Error Message String
+	 */
+	async validate() {
+		const num_official_rules = global.Sandbox.official_rules.length;
+		const num_new_official_rules = num_official_rules - Rule.NUM_STARTING_RULES;
+
+		if (
+			(num_new_official_rules <= 0) &&
+			(!ProposedRule.REQUIRED_FIRST_RULE_PHRASES.every(
+				required_phrase => this.description.includes(required_phrase)
+			))
+		) {
+			return `The first new official rule must include the phrases: "${ProposedRule.REQUIRED_FIRST_RULE_PHRASES.join("\", \"")}"`
+		}
+
+		return true
 	}
 }
 

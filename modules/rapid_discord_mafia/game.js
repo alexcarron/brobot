@@ -1,10 +1,11 @@
-const { GameStates, Phases, Subphases, MessageDelays, Factions, MaxFactionMembersRatios, RDMRoles, WinConditions } = require("./enums.js");
-const { getChannel, getGuild, wait, getRandArrayItem, getGuildMember, getRole } = require("./functions.js");
-const ids = require("../databases/ids.json");
-const Players = require("./players.js");
+const { GameStates, Phases, Subphases, MessageDelays, Factions, MaxFactionMembersRatios, RDMRoles, WinConditions } = require("../enums.js");
+const { getChannel, getGuild, wait, getRandArrayItem, getGuildMember, getRole } = require("../functions.js");
+const ids = require("../../databases/ids.json");
+const Players = require("../rapid_discord_mafia/players.js");
 const Player = require("./player.js");
-const validator = require('../utilities/validator.js');
-const { github_token } =  require("../modules/token.js");
+const validator = require('../../utilities/validator.js');
+const { github_token } =  require("../token.js");
+const { Abilities } = require("./ability.js");
 
 class Game {
 	constructor({players = {}}) {
@@ -32,7 +33,6 @@ class Game {
 				.filter((role) => `${role.faction} ${role.alignment}` === "Neutral Killing")
 				.map((role) => role.name)
 		];
-		this.all_abilities = this.getAllAbilities();
 		this.abilities_performed = {}
 	}
 
@@ -45,25 +45,6 @@ class Game {
 
 	logPlayers() {
 		console.log(JSON.stringify(this.Players, null, 2));
-	}
-
-	getAllAbilities() {
-		return Object.values(global.Roles).reduce(
-			(accum_abilities, role) => {
-				if (role.abilities) {
-					for (let ability of role.abilities) {
-						accum_abilities = {
-							...accum_abilities,
-							[ability.name]: ability,
-						}
-					}
-					return accum_abilities;
-				}
-				else
-					return accum_abilities;
-			},
-			{}
-		);
 	}
 
 	/**
@@ -99,8 +80,9 @@ class Game {
 		this.abilities_performed = Object.values(this.abilities_performed)
 		.sort(
 			(ability_done1, ability_done2) => {
-				let ability1_priority = this.all_abilities[ability_done1.name].priority,
-					ability2_priority = this.all_abilities[ability_done2.name].priority;
+				console.log({ability_done1, ability_done2})
+				let ability1_priority = Object.values(Abilities).find(ability => ability.name === ability_done1.name).priority,
+					ability2_priority = Object.values(Abilities).find(ability => ability.name === ability_done1.name).priority;
 
 				return ability1_priority - ability2_priority;
 			}
@@ -686,7 +668,7 @@ class Game {
 			this.subphase === Subphases.Voting &&
 			this.days_passed <= days_passed
 		) {
-			const start_trial_cmd = require(`../commands/rapid_discord_mafia/starttrial.js`);
+			const start_trial_cmd = require(`../../commands/rapid_discord_mafia/start-trial.js`);
 			start_trial_cmd.execute(message);
 		}
 	}
@@ -702,12 +684,12 @@ class Game {
 			this.subphase === Subphases.Trial &&
 			this.days_passed <= days_passed
 		) {
-			const start_trial_results_cmd = require(`../commands/rapid_discord_mafia/starttrialresults.js`);
+			const start_trial_results_cmd = require(`../../commands/rapid_discord_mafia/start-trial-results.js`);
 			start_trial_results_cmd.execute(message);
 		}
 	}
 
-	startDay(days_passed, message) {
+	startDay(days_passed, interaction) {
 
 		console.log({days_passed});
 
@@ -716,8 +698,8 @@ class Game {
 			this.phase === Phases.Night &&
 			this.days_passed <= days_passed
 		) {
-			const start_day_cmd = require(`../commands/rapid_discord_mafia/startday.js`);
-			start_day_cmd.execute(message);
+			const start_day_cmd = require(`../../commands/rapid_discord_mafia/start-day.js`);
+			start_day_cmd.execute(interaction);
 		}
 	}
 
@@ -734,7 +716,7 @@ class Game {
 			this.phase === Phases.Day &&
 			this.days_passed <= days_passed
 		) {
-			const start_night_cmd = require(`../commands/rapid_discord_mafia/startnight.js`);
+			const start_night_cmd = require(`../../commands/rapid_discord_mafia/start-night.js`);
 			start_night_cmd.execute(message);
 		}
 	}
@@ -744,7 +726,6 @@ class Game {
 		let player_member;
 
 		const rdm_guild = await this.getGuild();
-		const join_chat = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.join_chat);
 
 		if ( this.Players && this.Players.get(player_name) ) {
 			return await interaction.editReply(`The name, **${player_name}**, already exists.`)
@@ -771,7 +752,8 @@ class Game {
 		player.createChannel();
 		this.Players.addPlayer(player);
 
-		interaction.editReply(`**${player_name}** added to the game.`);
+		const staff_chnl = await global.Game.getStaffChnl();
+		staff_chnl.send(`**${player_name}** added to the game.`, {ephemeral: true});
 		console.log(this.Players.getPlayers());
 	}
 
@@ -992,7 +974,7 @@ class Game {
 		for (let msg of death_announcement_msgs) {
 			announce_chnl.send(msg);
 
-			let {wait_times} = require("../databases/rapid_discord_mafia/constants.json");
+			let {wait_times} = require("../../databases/rapid_discord_mafia/constants.json");
 			await wait(...wait_times["message_delay"]);
 		}
 	}
@@ -1007,7 +989,7 @@ class Game {
 
 		await wait("30", "s");
 
-		let resetgame = require("../commands/rapid_discord_mafia/resetgame.js");
+		let resetgame = require("../../commands/rapid_discord_mafia/reset-game.js");
 		await resetgame.execute();
 	}
 }

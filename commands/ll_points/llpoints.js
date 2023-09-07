@@ -14,9 +14,9 @@ module.exports = {
 		const
 			noSpecifiedUser = args.length <= 0,
 			num_total_viewers = global.LLPointManager.getNumViewers(),
-			getViewer = function getViewer(viewer_name) {
+			getViewer = async function getViewer(viewer_name) {
 				if (noSpecifiedUser) {
-					let viewer = global.LLPointManager.getViewerById(message.author.id);
+					let viewer = await global.LLPointManager.getViewerById(message.author.id);
 					if (viewer)
 						return viewer;
 				}
@@ -51,7 +51,7 @@ module.exports = {
 			avatar = message.author.avatarURL();
 		}
 
-		viewer = getViewer(viewer_name);
+		viewer = await getViewer(viewer_name);
 
 		if (viewer) {
 			viewer_display_name = viewer.name;

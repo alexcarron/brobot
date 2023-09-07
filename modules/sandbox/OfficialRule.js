@@ -2,7 +2,7 @@ const validator = require("../../utilities/validator");
 const Host = require("./Host");
 const Rule = require("./Rule");
 const { getGuild, getChannel, getMessage } = require("../functions");
-const ids = require(`${global.paths.databases_dir}/ids.json`)
+const ids = require("../../databases/ids.json")
 
 class OfficialRule extends Rule {
 	constructor({
