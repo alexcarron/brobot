@@ -38,6 +38,8 @@ class Sandbox {
 		this.description = description;
 		this.phase_change_date = phase_change_date;
 
+		console.log({phase_change_date});
+
 		if (phase === Sandbox.Phases.Proposing || phase === Sandbox.Phases.Voting) {
 			let new_phase;
 			if (phase === Sandbox.Phases.Proposing) {

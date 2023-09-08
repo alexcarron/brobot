@@ -142,9 +142,7 @@ class LLPointManager {
 	static async getViewersAutocompleteValues(interaction) {
 		let autocomplete_values;
 		const focused_param = await interaction.options.getFocused(true);
-
 		if (!focused_param) return;
-
 		const entered_value = focused_param.value;
 
 		autocomplete_values = global.LLPointManager.getViewersArray()

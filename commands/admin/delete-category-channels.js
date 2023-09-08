@@ -38,8 +38,6 @@ command.execute = async function(interaction) {
 				.catch(console.error);
 		}
 	);
-
-	interaction.editReply("Channels deleted.");
 }
 command.autocomplete = async function(interaction) {
 	let autocomplete_values;
