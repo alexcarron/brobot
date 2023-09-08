@@ -1,30 +1,52 @@
-// ! ALL ——————————————————————————————————————————————————————————————————————————————————————————————————————
+const { PermissionFlagsBits } = require("discord.js");
+const Parameter = require("../../modules/commands/Paramater");
+const SlashCommand = require("../../modules/commands/SlashCommand");
+const { deferInteraction, getGuild, getChannel, getMessage } = require("../../modules/functions");
 
-// ! ME ——————————————————————————————————————————————————————————————————————————————————————————————————————
+const Parameters = {
+	MessageLink: new Parameter({
+		type: "string",
+		name: "message-link",
+		description: "The link to the message your reacting to"
+	}),
+	Reaction: new Parameter({
+		type: "string",
+		name: "reaction",
+		description: "The emoji your reacting with"
+	}),
+}
 
+const command = new SlashCommand({
+	name: "react",
+	description: "React to a message with an emoji",
+});
+command.required_permissions = [PermissionFlagsBits.Administrator]
+command.parameters = [
+	Parameters.MessageLink,
+	Parameters.Reaction,
+]
+command.execute = async function(interaction) {
+	await deferInteraction(interaction);
 
-module.exports = {
-	name: 'react',
-    description: 'Reacts to a message with an emoji',
-    isServerOnly: true,
-    args: true,
-    isRestrictedToMe: true,
-	usages: ['<mentioned-user> <message>'],
-	execute(message, args) {
-		if (args.length <= 1) {
-            return message.channel.send('Gonna need to see more arguments than that.');
-        }
+	const message_link = interaction.options.getString(Parameters.MessageLink.name);
+	const reaction_str = interaction.options.getString(Parameters.Reaction.name);
 
-        let userId = args[0].slice(2, -1);
-        if (userId.startsWith('!')) {
-            userId = userId.slice(1);
-        }
+	const guild_id = message_link.split('/').at(-3); // @ TODO Finish v
+	const channel_id = message_link.split('/').at(-2); // @ TODO Finish v
+	const message_id = message_link.split('/').at(-1); // @ TODO Finish v
+	// https://discord.com/channels/GUILD_ID/CHANNEL_ID/MESSAGE_ID
 
-        let DMChannel = message.client.channels.cache.get(args[0])
-        console.log(DMChannel.name)
-        let DMmessage = DMChannel.messages.cache.get(args[1])
-        console.log(message.contents)
+	const guild = await getGuild(guild_id);
+	const channel = await getChannel(guild, channel_id);
+	const message = await getMessage(channel, message_id);
 
-        DMmessage.react(args[2]).catch(console.error)
-    }
-};
+	try {
+		message.react(reaction_str).catch(console.error);
+		interaction.editReply(`Reacted to ${message_link} with ${reaction_str}`);
+	}
+	catch {
+		interaction.editReply(`Can't access message`);
+	}
+}
+
+module.exports = command;
