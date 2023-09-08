@@ -53,10 +53,7 @@ command.autocomplete = async function(interaction) {
 
 	autocomplete_values = all_categories
 		.map((chnl_category) => {
-			console.log(chnl_category);
-			console.log(chnl_category.name); // @TODO TEST /delete-channel-categ...
-			console.log(chnl_category.id);
-			return {name: all_categories.name, value: all_categories.id}
+			return {name: chnl_category.name, value: chnl_category.id}
 		})
 		.filter(autocomplete_entry => {
 			console.log({autocomplete_entry})
