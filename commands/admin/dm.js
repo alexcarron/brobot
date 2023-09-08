@@ -1,28 +1,38 @@
-// ! ALL ——————————————————————————————————————————————————————————————————————————————————————————————————————
+const { PermissionFlagsBits } = require("discord.js")
+const Parameter = require("../../modules/commands/Paramater")
+const SlashCommand = require("../../modules/commands/SlashCommand");
+const { deferInteraction } = require("../../modules/functions");
 
-// ! ME ——————————————————————————————————————————————————————————————————————————————————————————————————————
+const Parameters = {
+	UserDMing: new Parameter({
+		type: "user",
+		name: "user-dming",
+		description: "The user you want Brobot to DM"
+	}),
+	Message: new Parameter({
+		type: "string",
+		name: "message",
+		description: "The message you want DMed to the user"
+	}),
+}
 
+const command = new SlashCommand({
+	name: "dm",
+	description: "DM a user a message",
+});
+command.required_permissions = [PermissionFlagsBits.Administrator]
+command.parameters = [
+	Parameters.UserDMing,
+	Parameters.Message,
+];
+command.execute = async function(interaction) {
+	await deferInteraction(interaction);
 
-module.exports = {
-	name: 'dm',
-    description: 'DMs a certain user',
-    isServerOnly: true,
-    args: true,
-	isRestrictedToMe: true,
-    required_permission: 'ADMINISTRATOR',
-	usages: ['<mentioned-user> <message>'],
-	execute(message, args) {
-		if (args.length <= 1) {
-            return message.channel.send('Gonna need to see more arguments than that.');
-        }
+	const user_dming = interaction.options.getUser(Parameters.UserDMing.name);
+	const message_dming = interaction.options.getString(Parameters.Message.name);
+	user_dming.send(message_dming);
 
-        let userId = args[0].slice(2, -1);
-        if (userId.startsWith('!')) {
-            userId = userId.slice(1);
-        }
-        console.log(userId)
+	interaction.editReply(`DMed <@${user_dming.id}>: ${message_dming}`);
+}
 
-        const user = message.client.users.cache.get(userId);
-        user.send(args.slice(1).join(' '));
-    }
-};
+module.exports = command;
