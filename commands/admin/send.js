@@ -1,21 +1,36 @@
-// ! ALL ——————————————————————————————————————————————————————————————————————————————————————————————————————
+const { PermissionFlagsBits } = require("discord.js");
+const Parameter = require("../../modules/commands/Paramater");
+const SlashCommand = require("../../modules/commands/SlashCommand");
+const { deferInteraction } = require("../../modules/functions");
 
-// ! ME ——————————————————————————————————————————————————————————————————————————————————————————————————————
+const Parameters = {
+	Channel: new Parameter({
+		type: "channel",
+		name: "channel",
+		description: "The channel the message will be sent to"
+	}),
+	Message: new Parameter({
+		type: "string",
+		name: "message",
+		description: "The message that will be sent"
+	}),
+}
 
+const command = new SlashCommand({
+	name: "send",
+	description: "Sends a message to a certain channel",
+});
+command.required_permissions = [PermissionFlagsBits.Administrator]
+command.parameters = [
+	Parameters.Channel,
+	Parameters.Message,
+]
+command.execute = async function(interaction) {
+	await deferInteraction(interaction);
 
-module.exports = {
-	name: 'send',
-    description: 'Sends a message to a certain channel',
-    isServerOnly: true,
-    args: true,
-    isRestrictedToMe: true,
-	usages: ['<channel> <message>'],
-	execute(message, args) {
-		if (args.length <= 1) {
-            return message.channel.send('Gonna need to see more arguments than that.');
-        }
+	const channel = interaction.options.getChannel(Parameters.Channel.name);
+	const message = interaction.options.getString(Parameters.Message.name);
+	channel.send(message);
+}
 
-        const channel = message.guild.channels.cache.get(args[0].slice(2, -1))
-        channel.send(args.slice(1).join(' '));
-    }
-};
+module.exports = command;
