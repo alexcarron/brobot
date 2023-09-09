@@ -32,7 +32,9 @@ const command = new SlashCommand({
 });
 command.required_permissions = [PermissionFlagsBits.Administrator];
 command.parameters = [
-	// @ TODO: Add Parameters
+	Parameters.Accomplishment,
+	Parameters.GameShow,
+	Parameters.ViewerName,
 ]
 command.execute = async function(interaction) {
 	await deferInteraction(interaction);
