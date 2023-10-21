@@ -1,22 +1,4 @@
-const
-	Discord = require('discord.js'),
-	{ GatewayIntentBits, Partials } = require('discord.js'),
-	client = new Discord.Client({
-		intents: [
-			GatewayIntentBits.Guilds,
-			GatewayIntentBits.GuildMessages,
-			GatewayIntentBits.GuildMembers,
-			GatewayIntentBits.MessageContent,
-			GatewayIntentBits.DirectMessages,
-		],
-		partials: [
-			Partials.Channel,
-			Partials.Message,
-		]
-	}),
-	{ discord_token } =  require("../modules/token.js");
-
-client.login(discord_token);
+const ids = require("../databases/ids.json")
 
 const functions = {
 	toTitleCase(string) {
@@ -93,8 +75,48 @@ const functions = {
 		return array;
 	},
 
+	doArraysHaveSameElements(array1, array2) {
+		const array2_elems_not_in_array1 = array2;
+
+		if (array1.length !== array2.length)
+			return false
+
+		for (const element of array1) {
+			const elem_index = array2_elems_not_in_array1.indexOf(element);
+
+			if (elem_index !== -1) {
+				array2_elems_not_in_array1.splice(elem_index, 1)
+			}
+			else {
+				return false
+			}
+		}
+
+		console.log({array2_elems_not_in_array1})
+
+		if (array2_elems_not_in_array1.length > 0)
+			return false
+		else
+			return true
+	},
+
+	// Function to calculate the GCD (Greatest Common Divisor) using the Euclidean algorithm
+	gcd(num1, num2) {
+		if (num2 === 0) {
+				return num1;
+		}
+		return functions.gcd(num2, num1 % num2);
+	},
+
+	// Function to calculate the LCM (Least Common Multiple)
+	lcm(num1, num2) {
+		return (num1 * num2) / functions.gcd(num1, num2);
+	},
+
 	getRandArrayItem(array) {
-		return array[ Math.floor( Math.random() * array.length ) ]
+		const rand_index = Math.floor( Math.random() * array.length )
+		const rand_element = array[rand_index];
+		return rand_element
 	},
 
 	getChannelCategorys(guild) {
@@ -165,21 +187,23 @@ const functions = {
 
 		const collectorFilter = other_interaction => other_interaction.user.id === interaction.user.id;
 
-		const confirmation = await confirmation_message.awaitMessageComponent({ filter: collectorFilter, time: 60_000 });
+		try {
+			const confirmation = await confirmation_message.awaitMessageComponent({ filter: collectorFilter, time: 120_000 });
 
-		// * CONFIRM
-		if (confirmation.customId === 'confirm') {
-			console.log("confirmed")
-			await confirmation.update({ content: `\`${confirm_update_txt}\``, components: [] });
-			return true;
-		// ! CANCEL
-		} else if (confirmation.customId === 'cancel') {
-			console.log("cancelled")
-			await confirmation.update({ content: `\`${cancel_update_txt}\``, components: [] });
-			return false;
+			// * CONFIRM
+			if (confirmation.customId === 'confirm') {
+				console.log("confirmed")
+				await confirmation.update({ content: `\`${confirm_update_txt}\``, components: [] });
+				return true;
+			// ! CANCEL
+			} else if (confirmation.customId === 'cancel') {
+				console.log("cancelled")
+				await confirmation.update({ content: `\`${cancel_update_txt}\``, components: [] });
+				return false;
+			}
 		}
-		else {
-			confirmation_message.update({ content: `\`Response not recieved in time\``, components: [] });
+		catch {
+			interaction.editReply({ content: `\`Response not recieved in time\``, components: [] });
 		}
 	},
 
@@ -187,8 +211,13 @@ const functions = {
 		return await channel.messages.fetch(messsage_id);
 	},
 
+
+	async getRDMGuild() {
+		return await functions.getGuild(ids.rapid_discord_mafia.rdm_server_id);
+	},
+
 	async getGuild(guild_id) {
-		return await client.guilds.fetch(guild_id);
+		return await global.client.guilds.fetch(guild_id);
 	},
 
 	async getGuildMember(guild, user_id) {
@@ -196,7 +225,7 @@ const functions = {
 	},
 
 	async getUser(user_id) {
-		return await client.users.fetch(user_id);
+		return await global.client.users.fetch(user_id);
 	},
 
 	async getRole(guild, role_name) {
@@ -221,16 +250,110 @@ const functions = {
 		await guild_member.setNickname(nickname).catch(console.error());
 	},
 
-	async deferInteraction(interaction) {
+	async deferInteraction(interaction, message_content="Running command...") {
+
 		if (interaction) {
 			try {
-				await interaction.reply({content: "Running command...", ephemeral: true});
+				if (interaction.replied) {
+					await interaction.followUp({
+						content: message_content,
+						ephemeral: true
+					});
+				}
+				else if (interaction.deferred) {
+					await interaction.editReply({
+						content: message_content,
+						ephemeral: true
+					});
+				}
+				else {
+					await interaction.deferReply({
+						content: message_content,
+						ephemeral: true
+					});
+				}
 			}
-			catch {
-				console.log("Failed Defer: Reply Already Exists");
-				await interaction.editReply({ content: "Running Command...", ephemeral: true});
+			catch (error) {
+				console.error(error);
+				console.log("Failed Defer: Brute Forcing");
+				try {
+					await interaction.deferReply({
+						content: message_content,
+						ephemeral: true
+					});
+				}
+				catch (error) {
+					console.error(error);
+					try {
+						await interaction.editReply({
+							content: message_content,
+							ephemeral: true
+						});
+					}
+					catch (error) {
+						console.error(error);
+						await interaction.followUp({
+							content: message_content,
+							ephemeral: true
+						});
+					}
+				}
 			}
 		}
+	},
+
+	async editReplyToInteraction(interaction, new_message) {
+		if (interaction && (interaction.replied || interaction.deferred)) {
+			return await interaction.editReply(new_message);
+		}
+	},
+
+	async replyToInteraction(interaction, content) {
+		try {
+			await interaction.reply({
+				content: content,
+				components: [],
+				ephemeral: true,
+			});
+		}
+		catch {
+			try {
+				await interaction.followUp({
+					content: content,
+					components: [],
+					ephemeral: true,
+				});
+			}
+			catch {
+				await interaction.channel.send({
+					content: content,
+					components: [],
+					ephemeral: true,
+				});
+			}
+		}
+	},
+
+	/**
+	 * Create a text progress bar
+	 * @param {Number} value - The value to fill the bar
+	 * @param {Number} maxValue - The max value of the bar
+	 * @param {Number} size - The bar size (in letters)
+	 * @return {String} - The bar
+	 */
+	getProgressBar(value, maxValue, size) {
+		const percentage = value / maxValue; // Calculate the percentage of the bar
+		let progress = Math.round((size * percentage)); // Calculate the number of square caracters to fill the progress side.
+		const emptyProgress = size - progress; // Calculate the number of dash caracters to fill the empty progress side.
+
+		if (progress <= 0 || progress > size) progress = 0;
+
+		const progressText = '▇'.repeat(progress); // Repeat is creating a string with progress * caracters in it
+		const emptyProgressText = '—'.repeat(emptyProgress); // Repeat is creating a string with empty progress * caracters in it
+		const percentageText = Math.round(percentage * 100) + '%'; // Displaying the percentage of the bar
+
+		const bar = '```[' + progressText + emptyProgressText + ']' + percentageText + '```'; // Creating the bar
+		return bar;
 	},
 
 	logColor(message, color) {
@@ -282,7 +405,7 @@ const functions = {
 		}
 
 		return new Promise(
-			resolve => setTimeout(resolve, milliseconds)
+			resolve => setTimeout(resolve, Math.round(milliseconds))
 		);
 	},
 
@@ -297,7 +420,6 @@ const functions = {
 		const nextDay = new Date(currentDate);
 		// nextDay.setDate(currentDate.getDate() + 1);
 		nextDay.setSeconds(currentDate.getSeconds() + 15);
-		console.log({nextDay});
 
 		const seconds = nextDay.getSeconds();
 		const minutes = nextDay.getMinutes();
@@ -387,10 +509,63 @@ doesValueMatchType: function doesValueMatchType(value, type) {
 		return color;
 	},
 
-	generateRandomHexColorNumber: function() {
+	getRandomHexColorNumber: function() {
 		const colorNumber = Math.floor(Math.random() * 16777216); // 16777216 = 0xFFFFFF + 1
 
 		return colorNumber;
+	},
+
+	toOrdinal(number) {
+    if (typeof number !== 'number' || isNaN(number)) {
+        throw new Error('Input is not a valid number');
+    }
+
+    if (number % 100 >= 11 && number % 100 <= 13) {
+        return number + 'th';
+    }
+
+    switch (number % 10) {
+        case 1:
+            return number + 'st';
+        case 2:
+            return number + 'nd';
+        case 3:
+            return number + 'rd';
+        default:
+            return number + 'th';
+    }
+	},
+
+	toWordOrdinal(number) {
+    if (typeof number !== 'number' || isNaN(number)) {
+        throw new Error('Input is not a valid number');
+    }
+
+    const ordinals = [
+        'zeroth', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth',
+        'tenth', 'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth', 'sixteenth', 'seventeenth', 'eighteenth', 'nineteenth'
+    ];
+
+    const tensOrdinals = [
+        '', 'tenth', 'twentieth', 'thirtieth', 'fortieth', 'fiftieth', 'sixtieth', 'seventieth', 'eightieth', 'ninetieth'
+    ];
+
+    const tensNormal = [
+        '', 'ten', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety', "hundred",
+    ];
+
+    if (number < 20) {
+        return ordinals[number];
+    }
+
+    const lastDigit = number % 10;
+    const tens = Math.floor(number / 10);
+
+    if (lastDigit === 0) {
+        return tensOrdinals[tens];
+    }
+
+    return tensNormal[tens] + '-' + ordinals[lastDigit];
 	}
 }
 

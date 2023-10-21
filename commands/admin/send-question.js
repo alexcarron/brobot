@@ -14,6 +14,8 @@ const Parameters = {
 		autocomplete: {
 			"Controversial": "controversial_talk",
 			"Philosophy": "philosophy",
+			"Conversation Starter": "general",
+			"AAA": "AAA",
 		},
 	}),
 }
@@ -73,8 +75,6 @@ command.execute = async function(interaction) {
 
 	const llgs_server = global.client.guilds.cache.get(llgs.server_id);
 	const { github_token } =  require("../../modules/token.js");
-
-
 	const channel_name = interaction.options.getString(Parameters.Channel.name)
 
 	switch (channel_name) {
@@ -84,6 +84,7 @@ command.execute = async function(interaction) {
 				controversial_question_index = Math.floor( Math.random() * global.messages.controversial_talk.length ),
 				controversial_question = global.messages.controversial_talk[controversial_question_index];
 
+			console.log(global.messages.controversial_talk);
 
 			try {
 				await controversial_channel.send( controversial_question );
@@ -113,6 +114,44 @@ command.execute = async function(interaction) {
 
 			global.messages.philosophy.splice(philosophy_question_index, 1);
 			updateMessagesDatabase();
+			break;
+		}
+
+
+		case "general": {
+			const
+				general_question_index = Math.floor( Math.random() * global.messages.general.length ),
+				general_question = global.messages.general[general_question_index];
+
+			try {
+				await interaction.channel.send( general_question );
+			}
+			catch {
+				return await interaction.channel.send(`<@${ids.users.LL}> WARNING: We have run out of general questions! Blow up the server!`);
+			}
+
+			global.messages.general.splice(general_question_index, 1);
+			updateMessagesDatabase();
+			break;
+		}
+
+
+		case "AAA": {
+			const
+				aaa_question_index = Math.floor( Math.random() * global.questions.length ),
+				aaa_question = global.questions[aaa_question_index],
+				participant_index = Math.floor( Math.random() * global.participants.length ),
+				participant = global.participants[participant_index];
+
+			try {
+				await interaction.channel.send( `Question for **${participant}**: ${aaa_question}` );
+			}
+			catch {
+				return await interaction.channel.send(`<@${ids.users.LL}> WARNING: We have run out of AAA questions! Blow up the server!`);
+			}
+
+			global.questions.splice(aaa_question_index, 1);
+			console.log(global.questions);
 			break;
 		}
 

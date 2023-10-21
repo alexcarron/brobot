@@ -95,6 +95,9 @@ class Viewer {
 		}
 		let accomplishment_key = Object.keys(LLPointAccomplishments).find(key => LLPointAccomplishments[key] === accomplishment);
 
+		console.log({accomplishment});
+		console.log(LLPointAccomplishments.DoUndertaleQuiz);
+
 		switch (accomplishment) {
 			case LLPointAccomplishments.Subscribe:
 				if (this.isSubscribed) {
@@ -106,12 +109,14 @@ class Viewer {
 				break;
 
 			case LLPointAccomplishments.DoUndertaleQuiz:
+				console.log("HELLO!")
 				if (this.didUndertaleQuiz) {
 					console.log("Error: Already did Undertale Music Quiz");
 					return "Error: Already did Undertale Music Quiz";
 				}
 
 				this.didUndertaleQuiz = true;
+				console.log(this)
 				break;
 
 			case LLPointAccomplishments.DoDeltaruneQuiz:
@@ -131,9 +136,18 @@ class Viewer {
 
 				this.games_participated_in.push(game_name);
 				break;
+
+			case LLPointAccomplishments.ParticipateInEvent:
+				if (this.games_participated_in.includes(game_name)) {
+					console.log(`Error: Already participated in ${game_name}`);
+					return;
+				}
+
+				this.games_participated_in.push(game_name);
+				break;
 		}
 
-		await addLLPoints(LLPointRewards[accomplishment_key]);
+		await this.addLLPoints(LLPointRewards[accomplishment_key]);
 		return "Success";
 	}
 

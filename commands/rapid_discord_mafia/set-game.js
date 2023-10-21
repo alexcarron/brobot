@@ -31,6 +31,7 @@ command.execute = async function execute(interaction) {
 
 	global.Game[property] = value;
 	global.Game.logGame();
+
 	interaction.editReply(`Changed **${property}** to \`${value}\``);
 }
 

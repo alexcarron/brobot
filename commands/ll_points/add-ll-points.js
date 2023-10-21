@@ -30,6 +30,7 @@ command.parameters = [
 	Parameters.ViewerName,
 	Parameters.LLPointAmount,
 ]
+command.allowsDMs = true;
 command.execute = async function(interaction) {
 	if (interaction) {
 		try {

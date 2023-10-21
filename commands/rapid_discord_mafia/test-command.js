@@ -1,14 +1,57 @@
 const { PermissionFlagsBits } = require("discord.js");
 const SlashCommand = require("../../modules/commands/SlashCommand.js");
 const Parameter = require("../../modules/commands/Paramater.js");
+const Enums = require("../../modules/enums.js");
+const Game = require("../../modules/rapid_discord_mafia/game.js");
 
 const ids = require(`${global.paths.databases_dir}/ids.json`);
+
+const Subparameters = {
+	PlayerVotingFor: new Parameter({
+		type: "string",
+		name: "player-voting-for",
+		description: "The player you want to put on trial",
+		isAutocomplete: true,
+	}),
+	TrialOutcome: new Parameter({
+		type: "string",
+		name: "trial-outcome",
+		description: "The vote you want to cast for the current trial",
+		autocomplete: Enums.TrialVotes
+	}),
+	PlayerVoting: new Parameter({
+		type: "string",
+		name: "player-voting",
+		description: "The player you are making vote",
+		isAutocomplete: true,
+	}),
+}
+const Parameters = {
+	ForPlayer: new Parameter({
+		type: "subcommand",
+		name: "for-player",
+		description: "Vote for a player to put on trial",
+		subparameters: [
+			Subparameters.PlayerVoting,
+			Subparameters.PlayerVotingFor,
+		]
+	}),
+	ForTrialOutcome: new Parameter({
+		type: "subcommand",
+		name: "for-trial-outcome",
+		description: "Vote for whether or not you want to execute the player on trial",
+		subparameters: [
+			Subparameters.PlayerVoting,
+			Subparameters.TrialOutcome,
+		]
+	}),
+}
 
 const command = new SlashCommand({
 	name: "test-command",
 	description: "Test a command at any point as any person",
 });
-command.required_permissions = [PermissionFlagsBits.AddReactions];
+command.required_permissions = [PermissionFlagsBits.Administrator];
 command.parameters = [
 	new Parameter({
 		type: "subcommand",
@@ -59,20 +102,12 @@ command.parameters = [
 		]
 	}),
 	new Parameter({
-		type: "subcommand",
+		type: "Subcommandgroup",
 		name: "vote",
 		description: "Test the /vote command",
-		subparameters: [
-			new Parameter({
-				type: "string",
-				name: "player-name",
-				description: "The name of the player you want to vote",
-			}),
-			new Parameter({
-				type: "string",
-				name: "vote",
-				description: "The vote you want the player to make",
-			}),
+		subcommands : [
+			Parameters.ForPlayer,
+			Parameters.ForTrialOutcome,
 		]
 	}),
 	new Parameter({
@@ -121,20 +156,41 @@ command.execute = async function execute(interaction) {
 		for (let player_name of player_names) {
 			join_command.execute(interaction, [ids.users.LL, player_name, true], true);
 		}
+
+		interaction.editReply("Did fake joins!");
 	}
 	else {
 		let command;
+		let command_name = subcommand
+
+		if (interaction.options.getSubcommandGroup()) {
+			command_name = interaction.options.getSubcommandGroup();
+		}
 
 		try {
-			command = require(`./${subcommand}.js`);
+			command = require(`./${command_name}.js`);
 		}
 		catch {
-			return interaction.editReply(`\`${subcommand}\` is an invalid command name.`)
+			return interaction.editReply(`\`${command_name}\` is an invalid command name.`)
 		}
 
-		command.execute(interaction, true);
+		await command.execute(interaction, true);
 	}
 
+};
+command.autocomplete = async function(interaction) {
+	const focused_param = await interaction.options.getFocused(true);
+
+	if ([Subparameters.PlayerVotingFor.name, Subparameters.PlayerVoting.name].includes(focused_param.name)) {
+		return await Game.getAlivePlayersAutocomplete(interaction)
+	}
+	else {
+		const autocomplete_values = [{name: "Sorry, there are no alive players to choose from", value: "N/A"}];
+
+		await interaction.respond(
+			autocomplete_values
+		);
+	}
 };
 
 module.exports = command;

@@ -33,6 +33,9 @@ class Parameter {
 	/** @field {Paramater[]} Paramaters specific to this subcommand parameter */
 	subparameters;
 
+	/** @field {Paramater[]} Subcommand parameters specific to this subcommandgroup parameter */
+	subcommands;
+
 	/**
 	 * @param {"subcommand" | "string" | "channel" | "attachment" | "boolean" | "mentionable" | "number" | "integer" | "role" | "user"} type
 	 * @param {string} name
@@ -43,6 +46,7 @@ class Parameter {
 	 * @param {number} [min_value]
 	 * @param {number} [max_value]
 	 * @param {Parameter[]} [subparameters = []]
+	 * @param {SubcommandParameter[]} [subcommands = []]
 	 */
 	constructor({
 		type,
@@ -54,6 +58,7 @@ class Parameter {
 		max_value,
 		autocomplete,
 		subparameters = [],
+		subcommands = [],
 	}) {
 		this.type = type;
 		this.name = name;
@@ -64,6 +69,7 @@ class Parameter {
 		this.max_value = max_value;
 		this.autocomplete = autocomplete;
 		this.subparameters = subparameters;
+		this.subcommands = subcommands;
 	}
 
 	/**
@@ -72,7 +78,6 @@ class Parameter {
 	 * @param {object} command The command data or subcommand you want the paramter added to.
 	 */
 	addToCommand(command) {
-		// console.log("adding Paramater...");
 		// console.log(this);
 		// console.log(" to Command:")
 		// console.log({command});
@@ -80,11 +85,14 @@ class Parameter {
 		// console.log(`Subcommand Instance? ${command instanceof SlashCommandSubcommandBuilder}`);
 
 		const type = toTitleCase(this.type);
-		// console.log({type});
 
 		if (type === "Subcommand") {
 			// @ TODO: run it and Fix this subcommand instance of problem
 			this.addSubcommandToCommand(command);
+			// console.log({command});
+		} else if (type === "Subcommandgroup") {
+			// @ TODO: run it and Fix this subcommand instance of problem
+			this.addSubcommandGroupToCommand(command);
 			// console.log({command});
 		}
 		else {
@@ -146,6 +154,30 @@ class Parameter {
 			});
 
 			return subcommand;
+		})
+
+		return command;
+	}
+	addSubcommandGroupToCommand(command) {
+		// console.log("Adding subcommand paramater:");
+		// console.log(this);
+		command.addSubcommandGroup( (subcommand_group) => {
+			// console.log(`Subcommand Instance? ${subcommand instanceof SlashCommandSubcommandBuilder}`);
+
+			subcommand_group
+				.setName(this.name)
+				.setDescription(this.description);
+
+			// console.log({subcommand});
+
+			this.subcommands.forEach(subcommand => {
+				// console.log("Adding subparamater to subcommand:");
+				// console.log({subparameter});
+
+				subcommand_group = subcommand.addToCommand(subcommand_group);
+			});
+
+			return subcommand_group;
 		})
 
 		return command;

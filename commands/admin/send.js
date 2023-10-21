@@ -31,6 +31,8 @@ command.execute = async function(interaction) {
 	const channel = interaction.options.getChannel(Parameters.Channel.name);
 	const message = interaction.options.getString(Parameters.Message.name);
 	channel.send(message);
+
+	await interaction.editReply(`Sent \`${message}\` to **${channel}**`)
 }
 
 module.exports = command;

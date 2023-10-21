@@ -7,7 +7,6 @@ class Arg {
 		this.type = type;
 		this.subtypes = subtypes;
 		this.value = value;
-
 	}
 
 	static getPropertyTypes() {

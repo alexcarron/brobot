@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require("discord.js");
+const Parameter = require("./Paramater");
 
 /**
  * Represents a Discord command.
@@ -81,6 +82,7 @@ class SlashCommand {
 			.setDescription(this.description);
 
 		await this.parameters.forEach(async parameter => {
+			console.log(parameter instanceof Parameter);
 			await parameter.addToCommand(data)
 		});
 

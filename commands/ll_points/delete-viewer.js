@@ -22,6 +22,7 @@ const command = new SlashCommand({
 command.parameters = [
 	Parameters.ViewerDeleting,
 ];
+command.allowsDMs = true;
 command.required_permissions = [PermissionFlagsBits.Administrator];
 command.execute = async function(interaction) {
 	await deferInteraction(interaction);

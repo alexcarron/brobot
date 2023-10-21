@@ -1,9 +1,10 @@
 const Parameter = require("../../modules/commands/Paramater");
 const SlashCommand = require("../../modules/commands/SlashCommand");
-const { toTitleCase } = require("../../modules/functions");
+const { toTitleCase, deferInteraction, getRDMGuild, getChannel } = require("../../modules/functions");
 const { Abilities } = require("../../modules/rapid_discord_mafia/ability");
-const { ArgumentTypes, ArgumentSubtypes, Factions } = require("../../modules/enums");
+const { ArgumentTypes, ArgumentSubtypes, Factions, AbilityUses } = require("../../modules/enums");
 const roles = require("../../modules/rapid_discord_mafia/roles");
+const ids = require("../../databases/ids.json")
 
 const command = new SlashCommand({
 	name: "use",
@@ -18,16 +19,21 @@ command.parameters.push(new Parameter({
 }));
 
 for (const ability_name in Abilities) {
-	console.log({ability_name});
 	const ability = Abilities[ability_name];
+
+	if (
+		(!ability.uses || ability.uses === AbilityUses.None) ||
+		(!ability.phases_can_use || ability.phases_can_use.length <= 0)
+	) {
+		continue;
+	}
+
 	const subcommand_name = ability.name.split(" ").join("-").toLowerCase()
 	let subcommand_description = ability.description;
 
 	if (ability.description.length > 100) {
 		subcommand_description = ability.description.substring(0, 96) + "...";
 	}
-
-	console.log({subcommand_description})
 
 	const parameter = new Parameter({
 		type: "subcommand",
@@ -67,9 +73,15 @@ for (const ability_name in Abilities) {
 	command.parameters.push(parameter);
 }
 
+command.required_servers = [ids.servers.rapid_discord_mafia];
+command.required_categories = [
+	ids.rapid_discord_mafia.category.player_action,
+	ids.rapid_discord_mafia.category.night,
+];
+command.required_roles = [ids.rapid_discord_mafia.roles.living];
+
 command.execute = async function(interaction, isTest) {
-	if (!(await interaction.fetchReply()))
-		await interaction.deferReply({ephemeral: true});
+	await deferInteraction(interaction);
 
 	let player, ability_name;
 
@@ -100,12 +112,16 @@ command.execute = async function(interaction, isTest) {
 	if (ability_name === "Nothing") {
 		player.setAbilityDoing("nothing", {});
 
+		player.resetInactivity();
+
 		return await interaction.editReply(
-			`Action Saved: **${player.name}** is doing **Nothing**`
+			`You will attempt to do **Nothing**`
 		);
 	}
 
-	const ability = Object.values(Abilities).find(ability => {console.log(ability.name); return ability.name === ability_name});
+	const ability = Object.values(Abilities).find(ability =>
+		ability.name === ability_name
+	);
 
 	console.log({ability_name, ability, player});
 
@@ -113,6 +129,10 @@ command.execute = async function(interaction, isTest) {
 
 	if (player_role.abilities.every(ability => ability.name !== ability_name)) {
 		return await interaction.editReply("You can't use this ability.");
+	}
+
+	if (!ability.phases_can_use.includes(global.Game.phase)) {
+		return await interaction.editReply(`You can't use this ability during the** ${global.Game.phase}** phase`)
 	}
 
 	const arg_values = {};
@@ -145,6 +165,24 @@ command.execute = async function(interaction, isTest) {
 			player.setVisiting(arg_param_value);
 		}
 
+		const isArgValueValid = (player_using_ability, ability_arg, arg_value) => {
+			if (ability_arg.subtypes.includes(ArgumentSubtypes.NonMafia)) {
+				const player_targeting = global.Players.get(arg_param_value);
+				const player_targeting_role = roles[player_targeting.role];
+				if (player_targeting_role.faction === Factions.Mafia) {
+					return `You cannot target **${player_targeting.name}** as you may only target non-mafia`;
+				}
+			}
+			if (ability_arg.subtypes.includes(ArgumentSubtypes.NotSelf)) {
+				if (arg_param_value === player_using_ability.name) {
+					return `You cannot target yourself`;
+				}
+			}
+
+			return true;
+		}
+
+
 		if (arg_param_value === "N/A") {
 			return await interaction.editReply(`You did not enter in a valid player in the argument **${arg_param_name}**`);
 		}
@@ -166,14 +204,26 @@ command.execute = async function(interaction, isTest) {
 			}).join(", ");
 	}
 
+	player.resetInactivity();
+
 	await interaction.editReply(
-		`Action Saved: **${player.name}** is doing **${ability.name}**${arg_values_txt}`
+		ability.feedback(...Object.values(arg_values))
 	);
+
+	console.log({player});
+
+	if (roles[player.role].faction === Factions.Mafia) {
+		const rdm_guild = await getRDMGuild();
+		const mafia_channel = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.mafia_chat);
+
+		mafia_channel.send(
+			ability.feedback(...Object.values(arg_values), player.name)
+		);
+	}
 }
 command.autocomplete = async function(interaction) {
 	let autocomplete_values;
 	const focused_param = interaction.options.getFocused(true);
-	console.log({focused_param});
 
 	if (!focused_param) return;
 
@@ -181,10 +231,9 @@ command.autocomplete = async function(interaction) {
 
 	if (!player) {
 		return await interaction.respond(
-			[{name: "Sorry, your not allowed to use this command", value: "N/A"}]
+			[{name: "Sorry, you're not allowed to use this command", value: "N/A"}]
 		);
 	}
-
 
 	const subcommand_name = interaction.options.getSubcommand();
 	const ability_name = subcommand_name.split("-").map(name => toTitleCase(name)).join(" ");
@@ -198,28 +247,19 @@ command.autocomplete = async function(interaction) {
 
 	if (player_role.abilities.every(ability => ability.name !== ability_name)) {
 		return await interaction.respond(
-			[{name: "Sorry, your not allowed to use this command", value: "N/A"}]
+			[{name: "Sorry, you're not allowed to use this command", value: "N/A"}]
 		);
 	}
 
-	console.log({
-		focused_param,
-		subcommand_name,
-		ability_name,
-		arg_name,
-		ability,
-		ability_arg,
-	});
+	console.log({ability_arg})
 
 	if (ability_arg.type === ArgumentTypes.Player) {
 		autocomplete_values =
-			global.Game.Players.getPlayerList().filter(
+			global.Game.Players.getAlivePlayers().filter(
 				(player) => {
 					console.log(ability_arg.subtypes);
-					console.log(ArgumentSubtypes.NonMafia);
 					console.log(player.role);
 					console.log(player.role.faction);
-					console.log(Factions.Mafia);
 
 					if (
 						ability_arg.subtypes.includes(ArgumentSubtypes.NonMafia) &&
@@ -254,8 +294,9 @@ command.autocomplete = async function(interaction) {
 	if (Object.values(autocomplete_values).length <= 0) {
 		autocomplete_values = [{name: "Sorry, there are no players left to choose from", value: "N/A"}];
 	}
-
-	console.log({autocomplete_values});
+	else if (Object.values(autocomplete_values).length > 25) {
+		autocomplete_values.splice(25);
+	}
 
 	await interaction.respond(
 		autocomplete_values

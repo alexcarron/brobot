@@ -6,6 +6,7 @@ const command = new SlashCommand({
 	description: "Update the tier and tier role of every viewer in the database",
 });
 command.required_permissions = [PermissionFlagsBits.Administrator];
+command.allowsDMs = true;
 command.execute = async function(interaction) {
 	if (interaction) {
 		try {

@@ -7,6 +7,7 @@ const command = new SlashCommand({
 	name: "leaderboard",
 	description: "See a leaderboard of everybody with LL Points",
 });
+command.allowsDMs = true;
 command.execute = async function(interaction) {
 	await deferInteraction(interaction);
 

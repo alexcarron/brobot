@@ -110,6 +110,16 @@ class LLPointManager {
 		this.viewers.set(viewer.name, viewer);
 	}
 
+	addViewerFromUser(viewer_user) {
+		let new_viewer = new Viewer({
+			name: viewer_user.username,
+			ll_points: 0,
+			user_id: viewer_user.id,
+		});
+
+		this.addViewer(new_viewer);
+	}
+
 	removeViewer(viewer) {
 		this.viewers.delete(viewer.name);
 	}

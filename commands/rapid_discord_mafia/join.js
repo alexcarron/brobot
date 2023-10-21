@@ -1,6 +1,7 @@
 const Parameter = require("../../modules/commands/Paramater");
 const SlashCommand = require("../../modules/commands/SlashCommand");
 const { GameStates } = require("../../modules/enums");
+const { deferInteraction } = require("../../modules/functions");
 const
 	ids = require(`${global.paths.databases_dir}/ids.json`);
 
@@ -22,15 +23,7 @@ command.parameters = [
 	})
 ]
 command.execute = async function execute(interaction, args, isTest) {
-	if (interaction) {
-		try {
-			await interaction.reply({content: "Starting Day...", ephemeral: true});
-		}
-		catch {
-			console.log("Failed Defer: Reply Already Exists");
-			await interaction.editReply({ content: "Sending Command...", ephemeral: true});
-		}
-	}
+	await deferInteraction(interaction);
 
 	global.Game.logPlayers();
 
@@ -53,11 +46,13 @@ command.execute = async function execute(interaction, args, isTest) {
 		else
 			isFakeUser = false;
 
-		global.Game.state = GameStates.ReadyToBegin;
+		// global.Game.state = GameStates.ReadyToBegin;
 	}
 
 	console.log({player_id, player_name, isFakeUser})
 	global.Game.addPlayerToGame(player_name, player_id, interaction, isFakeUser);
+
+	await interaction.editReply(`**${player_name}** has been added to the game`);
 }
 
 

@@ -5,19 +5,23 @@
 	},
 	"servers": {
 		"brobot_testing": "726562624682197024",
-		"sandbox": "1135364976496873644",
-		"rapid_discord_mafia": "1031365759919726622"
+		"gameforge": "1135364976496873644",
+		"rapid_discord_mafia": "1031365759919726622",
+		"LLGameShowCenter": "1137452342850097252"
 	},
 	"ll_user_id": "276119804182659072",
 	"brobot_user_id": "803333218614116392",
 	"client": "803333218614116392",
-	"sandbox": {
+	"gameforge": {
 		"guild": "1135364976496873644",
 		"channels": {
 			"proposed_rules": "1139304249050812416",
 			"official_rules": "1135365489875505313",
 			"staff": "1139721081360490518",
 			"announcements": "1139750688746917888"
+		},
+		"roles": {
+			"host": "1139336733545210019"
 		}
 	},
 	"brobot_test_server": {
@@ -31,6 +35,7 @@
 		"controversial_channel_id": "1137452343785443471",
 		"channels":{
 			"philosophy": "1137452343785443472",
+			"controversial": "1137452343785443471",
 			"song_sharing": "1137488930967666830"
 		},
 		"roles": {

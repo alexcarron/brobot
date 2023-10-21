@@ -1,5 +1,5 @@
 
-const {Feedback, Phases, AbilityUses, ArgumentTypes, ArgumentSubtypes, Immunities} = require("../enums.js");
+const {Feedback, Phases, AbilityUses, ArgumentTypes, ArgumentSubtypes, Immunities, AbilityNames} = require("../enums.js");
 const addAffect = function(ability_done, target_name) {
 	if (![0, -1].includes(ability_done.uses)) {
 		if (!global.Game.Players.get(ability_done.by).used[ability_done.name]) {
@@ -51,7 +51,7 @@ const perform = {
 
 			global.Game.abilities_performed[roleblocked_player_name] =
 				{
-					"name": "Knife",
+					"name": AbilityNames.Knife,
 					"by": roleblocked_player_name,
 					"args": [ability_performed.by]
 				}
@@ -60,15 +60,7 @@ const perform = {
 			roleblocked_player.addFeedback(Feedback.AttackedRoleblocker);
 		}
 
-		addAffect(ability_performed, roleblocker_player_name);
-	},
-	async silenceCurse(ability_performed) {
-		const
-			fool_name = ability_performed.by,
-			fool_player = global.Game.Players.get(fool_name);
-
-		global.Game.isSilentCursed = true;
-		fool_player.addFeedback(Feedback.DidSilenceCurse);
+		addAffect(ability_performed, roleblocked_player_name);
 	},
 	async cautious(ability_performed) {
 		const
@@ -109,18 +101,33 @@ const perform = {
 	},
 	async order(ability_performed) {
 		const
+			godfather_name = ability_performed.by,
+			godfather_player = global.Game.Players.get(godfather_name),
 			player_killing_name = ability_performed.args["Player Killing"],
 			mafioso_player = global.Game.Players.getPlayerWithRole("Mafioso");
 
-		mafioso_player.visiting = player_killing_name;
-		global.Game.abilities_performed[mafioso_player.name] =
-			{
-				"name": "Murder",
-				"by": mafioso_player.name,
-				"args": [player_killing_name]
-			}
+		if (mafioso_player) {
+			mafioso_player.visiting = player_killing_name;
+			global.Game.abilities_performed[mafioso_player.name] =
+				{
+					"name": AbilityNames.Murder,
+					"by": mafioso_player.name,
+					"args": [player_killing_name]
+				}
 
 			mafioso_player.addFeedback(Feedback.OrderedByGodfather(player_killing_name));
+		}
+		else {
+			godfather_player.visiting = player_killing_name;
+			global.Game.abilities_performed[godfather_player.name] =
+				{
+					"name": AbilityNames.Murder,
+					"by": godfather_player.name,
+					"args": [player_killing_name]
+				}
+
+			godfather_player.addFeedback(Feedback.KillForMafioso(player_killing_name));
+		}
 	},
 	async attack(ability_performed) {
 		const
@@ -135,7 +142,7 @@ const perform = {
 		if (attacked_player.defense < attacker_player.attack) {
 			console.log("Attack Success");
 
-			global.Game.addVictimToNextDeaths(attacked_player, attacker_player);
+			global.Game.addDeath(attacked_player, attacker_player);
 
 			attacked_player.addFeedback(Feedback.KilledByAttack);
 			attacker_player.addFeedback(Feedback.KilledPlayer(attacked_player_name));
@@ -147,7 +154,7 @@ const perform = {
 				addAffect(
 					{
 						"by": attacker_player_name,
-						"name": "Suicide"
+						"name": AbilityNames.Suicide
 					},
 					attacker_player_name
 				);
@@ -238,17 +245,7 @@ const perform = {
 		}
 
 		console.log("Checking to get rid of manipulation affects");
-		if (player_evaluating.affected_by) {
-			for (let [index, affect] of player_evaluating.affected_by.entries()) {
-				console.log({affect});
-				if (Abilities[affect.name].type === "manipulation") {
-					console.log("Found manipulation affect. Removing affect and reseting percieved.");
-
-					player_evaluating.affected_by.splice(index, 1);
-					player_evaluating.resetPercieved();
-				}
-			}
-		}
+		player_evaluating.removeManipulationAffects();
 
 		evaluater_player.addFeedback(feedback);
 		addAffect(ability_performed, player_evaluating_name);

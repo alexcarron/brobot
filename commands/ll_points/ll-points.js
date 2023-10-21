@@ -24,6 +24,7 @@ const command = new SlashCommand({
 command.parameters = [
 	Parameters.ViewerName,
 ]
+command.allowsDMs = true;
 command.execute = async function(interaction) {
 	await deferInteraction(interaction);
 

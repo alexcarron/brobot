@@ -1,6 +1,7 @@
 const { PermissionFlagsBits } = require("discord.js");
 const SlashCommand = require("../../modules/commands/SlashCommand");
-const ids = require(`../../databases/ids.json`)
+const ids = require(`../../databases/ids.json`);
+const { editReplyToInteraction } = require("../../modules/functions");
 
 module.exports = {
 
@@ -16,8 +17,9 @@ command.execute = async function execute(interaction) {
 	await interaction.deferReply({ephemeral: true});
 
 	await global.Game.saveGameDataToDatabase();
-	interaction.editReply("Game succesfully saved.");
 	global.Game.logGame();
+
+	editReplyToInteraction(interaction, "Game succesfully saved.")
 }
 
 module.exports = command;

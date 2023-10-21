@@ -1,4 +1,6 @@
-const { setNickname, getGuildMember } = require("../functions");
+const { setNickname } = require("../functions");
+const Player = require("./player");
+const roles = require("./roles");
 
 class Players {
 	constructor(players = {}) {
@@ -26,8 +28,14 @@ class Players {
 	/**
 	 * @param {Player} Player object
 	 */
-	addPlayer(player) {
+	async addPlayer(player) {
 		this.players[player.name] = player;
+	}
+
+	async addPlayerFromObj(player_obj) {
+		const player = new Player(player_obj);
+		await this.addPlayer(player);
+		return player;
 	}
 
 	get(name) {
@@ -58,12 +66,20 @@ class Players {
 		return this.getPlayerList().find( player => player.role === role_name );
 	}
 
-	getTownspeople() {
+	getTownPlayers() {
 		return this.getPlayerList().filter( player => global.Roles[player.role].faction === "Town" );
 	}
 
 	getAlivePlayers() {
 		return this.getPlayerList().filter( player => player.isAlive );
+	}
+
+	getPlayersInFaction(faction) {
+		return this.getPlayerList().filter( player => roles[player.role].faction === faction );
+	}
+
+	getAlivePlayersInFaction(faction) {
+		return this.getAlivePlayers().filter( player => roles[player.role].faction === faction );
 	}
 
 	getAlivePlayerNames() {
@@ -81,6 +97,18 @@ class Players {
 		delete this.players[old_name];
 		const player_guild_member = await this.players[new_name].getGuildMember();
 		await setNickname(player_guild_member, new_name);
+	}
+
+	isFactionAlive(faction) {
+		return this.getAlivePlayers().some(player =>
+			roles[player.role].faction === faction
+		)
+	}
+
+	isRoleAlive(role) {
+		return this.getAlivePlayers().some(player =>
+			player.role === role
+		)
 	}
 }
 

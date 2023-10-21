@@ -43,7 +43,7 @@ command.execute = async function execute(interaction) {
 	await global.Game.Players.renamePlayer(old_player_name, new_player_name);
 
 	await interaction.editReply(`You, **${old_player_name}**, changed your name to **${new_player_name}**.`);
-	await global.Game.announceMessages(`**${old_player_name}** changed their name to  **${new_player_name}**.`);
+	await global.Game.announceMessages(`**${old_player_name}** changed their name to **${new_player_name}**.`);
 }
 
 module.exports = command;

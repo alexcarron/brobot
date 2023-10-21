@@ -18,10 +18,10 @@ const Parameters = {
 		description: "The accomplishment you are rewarding the viewer for",
 		isAutocomplete: true,
 	}),
-	GameShow: new Parameter({
+	ThingParticipatedIn: new Parameter({
 		type: "string",
-		name: "game-show-played-in",
-		description: "The game show the viewer played in to be rewarded for the participating accomplishment",
+		name: "thing-participated-in",
+		description: "The game show or event the viewer participated in",
 		isRequired: false,
 	}),
 }
@@ -30,20 +30,23 @@ const command = new SlashCommand({
 	name: "reward-ll-points",
 	description: "Give LL Points to a viewer because of their accomplishments.",
 });
+command.allowsDMs = true;
 command.required_permissions = [PermissionFlagsBits.Administrator];
 command.parameters = [
 	Parameters.ViewerName,
 	Parameters.Accomplishment,
-	Parameters.GameShow,
+	Parameters.ThingParticipatedIn,
 ]
 command.execute = async function(interaction) {
 	await deferInteraction(interaction);
 
 	let
 		viewer_name = interaction.options.getString(Parameters.ViewerName.name);
-		viewer = global.LLPointManager.getViewerByName(viewer_name),
-		accomplishment = interaction.options.getString(Parameters.Accomplishment.name);
-		game_name = interaction.options.getString(Parameters.GameShow.name) || undefined;
+		viewer = global.LLPointManager.getViewerByName(viewer_name);
+
+	let
+		accomplishment = interaction.options.getString(Parameters.Accomplishment.name),
+		game_name = interaction.options.getString(Parameters.ThingParticipatedIn.name) || undefined;
 
 	if (!viewer) {
 		return await interaction.editReply(`The viewer, **${viewer_name}**, doesn't exist.`);
@@ -57,19 +60,21 @@ command.execute = async function(interaction) {
 
 	console.log({viewer, viewer_name, accomplishment});
 
-	const result_msg = global.LLPointManager.viewers.get(viewer_name).giveReward(accomplishment, game_name);
+	const result_msg = await viewer.giveReward(accomplishment, game_name);
+
+	console.log({viewer});
 
 	if (result_msg !== "Success")
 		return await interaction.editReply(result_msg);
 
-	global.LLPointManager.updateDatabase();
 	let current_ll_points = global.LLPointManager.viewers.get(viewer_name).ll_points;
 	let accomplishment_key = Object.keys(LLPointAccomplishments).find(key => LLPointAccomplishments[key] === accomplishment);
 
-	interaction.editReply(
+	await interaction.editReply(
 		`Giving **${viewer_name}** \`${LLPointRewards[accomplishment_key]}\` LL Point(s) for "*${accomplishment}*"\n` +
 		`They now have \`${current_ll_points}\` LL Point(s).`
 	);
+	await global.LLPointManager.updateDatabase();
 }
 command.autocomplete = async function(interaction) {
 	let autocomplete_values;

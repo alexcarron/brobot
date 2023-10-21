@@ -1,8 +1,12 @@
-console.log(`discord.js version: ${require('discord.js').version}`);
+const { Player } = require('discord-player');
+const ProposedRule = require('./modules/gameforge/ProposedRule.js');
+const Host = require('./modules/gameforge/host.js');
+const GameForge = require('./modules/gameforge/gameforge.js');
+{console.log(`discord.js version: ${require('discord.js').version}`);
 
 const
-	{ DatabaseURLs } = require("./modules/enums.js");
-	ids = require('./databases/ids.json');
+	{ DatabaseURLs, XPRewards, XPTaskKeys, GameForgePhases, RDMRoles } = require("./modules/enums.js"),
+	ids = require('./databases/ids.json'),
 	fs = require("fs"), // Used to interact with file system
 	cron = require("cron"), // Used to have scheduled functions execute
 	Discord = require('discord.js'),
@@ -16,9 +20,11 @@ global.client = new Discord.Client({
 		GatewayIntentBits.Guilds,
 		GatewayIntentBits.GuildMessages,
 		GatewayIntentBits.GuildMembers,
+		GatewayIntentBits.GuildPresences,
 		GatewayIntentBits.MessageContent,
 		GatewayIntentBits.DirectMessages,
-		GatewayIntentBits.GuildMessageReactions
+		GatewayIntentBits.GuildMessageReactions,
+		GatewayIntentBits.GuildVoiceStates,
 	],
 	partials: [
 		Partials.Channel,
@@ -29,16 +35,14 @@ global.client = new Discord.Client({
 
 // ! Create global paths object to store directories
 const paths = require("./utilities/path.js");
-const { addRole, getRole, getGuild } = require('./modules/functions.js');
+const { addRole, getRole, getGuild, getChannel } = require('./modules/functions.js');
 const { Collection } = require('discord.js');
 const SlashCommand = require('./modules/commands/SlashCommand.js');
-const Vote = require('./modules/sandbox/Vote.js');
-const Sandbox = require('./modules/sandbox/sandbox');
+const Vote = require('./modules/gameforge/Vote.js');
 global.paths = paths;
 
 // ! Store a list of command cooldowns
 client.cooldowns = new Collection();
-
 
 // ! Store commands to client
 global.client.commands = new Discord.Collection();
@@ -132,7 +136,7 @@ const command_folders = fs.readdirSync(command_folders_path);
 		// .then(() => console.log('Successfully deleted application command'))
 		// .catch(console.error);
 
-		//! Delete Every Guild Command
+		//! Delete Every Global Command
 		// rest.put(Routes.applicationCommands(ids.client), { body: [] })
 		// .then(() => console.log('Successfully deleted all application commands.'))
 		// .catch(console.error);
@@ -151,8 +155,15 @@ global.client.once(Events.ClientReady, async () => {
 		Game = require("./modules/rapid_discord_mafia/game.js"),
 		Players = require("./modules/rapid_discord_mafia/players.js"),
 		LLPointManager = require("./modules/llpointmanager.js"),
-		Sandbox = require("./modules/sandbox/sandbox"),
 		config = require('./utilities/config.json');
+
+	global.music_queues = new Map();
+	global.client.player = new Player(global.client, {
+		ytdlOptions: {
+			quality: "highestaudio",
+			highWaterMark: 1 << 25
+		}
+	});
 
 	config.isOn = true;
 	console.log("I'm turned on");
@@ -166,11 +177,11 @@ global.client.once(Events.ClientReady, async () => {
 	await global.LLPointManager.updateViewersFromDatabase();
 	console.log("Viewers Updated From Database");
 
-	global.Sandbox = new Sandbox({});
-	console.log("Sandbox Modules Built");
+	global.GameForge = new GameForge({});
+	console.log("GameForge Modules Built");
 
-	await global.Sandbox.loadGameDataFromDatabase();
-	console.log("Sandbox Data Updated From Database");
+	await global.GameForge.loadGameDataFromDatabase();
+	console.log("GameForge Data Updated From Database");
 
 	global.client.user.setPresence({
 		status: 'online',
@@ -181,9 +192,32 @@ global.client.once(Events.ClientReady, async () => {
 		}
 	});
 
+	// Get messages.json
+	global.participants = [
+		"LL",
+	];
+	global.questions = [
+		"Do you fart?",
+		"Why are you a furry?",
+		"What wish do you make on the monkeys paw?",
+		"What's you favorite animal?",
+		"What tank would you want to have as your mobile home?",
+		"What, in your opinion, makes a life worthwhile? What makes it something, in a hypothetical afterlife, that you can look back to and think 'yeah, that was a pretty good life'? Is it simple happiness? Doing good for others? A good childhood or, on the opposite, successfully recovering from a bad one? Accomplishing your life goal, even at a cost you may come to regret?",
+		"What is the inspiration behind the profile picture you're currently using right now?",
+		"If a cave has a cave-in, is it still called a cave?",
+		"Do you are is are um do gay?",
+		"Do you have callused feet?",
+		"Have you ever woken up at 8 am but since your parents were asleep you had nobody to ask and tried to open the shutters on your own and accidentally broke them, causing the rain outside to drip inside and straight on your parents' computer, but because you were 7 you didn't get why water+computer=bad and got mad at the fact that it wasn't working and started calling your parents for help only to get punished?",
+		"Can you describe the last dream that you had? How many details of it do you still remember?",
+		"When was the last time you saw Ronald McDonald in a commercial?",
+		"Can you name every song here? (If the answer is no, no LL Point for you 🥰) https://cdn.discordapp.com/attachments/1161477028441239562/1162527149115326496/53B04D6E-E756-4F6D-BCC2-08ADABD14AC6.mov?ex=653c42c7&is=6529cdc7&hm=81cf2284b2b432354c99d596a3ab328671559f031cfd041dabde9fe5d2908cd7&",
+		"Who is your least favorite person out of the people participanting in this event?",
+		"What is the daily routine of hte participant after you alphabetically?",
+	]
 	const { promisify } = require('util');
 	const request = promisify(require("request"));
 	const { github_token } =  require("./modules/token.js");
+	const ll_game_show_center_guild = await getGuild(ids.servers.LLGameShowCenter);
 
 	const options = {
 		url: DatabaseURLs.Messages,
@@ -199,6 +233,7 @@ global.client.once(Events.ClientReady, async () => {
 				let messages = JSON.parse(body);
 				global.messages = messages;
 			} else {
+				console.log(body);
 				console.error(error);
 			}
 		}
@@ -207,13 +242,69 @@ global.client.once(Events.ClientReady, async () => {
 		console.error(err);
 	});
 
-	const sendmessage_cmd = require(`./commands/admin/sendmessage.js`);
+
+
+	async function updateMessagesDatabase() {
+		const
+			axios = require('axios'),
+			messages_str = JSON.stringify(global.messages),
+			owner = "alexcarron",
+			repo = "brobot-database",
+			path = "messages.json";
+
+
+		try {
+			// Get the current file data
+			const {data: file} =
+				await axios.get(
+					`https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
+					{
+						headers: {
+							'Authorization': `Token ${github_token}`
+						}
+					}
+				);
+
+			// Update the file content
+
+			const {data: updated_file} =
+				await axios.put(
+					`https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
+					{
+						message: 'Update file',
+						content: new Buffer.from(messages_str).toString(`base64`),
+						sha: file.sha
+					},
+					{
+						headers: {
+							'Authorization': `Token ${github_token}`
+						}
+					}
+				);
+		} catch (error) {
+			console.error(error);
+		}
+	}
 
 	const daily_controversial_msg = new cron.CronJob(
 		'00 30 14 */1 * *',
 		() => {
 			console.log("Controversial Message Sending...");
-			sendmessage_cmd.execute(null, ["controversial_talk"]);
+			const
+				controversial_channel = ll_game_show_center_guild.channels.cache.get(ids.ll_game_shows.channels.controversial),
+				controversial_question_index = Math.floor( Math.random() * global.messages.controversial_talk.length ),
+				controversial_question = global.messages.controversial_talk[controversial_question_index];
+
+			if (controversial_question) {
+				controversial_channel.send( controversial_question );
+
+				global.messages.controversial_talk.splice(controversial_question_index, 1);
+				updateMessagesDatabase();
+			}
+			else {
+				controversial_channel.send(`<@${ids.users.LL}> WARNING: We have run out of controversial questions! Blow up the server!`);
+			}
+
 		},
 		null,
 		true,
@@ -224,22 +315,51 @@ global.client.once(Events.ClientReady, async () => {
 		'00 00 11 */1 * *',
 		() => {
 			console.log("Philosophy Message Sending...");
-			sendmessage_cmd.execute(null, ["philosophy"]);
+			const
+				philosophy_channel = ll_game_show_center_guild.channels.cache.get(ids.ll_game_shows.channels.philosophy),
+				philosophy_question_index = Math.floor( Math.random() * global.messages.philosophy.length ),
+				philosophy_question = global.messages.philosophy[philosophy_question_index];
+
+			try {
+				philosophy_channel.send( philosophy_question );
+			}
+			catch {
+				return philosophy_channel.send(`<@${ids.users.LL}> WARNING: We have run out of philosophy questions! Blow up the server!`);
+			}
+
+			global.messages.philosophy.splice(philosophy_question_index, 1);
+			updateMessagesDatabase();
 		},
 		null,
 		true,
 		"America/New_York"
 	);
 
+	console.log("STARTING CRON JOBS")
 	daily_philosophy_msg.start();
 	daily_controversial_msg.start();
 
 	console.log('Ready!');
 });
 
+// @ TODO Replace all user.send with this
+global.dm = async function(user, message_contents) {
+	await user.send(message_contents);
+
+	// const brobot_server = await getGuild(ids.servers.brobot_testing);
+	// const dm_log_chnl = await getChannel(brobot_server, ids.brobot_test_server.channels.dm_log);
+	// let message_log =
+	// 	`<@${ids.users.Brobot}> ➜ <@${user.id}>\n\`Brobot ➜ ${user.username}\`\n` +
+	// 	`DM Channel ID: \`${message_dmed.channel.id}\`\n` +
+	// 	`Message ID: \`${message_dmed.id}\`\n` +
+	// 	`\n` +
+	// 	`\`\`\`${message_contents}\`\`\``;
+
+	// await dm_log_chnl.send(message_log);
+}
+
 // ! Executed for every message sent
 global.client.on(Events.MessageCreate, async(msg) => {
-
 	// Log DMs
 	if (!msg.guild) {
 		let brobot_server = global.client.guilds.cache.get(ids.servers.brobot_testing),
@@ -262,6 +382,29 @@ global.client.on(Events.MessageCreate, async(msg) => {
 			`\n` +
 			`\`\`\`${msg.content}\`\`\``
 		)
+	}
+
+	if (
+		msg &&
+		msg.guild &&
+		msg.guild.id === ids.servers.gameforge &&
+		msg.channel.type === Discord.ChannelType.PublicThread
+	) {
+		try {
+			const proposed_rule_chnl = await ProposedRule.getProposedRuleChannel();
+			const active_threads = await proposed_rule_chnl.threads.fetchActive()
+
+			if (active_threads.threads.some(thread => thread.id === msg.channel.id)) {
+				console.log(msg.channel.name);
+				const host = await global.GameForge.getHostByID(msg.author.id);
+				if (host && host instanceof Host) {
+					host.rewardXPFor(XPTaskKeys.Discuss);
+				}
+			}
+		}
+		catch (error) {
+			console.error(error);
+		}
 	}
 
 	// Stop if not command
@@ -288,11 +431,15 @@ global.client.on(Events.MessageCreate, async(msg) => {
 	// Check if turned off
 	const config = require("./utilities/config.json");
 	if (
-		!config.isOn &&
+		!config.isSleep &&
 		command_name != 'togglestatus' &&
 		msg.author.id != ids.users.LL
 	) {
 		return msg.channel.send(`Someone's messing with my code. Hold on a moment.`)
+	}
+
+	if (command instanceof SlashCommand) {
+		return msg.channel.send(`This is now a slash command.`)
 	}
 
 	// Server only command?
@@ -322,10 +469,11 @@ global.client.on(Events.MessageCreate, async(msg) => {
 		return msg.channel.send("This command doesn't work in this channel category");
 
 	// Has The Required Role(s)?
-	let user_roles = msg.member.roles.cache.map(r => r.name);
+	const user_role_names = interaction.member.roles.cache.map(r => r.name);
+	const user_role_ids = interaction.member.roles.cache.map(r => r.id);
 	if (
 		command.required_roles &&
-		!command.required_roles.every( role => user_roles.includes(role) )
+		!command.required_roles.every( role => user_role_names.includes(role) || user_role_ids.includes(role) )
 	) {
 		return msg.channel.send('You don\'t have the role(s) required to do this.');
 	}
@@ -412,7 +560,7 @@ global.client.on(Events.InteractionCreate, async (interaction) => {
 		// Check if turned off in config
 		const config = require("./utilities/config.json");
 		if (
-			!config.isOn &&
+			!config.isSleep &&
 			interaction.commandName != 'togglestatus' &&
 			interaction.author.id != ids.users.LL
 		) {
@@ -466,16 +614,19 @@ global.client.on(Events.InteractionCreate, async (interaction) => {
 				ephemeral: true
 			});
 
-		// Has The Required Role(s)?
-		const user_roles = interaction.member.roles.cache.map(r => r.name);
-		if (
-			command.required_roles &&
-			!command.required_roles.every( role => user_roles.includes(role) )
-		) {
-			return interaction.reply({
-				content: `\`You don't have the roles required to use this command.\``,
-				ephemeral: true
-			});
+		if (command.required_roles) {
+			// Has The Required Role(s)?
+			const user_role_names = interaction.member.roles.cache.map(r => r.name);
+			const user_role_ids = interaction.member.roles.cache.map(r => r.id);
+
+			if (
+				!command.required_roles.every( role => user_role_names.includes(role) || user_role_ids.includes(role) )
+			) {
+				return interaction.reply({
+					content: `\`You don't have the roles required to use this command.\``,
+					ephemeral: true
+				});
+			}
 		}
 
 		// Check for cooldowns
@@ -492,7 +643,9 @@ global.client.on(Events.InteractionCreate, async (interaction) => {
 		if (timestamps.has(interaction.user.id)) {
 			const cooldown_expiration_time = timestamps.get(interaction.user.id) + cooldown_sec;
 
-			if (now < cooldown_expiration_time) {
+			const author_perms = interaction.channel.permissionsFor(interaction.user);
+
+			if (now < cooldown_expiration_time && (!author_perms || !author_perms.has(Discord.PermissionFlagsBits.Administrator))) {
 				const expired_timestamp = Math.round(cooldown_expiration_time / 1000);
 				return interaction.reply({ content: `Please wait, you are on a cooldown for \`/${command.data.name}\`. You can use it again <t:${expired_timestamp}:R>.`, ephemeral: true });
 			}
@@ -506,17 +659,18 @@ global.client.on(Events.InteractionCreate, async (interaction) => {
 			await command.execute(interaction);
 		}
 		catch (error) {
+			console.log("There was an error while running that command")
 			console.error(error);
 
 			if (interaction.replied || interaction.deferred) {
 				await interaction.followUp({
-					content: 'There was an error while executing this command!',
+					content: 'There was an error while executing this command! Quick, tell LL!',
 					ephemeral: true
 				});
 			}
 			else {
-				await interaction.reply({
-					content: 'There was an error while executing this command!',
+				await interaction.channel.send({
+					content: 'There was an error while executing this command! Quick, tell LL!',
 					ephemeral: true
 				});
 			}
@@ -542,14 +696,14 @@ global.client.on(Events.InteractionCreate, async (interaction) => {
 		if (Object.values(Vote.Votes).some(vote => interaction.customId.startsWith(vote))) {
 			(async () => {
 
-				if (global.Sandbox.phase === Sandbox.Phases.Proposing) {
+				if (global.GameForge.phase === GameForgePhases.Proposing) {
 					return await interaction.reply({ content: `Sorry, we're in the proposing phase. You can't vote.`, components: [], ephemeral: true });
 				}
 
-				const host = await global.Sandbox.getHostByID(interaction.user.id);
+				const host = await global.GameForge.getHostByID(interaction.user.id);
 
 				console.log("Proposed Rule Clicked on by")
-				console.log({host})
+				console.log((host && host.name) ?? "undefined")
 				console.log("Clicked on: ");
 				console.log(interaction.customId);
 
@@ -575,46 +729,40 @@ global.client.on(Events.InteractionCreate, async (interaction) => {
 					const proposed_rule_num = parseInt(interaction.customId.replace(Vote.Votes.Approve, ""));
 					console.log({proposed_rule_num});
 
-					proposed_rule = await global.Sandbox.getProposedRuleFromNum(proposed_rule_num);
+					proposed_rule = await global.GameForge.getProposedRuleFromNum(proposed_rule_num);
 					console.log({proposed_rule});
 
 					if (!proposed_rule) {
 						return await interaction.reply({ content: `Something went wrong...`, components: [], ephemeral: true });
 					};
-
-					await interaction.reply({ content: `👍 You voted to approve proposal \`#${proposed_rule.number}\``, components: [], ephemeral: true });
 				}
 				else if (vote === Vote.Votes.Disapprove) {
 					const proposed_rule_num = parseInt(interaction.customId.replace(Vote.Votes.Disapprove, ""));
 					console.log({proposed_rule_num});
 
-					proposed_rule = await global.Sandbox.getProposedRuleFromNum(proposed_rule_num);
+					proposed_rule = await global.GameForge.getProposedRuleFromNum(proposed_rule_num);
 					console.log({proposed_rule});
 
 
 					if (!proposed_rule) {
 						return await interaction.reply({ content: `Something went wrong...`, components: [], ephemeral: true });
 					};
-
-					await interaction.reply({ content: `👎 You voted to disapprove proposal \`#${proposed_rule.number}\``, components: [], ephemeral: true });
 				}
-				else  if (vote === Vote.Votes.NoOpinion) {
+				else if (vote === Vote.Votes.NoOpinion) {
 					const proposed_rule_num = parseInt(interaction.customId.replace(Vote.Votes.NoOpinion, ""));
 					console.log({proposed_rule_num});
 
-					proposed_rule = await global.Sandbox.getProposedRuleFromNum(proposed_rule_num);
+					proposed_rule = await global.GameForge.getProposedRuleFromNum(proposed_rule_num);
 					console.log({proposed_rule});
 
 
 					if (!proposed_rule) {
 						return await interaction.reply({ content: `Something went wrong...`, components: [], ephemeral: true });
 					};
-
-					await interaction.reply({ content: `You voted no opinion on proposal \`#${proposed_rule.number}\``, components: [], ephemeral: true });
 				}
 
 				proposed_rule.message = interaction.message.id;
-				proposed_rule.addVote(vote, host.id);
+				proposed_rule.addVote(vote, host.id, interaction);
 			})();
 		}
 	}
@@ -623,9 +771,14 @@ global.client.on(Events.InteractionCreate, async (interaction) => {
 
 // User Join Server
 client.on(Events.GuildMemberAdd, async (guild_member) => {
-	if (guild_member.guild.id === ids.servers.sandbox) {
-		const sandbox_guild = await getGuild(ids.servers.sandbox);
-		const outsiders_role = await getRole(sandbox_guild, "Outsider");
+	if (guild_member.guild.id === ids.servers.gameforge) {
+		const gameforge_guild = await getGuild(ids.servers.gameforge);
+		const outsiders_role = await getRole(gameforge_guild, "Outsider");
+		await addRole(guild_member, outsiders_role);
+	}
+	else if (guild_member.guild.id === ids.servers.rapid_discord_mafia) {
+		const rdm_guild = await getGuild(ids.servers.rapid_discord_mafia);
+		const outsiders_role = await getRole(rdm_guild, RDMRoles.Spectator);
 		await addRole(guild_member, outsiders_role);
 	}
 });
@@ -635,4 +788,4 @@ client.on(Events.GuildMemberAdd, async (guild_member) => {
 
 
 // login to Discord with your app's token
-global.client.login(discord_token);
+global.client.login(discord_token);}

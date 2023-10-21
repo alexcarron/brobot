@@ -1,18 +1,18 @@
-const { Factions, Alignments, AbilityTypes, ArgumentTypes, ArgumentSubtypes, Immunities, AbilityUses, Priorities, Durations, WinConditions } = require("../enums.js");
+const { Factions, Alignments, Immunities, WinConditions, RoleNames } = require("../enums.js");
 const { Abilities } = require("./ability.js");
 const Role = require("./role.js");
 
 const roles = {
-	"Townie": new Role({
-		name: "Townie",
+	[RoleNames.Townie]: new Role({
+		name: RoleNames.Townie,
 		faction: Factions.Town,
 		alignment: Alignments.Crowd,
 		attack: 0,
 		defense: 0,
 		goal: WinConditions.EliminateOtherFactions,
 	}),
-	"Doctor": new Role({
-		name: "Doctor",
+	[RoleNames.Doctor]: new Role({
+		name: RoleNames.Doctor,
 		faction: Factions.Town,
 		alignment: Alignments.Protective,
 		attack: 0,
@@ -23,8 +23,8 @@ const roles = {
 			Abilities.HealSelf,
 		]
 	}),
-	"Sheriff": new Role({
-		name: "Sheriff",
+	[RoleNames.Sheriff]: new Role({
+		name: RoleNames.Sheriff,
 		faction: Factions.Town,
 		alignment: Alignments.Investigative,
 		attack: 0,
@@ -54,7 +54,7 @@ const roles = {
 		defense: 0,
 		goal: WinConditions.EliminateOtherFactions,
 		abilities: [
-			Abilities.Escort,
+			Abilities.Roleblock,
 		]
 	}),
 	"Vigilante": new Role({
@@ -67,25 +67,23 @@ const roles = {
 		abilities: [
 			Abilities.Shoot,
 		],
-		notes: "At night, if you were responsible for killing a player that was actually town last night, you will attack yourself with an attack level of four the next night."
+		notes: "If you shoot a town player, you will shoot yourself the next night with an attack level of four."
 	}),
-
-	"Godfather": new Role({
-		name: "Godfather",
-		faction: Factions.Mafia,
-		alignment: Alignments.Killing,
-		isUnique: true,
-		attack: 1,
-		defense: 1,
-		goal: WinConditions.EliminateOtherFactions,
-		immunities: [Immunities.Control],
-		abilities: [
-			Abilities.Order,
-		],
-		notes: "At night, if your existing mafioso died the previous night, you'll automatically have to promote a chosen mafia member to Mafioso. They will lose their original role and become a Mafioso."
-	}),
-	"Mafioso": new Role({
-		name: "Mafioso",
+	// [RoleNames.Godfather]: new Role({
+	// 	name: RoleNames.Godfather,
+	// 	faction: Factions.Mafia,
+	// 	alignment: Alignments.Killing,
+	// 	isUnique: true,
+	// 	attack: 1,
+	// 	defense: 1,
+	// 	goal: WinConditions.EliminateOtherFactions,
+	// 	immunities: [Immunities.Control],
+	// 	abilities: [
+	// 		Abilities.Order,
+	// 	],
+	// }),
+	[RoleNames.Mafioso]: new Role({
+		name: RoleNames.Mafioso,
 		faction: Factions.Mafia,
 		alignment: Alignments.Killing,
 		isUnique: true,
@@ -95,7 +93,7 @@ const roles = {
 		abilities: [
 			Abilities.Murder,
 		],
-		notes: "At night, you'll automatically become promoted to Godfather if the existing one died. You'll lose your Mafioso role and become a Godfather."
+		notes: "If you are not alive, a random mafia member will be converted to the Mafioso and take your place."
 	}),
 	"Framer": new Role({
 		name: "Framer",
@@ -142,10 +140,9 @@ const roles = {
 			Abilities.SelfFrame,
 			Abilities.DeathCurse,
 		],
-		"notes": "If you were lynched after 2nd day, you can only do one of the three curses at any time you want.\nIf you were lynched on the 2nd day, you can do two curses. (They can be the same or different ones and happen on the same or different nights)"
 	}),
-	"Executioner": new Role({
-		name: "Executioner",
+	[RoleNames.Executioner]: new Role({
+		name: RoleNames.Executioner,
 		faction: Factions.Neutral,
 		alignment: Alignments.Evil,
 		attack: 0,
@@ -154,7 +151,7 @@ const roles = {
 		abilities: [
 			Abilities.FrameTarget,
 		],
-		"notes": "At the beginning of the game, you will be given a target (a player with a town role). You need to try and get them lynched before the end of the game. If your target dies before then, you'll become a Fool and no longer be an Executioner."
+		"notes": "At the beginning of the game, you will be given a town player target that you must try to get lynched before the end of the game. If your target dies before then, you'll become a Fool."
 	}),
 	"Survivor": new Role({
 		name: "Survivor",
@@ -179,7 +176,7 @@ const roles = {
 			Abilities.Knife,
 			Abilities.Cautious,
 		],
-		"notes": "You'll automatically attack anybody who roleblocked you instead of your original target."
+		"notes": "You'll automatically attack anybody who roleblocks you instead of your original target."
 	}),
 	"Blacksmith": new Role({
 		name: "Blacksmith",
@@ -193,8 +190,8 @@ const roles = {
 			Abilities.SelfSmith,
 		],
 	}),
-	"Witch": new Role({
-		name: "Witch",
+	[RoleNames.Witch]: new Role({
+		name: RoleNames.Witch,
 		faction: Factions.Neutral,
 		alignment: Alignments.Evil,
 		attack: 0,

@@ -22,6 +22,7 @@ command.required_permissions = [PermissionFlagsBits.Administrator]
 command.parameters = [
 	Parameters.ViewerAdding,
 ]
+command.allowsDMs = true;
 command.execute = async function(interaction) {
 	await deferInteraction(interaction);
 
