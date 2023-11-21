@@ -1,4 +1,5 @@
 const { RoleIdentifierTypes, RoleIdentifierKeywords, RoleIdentifierPriorities, Factions, Alignments } = require("../enums");
+const Game = require("./game");
 const roles = require("./roles");
 
 class RoleIdentifier {
@@ -9,7 +10,7 @@ class RoleIdentifier {
 	constructor(role_identifier_str) {
 		this.name = role_identifier_str;
 		this.type = RoleIdentifier.getTypeFromIdentifierStr(role_identifier_str);
-		this.priority = RoleIdentifier.getPriorityFromType(this.type);
+		this.priority = this.getPriority();
 	}
 
 	static isValidIdentifierStr(role_identifier_str) {
@@ -49,6 +50,20 @@ class RoleIdentifier {
 		else {
 			return undefined;
 		}
+	}
+
+	getPriority() {
+		let priority = RoleIdentifier.getPriorityFromType(this.type);
+
+		const possible_roles = this.getPossibleRoles();
+		const canIncludeRoleInFaction = possible_roles.some(role =>{
+			return Game.isRoleInPossibleFaction(role)
+		})
+
+		if (!canIncludeRoleInFaction && this.type !== RoleIdentifierTypes.SpecificRole)
+			priority += 4;
+
+		return priority;
 	}
 
 	static getPriorityFromType(type) {
@@ -105,7 +120,7 @@ class RoleIdentifier {
 		let possible_roles = [];
 
 		if (this.type === RoleIdentifierTypes.SpecificRole) {
-			possible_roles = [Object.values(roles).find(role => role.name === this.name)];
+			possible_roles = [Object.values(roles).find(role => role.name.toLowerCase() === this.name.toLowerCase())];
 		}
 		else if (this.type === RoleIdentifierTypes.RandomRoleInFactionAlignment) {
 			possible_roles = Object.values(roles).filter( role_checking => {

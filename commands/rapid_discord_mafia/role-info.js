@@ -49,8 +49,6 @@ command.autocomplete = async function(interaction) {
 		autocomplete_values.splice(25);
 	}
 
-	console.log({autocomplete_values});
-
 	await interaction.respond(
 		autocomplete_values
 	);

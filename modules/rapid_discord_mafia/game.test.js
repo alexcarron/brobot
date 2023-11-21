@@ -39,6 +39,54 @@ const roles = require("./roles");
 			expect(doArraysHaveSameElements(expected_role_list, actual_role_list)).toStrictEqual(true);
 		}
 	);
+
+	test.concurrent(
+		".createRoleList() should assign NK and RT before NB on [Neutral Benign, Neutral Killing, Random Town]",
+		async () => {
+			const rdm_game = Game.getEmptyGame();
+			rdm_game.role_identifiers = RoleIdentifier.convertIdentifierStrings(
+				[
+					Factions.Neutral + " " + Alignments.Benign,
+					Factions.Neutral + " " + Alignments.Killing,
+					Factions.Town + " " + RoleIdentifierKeywords.Random,
+				]
+			);
+			await rdm_game.createRoleList();
+
+			const actual_role_list = rdm_game.role_list
+
+			console.log({actual_role_list})
+			console.log(rdm_game.role_identifiers[0].priority)
+			console.log(rdm_game.role_identifiers[1].priority)
+			console.log(rdm_game.role_identifiers[2].priority)
+
+			expect(actual_role_list.length).toStrictEqual(3);
+		}
+	);
+
+	test.concurrent(
+		".createRoleList() should assign RM and RT before NB on [Neutral Benign, Random Mafia, Random Town]",
+		async () => {
+			const rdm_game = Game.getEmptyGame();
+			rdm_game.role_identifiers = RoleIdentifier.convertIdentifierStrings(
+				[
+					Factions.Neutral + " " + Alignments.Benign,
+					Factions.Mafia + " " + RoleIdentifierKeywords.Random,
+					Factions.Town + " " + RoleIdentifierKeywords.Random,
+				]
+			);
+			await rdm_game.createRoleList();
+
+			const actual_role_list = rdm_game.role_list
+
+			console.log({actual_role_list})
+			console.log(rdm_game.role_identifiers[0].priority)
+			console.log(rdm_game.role_identifiers[1].priority)
+			console.log(rdm_game.role_identifiers[2].priority)
+
+			expect(actual_role_list.length).toStrictEqual(3);
+		}
+	);
 }
 
 // ^ .getRoleFromRoleIdentifier()
@@ -232,12 +280,21 @@ const roles = require("./roles");
 	)
 
 	test.concurrent(
-		`.getPossibleRolesFromIdentifier(RoleIdentifier("Neutral Random")) should return list of roles in Neutral faction`,
+		`.getPossibleRolesFromIdentifier(RoleIdentifier("Neutral Random")) should return list of roles in Neutral faction when we already have opposing factions`,
 		async () => {
 			const input_identifier = new RoleIdentifier(`${Factions.Neutral} ${RoleIdentifierKeywords.Random}`);
-			const existing_role_list = [];
+			const existing_role_list = [
+				RoleNames.Mafioso,
+				RoleNames.Doctor,
+			];
+			const input_num_roles_in_faction = {
+				Town: 1,
+				Mafia: 1,
+			}
 			const existing_role_identifiers = RoleIdentifier.convertIdentifierStrings(
 				[
+					RoleNames.Mafioso,
+					RoleNames.Doctor,
 					`${Factions.Neutral} ${RoleIdentifierKeywords.Random}`
 				]
 			);
@@ -250,7 +307,7 @@ const roles = require("./roles");
 			rdm_game.role_identifiers = existing_role_identifiers;
 			rdm_game.role_list = existing_role_list;
 
-			const actual_output = rdm_game.getPossibleRolesFromIdentifier(input_identifier, {})
+			const actual_output = rdm_game.getPossibleRolesFromIdentifier(input_identifier, input_num_roles_in_faction)
 
 			expect(actual_output).toStrictEqual(expected_output);
 		}
@@ -475,7 +532,7 @@ const roles = require("./roles");
 	)
 
 	test.concurrent(
-		`.getPossibleRolesFromIdentifier(Any) should return only roles in a faction that's not Town when an Town is the only faction in the role list`,
+		`.getPossibleRolesFromIdentifier(Any) should return only roles in a faction that's not Town when Town is the only faction in the role list`,
 		async () => {
 			const input_identifier = new RoleIdentifier(RoleIdentifierKeywords.Any);
 			const existing_role_list = [
@@ -497,11 +554,50 @@ const roles = require("./roles");
 
 			const actual_output = rdm_game.getPossibleRolesFromIdentifier(input_identifier, input_num_roles_in_faction);
 
-			console.log({actual_output})
+			// console.log({actual_output})
 
 			expect(
 				actual_output.every(role =>
-					role.faction !== Factions.Town
+					role.faction !== Factions.Town &&
+					Game.POSSIBLE_FACTIONS.some(faction =>
+						Game.isRoleInFaction(role, faction)
+					)
+				)
+			).toStrictEqual(true);
+		}
+	)
+
+	test.concurrent(
+		`.getPossibleRolesFromIdentifier(Random Neutral) should return only roles in a faction when Town is the only faction in the role list`,
+		async () => {
+			const input_identifier = new RoleIdentifier(`${Factions.Neutral} ${RoleIdentifierKeywords.Random}`);
+			const existing_role_list = [
+				RoleNames.Townie,
+			];
+			const input_num_roles_in_faction = {
+				Town: 1,
+			}
+			const existing_role_identifiers = RoleIdentifier.convertIdentifierStrings(
+				[
+					RoleNames.Townie,
+					`${Factions.Neutral} ${RoleIdentifierKeywords.Random}`,
+				]
+			);
+
+			const rdm_game = Game.getEmptyGame();
+			rdm_game.role_identifiers = existing_role_identifiers;
+			rdm_game.role_list = existing_role_list;
+
+			const actual_output = rdm_game.getPossibleRolesFromIdentifier(input_identifier, input_num_roles_in_faction);
+
+			// console.log({actual_output})
+
+			expect(
+				actual_output.every(role =>
+					role.faction !== Factions.Town &&
+					Game.POSSIBLE_FACTIONS.some(faction =>
+						Game.isRoleInFaction(role, faction)
+					)
 				)
 			).toStrictEqual(true);
 		}
@@ -532,12 +628,12 @@ const roles = require("./roles");
 
 			const actual_output = rdm_game.getPossibleRolesFromIdentifier(input_identifier, input_num_roles_in_faction);
 
-			console.log({actual_output})
+			// console.log({actual_output});
 
 			expect(
 				actual_output.every(role =>
 					Game.POSSIBLE_FACTIONS.some(faction =>
-						rdm_game.isRoleInFaction(role, faction)
+						Game.isRoleInFaction(role, faction)
 					) &&
 					role.faction !== Factions.Town
 				)
@@ -549,7 +645,7 @@ const roles = require("./roles");
 
 // ^ isValidArgValue
 describe('isValidArgValue', () => {
-	it('should return false for input player_framing_arg, arg_value', () => {
+	it('should return NOT true for input framer using frame on mafioso', () => {
 		const player_framing_arg = Abilities.Frame.args[0];
 		const player_using_ability = new Player({name: "name"});
 		const arg_value = "mafia";
@@ -564,6 +660,20 @@ describe('isValidArgValue', () => {
 			rdm_game.isValidArgValue(player_using_ability, player_framing_arg, arg_value)
 		).toStrictEqual(
 			`You cannot target **mafia** as you may only target non-mafia`
+		);
+	});
+
+	it('should return NOT true for input doctor using heal on themselves', () => {
+		const player_framing_arg = Abilities.Heal.args[0];
+		const player_using_ability = new Player({name: "name", role: RoleNames.Doctor});
+		const arg_value = "name";
+
+		const rdm_game = Game.getEmptyGame();
+		rdm_game.Players.addPlayer(player_using_ability);
+		expect(
+			rdm_game.isValidArgValue(player_using_ability, player_framing_arg, arg_value)
+		).toStrictEqual(
+			`You cannot target yourself`
 		);
 	});
 });

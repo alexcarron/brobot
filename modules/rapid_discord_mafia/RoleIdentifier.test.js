@@ -398,3 +398,50 @@ test.concurrent(
 		expect(actual_role_identifiers).toStrictEqual(expected_role_identifiers)
 	}
 )
+
+// ^ .getPriority()
+describe('.getPriority()', () => {
+	it('should return 6 for input neutral_benign_role_identifier', () => {
+		const neutral_benign_role_identifier = new RoleIdentifier(Factions.Neutral + " " + Alignments.Benign);
+
+		expect(neutral_benign_role_identifier.priority)
+		.toStrictEqual(6);
+	});
+
+	it('should return 2 for input neutral_killing_role_identifier', () => {
+		const neutral_killing_role_identifier = new RoleIdentifier(`${Factions.Neutral} ${Alignments.Killing}`);
+
+		expect(neutral_killing_role_identifier.priority)
+		.toStrictEqual(2);
+	});
+
+	it('should return 1 for input survivor_role_identifier despite being a non-faction', () => {
+		const survivor_role_identifier = new RoleIdentifier(RoleNames.Survivor);
+
+		expect(survivor_role_identifier.priority)
+		.toStrictEqual(1);
+	});
+
+	it('should return 1 for input mafioso_role_identifier', () => {
+		const mafioso_role_identifier = new RoleIdentifier(RoleNames.Mafioso);
+
+		expect(mafioso_role_identifier.priority)
+		.toStrictEqual(1);
+	});
+
+	it('should return 3 for input random_neutral_role_identifier', () => {
+		const random_neutral_role_identifier = new RoleIdentifier(
+			`${RoleIdentifierKeywords.Random} ${Factions.Neutral}`
+		);
+
+		expect(random_neutral_role_identifier.priority)
+		.toStrictEqual(3);
+	});
+
+	it('should return 4 for input any_role_identifier', () => {
+		const any_role_identifier = new RoleIdentifier(RoleIdentifierKeywords.Any);
+
+		expect(any_role_identifier.priority)
+		.toStrictEqual(4);
+	});
+});

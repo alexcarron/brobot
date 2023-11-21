@@ -31,28 +31,32 @@ const functions = {
 		)
 	},
 
-	pushItemToObj: function pushItemToObj(obj, ...properties) {
-		let property = properties[0],
-			value = properties.slice(-1)[0];
+	appendElementToNestedProperty: function pushItemToObj(element, object, ...nested_properties) {
+		let top_level_property = nested_properties[0];
 
-		properties = properties.slice(0, -1);
+		console.log({element, object, nested_properties, top_level_property})
 
-		if (properties.length <= 1) {
-			if ( obj[property] )
-				obj[property].push(value)
+		// If element not being added to nested property
+		if (nested_properties.length == 1) {
+			if ( object[top_level_property] )
+				object[top_level_property].push(element)
 			else
-				obj[property] = [value]
+				object[top_level_property] = [element]
 
-			return obj;
+			return object;
+		}
+		// If element being added to nested property
+		else {
+			if (object[top_level_property] === undefined)
+				object[top_level_property] = {};
 		}
 
-		if (!obj[property])
-			obj[property] = {}
 
+		// Go one level deeper in the object
 		pushItemToObj(
-			obj[properties[0]],
-			...properties.slice(1),
-			value
+			element,
+			object[top_level_property],
+			...nested_properties.slice(1),
 		)
 	},
 
@@ -60,7 +64,7 @@ const functions = {
 		let current_index = array.length,
 			rand_index;
 
-		// While there remain elements to shuffle.
+		// While there remain elementelements to shuffle.
 		while (current_index != 0) {
 
 			// Pick a remaining element.

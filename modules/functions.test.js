@@ -1,4 +1,4 @@
-const { doArraysHaveSameElements, gcd, lcm, toOrdinal, toWordOrdinal } = require("./functions");
+const { doArraysHaveSameElements, gcd, lcm, toOrdinal, toWordOrdinal, addOrAssignElementToArray, appendElementToNestedProperty: addElementToNestedProperty } = require("./functions");
 
 // ^ doArraysHaveSameElements
 {
@@ -174,5 +174,139 @@ describe('toWordOrdinal', () => {
 
 	it('should return "ninety-ninth" for input 99', () => {
 			expect(toWordOrdinal(99)).toBe('ninety-ninth');
+	});
+});
+
+// ^ addElementToNestedProperty
+describe('addElementToNestedProperty', () => {
+	it('should return {"first_level": {"second_level": {"third_level": ["element"]}}} for input "element", {}, "first_level", "second_level", "third_level"', () => {
+		const element_adding = "element";
+		const object_adding_to = {};
+		const nested_properties = [
+			"first_level",
+			"second_level",
+			"third_level",
+		]
+
+		addElementToNestedProperty(element_adding, object_adding_to, ...nested_properties);
+		expect(object_adding_to)
+		.toStrictEqual(
+			{
+				[nested_properties[0]]: {
+					[nested_properties[1]]: {
+						[nested_properties[2]]: ["element"],
+					},
+				},
+			}
+		);
+	});
+
+
+	it('should add element to empty array in top level property"', () => {
+		const element_adding = "element";
+		const object_adding_to = {
+			"elements": []
+		};
+
+		addElementToNestedProperty(element_adding, object_adding_to, "elements");
+		expect(object_adding_to)
+		.toStrictEqual(
+			{
+				"elements": [element_adding]
+			}
+		);
+	});
+
+
+	it('should append element to existing array in top level property"', () => {
+		const element_adding = "element";
+		const object_adding_to = {
+			"elements": [1, true, null, undefined]
+		};
+
+		addElementToNestedProperty(element_adding, object_adding_to, "elements");
+		expect(object_adding_to)
+		.toStrictEqual(
+			{
+				"elements": [1, true, null, undefined, element_adding]
+			}
+		);
+	});
+
+
+	it('should assign array with single element in top level property"', () => {
+		const element_adding = "element";
+		const object_adding_to = {
+			"colors": ["red"]
+		};
+
+		addElementToNestedProperty(element_adding, object_adding_to, "elements");
+		expect(object_adding_to)
+		.toStrictEqual(
+			{
+				"colors": ["red"],
+				"elements": [element_adding]
+			}
+		);
+	});
+	it('should ignore other properties in levels and go any depth', () => {
+		const element_adding = "element";
+		const object_adding_to = {
+			"first_level": {
+				"second_level": {
+					"decoy_property": {
+						"decoy": [],
+					},
+				},
+				"decoy_property1": {
+					"decoy": [],
+				},
+				"decoy_property2": [1, 2, 3]
+			},
+			"decoy_property1": {
+				"decoy_property1": {
+					"decoy": [],
+				},
+			},
+			"decoy_property2": [1, 2, 3],
+			"decoy_property3": [],
+		};
+		const nested_properties = [
+			"first_level",
+			"second_level",
+			"third_level",
+			"fourth_level",
+			"fifth_level",
+		]
+
+		addElementToNestedProperty(element_adding, object_adding_to, ...nested_properties);
+		expect(object_adding_to)
+		.toStrictEqual(
+			{
+				"first_level": {
+					"second_level": {
+						"third_level": {
+							"fourth_level": {
+								"fifth_level": [element_adding],
+							},
+						},
+						"decoy_property": {
+							"decoy": [],
+						},
+					},
+					"decoy_property1": {
+						"decoy": [],
+					},
+					"decoy_property2": [1, 2, 3]
+				},
+				"decoy_property1": {
+					"decoy_property1": {
+						"decoy": [],
+					},
+				},
+				"decoy_property2": [1, 2, 3],
+				"decoy_property3": [],
+			}
+		);
 	});
 });

@@ -60,7 +60,6 @@ command.parameters = [
 	Parameters.Playlist,
 	Parameters.Search,
 ]
-command.required_permissions = [PermissionFlagsBits.Administrator];
 command.execute = async function(interaction) {
 	await deferInteraction(interaction);
 

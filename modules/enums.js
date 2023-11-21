@@ -10,6 +10,7 @@ const Enums = {
 		Fool: "Be successfully lynched.",
 		Executioner: "Get your target successfully lynched.",
 		Blacksmith: "Have a player you smithed a vest for be saved from an attack.",
+		Stranger: "Replace someone and accomplish their win condition.",
 	},
 
 	AbilityUses: {
@@ -247,7 +248,6 @@ const Enums = {
 		ExeTarget: (target_name) =>
 			`Your target is **${target_name}**! Make sure they are lynched by any means necessary.`,
 		LivingPlayers: (living_player_names) =>
-			`_ _` + "\n" +
 			`# Living Players` + "\n" +
 			">>> " + living_player_names.map(name => `**${name}**\n`).join(""),
 		RoleList: (role_identifiers) =>
@@ -258,10 +258,14 @@ const Enums = {
 			`_ _\n__Helpful Reminders__`,
 			`> — The role list is in <#${role_list_chnl_id}>`,
 			`> — Type a \`/\` to get a list of all the commands you can use.`,
+			`> — You can use \`/whisper\` to secretly talk to another player privately. Brobot will announce that you're whispering to that player, but not the contents of the whisper.`,
+			`> — You can use \`/report\` to report any bugs or errors you come across or give feedback and ideas.`,
 			`> — You can use \`/last-will\` to create, edit, or remove a will that's shown when you die`,
 			`> — You can use \`/death-note\` to create, edit, or remove a note to show on your victim's death.`,
+			`> — You can use \`/roles\` to get a list of all possible roles and their factions and alignments.`,
 			`> — You can use \`/role-info\` to get all the information about a chosen role.`,
-			`> — You can use \`/leave-game\` to commit suicide in game if you have to go. Only do this if absolutely necessary`,
+			`> — You can use \`/role-list\` to see the current role list.`,
+			`> — You can use \`/leave-game\` to commit suicide in-game if you have to go. Only do this if absolutely necessary`,
 		],
 		Day1Started: () => [
 			`_ _\n# Day 1`,
@@ -315,18 +319,29 @@ const Enums = {
 		PhaseAlmostOverWarning: (min_left) =>
 			`**WARNING: Phase ends <t:${getUnixTimestamp() + min_left*60}:R>**`,
 		PlayerSuicide: `They left the game, committing suicide.`,
-		PlayerSmitten: `They were smitten by the host.`,
+		PlayerSmitten: `They were smitten by the host for inactivity.`,
 		VigilanteSuicide: "They comitted suicide over the guilt of killing a town member.",
 		RoleReveal: (player) => `**${player.name}**'s role was revealed to be **${player.role}**.`,
+		RoleIsUnidentifiable: (player) => `**${player.name}**'s role could not be determined.`,
 		LynchVoteHeader: (num_day) => `# Day ${num_day} Lynch Vote`,
 		OpenDayChat: (day_chat_chnl_id) => `_ _\nYou may now discuss in <#${day_chat_chnl_id}>`,
 		PlayerFoundDead: (player) =>
 		 	`:skull: **${player.name}** was found dead.`,
+		LastWillUnidentifiable: () =>
+			`The contents of their last will could not be determined.`,
+		LastWillNotFound: () =>
+			`No last will could be found.`,
+		LastWillFound: (last_will) =>
+			`They left behind a last will: \`\`\`\n${last_will}\n\`\`\``,
 		CongratulateWinners: (winning_factions, winning_player_names) =>
 			[
 				`_ _\n**${winning_factions.join("**, **")} **won!`,
 				`Congratulations** ${winning_player_names.join("**, **")}**!`
-			]
+			],
+		Whisper: (player_whispering, player_whispering_to) =>
+			`> **${player_whispering.name}** whispers to **${player_whispering_to.name}**`,
+		WhisperLog: (player_whispering, player_whispering_to, whisper_contents) =>
+			`\`[${player_whispering.role}]\` **${player_whispering.name}** whispers to \`[${player_whispering_to.role}]\` **${player_whispering_to.name}**\n>>> ${whisper_contents}`,
 	},
 
 	Feedback: {
@@ -346,7 +361,15 @@ const Enums = {
 		ComittedSuicide: "You comitted suicide over the guilt of killing a town member.",
 		AnnounceMurderByFaction: (faction) =>  `They were killed by the **${faction}**.`,
 		AnnounceAnotherMurderByFaction: (faction) =>  `They were also killed by the **${faction}**.`,
-		AnnounceMurderByRole: (role) =>  `They were killed by a(n) **${role}**.`,
+		AnnounceMurderByRole: (role) => {
+			switch (role) {
+				case Enums.RoleNames.Stranger:
+					return "They were replaced by a **Stranger**.";
+
+				default:
+					return `They were killed by a(n) **${role}**.`;
+			}
+		},
 		AnnounceAnotherMurderByRole: (role) =>  `They were also killed by a(n) **${role}**.`,
 		Controlled: "You were controlled.",
 		EvaluatedPlayersRole: (player_evaluating, player_role) => {return `**${player_evaluating}** seemed to be the role, **${player_role}**.`},
@@ -366,7 +389,23 @@ const Enums = {
 			`<@${player.id}>` + `\n` +
 			`You've been inactive for **${num_subphases_inactive}** subphases. If you are inactive for **${num_subphases_inactive_left}** more subphases, you will be kicked from the game.` + `\n` +
 			`Try doing \`/use nothing\`, \`/vote for-player Abstain\`, and \`/vote for-trial-outcome Abstain\` to reduce inactivity.`,
-		Smitten: (player) => `<@${player.id}> You have be smitten for inactvity.`,
+		Smitten: (player) => `<@${player.id}> You have been smitten for inactivity.`,
+		WhisperedTo: (player_whispering, whisper_contents) =>
+			`**${player_whispering.name}** whispers to you:\n>>> ${whisper_contents}`,
+		ObservedWithNoPreviousObserve: (player_observing) =>
+			`You observed **${player_observing.name}** last night. The next time you observe someone, you'll know if they and **${player_observing.name}** are working together.`,
+		ObservedWorkingTogether: (player_observing, previous_player_observed) =>
+			`You observed **${player_observing.name}** last night and it seems like they're in the same faction as **${previous_player_observed.name}**, the previous player you observed.`,
+		ObservedNotWorkingTogether: (player_observing, previous_player_observed) =>
+			`You observed **${player_observing.name}** last night and it seems like they're NOT in the same faction as **${previous_player_observed.name}**, the previous player you observed.`,
+		ObservedSamePerson: (player_observing) =>
+			`You observed **${player_observing.name}** last night, but it was pretty obvious they were in the same faction as themselves.`,
+		ReplacedByReplacer: () =>
+			`Don't worry, you have been replaced by someone.`,
+		ReplacedPlayer: (player_replacing) =>
+			`You have succesfully replaced **${player_replacing.name}**'s role as **${player_replacing.role}**`,
+		ReplaceFailed: (player_replacing) =>
+			`You failed to replace **${player_replacing.name}**...`,
 	},
 
 	RoleIdentifierKeywords: {
@@ -402,6 +441,10 @@ const Enums = {
 		Witch: "Witch",
 		Townie: "Townie",
 		Sheriff: "Sheriff",
+		Survivor: "Survivor",
+		Fool: "Fool",
+		Oracle: "Oracle",
+		Stranger: "Stranger",
 	},
 
 	LLPointTiers: {
@@ -448,6 +491,14 @@ const Enums = {
 		VoiceAct: "Voice Acting",
 	},
 
+	LLPointPerks: {
+		DrawAsset: "Draw an asset for a YouTube video",
+		VoiceAct: "Voice act for a YouTube video",
+		CustomRoleColor: "Get custom Discord role color",
+		CustomPersonification: "Get a custom personification drawing",
+		AddEmote: "Add a custom emote to the server",
+	},
+
 	DatabaseURLs: {
 		Viewers: "https://raw.githubusercontent.com/alexcarron/brobot-database/main/viewers.json",
 		Messages: "https://raw.githubusercontent.com/alexcarron/brobot-database/main/messages.json",
@@ -455,7 +506,7 @@ const Enums = {
 
 	MessageDelays: {
 		Short: 1,
-		Normal: 0,
+		Normal: 4,
 		Long: 8
 	},
 

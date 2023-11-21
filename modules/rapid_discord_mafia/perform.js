@@ -233,13 +233,15 @@ const perform = {
 		if (player_evaluating.isDoused) {
 			console.log("Evaluatee doused.");
 			feedback = Feedback.GotUnclearEvaluation(player_evaluating_name);
-		} else if (
+		}
+		else if (
 			["Mafia", "Coven"].includes(evaluated_role.faction) ||
 			(evaluated_role.faction === "Neutral" && evaluated_role.alignment === "Killing")
 		) {
 			console.log("Evaluatee suspicious.");
 			feedback = Feedback.GotSuspiciousEvaluation(player_evaluating_name);
-		} else {
+		}
+		else {
 			console.log("Evaluatee innocent.");
 			feedback = Feedback.GotInnocentEvaluation(player_evaluating_name);
 		}
@@ -371,6 +373,72 @@ const perform = {
 		player_controlling.addFeedback(Feedback.Controlled);
 		controller_player.addFeedback(Feedback.ControlSucceeded(player_controlling_name, player_controlling_into_name));
 		controller_player.addFeedback(Feedback.EvaluatedPlayersRole(player_controlling_name, player_controlling.getPercievedRole()));
+	},
+	async observe(ability_performed) {
+		const
+			observer_player = global.Game.Players.get(ability_performed.by),
+			player_observing = global.Game.Players.get(observer_player.visiting),
+			percieved_role_of_target = global.Roles[ player_observing.getPercievedRole() ],
+			percieved_faction_of_target = percieved_role_of_target.faction,
+			last_player_observed_name = observer_player.last_player_observed_name;
+
+		let feedback = "";
+
+		if (!last_player_observed_name) {
+			feedback = Feedback.ObservedWithNoPreviousObserve(player_observing);
+		}
+		else {
+			const
+				last_player_observed = global.Game.Players.get(last_player_observed_name),
+				percieved_role_of_last_target = global.Roles[ last_player_observed.getPercievedRole() ],
+				percieved_faction_of_last_target = percieved_role_of_last_target.faction;
+
+			if (last_player_observed.name === player_observing.name) {
+				feedback = Feedback.ObservedSamePerson(player_observing);
+			}
+			else if (percieved_faction_of_target === percieved_faction_of_last_target) {
+				feedback = Feedback.ObservedWorkingTogether(player_observing, last_player_observed);
+			}
+			else if (percieved_faction_of_target !== percieved_faction_of_last_target) {
+				feedback = Feedback.ObservedNotWorkingTogether(player_observing, last_player_observed);
+			}
+
+			console.log("Checking to get rid of manipulation affects");
+			player_observing.removeManipulationAffects();
+			last_player_observed.removeManipulationAffects();
+
+			addAffect(ability_performed, player_observing.name);
+			addAffect(ability_performed, last_player_observed.name);
+		}
+
+		observer_player.last_player_observed_name = player_observing.name;
+
+		observer_player.addFeedback(feedback);
+	},
+	async replace(ability_performed) {
+		const
+			replacer_name = ability_performed.by,
+			replacer_player = global.Game.Players.get(replacer_name),
+			player_replacing_name = replacer_player.visiting,
+			player_replacing = global.Game.Players.get(player_replacing_name);
+
+		console.log(`${replacer_name} attempts to replace ${player_replacing_name}.`);
+
+		// Attack Success
+		if (player_replacing.defense < replacer_player.attack) {
+			replacer_player.convertToRole(player_replacing.role);
+
+			player_replacing.isUnidentifiable = true;
+
+			replacer_player.addFeedback(Feedback.ReplacedPlayer(player_replacing));
+			player_replacing.addFeedback(Feedback.ReplacedByReplacer());
+
+			addAffect(ability_performed, player_replacing_name);
+		}
+		// Attack Failed
+		else {
+			replacer_player.addFeedback(Feedback.ReplaceFailed(player_replacing));
+		}
 	},
 }
 

@@ -49,6 +49,10 @@ command.execute = async function execute(interaction, args, isTest) {
 		// global.Game.state = GameStates.ReadyToBegin;
 	}
 
+	if (global.Game.state !== GameStates.SignUp) {
+		return await interaction.editReply("We're not in sign-ups so you can't join just yet.");
+	}
+
 	console.log({player_id, player_name, isFakeUser})
 	global.Game.addPlayerToGame(player_name, player_id, interaction, isFakeUser);
 

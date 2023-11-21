@@ -71,9 +71,9 @@ class OfficialRule extends Rule {
 	}
 
 	isAboutChallenge(challenge_num) {
-		console.log(this.description.toLowerCase())
-		console.log("challenge " + challenge_num)
-		console.log("challenge #" + challenge_num)
+		// console.log(this.description.toLowerCase())
+		// console.log("challenge " + challenge_num)
+		// console.log("challenge #" + challenge_num)
 		return (
 			[
 				`challenge ${challenge_num}`,

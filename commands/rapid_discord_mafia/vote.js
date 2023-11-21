@@ -55,7 +55,6 @@ const command = new SlashCommand({
 	description: "Vote for a player to put on trial or whether or not to execute the person on trial",
 });
 command.required_servers = [ids.servers.rapid_discord_mafia];
-command.required_categories = [player_actions_category_id];
 command.required_roles = [ids.rapid_discord_mafia.roles.living];
 command.parameters = [
 	Parameters.ForPlayer,
@@ -102,10 +101,12 @@ command.execute = async function execute(interaction, isTest=false) {
 		}
 
 		if (curr_votes[player_voting.name]) {
+			Game.log(`**${player_voting.name}** changed their vote to **${vote}**`);
 			announce_chnl.send(`**${player_voting.name}** changed their vote to **${vote}**`);
 			interaction.editReply(`You are replacing your previous vote, **${curr_votes[player_voting.name]}**, with **${vote}**`);
 		}
 		else {
+			Game.log(`**${player_voting.name}** voted **${vote}**.`);
 			announce_chnl.send(`**${player_voting.name}** voted **${vote}**.`);
 			interaction.editReply(`You voted **${vote}**.`);
 		}
@@ -132,10 +133,12 @@ command.execute = async function execute(interaction, isTest=false) {
 		}
 
 		if (curr_votes[player_voting.name]) {
+			Game.log(`**${player_voting.name}** changed their vote to **${toTitleCase(vote)}**`);
 			announce_chnl.send(`**${player_voting.name}** changed their vote.`);
 			interaction.editReply(`You are replacing your previous vote, **${toTitleCase(curr_votes[player_voting.name])}**, with **${toTitleCase(vote)}**`);
 		}
 		else {
+			Game.log(`**${player_voting.name}** voted **${toTitleCase(vote)}**.`);
 			announce_chnl.send(`**${player_voting.name}** voted.`);
 			interaction.editReply(`You voted **${toTitleCase(vote)}**.`);
 		}

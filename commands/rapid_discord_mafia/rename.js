@@ -11,7 +11,6 @@ const command = new SlashCommand({
 	description: "Change your name while still in sign-ups",
 });
 command.required_servers = [ids.servers.rapid_discord_mafia];
-command.required_categories = [ids.rapid_discord_mafia.category.player_action];
 command.required_roles = [RDMRoles.Living];
 command.parameters = [
 	new Parameter({

@@ -62,6 +62,10 @@ class Players {
 		return this.getPlayerList().filter( player => player.role === role_name );
 	}
 
+	getPlayersInLimbo() {
+		return this.getPlayerList().filter( player => player.isInLimbo);
+	}
+
 	getPlayerWithRole(role_name) {
 		return this.getPlayerList().find( player => player.role === role_name );
 	}

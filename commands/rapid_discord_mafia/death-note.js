@@ -52,7 +52,6 @@ command.parameters = [
 ];
 
 command.required_servers = [ids.servers.rapid_discord_mafia];
-command.required_categories = [ids.rapid_discord_mafia.category.player_action];
 command.required_roles = [ids.rapid_discord_mafia.roles.living];
 command.execute = async function(interaction) {
 	await deferInteraction(interaction);

@@ -1,10 +1,8 @@
-const { PermissionFlagsBits } = require('discord.js');
 const Parameter = require('../../modules/commands/Paramater.js');
 const SlashCommand = require('../../modules/commands/SlashCommand.js');
-const { LLPointRewards, LLPointAccomplishments } = require('../../modules/enums.js')
-const { autocomplete, deferInteraction, confirmAction, getUser } = require("../../modules/functions.js");
+const { LLPointAccomplishments } = require('../../modules/enums.js')
+const { deferInteraction, confirmAction, getUser } = require("../../modules/functions.js");
 const LLPointManager = require('../../modules/llpointmanager.js');
-const Viewer = require('../../modules/viewer.js');
 const ids = require(`../../databases/ids.json`)
 
 const Parameters = {
@@ -102,24 +100,19 @@ command.autocomplete = async function(interaction) {
 	if (!focused_param) return;
 	const entered_value = focused_param.value;
 
-	if (focused_param.name === Parameters.Accomplishment.name) {
-		autocomplete_values = Object.values(LLPointAccomplishments)
-			.map((accomplishment_str) => {return {name: accomplishment_str, value: accomplishment_str}})
-			.filter(autocomplete_entry => autocomplete_entry.value.toLowerCase().startsWith(entered_value.toLowerCase()));
+	autocomplete_values = Object.values(LLPointAccomplishments)
+		.map((accomplishment_str) => {return {name: accomplishment_str, value: accomplishment_str}})
+		.filter(autocomplete_entry => autocomplete_entry.value.toLowerCase().startsWith(entered_value.toLowerCase()));
 
-		if (Object.values(autocomplete_values).length <= 0) {
-			autocomplete_values = [{name: "Sorry, there are no accomplishments to choose from", value: "N/A"}];
-		}
-		else if (Object.values(autocomplete_values).length > 25) {
-			autocomplete_values.splice(25);
-		}
+	if (Object.values(autocomplete_values).length <= 0) {
+		autocomplete_values = [{name: "Sorry, there are no accomplishments to choose from", value: "N/A"}];
+	}
+	else if (Object.values(autocomplete_values).length > 25) {
+		autocomplete_values.splice(25);
+	}
 
-		await interaction.respond(
-			autocomplete_values
-		);
-	}
-	else if (focused_param.name === Parameters.ViewerName.name) {
-		LLPointManager.getViewersAutocompleteValues(interaction)
-	}
+	await interaction.respond(
+		autocomplete_values
+	);
 }
 module.exports = command;

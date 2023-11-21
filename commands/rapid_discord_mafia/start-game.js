@@ -57,7 +57,7 @@ command.execute = async function execute(interaction, role_identifiers_str) {
 	}
 	// Check if player count equal role amount
 	else if (player_count != role_identifier_strings.length) {
-		interaction.editReply(`You included ${role_identifier_strings.length} roles, but there's ${player_count} players.`)
+		return await interaction.editReply(`You included ${role_identifier_strings.length} roles, but there's ${player_count} players.`)
 	}
 
 	if (
@@ -73,7 +73,8 @@ command.execute = async function execute(interaction, role_identifiers_str) {
 		}
 	});
 
-	await global.Game.start(role_identifier_strings);
+	console.log({role_identifier_strings});
+	await global.Game.start(RoleIdentifier.convertIdentifierStrings(role_identifier_strings));
 }
 
 module.exports = command;

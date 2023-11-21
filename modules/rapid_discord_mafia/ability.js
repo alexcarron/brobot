@@ -23,7 +23,7 @@ class Ability {
 	static Abilities = {
 		Heal: new Ability({
 			name: "Heal",
-			description: "You can heal a player that's not yourself at night to give them a level two defense for the night and following day. You and your target will be notified if your target was attacked while healed.",
+			description: "At night, you can heal a player that's not yourself at night to give them a level two defense for the night and following day. You and your target will be notified if your target was attacked while healed.",
 			type: AbilityTypes.Protection,
 			priority: Priorities.Protection,
 			uses: AbilityUses.Unlimited,
@@ -32,8 +32,8 @@ class Ability {
 			effects: [
 				perform.heal
 			],
-			feedback: function(player_healing, player_name="You") {
-				return `**${player_name}** will attempt to heal **${player_healing}** tonight`
+			feedback: function(player_healing, player_name="You", isYou=true) {
+				return `**${isYou ? "You" : player_name}** will attempt to heal **${player_healing}** tonight`
 			},
 			args: [
 				new Arg({
@@ -46,7 +46,7 @@ class Ability {
 		}),
 		HealSelf: new Ability({
 			name: "Heal Self",
-			description: "You can heal yourself at night to give yourself a level two defense for the night and following day.",
+			description: "At night, you can heal yourself at night to give yourself a level two defense for the night and following day.",
 			type: AbilityTypes.Protection,
 			priority: Priorities.Protection,
 			uses: AbilityUses.Amount(1),
@@ -55,13 +55,13 @@ class Ability {
 			effects: [
 				perform.selfHeal
 			],
-			feedback: function(player_name="You") {
-				return `**${player_name}** will attempt to heal ${player_name==="You" ? "yourself" : "themself"} tonight`
+			feedback: function(player_name="You", isYou=true) {
+				return `**${isYou ? "You" : player_name}** will attempt to heal ${player_name==="You" ? "yourself" : "themself"} tonight`
 			},
 		}),
 		Evaluate: new Ability({
 			name: "Evaluate",
-			description: "You can evaluate a player that's not yourself at night to see if their suspicious or innocent. Mafia, Coven, and Neutral Killing seem suspicious. Town and non-Killing Neutrals seem innocent. Those douesd by an Arsonist will be unclear. These results are affected by the players' perceived role.",
+			description: "At night, you can evaluate a player that's not yourself at night to see if their suspicious or innocent. Mafia, Coven, and Neutral Killing seem suspicious. Town and non-Killing Neutrals seem innocent. Those douesd by an Arsonist will be unclear. These results are affected by the players' perceived role.",
 			type: AbilityTypes.Investigative,
 			priority: Priorities.Investigative,
 			uses: AbilityUses.Unlimited,
@@ -69,7 +69,9 @@ class Ability {
 			effects: [
 				perform.evaluate
 			],
-			feedback: function(player_evaluating, player_name="You") {return `**${player_name}** will attempt to evaluate **${player_evaluating}** tonight`},
+			feedback: function(player_evaluating, player_name="You", isYou=true) {
+				return `**${isYou ? "You" : player_name}** will attempt to evaluate **${player_evaluating}** tonight`
+			},
 			args: [
 				new Arg({
 					name: "Player Evaluating",
@@ -81,7 +83,7 @@ class Ability {
 		}),
 		Track: new Ability({
 			name: "Track",
-			description: "You can track a player that's not yourself at night to see who they are percieved to be visiting.",
+			description: "At night, you can track a player that's not yourself at night to see who they are percieved to be visiting.",
 			type: AbilityTypes.Investigative,
 			priority: Priorities.Investigative,
 			uses: AbilityUses.Unlimited,
@@ -89,7 +91,9 @@ class Ability {
 			effects: [
 				perform.track
 			],
-			feedback: function(player_tracking, player_name="You") {return `**${player_name}** will attempt to track the visit of **${player_tracking}** tonight`},
+			feedback: function(player_tracking, player_name="You", isYou=true) {
+				return `**${isYou ? "You" : player_name}** will attempt to track the visit of **${player_tracking}** tonight`
+			},
 			args: [
 				new Arg({
 					name: "Player Tracking",
@@ -101,7 +105,7 @@ class Ability {
 		}),
 		Roleblock: new Ability({
 			name: "Roleblock",
-			description: "You can roleblock a player that is not yourself at night so that they can't perform their ability that night and following day. They will be notified of this.",
+			description: "At night, you can roleblock a player that is not yourself at night so that they can't perform their ability that night and following day. They will be notified of this.",
 			type: AbilityTypes.Roleblock,
 			priority: Priorities.Roleblock,
 			uses: AbilityUses.Unlimited,
@@ -110,7 +114,9 @@ class Ability {
 			effects: [
 				perform.roleblock
 			],
-			feedback: function(player_roleblocking, player_name="You") {return `**${player_name}** will attempt to roleblock **${player_roleblocking}** tonight`},
+			feedback: function(player_roleblocking, player_name="You", isYou=true) {
+				return `**${isYou ? "You" : player_name}** will attempt to roleblock **${player_roleblocking}** tonight`
+			},
 			args: [
 				new Arg({
 					name: "Player Roleblocking",
@@ -122,7 +128,7 @@ class Ability {
 		}),
 		Shoot: new Ability({
 			name: "Shoot",
-			description: "You can shoot a player that isn't yourself at night, attacking them.",
+			description: "At night, you can shoot a player that isn't yourself at night, attacking them.",
 			type: AbilityTypes.Attacking,
 			priority: Priorities.Attacking,
 			uses: AbilityUses.Amount(3),
@@ -131,7 +137,9 @@ class Ability {
 			effects: [
 				perform.attack
 			],
-			feedback: function(player_shooting, player_name="You") {return `**${player_name}** will attempt to shoot **${player_shooting}** tonight`},
+			feedback: function(player_shooting, player_name="You", isYou=true) {
+				return `**${isYou ? "You" : player_name}** will attempt to shoot **${player_shooting}** tonight`
+			},
 			args: [
 				new Arg({
 					name: "Player Shooting",
@@ -143,7 +151,7 @@ class Ability {
 		}),
 		Order: new Ability({
 			name: "Order",
-			description: "You can order the Mafia to kill a non-mafia player at night so that they become the Mafioso's target. If the Mafioso doesn't exist, is dead, or is roleblocked, you will attack them yourself instead.",
+			description: "At night, you can order the Mafia to kill a non-mafia player at night so that they become the Mafioso's target. If the Mafioso doesn't exist, is dead, or is roleblocked, you will attack them yourself instead.",
 			type: AbilityTypes.Control,
 			priority: Priorities.Control,
 			uses: AbilityUses.Unlimited,
@@ -152,7 +160,9 @@ class Ability {
 			effects: [
 				perform.order
 			],
-			feedback: function(player_ordering_to_kill, player_name="You") {return `**${player_name}** will attempt to order the Mafioso to murder **${player_ordering_to_kill}** tonight`},
+			feedback: function(player_ordering_to_kill, player_name="You", isYou=true) {
+				return `**${isYou ? "You" : player_name}** will attempt to order the Mafioso to murder **${player_ordering_to_kill}** tonight`
+			},
 			args: [
 				new Arg({
 					name: "Player Killing",
@@ -164,7 +174,7 @@ class Ability {
 		}),
 		Murder: new Ability({
 			name: AbilityNames.Murder,
-			description: "You can murder a non-mafia player at night, attacking them.",
+			description: "At night, you can murder a non-mafia player at night, attacking them.",
 			type: AbilityTypes.Attacking,
 			priority: Priorities.Attacking,
 			uses: AbilityUses.Unlimited,
@@ -173,7 +183,9 @@ class Ability {
 			effects: [
 				perform.attack
 			],
-			feedback: function(player_murdering, player_name="You") {return `**${player_name}** will attempt to murder **${player_murdering}** tonight`},
+			feedback: function(player_murdering, player_name="You", isYou=true) {
+				return `**${isYou ? "You" : player_name}** will attempt to murder **${player_murdering}** tonight`
+			},
 			args: [
 				new Arg({
 					name: "Player Killing",
@@ -185,7 +197,7 @@ class Ability {
 		}),
 		Frame: new Ability({
 			name: "Frame",
-			description: "You can frame a non-mafia player at night, making them perceived to be a Mafioso until after they're investigated by a player that gets any information based off of percieved roles.",
+			description: "At night, you can frame a non-mafia player at night, making them perceived to be a Mafioso until after they're investigated by a player that gets any information based off of percieved roles.",
 			type: AbilityTypes.Manipulation,
 			priority: Priorities.Manipulation,
 			uses: AbilityUses.Unlimited,
@@ -194,7 +206,9 @@ class Ability {
 			effects: [
 				perform.frame
 			],
-			feedback: function(player_frame, player_name="You") {return `**${player_name}** will attempt to frame **${player_frame}** as the Mafioso tonight`},
+			feedback: function(player_frame, player_name="You", isYou=true) {
+				return `**${isYou ? "You" : player_name}** will attempt to frame **${player_frame}** as the Mafioso tonight`
+			},
 			args: [
 				new Arg({
 					name: "Player Framing",
@@ -206,7 +220,7 @@ class Ability {
 		}),
 		Consort: new Ability({
 			name: "Consort",
-			description: "You can consort a player who's not yourself at night, roleblocking them that night and following day. They will be notified.",
+			description: "At night, you can consort a player who's not yourself at night, roleblocking them that night and following day. They will be notified.",
 			type: AbilityTypes.Roleblock,
 			priority: Priorities.Roleblock,
 			uses: AbilityUses.Unlimited,
@@ -215,7 +229,9 @@ class Ability {
 			effects: [
 				perform.frame
 			],
-			feedback: function(player_roleblocking, player_name="You") {return `**${player_name}** will attempt to roleblock **${player_roleblocking}** tonight`},
+			feedback: function(player_roleblocking, player_name="You", isYou=true) {
+				return `**${isYou ? "You" : player_name}** will attempt to roleblock **${player_roleblocking}** tonight`
+			},
 			args: [
 				new Arg({
 					name: "Player Consorting",
@@ -227,7 +243,7 @@ class Ability {
 		}),
 		Investigate: new Ability({
 			name: "Investigate",
-			description: "You can investigate a non-mafia player at night, learning their percieved role.",
+			description: "At night, you can investigate a non-mafia player at night, learning their percieved role.",
 			type: AbilityTypes.Investigative,
 			priority: Priorities.Investigative,
 			uses: AbilityUses.Unlimited,
@@ -235,7 +251,7 @@ class Ability {
 			effects: [
 				perform.investigate
 			],
-			feedback: function(player_investigating, player_name="You") {return `**${player_name}** will attempt to investigate the role of **${player_investigating}** tonight`},
+			feedback: function(player_investigating, player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to investigate the role of **${player_investigating}** tonight`},
 			args: [
 				new Arg({
 					name: "Player Investigating",
@@ -247,7 +263,7 @@ class Ability {
 		}),
 		SelfFrame: new Ability({
 			name: "Self Frame",
-			description: "You can frame yourself at night, making yourself perceived as a Mafioso until after you're investigated by a player that gets any information based off of percieved roles.",
+			description: "At night, you can frame yourself at night, making yourself perceived as a Mafioso until after you're investigated by a player that gets any information based off of percieved roles.",
 			type: AbilityTypes.Manipulation,
 			priority: Priorities.Manipulation,
 			uses: AbilityUses.Amount(1),
@@ -256,7 +272,7 @@ class Ability {
 			effects: [
 				perform.selfFrame
 			],
-			feedback: function(player_name="You") {return `**${player_name}** will attempt to frame ${player_name==="You" ? "yourself" : "themself"} as the mafioso tonight`},
+			feedback: function(player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to frame ${player_name==="You" ? "yourself" : "themself"} as the mafioso tonight`},
 		}),
 		DeathCurse: new Ability({
 			name: "Death Curse",
@@ -269,7 +285,7 @@ class Ability {
 			effects: [
 				perform.attack
 			],
-			feedback: function(player_cursing, player_name="You") {return `**${player_name}** will attempt to curse **${player_cursing}** with death tonight`},
+			feedback: function(player_cursing, player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to curse **${player_cursing}** with death tonight`},
 			args: [
 				new Arg({
 					name: "Player Killing",
@@ -281,7 +297,7 @@ class Ability {
 		}),
 		FrameTarget: new Ability({
 			name: "Frame Target",
-			description: "You can frame your target at night, making them perceived as a Mafioso until after you're investigated by a player that gets any information based off of percieved roles.",
+			description: "At night, you can frame your target at night, making them perceived as a Mafioso until after you're investigated by a player that gets any information based off of percieved roles.",
 			type: AbilityTypes.Manipulation,
 			priority: Priorities.Manipulation,
 			uses: AbilityUses.Amount(1),
@@ -290,11 +306,11 @@ class Ability {
 			effects: [
 				perform.frameTarget
 			],
-			feedback: function(player_name="You") {return `**${player_name}** will attempt to frame ${player_name==="You" ? "your" : "their"} target as the Mafioso tonight`},
+			feedback: function(player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to frame ${isYou ? "your" : "their"} target as the Mafioso tonight`},
 		}),
 		SelfVest: new Ability({
 			name: "Self Vest",
-			description: "You can put on a vest at night, gaining a level two defense for the night and following day.",
+			description: "At night, you can put on a vest at night, gaining a level two defense for the night and following day.",
 			type: AbilityTypes.Protection,
 			priority: Priorities.Protection,
 			uses: AbilityUses.Amount(4),
@@ -303,11 +319,11 @@ class Ability {
 			effects: [
 				perform.selfHeal
 			],
-			feedback: function(player_name="You") {return `**${player_name}** will attempt to put on a vest tonight`},
+			feedback: function(player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to put on a vest tonight`},
 		}),
 		Knife: new Ability({
 			name: AbilityNames.Knife,
-			description: "You can knife a player that's not yourself at night, attacking them.",
+			description: "At night, you can knife a player that's not yourself at night, attacking them.",
 			type: AbilityTypes.Attacking,
 			priority: Priorities.Attacking,
 			uses: AbilityUses.Unlimited,
@@ -316,8 +332,8 @@ class Ability {
 			effects: [
 				perform.attack
 			],
-			feedback(player_knifing) {
-				return `You will attempt to knife ${player_knifing} to death tonight`
+			feedback(player_knifing, player_name="You", isYou=true) {
+				return `**${isYou ? "You" : player_name}** will attempt to knife ${player_knifing} to death tonight`
 			},
 			args: [
 				new Arg({
@@ -330,7 +346,7 @@ class Ability {
 		}),
 		Cautious: new Ability({
 			name: "Cautious",
-			description: "You can choose to be cautious at night, not attacking anyone who roleblocks you.",
+			description: "At night, you can choose to be cautious at night, not attacking anyone who roleblocks you.",
 			type: AbilityTypes.Modifier,
 			priority: Priorities.Modifier,
 			uses: AbilityUses.Unlimited,
@@ -339,11 +355,11 @@ class Ability {
 			effects: [
 				perform.cautious
 			],
-			feedback: function(player_name="You") {return `**${player_name}** will attempt to be cautious of roleblockers tonight`},
+			feedback: function(player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to be cautious of roleblockers tonight`},
 		}),
 		Smith: new Ability({
 			name: "Smith",
-			description: "You can smith a bulletproof vest for a player that's not yourself at night, giving them a level one defense that night and following day. You and your target will be notified if your target was attacked while wearing the vest.",
+			description: "At night, you can smith a bulletproof vest for a player that's not yourself at night, giving them a level one defense that night and following day. You and your target will be notified if your target was attacked while wearing the vest.",
 			type: AbilityTypes.Protection,
 			priority: Priorities.Protection,
 			uses: AbilityUses.Amount(3),
@@ -352,7 +368,7 @@ class Ability {
 			effects: [
 				perform.smith
 			],
-			feedback: function(player_smithing_for, player_name="You") {return `**${player_name}** will attempt to smith a bulletproof vest for **${player_smithing_for}** tonight`},
+			feedback: function(player_smithing_for, player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to smith a bulletproof vest for **${player_smithing_for}** tonight`},
 			args: [
 				new Arg({
 					name: "Player Smithing For",
@@ -364,7 +380,7 @@ class Ability {
 		}),
 		SelfSmith: new Ability({
 			name: "Self Smith",
-			description: "You can smith a bulletproof vest for yourself at night, gaining a level one defense that night and following day.",
+			description: "At night, you can smith a bulletproof vest for yourself at night, gaining a level one defense that night and following day.",
 			type: AbilityTypes.Protection,
 			priority: Priorities.Protection,
 			uses: AbilityUses.Amount(1),
@@ -373,7 +389,7 @@ class Ability {
 			effects: [
 				perform.selfSmith
 			],
-			feedback: function(player_name="You") {return `**${player_name}** will attempt to smith a bulletproof vest for ${player_name==="You" ? "yourself" : "themself"} tonight`},
+			feedback: function(player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to smith a bulletproof vest for ${isYou ? "yourself" : "themself"} tonight`},
 		}),
 		Suicide: new Ability({
 			name: AbilityNames.Suicide,
@@ -389,7 +405,7 @@ class Ability {
 		}),
 		Control: new Ability({
 			name: "Control",
-			description: "You can control a player that's not yourself, forcing them to use their main ability on another player or themself. You will learn the perceived role of who you controlled and they will be notified that they were controlled. Your control will fail if the player has no ability that can be used on another player or themself.",
+			description: "At night, you can control a player that's not yourself, forcing them to use their main ability on another player or themself. You will learn the perceived role of who you controlled and they will be notified that they were controlled. Your control will fail if the player has no ability that can be used on another player or themself.",
 			type: AbilityTypes.Control,
 			priority: Priorities.Control,
 			uses: AbilityUses.Unlimited,
@@ -398,7 +414,7 @@ class Ability {
 			effects: [
 				perform.control
 			],
-			feedback: function(player_controlling, player_controlled_into, player_name="You") {return `**${player_name}** will attempt to control **${player_controlling}** into using their ability on **${player_controlled_into}** tonight`},
+			feedback: function(player_controlling, player_controlled_into, player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to control **${player_controlling}** into using their ability on **${player_controlled_into}** tonight`},
 			args: [
 				new Arg({
 					name: "Player Controlling",
@@ -411,6 +427,59 @@ class Ability {
 					description: "The player your forcing whoever your controlling to visit",
 					type: ArgumentTypes.Player,
 					subtypes: []
+				}),
+			],
+		}),
+		Observe: new Ability({
+			name: "Observe",
+			description: "At night, you can observe a player that isn't yourself, being told if this player and the last one you observed are percieved to be in the same faction. If this is the first player you observe, you are told nothing.",
+			type: AbilityTypes.Investigative,
+			priority: Priorities.Investigative,
+			uses: AbilityUses.Unlimited,
+			phases_can_use: [Phases.Night],
+			effects: [
+				perform.observe
+			],
+			feedback: function(player_observing, player_name="You", isYou=true) {
+				const player = global.Game.Players.get(player_name);
+				const last_player_observed_name = player.last_player_observed_name;
+
+				if (last_player_observed_name) {
+					return `**${isYou ? "You" : player_name}** will attempt to observe **${player_observing}** tonight to see if they're working with the last player you observed, **${last_player_observed_name}**.`;
+				}
+				else {
+					return `**${isYou ? "You" : player_name}** will attempt to observe **${player_observing}** tonight to see if they're working with the next player you observe`;
+				}
+			},
+			args: [
+				new Arg({
+					name: "Player Observing",
+					description: "The player you're observing",
+					type: ArgumentTypes.Player,
+					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf]
+				}),
+			],
+		}),
+		Replace: new Ability({
+			name: "Replace",
+			description: "At night, you can replace a player that isn't yourself. You will attack them, and if you successfully kill them you will be converted to their actual role. Their role and last will won't be revealed upon death.",
+			type: AbilityTypes.Attacking,
+			priority: Priorities.Attacking,
+			uses: AbilityUses.Unlimited,
+			phases_can_use: [Phases.Night],
+			effects: [
+				perform.attack,
+				perform.replace,
+			],
+			feedback: function(player_replacing_name, player_name="You", isYou=true) {
+				return `**${isYou ? "You" : player_name}** will attempt to replace **${player_replacing_name}** tonight`
+			},
+			args: [
+				new Arg({
+					name: "Player Replacing",
+					description: "The player you're attacking and replacing",
+					type: ArgumentTypes.Player,
+					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf]
 				}),
 			],
 		}),

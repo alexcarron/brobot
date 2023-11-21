@@ -2,7 +2,7 @@ const Parameter = require("../../modules/commands/Paramater");
 const SlashCommand = require("../../modules/commands/SlashCommand");
 const { toTitleCase, deferInteraction, getRDMGuild, getChannel } = require("../../modules/functions");
 const { Abilities } = require("../../modules/rapid_discord_mafia/ability");
-const { ArgumentTypes, ArgumentSubtypes, Factions, AbilityUses } = require("../../modules/enums");
+const { ArgumentTypes, ArgumentSubtypes, Factions, AbilityUses, Phases } = require("../../modules/enums");
 const roles = require("../../modules/rapid_discord_mafia/roles");
 const ids = require("../../databases/ids.json")
 
@@ -74,11 +74,10 @@ for (const ability_name in Abilities) {
 }
 
 command.required_servers = [ids.servers.rapid_discord_mafia];
-command.required_categories = [
-	ids.rapid_discord_mafia.category.player_action,
-	ids.rapid_discord_mafia.category.night,
+command.required_roles = [
+	ids.rapid_discord_mafia.roles.living,
+	ids.rapid_discord_mafia.roles.ghosts,
 ];
-command.required_roles = [ids.rapid_discord_mafia.roles.living];
 
 command.execute = async function(interaction, isTest) {
 	await deferInteraction(interaction);
@@ -132,7 +131,21 @@ command.execute = async function(interaction, isTest) {
 	}
 
 	if (!ability.phases_can_use.includes(global.Game.phase)) {
-		return await interaction.editReply(`You can't use this ability during the** ${global.Game.phase}** phase`)
+		if (
+			!(ability.phases_can_use.includes(Phases.Limbo) &&
+			player.isInLimbo)
+		) {
+			return await interaction.editReply(`You can't use this ability during the** ${global.Game.phase}** phase`)
+		}
+	}
+
+	if (!player.isAlive) {
+		if (!(
+			ability.phases_can_use.includes(Phases.Limbo) &&
+			player.isInLimbo
+		)) {
+			return await interaction.editReply(`You can't use this ability while you're not alive`);
+		}
 	}
 
 	const arg_values = {};
@@ -154,37 +167,28 @@ command.execute = async function(interaction, isTest) {
 		else {
 			arg_param_value = interaction.options.getString(arg_param_name);
 		}
+		arg_values[arg.name] = arg_param_value;
 
 		console.log({arg, arg_param_name, arg_param_value});
 
-		arg_values[arg.name] = arg_param_value;
+		if (arg_param_value === "N/A") {
+			return await interaction.editReply(`You did not enter in a valid player in the argument **${arg_param_name}**`);
+		}
+
+		const isValidArg = global.Game.isValidArgValue(player, arg, arg_param_value);
+
+		console.log({isValidArg});
+
+		if (isValidArg !== true) {
+			return await interaction.editReply(isValidArg);
+		}
+
+
 
 		console.log({arg_values});
 
 		if (arg.subtypes.includes(ArgumentSubtypes.Visiting)) {
 			player.setVisiting(arg_param_value);
-		}
-
-		const isArgValueValid = (player_using_ability, ability_arg, arg_value) => {
-			if (ability_arg.subtypes.includes(ArgumentSubtypes.NonMafia)) {
-				const player_targeting = global.Players.get(arg_param_value);
-				const player_targeting_role = roles[player_targeting.role];
-				if (player_targeting_role.faction === Factions.Mafia) {
-					return `You cannot target **${player_targeting.name}** as you may only target non-mafia`;
-				}
-			}
-			if (ability_arg.subtypes.includes(ArgumentSubtypes.NotSelf)) {
-				if (arg_param_value === player_using_ability.name) {
-					return `You cannot target yourself`;
-				}
-			}
-
-			return true;
-		}
-
-
-		if (arg_param_value === "N/A") {
-			return await interaction.editReply(`You did not enter in a valid player in the argument **${arg_param_name}**`);
 		}
 	}
 
@@ -207,7 +211,7 @@ command.execute = async function(interaction, isTest) {
 	player.resetInactivity();
 
 	await interaction.editReply(
-		ability.feedback(...Object.values(arg_values))
+		ability.feedback(...Object.values(arg_values), player.name)
 	);
 
 	console.log({player});
@@ -217,7 +221,7 @@ command.execute = async function(interaction, isTest) {
 		const mafia_channel = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.mafia_chat);
 
 		mafia_channel.send(
-			ability.feedback(...Object.values(arg_values), player.name)
+			ability.feedback(...Object.values(arg_values), player.name, false)
 		);
 	}
 }
@@ -271,7 +275,7 @@ command.autocomplete = async function(interaction) {
 
 					if (
 						ability_arg.subtypes.includes(ArgumentSubtypes.NotSelf) &&
-						player.id === interaction.user.id
+						player.name === interaction.user.name
 					) {
 						console.log(player.name);
 						return false;

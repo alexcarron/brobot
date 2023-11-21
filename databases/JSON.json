@@ -2,18 +2,23 @@
   "state": "in progress",
   "Players": {
     "players": {
-      "star": {
-        "ability_doing": {},
-        "id": "271491997519314946",
-        "name": "star",
-        "channel_id": "1163232703433412650",
+      "Reed": {
+        "ability_doing": {
+          "name": "Evaluate",
+          "args": {
+            "Player Evaluating": "five"
+          }
+        },
+        "id": "932399454915551325",
+        "name": "Reed",
+        "channel_id": "1173377617907421234",
         "isAlive": true,
         "isInLimbo": false,
         "hasWon": false,
         "isRoleblocked": false,
         "isDoused": false,
-        "role": "",
-        "visiting": "",
+        "role": "Sheriff",
+        "visiting": "five",
         "last_will": "",
         "death_note": "",
         "exe_target": "",
@@ -23,20 +28,26 @@
         "affected_by": [],
         "attack": 0,
         "defense": 0,
-        "num_phases_inactive": 0
+        "num_phases_inactive": 0,
+        "isUnidentifiable": false
       },
-      "Super Doombus": {
-        "ability_doing": {},
-        "id": "415041949859315717",
-        "name": "Super Doombus",
-        "channel_id": "1163232712597983272",
+      "Jake": {
+        "ability_doing": {
+          "name": "Roleblock",
+          "args": {
+            "Player Roleblocking": "Taken by a Stranger by Lena"
+          }
+        },
+        "id": "734127679011422310",
+        "name": "Jake",
+        "channel_id": "1173377717035602031",
         "isAlive": true,
         "isInLimbo": false,
         "hasWon": false,
         "isRoleblocked": false,
         "isDoused": false,
-        "role": "",
-        "visiting": "",
+        "role": "Escort",
+        "visiting": "Taken by a Stranger by Lena",
         "last_will": "",
         "death_note": "",
         "exe_target": "",
@@ -46,19 +57,23 @@
         "affected_by": [],
         "attack": 0,
         "defense": 0,
-        "num_phases_inactive": 0
+        "num_phases_inactive": 0,
+        "isUnidentifiable": false
       },
       "five": {
-        "ability_doing": {},
+        "ability_doing": {
+          "name": "nothing",
+          "args": {}
+        },
         "id": "560499630010531851",
         "name": "five",
-        "channel_id": "1163232864406601858",
+        "channel_id": "1173377722664366141",
         "isAlive": true,
         "isInLimbo": false,
         "hasWon": false,
         "isRoleblocked": false,
         "isDoused": false,
-        "role": "",
+        "role": "Vigilante",
         "visiting": "",
         "last_will": "",
         "death_note": "",
@@ -67,68 +82,28 @@
         "used": {},
         "percieved": {},
         "affected_by": [],
-        "attack": 0,
+        "attack": 1,
         "defense": 0,
-        "num_phases_inactive": 0
+        "num_phases_inactive": 0,
+        "isUnidentifiable": false
       },
-      "Chicka Chicka Seventy": {
-        "ability_doing": {},
-        "id": "791740987172323338",
-        "name": "Chicka Chicka Seventy",
-        "channel_id": "1163233852140036097",
-        "isAlive": true,
-        "isInLimbo": false,
-        "hasWon": false,
-        "isRoleblocked": false,
-        "isDoused": false,
-        "role": "",
-        "visiting": "",
-        "last_will": "",
-        "death_note": "",
-        "exe_target": "",
-        "feedback": [],
-        "used": {},
-        "percieved": {},
-        "affected_by": [],
-        "attack": 0,
-        "defense": 0,
-        "num_phases_inactive": 0
-      },
-      "braingone": {
-        "ability_doing": {},
-        "id": "997930454982348921",
-        "name": "Shadow",
-        "channel_id": "1163232740783698001",
-        "isAlive": true,
-        "isInLimbo": false,
-        "hasWon": false,
-        "isRoleblocked": false,
-        "isDoused": false,
-        "role": "",
-        "visiting": "",
-        "last_will": "",
-        "death_note": "",
-        "exe_target": "",
-        "feedback": [],
-        "used": {},
-        "percieved": {},
-        "affected_by": [],
-        "attack": 0,
-        "defense": 0,
-        "num_phases_inactive": 0
-      },
-      "give that wolf a banana": {
-        "ability_doing": {},
+      "Taken by a Stranger by Lena": {
+        "ability_doing": {
+          "name": "Evaluate",
+          "args": {
+            "Player Evaluating": "Jake"
+          }
+        },
         "id": "552896092631728129",
-        "name": "Terminal 3 by Linda Martin",
-        "channel_id": "1163232828696313976",
+        "name": "Taken by a Stranger by Lena",
+        "channel_id": "1173377730058911787",
         "isAlive": true,
         "isInLimbo": false,
         "hasWon": false,
         "isRoleblocked": false,
         "isDoused": false,
-        "role": "",
-        "visiting": "",
+        "role": "Sheriff",
+        "visiting": "Jake",
         "last_will": "",
         "death_note": "",
         "exe_target": "",
@@ -138,20 +113,170 @@
         "affected_by": [],
         "attack": 0,
         "defense": 0,
-        "num_phases_inactive": 0
+        "num_phases_inactive": 0,
+        "isUnidentifiable": false
       },
-      "Ramzi": {
-        "ability_doing": {},
-        "id": "342312216881659924",
-        "name": "Ramzi",
-        "channel_id": "1163235439981895752",
+      "Chicka Chicka Slim Seventy": {
+        "ability_doing": {
+          "name": "Murder",
+          "args": {
+            "Player Killing": "asdfghjkl"
+          }
+        },
+        "id": "791740987172323338",
+        "name": "Chicka Chicka Slim Seventy",
+        "channel_id": "1173377745460416593",
         "isAlive": true,
         "isInLimbo": false,
         "hasWon": false,
         "isRoleblocked": false,
         "isDoused": false,
-        "role": "",
+        "role": "Mafioso",
+        "visiting": "asdfghjkl",
+        "last_will": "",
+        "death_note": "",
+        "exe_target": "",
+        "feedback": [],
+        "used": {},
+        "percieved": {},
+        "affected_by": [],
+        "attack": 1,
+        "defense": 0,
+        "num_phases_inactive": 0,
+        "isUnidentifiable": false
+      },
+      "TheOhNoLeonardoFad": {
+        "ability_doing": {
+          "name": "Self Vest",
+          "args": {}
+        },
+        "id": "826610952480358401",
+        "name": "TheOhNoLeonardoFad",
+        "channel_id": "1173377927354781756",
+        "isAlive": true,
+        "isInLimbo": false,
+        "hasWon": false,
+        "isRoleblocked": false,
+        "isDoused": false,
+        "role": "Survivor",
         "visiting": "",
+        "last_will": "JACKSEPICYOUTUBECHANNELFULLOFFUNTIMESANDFUNHIRICKX HASNOTHINGONMEIAMTHESUPERIORCHANNELIHAVEMORE CHARACTERSTHANALLOFJACKSYOUTUBECHANNELSCOMBINED HAHAHAHAIHAVEMORECHARACTERSTHANJACKSUCKSATLIFE JACKSUCKSATSTUFFJACKMASSEYWELSHJACKSUCKSATGEOGRAPHY JACKSUCKSATCLIPSSAMSMELLSOFAPRICOTS JACKSUCKSATPOPUPPIRATEETCETCIMAGINETHISONAPLAYBUTTON JESUSCHRISTBTWPLEASESUBSCRIBETHANKYOUVERYMUCH HIRICKXxXxXX",
+        "death_note": "",
+        "exe_target": "",
+        "feedback": [],
+        "used": {},
+        "percieved": {},
+        "affected_by": [],
+        "attack": 0,
+        "defense": 0,
+        "num_phases_inactive": 0,
+        "isUnidentifiable": false
+      },
+      "star": {
+        "ability_doing": {
+          "name": "Observe",
+          "args": {
+            "Player Observing": "Reed"
+          }
+        },
+        "id": "271491997519314946",
+        "name": "star",
+        "channel_id": "1173377612626804826",
+        "isAlive": true,
+        "isInLimbo": false,
+        "hasWon": false,
+        "isRoleblocked": false,
+        "isDoused": false,
+        "role": "Oracle",
+        "visiting": "Reed",
+        "last_will": "ockle  n1 reed",
+        "death_note": "",
+        "exe_target": "",
+        "feedback": [],
+        "used": {},
+        "percieved": {},
+        "affected_by": [],
+        "attack": 0,
+        "defense": 0,
+        "num_phases_inactive": 1,
+        "isUnidentifiable": false
+      },
+      "eve": {
+        "ability_doing": {
+          "name": "Control",
+          "args": {
+            "Player Controlling": "asdfghjkl",
+            "Player Target Is Controlled Into": "Jake"
+          }
+        },
+        "id": "723635030622208113",
+        "name": "eve",
+        "channel_id": "1173377610907144322",
+        "isAlive": true,
+        "isInLimbo": false,
+        "hasWon": false,
+        "isRoleblocked": false,
+        "isDoused": false,
+        "role": "Witch",
+        "visiting": "asdfghjkl",
+        "last_will": ">:)",
+        "death_note": "",
+        "exe_target": "",
+        "feedback": [],
+        "used": {},
+        "percieved": {},
+        "affected_by": [],
+        "attack": 0,
+        "defense": 0,
+        "num_phases_inactive": 0,
+        "isUnidentifiable": false
+      },
+      "asdfghjkl": {
+        "ability_doing": {
+          "name": "Replace",
+          "args": {
+            "Player Replacing": "Jake"
+          }
+        },
+        "id": "1123420189887836190",
+        "name": "asdfghjkl",
+        "channel_id": "1173379293632528406",
+        "isAlive": true,
+        "isInLimbo": false,
+        "hasWon": false,
+        "isRoleblocked": false,
+        "isDoused": false,
+        "role": "Stranger",
+        "visiting": "Jake",
+        "last_will": "Stranger N1-Jake",
+        "death_note": "Hope I don’t die",
+        "exe_target": "",
+        "feedback": [],
+        "used": {},
+        "percieved": {},
+        "affected_by": [],
+        "attack": 2,
+        "defense": 0,
+        "num_phases_inactive": 0,
+        "isUnidentifiable": false
+      },
+      "Super Dumbass The Second": {
+        "ability_doing": {
+          "name": "Investigate",
+          "args": {
+            "Player Investigating": "TheOhNoLeonardoFad"
+          }
+        },
+        "id": "415041949859315717",
+        "name": "Super Dumbass The Second",
+        "channel_id": "1173377662442541076",
+        "isAlive": true,
+        "isInLimbo": false,
+        "hasWon": false,
+        "isRoleblocked": false,
+        "isDoused": false,
+        "role": "Consigliere",
+        "visiting": "TheOhNoLeonardoFad",
         "last_will": "",
         "death_note": "",
         "exe_target": "",
@@ -161,13 +286,14 @@
         "affected_by": [],
         "attack": 0,
         "defense": 0,
-        "num_phases_inactive": 0
+        "num_phases_inactive": 0,
+        "isUnidentifiable": false
       }
     }
   },
-  "phase": null,
+  "phase": "night",
   "subphase": null,
-  "days_passed": 0,
+  "days_passed": 1,
   "timeout_counter": 0,
   "votes": {},
   "trial_votes": {},
@@ -176,49 +302,122 @@
   "next_deaths": [],
   "winning_factions": [],
   "winning_players": [],
-  "role_identifiers": [
+  "unshuffled_role_identifiers": [
     {
-      "name": "Random Neutral",
-      "type": "faction",
-      "priority": 3
+      "name": "Stranger",
+      "type": "role",
+      "priority": 1
     },
     {
-      "name": "Random Town",
-      "type": "faction",
-      "priority": 3
+      "name": "Oracle",
+      "type": "role",
+      "priority": 1
     },
     {
-      "name": "Random Town",
-      "type": "faction",
-      "priority": 3
+      "name": "Any",
+      "type": "any",
+      "priority": 4
     },
     {
-      "name": "Random Town",
-      "type": "faction",
-      "priority": 3
+      "name": "Any",
+      "type": "any",
+      "priority": 4
     },
     {
-      "name": "Random Neutral",
-      "type": "faction",
-      "priority": 3
+      "name": "Any",
+      "type": "any",
+      "priority": 4
     },
     {
-      "name": "Random Town",
-      "type": "faction",
-      "priority": 3
+      "name": "Any",
+      "type": "any",
+      "priority": 4
     },
     {
-      "name": "Random Town",
-      "type": "faction",
-      "priority": 3
+      "name": "Any",
+      "type": "any",
+      "priority": 4
     },
     {
-      "name": "Random Neutral",
-      "type": "faction",
-      "priority": 3
+      "name": "Any",
+      "type": "any",
+      "priority": 4
+    },
+    {
+      "name": "Any",
+      "type": "any",
+      "priority": 4
+    },
+    {
+      "name": "Any",
+      "type": "any",
+      "priority": 4
     }
   ],
-  "role_list": [],
-  "players_in_limbo": [],
+  "role_identifiers": [
+    {
+      "name": "Stranger",
+      "type": "role",
+      "priority": 1
+    },
+    {
+      "name": "Oracle",
+      "type": "role",
+      "priority": 1
+    },
+    {
+      "name": "Any",
+      "type": "any",
+      "priority": 4
+    },
+    {
+      "name": "Any",
+      "type": "any",
+      "priority": 4
+    },
+    {
+      "name": "Any",
+      "type": "any",
+      "priority": 4
+    },
+    {
+      "name": "Any",
+      "type": "any",
+      "priority": 4
+    },
+    {
+      "name": "Any",
+      "type": "any",
+      "priority": 4
+    },
+    {
+      "name": "Any",
+      "type": "any",
+      "priority": 4
+    },
+    {
+      "name": "Any",
+      "type": "any",
+      "priority": 4
+    },
+    {
+      "name": "Any",
+      "type": "any",
+      "priority": 4
+    }
+  ],
+  "role_list": [
+    "Sheriff",
+    "Escort",
+    "Vigilante",
+    "Sheriff",
+    "Mafioso",
+    "Survivor",
+    "Oracle",
+    "Witch",
+    "Stranger",
+    "Consigliere"
+  ],
+  "action_log": {},
   "abilities_performed": {}
 }

@@ -12,9 +12,10 @@ class Death {
 		this.kills = kills
 	}
 
-	addKill({killer_name, flavor_text}) {
+	addKill(killer, flavor_text) {
 		const kill = {}
-		kill.killer_name = killer_name;
+		kill.killer_name = killer.name;
+		kill.killer_role = killer.getPercievedRole();
 
 		if (flavor_text)
 			kill.flavor_text = flavor_text
@@ -28,6 +29,12 @@ class Death {
 		}
 
 		this.kills.push(kill);
+	}
+
+	isLynch() {
+		return this.kills.some(kill =>
+			kill.killer_name === Factions.Town
+		)
 	}
 }
 

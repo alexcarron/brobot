@@ -34,6 +34,8 @@ class Player {
 		affected_by = [],
 		attack = 0,
 		defense = 0,
+		last_player_observed_name = undefined,
+		isUnidentifiable = false,
 	}) {
 		this.id = id;
 		this.name = name;
@@ -56,6 +58,8 @@ class Player {
 		this.attack = attack;
 		this.defense = defense;
 		this.num_phases_inactive = num_phases_inactive;
+		this.last_player_observed_name = last_player_observed_name;
+		this.isUnidentifiable = isUnidentifiable;
 	}
 
 	reset() {
@@ -77,6 +81,8 @@ class Player {
 		this.attack = 0;
 		this.defense = 0;
 		this.num_phases_inactive = 0;
+		this.last_player_observed_name = undefined;
+		this.isUnidentifiable = false;
 	}
 
 	static MAX_INACTIVE_PHASES = 6;
@@ -205,11 +211,20 @@ class Player {
 		this.alignment = alignment;
 	}
 
-	async kill(killer_name="Host", type="lynch") {
+	/**
+		 * {
+				"victim": Player.name,
+				"kills": {
+						killer_name: Player.name,
+						flavor_text: string
+					}[]
+				}
+		 */
+	async kill(death) {
 		this.isAlive = false;
 
-		if (type == "lynch") {
-			if (this.role == "Fool") {
+		if (death.isLynch()) {
+			if (this.role == RoleNames.Fool) {
 				let fool_chnl = await getChannel((await getRDMGuild()), this.channel_id);
 
 				await global.Game.announceMessages("You feel like you've made a terrible mistake...\n _ _");
@@ -220,8 +235,6 @@ class Player {
 
 				global.Game.winning_factions.push("Fool");
 				global.Game.winning_players.push(this.name);
-				global.Game.players_in_limbo.push(this.name);
-
 			}
 
 			let executioners = global.Game.Players.getExecutioners();
@@ -236,7 +249,7 @@ class Player {
 					const exe_player = global.Game.Players.get(exe.name)
 
 					let exe_chnl = await getChannel((await getRDMGuild()), exe_player.channel_id);
-					await exe_chnl.send("You win! You have successfully gotten your target lynched.");
+					await exe_chnl.send("You win! You have successfully gotten your target lynched. Do whatever you want now. You'll still win if you die.");
 					exe_player.hasWon = true;
 
 					global.Game.winning_factions.push("Executioner");
@@ -303,6 +316,7 @@ class Player {
 	}
 
 	async leaveGame() {
+		global.Game.log(`**${this.name}** left the game.`);
 		global.Game.addDeath(this, this, Announcements.PlayerSuicide);
 	}
 
@@ -327,16 +341,16 @@ class Player {
 	}
 
 	async convertToRole(role_name) {
+		const current_role_name = this.role;
 		const role = Object.values(roles).find(role => role.name ===  role_name);
 		this.setRole(role);
 
+		global.Game.role_log[this.name] += " -> " + role_name;
+
 		const channel = await this.getPlayerChannel();
 
-		await channel.send(`_ _\n<@${this.id}>\n# You've been converted to ${role_name}`)
-
-		await wait(MessageDelays.Normal, "s"),
-
-		await channel.send("_ _\n\n" + role.toString()).then( msg => msg.pin() );
+		await channel.send(`<@${this.id}>\n# You've been converted from ${current_role_name} to ${role_name}`)
+		await channel.send(role.toString()).then( msg => msg.pin() );
 	}
 
 	async giveAccessToMafiaChat() {
@@ -437,6 +451,22 @@ class Player {
 				}
 			}
 		}
+	}
+
+	async whisper(player_whispering_to, whisper_contents) {
+		const rdm_guild = await getRDMGuild();
+		const town_discussion_chnl = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.town_discussion);
+
+		await town_discussion_chnl.send(Announcements.Whisper(
+			this, player_whispering_to
+		));
+
+		global.Game.log(
+			Announcements.WhisperLog(this, player_whispering_to, whisper_contents)
+		);
+
+		const player_whispering_to_chnl = await player_whispering_to.getPlayerChannel();
+		player_whispering_to_chnl.send(Feedback.WhisperedTo(this, whisper_contents));
 	}
 }
 

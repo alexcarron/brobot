@@ -1,7 +1,7 @@
 const { Player } = require('discord-player');
 const ProposedRule = require('./modules/gameforge/ProposedRule.js');
 const Host = require('./modules/gameforge/host.js');
-const GameForge = require('./modules/gameforge/gameforge.js');
+const GameForge = require('./modules/gameforge/GameForge');
 {console.log(`discord.js version: ${require('discord.js').version}`);
 
 const
@@ -65,7 +65,7 @@ const command_folders = fs.readdirSync(command_folders_path);
 			let command = await require(`${commands_path}/${file}`);
 
 			if (command instanceof SlashCommand) {
-				console.log(`Slash command ${file} found.`)
+				console.log(`Slash command ${file} found.`);
 				command = await command.getCommand();
 			}
 
@@ -108,18 +108,24 @@ const command_folders = fs.readdirSync(command_folders_path);
 		for (const required_server_id in private_slash_commands) {
 			const slash_commands = private_slash_commands[required_server_id];
 
+			console.log("Reloading " + slash_commands.length + " private slash commands...");
+
 			await rest.put(
 				Routes.applicationGuildCommands(ids.client, required_server_id),
 				{ body: slash_commands },
 			);
+
+			console.log("Reloaded");
 		}
+		console.log("Reloading " + public_slash_commands.length + " public slash commands...");
 		await rest.put(
 			Routes.applicationCommands(ids.client),
 			{ body: public_slash_commands },
 		);
+		console.log("Reloaded");
 
 
-		console.log(`Successfully reloaded some application (/) commands.`);
+		console.log(`Successfully reloaded application (/) commands.`);
 
 		// ! Delete Guild Command
 		// rest.delete(Routes.applicationGuildCommand(ids.client, ids.servers.rapid_discord_mafia, "1146264673470136350"))
@@ -769,7 +775,7 @@ global.client.on(Events.InteractionCreate, async (interaction) => {
 
 });
 
-// User Join Server
+// ! Executed when a user joins the server
 client.on(Events.GuildMemberAdd, async (guild_member) => {
 	if (guild_member.guild.id === ids.servers.gameforge) {
 		const gameforge_guild = await getGuild(ids.servers.gameforge);
@@ -778,8 +784,13 @@ client.on(Events.GuildMemberAdd, async (guild_member) => {
 	}
 	else if (guild_member.guild.id === ids.servers.rapid_discord_mafia) {
 		const rdm_guild = await getGuild(ids.servers.rapid_discord_mafia);
-		const outsiders_role = await getRole(rdm_guild, RDMRoles.Spectator);
-		await addRole(guild_member, outsiders_role);
+		const spectator_role = await getRole(rdm_guild, RDMRoles.Spectator);
+		await addRole(guild_member, spectator_role);
+	}
+	else if (guild_member.guild.id === ids.servers.LLGameShowCenter) {
+		const rdm_guild = await getGuild(ids.servers.LLGameShowCenter);
+		const viewer_role = await getRole(rdm_guild, ids.ll_game_shows.roles.viewer);
+		await addRole(guild_member, viewer_role);
 	}
 });
 

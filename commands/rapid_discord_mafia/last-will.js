@@ -51,7 +51,6 @@ command.parameters = [
 ];
 
 command.required_servers = [ids.servers.rapid_discord_mafia];
-command.required_categories = [ids.rapid_discord_mafia.category.player_action];
 command.required_roles = [ids.rapid_discord_mafia.roles.living];
 command.execute = async function(interaction) {
 	await deferInteraction(interaction);
@@ -84,6 +83,7 @@ command.execute = async function(interaction) {
 		player.last_will = "";
 	}
 
+	global.Game.log(`**${player.name}** updated their last will to be \n\`\`\`\n${player.last_will}\n\`\`\``);
 	return await interaction.editReply(`Your last will is now: \n\`\`\`\n${player.last_will}\n\`\`\``);
 };
 command.autocomplete = async function(interaction) {
@@ -104,6 +104,10 @@ command.autocomplete = async function(interaction) {
 
 	if (autocomplete_values[0].name.length <= 0) {
 		autocomplete_values = [{name: "Your last will is currently empty", value: ""}]
+	}
+
+	if (autocomplete_values[0].name.length >= 100) {
+		autocomplete_values = [{name: autocomplete_values[0].name.substring(0, 96) + "...", value: ""}]
 	}
 
 	console.log({autocomplete_values});

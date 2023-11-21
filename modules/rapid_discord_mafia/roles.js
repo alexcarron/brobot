@@ -153,8 +153,8 @@ const roles = {
 		],
 		"notes": "At the beginning of the game, you will be given a town player target that you must try to get lynched before the end of the game. If your target dies before then, you'll become a Fool."
 	}),
-	"Survivor": new Role({
-		name: "Survivor",
+	[RoleNames.Survivor]: new Role({
+		name: RoleNames.Survivor,
 		faction: Factions.Neutral,
 		alignment: Alignments.Benign,
 		attack: 0,
@@ -196,13 +196,34 @@ const roles = {
 		alignment: Alignments.Evil,
 		attack: 0,
 		defense: 0,
-		goal: WinConditions.
-		SurviveTownLose,
+		goal: WinConditions.SurviveTownLose,
 		immunities: [Immunities.Roleblock, Immunities.Control],
 		abilities: [
 			Abilities.Control,
 		],
-	})
+	}),
+	[RoleNames.Oracle]: new Role({
+		name: RoleNames.Oracle,
+		faction: Factions.Town,
+		alignment: Alignments.Investigative,
+		attack: 0,
+		defense: 0,
+		goal: WinConditions.EliminateOtherFactions,
+		abilities: [
+			Abilities.Observe
+		],
+	}),
+	[RoleNames.Stranger]: new Role({
+		name: RoleNames.Stranger,
+		faction: Factions.Neutral,
+		alignment: Alignments.Chaos,
+		attack: 2,
+		defense: 0,
+		goal: WinConditions.Stranger,
+		abilities: [
+			Abilities.Replace
+		],
+	}),
 }
 
 module.exports = roles;

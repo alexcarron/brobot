@@ -51,15 +51,13 @@ class GameForge {
 	static NUM_CHALLENGES = 10;
 	static PHASE_LENGTH_MIN = 60*24;
 	static TOPICS = [
-		"Elaborate on official rule 24. Explain how the amount of lost Among Us Drip Bucks is decided",
-		"Elaborate on official rule 24. Explain how the amount of lost Among Us Drip Bucks is decided",
-		"The official theme of the game is Luigi fighting Brobot in a 10x10 grid. How can we inlcude this in the game?",
-		"Rounds can have optional challenges and every 5 rounds, there is a challenge, but what happens in rounds without optional challenges. What determines when we have these challenges? What are the optional challenges?",
-		"A shop has been established, but what items can contestants buy in the shop? How do they buy them? Does the shop have any special mechanics",
-		"The first challenge is quiz with LL server-based questions, but what are the questions? How is the quiz run? How does one win or lose?",
-		"Challenge 4 is a game of hot potato with a random time. How is the time randomly generated? How are the three players chosen for this challenge? Do the players know the time on the bomb when they have it?",
-		"Challenge 7 is a video game soundtrack quiz, but what soundtrack is it? How is it run? How will the questions be decided? How will you decide which songs to include in the quiz? How many questions will there be? How can contestants win Among Us Drip Bucks?",
-		"Check out all the features listed in the rule summary. Is there any that you think are too complicated, uncessary, or you want to change? Is there any that haven't been utilized?",
+		// "Rounds can have optional challenges and there is a challenge every 5 rounds, but what happens in rounds without optional challenges. What determines when we have these challenges? What are the optional challenges?",
+		// "A shop has been established, but what items can contestants buy in the shop? How do they buy them? Does the shop have any special mechanics",
+		// "The first challenge is quiz with LL server-based questions, but what are the questions? How is the quiz run? How does one win or lose?",
+		// "Challenge 4 is a game of hot potato with a random time. How is the time randomly generated? How are the three players chosen for this challenge? Do the players know the time on the bomb when they have it?",
+		// "Challenge 7 is a video game soundtrack quiz, but what soundtrack is it? How is it run? How will the questions be decided? How will you decide which songs to include in the quiz? How many questions will there be? How can contestants win AUDB?",
+		// "Check out all the features listed in the rule summary. Is there any that you think are too complicated, uncessary, or you want to change? Is there any that haven't been utilized?",
+		"Challenge 10 doesn't exist yet. What ideas do you have for it? Any specific mechanics, story, or dynamics come to mind for the challenge? What would be fun and unique?",
 	]
 
 	async resetGameForge() {
@@ -517,29 +515,17 @@ class GameForge {
 				}
 
 				console.log("Judged all proposals");
+				await this.resetTopic();
 
 				console.log("\n\nSending Announcement");
-				await announce_chnl.send(`_ _\n<@&${ids.gameforge.roles.host}>\n# It is now the **${phase}** phase`);
-
 				await announce_chnl.send(
-					`_ _\n## Things To Do\n` +
-					`- Check what's new in <#${ids.gameforge.channels.official_rules}>\n` +
-					`- Discuss what part of the game to work on or follow today's topic\n` +
-					`- Come up with and propose a rule for the game with the \`/propose\` command`
+					`# <@&${ids.gameforge.roles.host}> It is now the **${phase}** phase` + "\n" +
+					`- Check out the new <#${ids.gameforge.channels.official_rules}>\n` +
+					`- Discuss what you want to add to the game next in <#${ids.gameforge.channels.game_discussion}>\n` +
+					`- Propose that addition to the game using the command \`/propose-rules\`` + `\n` +
+					`\n` +
+					`**Question(s) To Consider**: ${this.topic}`
 				);
-
-				const topic_announec_msg = await announce_chnl.send(
-					`_ _\n## Today's Proposal Topic\n` +
-					`> **${this.topic}**`
-				);
-
-
-
-				await topic_announec_msg.startThread({
-					name: `Discuss Topic or Proposal Ideas`,
-					autoArchiveDuration: ThreadAutoArchiveDuration.ThreeDays,
-					reason: `To discuss the topic`,
-				});
 			}
 			else {
 				next_phase = GameForgePhases.Proposing;
@@ -558,17 +544,15 @@ class GameForge {
 
 				console.log("Added buttons to all proposals");
 
-				await announce_chnl.send(`_ _\n<@&${ids.gameforge.roles.host}>\n# It is now the **${phase}** phase`);
-
 				await announce_chnl.send(
-					`_ _\n## Things To Do This Phase` + "\n" +
+					`# It is now the **${phase}** phase` + "\n" +
 					`- Look at all the rules that have been proposed` + "\n" +
 					`- Discuss in the proposal threads what you think about the rules` + "\n" +
 					`- Vote on the existing proposed rules` + "\n" +
-					`- Discuss what rules should be added next`
+					`- Discuss what rules should be added next` + "\n" +
+					`\n` +
+					`<@&${ids.gameforge.roles.host}>`
 				);
-
-				await this.resetTopic();
 			}
 
 			console.log({new_phase: next_phase});
@@ -731,18 +715,20 @@ class GameForge {
 			}
 			else {
 				challenge_num_topic = challenge_num
-				console.log({challenge_num_topic});
+				// console.log({challenge_num_topic});
 				break;
 			}
 		}
 		if (GameForge.TOPICS.length > 0) {
 			this.topic = getRandArrayItem(GameForge.TOPICS);
 		} else if (challenge_num_topic) {
-			this.topic = `The rules, base, story, or theme of Challenge ${challenge_num_topic}`;
+			this.topic = `Challeneg ${challenge_num_topic} doesn't exist yet. What ideas do you have for it? Any specific mechanics, story, or dynamics come to mind for the challenge? What would be fun and unique?`;
 		}
 		else {
 			this.topic = `The mechanics of the overall game`;
 		}
+
+		this.topic += " (Discussing the topic in this thread will earn you XP)";
 	}
 }
 

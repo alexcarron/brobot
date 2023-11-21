@@ -7,7 +7,6 @@ const { Abilities } = require("./ability.js");
 const { PermissionFlagsBits } = require("discord.js");
 const Death = require("./death.js");
 const roles = require("./roles.js");
-const RoleIdentifier = require("./RoleIdentifier.js");
 const Players = require("../rapid_discord_mafia/players.js");
 
 class Game {
@@ -22,13 +21,23 @@ class Game {
 		this.trial_votes = {};
 		this.verdict = ""
 		this.on_trial = ""
+		/**
+		 * {
+				"victim": Player.name,
+				"kills": {
+						killer_name: Player.name,
+						flavor_text: string
+					}[]
+				}
+		 */
 		this.next_deaths = [];
 		this.winning_factions = [];
 		this.winning_players = [];
+		this.unshuffled_role_identifiers = [];
 		this.role_identifiers = [];
 		this.role_list = [];
-		this.players_in_limbo = [];
 		this.action_log = {};
+		this.role_log = {};
 
 		/**
 		 * {
@@ -59,7 +68,6 @@ class Game {
 		let simple_game_obj = JSON.parse(JSON.stringify(this));
 		delete simple_game_obj.all_abilities;
 		console.log(`\x1b[36m Logging Game: \x1b[0m`);
-		this.logPlayers();
 		console.log(JSON.stringify(simple_game_obj, null, 2));
 	}
 
@@ -143,9 +151,17 @@ class Game {
 
 	async setGame(game) {
 		for (const property in game) {
-			if (property !== "Players") {
+			if (property === "next_deaths") {
+				this.next_deaths = [];
+				const deaths = game[property];
+				for (const death of deaths) {
+					this.next_deaths.push(new Death(death));
+				}
+			}
+			else if (property !== "Players") {
 				this[property] = game[property];
 			}
+
 		}
 
 		this.Players = new Players();
@@ -155,14 +171,14 @@ class Game {
 		}
 	}
 
-	async start(role_identifier_strings) {
+	async start(role_identifiers) {
 		const
-			role_identifiers = RoleIdentifier.convertIdentifierStrings(role_identifier_strings),
-			unshuffled_role_identifiers = role_identifiers,
+			unshuffled_role_identifiers = [...role_identifiers],
 			shuffled_role_identifiers = shuffleArray(role_identifiers),
 			days_passed_at_sign_ups = 0;
 
 		this.state = GameStates.InProgress;
+		this.unshuffled_role_identifiers = unshuffled_role_identifiers;
 		this.role_identifiers = shuffled_role_identifiers;
 		this.phase = null;
 		this.subphase = null;
@@ -176,7 +192,6 @@ class Game {
 		this.winning_factions = [];
 		this.winning_players = [];
 		this.role_list = [];
-		this.players_in_limbo = [];
 		this.abilities_performed = {};
 		this.Players.reset();
 
@@ -188,6 +203,10 @@ class Game {
 		await this.announceMessages(
 			Announcements.LivingPlayers(this.Players.getAlivePlayerNames())
 		);
+
+		this.Players.getPlayerList().forEach(player => {
+			this.role_log[player.name] = player.role;
+		})
 
 		await this.startDay1(days_passed_at_sign_ups);
 	}
@@ -238,7 +257,10 @@ class Game {
 			if (player.role === RoleNames.Executioner) {
 				console.log(this.Players);
 				const rand_town_player = getRandArrayItem(this.Players.getTownPlayers());
-				player.setExeTarget(rand_town_player);
+				if (rand_town_player)
+					player.setExeTarget(rand_town_player);
+				else
+					player.convertToRole(RoleNames.Fool);
 			}
 		}
 	}
@@ -250,8 +272,8 @@ class Game {
 
 		let possible_roles = role_identifier.getPossibleRoles();
 
-		console.log({role_identifier, existing_factions, num_roles_in_faction,needOpposingFactions});
-		console.log("POSSIBLE ROLES " + possible_roles.map(r => r.name));
+		// console.log({role_identifier, existing_factions, num_roles_in_faction,needOpposingFactions});
+		// console.log("POSSIBLE ROLES " + possible_roles.map(r => r.name));
 
 		if (role_identifier.type === RoleIdentifierTypes.AnyRole) {
 
@@ -259,10 +281,10 @@ class Game {
 			if (needOpposingFactions) {
 				possible_roles = possible_roles.filter(role =>
 					existing_factions.every(existing_faction =>
-						!this.isRoleInFaction(role, existing_faction)
+						!Game.isRoleInFaction(role, existing_faction)
 					) &&
 					Game.POSSIBLE_FACTIONS.some(faction =>
-						this.isRoleInFaction(role, faction)
+						Game.isRoleInFaction(role, faction)
 					)
 				)
 			}
@@ -300,8 +322,40 @@ class Game {
 				)
 			);
 		}
+		else if ([RoleIdentifierTypes.RandomRoleInFaction, RoleIdentifierTypes.RandomRoleInFactionAlignment].includes(role_identifier.type)) {
+			// ! Filter out existing factions if we need an opposing faction
+			const old_possible_roles = possible_roles;
+			if (needOpposingFactions) {
+				possible_roles = possible_roles.filter(role =>
+					existing_factions.every(existing_faction =>
+						!Game.isRoleInFaction(role, existing_faction)
+					) &&
+					Game.POSSIBLE_FACTIONS.some(faction =>
+						Game.isRoleInFaction(role, faction)
+					)
+				)
+			}
+			if (possible_roles.length <= 0) possible_roles = old_possible_roles;
 
-		console.log("POSSIBLE ROLES " + possible_roles.map(r => r.name));
+			// ! Filter out Non-Mafioso Mafia if Mafioso doesn't exist yet
+			if (!this.role_list.includes(RoleNames.Mafioso)) {
+				possible_roles = possible_roles.filter(role =>
+					role.faction !== Factions.Mafia ||
+					role.name === RoleNames.Mafioso
+				)
+			}
+
+			// ! Filter out unique roles if they exist already
+			possible_roles = possible_roles.filter( role =>
+				!(
+					role.isUnique &&
+					(this.role_list.includes(role.name) ||
+					this.role_identifiers.some(identifier => identifier.name === role.name))
+				)
+			);
+		}
+
+		// console.log("POSSIBLE ROLES " + possible_roles.map(r => r.name));
 
 		return possible_roles;
 	}
@@ -314,7 +368,7 @@ class Game {
 
 		// Add faction to list of existing factions
 		const chosen_role_faction = Game.POSSIBLE_FACTIONS.find(faction =>
-			this.isRoleInFaction(chosen_role, faction)
+			Game.isRoleInFaction(chosen_role, faction)
 		)
 
 		if (chosen_role_faction) {
@@ -324,7 +378,7 @@ class Game {
 				num_roles_in_faction[chosen_role_faction] = 1;
 		}
 
-		console.log({num_roles_in_faction});
+		// console.log({num_roles_in_faction});
 
 		return chosen_role
 	}
@@ -412,26 +466,30 @@ class Game {
 		}
 	}
 
+	async log(message, heading_level=0) {
+		Game.log(message, heading_level);
+	}
+
 	async killDeadPlayers() {
 		await this.announceAllDeaths();
 		await this.announceMessages(
 			Announcements.LivingPlayers(this.Players.getAlivePlayerNames())
 		);
 
-		let
-			victim_player_names = this.next_deaths.map(death => death.victim),
-			victim_players =
-				this.Players.getPlayerList()
-					.filter(player => victim_player_names.includes(player.name));
+		console.log(this.next_deaths);
 
-		console.log({victim_player_names});
-
-		for (let player of victim_players) {
-			await player.kill()
-		}
-
-		for (let player_name of this.players_in_limbo) {
-			this.Players.get(player_name).isInLimbo = false;
+		/**
+		 * {
+				"victim": Player.name,
+				"kills": {
+						killer_name: Player.name,
+						flavor_text: string
+					}[]
+				}
+		 */
+		for (let death of this.next_deaths) {
+			const victim_player = this.Players.get(death.victim);
+			await victim_player.kill(death);
 		}
 
 
@@ -485,7 +543,7 @@ class Game {
 
 		Game.log("Incrementing Inactvity")
 		this.Players.getAlivePlayers().forEach(player => {
-				player.incrementInactvity();
+				if (!Game.IS_TESTING) player.incrementInactvity();
 		});
 	}
 
@@ -500,13 +558,11 @@ class Game {
 
 		Game.log("Incrementing Inactvity")
 		this.Players.getAlivePlayers().forEach(player => {
-				player.incrementInactvity();
+			if (!Game.IS_TESTING) player.incrementInactvity();
 		});
 	}
 
 	async setPhaseToVoting() {
-		await this.saveGameDataToDatabase();
-
 		Game.log(`Voting Begins`, 2);
 
 		this.subphase = Subphases.Voting;
@@ -524,7 +580,7 @@ class Game {
 
 		Game.log("Incrementing Inactvity")
 		this.Players.getAlivePlayers().forEach(player => {
-				player.incrementInactvity();
+			if (!Game.IS_TESTING) player.incrementInactvity();
 		});
 	}
 
@@ -538,8 +594,9 @@ class Game {
 		if (this.Players.getAlivePlayerNames().includes(this.on_trial)) {
 			Game.log("Incrementing Inactvity")
 			this.Players.getAlivePlayers().forEach(player => {
-				if (player.name !== this.on_trial)
-					player.incrementInactvity();
+				if (player.name !== this.on_trial) {
+					if (!Game.IS_TESTING) player.incrementInactvity();
+				}
 			});
 		}
 
@@ -558,13 +615,13 @@ class Game {
 
 	async lynchPlayerOnTrial() {
 		const player_on_trial = this.Players.get(this.on_trial);
-		await player_on_trial.kill();
 
 		const death = new Death({
 			victim: player_on_trial.name
 		});
 		death.setToLynch();
 
+		await player_on_trial.kill(death);
 		await this.sendDeathMsg(death, "lynch");
 		this.resetTimeout()
 	}
@@ -727,9 +784,10 @@ class Game {
 
 		Game.log("Performing Every Ability", 1);
 
-		this.action_log[this.getDayNum()] = [];
+		this.action_log[this.getDayNum()-1] = [];
 
 		for (let i = 0; i < Object.keys(this.abilities_performed).length; i++) {
+			console.log(Object.keys(this.abilities_performed));
 			let player_name = Object.keys(this.abilities_performed)[i],
 				player = this.Players.get(player_name),
 				ability_performed = this.abilities_performed[player_name],
@@ -749,8 +807,10 @@ class Game {
 			}
 
 
-			Game.log(ability.feedback(...Object.values(ability_performed.args), player.name));
-			this.action_log[this.getDayNum()].push(ability.feedback(...Object.values(ability_performed.args), player.name))
+			Game.log(ability.feedback(...Object.values(ability_performed.args), player.name, false));
+			this.action_log[this.getDayNum()-1].push(
+				ability.feedback(...Object.values(ability_performed.args), player.name, false)
+			);
 
 			if (this.Players.get(player_name).isRoleblocked) {
 				Game.log(`${player_name} is roleblocked, so they can't do ${ability_performed.name}`);
@@ -807,7 +867,7 @@ class Game {
 
 	isRoleInMissingFaction(role, missing_factions) {
 		return missing_factions.some((missing_faction) => {
-			return this.isRoleInFaction(role, missing_faction);
+			return Game.isRoleInFaction(role, missing_faction);
 		});
 	}
 
@@ -823,23 +883,20 @@ class Game {
 	}
 
 	addDeath(player, killer, flavor_text) {
-		const death_index = this.next_deaths.findIndex(death => death.victim == this.name);
-
-		const kill = {
-			killer_name: killer.name,
-			flavor_text: flavor_text
-		}
+		console.log(this.next_deaths)
+		const death_index = this.next_deaths.findIndex(
+			death => death.victim == player.name
+		);
 
 		if (death_index == -1) {
-			this.next_deaths.push(
-				{
-					"victim": player.name,
-					"kills": [kill],
-				}
-			);
+			const death = new Death({
+				victim: player.name,
+			});
+			death.addKill(killer, flavor_text);
+			this.next_deaths.push(death);
 		}
 		else {
-			this.next_deaths[death_index].kills.push(kill)
+			this.next_deaths[death_index].addKill(killer, flavor_text);
 		}
 
 	}
@@ -884,12 +941,18 @@ class Game {
 		return majority_vote;
 	}
 
-	isRoleInFaction(role, faction) {
+	static isRoleInFaction(role, faction) {
 		if (Object.values(Factions).includes(faction)) {
 			return role.faction === faction;
 		} else {
 			return role.name === faction;
 		}
+	}
+
+	static isRoleInPossibleFaction(role) {
+		return Game.POSSIBLE_FACTIONS.some(faction =>
+			Game.isRoleInFaction(role, faction)
+		)
 	}
 
 	async sendFeedbackToPlayers() {
@@ -909,7 +972,7 @@ class Game {
 				continue;
 
 			let feedback_msg =
-				`_ _\n<@${player_id}>\n` +
+				`<@${player_id}> ` +
 				player_feedback.join("\n");
 
 			player_chnl.send(feedback_msg);
@@ -1055,6 +1118,11 @@ class Game {
 		await this.setPhaseToNextPhase();
 		const days_passed_last_day = this.days_passed;
 
+
+		for (const player of this.Players.getPlayersInLimbo()) {
+			console.log({player})
+			player.isInLimbo = false;
+		}
 		await Game.closeNightChannels();
 		await this.performCurrentNightAbilities();
 		this.logPlayers();
@@ -1140,10 +1208,10 @@ class Game {
 
 		const player_on_trial = this.Players.get(this.on_trial);
 
+		await this.announceMessages(...Announcements.StartTrial(player_on_trial));
 		await this.givePlayerOnTrialRole(player_on_trial);
-		this.announceMessages(
+		await this.announceMessages(
 			Announcements.OnTrialPlayerGiveDefense(ids.rapid_discord_mafia.roles.on_trial),
-			...Announcements.StartTrial(player_on_trial)
 		);
 		this.remindPlayersTo(Announcements.TrialVotingReminder(player_on_trial));
 
@@ -1508,7 +1576,7 @@ class Game {
 					death_announcement_msgs.push(kill.flavor_text);
 				}
 				else if (
-					[RoleNames.Mafioso, RoleNames.Godfather].includes(killer.role)
+					[RoleNames.Mafioso, RoleNames.Godfather].includes(kill.killer_role)
 				) {
 					if (index == 0)
 						death_announcement_msgs.push(
@@ -1522,11 +1590,11 @@ class Game {
 				else {
 					if (index == 0)
 						death_announcement_msgs.push(
-							`\n` + Feedback.AnnounceMurderByRole(killer.role)
+							`\n` + Feedback.AnnounceMurderByRole(kill.killer_role)
 						);
 					else
 					death_announcement_msgs.push(
-						`\n` + Feedback.AnnounceAnotherMurderByRole(killer.role)
+						`\n` + Feedback.AnnounceAnotherMurderByRole(kill.killer_role)
 					);
 				}
 
@@ -1541,12 +1609,23 @@ class Game {
 
 
 		// Make last will message
-		if (victim_player.last_will)
-			death_announcement_msgs.push(`They left behind a last will: \`\`\`\n${victim_player.last_will}\n\`\`\``);
-		else
-			death_announcement_msgs.push(`No last will could be found.`);
+		if (victim_player.isUnidentifiable) {
+			death_announcement_msgs.push(Announcements.LastWillUnidentifiable())
+		}
+		else if (!victim_player.last_will) {
+			death_announcement_msgs.push(Announcements.LastWillNotFound())
+		}
+		else {
+			death_announcement_msgs.push(Announcements.LastWillFound(victim_player.last_will));
+		}
 
-		death_announcement_msgs.push(Announcements.RoleReveal(victim_player));
+		// Make role reveal message
+		if (victim_player.isUnidentifiable) {
+			death_announcement_msgs.push(Announcements.RoleIsUnidentifiable(victim_player));
+		}
+		else {
+			death_announcement_msgs.push(Announcements.RoleReveal(victim_player));
+		}
 
 		await this.announceMessages(...death_announcement_msgs);
 	}
@@ -1601,7 +1680,7 @@ class Game {
 			const actions = this.action_log[day_num];
 
 			await this.announceMessages(
-				`_ _\n## Day ${day_num} Actions\n>>> ` +
+				`_ _\n## Night ${day_num} Actions\n>>> ` +
 				actions.join("\n")
 			);
 		}
@@ -1635,7 +1714,8 @@ class Game {
 
 		await player_action_chnls.forEach(
 			async (channel) => {
-				await channel.setParent(archive_category)
+				await channel.setParent(archive_category);
+				// await channel.delete();
 			}
 		);
 	}
@@ -1902,7 +1982,7 @@ class Game {
 					deny: [PermissionFlagsBits.SendMessages, PermissionFlagsBits.ViewChannel],
 				},
 				{
-					id: on_trial_role,
+					id: on_trial_role.id,
 					allow: [PermissionFlagsBits.SendMessages],
 				},
 			]);
@@ -1915,7 +1995,7 @@ class Game {
 					deny: [PermissionFlagsBits.SendMessages],
 				},
 				{
-					id: on_trial_role,
+					id: on_trial_role.id,
 					allow: [PermissionFlagsBits.SendMessages],
 				},
 			]);
@@ -1969,26 +2049,6 @@ class Game {
 		}
 	}
 
-	static async setupAnnounceChannel() {
-		const
-			rdm_guild = await getRDMGuild(),
-			game_announce_chnl = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.game_announce);
-
-		if (Game.IS_TESTING) {
-			game_announce_chnl.permissionOverwrites.set([{
-				id: rdm_guild.id,
-				deny: [PermissionFlagsBits.SendMessages, PermissionFlagsBits.ViewChannel],
-			}]);
-		}
-		else {
-			game_announce_chnl.permissionOverwrites.set([{
-				id: rdm_guild.id,
-				allow: [PermissionFlagsBits.ViewChannel],
-				deny: [PermissionFlagsBits.SendMessages],
-			}]);
-		}
-	}
-
 	static async reset() {
 		console.time("convertAllToSpectator");
 		await Game.convertAllToSpectator();
@@ -2011,15 +2071,12 @@ class Game {
 		// console.time("closeVotingChannel");
 		// await Game.closeVotingChannel();
 		// console.timeEnd("closeVotingChannel");
-		console.time("closeAnnounceChannel");
+		console.time("setAnnounceChannelPerms");
 		await Game.setAnnounceChannelPerms();
-		console.timeEnd("closeAnnounceChannel");
+		console.timeEnd("setAnnounceChannelPerms");
 		console.time("closeJoinChannel");
 		await Game.closeJoinChannel();
 		console.timeEnd("closeJoinChannel");
-		console.time("setupAnnounceChannel");
-		await Game.setupAnnounceChannel();
-		console.timeEnd("setupAnnounceChannel");
 		// console.time("setDefenseChannelPerms");
 		// await Game.setDefenseChannelPerms();
 		// console.timeEnd("setDefenseChannelPerms");
@@ -2101,17 +2158,17 @@ class Game {
 	 * @returns true if valid or string containing reason if invalid
 	 */
 	isValidArgValue(player_using_ability, ability_arg, arg_value) {
+		if (ability_arg.subtypes.includes(ArgumentSubtypes.NotSelf)) {
+			if (arg_value === player_using_ability.name) {
+				return `You cannot target yourself`;
+			}
+		}
+
 		if (ability_arg.subtypes.includes(ArgumentSubtypes.NonMafia)) {
 			const player_targeting = this.Players.get(arg_value);
 			const player_targeting_role = roles[player_targeting.role];
 			if (player_targeting_role.faction === Factions.Mafia) {
 				return `You cannot target **${player_targeting.name}** as you may only target non-mafia`;
-			}
-		}
-
-		if (ability_arg.subtypes.includes(ArgumentSubtypes.NotSelf)) {
-			if (arg_value === player_using_ability.name) {
-				return `You cannot target yourself`;
 			}
 		}
 
