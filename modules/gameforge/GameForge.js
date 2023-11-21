@@ -728,7 +728,6 @@ class GameForge {
 			this.topic = `The mechanics of the overall game`;
 		}
 
-		this.topic += " (Discussing the topic in this thread will earn you XP)";
 	}
 }
 
