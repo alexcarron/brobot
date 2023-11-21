@@ -13,7 +13,6 @@ const command = new SlashCommand({
 });
 
 command.required_servers = [ids.servers.rapid_discord_mafia];
-command.required_channels = [ids.rapid_discord_mafia.channels.join_chat];
 command.required_roles = ['Spectators'];
 command.parameters = [
 	new Parameter({
