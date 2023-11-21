@@ -103,11 +103,21 @@ class Players {
 	async renamePlayer(old_name, new_name) {
 		this.players[new_name] = this.players[old_name];
 		delete this.players[old_name];
+		const player = this.players[new_name];
 
 		this.players[new_name].name = new_name;
 
 		const player_guild_member = await this.players[new_name].getGuildMember();
 		await setNickname(player_guild_member, new_name);
+
+		const new_channel_name =
+			"👤｜" +
+			player.name.toLowerCase()
+				.replace(' ', '-')
+				.replace(/[^a-zA-Z0-9 -]/g, "");
+
+		const player_channel = await player.getPlayerChannel();
+		player_channel.setName(new_channel_name);
 	}
 
 	isFactionAlive(faction) {
