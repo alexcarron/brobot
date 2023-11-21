@@ -96,6 +96,10 @@ class Players {
 		return alive_players;
 	}
 
+	async removePlayer(player_name) {
+		delete this.players[player_name];
+	}
+
 	async renamePlayer(old_name, new_name) {
 		this.players[new_name] = this.players[old_name];
 		delete this.players[old_name];

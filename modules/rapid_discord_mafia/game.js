@@ -1369,6 +1369,11 @@ class Game {
 
 		const staff_chnl = await Game.getStaffChnl();
 		staff_chnl.send(`**${player_name}** added to the game.`, {ephemeral: true});
+
+
+		global.Game.announceMessages(
+			`**${player_name}** joined the game`
+		);
 	}
 
 	getWhichFactionWon() {

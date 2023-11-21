@@ -320,6 +320,27 @@ class Player {
 		global.Game.addDeath(this, this, Announcements.PlayerSuicide);
 	}
 
+	async leaveGameSignUps() {
+		global.Game.log(`**${this.name}** left the game`);
+
+		global.Game.announceMessages(
+			`**${this.name}** left the game`
+		);
+
+		const rdm_guild = await getRDMGuild();
+		const player_member = await getGuildMember(rdm_guild, this.id);
+		const spectator_role = await getRole(rdm_guild, RDMRoles.Spectator);
+		const living_role = await getRole(rdm_guild, RDMRoles.Living);
+
+		await player_member.roles.remove(living_role).catch(console.error());
+		await player_member.roles.add(spectator_role).catch(console.error());
+
+		const player_channel = await this.getPlayerChannel();
+		await player_channel.delete();
+
+		global.Game.Players.removePlayer(this.name);
+	}
+
 	async smite() {
 		const channel = await this.getPlayerChannel();
 		channel.send(Feedback.Smitten(this));
