@@ -99,6 +99,9 @@ class Players {
 	async renamePlayer(old_name, new_name) {
 		this.players[new_name] = this.players[old_name];
 		delete this.players[old_name];
+
+		this.players[new_name].name = new_name;
+
 		const player_guild_member = await this.players[new_name].getGuildMember();
 		await setNickname(player_guild_member, new_name);
 	}

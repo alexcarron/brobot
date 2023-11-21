@@ -1667,9 +1667,9 @@ class Game {
 		}
 
 		let revealed_roles_msg = "_ _\n# Everyone's Roles\n>>> "
-		const players = this.Players.getPlayerList();
-		for (const player of players) {
-			revealed_roles_msg += `**${player.name}**: ${player.role}\n`
+		for (const player in this.role_log) {
+			const role = this.role_log[player];
+			revealed_roles_msg += `**${player}**: ${role}\n`
 		}
 
 		await this.announceMessages(
