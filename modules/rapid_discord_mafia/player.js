@@ -258,17 +258,23 @@ class Player {
 			}
 		}
 
-		let ghost_role = await getRole((await getRDMGuild()), RDMRoles.Ghosts),
-			living_role = await getRole((await getRDMGuild()), RDMRoles.Living),
-			player_guild_member = await getGuildMember((await getRDMGuild()), this.id);
+		try {
+			let ghost_role = await getRole((await getRDMGuild()), RDMRoles.Ghosts),
+				living_role = await getRole((await getRDMGuild()), RDMRoles.Living),
+				player_guild_member = await getGuildMember((await getRDMGuild()), this.id);
 
-		await addRole(player_guild_member, ghost_role);
-		await removeRole(player_guild_member, living_role);
 
-		const role = Object.values(roles).find(role => role.name === this.role);
+			await addRole(player_guild_member, ghost_role);
+			await removeRole(player_guild_member, living_role);
 
-		if (role.faction == Factions.Mafia) {
-			this.removeAccessFromMafiaChat();
+			const role = Object.values(roles).find(role => role.name === this.role);
+
+			if (role.faction == Factions.Mafia) {
+				this.removeAccessFromMafiaChat();
+			}
+		}
+		catch {
+			Game.log(`**${this.name}** user not found. Possibly left the game.`);
 		}
 	}
 
