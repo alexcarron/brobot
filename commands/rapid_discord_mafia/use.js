@@ -74,10 +74,6 @@ for (const ability_name in Abilities) {
 }
 
 command.required_servers = [ids.servers.rapid_discord_mafia];
-command.required_roles = [
-	ids.rapid_discord_mafia.roles.living,
-	ids.rapid_discord_mafia.roles.ghosts,
-];
 
 command.execute = async function(interaction, isTest) {
 	await deferInteraction(interaction);
