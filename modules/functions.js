@@ -1,4 +1,5 @@
 const ids = require("../databases/ids.json")
+const { github_token } =  require("../token.json");
 
 const functions = {
 	toTitleCase(string) {
@@ -570,6 +571,75 @@ doesValueMatchType: function doesValueMatchType(value, type) {
     }
 
     return tensNormal[tens] + '-' + ordinals[lastDigit];
+	},
+
+	async saveObjectToGitHubJSON(object, json_name) {
+		const
+			axios = require('axios'),
+			owner = "alexcarron",
+			repo = "brobot-database",
+			path = `${json_name}.json`,
+			rdm_game_str = JSON.stringify(object);
+
+
+		try {
+			// Get the current file data
+			const {data: file} =
+				await axios.get(
+					`https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
+					{
+						headers: {
+							'Authorization': `Token ${github_token}`
+						}
+					}
+				);
+
+			// Update the file content
+			await axios.put(
+				`https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
+				{
+					message: 'Update file',
+					content: new Buffer.from(rdm_game_str).toString(`base64`),
+					sha: file.sha
+				},
+				{
+					headers: {
+						'Authorization': `Token ${github_token}`
+					}
+				}
+			);
+		} catch (error) {
+			console.error(error);
+		}
+	},
+
+	async getObjectFromGitHubJSON(json_name) {
+		const
+			axios = require('axios'),
+			owner = "alexcarron",
+			repo = "brobot-database",
+			path = `${json_name}.json`;
+
+
+		// Get the current file data
+		const {data: file} =
+			await axios.get(
+				`https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
+				{
+					headers: {
+						'Authorization': `Token ${github_token}`
+					}
+				}
+			)
+			.catch(err => {
+				console.error(err);
+			});
+
+
+		let object_string = Buffer.from(file.content, 'base64').toString();
+		let object = JSON.parse(object_string);
+
+		return object;
 	}
 }
 

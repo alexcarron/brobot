@@ -1,5 +1,5 @@
-const { GameStates, Phases, Subphases, MessageDelays, Factions, RDMRoles, WinConditions, Feedback, Announcements, RoleNames, PhaseWaitTimes, VotingOutcomes, TrialOutcomes, TrialVotes, RoleIdentifierTypes, ArgumentSubtypes } = require("../enums.js");
-const { getChannel, getGuild, wait, getRandArrayItem, getGuildMember, getRole, removeRole, getCategoryChildren, logColor, getUnixTimestamp, shuffleArray, getRDMGuild, addRole, toTitleCase } = require("../functions.js");
+const { GameStates, Phases, Subphases, MessageDelays, Factions, RDMRoles, WinConditions, Feedback, Announcements, RoleNames, PhaseWaitTimes, VotingOutcomes, TrialOutcomes, TrialVotes, RoleIdentifierTypes, ArgumentSubtypes, CoinRewards } = require("../enums.js");
+const { getChannel, getGuild, wait, getRandArrayItem, getGuildMember, getRole, removeRole, getCategoryChildren, logColor, getUnixTimestamp, shuffleArray, getRDMGuild, addRole, toTitleCase, saveObjectToGitHubJSON } = require("../functions.js");
 const ids = require("../../databases/ids.json");
 const validator = require('../../utilities/validator.js');
 const { github_token } =  require("../token.js");
@@ -1660,6 +1660,7 @@ class Game {
 	async endGame(isDraw=false) {
 		console.log(this.winning_factions);
 		console.log(this.winning_players);
+
 		if (!isDraw) {
 			await this.announceMessages(
 				...Announcements.CongratulateWinners(this.winning_factions, this.winning_players)

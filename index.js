@@ -35,7 +35,7 @@ global.client = new Discord.Client({
 
 // ! Create global paths object to store directories
 const paths = require("./utilities/path.js");
-const { addRole, getRole, getGuild, getChannel } = require('./modules/functions.js');
+const { addRole, getRole, getGuild, getChannel, getObjectFromGitHubJSON, saveObjectToGitHubJSON } = require('./modules/functions.js');
 const { Collection } = require('discord.js');
 const SlashCommand = require('./modules/commands/SlashCommand.js');
 const Vote = require('./modules/gameforge/Vote.js');
@@ -178,7 +178,9 @@ global.client.once(Events.ClientReady, async () => {
 	global.Roles = require("./modules/rapid_discord_mafia/roles");
 	global.Game = new Game( new Players() );
 	global.LLPointManager = new LLPointManager();
+	global.rapid_discord_mafia = await getObjectFromGitHubJSON("rapid_discord_mafia");
 	console.log("RDM Modules Built");
+
 
 	await global.LLPointManager.updateViewersFromDatabase();
 	console.log("Viewers Updated From Database");
