@@ -114,12 +114,12 @@ class Ability {
 				perform.lookout
 			],
 			feedback: function(player_tracking, player_name="You", isYou=true) {
-				return `**${isYou ? "You" : player_name}** will attempt to track the visit of **${player_tracking}** tonight`
+				return `**${isYou ? "You" : player_name}** will watch **${player_tracking}**'s house tonight to see who visits them.`
 			},
 			args: [
 				new Arg({
-					name: "Player Tracking",
-					description: "The player whose visit your tracking",
+					name: "Player Watching",
+					description: "The player whose house your watching for visits",
 					type: ArgumentTypes.Player,
 					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf]
 				})

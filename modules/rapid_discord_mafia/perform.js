@@ -294,14 +294,19 @@ const perform = {
 
 		let players_seen_visiting = [];
 
-		let feedback = "";
+		global.Game.Players.getPlayerList().forEach(player => {
+			const player_visiting_name = player.getPercievedVisit();
 
-		if (player_seen_visiting)
-			feedback = Feedback.SawPlayerVisit(target_player_name, player_seen_visiting);
+			if (player_visiting_name === target_player_name) {
+				players_seen_visiting.push(player);
+			}
+		});
+
+		if (players_seen_visiting.length > 0)
+			lookout_player.addFeedback(Feedback.LookoutSeesVisits(target_player, players_seen_visiting));
 		else
-			feedback = Feedback.SawPlayerNotVisit(target_player_name);
-
-		lookout_player.addFeedback(feedback);
+			lookout_player.addFeedback(Feedback.LookoutSeesNoVisits(target_player));
+		
 		addAffect(ability_performed, target_player_name);
 	},
 	async investigate(ability_performed) {

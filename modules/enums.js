@@ -1,4 +1,4 @@
-const { getUnixTimestamp } = require("./functions");
+const { getUnixTimestamp, getSentenceFromArray } = require("./functions");
 
 const Enums = {
 	WinConditions: {
@@ -384,9 +384,11 @@ const Enums = {
 		GotSuspiciousEvaluation: (player_evaluating) => {return `**${player_evaluating}** seemed to be suspicious.`},
 		GotInnocentEvaluation: (player_evaluating) => {return `**${player_evaluating}** seemed to be innocent.`},
 		LookoutSeesNoVisits: (target_player) =>
-			`It seems like nobody visited **${target_player}** last night.`,
-		LookoutSeesVisits: (target_player, players_visiting) =>
-			`It seems like **${target_player}** was visited by last night.`,
+			`It seems like nobody visited **${target_player.name}** last night.`,
+		LookoutSeesVisits: (target_player, players_seen_visiting) => {
+			const player_names_visiting = players_seen_visiting.map(player => `**${player.name}**`);
+			return `It seems like **${target_player.name}** was visited by ${getSentenceFromArray(player_names_visiting)} last night.`;
+		},
 		SawPlayerVisit: (player_tracked, percieved_visit) => {return `It looked like **${player_tracked}** visited **${percieved_visit}** last night.`},
 		SawPlayerNotVisit: (player_tracked) => {return `It looked like **${player_tracked}** didn't visit anyone last night.`},
 		AttackFailed: (player_attacking) => {return `You tried to attack **${player_attacking}**, but their defense was too strong.`},
