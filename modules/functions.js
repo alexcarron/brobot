@@ -611,6 +611,21 @@ doesValueMatchType: function doesValueMatchType(value, type) {
 		let object = JSON.parse(object_string);
 
 		return object;
+	},
+
+	getSentenceFromArray(array) {
+		if (!array || array.length <= 0)
+			return ""
+
+		if (array.length === 1)
+			return `${array[0]}`;
+
+		if (array.length === 2)
+			return `${array[0]} and ${array[1]}`
+
+		const non_last_elements = array.slice(0, -1);
+		const last_element = array[array.length-1];
+		return `${non_last_elements.join(", ")}, and ${last_element}`;
 	}
 }
 

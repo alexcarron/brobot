@@ -283,6 +283,27 @@ const perform = {
 		tracker_player.addFeedback(feedback);
 		addAffect(ability_performed, tracked_player_name);
 	},
+	async lookout(ability_performed) {
+		const
+			lookout_player_name = ability_performed.by,
+			lookout_player = global.Game.Players.get(lookout_player_name),
+			target_player_name = lookout_player.visiting,
+			target_player = global.Game.Players.get(target_player_name);
+
+		console.log(`${lookout_player_name} looks out at ${target_player_name}'s house`);
+
+		let players_seen_visiting = [];
+
+		let feedback = "";
+
+		if (player_seen_visiting)
+			feedback = Feedback.SawPlayerVisit(target_player_name, player_seen_visiting);
+		else
+			feedback = Feedback.SawPlayerNotVisit(target_player_name);
+
+		lookout_player.addFeedback(feedback);
+		addAffect(ability_performed, target_player_name);
+	},
 	async investigate(ability_performed) {
 		const
 			investigator_player_name = ability_performed.by,

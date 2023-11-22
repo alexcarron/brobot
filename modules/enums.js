@@ -383,6 +383,10 @@ const Enums = {
 		GotUnclearEvaluation: (player_evaluating) => {return `The results on **${player_evaluating}** were unclear.`},
 		GotSuspiciousEvaluation: (player_evaluating) => {return `**${player_evaluating}** seemed to be suspicious.`},
 		GotInnocentEvaluation: (player_evaluating) => {return `**${player_evaluating}** seemed to be innocent.`},
+		LookoutSeesNoVisits: (target_player) =>
+			`It seems like nobody visited **${target_player}** last night.`,
+		LookoutSeesVisits: (target_player, players_visiting) =>
+			`It seems like **${target_player}** was visited by last night.`,
 		SawPlayerVisit: (player_tracked, percieved_visit) => {return `It looked like **${player_tracked}** visited **${percieved_visit}** last night.`},
 		SawPlayerNotVisit: (player_tracked) => {return `It looked like **${player_tracked}** didn't visit anyone last night.`},
 		AttackFailed: (player_attacking) => {return `You tried to attack **${player_attacking}**, but their defense was too strong.`},
@@ -449,6 +453,8 @@ const Enums = {
 		Suicide: "Suicide",
 		Smith: "Smith",
 		Kidnap: "Kidnap",
+		Track: "Track",
+		Lookout: "Lookout",
 	},
 
 	RoleNames: {
@@ -465,6 +471,8 @@ const Enums = {
 		Stranger: "Stranger",
 		Kidnapper: "Kidnapper",
 		Vigilante: "Vigilante",
+		Tracker: "Tracker",
+		Lookout: "Lookout",
 	},
 
 	LLPointTiers: {

@@ -82,7 +82,7 @@ class Ability {
 			]
 		}),
 		Track: new Ability({
-			name: "Track",
+			name: AbilityNames.Track,
 			description: "At night, you can track a player that's not yourself at night to see who they are percieved to be visiting.",
 			type: AbilityTypes.Investigative,
 			priority: Priorities.Investigative,
@@ -90,6 +90,28 @@ class Ability {
 			phases_can_use: [Phases.Night],
 			effects: [
 				perform.track
+			],
+			feedback: function(player_tracking, player_name="You", isYou=true) {
+				return `**${isYou ? "You" : player_name}** will attempt to track the visit of **${player_tracking}** tonight`
+			},
+			args: [
+				new Arg({
+					name: "Player Tracking",
+					description: "The player whose visit your tracking",
+					type: ArgumentTypes.Player,
+					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf]
+				})
+			]
+		}),
+		Lookout: new Ability({
+			name: AbilityNames.Lookout,
+			description: "At night, watch a player's house that isn't yourself. If any players visited them, you'll be told every player that did that night. This is affected by players' perceived visits.",
+			type: AbilityTypes.Investigative,
+			priority: Priorities.Investigative,
+			uses: AbilityUses.Unlimited,
+			phases_can_use: [Phases.Night],
+			effects: [
+				perform.lookout
 			],
 			feedback: function(player_tracking, player_name="You", isYou=true) {
 				return `**${isYou ? "You" : player_name}** will attempt to track the visit of **${player_tracking}** tonight`

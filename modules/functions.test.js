@@ -1,4 +1,4 @@
-const { doArraysHaveSameElements, gcd, lcm, toOrdinal, toWordOrdinal, addOrAssignElementToArray, appendElementToNestedProperty: addElementToNestedProperty } = require("./functions");
+const { doArraysHaveSameElements, gcd, lcm, toOrdinal, toWordOrdinal, addOrAssignElementToArray, appendElementToNestedProperty: addElementToNestedProperty, getSentenceFromArray } = require("./functions");
 
 // ^ doArraysHaveSameElements
 {
@@ -308,5 +308,32 @@ describe('addElementToNestedProperty', () => {
 				"decoy_property3": [],
 			}
 		);
+	});
+});
+
+// ^ getSentenceFromArray
+describe('getSentenceFromArray', () => {
+	it('should return "" for input undefined', () => {
+		expect(getSentenceFromArray(undefined)).toStrictEqual("");
+	});
+
+	it('should return "" for input []', () => {
+		expect(getSentenceFromArray([])).toStrictEqual("");
+	});
+
+	it('should return "Alex" for input ["Alex"]', () => {
+		expect(getSentenceFromArray(["Alex"])).toStrictEqual("Alex");
+	});
+
+	it('should return "Alex and Brock" for input ["Alex", "Brock"]', () => {
+		expect(getSentenceFromArray(["Alex", "Brock"])).toStrictEqual("Alex and Brock");
+	});
+
+	it('should return "Alex, Brock, and Clark" for input ["Alex", "Brock", "Clark"]', () => {
+		expect(getSentenceFromArray(["Alex", "Brock", "Clark"])).toStrictEqual("Alex, Brock, and Clark");
+	});
+
+	it('should return "Alex, Brock, Clark, and Doug" for input ["Alex", "Brock", "Clark", "Doug"]', () => {
+		expect(getSentenceFromArray(["Alex", "Brock", "Clark", "Doug"])).toStrictEqual("Alex, Brock, Clark, and Doug");
 	});
 });

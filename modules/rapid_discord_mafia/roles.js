@@ -34,8 +34,8 @@ const roles = {
 			Abilities.Evaluate,
 		]
 	}),
-	"Tracker": new Role({
-		name: "Tracker",
+	[RoleNames.Tracker]: new Role({
+		name: RoleNames.Tracker,
 		faction: Factions.Town,
 		alignment: Alignments.Investigative,
 		attack: 0,
@@ -43,6 +43,17 @@ const roles = {
 		goal: WinConditions.EliminateOtherFactions,
 		abilities: [
 			Abilities.Track,
+		]
+	}),
+	[RoleNames.Lookout]: new Role({
+		name: RoleNames.Lookout,
+		faction: Factions.Town,
+		alignment: Alignments.Investigative,
+		attack: 0,
+		defense: 0,
+		goal: WinConditions.EliminateOtherFactions,
+		abilities: [
+			Abilities.Lookout,
 		]
 	}),
 	"Escort": new Role({
