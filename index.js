@@ -2,6 +2,7 @@ const { Player } = require('discord-player');
 const ProposedRule = require('./modules/gameforge/ProposedRule.js');
 const Host = require('./modules/gameforge/host.js');
 const GameForge = require('./modules/gameforge/GameForge');
+const RapidDiscordMafia = require('./modules/rapid_discord_mafia/RapidDiscordMafia.js');
 {console.log(`discord.js version: ${require('discord.js').version}`);
 
 const
@@ -178,7 +179,9 @@ global.client.once(Events.ClientReady, async () => {
 	global.Roles = require("./modules/rapid_discord_mafia/roles");
 	global.Game = new Game( new Players() );
 	global.LLPointManager = new LLPointManager();
-	global.rapid_discord_mafia = await getObjectFromGitHubJSON("rapid_discord_mafia");
+	global.rapid_discord_mafia = new RapidDiscordMafia();
+	const rapid_discord_mafia_obj = await getObjectFromGitHubJSON("rapid_discord_mafia");
+	global.rapid_discord_mafia.setTo(rapid_discord_mafia_obj);
 	console.log("RDM Modules Built");
 
 
