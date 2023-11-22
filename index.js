@@ -177,6 +177,7 @@ global.client.once(Events.ClientReady, async () => {
 	fs.writeFileSync("./utilities/config.json", JSON.stringify(config));
 
 	global.Roles = require("./modules/rapid_discord_mafia/roles");
+	global.abilities = require("./modules/rapid_discord_mafia/ability.js").Abilities;
 	global.Game = new Game( new Players() );
 	global.LLPointManager = new LLPointManager();
 	global.rapid_discord_mafia = new RapidDiscordMafia();
@@ -184,7 +185,6 @@ global.client.once(Events.ClientReady, async () => {
 	console.log({rapid_discord_mafia_obj})
 	global.rapid_discord_mafia.setTo(rapid_discord_mafia_obj);
 	console.log("RDM Modules Built");
-
 
 	await global.LLPointManager.updateViewersFromDatabase();
 	console.log("Viewers Updated From Database");

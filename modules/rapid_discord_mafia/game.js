@@ -247,7 +247,7 @@ class Game {
 				player = this.Players.getPlayerList()[role_index];
 
 			await player.setRole(role);
-			Game.log(`Sent role info message, ${role.name}, to ${player.name}.`);
+			await Game.log(`Sent role info message, ${role.name}, to ${player.name}.`);
 		}
 
 		await this.giveAllExesTargets();
@@ -443,7 +443,7 @@ class Game {
 	async setPhaseToNight() {
 		await this.saveGameDataToDatabase();
 
-		Game.log(`Night ${this.getDayNum()} Begins`, 2);
+		await Game.log(`Night ${this.getDayNum()} Begins`, 2);
 
 		this.phase = Phases.Night;
 		this.subphase = Subphases.None;
@@ -468,7 +468,7 @@ class Game {
 	}
 
 	async log(message, heading_level=0) {
-		Game.log(message, heading_level);
+		await Game.log(message, heading_level);
 	}
 
 	async killDeadPlayers() {
@@ -510,7 +510,7 @@ class Game {
 			const player = this.Players.get(player_name);
 			const player_chnl = await getChannel(rdm_guild, player.channel_id);
 
-			player_chnl.send(`> ${reminder}`);
+			await player_chnl.send(`> ${reminder}`);
 		}
 	}
 
@@ -536,13 +536,13 @@ class Game {
 	async setPhaseToDay1() {
 		await this.saveGameDataToDatabase();
 
-		Game.log(`Day ${this.getDayNum()} Begins`, 2);
+		await Game.log(`Day ${this.getDayNum()} Begins`, 2);
 
 		this.phase = Phases.Day;
 		this.subphase = Subphases.None;
 		this.days_passed += 0.5;
 
-		Game.log("Incrementing Inactvity")
+		await Game.log("Incrementing Inactvity")
 		this.Players.getAlivePlayers().forEach(player => {
 				if (!Game.IS_TESTING) player.incrementInactvity();
 		});
@@ -551,20 +551,20 @@ class Game {
 	async setPhaseToDay() {
 		await this.saveGameDataToDatabase();
 
-		Game.log(`Day ${this.getDayNum()} Begins`, 2);
+		await Game.log(`Day ${this.getDayNum()} Begins`, 2);
 
 		this.phase = Phases.Day;
 		this.subphase = Subphases.Announcements;
 		this.days_passed += 0.5;
 
-		Game.log("Incrementing Inactvity")
+		await Game.log("Incrementing Inactvity")
 		this.Players.getAlivePlayers().forEach(player => {
 			if (!Game.IS_TESTING) player.incrementInactvity();
 		});
 	}
 
 	async setPhaseToVoting() {
-		Game.log(`Voting Begins`, 2);
+		await Game.log(`Voting Begins`, 2);
 
 		this.subphase = Subphases.Voting;
 	}
@@ -579,7 +579,7 @@ class Game {
 		this.subphase = Subphases.Trial;
 		this.on_trial = this.getMajorityVote(this.votes);
 
-		Game.log("Incrementing Inactvity")
+		await Game.log("Incrementing Inactvity")
 		this.Players.getAlivePlayers().forEach(player => {
 			if (!Game.IS_TESTING) player.incrementInactvity();
 		});
@@ -593,7 +593,7 @@ class Game {
 		this.subphase = Subphases.TrialResults;
 
 		if (this.Players.getAlivePlayerNames().includes(this.on_trial)) {
-			Game.log("Incrementing Inactvity")
+			await Game.log("Incrementing Inactvity")
 			this.Players.getAlivePlayers().forEach(player => {
 				if (player.name !== this.on_trial) {
 					if (!Game.IS_TESTING) player.incrementInactvity();
@@ -679,7 +679,7 @@ class Game {
 	}
 
 	async announceVotingResults() {
-		Game.log(`Announcing ${this.on_trial} On Trial.`);
+		await Game.log(`Announcing ${this.on_trial} On Trial.`);
 
 		const voting_outcome = this.on_trial;
 
@@ -780,10 +780,10 @@ class Game {
 
 	async performCurrentNightAbilities() {
 		await this.updateCurrentAbilitiesPerformed();
-		console.log("\nAbilities Performed");
+		console.log("Abilities To Perform:")
 		console.log(this.abilities_performed);
 
-		Game.log("Performing Every Ability", 1);
+		await Game.log("Performing Every Ability", 1);
 
 		this.action_log[this.getDayNum()-1] = [];
 
@@ -808,13 +808,13 @@ class Game {
 			}
 
 
-			Game.log(ability.feedback(...Object.values(ability_performed.args), player.name, false));
+			await Game.log(ability.feedback(...Object.values(ability_performed.args), player.name, false));
 			this.action_log[this.getDayNum()-1].push(
 				ability.feedback(...Object.values(ability_performed.args), player.name, false)
 			);
 
 			if (this.Players.get(player_name).isRoleblocked) {
-				Game.log(`${player_name} is roleblocked, so they can't do ${ability_performed.name}`);
+				await Game.log(`${player_name} is roleblocked, so they can't do ${ability_performed.name}`);
 				continue;
 			}
 
@@ -826,15 +826,16 @@ class Game {
 				ability.effects.forEach( async (effect) => {
 					await effect(ability_performed);
 				})
-				console.table(this.Players.getPlayerList());
 				console.table(this.abilities_performed);
 			}
+
+			console.log("Performed an ability");
 		}
 	}
 
 	async announceAllDeaths() {
 		for (let death of this.next_deaths) {
-			Game.log(`Killing ${death.victim}`);
+			await Game.log(`Killing ${death.victim}`);
 			this.Players.get(death.victim).isAlive = false;
 
 			await this.sendDeathMsg(death);
@@ -850,20 +851,20 @@ class Game {
 			...Announcements.StartDay(ids.rapid_discord_mafia.roles.living, phase_num)
 		);
 
-		Game.log(`Announced Day ${phase_num}.`);
+		await Game.log(`Announced Day ${phase_num}.`);
 	}
 
 
-	announceNight() {
+	async announceNight() {
 		const night_num = this.getDayNum();
 
-		this.announceMessages(
+		await this.announceMessages(
 			...Announcements.StartNight(ids.rapid_discord_mafia.roles.living, night_num),
 		);
 
-		this.remindPlayersTo(Announcements.UseNightAbilityReminder);
+		await this.remindPlayersTo(Announcements.UseNightAbilityReminder);
 
-		Game.log(`Announced Night ${night_num}.`);
+		await Game.log(`Announced Night ${night_num}.`);
 	}
 
 	isRoleInMissingFaction(role, missing_factions) {
@@ -1013,7 +1014,7 @@ class Game {
 	}
 
 	async resetAllPlayersNightInfo() {
-		Game.log("Reseting Every Player's Night Info");
+		await Game.log("Reseting Every Player's Night Info");
 		this.logGame();
 
 		for (const player_name of this.Players.getPlayerNames()) {
@@ -1098,7 +1099,7 @@ class Game {
 			...Announcements.Day1Started(),
 		)
 
-		Game.log("Waiting For Day 1 to End");
+		await Game.log("Waiting For Day 1 to End");
 
 		await wait(PhaseWaitTimes.FirstDay, "min");
 		await this.startNight(curr_day_num);
@@ -1125,8 +1126,10 @@ class Game {
 			player.isInLimbo = false;
 		}
 		await Game.closeNightChannels();
+		console.log("Performing Night Abilities");
 		await this.performCurrentNightAbilities();
 		this.logPlayers();
+		console.log("Sending Feedback");
 		await this.sendFeedbackToPlayers();
 		await this.announceDay();
 
@@ -1160,7 +1163,7 @@ class Game {
 			...Announcements.StartVoting()
 		);
 
-		Game.log("Waiting for Voting to End");
+		await Game.log("Waiting for Voting to End");
 
 		await wait(PhaseWaitTimes.Voting*4/5, "min");
 
@@ -1216,7 +1219,7 @@ class Game {
 		);
 		this.remindPlayersTo(Announcements.TrialVotingReminder(player_on_trial));
 
-		Game.log("Waiting for Trial Voting to End");
+		await Game.log("Waiting for Trial Voting to End");
 
 		await wait(PhaseWaitTimes.Trial*4/5, "min");
 
@@ -1296,9 +1299,9 @@ class Game {
 		await this.resetAllPlayersNightInfo();
 		await this.promoteMafia();
 
-		this.announceNight();
+		await this.announceNight();
 
-		Game.log("Waiting for Night to End");
+		await Game.log("Waiting for Night to End");
 
 		await wait(PhaseWaitTimes.Night * 4/5, "min");
 
@@ -2181,7 +2184,7 @@ class Game {
 
 	async setState(state) {
 		this.state = state;
-		Game.log(`Setting state to ${state}`, 2)
+		await Game.log(`Setting state to ${state}`, 2)
 	}
 
 	/**

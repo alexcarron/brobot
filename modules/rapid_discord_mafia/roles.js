@@ -129,6 +129,17 @@ const roles = {
 			Abilities.Investigate,
 		]
 	}),
+	[RoleNames.Kidnapper]: new Role({
+		name: RoleNames.Kidnapper,
+		faction: Factions.Mafia,
+		alignment: Alignments.Support,
+		attack: 0,
+		defense: 0,
+		goal: WinConditions.EliminateOtherFactions,
+		abilities: [
+			Abilities.Kidnap,
+		]
+	}),
 	"Fool": new Role({
 		name: "Fool",
 		faction: Factions.Neutral,

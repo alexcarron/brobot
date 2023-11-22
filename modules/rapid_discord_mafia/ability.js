@@ -358,7 +358,7 @@ class Ability {
 			feedback: function(player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to be cautious of roleblockers tonight`},
 		}),
 		Smith: new Ability({
-			name: "Smith",
+			name: AbilityNames.Smith,
 			description: "At night, you can smith a bulletproof vest for a player that's not yourself at night, giving them a level one defense that night and following day. You and your target will be notified if your target was attacked while wearing the vest.",
 			type: AbilityTypes.Protection,
 			priority: Priorities.Protection,
@@ -480,6 +480,28 @@ class Ability {
 					description: "The player you're attacking and replacing",
 					type: ArgumentTypes.Player,
 					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf]
+				}),
+			],
+		}),
+		Kidnap: new Ability({
+			name: "Kidnap",
+			description: "At night, kidnap a non-mafia player. They will gain a level four defense for the night but they will be roleblocked and won't be able to speak or vote the next day. If you kidnap a role with an attack level above zero, they will attack you while kidnapped without using up an ability no matter what.",
+			type: AbilityTypes.Roleblock,
+			priority: Priorities.Roleblock,
+			uses: AbilityUses.Unlimited,
+			phases_can_use: [Phases.Night],
+			effects: [
+				perform.kidnap,
+			],
+			feedback: function(player_kidnapping_name, player_name="You", isYou=true) {
+				return `**${isYou ? "You" : player_name}** will attempt to kidnap **${player_kidnapping_name}** tonight`
+			},
+			args: [
+				new Arg({
+					name: "Player Kidnapping",
+					description: "The player you're kidnapping",
+					type: ArgumentTypes.Player,
+					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NonMafia, ArgumentSubtypes.NotSelf]
 				}),
 			],
 		}),

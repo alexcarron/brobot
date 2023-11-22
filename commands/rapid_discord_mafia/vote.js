@@ -100,13 +100,17 @@ command.execute = async function execute(interaction, isTest=false) {
 			return await interaction.editReply("You can't vote for yourself!");
 		}
 
+		if (!player_voting.canVote) {
+			return await interaction.editReply("Sorry, you have been prevented from voting.");
+		}
+
 		if (curr_votes[player_voting.name]) {
-			Game.log(`**${player_voting.name}** changed their vote to **${vote}**`);
+			await Game.log(`**${player_voting.name}** changed their vote to **${vote}**`);
 			announce_chnl.send(`**${player_voting.name}** changed their vote to **${vote}**`);
 			interaction.editReply(`You are replacing your previous vote, **${curr_votes[player_voting.name]}**, with **${vote}**`);
 		}
 		else {
-			Game.log(`**${player_voting.name}** voted **${vote}**.`);
+			await Game.log(`**${player_voting.name}** voted **${vote}**.`);
 			announce_chnl.send(`**${player_voting.name}** voted **${vote}**.`);
 			interaction.editReply(`You voted **${vote}**.`);
 		}
@@ -133,12 +137,12 @@ command.execute = async function execute(interaction, isTest=false) {
 		}
 
 		if (curr_votes[player_voting.name]) {
-			Game.log(`**${player_voting.name}** changed their vote to **${toTitleCase(vote)}**`);
+			await Game.log(`**${player_voting.name}** changed their vote to **${toTitleCase(vote)}**`);
 			announce_chnl.send(`**${player_voting.name}** changed their vote.`);
 			interaction.editReply(`You are replacing your previous vote, **${toTitleCase(curr_votes[player_voting.name])}**, with **${toTitleCase(vote)}**`);
 		}
 		else {
-			Game.log(`**${player_voting.name}** voted **${toTitleCase(vote)}**.`);
+			await Game.log(`**${player_voting.name}** voted **${toTitleCase(vote)}**.`);
 			announce_chnl.send(`**${player_voting.name}** voted.`);
 			interaction.editReply(`You voted **${toTitleCase(vote)}**.`);
 		}

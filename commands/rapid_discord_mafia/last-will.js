@@ -83,7 +83,7 @@ command.execute = async function(interaction) {
 		player.last_will = "";
 	}
 
-	global.Game.log(`**${player.name}** updated their last will to be \n\`\`\`\n${player.last_will}\n\`\`\``);
+	await global.Game.log(`**${player.name}** updated their last will to be \n\`\`\`\n${player.last_will}\n\`\`\``);
 	return await interaction.editReply(`Your last will is now: \n\`\`\`\n${player.last_will}\n\`\`\``);
 };
 command.autocomplete = async function(interaction) {

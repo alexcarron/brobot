@@ -1,5 +1,5 @@
 
-const {Feedback, Phases, AbilityUses, ArgumentTypes, ArgumentSubtypes, Immunities, AbilityNames} = require("../enums.js");
+const {Feedback, Phases, AbilityUses, ArgumentTypes, ArgumentSubtypes, Immunities, AbilityNames, RoleNames, Factions, AbilityTypes} = require("../enums.js");
 const addAffect = function(ability_done, target_name) {
 	if (![0, -1].includes(ability_done.uses)) {
 		if (!global.Game.Players.get(ability_done.by).used[ability_done.name]) {
@@ -19,6 +19,77 @@ const addAffect = function(ability_done, target_name) {
 	);
 }
 
+const givePlayerDefense = function(player_healing, defense_level) {
+	console.log(`Healing ${player_healing.name} for ${defense_level} defense`);
+
+	if (player_healing.defense < defense_level) {
+		console.log(`Increased ${player_healing.name}'s defense from ${player_healing.defense} to ${defense_level}`);
+		player_healing.defense = defense_level
+	}
+	else {
+		console.log(`${player_healing_name}'s was already at or above ${defense_level}`);
+	}
+}
+
+const attackPlayer = function(attacker_player, attacked_player) {
+	console.log(`${attacker_player.name} attacks ${attacked_player.name} with ${attacker_player.attack} attack level against ${attacked_player.defense} defense level.`);
+
+	// Attack Success
+	if (attacked_player.defense < attacker_player.attack) {
+		console.log("Attack Success");
+
+		global.Game.addDeath(attacked_player, attacker_player);
+
+		attacked_player.addFeedback(Feedback.KilledByAttack);
+		attacker_player.addFeedback(Feedback.KilledPlayer(attacked_player.name));
+
+		const target_role = global.Roles[attacked_player.role];
+		if (attacker_player.role === RoleNames.Vigilante && target_role.faction === Factions.Town) {
+			console.log("Vigilante Suicide Confirmed");
+
+			addAffect(
+				{
+					"by": attacker_player.name,
+					"name": AbilityNames.Suicide
+				},
+				attacker_player.name
+			);
+		}
+	}
+	// Attack Failed
+	else {
+		console.log("Attack Failed");
+
+		const protection_affects_on_target = attacked_player.affected_by.filter(
+			affect => {
+				const ability = global.abilities[affect.name]
+				return ability.type == AbilityTypes.Protection;
+			}
+		);
+
+		if ( protection_affects_on_target.length > 0 ) {
+			console.log("Victim has heal affects");
+
+			for (let protection_affect of protection_affects_on_target) {
+				const protecter_player = global.Game.Players.get(protection_affect.by);
+				protecter_player.addFeedback(Feedback.ProtectedAnAttackedPlayer);
+
+				console.log(`${protecter_player.name} has protected the victim ${attacked_player.name}`);
+
+				if (protection_affect.name === AbilityNames.Smith) {
+					console.log(`${protecter_player.name} successfully smithed a vest and achieved their win condition.`);
+
+					protecter_player.addFeedback(Feedback.DidSuccesfulSmith);
+					protecter_player.makeAWinner();
+				}
+			}
+		}
+
+		attacked_player.addFeedback(Feedback.AttackedButSurvived);
+		attacker_player.addFeedback(Feedback.AttackFailed(attacked_player.name));
+	}
+}
+
 /**
  * AbilityPerformed {
  * 	by: {Player.name},
@@ -35,7 +106,7 @@ const perform = {
 			roleblocked_player = global.Game.Players.get(roleblocked_player_name),
 			roleblocked_player_role = global.Roles[ roleblocked_player.role ];
 
-		if ( !(roleblocked_player_role.immunities && roleblocked_player_role.immunities.includes("roleblock")) ) {
+		if ( !(roleblocked_player_role.immunities && roleblocked_player_role.immunities.includes(Immunities.Roleblock)) ) {
 			roleblocked_player.isRoleblocked = true;
 			roleblocked_player.addFeedback(Feedback.WasRoleblocked);
 		}
@@ -45,7 +116,7 @@ const perform = {
 
 		if (
 			roleblocked_player_role.name === "Serial Killer" &&
-			!global.Game.Players.affected_by.some(affect => affect.name === "Cautious")
+			!roleblocked_player.affected_by.some(affect => affect.name === "Cautious")
 		) {
 			console.log(`Serial Killer ${roleblocked_player_name} stabs ${roleblocker_player_name} as revenge for roleblocking them`);
 
@@ -60,6 +131,7 @@ const perform = {
 			roleblocked_player.addFeedback(Feedback.AttackedRoleblocker);
 		}
 
+		roleblocker_player.addFeedback(Feedback.RoleblockedPlayer(roleblocked_player));
 		addAffect(ability_performed, roleblocked_player_name);
 	},
 	async cautious(ability_performed) {
@@ -77,15 +149,7 @@ const perform = {
 			player_healing_name = healer_player.visiting,
 			player_healing = global.Game.Players.get(player_healing_name);
 
-		console.log(`Healing ${player_healing_name} for 2 defense`);
-
-		if (player_healing.defense < 2) {
-			console.log(`Increased ${player_healing_name}'s defense from ${player_healing.defense} to 2`);
-			player_healing.defense = 2
-		}
-		else {
-			console.log(`${player_healing_name}'s was already at or above 2`);
-		}
+		givePlayerDefense(player_healing, 2);
 
 		addAffect(ability_performed, player_healing_name);
 	},
@@ -94,8 +158,7 @@ const perform = {
 			self_healer_player_name = ability_performed.by,
 			self_healer_player = global.Game.Players.get(self_healer_player_name);
 
-		if (self_healer_player.defense < 2)
-			self_healer_player.defense = 2;
+		givePlayerDefense(self_healer_player, 2);
 
 		addAffect(ability_performed, self_healer_player_name);
 	},
@@ -136,59 +199,7 @@ const perform = {
 			attacked_player_name = attacker_player.visiting,
 			attacked_player = global.Game.Players.get(attacked_player_name);
 
-		console.log(`${attacker_player_name} attacks ${attacked_player_name} with ${attacker_player.attack} attack level against ${attacked_player.defense} defense level.`);
-
-		// Attack Success
-		if (attacked_player.defense < attacker_player.attack) {
-			console.log("Attack Success");
-
-			global.Game.addDeathaddDeath(attacked_player, attacker_player);
-
-			attacked_player.addFeedback(Feedback.KilledByAttack);
-			attacker_player.addFeedback(Feedback.KilledPlayer(attacked_player_name));
-
-			const target_role = global.Roles[attacked_player.role];
-			if (attacker_player.role === "Vigilante" && target_role.faction === "Town") {
-				console.log("Vigilante Suicide Confirmed");
-
-				addAffect(
-					{
-						"by": attacker_player_name,
-						"name": AbilityNames.Suicide
-					},
-					attacker_player_name
-				);
-			}
-		}
-		// Attack Failed
-		else {
-			console.log("Attack Failled");
-
-			const target_heal_affects = attacked_player.affected_by.filter(
-				affect => ["Heal", "Smith"].includes(affect.name)
-			);
-
-			if ( target_heal_affects.length > 0 ) {
-				console.log("Victim has heal affects");
-
-				for (let heal_affect of target_heal_affects) {
-					const healer_player = global.Game.Players.get(heal_affect.by);
-					healer_player.addFeedback(Feedback.ProtectedAnAttackedPlayer);
-
-					console.log(`${healer_player.name} has healed the victim ${attacked_player_name}`);
-
-					if (heal_affect.name === "Smith") {
-						console.log(`${healer_player.name} successfully smithed a vest and achieved their win condition.`);
-
-						healer_player.addFeedback(Feedback.DidSuccesfulSmith);
-						healer_player.makeAWinner();
-					}
-				}
-			}
-
-			attacked_player.addFeedback(Feedback.AttackedButSurvived);
-			attacker_player.addFeedback(Feedback.AttackFailed(attacked_player_name));
-		}
+		attackPlayer(attacker_player, attacked_player);
 
 		addAffect(ability_performed, attacked_player_name);
 	},
@@ -292,8 +303,7 @@ const perform = {
 
 		console.log({smither_player_name, smithed_player_name});
 
-		if (smithed_player.defense < 1)
-			smithed_player.defense = 1;
+		givePlayerDefense(smithed_player, 1);
 
 		addAffect(ability_performed, smithed_player_name);
 	},
@@ -302,8 +312,7 @@ const perform = {
 			self_smither_player_name = ability_performed.by,
 			self_smither_player = global.Game.Players.get(self_smither_player_name);
 
-		if (self_smither_player.defense < 1)
-			self_smither_player.defense = 1;
+		givePlayerDefense(self_smither_player, 1);
 
 		addAffect(ability_performed, self_smither_player_name);
 	},
@@ -439,6 +448,46 @@ const perform = {
 		else {
 			replacer_player.addFeedback(Feedback.ReplaceFailed(player_replacing));
 		}
+	},
+	async kidnap(ability_performed) {
+		const
+			kidnaper_name = ability_performed.by,
+			kidnaper_player = global.Game.Players.get(kidnaper_name),
+			kidnapped_player_name = kidnaper_player.visiting,
+			kidnapped_player = global.Game.Players.get(kidnapped_player_name),
+			kidnapped_player_role = global.Roles[kidnapped_player.role];
+
+		console.log(`${kidnaper_name} attempts to kidnap ${kidnapped_player_name}.`);
+
+		kidnapped_player.addFeedback(Feedback.Kidnapped);
+
+		if (kidnapped_player.attack > 0) {
+			kidnaper_player.addFeedback(Feedback.AttackedByKidnappedPlayer(kidnapped_player));
+			kidnapped_player.addFeedback(Feedback.AttackedKidnapper);
+
+			console.log("AFFECTED BY")
+			console.log(kidnapped_player.affected_by);
+
+			attackPlayer(kidnapped_player, kidnaper_player);
+		}
+		else {
+			kidnaper_player.addFeedback(Feedback.KidnappedPlayer(kidnapped_player));
+		}
+
+		if (
+			!(kidnapped_player.immunities &&
+				kidnapped_player_role.immunities.includes(Immunities.Roleblock))
+		) {
+			kidnapped_player.isRoleblocked = true;
+			kidnapped_player.addFeedback(Feedback.RoleblockedByKidnapper);
+		}
+		else {
+			kidnapped_player.addFeedback(Feedback.RoleblockedByKidnapperButImmune);
+		}
+
+		givePlayerDefense(kidnapped_player, 4);
+		await kidnapped_player.mute();
+		await kidnapped_player.removeVotingAbility();
 	},
 }
 

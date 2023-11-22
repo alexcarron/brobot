@@ -356,6 +356,8 @@ const Enums = {
 		DidSuccesfulSmith: "You have accomplished your goal and saved someone from death.",
 		DidSilenceCurse: "You cursed the town with silence.",
 		DidCautious: "You were cautious last night and didn't attack any roleblockers.",
+		RoleblockedPlayer: (roleblocked_player) =>
+			`You attempted to roleblock **${roleblocked_player.name}** last night.`,
 		WasRoleblocked: "You were roleblocked.",
 		WasRoleblockedButImmune: "Someone attempted to roleblock you, but you were immune.",
 		AttackedRoleblocker: "You attacked the player who attempted to roleblock you instead of your original target.",
@@ -411,6 +413,15 @@ const Enums = {
 			`You have succesfully replaced **${player_replacing.name}**'s role as **${player_replacing.role}**`,
 		ReplaceFailed: (player_replacing) =>
 			`You failed to replace **${player_replacing.name}**...`,
+		KidnappedPlayer: (player_kindapped) =>
+			`You kidnapped **${player_kindapped.name}**. They won't be able to speak or vote tonight and you attempted to roleblock them.`,
+		AttackedByKidnappedPlayer: (player_kindapped) =>
+			`You kidnapped **${player_kindapped.name}**. They won't be able to speak or vote tonight and you attempted to roleblock them, but they were stronger than you thought and attacked you.`,
+		Kidnapped: `You were kidnapped. You may not speak or vote for the rest of the day.`,
+		Unkidnapped: `You are no longer kidnapped. You may now speak and vote again.`,
+		AttackedKidnapper: `You retaliated against your kidnapper and attacked them.`,
+		RoleblockedByKidnapper: `Your kidnapper roleblocked you.`,
+		RoleblockedByKidnapperButImmune: `Your kidnapper attempted to roleblock you, but you were immune.`,
 	},
 
 	RoleIdentifierKeywords: {
@@ -436,6 +447,8 @@ const Enums = {
 		Knife: "Knife",
 		Murder: "Murder",
 		Suicide: "Suicide",
+		Smith: "Smith",
+		Kidnap: "Kidnap",
 	},
 
 	RoleNames: {
@@ -450,6 +463,8 @@ const Enums = {
 		Fool: "Fool",
 		Oracle: "Oracle",
 		Stranger: "Stranger",
+		Kidnapper: "Kidnapper",
+		Vigilante: "Vigilante",
 	},
 
 	LLPointTiers: {

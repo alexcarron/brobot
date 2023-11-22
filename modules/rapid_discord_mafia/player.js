@@ -1,4 +1,4 @@
-const { RDMRoles, Announcements, MessageDelays, Feedback, Factions, RoleNames, AbilityTypes, TrialVotes } = require("../enums");
+const { RDMRoles, Announcements, MessageDelays, Feedback, Factions, RoleNames, AbilityTypes, TrialVotes, AbilityNames } = require("../enums");
 const roles = require("./roles");
 const ids = require("../../databases/ids.json");
 const { Abilities } = require("./ability");
@@ -37,6 +37,8 @@ class Player {
 		last_player_observed_name = undefined,
 		isUnidentifiable = false,
 		players_can_use_on = [],
+		isMuted = false,
+		canVote = true,
 	}) {
 		this.id = id;
 		this.name = name;
@@ -62,6 +64,8 @@ class Player {
 		this.last_player_observed_name = last_player_observed_name;
 		this.isUnidentifiable = isUnidentifiable;
 		this.players_can_use_on = players_can_use_on;
+		this.isMuted = isMuted;
+		this.canVote = canVote;
 	}
 
 	reset() {
@@ -86,6 +90,8 @@ class Player {
 		this.last_player_observed_name = undefined;
 		this.isUnidentifiable = false;
 		this.players_can_use_on = [];
+		this.isMuted = true;
+		this.canVote = false;
 	}
 
 	static MAX_INACTIVE_PHASES = 6;
@@ -93,6 +99,40 @@ class Player {
 
 	resetInactivity() {
 		this.num_phases_inactive = 0;
+	}
+
+	async mute() {
+		this.isMuted = true;
+
+		const
+			rdm_guild = await getRDMGuild(),
+			town_discussion_chnl = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.town_discussion),
+			player_guild_member = await getGuildMember(rdm_guild, this.id);
+
+		town_discussion_chnl.permissionOverwrites.edit(player_guild_member.user, {SendMessages: false});
+
+		console.log(`Muted **${this.name}**.`);
+	}
+
+	async unmute() {
+		this.isMuted = false;
+
+		const
+			rdm_guild = await getRDMGuild(),
+			town_discussion_chnl = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.town_discussion),
+			player_guild_member = await getGuildMember(rdm_guild, this.id);
+
+		town_discussion_chnl.permissionOverwrites.edit(player_guild_member.user, {SendMessages: true});
+
+		console.log(`Unmuted **${this.name}**.`);
+	}
+
+	async removeVotingAbility() {
+		this.canVote = false;
+	}
+
+	async regainVotingAbility() {
+		this.canVote = true;
 	}
 
 	async incrementInactvity() {
@@ -279,7 +319,7 @@ class Player {
 			}
 		}
 		catch {
-			Game.log(`**${this.name}** user not found. Possibly left the game.`);
+			await global.Game.log(`**${this.name}** user not found. Possibly left the game.`);
 		}
 	}
 
@@ -327,14 +367,14 @@ class Player {
 	}
 
 	async leaveGame() {
-		global.Game.log(`**${this.name}** left the game.`);
+		await global.Game.log(`**${this.name}** left the game.`);
 		global.Game.addDeath(this, this, Announcements.PlayerSuicide);
 	}
 
 	async leaveGameSignUps() {
-		global.Game.log(`**${this.name}** left the game`);
+		await global.Game.log(`**${this.name}** left the game`);
 
-		global.Game.announceMessages(
+		await global.Game.announceMessages(
 			`**${this.name}** left the game`
 		);
 
@@ -463,6 +503,13 @@ class Player {
 					}
 				}
 
+				if (ability.name === AbilityNames.Kidnap) {
+					await this.unmute();
+					await this.regainVotingAbility();
+					this.isRoleblocked = false;
+					this.addFeedback(Feedback.Unkidnapped);
+				}
+
 				this.affected_by.splice(affect_num, 1);
 			}
 		}
@@ -493,7 +540,7 @@ class Player {
 			this, player_whispering_to
 		));
 
-		global.Game.log(
+		await global.Game.log(
 			Announcements.WhisperLog(this, player_whispering_to, whisper_contents)
 		);
 
