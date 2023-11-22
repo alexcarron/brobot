@@ -294,7 +294,7 @@ class Ability {
 			effects: [
 				perform.selfFrame
 			],
-			feedback: function(player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to frame ${player_name==="You" ? "yourself" : "themself"} as the mafioso tonight`},
+			feedback: function(player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to frame ${isYou ? "yourself" : "themself"} as the mafioso tonight`},
 		}),
 		DeathCurse: new Ability({
 			name: "Death Curse",

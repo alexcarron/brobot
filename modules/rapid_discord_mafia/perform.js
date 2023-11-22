@@ -297,7 +297,10 @@ const perform = {
 		global.Game.Players.getPlayerList().forEach(player => {
 			const player_visiting_name = player.getPercievedVisit();
 
-			if (player_visiting_name === target_player_name) {
+			if (
+				player_visiting_name === target_player_name &&
+				player.name !== lookout_player_name
+			) {
 				players_seen_visiting.push(player);
 			}
 		});
@@ -306,7 +309,7 @@ const perform = {
 			lookout_player.addFeedback(Feedback.LookoutSeesVisits(target_player, players_seen_visiting));
 		else
 			lookout_player.addFeedback(Feedback.LookoutSeesNoVisits(target_player));
-		
+
 		addAffect(ability_performed, target_player_name);
 	},
 	async investigate(ability_performed) {
@@ -328,6 +331,8 @@ const perform = {
 			smithed_player = global.Game.Players.get(smithed_player_name);
 
 		console.log({smither_player_name, smithed_player_name});
+
+		smither_player.addFeedback(Feedback.SmithedVestForPlayer(smithed_player))
 
 		givePlayerDefense(smithed_player, 1);
 

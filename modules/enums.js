@@ -353,6 +353,8 @@ const Enums = {
 		CreatedPlayerActionChannel: (player) =>
 		  `<@${player.id}> Welcome to your player action channel!` + "\n" +
 			`If you'd like to rename yourself use the \`/rename\` command.`,
+		SmithedVestForPlayer: (player_smithed_for) =>
+			`You smited a vest for **${player_smithed_for.name}** last night.`,
 		DidSuccesfulSmith: "You have accomplished your goal and saved someone from death.",
 		DidSilenceCurse: "You cursed the town with silence.",
 		DidCautious: "You were cautious last night and didn't attack any roleblockers.",
@@ -361,9 +363,9 @@ const Enums = {
 		WasRoleblocked: "You were roleblocked.",
 		WasRoleblockedButImmune: "Someone attempted to roleblock you, but you were immune.",
 		AttackedRoleblocker: "You attacked the player who attempted to roleblock you instead of your original target.",
-		KilledByAttack: "You were attacked and killed.",
+		KilledByAttack: "You were attacked by someone and they succesfully killed you.",
 		ProtectedAnAttackedPlayer: "The player you protected was attacked!",
-		AttackedButSurvived: "You were attacked, but your defense was strong enough to survive it.",
+		AttackedButSurvived: "You were attacked by someone, but your defense was strong enough to survive their attack.",
 		ComittingSuicide: "You will comitt suicide over the guilt of killing a town member tonight.",
 		ComittedSuicide: "You comitted suicide over the guilt of killing a town member.",
 		AnnounceMurderByFaction: (faction) =>  `They were killed by the **${faction}**.`,
@@ -386,7 +388,8 @@ const Enums = {
 		LookoutSeesNoVisits: (target_player) =>
 			`It seems like nobody visited **${target_player.name}** last night.`,
 		LookoutSeesVisits: (target_player, players_seen_visiting) => {
-			const player_names_visiting = players_seen_visiting.map(player => `**${player.name}**`);
+			const player_names_visiting =
+			players_seen_visiting.map(player => `**${player.name}**`);
 			return `It seems like **${target_player.name}** was visited by ${getSentenceFromArray(player_names_visiting)} last night.`;
 		},
 		SawPlayerVisit: (player_tracked, percieved_visit) => {return `It looked like **${player_tracked}** visited **${percieved_visit}** last night.`},
