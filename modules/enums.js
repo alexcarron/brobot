@@ -529,6 +529,11 @@ const Enums = {
 		Ghosts: "Ghosts",
 		OnTrial: "On Trial"
 	},
+
+	CoinRewards: {
+		Winning: 10,
+		Participation: 1,
+	},
 }
 
 module.exports = Enums;
