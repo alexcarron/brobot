@@ -227,9 +227,9 @@ command.autocomplete = async function(interaction) {
 
 	if (!focused_param) return;
 
-	const player = global.Game.Players.getPlayerFromId(interaction.user.id);
+	const player_using_command = global.Game.Players.getPlayerFromId(interaction.user.id);
 
-	if (!player) {
+	if (!player_using_command) {
 		return await interaction.respond(
 			[{name: "Sorry, you're not allowed to use this command", value: "N/A"}]
 		);
@@ -243,7 +243,7 @@ command.autocomplete = async function(interaction) {
 	const ability = Object.values(Abilities).find(ability => ability.name === ability_name);
 	const ability_arg = ability.args.find(arg => arg.name === arg_name);
 
-	const player_role = roles[player.role]
+	const player_role = roles[player_using_command.role]
 
 	if (player_role.abilities.every(ability => ability.name !== ability_name)) {
 		return await interaction.respond(
@@ -272,6 +272,14 @@ command.autocomplete = async function(interaction) {
 					if (
 						ability_arg.subtypes.includes(ArgumentSubtypes.NotSelf) &&
 						player.name === interaction.user.name
+					) {
+						console.log(player.name);
+						return false;
+					}
+
+					if (
+						ability_arg.subtypes.includes(ArgumentSubtypes.CertainPlayers) &&
+						!player_using_command.players_can_use_on.includes(player.name)
 					) {
 						console.log(player.name);
 						return false;

@@ -72,7 +72,7 @@ class Role {
 			return this.faction;
 		}
 		else {
-			return this.role;
+			return this.name;
 		}
 	}
 }

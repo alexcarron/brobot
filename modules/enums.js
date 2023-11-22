@@ -130,6 +130,7 @@ const Enums = {
 		Visiting: "visiting",
 		NotSelf: "not yourself",
 		NonMafia: "non-mafia",
+		CertainPlayers: "certain players",
 		None: "",
 	},
 

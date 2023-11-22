@@ -276,7 +276,7 @@ class Ability {
 		}),
 		DeathCurse: new Ability({
 			name: "Death Curse",
-			description: "After you've satisfied your win condition and been lynched, you can curse a chosen player with death at night, attacking them.",
+			description: "After you've satisfied your win condition and been lynched, you can curse a chosen player who voted guilty during your trial with death at night, attacking them.",
 			type: AbilityTypes.Attacking,
 			priority: Priorities.Attacking,
 			uses: AbilityUses.Amount(1),
@@ -291,7 +291,7 @@ class Ability {
 					name: "Player Killing",
 					description: "The player your cursing with death",
 					type: ArgumentTypes.Player,
-					subtypes: [ArgumentSubtypes.Visiting]
+					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.CertainPlayers]
 				})
 			],
 		}),

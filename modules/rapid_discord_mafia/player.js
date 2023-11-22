@@ -1,4 +1,4 @@
-const { RDMRoles, Announcements, MessageDelays, Feedback, Factions, RoleNames, AbilityTypes } = require("../enums");
+const { RDMRoles, Announcements, MessageDelays, Feedback, Factions, RoleNames, AbilityTypes, TrialVotes } = require("../enums");
 const roles = require("./roles");
 const ids = require("../../databases/ids.json");
 const { Abilities } = require("./ability");
@@ -36,6 +36,7 @@ class Player {
 		defense = 0,
 		last_player_observed_name = undefined,
 		isUnidentifiable = false,
+		players_can_use_on = [],
 	}) {
 		this.id = id;
 		this.name = name;
@@ -60,6 +61,7 @@ class Player {
 		this.num_phases_inactive = num_phases_inactive;
 		this.last_player_observed_name = last_player_observed_name;
 		this.isUnidentifiable = isUnidentifiable;
+		this.players_can_use_on = players_can_use_on;
 	}
 
 	reset() {
@@ -83,6 +85,7 @@ class Player {
 		this.num_phases_inactive = 0;
 		this.last_player_observed_name = undefined;
 		this.isUnidentifiable = false;
+		this.players_can_use_on = [];
 	}
 
 	static MAX_INACTIVE_PHASES = 6;
@@ -229,7 +232,12 @@ class Player {
 
 				await global.Game.announceMessages("You feel like you've made a terrible mistake...\n _ _");
 				await fool_chnl.send("You win! Your powers have awakened. You can use any of your curses for only this night.");
+				const players_voting_guilty =
+					Object.entries(global.Game.trial_votes)
+						.filter(entry => entry[1] === TrialVotes.Guilty)
+						.map(entry => entry[0]);
 
+				this.players_can_use_on = players_voting_guilty;
 				this.isInLimbo = true;
 				this.hasWon = true;
 
