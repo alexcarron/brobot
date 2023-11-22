@@ -181,6 +181,7 @@ global.client.once(Events.ClientReady, async () => {
 	global.LLPointManager = new LLPointManager();
 	global.rapid_discord_mafia = new RapidDiscordMafia();
 	const rapid_discord_mafia_obj = await getObjectFromGitHubJSON("rapid_discord_mafia");
+	console.log({rapid_discord_mafia_obj})
 	global.rapid_discord_mafia.setTo(rapid_discord_mafia_obj);
 	console.log("RDM Modules Built");
 

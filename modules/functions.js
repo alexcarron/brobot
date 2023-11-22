@@ -256,53 +256,24 @@ const functions = {
 	},
 
 	async deferInteraction(interaction, message_content="Running command...") {
-
 		if (interaction) {
-			try {
-				if (interaction.replied) {
-					await interaction.followUp({
-						content: message_content,
-						ephemeral: true
-					});
-				}
-				else if (interaction.deferred) {
-					await interaction.editReply({
-						content: message_content,
-						ephemeral: true
-					});
-				}
-				else {
-					await interaction.deferReply({
-						content: message_content,
-						ephemeral: true
-					});
-				}
+			if (interaction.replied) {
+				await interaction.followUp({
+					content: message_content,
+					ephemeral: true
+				});
 			}
-			catch (error) {
-				console.error(error);
-				console.log("Failed Defer: Brute Forcing");
-				try {
-					await interaction.deferReply({
-						content: message_content,
-						ephemeral: true
-					});
-				}
-				catch (error) {
-					console.error(error);
-					try {
-						await interaction.editReply({
-							content: message_content,
-							ephemeral: true
-						});
-					}
-					catch (error) {
-						console.error(error);
-						await interaction.followUp({
-							content: message_content,
-							ephemeral: true
-						});
-					}
-				}
+			else if (interaction.deferred) {
+				await interaction.editReply({
+					content: message_content,
+					ephemeral: true
+				});
+			}
+			else {
+				await interaction.deferReply({
+					content: message_content,
+					ephemeral: true
+				});
 			}
 		}
 	},

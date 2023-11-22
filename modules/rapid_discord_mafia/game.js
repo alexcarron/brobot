@@ -1672,6 +1672,32 @@ class Game {
 			);
 		}
 
+		this.Players.getPlayerList().forEach(async player => {
+			const contestant = global.rapid_discord_mafia.getContestantFromPlayer(player);
+			contestant.giveCoins(CoinRewards.Participation);
+		});
+
+		await global.Game.announceMessages(
+			Announcements.RewardCoinsToPlayers(
+				this.Players.getPlayerList().map(player => player.name),
+				CoinRewards.Participation
+			)
+		);
+
+		this.winning_players.forEach(async player_name => {
+			const player = this.Players.get(player_name);
+			const contestant = global.rapid_discord_mafia.getContestantFromPlayer(player);
+			const coins_rewarded = CoinRewards.Winning;
+
+			contestant.giveCoins(coins_rewarded);
+
+			await global.Game.announceMessages(
+				Announcements.RewardCoinsToPlayer(player.name, coins_rewarded)
+			);
+		});
+
+		await saveObjectToGitHubJSON(global.rapid_discord_mafia, "rapid_discord_mafia");
+
 		let revealed_roles_msg = "_ _\n# Everyone's Roles\n>>> "
 		for (const player in this.role_log) {
 			const role = this.role_log[player];

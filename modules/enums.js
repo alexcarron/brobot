@@ -342,6 +342,10 @@ const Enums = {
 			`> **${player_whispering.name}** whispers to **${player_whispering_to.name}**`,
 		WhisperLog: (player_whispering, player_whispering_to, whisper_contents) =>
 			`\`[${player_whispering.role}]\` **${player_whispering.name}** whispers to \`[${player_whispering_to.role}]\` **${player_whispering_to.name}**\n>>> ${whisper_contents}`,
+		RewardCoinsToPlayer: (player_name, coins) =>
+			`**${player_name}** is rewarded with \`${coins}\` coins!`,
+		RewardCoinsToPlayers: (player_names, coins) =>
+			`**${player_names.join(", ")}** is rewarded with \`${coins}\` coins!`,
 	},
 
 	Feedback: {

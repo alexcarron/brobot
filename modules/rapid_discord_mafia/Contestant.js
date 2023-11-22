@@ -1,3 +1,5 @@
+const { Announcements } = require("../enums");
+
 class Contestant {
 	constructor({
 		coins = 0,
