@@ -56,6 +56,7 @@ class Game {
 	static MIN_PLAYER_COUNT = 4;
 	static MAX_MAFIA_TO_TOWN_RATIO = 2/3;
 	static MAX_TOWN_TO_MAFIA_RATIO = 5;
+	static MAJORITY_VOTE_RATIO = 7/8;
 	static POSSIBLE_FACTIONS = [
 		"Mafia",
 		"Town",

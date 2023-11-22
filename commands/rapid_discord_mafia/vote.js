@@ -150,7 +150,7 @@ command.execute = async function execute(interaction, isTest=false) {
 	total_vote_count = Object.keys(curr_votes).length;
 
 	console.log("Checking For Early Majority Vote");
-	const majority_player_count = Math.ceil((max_voters_count) * 2/3);
+	const majority_player_count = Math.ceil((max_voters_count) * Game.MAJORITY_VOTE_RATIO);
 	console.log({max_voters_count, majority_player_count, total_vote_count});
 
 	if (total_vote_count >= majority_player_count) {
