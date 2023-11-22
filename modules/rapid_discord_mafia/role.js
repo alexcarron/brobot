@@ -1,3 +1,4 @@
+const { Factions } = require("../enums.js");
 const { toTitleCase } = require("../functions.js");
 const Types = require("./types.js");
 
@@ -64,6 +65,15 @@ class Role {
 			special_notes_msg;
 
 		return role_info_msg;
+	}
+
+	getFaction() {
+		if ([Factions.Mafia, Factions.Town].includes(this.faction)) {
+			return this.faction;
+		}
+		else {
+			return this.role;
+		}
 	}
 }
 

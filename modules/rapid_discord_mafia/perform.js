@@ -142,7 +142,7 @@ const perform = {
 		if (attacked_player.defense < attacker_player.attack) {
 			console.log("Attack Success");
 
-			global.Game.addDeath(attacked_player, attacker_player);
+			global.Game.addDeathaddDeath(attacked_player, attacker_player);
 
 			attacked_player.addFeedback(Feedback.KilledByAttack);
 			attacker_player.addFeedback(Feedback.KilledPlayer(attacked_player_name));
@@ -181,7 +181,7 @@ const perform = {
 						console.log(`${healer_player.name} successfully smithed a vest and achieved their win condition.`);
 
 						healer_player.addFeedback(Feedback.DidSuccesfulSmith);
-						healer_player.hasWon = true;
+						healer_player.makeAWinner();
 					}
 				}
 			}

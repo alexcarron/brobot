@@ -250,10 +250,7 @@ class Player {
 
 					let exe_chnl = await getChannel((await getRDMGuild()), exe_player.channel_id);
 					await exe_chnl.send("You win! You have successfully gotten your target lynched. Do whatever you want now. You'll still win if you die.");
-					exe_player.hasWon = true;
-
-					global.Game.winning_factions.push("Executioner");
-					global.Game.winning_players.push(exe.name);
+					exe_player.makeAWinner();
 				}
 			}
 		}
@@ -494,6 +491,19 @@ class Player {
 
 		const player_whispering_to_chnl = await player_whispering_to.getPlayerChannel();
 		player_whispering_to_chnl.send(Feedback.WhisperedTo(this, whisper_contents));
+	}
+
+	makeAWinner() {
+		this.hasWon = true;
+
+		const player_role = global.Roles[this.role];
+		const player_faction = player_role.getFaction();
+
+		if (!global.Game.winning_factions.includes(player_faction))
+			global.Game.winning_factions.push(player_faction);
+
+		if (!global.Game.winning_players.includes(this.name))
+			global.Game.winning_players.push(this.name);
 	}
 }
 
