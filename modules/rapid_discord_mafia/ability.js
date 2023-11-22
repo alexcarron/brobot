@@ -454,7 +454,7 @@ class Ability {
 		}),
 		Observe: new Ability({
 			name: "Observe",
-			description: "At night, you can observe a player that isn't yourself, being told if this player and the last one you observed are percieved to be in the same faction. If this is the first player you observe, you are told nothing.",
+			description: "At night, you can observe a player that isn't yourself and be told if this player and the last one you observed are percieved to be in the same faction. If this is the first player you observe, you are told nothing.",
 			type: AbilityTypes.Investigative,
 			priority: Priorities.Investigative,
 			uses: AbilityUses.Unlimited,
