@@ -6,7 +6,7 @@ const command = new SlashCommand({
 	name: "quit",
 	description: "Quit playing music and clear queue",
 });
-command.required_permissions = [PermissionFlagsBits.Administrator];
+// command.required_permissions = [PermissionFlagsBits.Administrator];
 command.execute = async function(interaction) {
 	await deferInteraction(interaction);
 

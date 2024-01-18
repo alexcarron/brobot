@@ -19,7 +19,7 @@ command.execute = async function execute(interaction) {
 	await global.Game.saveGameDataToDatabase();
 	global.Game.logGame();
 
-	editReplyToInteraction(interaction, "Game succesfully saved.")
+	editReplyToInteraction(interaction, "Game successfully saved.")
 }
 
 module.exports = command;

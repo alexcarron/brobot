@@ -51,7 +51,7 @@ class Game {
 		this.abilities_performed = {}
 	}
 
-	static IS_TESTING = true;
+	static IS_TESTING = false;
 	static MAX_TIMEOUT_COUNTER = 3;
 	static MIN_PLAYER_COUNT = 4;
 	static MAX_MAFIA_TO_TOWN_RATIO = 2/3;
@@ -858,11 +858,11 @@ class Game {
 	async announceNight() {
 		const night_num = this.getDayNum();
 
+		await this.remindPlayersTo(Announcements.UseNightAbilityReminder);
+
 		await this.announceMessages(
 			...Announcements.StartNight(ids.rapid_discord_mafia.roles.living, night_num),
 		);
-
-		await this.remindPlayersTo(Announcements.UseNightAbilityReminder);
 
 		await Game.log(`Announced Night ${night_num}.`);
 	}
@@ -1092,14 +1092,18 @@ class Game {
 		const curr_day_num = this.days_passed;
 
 		await Game.closePreGameChannels();
-		await Game.openDayChat();
 
-		this.announceMessages(
-			...Announcements.GameStarted(ids.rapid_discord_mafia.roles.living, ids.rapid_discord_mafia.channels.role_list),
-			...Announcements.Day1Started(),
+		await this.announceMessages(
+			...Announcements.GameStarted(ids.rapid_discord_mafia.roles.living, ids.rapid_discord_mafia.channels.role_list)
 		)
 
-		await Game.log("Waiting For Day 1 to End");
+		this.announceMessages(
+			...Announcements.Day1Started()
+		)
+
+		await Game.openDayChat();
+
+		await Game.log("Waiting For Day 1 to fEnd");
 
 		await wait(PhaseWaitTimes.FirstDay, "min");
 		await this.startNight(curr_day_num);
@@ -1791,6 +1795,11 @@ class Game {
 			{ SendMessages: true }
 		);
 
+		await day_chat_chnl.permissionOverwrites.edit(
+			rdm_guild.roles.everyone,
+			{ SendMessages: false, AddReactions: false }
+		);
+
 		if (Game.IS_TESTING) {
 			await day_chat_chnl.permissionOverwrites.create(
 				rdm_guild.roles.everyone,
@@ -1812,6 +1821,11 @@ class Game {
 			day_chat_chnl = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.town_discussion);
 
 		await day_chat_chnl.permissionOverwrites.edit(living_role, { SendMessages: false });
+
+		await day_chat_chnl.permissionOverwrites.edit(
+			rdm_guild.roles.everyone,
+			{ SendMessages: false, AddReactions: false }
+		);
 
 		if (Game.IS_TESTING) {
 			await day_chat_chnl.permissionOverwrites.create(

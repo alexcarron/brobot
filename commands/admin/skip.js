@@ -7,7 +7,7 @@ const command = new SlashCommand({
 	name: "skip",
 	description: "Skips current song",
 });
-command.required_permissions = [PermissionFlagsBits.Administrator];
+// command.required_permissions = [PermissionFlagsBits.Administrator];
 command.execute = async function(interaction) {
 	await deferInteraction(interaction);
 

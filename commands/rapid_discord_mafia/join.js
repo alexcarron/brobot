@@ -52,7 +52,6 @@ command.execute = async function execute(interaction, args, isTest) {
 		return await interaction.editReply("We're not in sign-ups so you can't join just yet.");
 	}
 
-	console.log({player_id, player_name, isFakeUser})
 	global.Game.addPlayerToGame(player_name, player_id, interaction, isFakeUser);
 
 	await interaction.editReply(`**${player_name}** has been added to the game`);

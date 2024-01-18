@@ -6,7 +6,7 @@ const command = new SlashCommand({
 	name: "pause",
 	description: "Pause the currently playing music",
 });
-command.required_permissions = [PermissionFlagsBits.Administrator];
+// command.required_permissions = [PermissionFlagsBits.Administrator];
 command.execute = async function(interaction) {
 	await deferInteraction(interaction);
 

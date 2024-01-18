@@ -90,8 +90,8 @@ class Player {
 		this.last_player_observed_name = undefined;
 		this.isUnidentifiable = false;
 		this.players_can_use_on = [];
-		this.isMuted = true;
-		this.canVote = false;
+		this.isMuted = false;
+		this.canVote = true;
 	}
 
 	static MAX_INACTIVE_PHASES = 6;
@@ -109,7 +109,7 @@ class Player {
 			town_discussion_chnl = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.town_discussion),
 			player_guild_member = await getGuildMember(rdm_guild, this.id);
 
-		town_discussion_chnl.permissionOverwrites.edit(player_guild_member.user, {SendMessages: false});
+		town_discussion_chnl.permissionOverwrites.edit(player_guild_member.user, {SendMessages: false, AddReactions: false});
 
 		console.log(`Muted **${this.name}**.`);
 	}
@@ -270,8 +270,8 @@ class Player {
 			if (this.role == RoleNames.Fool) {
 				let fool_chnl = await getChannel((await getRDMGuild()), this.channel_id);
 
-				await global.Game.announceMessages("You feel like you've made a terrible mistake...\n _ _");
-				await fool_chnl.send("You win! Your powers have awakened. You can use any of your curses for only this night.");
+				await global.Game.announceMessages("_ _\nYou feel like you've made a terrible mistake...");
+				await fool_chnl.send("You win! Your powers have awakened. You can use your death curse ability for only this night.");
 				const players_voting_guilty =
 					Object.entries(global.Game.trial_votes)
 						.filter(entry => entry[1] === TrialVotes.Guilty)
@@ -449,9 +449,9 @@ class Player {
 
 	async removeAffects() {
 		for (const [affect_num, affect] of this.affected_by.entries()) {
-			// console.log("Removing Affects From Player " + this.name);
-			// console.log("Affect Before:");
-			// console.log({affect});
+			console.log("Removing Affects From Player " + this.name);
+			console.log("Affect Before:");
+			console.log({affect});
 
 			const ability = Object.values(Abilities).find(ability =>
 				ability.name === affect.name

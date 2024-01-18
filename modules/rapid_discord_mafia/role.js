@@ -57,7 +57,6 @@ class Role {
 		role_info_msg  =
 			(isInfoOnly ? `# ${this.name}` : `# Your role is ${this.name}`) + `\n` +
 			`**Goal**: ${this.goal}` + `\n` +
-			`\n` +
 			`**Alignment**: ${this.faction} ${this.alignment}\n` +
 			`**Attack**: ${this.attack}  **|**  **Defense**: ${this.defense}\n` +
 			immunities_msg +

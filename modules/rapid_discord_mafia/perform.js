@@ -62,6 +62,7 @@ const attackPlayer = function(attacker_player, attacked_player) {
 
 		const protection_affects_on_target = attacked_player.affected_by.filter(
 			affect => {
+				console.log({affect});
 				const ability = global.abilities[affect.name]
 				return ability.type == AbilityTypes.Protection;
 			}
@@ -79,7 +80,7 @@ const attackPlayer = function(attacker_player, attacked_player) {
 				if (protection_affect.name === AbilityNames.Smith) {
 					console.log(`${protecter_player.name} successfully smithed a vest and achieved their win condition.`);
 
-					protecter_player.addFeedback(Feedback.DidSuccesfulSmith);
+					protecter_player.addFeedback(Feedback.DidSuccessfulSmith);
 					protecter_player.makeAWinner();
 				}
 			}
@@ -519,6 +520,8 @@ const perform = {
 		givePlayerDefense(kidnapped_player, 4);
 		await kidnapped_player.mute();
 		await kidnapped_player.removeVotingAbility();
+
+		addAffect(ability_performed, kidnapped_player.name);
 	},
 }
 

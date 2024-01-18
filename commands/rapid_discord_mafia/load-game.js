@@ -12,7 +12,7 @@ command.execute = async function execute(interaction) {
 	await interaction.deferReply({ephemeral: true});
 
 	await global.Game.loadGameDataFromDatabase();
-	interaction.editReply("Game succesfully loaded.");
+	interaction.editReply("Game successfully loaded.");
 	global.Game.logGame();
 }
 

@@ -13,8 +13,6 @@ command.execute = async function(interaction) {
 
 	const queue = await global.client.player.queues.get(interaction.channel.guild);
 
-	console.log(queue.isPlaying())
-
 	if (!queue || !queue.isPlaying()) {
 		return await interaction.editReply("There's no songs in the queue");
 	}

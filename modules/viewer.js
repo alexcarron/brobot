@@ -168,7 +168,12 @@ class Viewer {
 		console.log(this.user_id);
 		const user = await getUser(this.user_id);
 		console.log({user})
-		user.send(`You have been promoted from **${old_tier}** to **${new_tier}**. Congratulations!`);
+		await user.send(`You have been promoted from **${old_tier}** to **${new_tier}**. Congratulations!`);
+	}
+
+	async dm(message) {
+		const user = await getUser(this.user_id);
+		await user.send(message);
 	}
 }
 

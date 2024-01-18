@@ -271,7 +271,7 @@ command.autocomplete = async function(interaction) {
 
 					if (
 						ability_arg.subtypes.includes(ArgumentSubtypes.NotSelf) &&
-						player.name === interaction.user.name
+						player.name === player_using_command.name
 					) {
 						console.log(player.name);
 						return false;

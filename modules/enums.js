@@ -1,9 +1,10 @@
 const { getUnixTimestamp, getSentenceFromArray } = require("./functions");
+const ids = require("../databases/ids.json");
 
 const Enums = {
 	WinConditions: {
-		EliminateOtherFactions: "Eliminate all non-neutral factions as well as any Neutral Killing/Tyrant roles.",
-		SurviveEliminateOtherFactions: "Survive until the end of the game and eliminate all non-neutral factions as well as any different Neutral Killing/Tyrant roles.",
+		EliminateOtherFactions: "Eliminate all non-neutral factions outside of your own as well as any Neutral Killing/Tyrant roles.",
+		SurviveEliminateOtherFactions: "Survive until the end of the game and eliminate all non-neutral factions outside of your own as well as any different Neutral Killing/Tyrant roles.",
 		Survive: "Survive until the end of the game.",
 		SurviveTownLose: "Survive until the end of the game to see town lose.",
 
@@ -232,7 +233,7 @@ const Enums = {
 
 	Announcements: {
 		StartSignUps: (sign_up_ping_id, join_chat_id, unix_timestamp) =>
-			`<@&${sign_up_ping_id}> A Rapid Discord Mafia game is starting <t:${unix_timestamp}:R>.` + "\n" +
+			`<@&${sign_up_ping_id}> @everyone A Rapid Discord Mafia game is starting <t:${unix_timestamp}:R>.` + "\n" +
 			`To join the game, go to <#${join_chat_id}> and use the command \`/join\`.`,
 		SignUpsReminder: (join_chat_id, unix_timestamp) =>
 			`@here A Rapid Discord Mafia game will begin <t:${unix_timestamp}:R>!` + "\n" +
@@ -249,6 +250,7 @@ const Enums = {
 		ExeTarget: (target_name) =>
 			`Your target is **${target_name}**! Make sure they are lynched by any means necessary.`,
 		LivingPlayers: (living_player_names) =>
+			"_ _\n" +
 			`# Living Players` + "\n" +
 			">>> " + living_player_names.map(name => `**${name}**\n`).join(""),
 		RoleList: (role_identifiers) =>
@@ -283,7 +285,7 @@ const Enums = {
 			"Use `/vote for-player` in your player action channel to vote for a player to put on trial. Your votes are not anonymous.",
 		],
 		VotingReminder: `Use the command \`/vote for-player\` in this channel to vote for a player you want to put on trial, abstain, or vote nobody.`,
-		UseNightAbilityReminder: "It's night time. Use `/use ABILITY` to perform an ability or `/use nothing`.",
+		UseNightAbilityReminder: "It's night time. Use the command `/use ABILITY-NAME-HERE` to perform an ability or `/use nothing`.",
 		VotingOver: (living_role_id) =>
 			`_ _\n<@&${living_role_id}> Voting is closed. Let's see who is put on trial...`,
 		VotingOutcomeNobody: `The town decided to lynch nobody, so we will be skipping the trial.`,
@@ -314,7 +316,7 @@ const Enums = {
 			`_ _\n# Night ${night_num}`,
 			`<@&${living_role_id}> Goodnight! It is now nightime.`,
 			`**The night phase will end <t:${getUnixTimestamp() + Enums.PhaseWaitTimes.Night*60}:R>**`,
-			`Time to do your night abilities in your player action channels with \`/use ABILITY...\``,
+			`Time to do your night abilities in your player action channels with the command \`/use ABILITY-NAME-HERE\``,
 			`If you're not using an ability, do \`/use nothing\` to speed up the night`,
 		],
 		PhaseAlmostOverWarning: (min_left) =>
@@ -352,10 +354,11 @@ const Enums = {
 	Feedback: {
 		CreatedPlayerActionChannel: (player) =>
 		  `<@${player.id}> Welcome to your player action channel!` + "\n" +
+			// `If your new to Rapid Discord Mafia learn how to play and read the rules in <#${ids.rapid_discord_mafia.channels.how_to_play}> and <#${ids.rapid_discord_mafia.channels.rules}>`
 			`If you'd like to rename yourself use the \`/rename\` command.`,
 		SmithedVestForPlayer: (player_smithed_for) =>
 			`You smited a vest for **${player_smithed_for.name}** last night.`,
-		DidSuccesfulSmith: "You have accomplished your goal and saved someone from death.",
+		DidSuccessfulSmith: "You have accomplished your goal and saved someone from death.",
 		DidSilenceCurse: "You cursed the town with silence.",
 		DidCautious: "You were cautious last night and didn't attack any roleblockers.",
 		RoleblockedPlayer: (roleblocked_player) =>
@@ -363,7 +366,7 @@ const Enums = {
 		WasRoleblocked: "You were roleblocked.",
 		WasRoleblockedButImmune: "Someone attempted to roleblock you, but you were immune.",
 		AttackedRoleblocker: "You attacked the player who attempted to roleblock you instead of your original target.",
-		KilledByAttack: "You were attacked by someone and they succesfully killed you.",
+		KilledByAttack: "You were attacked by someone and they successfully killed you.",
 		ProtectedAnAttackedPlayer: "The player you protected was attacked!",
 		AttackedButSurvived: "You were attacked by someone, but your defense was strong enough to survive their attack.",
 		ComittingSuicide: "You will comitt suicide over the guilt of killing a town member tonight.",
@@ -419,7 +422,7 @@ const Enums = {
 		ReplacedByReplacer: () =>
 			`Don't worry, you have been replaced by someone.`,
 		ReplacedPlayer: (player_replacing) =>
-			`You have succesfully replaced **${player_replacing.name}**'s role as **${player_replacing.role}**`,
+			`You have successfully replaced **${player_replacing.name}**'s role as **${player_replacing.role}**`,
 		ReplaceFailed: (player_replacing) =>
 			`You failed to replace **${player_replacing.name}**...`,
 		KidnappedPlayer: (player_kindapped) =>

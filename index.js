@@ -1,12 +1,9 @@
 const { Player } = require('discord-player');
-const ProposedRule = require('./modules/gameforge/ProposedRule.js');
-const Host = require('./modules/gameforge/host.js');
-const GameForge = require('./modules/gameforge/GameForge');
 const RapidDiscordMafia = require('./modules/rapid_discord_mafia/RapidDiscordMafia.js');
 {console.log(`discord.js version: ${require('discord.js').version}`);
 
 const
-	{ DatabaseURLs, XPRewards, XPTaskKeys, GameForgePhases, RDMRoles } = require("./modules/enums.js"),
+	{ DatabaseURLs, XPRewards, XPTaskKeys, RDMRoles } = require("./modules/enums.js"),
 	ids = require('./databases/ids.json'),
 	fs = require("fs"), // Used to interact with file system
 	cron = require("cron"), // Used to have scheduled functions execute
@@ -36,10 +33,9 @@ global.client = new Discord.Client({
 
 // ! Create global paths object to store directories
 const paths = require("./utilities/path.js");
-const { addRole, getRole, getGuild, getChannel, getObjectFromGitHubJSON, saveObjectToGitHubJSON } = require('./modules/functions.js');
+const { addRole, getRole, getGuild, getChannel, getObjectFromGitHubJSON, saveObjectToGitHubJSON, getRoleById } = require('./modules/functions.js');
 const { Collection } = require('discord.js');
 const SlashCommand = require('./modules/commands/SlashCommand.js');
-const Vote = require('./modules/gameforge/Vote.js');
 global.paths = paths;
 
 // ! Store a list of command cooldowns
@@ -188,12 +184,6 @@ global.client.once(Events.ClientReady, async () => {
 
 	await global.LLPointManager.updateViewersFromDatabase();
 	console.log("Viewers Updated From Database");
-
-	global.GameForge = new GameForge({});
-	console.log("GameForge Modules Built");
-
-	await global.GameForge.loadGameDataFromDatabase();
-	console.log("GameForge Data Updated From Database");
 
 	global.client.user.setPresence({
 		status: 'online',
@@ -396,28 +386,29 @@ global.client.on(Events.MessageCreate, async(msg) => {
 		)
 	}
 
-	if (
-		msg &&
-		msg.guild &&
-		msg.guild.id === ids.servers.gameforge &&
-		msg.channel.type === Discord.ChannelType.PublicThread
-	) {
-		try {
-			const proposed_rule_chnl = await ProposedRule.getProposedRuleChannel();
-			const active_threads = await proposed_rule_chnl.threads.fetchActive()
+	// ! GameForge Thread Message Checker
+	// if (
+	// 	msg &&
+	// 	msg.guild &&
+	// 	msg.guild.id === ids.servers.gameforge &&
+	// 	msg.channel.type === Discord.ChannelType.PublicThread
+	// ) {
+	// 	try {
+	// 		const proposed_rule_chnl = await ProposedRule.getProposedRuleChannel();
+	// 		const active_threads = await proposed_rule_chnl.threads.fetchActive()
 
-			if (active_threads.threads.some(thread => thread.id === msg.channel.id)) {
-				console.log(msg.channel.name);
-				const host = await global.GameForge.getHostByID(msg.author.id);
-				if (host && host instanceof Host) {
-					host.rewardXPFor(XPTaskKeys.Discuss);
-				}
-			}
-		}
-		catch (error) {
-			console.error(error);
-		}
-	}
+	// 		if (active_threads.threads.some(thread => thread.id === msg.channel.id)) {
+	// 			console.log(msg.channel.name);
+	// 			const host = await global.GameForge.getHostByID(msg.author.id);
+	// 			if (host && host instanceof Host) {
+	// 				host.rewardXPFor(XPTaskKeys.Discuss);
+	// 			}
+	// 		}
+	// 	}
+	// 	catch (error) {
+	// 		console.error(error);
+	// 	}
+	// }
 
 	// Stop if not command
 	if (
@@ -705,97 +696,93 @@ global.client.on(Events.InteractionCreate, async (interaction) => {
 	}
 	// Button presses
 	else if (interaction.type = Discord.InteractionType.MessageComponent) {
-		if (Object.values(Vote.Votes).some(vote => interaction.customId.startsWith(vote))) {
-			(async () => {
+		// ! GameForge Vote Reader
+		// if (Object.values(Vote.Votes).some(vote => interaction.customId.startsWith(vote))) {
+		// 	(async () => {
 
-				if (global.GameForge.phase === GameForgePhases.Proposing) {
-					return await interaction.reply({ content: `Sorry, we're in the proposing phase. You can't vote.`, components: [], ephemeral: true });
-				}
+		// 		if (global.GameForge.phase === GameForgePhases.Proposing) {
+		// 			return await interaction.reply({ content: `Sorry, we're in the proposing phase. You can't vote.`, components: [], ephemeral: true });
+		// 		}
 
-				const host = await global.GameForge.getHostByID(interaction.user.id);
+		// 		const host = await global.GameForge.getHostByID(interaction.user.id);
 
-				console.log("Proposed Rule Clicked on by")
-				console.log((host && host.name) ?? "undefined")
-				console.log("Clicked on: ");
-				console.log(interaction.customId);
+		// 		console.log("Proposed Rule Clicked on by")
+		// 		console.log((host && host.name) ?? "undefined")
+		// 		console.log("Clicked on: ");
+		// 		console.log(interaction.customId);
 
-				if (host === undefined) {
-					await interaction.reply({ content: `You are not allowed to vote on proposed rules if you're not a host!`, components: [], ephemeral: true });
-					return
-				}
+		// 		if (host === undefined) {
+		// 			await interaction.reply({ content: `You are not allowed to vote on proposed rules if you're not a host!`, components: [], ephemeral: true });
+		// 			return
+		// 		}
 
-				let proposed_rule;
-				let vote;
+		// 		let proposed_rule;
+		// 		let vote;
 
-				if (interaction.customId.startsWith(Vote.Votes.Approve)) {
-					vote = Vote.Votes.Approve
-				}
-				else if (interaction.customId.startsWith(Vote.Votes.Disapprove)) {
-					vote = Vote.Votes.Disapprove
-				}
-				else if (interaction.customId.startsWith(Vote.Votes.NoOpinion)) {
-					vote = Vote.Votes.NoOpinion
-				}
+		// 		if (interaction.customId.startsWith(Vote.Votes.Approve)) {
+		// 			vote = Vote.Votes.Approve
+		// 		}
+		// 		else if (interaction.customId.startsWith(Vote.Votes.Disapprove)) {
+		// 			vote = Vote.Votes.Disapprove
+		// 		}
+		// 		else if (interaction.customId.startsWith(Vote.Votes.NoOpinion)) {
+		// 			vote = Vote.Votes.NoOpinion
+		// 		}
 
-				if (vote === Vote.Votes.Approve) {
-					const proposed_rule_num = parseInt(interaction.customId.replace(Vote.Votes.Approve, ""));
-					console.log({proposed_rule_num});
+		// 		if (vote === Vote.Votes.Approve) {
+		// 			const proposed_rule_num = parseInt(interaction.customId.replace(Vote.Votes.Approve, ""));
+		// 			console.log({proposed_rule_num});
 
-					proposed_rule = await global.GameForge.getProposedRuleFromNum(proposed_rule_num);
-					console.log({proposed_rule});
+		// 			proposed_rule = await global.GameForge.getProposedRuleFromNum(proposed_rule_num);
+		// 			console.log({proposed_rule});
 
-					if (!proposed_rule) {
-						return await interaction.reply({ content: `Something went wrong...`, components: [], ephemeral: true });
-					};
-				}
-				else if (vote === Vote.Votes.Disapprove) {
-					const proposed_rule_num = parseInt(interaction.customId.replace(Vote.Votes.Disapprove, ""));
-					console.log({proposed_rule_num});
+		// 			if (!proposed_rule) {
+		// 				return await interaction.reply({ content: `Something went wrong...`, components: [], ephemeral: true });
+		// 			};
+		// 		}
+		// 		else if (vote === Vote.Votes.Disapprove) {
+		// 			const proposed_rule_num = parseInt(interaction.customId.replace(Vote.Votes.Disapprove, ""));
+		// 			console.log({proposed_rule_num});
 
-					proposed_rule = await global.GameForge.getProposedRuleFromNum(proposed_rule_num);
-					console.log({proposed_rule});
-
-
-					if (!proposed_rule) {
-						return await interaction.reply({ content: `Something went wrong...`, components: [], ephemeral: true });
-					};
-				}
-				else if (vote === Vote.Votes.NoOpinion) {
-					const proposed_rule_num = parseInt(interaction.customId.replace(Vote.Votes.NoOpinion, ""));
-					console.log({proposed_rule_num});
-
-					proposed_rule = await global.GameForge.getProposedRuleFromNum(proposed_rule_num);
-					console.log({proposed_rule});
+		// 			proposed_rule = await global.GameForge.getProposedRuleFromNum(proposed_rule_num);
+		// 			console.log({proposed_rule});
 
 
-					if (!proposed_rule) {
-						return await interaction.reply({ content: `Something went wrong...`, components: [], ephemeral: true });
-					};
-				}
+		// 			if (!proposed_rule) {
+		// 				return await interaction.reply({ content: `Something went wrong...`, components: [], ephemeral: true });
+		// 			};
+		// 		}
+		// 		else if (vote === Vote.Votes.NoOpinion) {
+		// 			const proposed_rule_num = parseInt(interaction.customId.replace(Vote.Votes.NoOpinion, ""));
+		// 			console.log({proposed_rule_num});
 
-				proposed_rule.message = interaction.message.id;
-				proposed_rule.addVote(vote, host.id, interaction);
-			})();
-		}
+		// 			proposed_rule = await global.GameForge.getProposedRuleFromNum(proposed_rule_num);
+		// 			console.log({proposed_rule});
+
+
+		// 			if (!proposed_rule) {
+		// 				return await interaction.reply({ content: `Something went wrong...`, components: [], ephemeral: true });
+		// 			};
+		// 		}
+
+		// 		proposed_rule.message = interaction.message.id;
+		// 		proposed_rule.addVote(vote, host.id, interaction);
+		// 	})();
+		// }
 	}
 
 });
 
 // ! Executed when a user joins the server
 client.on(Events.GuildMemberAdd, async (guild_member) => {
-	if (guild_member.guild.id === ids.servers.gameforge) {
-		const gameforge_guild = await getGuild(ids.servers.gameforge);
-		const outsiders_role = await getRole(gameforge_guild, "Outsider");
-		await addRole(guild_member, outsiders_role);
-	}
-	else if (guild_member.guild.id === ids.servers.rapid_discord_mafia) {
+	if (guild_member.guild.id === ids.servers.rapid_discord_mafia) {
 		const rdm_guild = await getGuild(ids.servers.rapid_discord_mafia);
 		const spectator_role = await getRole(rdm_guild, RDMRoles.Spectator);
 		await addRole(guild_member, spectator_role);
 	}
-	else if (guild_member.guild.id === ids.servers.LLGameShowCenter) {
-		const rdm_guild = await getGuild(ids.servers.LLGameShowCenter);
-		const viewer_role = await getRole(rdm_guild, ids.ll_game_shows.roles.viewer);
+	else if (guild_member.guild.id === ids.servers.ll_game_show_center) {
+		const ll_game_show_guild = await getGuild(ids.servers.ll_game_show_center);
+		const viewer_role = await getRoleById(ll_game_show_guild, ids.ll_game_shows.roles.viewer);
 		await addRole(guild_member, viewer_role);
 	}
 });

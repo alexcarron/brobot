@@ -45,6 +45,10 @@ command.execute = async function(interaction) {
 		return await interaction.editReply("Don't you think it's a bit weird to whisper to yourself?");
 	}
 
+	if (player_whispering.isMuted) {
+		return await interaction.editReply("Sorry, but you've been prevented from whispering.");
+	}
+
 	await player_whispering.whisper(player_whispering_to, whisper_contents);
 
 	interaction.editReply(`**You** whispered to **${player_whispering_to.name}** the following\n>>> ${whisper_contents}`);
