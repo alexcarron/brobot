@@ -183,7 +183,7 @@ const functions = {
 			.setStyle(ButtonStyle.Secondary);
 
 		const action_row = new ActionRowBuilder()
-			.addComponents(cancel_button, confirm_button)
+			.addComponents(cancel_button, confirm_button);
 
 		confirmation_message = await interaction.editReply({
 			content: message,
@@ -349,6 +349,11 @@ const functions = {
 		console.log(color_start + message + reset);
 	},
 
+	/**
+	 *
+	 * @param {number} time_amount amount of time units waiting
+	 * @param {string} unit Unit of time waiting (h, hour(s), m, min(s), minute(s), s, sec(s), second(s))
+	 */
 	wait(time_amount, unit = "ms") {
 		let milliseconds = 0;
 
@@ -385,8 +390,13 @@ const functions = {
 		);
 	},
 
-	getUnixTimestamp() {
-		return Math.round((new Date()).getTime() / 1000);
+	/**
+	 *
+	 * @param {Date} date Date you want converted. Default is current date
+	 * @returns Unix timestamp as integer
+	 */
+	getUnixTimestamp(date = new Date()) {
+		return Math.round((date).getTime() / 1000);
 	},
 
 	getNextDayCronExpression() {

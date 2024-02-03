@@ -200,6 +200,21 @@ class LLPointManager {
 			// }
 		}
 	}
+
+	async getViewerOrCreateViewer(interaction) {
+		const user_id = interaction.user.id;
+		const viewer = await global.LLPointManager.getViewerById(user_id);
+
+		if (!viewer) {
+			interaction.channel.send(`You have not been added to the LL Point database yet. You will be added as **${interaction.user.username}**`);
+			await global.LLPointManager.addViewerFromUser(interaction.user);
+			await global.LLPointManager.updateDatabase();
+			return await global.LLPointManager.getViewerById(interaction.user.id);
+		}
+		else {
+			return viewer
+		}
+	}
 }
 
 module.exports = LLPointManager;

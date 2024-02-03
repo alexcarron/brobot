@@ -1,5 +1,6 @@
 const { Player } = require('discord-player');
 const RapidDiscordMafia = require('./modules/rapid_discord_mafia/RapidDiscordMafia.js');
+const Event = require('./modules/Event.js');
 {console.log(`discord.js version: ${require('discord.js').version}`);
 
 const
@@ -33,7 +34,7 @@ global.client = new Discord.Client({
 
 // ! Create global paths object to store directories
 const paths = require("./utilities/path.js");
-const { addRole, getRole, getGuild, getChannel, getObjectFromGitHubJSON, saveObjectToGitHubJSON, getRoleById } = require('./modules/functions.js');
+const { addRole, getRole, getGuild, getChannel, getObjectFromGitHubJSON, saveObjectToGitHubJSON, getRoleById, getJSONFromObj } = require('./modules/functions.js');
 const { Collection } = require('discord.js');
 const SlashCommand = require('./modules/commands/SlashCommand.js');
 global.paths = paths;
@@ -160,6 +161,15 @@ global.client.once(Events.ClientReady, async () => {
 		LLPointManager = require("./modules/llpointmanager.js"),
 		config = require('./utilities/config.json');
 
+	client.user.setPresence({
+		activities: [{
+				name: 'with depression',
+				type: Discord.ActivityType.Streaming,
+				url: 'https://twitch.tv/jackofalltrade5'
+		}],
+		status: 'online'
+	});
+
 	global.music_queues = new Map();
 	global.client.player = new Player(global.client, {
 		ytdlOptions: {
@@ -171,19 +181,27 @@ global.client.once(Events.ClientReady, async () => {
 	config.isOn = true;
 	console.log("I'm turned on");
 	fs.writeFileSync("./utilities/config.json", JSON.stringify(config));
-
 	global.Roles = require("./modules/rapid_discord_mafia/roles");
 	global.abilities = require("./modules/rapid_discord_mafia/ability.js").Abilities;
 	global.Game = new Game( new Players() );
 	global.LLPointManager = new LLPointManager();
 	global.rapid_discord_mafia = new RapidDiscordMafia();
 	const rapid_discord_mafia_obj = await getObjectFromGitHubJSON("rapid_discord_mafia");
-	console.log({rapid_discord_mafia_obj})
 	global.rapid_discord_mafia.setTo(rapid_discord_mafia_obj);
 	console.log("RDM Modules Built");
 
 	await global.LLPointManager.updateViewersFromDatabase();
 	console.log("Viewers Updated From Database");
+
+	const events_json = await getObjectFromGitHubJSON("events");
+	let events = events_json.events;
+	for (const event_index in events) {
+		let event = events[event_index];
+		event = new Event(event);
+		event.restartCronJobs();
+		events[event_index] = event;
+	}
+	global.events = events;
 
 	global.client.user.setPresence({
 		status: 'online',
@@ -235,7 +253,6 @@ global.client.once(Events.ClientReady, async () => {
 				let messages = JSON.parse(body);
 				global.messages = messages;
 			} else {
-				console.log(body);
 				console.error(error);
 			}
 		}
@@ -289,7 +306,7 @@ global.client.once(Events.ClientReady, async () => {
 	}
 
 	const daily_controversial_msg = new cron.CronJob(
-		'00 30 14 */1 * *',
+		'00 30 14 2-31/2 * *',
 		() => {
 			console.log("Controversial Message Sending...");
 			const
@@ -314,7 +331,7 @@ global.client.once(Events.ClientReady, async () => {
 	);
 
 	const daily_philosophy_msg = new cron.CronJob(
-		'00 00 11 */1 * *',
+		'00 00 11 */2 * *',
 		() => {
 			console.log("Philosophy Message Sending...");
 			const

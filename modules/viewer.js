@@ -33,7 +33,7 @@ class Viewer {
 				tier = LLPointTiers[tier_key];
 				break;
 			}
-		}
+	}
 
 		return tier
 	}

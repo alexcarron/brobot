@@ -13,6 +13,34 @@
 	"ll_user_id": "276119804182659072",
 	"brobot_user_id": "803333218614116392",
 	"client": "803333218614116392",
+	"ll_game_shows": {
+		"server_id": "1137452342850097252",
+		"controversial_channel_id": "1137452343785443471",
+		"channels":{
+			"philosophy": "1137452343785443472",
+			"controversial": "1137452343785443471",
+			"song_sharing": "1137488930967666830",
+			"game_show_announcements": "1137488553413189702",
+			"events_vc": "1151333097846091886",
+			"events_text_chat": "1140463227256455198"
+		},
+		"roles": {
+			"viewer": "1137452342862696564",
+			"LL Worshiper!": "1137452342879453189",
+			"LL Devotee!": "1137452342879453188",
+			"LL Addict!": "1137452342879453187",
+			"LL Fanatic!": "1137452342879453186",
+			"LL Enthusiast!": "1137452342862696567",
+			"LL Follower!": "1137452342862696566",
+			"LL Fan!": "1137452342862696565",
+			"self_hosted_games": "1141053180201939015",
+			"all_discord_events": "1151333405712195614",
+			"game_night": "1137452342850097257",
+			"live_tune_tournament_event": "1157720530980438136",
+			"watch_party": "1137452342850097258",
+			"self_hosted_game": "1137452342850097258"
+		}
+	},
 	"gameforge": {
 		"guild": "1135364976496873644",
 		"channels": {
@@ -30,25 +58,6 @@
 		"server_id": "726562624682197024",
 		"channels": {
 			"dm_log": "811399149323812874"
-		}
-	},
-	"ll_game_shows": {
-		"server_id": "1137452342850097252",
-		"controversial_channel_id": "1137452343785443471",
-		"channels":{
-			"philosophy": "1137452343785443472",
-			"controversial": "1137452343785443471",
-			"song_sharing": "1137488930967666830"
-		},
-		"roles": {
-			"viewer": "1137452342862696564",
-			"LL Worshiper!": "1137452342879453189",
-			"LL Devotee!": "1137452342879453188",
-			"LL Addict!": "1137452342879453187",
-			"LL Fanatic!": "1137452342879453186",
-			"LL Enthusiast!": "1137452342862696567",
-			"LL Follower!": "1137452342862696566",
-			"LL Fan!": "1137452342862696565"
 		}
 	},
 	"rapid_discord_mafia": {
