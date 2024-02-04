@@ -289,12 +289,6 @@ command.execute = async function(interaction) {
 	let event_days_after_today = 0;
 
 	let dateInFuture = false;
-	console.log({
-		chosen_week_day_num,
-		day_after_today_week_day_num,
-		chosen_time,
-		current_hour
-	});
 	if (chosen_week_day_num >= day_after_today_week_day_num) {
 		if (chosen_week_day_num === day_after_today_week_day_num) {
 			if (chosen_time > current_hour) {
@@ -318,24 +312,31 @@ command.execute = async function(interaction) {
 
 	await wait(3, "second");
 
-	const ping_roles = {
+	const ping_role_ids = {
 		"...playing a game I invented": ids.ll_game_shows.roles.self_hosted_game,
 		"...playing an existing game": ids.ll_game_shows.roles.game_night,
-		"...watching a video/movie/show/etc.": ids.ll_game_shows.roles.watch_party,
+		"...watching something": ids.ll_game_shows.roles.watch_party,
 		"...rating music": ids.ll_game_shows.roles.live_tune_tournament_event,
 	};
+	const ping_role_names = {
+		"...playing a game I invented": "Self Hosted Games",
+		"...playing an existing game": "Game Nights",
+		"...watching something": "Watch Parties",
+		"...rating music": "Live Tune Tournaments",
+	};
 	const ping_roles_select_options = []
-	for (const ping_role_name in Object.keys(ping_roles)) {
-		const ping_role_id = ping_roles[ping_role_name];
-		week_day_select_options.push(
+	let i = 0
+	for (const ping_role_name in ping_role_ids) {
+		ping_roles_select_options.push(
 			new StringSelectMenuOptionBuilder()
 				.setLabel(ping_role_name)
-				.setValue(ping_role_id)
+				.setValue(ping_role_name)
 		);
 	}
+
 	const ping_role_select_menu = new StringSelectMenuBuilder()
 		.setMinValues(0)
-		.setMaxValues(ping_roles.length)
+		.setMaxValues(Object.keys(ping_role_ids).length)
 		.setCustomId('PingRoleSelectMenu')
 		.setPlaceholder('My event involves...')
 		.addOptions(
@@ -347,26 +348,40 @@ command.execute = async function(interaction) {
 		.setLabel(`Confirm`)
 		.setStyle(ButtonStyle.Success);
 
-	const ping_role_action_row = new ActionRowBuilder()
-		.addComponents(ping_role_select_menu, confirm_ping_role_button);
+	const ping_role_select_action_row = new ActionRowBuilder()
+		.addComponents(ping_role_select_menu);
+
+	const ping_role_confirm_action_row = new ActionRowBuilder()
+		.addComponents(confirm_ping_role_button);
 
 	const ping_role_message_sent = await interaction.channel.send({
 		content: "Select all of the things you're event involves in order to determine which ping roles are used. You can choose multiple, but do NOT choose any options that aren't true.",
-		components: [ping_role_action_row],
+		components: [ping_role_select_action_row, ping_role_confirm_action_row],
 	});
 
 	let chosePingRoles = false;
-	let chosen_ping_roles;
+	let chosen_ping_roles, chosen_ping_names;
 	let ping_role_confirmation_interaction;
 	while (!chosePingRoles) {
 		try {
-			ping_role_confirmation_interaction = await date_time_message_sent.awaitMessageComponent({ time: 120_000 });
+			ping_role_confirmation_interaction = await ping_role_message_sent.awaitMessageComponent({ time: 120_000 });
 
 			if (ping_role_confirmation_interaction.customId === "PingRoleSelectMenu") {
-				chosen_ping_roles = ping_role_confirmation_interaction.values;
-			}
+				chosen_ping_roles = [];
+				chosen_ping_names = [];
+				for (const ping_role of ping_role_confirmation_interaction.values) {
+					chosen_ping_roles.push(ping_role_ids[ping_role]);
+					chosen_ping_names.push(ping_role_names[ping_role]);
+				}
 
-			if (ping_role_confirmation_interaction.customId === "ConfirmPingRoles") {
+				const confimation_message = {
+					content: `# ⤵️ Ping Roles Selected\n>>> - **${chosen_ping_names.join("**\n- **")}**`,
+					ephemeral: true,
+				};
+				await ping_role_confirmation_interaction.reply(confimation_message);
+			}
+			else if (ping_role_confirmation_interaction.customId === "ConfirmPingRoles") {
+				chosePingRoles = true;
 				await ping_role_confirmation_interaction.reply({
 					content: `# ✅ Ping Roles Selected`,
 					ephemeral: true,
@@ -375,23 +390,24 @@ command.execute = async function(interaction) {
 		}
 		catch(error) {
 			console.error(error);
-			await date_time_message_sent.edit({ content: `\`Response not recieved in time\``, components: [] });
+			await ping_role_message_sent.edit({ content: `\`Response not recieved in time\``, components: [] });
 			return undefined;
 		}
 	}
 	chosen_ping_roles.push(ids.ll_game_shows.roles.all_discord_events);
 
-
-	console.log({
-		chosen_ping_roles
-	});
+	// event_instructions_text = "Instructions";
+	// event_plan_text = "Plan";
+	// enticing_summary_text = "Summary";
+	// event_title_text = "Title";
+	// event_unix_timestamp = 1706989356;
 
 	const event = new Event({});
 	event.instructions = event_instructions_text;
 	event.plan = event_plan_text;
 	event.summary = enticing_summary_text;
-	event.time = event_unix_timestamp;
 	event.name = event_title_text;
+	event.time = event_unix_timestamp;
 	event.host = viewer;
 	event._ping_role_ids = chosen_ping_roles;
 

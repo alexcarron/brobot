@@ -2,7 +2,7 @@ const { DatabaseURLs, LLPointTiers, } = require("./enums");
 const Viewer = require("./viewer");
 const { github_token } =  require("../modules/token.js");
 const ids = require("../databases/ids.json");
-const { addRole, getGuildMember, getGuild, getRoleById } = require("./functions");
+const { addRole, getGuildMember, getGuild, getRoleById, saveObjectToGitHubJSON } = require("./functions");
 
 class LLPointManager {
 	constructor() {
@@ -203,13 +203,15 @@ class LLPointManager {
 
 	async getViewerOrCreateViewer(interaction) {
 		const user_id = interaction.user.id;
-		const viewer = await global.LLPointManager.getViewerById(user_id);
+		const viewer = await this.getViewerById(user_id);
 
 		if (!viewer) {
 			interaction.channel.send(`You have not been added to the LL Point database yet. You will be added as **${interaction.user.username}**`);
-			await global.LLPointManager.addViewerFromUser(interaction.user);
-			await global.LLPointManager.updateDatabase();
-			return await global.LLPointManager.getViewerById(interaction.user.id);
+			this.addViewerFromUser(interaction.user);
+			console.log(this.viewers);
+			await this.updateDatabase();
+
+			return await this.getViewerById(interaction.user.id);
 		}
 		else {
 			return viewer

@@ -82,7 +82,6 @@ class SlashCommand {
 			.setDescription(this.description);
 
 		await this.parameters.forEach(async parameter => {
-			console.log(parameter instanceof Parameter);
 			await parameter.addToCommand(data)
 		});
 

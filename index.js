@@ -1,6 +1,7 @@
 const { Player } = require('discord-player');
 const RapidDiscordMafia = require('./modules/rapid_discord_mafia/RapidDiscordMafia.js');
 const Event = require('./modules/Event.js');
+const Timer = require('./modules/Timer.js');
 {console.log(`discord.js version: ${require('discord.js').version}`);
 
 const
@@ -63,7 +64,6 @@ const command_folders = fs.readdirSync(command_folders_path);
 			let command = await require(`${commands_path}/${file}`);
 
 			if (command instanceof SlashCommand) {
-				console.log(`Slash command ${file} found.`);
 				command = await command.getCommand();
 			}
 
@@ -96,8 +96,8 @@ const command_folders = fs.readdirSync(command_folders_path);
 
 	try {
 		console.log(`Started refreshing application (/) commands.`);
-
 		console.log(public_slash_commands.map(command => command.name));
+
 		Object.values(private_slash_commands).forEach(commands => {
 			console.log(commands.map(cmd => cmd.name))
 		})
@@ -113,14 +113,15 @@ const command_folders = fs.readdirSync(command_folders_path);
 				{ body: slash_commands },
 			);
 
-			console.log("Reloaded");
+			console.log("Reloaded " + slash_commands.length + " private slash commands...");
 		}
 		console.log("Reloading " + public_slash_commands.length + " public slash commands...");
 		await rest.put(
 			Routes.applicationCommands(ids.client),
 			{ body: public_slash_commands },
 		);
-		console.log("Reloaded");
+		console.log("Reloaded " + public_slash_commands.length + " public slash commands...");
+
 
 
 		console.log(`Successfully reloaded application (/) commands.`);
@@ -163,12 +164,16 @@ global.client.once(Events.ClientReady, async () => {
 
 	client.user.setPresence({
 		activities: [{
-				name: 'with depression',
+				name: 'How to Cook Spaghetti',
 				type: Discord.ActivityType.Streaming,
 				url: 'https://twitch.tv/jackofalltrade5'
 		}],
 		status: 'online'
 	});
+
+	config.isOn = true;
+	console.log("I'm turned on");
+	fs.writeFileSync("./utilities/config.json", JSON.stringify(config));
 
 	global.music_queues = new Map();
 	global.client.player = new Player(global.client, {
@@ -177,21 +182,21 @@ global.client.once(Events.ClientReady, async () => {
 			highWaterMark: 1 << 25
 		}
 	});
-
-	config.isOn = true;
-	console.log("I'm turned on");
-	fs.writeFileSync("./utilities/config.json", JSON.stringify(config));
 	global.Roles = require("./modules/rapid_discord_mafia/roles");
 	global.abilities = require("./modules/rapid_discord_mafia/ability.js").Abilities;
 	global.Game = new Game( new Players() );
 	global.LLPointManager = new LLPointManager();
 	global.rapid_discord_mafia = new RapidDiscordMafia();
+	console.log("Global module instantiated")
+
 	const rapid_discord_mafia_obj = await getObjectFromGitHubJSON("rapid_discord_mafia");
 	global.rapid_discord_mafia.setTo(rapid_discord_mafia_obj);
-	console.log("RDM Modules Built");
+	console.log("Rapid Discord Mafia Database Downloaded");
 
-	await global.LLPointManager.updateViewersFromDatabase();
-	console.log("Viewers Updated From Database");
+	global.LLPointManager.setViewers(
+		await getObjectFromGitHubJSON("viewers")
+	);
+	console.log("Viewers Database Downloaded");
 
 	const events_json = await getObjectFromGitHubJSON("events");
 	let events = events_json.events;
@@ -202,66 +207,24 @@ global.client.once(Events.ClientReady, async () => {
 		events[event_index] = event;
 	}
 	global.events = events;
+	console.log("Events Database Downloaded");
 
-	global.client.user.setPresence({
-		status: 'online',
-		activity: {
-			name: "LL Game Shows!",
-			type: 'WATCHING',
-			url: "https://www.youtube.com/LLGameShows"
-		}
-	});
+	const timers_json = await getObjectFromGitHubJSON("timers");
+	let timers = timers_json.timers;
+	for (const timer_index in timers) {
+		let timer = timers[timer_index];
+		timer = new Timer(timer);
+		timer.startCronJob();
+		timers[timer_index] = timer;
+	}
+	global.timers = timers;
+	console.log("Timers Database Downloaded");
 
 	// Get messages.json
-	global.participants = [
-		"LL",
-	];
-	global.questions = [
-		"Do you fart?",
-		"Why are you a furry?",
-		"What wish do you make on the monkeys paw?",
-		"What's you favorite animal?",
-		"What tank would you want to have as your mobile home?",
-		"What, in your opinion, makes a life worthwhile? What makes it something, in a hypothetical afterlife, that you can look back to and think 'yeah, that was a pretty good life'? Is it simple happiness? Doing good for others? A good childhood or, on the opposite, successfully recovering from a bad one? Accomplishing your life goal, even at a cost you may come to regret?",
-		"What is the inspiration behind the profile picture you're currently using right now?",
-		"If a cave has a cave-in, is it still called a cave?",
-		"Do you are is are um do gay?",
-		"Do you have callused feet?",
-		"Have you ever woken up at 8 am but since your parents were asleep you had nobody to ask and tried to open the shutters on your own and accidentally broke them, causing the rain outside to drip inside and straight on your parents' computer, but because you were 7 you didn't get why water+computer=bad and got mad at the fact that it wasn't working and started calling your parents for help only to get punished?",
-		"Can you describe the last dream that you had? How many details of it do you still remember?",
-		"When was the last time you saw Ronald McDonald in a commercial?",
-		"Can you name every song here? (If the answer is no, no LL Point for you 🥰) https://cdn.discordapp.com/attachments/1161477028441239562/1162527149115326496/53B04D6E-E756-4F6D-BCC2-08ADABD14AC6.mov?ex=653c42c7&is=6529cdc7&hm=81cf2284b2b432354c99d596a3ab328671559f031cfd041dabde9fe5d2908cd7&",
-		"Who is your least favorite person out of the people participanting in this event?",
-		"What is the daily routine of hte participant after you alphabetically?",
-	]
-	const { promisify } = require('util');
-	const request = promisify(require("request"));
-	const { github_token } =  require("./modules/token.js");
-	const ll_game_show_center_guild = await getGuild(ids.servers.LLGameShowCenter);
-
-	const options = {
-		url: DatabaseURLs.Messages,
-		headers: {
-			'Authorization': `Token ${github_token}`
-		},
-	};
-
-	request(
-		options,
-		(error, response, body) => {
-			if (!error && response.statusCode == 200) {
-				let messages = JSON.parse(body);
-				global.messages = messages;
-			} else {
-				console.error(error);
-			}
-		}
-	)
-	.catch(err => {
-		console.error(err);
-	});
-
-
+	global.participants = [];
+	global.questions = [];
+	global.messages = await getObjectFromGitHubJSON("messages");
+	console.log("Messages Database Downloaded");
 
 	async function updateMessagesDatabase() {
 		const
@@ -354,9 +317,9 @@ global.client.once(Events.ClientReady, async () => {
 		"America/New_York"
 	);
 
-	console.log("STARTING CRON JOBS")
 	daily_philosophy_msg.start();
 	daily_controversial_msg.start();
+	console.log("Setup reocurring LL Game Show Center questions");
 
 	console.log('Ready!');
 });
@@ -619,8 +582,6 @@ global.client.on(Events.InteractionCreate, async (interaction) => {
 
 		// In The Required Channel?
 		if (command.required_channels && !command.required_channels.includes(interaction.channel.id)) {
-			console.log({command});
-			console.log(interaction.channel.id);
 			return interaction.reply({
 				content: `\`You aren't allowed to use this command in this channel.\``,
 				ephemeral: true

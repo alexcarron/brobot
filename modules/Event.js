@@ -129,6 +129,7 @@ class Event {
 	async announceEvent() {
 		const ll_game_shows_guild = await getGuild(ids.ll_game_shows.server_id);
 		const announce_channel = await getChannel(ll_game_shows_guild, ids.ll_game_shows.channels.game_show_announcements);
+		const upcoming_games_channel = await getChannel(ll_game_shows_guild, ids.ll_game_shows.channels.upcoming_games);
 
 		const event_manager = new GuildScheduledEventManager(ll_game_shows_guild)
 
@@ -146,15 +147,24 @@ class Event {
 			maxAge: 0,
 		});
 
-		const message =
+		const announce_message =
 			`# ${this._name} (Coming Soon)` + "\n" +
 			`> **What**: ${this._summary}` + "\n" +
 			`> **When**: **<t:${this._time}:F>** <t:${this._time}:R>` + "\n" +
 			`> **Where**: ${event_invite_url}` + "\n" +
-			`<@&${ids.ll_game_shows.roles.all_discord_events}> <@&${ids.ll_game_shows.roles.self_hosted_games}>`;
+			`<@&${this._ping_role_ids.join("> <&@")}>`;
 			// "";
 
-		return await announce_channel.send(message);
+		const upcoming_message =
+			`# 🎉 ${this._name}` + "\n" +
+			`${this._summary}` + "\n" +
+			"\n" +
+			`> **When**: **<t:${this._time}:F>** <t:${this._time}:R>` + "\n" +
+			`> **Where**: ${event_invite_url}`;
+			// "";
+
+		await upcoming_games_channel.send(upcoming_message);
+		return await announce_channel.send(announce_message);
 	}
 
 	/**
@@ -167,7 +177,7 @@ class Event {
 
 		const message =
 			`# ${this._name} (Starting <t:${this._time + 60*5}:R>)` + "\n" +
-			`<@&${ids.ll_game_shows.roles.all_discord_events}> <@&${ids.ll_game_shows.roles.self_hosted_games}>` + "\n" +
+			`<@&${this._ping_role_ids.join("> <&@")}>` + "\n" +
 			`## To Participate` + "\n" +
 			`>>> ${this._instructions}`;
 
@@ -192,7 +202,7 @@ class Event {
 
 		const message =
 			`# ❗ STARTING NOW: ${this._name}` + "\n" +
-			`<@&${ids.ll_game_shows.roles.all_discord_events}> <@&${ids.ll_game_shows.roles.self_hosted_games}>` + "\n" +
+			`<@&${this._ping_role_ids.join("> <&@")}>` + "\n" +
 			`## Last Minute Joiners` + "\n" +
 			`>>> ${this._instructions}`;
 

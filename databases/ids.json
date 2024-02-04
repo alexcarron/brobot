@@ -22,7 +22,8 @@
 			"song_sharing": "1137488930967666830",
 			"game_show_announcements": "1137488553413189702",
 			"events_vc": "1151333097846091886",
-			"events_text_chat": "1140463227256455198"
+			"events_text_chat": "1140463227256455198",
+			"upcoming_games": "1142212905178239047"
 		},
 		"roles": {
 			"viewer": "1137452342862696564",
@@ -33,12 +34,11 @@
 			"LL Enthusiast!": "1137452342862696567",
 			"LL Follower!": "1137452342862696566",
 			"LL Fan!": "1137452342862696565",
-			"self_hosted_games": "1141053180201939015",
 			"all_discord_events": "1151333405712195614",
 			"game_night": "1137452342850097257",
 			"live_tune_tournament_event": "1157720530980438136",
 			"watch_party": "1137452342850097258",
-			"self_hosted_game": "1137452342850097258"
+			"self_hosted_game": "1141053180201939015"
 		}
 	},
 	"gameforge": {
