@@ -109,10 +109,22 @@ command.execute = async function(interaction) {
 		}
 	}
 
+	if (gifter_viewer.valentine) {
+		return await interaction.editReply(`You already have a valentine! It wouldn't be special if you chose multiple`);
+	}
+
 	console.log({gifted_viewer, gifter_viewer, viewer_name, num_gifted_points});
+
+	if (gifted_viewer == gifter_viewer) {
+		return await interaction.editReply(`You can't be your own valentine.`);
+	}
 
 	if (num_gifted_points <= 0) {
 		return await interaction.editReply(`You can only give people postive amounts of LL Points, sorry.`);
+	}
+
+	if (num_gifted_points % 1 !== 0) {
+		return await interaction.editReply(`You can only give people whole amounts of LL Points, sorry.`);
 	}
 
 	if (gifter_viewer.ll_points < num_gifted_points) {
@@ -129,6 +141,7 @@ command.execute = async function(interaction) {
 		`Making **${gifted_viewer.name}** your valentine and gifting them \`${num_gifted_points}\` LL Point(s)...\n` +
 		`You now have \`${gifter_viewer.ll_points}\` LL Point(s).`
 	);
+	console.log(gifted_viewer);
 	await gifted_viewer.dm(
 		`# 💖 Happy Valentines Day! 💞`
 	);
@@ -143,7 +156,7 @@ command.execute = async function(interaction) {
 				"Someone " :
 				`**${gifter_viewer.name}** `
 		) +
-		`has made you their valentine!` + "\n" +
+		`has made you their valentine! 🩷❤️🧡💛💚🩵💙💜` + "\n\n" +
 		`They gifted you **${num_gifted_points}** LL Points with the following message:` + "\n" +
 		`>>> ${personal_message}`
 	);

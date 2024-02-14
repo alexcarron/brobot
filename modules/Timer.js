@@ -154,8 +154,8 @@ class Timer {
 	async endTimer() {
 		const channel = await this.getChannel();
 		await channel.send(
-			`# <@${this._user_id}> ${this._reason}` + "\n" +
-			`❗ Times up!`
+			`# ❗ <@${this._user_id}> Time's Up!` + "\n" +
+			`>>> ${this._reason}`
 		);
 		await this.deleteTimer();
 	}
@@ -164,8 +164,9 @@ class Timer {
 		await this.startCronJob();
 		const channel = await this.getChannel();
 		await channel.send(
-			`# <@${this._user_id}> ${this._reason}` + "\n" +
-			`Timer ends <t:${this._end_time/1000}:R>`
+			`# <@${this._user_id}> started a timer` + "\n" +
+			`Timer ends <t:${this._end_time/1000}:R>` + "\n" +
+			`>>> ${this._reason}`
 		);
 		global.timers.push(this);
 		await saveObjectToGitHubJSON({timers: global.timers}, "timers");

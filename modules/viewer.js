@@ -178,7 +178,14 @@ class Viewer {
 	}
 
 	async dm(message) {
-		const user = await getUser(this.user_id);
+		let user_id;
+		if (this.user_id) {
+			user_id = this.user_id;
+		}
+		else {
+			user_id = ids.users.LL;
+		}
+		const user = await getUser(user_id);
 		await user.send(message);
 	}
 }
