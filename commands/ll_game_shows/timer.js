@@ -16,6 +16,7 @@ const Parameters = {
 		name: "days",
 		description: "The number of days your timer will last",
 		min_value: 0,
+		isRequired: false,
 	}),
 	Hours: new Parameter({
 		type: "integer",
@@ -23,6 +24,7 @@ const Parameters = {
 		description: "The number of hours your timer will last",
 		min_value: 0,
 		max_value: 59,
+		isRequired: false,
 	}),
 	Minutes: new Parameter({
 		type: "integer",
@@ -30,6 +32,7 @@ const Parameters = {
 		description: "The number of minutes your timer will last",
 		min_value: 0,
 		max_value: 59,
+		isRequired: false,
 	}),
 	Seconds: new Parameter({
 		type: "integer",
@@ -37,6 +40,7 @@ const Parameters = {
 		description: "The number of seconds your timer will last",
 		min_value: 0,
 		max_value: 59,
+		isRequired: false,
 	}),
 }
 const command = new SlashCommand({
@@ -56,12 +60,12 @@ command.execute = async function(interaction) {
 	await interaction.editReply("Loading...");
 
 	const reason_for_timer = interaction.options.getString(Parameters.ReasonForTimer.name);
-	const days = interaction.options.getString(Parameters.Days.name);
-	const hours = interaction.options.getString(Parameters.Hours.name);
-	const minutes = interaction.options.getString(Parameters.Minutes.name);
-	const seconds = interaction.options.getString(Parameters.Seconds.name);
+	const days = interaction.options.getInteger(Parameters.Days.name);
+	const hours = interaction.options.getInteger(Parameters.Hours.name);
+	const minutes = interaction.options.getInteger(Parameters.Minutes.name);
+	const seconds = interaction.options.getInteger(Parameters.Seconds.name);
 
-	const now_unix_timestamp = getUnixTimestamp();
+	let now_unix_timestamp = getUnixTimestamp();
 
 	if (days !== undefined && days !== null) {
 		now_unix_timestamp += days*60*60*24;
@@ -87,6 +91,8 @@ command.execute = async function(interaction) {
 	timer.guild_id = interaction.guild.id;
 	timer.user_id = interaction.user.id;
 
-	timer.startTimer();
+	await timer.startTimer();
+
+	await interaction.editReply("\`Timer created.\`");
 }
 module.exports = command;

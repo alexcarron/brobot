@@ -214,10 +214,12 @@ global.client.once(Events.ClientReady, async () => {
 	for (const timer_index in timers) {
 		let timer = timers[timer_index];
 		timer = new Timer(timer);
-		timer.startCronJob();
 		timers[timer_index] = timer;
 	}
 	global.timers = timers;
+	for (const timer of global.timers) {
+		await timer.startCronJob();
+	}
 	console.log("Timers Database Downloaded");
 
 	// Get messages.json
@@ -226,51 +228,10 @@ global.client.once(Events.ClientReady, async () => {
 	global.messages = await getObjectFromGitHubJSON("messages");
 	console.log("Messages Database Downloaded");
 
-	async function updateMessagesDatabase() {
-		const
-			axios = require('axios'),
-			messages_str = JSON.stringify(global.messages),
-			owner = "alexcarron",
-			repo = "brobot-database",
-			path = "messages.json";
-
-
-		try {
-			// Get the current file data
-			const {data: file} =
-				await axios.get(
-					`https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
-					{
-						headers: {
-							'Authorization': `Token ${github_token}`
-						}
-					}
-				);
-
-			// Update the file content
-
-			const {data: updated_file} =
-				await axios.put(
-					`https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
-					{
-						message: 'Update file',
-						content: new Buffer.from(messages_str).toString(`base64`),
-						sha: file.sha
-					},
-					{
-						headers: {
-							'Authorization': `Token ${github_token}`
-						}
-					}
-				);
-		} catch (error) {
-			console.error(error);
-		}
-	}
-
+	const ll_game_show_center_guild = await getGuild(ids.ll_game_shows.server_id);
 	const daily_controversial_msg = new cron.CronJob(
 		'00 30 14 2-31/2 * *',
-		() => {
+		async () => {
 			console.log("Controversial Message Sending...");
 			const
 				controversial_channel = ll_game_show_center_guild.channels.cache.get(ids.ll_game_shows.channels.controversial),
@@ -281,7 +242,7 @@ global.client.once(Events.ClientReady, async () => {
 				controversial_channel.send( controversial_question );
 
 				global.messages.controversial_talk.splice(controversial_question_index, 1);
-				updateMessagesDatabase();
+				await saveObjectToGitHubJSON(global.messages, "messages");
 			}
 			else {
 				controversial_channel.send(`<@${ids.users.LL}> WARNING: We have run out of controversial questions! Blow up the server!`);
@@ -295,10 +256,10 @@ global.client.once(Events.ClientReady, async () => {
 
 	const daily_philosophy_msg = new cron.CronJob(
 		'00 00 11 */2 * *',
-		() => {
+		async () => {
 			console.log("Philosophy Message Sending...");
 			const
-				philosophy_channel = ll_game_show_center_guild.channels.cache.get(ids.ll_game_shows.channels.philosophy),
+				philosophy_channel = await getChannel(ll_game_show_center_guild, ids.ll_game_shows.channels.philosophy),
 				philosophy_question_index = Math.floor( Math.random() * global.messages.philosophy.length ),
 				philosophy_question = global.messages.philosophy[philosophy_question_index];
 
@@ -310,7 +271,7 @@ global.client.once(Events.ClientReady, async () => {
 			}
 
 			global.messages.philosophy.splice(philosophy_question_index, 1);
-			updateMessagesDatabase();
+			await saveObjectToGitHubJSON(global.messages, "messages");
 		},
 		null,
 		true,

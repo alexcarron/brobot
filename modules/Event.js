@@ -149,16 +149,15 @@ class Event {
 
 		const announce_message =
 			`# ${this._name} (Coming Soon)` + "\n" +
-			`> **What**: ${this._summary}` + "\n" +
+			`${this._summary}` + "\n" +
 			`> **When**: **<t:${this._time}:F>** <t:${this._time}:R>` + "\n" +
 			`> **Where**: ${event_invite_url}` + "\n" +
-			`<@&${this._ping_role_ids.join("> <&@")}>`;
+			`<@&${this._ping_role_ids.join("> <@&")}>`;
 			// "";
 
 		const upcoming_message =
 			`# 🎉 ${this._name}` + "\n" +
 			`${this._summary}` + "\n" +
-			"\n" +
 			`> **When**: **<t:${this._time}:F>** <t:${this._time}:R>` + "\n" +
 			`> **Where**: ${event_invite_url}`;
 			// "";
@@ -177,7 +176,7 @@ class Event {
 
 		const message =
 			`# ${this._name} (Starting <t:${this._time + 60*5}:R>)` + "\n" +
-			`<@&${this._ping_role_ids.join("> <&@")}>` + "\n" +
+			`<@&${this._ping_role_ids.join("> <@&")}>` + "\n" +
 			`## To Participate` + "\n" +
 			`>>> ${this._instructions}`;
 
@@ -202,7 +201,7 @@ class Event {
 
 		const message =
 			`# ❗ STARTING NOW: ${this._name}` + "\n" +
-			`<@&${this._ping_role_ids.join("> <&@")}>` + "\n" +
+			`<@&${this._ping_role_ids.join("> <@&")}>` + "\n" +
 			`## Last Minute Joiners` + "\n" +
 			`>>> ${this._instructions}`;
 

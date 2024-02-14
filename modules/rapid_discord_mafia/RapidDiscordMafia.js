@@ -32,8 +32,6 @@ class RapidDiscordMafia {
 				this[property] = object[property];
 			}
 		}
-
-		console.log(this);
 	}
 }
 

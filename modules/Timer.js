@@ -143,19 +143,39 @@ class Timer {
 		return channel;
 	}
 
-	async startTimer() {
-		await channel.send(
-			`# <@${this._user_id}> ${this._reason}` + "\n" +
-			`Timer ends <t:${this._end_time/1000}:R>`
-		);
-		await this.startCronJob();
+	async deleteTimer() {
+		console.log(global.timers);
+		global.timers = global.timers.filter((timer) => timer !== this);
+		await saveObjectToGitHubJSON({timers: global.timers}, "timers");
+		console.log(global.timers);
+
 	}
 
 	async endTimer() {
+		const channel = await this.getChannel();
 		await channel.send(
 			`# <@${this._user_id}> ${this._reason}` + "\n" +
 			`❗ Times up!`
 		);
+		await this.deleteTimer();
+	}
+
+	async startTimer() {
+		await this.startCronJob();
+		const channel = await this.getChannel();
+		await channel.send(
+			`# <@${this._user_id}> ${this._reason}` + "\n" +
+			`Timer ends <t:${this._end_time/1000}:R>`
+		);
+		global.timers.push(this);
+		await saveObjectToGitHubJSON({timers: global.timers}, "timers");
+
+		const now = new Date();
+		const end_date = new Date(this._end_time);
+
+		if (now >= end_date) {
+			this.endTimer();
+		};
 	}
 
 	/**
@@ -164,16 +184,20 @@ class Timer {
 	async startCronJob() {
 		const now = new Date();
 		const end_date = new Date(this._end_time);
+		console.log({end_date});
+		const timer = this;
 
 		const timer_ends_cron_job = new cron.CronJob(
 			end_date,
 			async function() {
-				await this.endTimer();
+				await timer.endTimer();
 			},
 		);
 
 		if (now < end_date)
 			timer_ends_cron_job.start();
+		else
+			this.deleteTimer();
 	}
 }
 

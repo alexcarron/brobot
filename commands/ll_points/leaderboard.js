@@ -42,7 +42,6 @@ command.execute = async function(interaction) {
 			.setTimestamp();
 
 		const page = PAGES[current_page-1];
-		console.log({page});
 
 		// Add each viewer to the leaderboard embed
 		let embed_description = "";

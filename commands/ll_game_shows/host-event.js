@@ -79,7 +79,7 @@ command.execute = async function(interaction) {
 		const text_input = new TextInputBuilder()
 			.setCustomId(`${title_id}TextInput`)
 			.setLabel(short_question)
-			.setMaxLength(4_000)
+			.setMaxLength(1_900)
 			.setPlaceholder(placeholder)
 			.setRequired(true)
 			.setStyle(TextInputStyle.Paragraph);
@@ -97,7 +97,7 @@ command.execute = async function(interaction) {
 			while (!hasSubmittedModal) {
 				while (!hasPressedButton) {
 					// Wait for button press
-					confirmation_interaction = await message_sent.awaitMessageComponent({ time: 120_000 });
+					confirmation_interaction = await message_sent.awaitMessageComponent({ time: 1_000_000 });
 					if (confirmation_interaction.customId === `Enter${title_id}`)
 						hasPressedButton = true;
 				}
@@ -105,7 +105,7 @@ command.execute = async function(interaction) {
 				await confirmation_interaction.showModal(modal);
 
 				// Wait for button press
-				confirmation_interaction = await message_sent.awaitMessageComponent({ time: 120_000 });
+				confirmation_interaction = await message_sent.awaitMessageComponent({ time: 1_000_000 });
 				if (confirmation_interaction.customId === `${title_id}Modal`)
 					hasSubmittedModal = true;
 			}
@@ -231,7 +231,7 @@ command.execute = async function(interaction) {
 		.addComponents(time_select_menu);
 
 	const date_time_message_sent = await interaction.channel.send({
-		content: 'Select the date and time for your event in EST. (WARNING: The date and time you pick will be forced to be at least 24 hours after today. So if today is Tuesday 3PM and you choose Wednesday 2PM, the event will be 8 days from now)',
+		content: '_ _\nSelect the date and time for your event in EST. (WARNING: The date and time you pick will be forced to be at least 24 hours after today. So if today is Tuesday 3PM and you choose Wednesday 2PM, the event will be 8 days from now)',
 		components: [week_day_action_row, time_action_row],
 	});
 
@@ -355,7 +355,7 @@ command.execute = async function(interaction) {
 		.addComponents(confirm_ping_role_button);
 
 	const ping_role_message_sent = await interaction.channel.send({
-		content: "Select all of the things you're event involves in order to determine which ping roles are used. You can choose multiple, but do NOT choose any options that aren't true.",
+		content: "_ _\nSelect all of the things you're event involves in order to determine which ping roles are used. You can choose multiple, but do NOT choose any options that aren't true.",
 		components: [ping_role_select_action_row, ping_role_confirm_action_row],
 	});
 

@@ -11,38 +11,38 @@ const Parameters = {
 	ViewerName: new Parameter({
 		type: "string",
 		name: "viewer-name",
-		description: "The name of the person your gifting LL Points to",
+		description: "The name of the person your making your valentine",
 		isAutocomplete: true,
 	}),
 	LLPointAmount: new Parameter({
 		type: "number",
 		name: "ll-point-amount",
-		description: "The amount of LL Points your gifting to them",
+		description: "The amount of LL Points you're gifting to them",
 	}),
 	PersonalMessage: new Parameter({
 		type: "string",
 		name: "personal-message",
 		description: "A heartfelt personal message to include with your gift",
 	}),
-	Anonymous: new Parameter({
-		type: "boolean",
-		name: "anonymous",
-		description: "If you want your gift to not include your name",
-		isRequired: false,
-	}),
+	// Anonymous: new Parameter({
+	// 	type: "boolean",
+	// 	name: "anonymous",
+	// 	description: "If you want your gift to not include your name",
+	// 	isRequired: false,
+	// }),
 }
 
 const command = new SlashCommand({
-	name: "gift",
-	description: "Gift another person a certain amount of LL Points for the holidays!",
+	name: "make-valentine",
+	description: "Make someone your valentine and send them a valentine's day gift",
 });
 command.parameters = [
 	Parameters.ViewerName,
 	Parameters.LLPointAmount,
 	Parameters.PersonalMessage,
-	Parameters.Anonymous,
+	// Parameters.Anonymous,
 ];
-command.required_permissions = [ PermissionFlagsBits.Administrator ];
+// command.required_permissions = [ PermissionFlagsBits.Administrator ];
 command.allowsDMs = true;
 command.execute = async function(interaction) {
 	await deferInteraction(interaction, "Adding LL Points...");
@@ -72,7 +72,7 @@ command.execute = async function(interaction) {
 				confirm_txt: `Add Me to the Database`,
 				cancel_txt: `Don't Add Me to the Database`,
 				confirm_update_txt: `**${interaction.user.username}** has been added to the LL Point database!`,
-				cancel_update_txt: `Canceled LL Point Gift`
+				cancel_update_txt: `Canceled LL Point Valentine`
 			})
 		) {
 			return
@@ -88,8 +88,10 @@ command.execute = async function(interaction) {
 	const
 		viewer_name_arg = interaction.options.getString(Parameters.ViewerName.name),
 		num_gifted_points = interaction.options.getNumber(Parameters.LLPointAmount.name),
-		personal_message = interaction.options.getString(Parameters.PersonalMessage.name),
-		isAnonymous = interaction.options.getBoolean(Parameters.Anonymous.name);
+		personal_message = interaction.options.getString(Parameters.PersonalMessage.name);
+		// isAnonymous = interaction.options.getBoolean(Parameters.Anonymous.name);
+
+	const isAnonymous = false;
 
 	let gifted_viewer = await global.LLPointManager.getViewerByName(viewer_name_arg);
 	let viewer_name = viewer_name_arg;
@@ -124,11 +126,11 @@ command.execute = async function(interaction) {
 	await gifter_viewer.addLLPoints(-num_gifted_points);
 	await gifted_viewer.addLLPoints(num_gifted_points);
 	await interaction.editReply(
-		`Gifting **${gifted_viewer.name}** \`${num_gifted_points}\` LL Point(s)...\n` +
+		`Making **${gifted_viewer.name}** your valentine and gifting them \`${num_gifted_points}\` LL Point(s)...\n` +
 		`You now have \`${gifter_viewer.ll_points}\` LL Point(s).`
 	);
 	await gifted_viewer.dm(
-		`# 🎁 Happy Holidays! ❄️`
+		`# 💖 Happy Valentines Day! 💞`
 	);
 	await gifted_viewer.dm(
 		(
@@ -141,9 +143,11 @@ command.execute = async function(interaction) {
 				"Someone " :
 				`**${gifter_viewer.name}** `
 		) +
-		`has gifted you **${num_gifted_points}** LL Points with the following message:` + "\n" +
+		`has made you their valentine!` + "\n" +
+		`They gifted you **${num_gifted_points}** LL Points with the following message:` + "\n" +
 		`>>> ${personal_message}`
 	);
+	gifted_viewer.setValentine(gifted_viewer);
 	await global.LLPointManager.updateDatabase();
 }
 command.autocomplete = LLPointManager.getViewersAutocompleteValues;

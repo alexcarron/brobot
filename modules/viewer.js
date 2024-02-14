@@ -3,7 +3,7 @@ const ids = require("../databases/ids.json");
 const { getGuild, getGuildMember, getRoleById, addRole, removeRole, getUser } = require("./functions.js");
 
 class Viewer {
-	constructor({name, aliases=[], user_id, ll_points=0, isSubscribed=false, didUndertaleQuiz=false, didDeltaruneQuiz=false, games_participated_in=[]}) {
+	constructor({name, aliases=[], user_id, ll_points=0, isSubscribed=false, didUndertaleQuiz=false, didDeltaruneQuiz=false, games_participated_in=[], valentine}) {
 		this.user_id = user_id;
 		this.name = name;
 		this.ll_points = ll_points;
@@ -13,6 +13,7 @@ class Viewer {
 		this.didUndertaleQuiz = didUndertaleQuiz;
 		this.didDeltaruneQuiz = didDeltaruneQuiz;
 		this.games_participated_in = games_participated_in;
+		this.valentine = valentine;
 	}
 
 	toString() {
@@ -83,6 +84,11 @@ class Viewer {
 
 		console.log("Done.");
 
+	}
+
+	setValentine(valentine_viewer) {
+		const valentine_name = valentine_viewer.name;
+		this.valentine = valentine_name
 	}
 
 	async giveReward(accomplishment, game_name=undefined) {

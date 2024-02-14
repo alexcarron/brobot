@@ -560,12 +560,12 @@ doesValueMatchType: function doesValueMatchType(value, type) {
 			owner = "alexcarron",
 			repo = "brobot-database",
 			path = `${json_name}.json`,
-			rdm_game_str = JSON.stringify(object);
+			json_object_string = JSON.stringify(object);
 
 
 		try {
-			// Get the current file data
-			const {data: file} =
+			// Get the current file data to obtain sha
+			const {data: current_file} =
 				await axios.get(
 					`https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
 					{
@@ -579,9 +579,9 @@ doesValueMatchType: function doesValueMatchType(value, type) {
 			await axios.put(
 				`https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
 				{
-					message: 'Update file',
-					content: new Buffer.from(rdm_game_str).toString(`base64`),
-					sha: file.sha
+					message: `Update ${json_name}`,
+					content: new Buffer.from(json_object_string).toString(`base64`),
+					sha: current_file.sha
 				},
 				{
 					headers: {
@@ -589,7 +589,8 @@ doesValueMatchType: function doesValueMatchType(value, type) {
 					}
 				}
 			);
-		} catch (error) {
+		}
+		catch (error) {
 			console.error(error);
 		}
 	},
