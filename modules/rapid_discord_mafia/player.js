@@ -1,12 +1,12 @@
 const { RDMRoles, Announcements, MessageDelays, Feedback, Factions, RoleNames, AbilityTypes, TrialVotes, AbilityNames } = require("../enums");
 const roles = require("./roles");
-const ids = require("../../databases/ids.json");
+const ids = require("../../data/ids.json");
 const { Abilities } = require("./ability");
 
 const
 	{ getGuildMember, getRole, addRole, removeRole, getChannel, wait, getRandArrayItem, getRDMGuild } = require("../functions"),
 	{ PermissionFlagsBits } = require('discord.js'),
-	rdm_ids = require("../../databases/ids.json").rapid_discord_mafia;
+	rdm_ids = require("../../data/ids.json").rapid_discord_mafia;
 
 class Player {
 	/** {name: AbilityNameStr, args: {[arg_name: ArgNameStr]: ArgValueStr}} */

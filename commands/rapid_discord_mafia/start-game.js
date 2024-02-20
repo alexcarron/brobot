@@ -6,7 +6,7 @@ const Game = require("../../modules/rapid_discord_mafia/game");
 /* eslint-disable no-unused-vars */
 const
 	{ PermissionFlagsBits } = require("discord.js"),
-	{ faction_names, max_ratios } = require("../../databases/rapid_discord_mafia/constants"),
+	{ faction_names, max_ratios } = require("../../data/rapid_discord_mafia/constants"),
 	{ Phases, GameStates, Subphases, Factions, AbilityUses, Announcements, PhaseWaitTimes, MessageDelays } = require("../../modules/enums"),
 	{
 		getChannel,
@@ -25,9 +25,9 @@ const
 		living_role_id,
 		pre_game_category_id,
 		channels: channel_ids
-	} = require("../../databases/ids.json").rapid_discord_mafia,
-	rdm_ids = require("../../databases/ids.json").rapid_discord_mafia,
-	ids = require("../../databases/ids.json");
+	} = require("../../data/ids.json").rapid_discord_mafia,
+	rdm_ids = require("../../data/ids.json").rapid_discord_mafia,
+	ids = require("../../data/ids.json");
 
 
 const command = new SlashCommand({

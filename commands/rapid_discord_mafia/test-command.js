@@ -4,7 +4,7 @@ const Parameter = require("../../modules/commands/Paramater.js");
 const Enums = require("../../modules/enums.js");
 const Game = require("../../modules/rapid_discord_mafia/game.js");
 
-const ids = require(`${global.paths.databases_dir}/ids.json`);
+const ids = require(`../../data/ids.json`);
 
 const Subparameters = {
 	PlayerVotingFor: new Parameter({

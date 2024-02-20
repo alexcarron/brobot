@@ -14,8 +14,8 @@ const
 		rdm_server_id,
 		player_actions_category_id,
 	}
-		= require("../../databases/ids.json").rapid_discord_mafia,
-	ids = require("../../databases/ids.json");
+		= require("../../data/ids.json").rapid_discord_mafia,
+	ids = require("../../data/ids.json");
 
 const Subparameters = {
 	PlayerVotingFor: new Parameter({

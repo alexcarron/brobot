@@ -1,12 +1,12 @@
 const { PermissionFlagsBits } = require("discord.js");
 const SlashCommand = require("../../modules/commands/SlashCommand");
 const { Abilities } = require("../../modules/rapid_discord_mafia/ability");
-const ids = require("../../databases/ids.json");
+const ids = require("../../data/ids.json");
 const { Announcements, MessageDelays, PhaseWaitTimes } = require("../../modules/enums");
 
 
 const
-	{ factions, max_timeout } = require("../../databases/rapid_discord_mafia/constants"),
+	{ factions, max_timeout } = require("../../data/rapid_discord_mafia/constants"),
 	{
 		getChannel,
 		getRole,
@@ -19,7 +19,7 @@ const
 		living_role_id,
 		town_discussion_channel_id: day_chat_chnl_id,
 		channels: channel_ids,
-	} = require("../../databases/ids.json").rapid_discord_mafia;
+	} = require("../../data/ids.json").rapid_discord_mafia;
 
 const command = new SlashCommand({
 	name: "start-day",

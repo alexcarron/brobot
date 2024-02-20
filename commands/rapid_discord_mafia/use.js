@@ -4,7 +4,7 @@ const { toTitleCase, deferInteraction, getRDMGuild, getChannel } = require("../.
 const { Abilities } = require("../../modules/rapid_discord_mafia/ability");
 const { ArgumentTypes, ArgumentSubtypes, Factions, AbilityUses, Phases } = require("../../modules/enums");
 const roles = require("../../modules/rapid_discord_mafia/roles");
-const ids = require("../../databases/ids.json")
+const ids = require("../../data/ids.json")
 
 const command = new SlashCommand({
 	name: "use",

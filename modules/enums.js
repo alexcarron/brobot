@@ -1,5 +1,5 @@
 const { getUnixTimestamp, getSentenceFromArray } = require("./functions");
-const ids = require("../databases/ids.json");
+const ids = require("../data/ids.json");
 
 const Enums = {
 	WinConditions: {

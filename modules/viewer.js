@@ -1,5 +1,5 @@
 const { LLPointTiers, LLPointThresholds, LLPointRewards, LLPointAccomplishments } = require("./enums.js");
-const ids = require("../databases/ids.json");
+const ids = require("../data/ids.json");
 const { getGuild, getGuildMember, getRoleById, addRole, removeRole, getUser } = require("./functions.js");
 
 class Viewer {

@@ -1,4 +1,4 @@
-const ids = require("../databases/ids.json")
+const ids = require("../data/ids.json")
 const { github_token } =  require("../token.json");
 
 const functions = {

@@ -5,7 +5,7 @@ const Game = require("../../modules/rapid_discord_mafia/game");
 const Death = require("../../modules/rapid_discord_mafia/death");
 
 const
-	{ factions } = require("../../databases/rapid_discord_mafia/constants"),
+	{ factions } = require("../../data/rapid_discord_mafia/constants"),
 	{
 		getChannel,
 		getGuildMember,
@@ -20,8 +20,8 @@ const
 	{
 		rdm_server_id,
 		channels: channel_ids,
-	} = require("../../databases/ids.json").rapid_discord_mafia,
-	ids = require("../../databases/ids.json");
+	} = require("../../data/ids.json").rapid_discord_mafia,
+	ids = require("../../data/ids.json");
 
 const command = new SlashCommand({
 	name: "start-trial-results",

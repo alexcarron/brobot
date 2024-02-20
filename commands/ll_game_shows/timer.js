@@ -1,5 +1,5 @@
 const SlashCommand = require('../../modules/commands/SlashCommand.js');
-const ids = require("../../databases/ids.json");
+const ids = require("../../data/ids.json");
 const Parameter = require('../../modules/commands/Paramater.js');
 const { getUnixTimestamp } = require('../../modules/functions.js');
 const Timer = require('../../modules/Timer.js');
