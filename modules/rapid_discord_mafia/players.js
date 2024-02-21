@@ -3,8 +3,9 @@ const Player = require("./player");
 const roles = require("./roles");
 
 class Players {
-	constructor(players = {}) {
+	constructor(players = {}, isMockPlayerManager=false) {
 		this.players = players;
+		this.isMockPlayerManager = isMockPlayerManager;
 	}
 
 	reset() {
@@ -38,6 +39,11 @@ class Players {
 		return player;
 	}
 
+	/**
+	 *
+	 * @param {string} name The name of the player getting
+	 * @returns {Player} player gettings
+	 */
 	get(name) {
 		return this.players[name];
 	}
@@ -107,17 +113,19 @@ class Players {
 
 		this.players[new_name].name = new_name;
 
-		const player_guild_member = await this.players[new_name].getGuildMember();
-		await setNickname(player_guild_member, new_name);
+		if (!this.isMockPlayerManager) {
+			const player_guild_member = await this.players[new_name].getGuildMember();
+			await setNickname(player_guild_member, new_name);
 
-		const new_channel_name =
-			"👤｜" +
-			player.name.toLowerCase()
-				.replace(' ', '-')
-				.replace(/[^a-zA-Z0-9 -]/g, "");
+			const new_channel_name =
+				"👤｜" +
+				player.name.toLowerCase()
+					.replace(' ', '-')
+					.replace(/[^a-zA-Z0-9 -]/g, "");
 
-		const player_channel = await player.getPlayerChannel();
-		player_channel.setName(new_channel_name);
+			const player_channel = await player.getPlayerChannel();
+			player_channel.setName(new_channel_name);
+		}
 	}
 
 	isFactionAlive(faction) {
