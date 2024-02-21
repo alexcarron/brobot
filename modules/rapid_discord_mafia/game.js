@@ -4,13 +4,19 @@ const ids = require("../../databases/ids.json");
 const validator = require('../../utilities/validator.js');
 const { github_token } =  require("../token.js");
 const { Abilities } = require("./ability.js");
-const { PermissionFlagsBits } = require("discord.js");
+const { PermissionFlagsBits, Role } = require("discord.js");
 const Death = require("./death.js");
 const roles = require("./roles.js");
 const Players = require("../rapid_discord_mafia/players.js");
+const RoleIdentifier = require("./RoleIdentifier.js");
 
 class Game {
-	constructor({players = {}}) {
+	/**
+	 * Whether this is a mock game used for testing or not
+	 */
+	isMockGame;
+
+	constructor({players = {}}, isMockGame=false) {
 		this.state = GameStates.Ended;
 		this.Players = new Players(players);
 		this.phase = null;
@@ -49,6 +55,7 @@ class Game {
 		 * }
 		 */
 		this.abilities_performed = {}
+		this.isMockGame = isMockGame;
 	}
 
 	static IS_TESTING = false;
@@ -77,11 +84,7 @@ class Game {
 	}
 
 	/**
-	 * {
-	 * 	by: {Player.name}
-	 *  name: {Ability.name}
-	 * 	args: [ ...{Arg} ]
-	 * }
+	 * Looks at all the player's abilities performed fields and adds them to the current abilities performed
 	 */
 	async updateCurrentAbilitiesPerformed() {
 		/**
@@ -115,6 +118,9 @@ class Game {
 		this.sortAbilitiesPerformed();
 	}
 
+	/**
+	 * Sorts all abilities performed in the game in order of priority
+	 */
 	async sortAbilitiesPerformed() {
 		this.abilities_performed = Object.values(this.abilities_performed)
 		.sort(
@@ -150,28 +156,36 @@ class Game {
 		);
 	}
 
-	async setGame(game) {
-		for (const property in game) {
+	/**
+	 * Sets the game object from a json game object
+	 * @param {Game} game_json A Game object
+	 */
+	async setGame(game_json) {
+		for (const property in game_json) {
 			if (property === "next_deaths") {
 				this.next_deaths = [];
-				const deaths = game[property];
+				const deaths = game_json[property];
 				for (const death of deaths) {
 					this.next_deaths.push(new Death(death));
 				}
 			}
 			else if (property !== "Players") {
-				this[property] = game[property];
+				this[property] = game_json[property];
 			}
 
 		}
 
 		this.Players = new Players();
 
-		for (const player_obj of Object.values(game.Players.players)) {
+		for (const player_obj of Object.values(game_json.Players.players)) {
 			await this.Players.addPlayerFromObj(player_obj);
 		}
 	}
 
+	/**
+	 * Starts the game
+	 * @param {RoleIdentifier[]} role_identifiers The unshuffled role identifiers for the game
+	 */
 	async start(role_identifiers) {
 		const
 			unshuffled_role_identifiers = [...role_identifiers],
@@ -212,6 +226,10 @@ class Game {
 		await this.startDay1(days_passed_at_sign_ups);
 	}
 
+	/**
+	 * Sends a message with all the role identifiers for the game to the announcements and role list channel
+	 * @param {RoleIdentifier[]} role_identifiers The unshuffled role identifiers for the game
+	 */
 	async announceRoleList(role_identifiers) {
 		const rdm_guild = await getRDMGuild();
 		const role_list_chnl = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.role_list);
@@ -238,6 +256,9 @@ class Game {
 		role_list_msg.pin();
 	}
 
+	/**
+	 * Uses the role list field to set the role of every player randomly
+	 */
 	async assignRolesToPlayers() {
 		await Game.log("Assigning Roles To Players", 2);
 
@@ -253,11 +274,15 @@ class Game {
 		await this.giveAllExesTargets();
 	}
 
+	/**
+	 * Sets and sends a target for all executioner players
+	 */
 	async giveAllExesTargets() {
 		for (const player of this.Players.getPlayerList()) {
+
 			if (player.role === RoleNames.Executioner) {
-				console.log(this.Players);
 				const rand_town_player = getRandArrayItem(this.Players.getTownPlayers());
+
 				if (rand_town_player)
 					player.setExeTarget(rand_town_player);
 				else
@@ -266,6 +291,12 @@ class Game {
 		}
 	}
 
+	/**
+	 * Gets a list of possible roles a role identifier could be
+	 * @param {RoleIdentifier} role_identifier
+	 * @param {{[faction_name: String]: Number}} num_roles_in_faction A dictionary which keeps track of the number of roles that exist for each faction
+	 * @returns {Role[]} An array of all possible roles a role identifier could roll as
+	 */
 	getPossibleRolesFromIdentifier(role_identifier, num_roles_in_faction) {
 		const
 			existing_factions = Object.keys(num_roles_in_faction),
@@ -361,6 +392,12 @@ class Game {
 		return possible_roles;
 	}
 
+	/**
+	 * Gets a random role from a role identifier
+	 * @param {RoleIdentifier} role_identifier
+	 * @param {{[faction_name: String]: Number}} num_roles_in_faction A dictionary which keeps track of the number of roles that exist for each faction
+	 * @returns {Role} The random role the role identifier rolled
+	 */
 	getRoleFromRoleIdentifier(role_identifier, num_roles_in_faction) {
 		const possible_roles = this.getPossibleRolesFromIdentifier(role_identifier, num_roles_in_faction);
 		const chosen_role = getRandArrayItem(possible_roles);
@@ -385,7 +422,8 @@ class Game {
 	}
 
 	/**
-	 * Prereqs: this.role_identifiers
+	 * @requires this.role_identifiers defined
+	 * Creates and sets the role list based off the current role identifiers
 	 */
 	async createRoleList() {
 		let num_roles_in_faction = {}
@@ -407,6 +445,9 @@ class Game {
 		}
 	}
 
+	/**
+	 * Switches the current phase to the next one
+	 */
 	async setPhaseToNextPhase() {
 		switch (this.phase) {
 			case Phases.Day:
@@ -451,18 +492,23 @@ class Game {
 	}
 
 	static async log(message, heading_level=0) {
-		const staff_chnl = await Game.getStaffChnl();
+		let staff_message = "";
 
 		if (heading_level == 2) {
 			logColor("\n\n" + message, "red");
-			await staff_chnl.send("# " + message);
+			staff_message = "# ";
 		}
 		else if (heading_level == 1) {
 			logColor("\n" + message, "cyan");
-			await staff_chnl.send("## " + message);
+			staff_message = "## ";
 		}
 		else {
 			console.log(message);
+		}
+
+		if (!this.isMockGame) {
+			staff_message += message;
+			const staff_chnl = await Game.getStaffChnl();
 			await staff_chnl.send(message);
 		}
 	}
@@ -504,13 +550,9 @@ class Game {
 	}
 
 	async remindPlayersTo(reminder) {
-		const rdm_guild = await getRDMGuild();
-
 		for (const player_name of this.Players.getAlivePlayerNames()) {
 			const player = this.Players.get(player_name);
-			const player_chnl = await getChannel(rdm_guild, player.channel_id);
-
-			await player_chnl.send(`> ${reminder}`);
+			await player.sendFeedback(`> ${reminder}`);
 		}
 	}
 
@@ -520,11 +562,15 @@ class Game {
 				this.timeout_counter += 1;
 
 				if (this.timeout_counter >= Game.MAX_TIMEOUT_COUNTER) {
-					await this.announceMessages(`There have been no deaths for the past **${this.timeout_counter} day(s)**, so it's a draw!\n_ _`);
+					await this.announceMessages(
+						Announcements.DrawGameFromTimeout(this.timeout_counter) + "\n_ _"
+					);
 					await this.endGame();
 				}
 				else {
-					await this.announceMessages(`Nobody has died in the past **${this.timeout_counter} day(s)**. **${Game.MAX_TIMEOUT_COUNTER - this.timeout_counter}** more days without bloodshed and the game ends in a draw.\n`);
+					await this.announceMessages(
+						Announcements.TimeoutWarning(Game.MAX_TIMEOUT_COUNTER, this.timeout_counter) + `\n`
+					);
 				}
 			}
 		}
@@ -605,11 +651,14 @@ class Game {
 
 	async resetPlayerOnTrial() {
 		const player_on_trial = this.Players.get(this.on_trial);
-		const rdm_guild = await getRDMGuild();
-		const on_trial_role = await getRole(rdm_guild, RDMRoles.OnTrial);
-		const player_guild_member = await getGuildMember(rdm_guild, player_on_trial.id);
 
-		await removeRole(player_guild_member, on_trial_role);
+		if (!this.isMockGame) {
+			const rdm_guild = await getRDMGuild();
+			const on_trial_role = await getRole(rdm_guild, RDMRoles.OnTrial);
+			const player_guild_member = await getGuildMember(rdm_guild, player_on_trial.id);
+
+			await removeRole(player_guild_member, on_trial_role);
+		}
 
 		this.on_trial = "";
 	}
@@ -628,16 +677,16 @@ class Game {
 	}
 
 	async announceRevealedVotes() {
-		const rdm_guild = await getRDMGuild();
-		const announce_chnl = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.game_announce);
-
-		announce_chnl.send(`_ _\n## Revealed Votes`);
+		let messages = [
+			`_ _\n## Revealed Votes`
+		];
 
 		for (const voter in this.trial_votes) {
 			const vote = this.trial_votes[voter];
-
-			await announce_chnl.send(`**${voter}** voted **${toTitleCase(vote)}**.`)
+			messages.push(`**${voter}** voted **${toTitleCase(vote)}**.`)
 		}
+
+		this.announceMessages(...messages);
 	}
 
 	async announceTrialVerdict() {
@@ -664,18 +713,13 @@ class Game {
 	}
 
 	async givePlayerOnTrialRole(player_on_trial) {
-		const rdm_guild = await getRDMGuild();
-		const on_trial_role = await getRole(rdm_guild, RDMRoles.OnTrial);
-		const player_guild_member = await getGuildMember(rdm_guild, player_on_trial.id);
+		if (!this.isMockGame) {
+			const rdm_guild = await getRDMGuild();
+			const on_trial_role = await getRole(rdm_guild, RDMRoles.OnTrial);
+			const player_guild_member = await getGuildMember(rdm_guild, player_on_trial.id);
 
-		await addRole(player_guild_member, on_trial_role);
-	}
-
-	async sendVotingHeader(header) {
-		const rdm_guild = await getRDMGuild()
-		const announce_chnl = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.game_announce);
-
-		announce_chnl.send(`${header}`);
+			await addRole(player_guild_member, on_trial_role);
+		}
 	}
 
 	async announceVotingResults() {
@@ -708,45 +752,14 @@ class Game {
 	}
 
 	async loadGameDataFromDatabase() {
-		const
-			axios = require('axios'),
-			owner = "alexcarron",
-			repo = "brobot-database",
-			path = "rdm-game.json";
+		if (!this.isMockGame) {
+			const
+				axios = require('axios'),
+				owner = "alexcarron",
+				repo = "brobot-database",
+				path = "rdm-game.json";
 
 
-		// Get the current file data
-		const {data: file} =
-			await axios.get(
-				`https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
-				{
-					headers: {
-						'Authorization': `Token ${github_token}`
-					}
-				}
-			)
-			.catch(err => {
-				console.error(err);
-			});
-
-
-		let rdm_game_str = Buffer.from(file.content, 'base64').toString();
-		let rdm_game = JSON.parse(rdm_game_str);
-
-		this.setGame(rdm_game);
-	}
-
-	async saveGameDataToDatabase() {
-		const
-			axios = require('axios'),
-			owner = "alexcarron",
-			repo = "brobot-database",
-			path = "rdm-game.json",
-			rdm_game = this,
-			rdm_game_str = JSON.stringify(rdm_game);
-
-
-		try {
 			// Get the current file data
 			const {data: file} =
 				await axios.get(
@@ -756,26 +769,61 @@ class Game {
 							'Authorization': `Token ${github_token}`
 						}
 					}
-				);
+				)
+				.catch(err => {
+					console.error(err);
+				});
 
-			// Update the file content
-			await axios.put(
-				`https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
-				{
-					message: 'Update file',
-					content: new Buffer.from(rdm_game_str).toString(`base64`),
-					sha: file.sha
-				},
-				{
-					headers: {
-						'Authorization': `Token ${github_token}`
-					}
-				}
-			);
-		} catch (error) {
-			console.error(error);
+
+			let rdm_game_str = Buffer.from(file.content, 'base64').toString();
+			let rdm_game = JSON.parse(rdm_game_str);
+
+			this.setGame(rdm_game);
 		}
+	}
 
+	async saveGameDataToDatabase() {
+		if (!this.isMockGame) {
+
+			const
+				axios = require('axios'),
+				owner = "alexcarron",
+				repo = "brobot-database",
+				path = "rdm-game.json",
+				rdm_game = this,
+				rdm_game_str = JSON.stringify(rdm_game);
+
+
+			try {
+				// Get the current file data
+				const {data: file} =
+					await axios.get(
+						`https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
+						{
+							headers: {
+								'Authorization': `Token ${github_token}`
+							}
+						}
+					);
+
+				// Update the file content
+				await axios.put(
+					`https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
+					{
+						message: 'Update file',
+						content: new Buffer.from(rdm_game_str).toString(`base64`),
+						sha: file.sha
+					},
+					{
+						headers: {
+							'Authorization': `Token ${github_token}`
+						}
+					}
+				);
+			} catch (error) {
+				console.error(error);
+			}
+		}
 	}
 
 	async performCurrentNightAbilities() {
@@ -789,6 +837,7 @@ class Game {
 
 		for (let i = 0; i < Object.keys(this.abilities_performed).length; i++) {
 			console.log(Object.keys(this.abilities_performed));
+
 			let player_name = Object.keys(this.abilities_performed)[i],
 				player = this.Players.get(player_name),
 				ability_performed = this.abilities_performed[player_name],
@@ -807,10 +856,20 @@ class Game {
 					}).join(", ");
 			}
 
+			await Game.log(
+				ability.feedback(
+					...Object.values(ability_performed.args),
+					player.name,
+					false
+				)
+			);
 
-			await Game.log(ability.feedback(...Object.values(ability_performed.args), player.name, false));
 			this.action_log[this.getDayNum()-1].push(
-				ability.feedback(...Object.values(ability_performed.args), player.name, false)
+				ability.feedback(
+					...Object.values(ability_performed.args),
+					player.name,
+					false
+				)
 			);
 
 			if (this.Players.get(player_name).isRoleblocked) {
@@ -843,8 +902,6 @@ class Game {
 	}
 
 	async announceDay() {
-		const rdm_guild = await getRDMGuild();
-		const announce_chnl = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.game_announce);
 		const phase_num = Math.ceil(this.days_passed);
 
 		await this.announceMessages(
@@ -963,21 +1020,19 @@ class Game {
 
 		for (let player_name of this.Players.getPlayerNames()) {
 			const
-				player_feedback = this.Players.get(player_name).feedback,
-				player_id = this.Players.get(player_name).id,
-				player_channel_id = this.Players.get(player_name).channel_id,
-				player_chnl = await getChannel(await getRDMGuild(), player_channel_id);
+				player = this.Players.get(player_name),
+				player_feedback = player.feedback,
+				player_id = player.id;
 
 			console.log({player_name, player_feedback, player_id})
 
 			if (player_feedback.length <= 0)
 				continue;
 
-			let feedback_msg =
+			await player.sendFeedback(
 				`<@${player_id}> ` +
-				player_feedback.join("\n");
-
-			player_chnl.send(feedback_msg);
+				player_feedback.join("\n")
+			)
 		}
 	}
 
@@ -1034,11 +1089,12 @@ class Game {
 	}
 
 	async announceMessages(...messages) {
-		const phase_before_announce = this.phase
-		const subphase_before_announce = this.subphase
-		const days_passed_before_announce = this.days_passed
+		const phase_before_announce = this.phase;
+		const subphase_before_announce = this.subphase;
+		const days_passed_before_announce = this.days_passed;
 
-		const game_announce_chnl = await getChannel(await getRDMGuild(), ids.rapid_discord_mafia.channels.game_announce);
+		if (!this.isMockGame)
+			var game_announce_chnl = await getChannel(await getRDMGuild(), ids.rapid_discord_mafia.channels.game_announce);
 
 		for (let message of messages) {
 			if (
@@ -1046,18 +1102,22 @@ class Game {
 				subphase_before_announce === this.subphase &&
 				days_passed_before_announce === this.days_passed
 			) {
-				await game_announce_chnl.send(message);
-				console.log(message);
+				if (!this.isMockGame)
+					await game_announce_chnl.send(message);
+
+				console.log(`[ANNOUNCEMENT: ${message}]`);
 				await wait(MessageDelays.Normal, "s");
 			}
 		}
 	}
 
 	static async announceMessages(...messages) {
-		const game_announce_chnl = await getChannel(await getRDMGuild(), ids.rapid_discord_mafia.channels.game_announce);
+		if (!this.isMockGame)
+			var game_announce_chnl = await getChannel(await getRDMGuild(), ids.rapid_discord_mafia.channels.game_announce);
 
 		for (let message of messages) {
-			await game_announce_chnl.send(message);
+			if (!this.isMockGame)
+				await game_announce_chnl.send(message);
 			console.log(message);
 			await wait(MessageDelays.Normal, "s");
 		}
@@ -1091,7 +1151,8 @@ class Game {
 		await this.setPhaseToNextPhase();
 		const curr_day_num = this.days_passed;
 
-		await Game.closePreGameChannels();
+		if (!this.isMockGame)
+			await Game.closePreGameChannels();
 
 		await this.announceMessages(
 			...Announcements.GameStarted(ids.rapid_discord_mafia.roles.living, ids.rapid_discord_mafia.channels.role_list)
@@ -1101,7 +1162,8 @@ class Game {
 			...Announcements.Day1Started()
 		)
 
-		await Game.openDayChat();
+		if (!this.isMockGame)
+			await Game.openDayChat();
 
 		await Game.log("Waiting For Day 1 to fEnd");
 
@@ -1129,7 +1191,10 @@ class Game {
 			console.log({player})
 			player.isInLimbo = false;
 		}
-		await Game.closeNightChannels();
+
+		if (!this.isMockGame)
+			await Game.closeNightChannels();
+
 		console.log("Performing Night Abilities");
 		await this.performCurrentNightAbilities();
 		this.logPlayers();
@@ -1140,7 +1205,8 @@ class Game {
 		if (await this.killDeadPlayers() === "all")
 			return;
 
-		await Game.openDayChat();
+		if (!this.isMockGame)
+			await Game.openDayChat();
 
 		await this.startVoting(days_passed_last_day);
 	}
@@ -1298,8 +1364,10 @@ class Game {
 		await this.setPhaseToNextPhase();
 		const days_passed_last_night = this.days_passed;
 
-		await Game.closeDayChat();
-		await Game.openNightChannels();
+		if (!this.isMockGame) {
+			await Game.closeDayChat();
+			await Game.openNightChannels();
+		}
 		await this.resetAllPlayersNightInfo();
 		await this.promoteMafia();
 
@@ -1346,20 +1414,32 @@ class Game {
 		);
 	}
 
-	async addPlayerToGame(player_name, player_id, interaction, isFakeUser=false) {
+	/**
+	 * Adds a player to the game, giving them roles and their own channel
+	 * @param {string} player_name Unique name for player
+	 * @param {string} player_id Discord id of player
+	 * @param {import("discord.js").Interaction} interaction Interaction to reply on invalid name
+	 * @param {boolean} isMockUser Whether this is a mock player
+	 */
+	async addPlayerToGame(player_name, player_id, interaction, isMockUser=false) {
 		let player_member;
 
 		const rdm_guild = await getRDMGuild();
 
 		if ( this.Players && this.Players.get(player_name) ) {
-			return await interaction.editReply(`The name, **${player_name}**, already exists.`)
+			if (!this.isMockGame)
+				await interaction.editReply(`The name, **${player_name}**, already exists.`);
+			return
 		}
 
 		const validator_result = validator.validateName(player_name);
-		if (validator_result !== true)
-			return await interaction.editReply(validator_result);
+		if (validator_result !== true) {
+			if (!this.isMockGame)
+				await interaction.editReply(validator_result);
+			return
+		}
 
-		if (!isFakeUser) {
+		if (!isMockUser) {
 
 			player_member = await getGuildMember(rdm_guild, player_id);
 			const
@@ -1373,13 +1453,14 @@ class Game {
 		}
 
 		const player = await this.Players.addPlayerFromObj({id: player_id, name: player_name});
-		await player.createChannel();
 
-		const staff_chnl = await Game.getStaffChnl();
-		staff_chnl.send(`**${player_name}** added to the game.`, {ephemeral: true});
+		if (!this.isMockGame) {
+			await player.createChannel();
+			const staff_chnl = await Game.getStaffChnl();
+			staff_chnl.send(`**${player_name}** added to the game.`, {ephemeral: true});
+		}
 
-
-		global.Game.announceMessages(
+		this.announceMessages(
 			`**${player_name}** joined the game`
 		);
 	}
@@ -1654,13 +1735,14 @@ class Game {
 				const player_to_promote = getRandArrayItem(mafia_players);
 				player_to_promote.convertToRole(RoleNames.Mafioso);
 
-				const rdm_guild = await getRDMGuild();
-				const mafia_channel = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.mafia_chat);
+				if (!this.isMockGame) {
+					const rdm_guild = await getRDMGuild();
+					const mafia_channel = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.mafia_chat);
 
-				mafia_channel.send(
-					`**${player_to_promote.name}** has been promoted to **Mafioso**!`
-				);
-
+					mafia_channel.send(
+						`**${player_to_promote.name}** has been promoted to **Mafioso**!`
+					);
+				}
 			}
 		}
 	}
@@ -2100,36 +2182,38 @@ class Game {
 	}
 
 	static async reset() {
-		console.time("convertAllToSpectator");
-		await Game.convertAllToSpectator();
-		console.timeEnd("convertAllToSpectator");
-		console.time("moveChannelsToArchives");
-		await Game.moveChannelsToArchives();
-		console.timeEnd("moveChannelsToArchives");
-		console.time("privateNightChannels");
-		await Game.privateNightChannels();
-		console.timeEnd("privateNightChannels");
-		console.time("publicizePreGameChannels");
-		await Game.publicizePreGameChannels();
-		console.timeEnd("publicizePreGameChannels");
-		console.time("closeGhostChannel");
-		await Game.closeGhostChannel();
-		console.timeEnd("closeGhostChannel");
-		console.time("closeTownDiscussionChannel");
-		await Game.closeTownDiscussionChannel();
-		console.timeEnd("closeTownDiscussionChannel");
-		// console.time("closeVotingChannel");
-		// await Game.closeVotingChannel();
-		// console.timeEnd("closeVotingChannel");
-		console.time("setAnnounceChannelPerms");
-		await Game.setAnnounceChannelPerms();
-		console.timeEnd("setAnnounceChannelPerms");
-		console.time("closeJoinChannel");
-		await Game.closeJoinChannel();
-		console.timeEnd("closeJoinChannel");
-		// console.time("setDefenseChannelPerms");
-		// await Game.setDefenseChannelPerms();
-		// console.timeEnd("setDefenseChannelPerms");
+		if (!isMockGame) {
+			console.time("convertAllToSpectator");
+			await Game.convertAllToSpectator();
+			console.timeEnd("convertAllToSpectator");
+			console.time("moveChannelsToArchives");
+			await Game.moveChannelsToArchives();
+			console.timeEnd("moveChannelsToArchives");
+			console.time("privateNightChannels");
+			await Game.privateNightChannels();
+			console.timeEnd("privateNightChannels");
+			console.time("publicizePreGameChannels");
+			await Game.publicizePreGameChannels();
+			console.timeEnd("publicizePreGameChannels");
+			console.time("closeGhostChannel");
+			await Game.closeGhostChannel();
+			console.timeEnd("closeGhostChannel");
+			console.time("closeTownDiscussionChannel");
+			await Game.closeTownDiscussionChannel();
+			console.timeEnd("closeTownDiscussionChannel");
+			// console.time("closeVotingChannel");
+			// await Game.closeVotingChannel();
+			// console.timeEnd("closeVotingChannel");
+			console.time("setAnnounceChannelPerms");
+			await Game.setAnnounceChannelPerms();
+			console.timeEnd("setAnnounceChannelPerms");
+			console.time("closeJoinChannel");
+			await Game.closeJoinChannel();
+			console.timeEnd("closeJoinChannel");
+			// console.time("setDefenseChannelPerms");
+			// await Game.setDefenseChannelPerms();
+			// console.timeEnd("setDefenseChannelPerms");
+		}
 
 		global.Game = new Game( new Players() );
 	}

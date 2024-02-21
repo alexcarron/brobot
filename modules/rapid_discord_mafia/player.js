@@ -39,6 +39,7 @@ class Player {
 		players_can_use_on = [],
 		isMuted = false,
 		canVote = true,
+		isMockPlayer = false,
 	}) {
 		this.id = id;
 		this.name = name;
@@ -66,7 +67,11 @@ class Player {
 		this.players_can_use_on = players_can_use_on;
 		this.isMuted = isMuted;
 		this.canVote = canVote;
+		this.isMockPlayer = isMockPlayer;
 	}
+
+	static MAX_INACTIVE_PHASES = 6;
+	static MIN_INACTIVE_PHASES_FOR_WARNING = 3;
 
 	reset() {
 		this.isAlive=true;
@@ -92,10 +97,8 @@ class Player {
 		this.players_can_use_on = [];
 		this.isMuted = false;
 		this.canVote = true;
+		this.isMockPlayer = false;
 	}
-
-	static MAX_INACTIVE_PHASES = 6;
-	static MIN_INACTIVE_PHASES_FOR_WARNING = 3;
 
 	resetInactivity() {
 		this.num_phases_inactive = 0;
@@ -104,12 +107,14 @@ class Player {
 	async mute() {
 		this.isMuted = true;
 
-		const
-			rdm_guild = await getRDMGuild(),
-			town_discussion_chnl = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.town_discussion),
-			player_guild_member = await getGuildMember(rdm_guild, this.id);
+		if (!this.isMockPlayer) {
+			const
+				rdm_guild = await getRDMGuild(),
+				town_discussion_chnl = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.town_discussion),
+				player_guild_member = await getGuildMember(rdm_guild, this.id);
 
-		town_discussion_chnl.permissionOverwrites.edit(player_guild_member.user, {SendMessages: false, AddReactions: false});
+			await town_discussion_chnl.permissionOverwrites.edit(player_guild_member.user, {SendMessages: false, AddReactions: false});
+		}
 
 		console.log(`Muted **${this.name}**.`);
 	}
@@ -117,12 +122,14 @@ class Player {
 	async unmute() {
 		this.isMuted = false;
 
-		const
-			rdm_guild = await getRDMGuild(),
-			town_discussion_chnl = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.town_discussion),
-			player_guild_member = await getGuildMember(rdm_guild, this.id);
+		if (!this.isMockPlayer) {
+			const
+				rdm_guild = await getRDMGuild(),
+				town_discussion_chnl = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.town_discussion),
+				player_guild_member = await getGuildMember(rdm_guild, this.id);
 
-		town_discussion_chnl.permissionOverwrites.edit(player_guild_member.user, {SendMessages: true});
+			town_discussion_chnl.permissionOverwrites.edit(player_guild_member.user, {SendMessages: true});
+		}
 
 		console.log(`Unmuted **${this.name}**.`);
 	}
@@ -146,11 +153,8 @@ class Player {
 			actual_phases_inactive >= Player.MIN_INACTIVE_PHASES_FOR_WARNING &&
 			actual_phases_inactive < Player.MAX_INACTIVE_PHASES
 		) {
-			const channel = await this.getPlayerChannel();
-
 			const remaining_inactive_phases = Player.MAX_INACTIVE_PHASES-actual_phases_inactive;
-
-			await channel.send(Feedback.InactivityWarning(this, actual_phases_inactive, remaining_inactive_phases));
+			await this.sendFeedback(Feedback.InactivityWarning(this, actual_phases_inactive, remaining_inactive_phases));
 		}
 	}
 
@@ -195,6 +199,19 @@ class Player {
 		this.channel_id = player_channel.id;
 	}
 
+	async sendFeedback(feedback, isPinned=false) {
+		if (!this.isMockPlayer) {
+			const channel = await this.getPlayerChannel();
+			const message_sent = await channel.send(feedback);
+
+			if (isPinned)
+				message_sent.pin();
+		}
+		else {
+			console.log(`{${this.name}: ${feedback}}`);
+		}
+	}
+
 	addFeedback(feedback) {
 		this.feedback.push(feedback);
 	}
@@ -230,20 +247,14 @@ class Player {
 
 		await this.sendRoleInfo();
 
-		if (role.faction == Factions.Mafia) {
+		if (role.faction == Factions.Mafia && !this.isMockPlayer) {
 			this.giveAccessToMafiaChat();
 		}
 	}
 
 	async setExeTarget(player) {
 		this.exe_target = player.name;
-		await this.sendExeTarget();
-	}
-
-	async sendExeTarget() {
-		const player_channel = await this.getPlayerChannel();
-		await player_channel.send(Announcements.ExeTarget(this.exe_target))
-			.then( msg => msg.pin() );
+		await this.sendFeedback(Announcements.ExeTarget(this.exe_target), true)
 	}
 
 	setVisiting(player_name) {
@@ -268,10 +279,8 @@ class Player {
 
 		if (death.isLynch()) {
 			if (this.role == RoleNames.Fool) {
-				let fool_chnl = await getChannel((await getRDMGuild()), this.channel_id);
-
+				await this.sendFeedback(Feedback.WonAsFool);
 				await global.Game.announceMessages("_ _\nYou feel like you've made a terrible mistake...");
-				await fool_chnl.send("You win! Your powers have awakened. You can use your death curse ability for only this night.");
 				const players_voting_guilty =
 					Object.entries(global.Game.trial_votes)
 						.filter(entry => entry[1] === TrialVotes.Guilty)
@@ -294,28 +303,28 @@ class Player {
 				if ( exe.exe_target == this.name ) {
 					console.log("Announcing win and giving player win.");
 
-					const exe_player = global.Game.Players.get(exe.name)
-
-					let exe_chnl = await getChannel((await getRDMGuild()), exe_player.channel_id);
-					await exe_chnl.send("You win! You have successfully gotten your target lynched. Do whatever you want now. You'll still win if you die.");
+					const exe_player = global.Game.Players.get(exe.name);
+					await exe_player.sendFeedback(Feedback.WonAsExecutioner);
 					exe_player.makeAWinner();
 				}
 			}
 		}
 
 		try {
-			let ghost_role = await getRole((await getRDMGuild()), RDMRoles.Ghosts),
-				living_role = await getRole((await getRDMGuild()), RDMRoles.Living),
-				player_guild_member = await getGuildMember((await getRDMGuild()), this.id);
+			if (!this.isMockPlayer) {
+				let ghost_role = await getRole((await getRDMGuild()), RDMRoles.Ghosts),
+					living_role = await getRole((await getRDMGuild()), RDMRoles.Living),
+					player_guild_member = await getGuildMember((await getRDMGuild()), this.id);
 
 
-			await addRole(player_guild_member, ghost_role);
-			await removeRole(player_guild_member, living_role);
+				await addRole(player_guild_member, ghost_role);
+				await removeRole(player_guild_member, living_role);
 
-			const role = Object.values(roles).find(role => role.name === this.role);
+				const role = Object.values(roles).find(role => role.name === this.role);
 
-			if (role.faction == Factions.Mafia) {
-				this.removeAccessFromMafiaChat();
+				if (role.faction == Factions.Mafia) {
+					this.removeAccessFromMafiaChat();
+				}
 			}
 		}
 		catch {
@@ -378,23 +387,24 @@ class Player {
 			`**${this.name}** left the game`
 		);
 
-		const rdm_guild = await getRDMGuild();
-		const player_member = await getGuildMember(rdm_guild, this.id);
-		const spectator_role = await getRole(rdm_guild, RDMRoles.Spectator);
-		const living_role = await getRole(rdm_guild, RDMRoles.Living);
+		if (!this.isMockPlayer) {
+			const rdm_guild = await getRDMGuild();
+			const player_member = await getGuildMember(rdm_guild, this.id);
+			const spectator_role = await getRole(rdm_guild, RDMRoles.Spectator);
+			const living_role = await getRole(rdm_guild, RDMRoles.Living);
 
-		await player_member.roles.remove(living_role).catch(console.error());
-		await player_member.roles.add(spectator_role).catch(console.error());
+			await player_member.roles.remove(living_role).catch(console.error());
+			await player_member.roles.add(spectator_role).catch(console.error());
 
-		const player_channel = await this.getPlayerChannel();
-		await player_channel.delete();
+			const player_channel = await this.getPlayerChannel();
+			await player_channel.delete();
+		}
 
 		global.Game.Players.removePlayer(this.name);
 	}
 
 	async smite() {
-		const channel = await this.getPlayerChannel();
-		channel.send(Feedback.Smitten(this));
+		await this.sendFeedback(Feedback.Smitten(this));
 		global.Game.addDeath(this, this, Announcements.PlayerSmitten);
 	}
 
@@ -404,12 +414,9 @@ class Player {
 	}
 
 	async sendRoleInfo() {
-		const player_channel = await this.getPlayerChannel();
-
 		const role = roles[this.role];
 		const role_info_msg  = role.toString();
-		await player_channel.send(role_info_msg)
-			.then( msg => msg.pin() );
+		await this.sendFeedback(role_info_msg, true);
 	}
 
 	async convertToRole(role_name) {
@@ -419,10 +426,8 @@ class Player {
 
 		global.Game.role_log[this.name] += " -> " + role_name;
 
-		const channel = await this.getPlayerChannel();
-
-		await channel.send(`<@${this.id}>\n# You've been converted from ${current_role_name} to ${role_name}`)
-		await channel.send(role.toString()).then( msg => msg.pin() );
+		await this.sendFeedback(Feedback.ConvertedToRole(this, current_role_name, role_name));
+		await this.sendFeedback(role.toString(), true);
 	}
 
 	async giveAccessToMafiaChat() {
@@ -495,9 +500,7 @@ class Player {
 					case AbilityTypes.Suicide: {
 						global.Game.addDeath(this, this, Announcements.VigilanteSuicide);
 
-						let player_chnl = await this.getPlayerChannel();
-						player_chnl.send(Feedback.ComittingSuicide);
-
+						await this.sendFeedback(Feedback.ComittingSuicide);
 						this.addFeedback(Feedback.ComittedSuicide);
 						break;
 					}
@@ -533,19 +536,21 @@ class Player {
 	}
 
 	async whisper(player_whispering_to, whisper_contents) {
-		const rdm_guild = await getRDMGuild();
-		const town_discussion_chnl = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.town_discussion);
+		if (!this.isMockPlayer) {
+			const rdm_guild = await getRDMGuild();
+			const town_discussion_chnl = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.town_discussion);
 
-		await town_discussion_chnl.send(Announcements.Whisper(
-			this, player_whispering_to
-		));
+			await town_discussion_chnl.send(Announcements.Whisper(
+				this, player_whispering_to
+			));
+
+			const player_whispering_to_chnl = await player_whispering_to.getPlayerChannel();
+			player_whispering_to_chnl.send(Feedback.WhisperedTo(this, whisper_contents));
+		}
 
 		await global.Game.log(
 			Announcements.WhisperLog(this, player_whispering_to, whisper_contents)
 		);
-
-		const player_whispering_to_chnl = await player_whispering_to.getPlayerChannel();
-		player_whispering_to_chnl.send(Feedback.WhisperedTo(this, whisper_contents));
 	}
 
 	makeAWinner() {
