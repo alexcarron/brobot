@@ -4,7 +4,7 @@ const ids = require("../../databases/ids.json");
 const validator = require('../../utilities/validator.js');
 const { github_token } =  require("../token.js");
 const { Abilities } = require("./ability.js");
-const { PermissionFlagsBits, Role } = require("discord.js");
+const { PermissionFlagsBits, Role, Interaction } = require("discord.js");
 const Death = require("./death.js");
 const roles = require("./roles.js");
 const Players = require("../rapid_discord_mafia/players.js");
@@ -1418,8 +1418,9 @@ class Game {
 	 * Adds a player to the game, giving them roles and their own channel
 	 * @param {string} player_name Unique name for player
 	 * @param {string} player_id Discord id of player
-	 * @param {import("discord.js").Interaction} interaction Interaction to reply on invalid name
+	 * @param {Interaction} interaction Interaction to reply on invalid name
 	 * @param {boolean} isMockUser Whether this is a mock player
+	 * @returns {Player} The created player
 	 */
 	async addPlayerToGame(player_name, player_id, interaction, isMockUser=false) {
 		let player_member;
@@ -1439,7 +1440,7 @@ class Game {
 			return
 		}
 
-		if (!isMockUser) {
+		if (!isMockUser && !this.isMockGame) {
 
 			player_member = await getGuildMember(rdm_guild, player_id);
 			const
@@ -1463,6 +1464,8 @@ class Game {
 		this.announceMessages(
 			`**${player_name}** joined the game`
 		);
+
+		return player;
 	}
 
 	getWhichFactionWon() {
