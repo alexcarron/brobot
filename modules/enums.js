@@ -349,6 +349,10 @@ const Enums = {
 			`**${player_name}** is rewarded with \`${coins}\` coins!`,
 		RewardCoinsToPlayers: (player_names, coins) =>
 			`**${player_names.join(", ")}** is rewarded with \`${coins}\` coins!`,
+		DrawGameFromTimeout: (num_days_since_deaths) =>
+			`There have been no deaths for the past **${num_days_since_deaths} day(s)**, so it's a draw!`,
+		TimeoutWarning: (max_days_since_death, num_days_since_deaths) =>
+			`Nobody has died in the past **${num_days_since_deaths} day(s)**. **${max_days_since_death - num_days_since_deaths}** more days without bloodshed and the game ends in a draw.`,
 	},
 
 	Feedback: {
@@ -434,6 +438,10 @@ const Enums = {
 		AttackedKidnapper: `You retaliated against your kidnapper and attacked them.`,
 		RoleblockedByKidnapper: `Your kidnapper roleblocked you.`,
 		RoleblockedByKidnapperButImmune: `Your kidnapper attempted to roleblock you, but you were immune.`,
+		WonAsFool: `You win! Your powers have awakened. You can use your death curse ability for only this night.`,
+		WonAsExecutioner: `You win! You have successfully gotten your target lynched. Do whatever you want now. You'll still win if you die.`,
+		ConvertedToRole: (player_converting, last_role_name, new_role_name) =>
+			`<@${player_converting.id}>\n# You've been converted from ${last_role_name} to ${new_role_name}`,
 	},
 
 	RoleIdentifierKeywords: {
