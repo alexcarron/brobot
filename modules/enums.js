@@ -341,9 +341,14 @@ const Enums = {
 				name => `**${name}**`
 			);
 			const winning_players_sentence = getSentenceFromArray(bolded_winning_player_names);
-			[
-				`_ _\n**${winning_factions.join("**, **")} **won!`,
-				`Congratulations** ${winning_players_sentence}**!`
+			const bolded_winning_factions = winning_factions.map(
+				name => `**${name}**`
+			);
+			const winning_factions_sentence = getSentenceFromArray(bolded_winning_factions);
+
+			return [
+				`_ _\n${winning_factions_sentence} won!`,
+				`Congratulations ${winning_players_sentence}!`
 			]
 		},
 		Whisper: (player_whispering, player_whispering_to) =>
@@ -353,7 +358,7 @@ const Enums = {
 		RewardCoinsToPlayer: (player_name, coins) =>
 			`**${player_name}** is rewarded with \`${coins}\` coins!`,
 		RewardCoinsToPlayers: (player_names, coins) =>
-			`**${player_names.join(", ")}** is rewarded with \`${coins}\` coins!`,
+			`🪙 **${player_names.join(", ")}** is rewarded with \`${coins}\` coins!`,
 		DrawGameFromTimeout: (num_days_since_deaths) =>
 			`There have been no deaths for the past **${num_days_since_deaths} day(s)**, so it's a draw!`,
 		TimeoutWarning: (max_days_since_death, num_days_since_deaths) =>

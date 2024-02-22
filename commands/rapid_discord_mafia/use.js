@@ -119,13 +119,20 @@ command.execute = async function(interaction, isTest) {
 
 		if (isTest) {
 			const ability_arguments_str = interaction.options.getString("ability-arguments");
+
 			const ability_arguments = ability_arguments_str.split(", ").map(str => str.split(": "));
 
 			console.log({ability_arguments, ability_arguments_str});
 
-			arg_param_value = ability_arguments.find(arg => {
-				return arg[0].split(" ").join("-").toLowerCase() === arg_param_name
-			})[1];
+			const ability_argument = ability_arguments.find(arg => {
+				const arg_name = arg[0];
+				return arg_name.split(" ").join("-").toLowerCase() === arg_param_name
+			});
+
+			if (!ability_argument)
+				return await interaction.editReply(`Arguments do not include \`${arg_param_name}\``);
+
+			arg_param_value = ability_argument[1];
 		}
 		else {
 			arg_param_value = interaction.options.getString(arg_param_name);

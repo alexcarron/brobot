@@ -63,7 +63,6 @@ class Game {
 	static MIN_PLAYER_COUNT = 4;
 	static MAX_MAFIA_TO_TOWN_RATIO = 2/3;
 	static MAX_TOWN_TO_MAFIA_RATIO = 5;
-	static MAJORITY_VOTE_RATIO = 7/8;
 	static POSSIBLE_FACTIONS = [
 		"Mafia",
 		"Town",
@@ -507,25 +506,25 @@ class Game {
 		else {
 			console.log(message);
 		}
+
+		if (!global.Game.isMockGame) {
+			let staff_message = "";
+
+			if (heading_level == 2) {
+				staff_message = "# ";
+			}
+			else if (heading_level == 1) {
+				staff_message = "## ";
+			}
+
+			staff_message += message;
+			const staff_chnl = await Game.getStaffChnl();
+			await staff_chnl.send(staff_message);
+		}
 	}
 
 	async log(message, heading_level=0) {
 		await Game.log(message, heading_level);
-
-		let staff_message = "";
-
-		if (heading_level == 2) {
-			staff_message = "# ";
-		}
-		else if (heading_level == 1) {
-			staff_message = "## ";
-		}
-
-		if (!this.isMockGame) {
-			staff_message += message;
-			const staff_chnl = await Game.getStaffChnl();
-			await staff_chnl.send(message);
-		}
 	}
 
 	async killDeadPlayers() {
@@ -684,7 +683,7 @@ class Game {
 
 		await player_on_trial.kill(death);
 		const death_messages = this.getDeathMessages(death, "lynch");
-		this.announceMessages(...death_messages);
+		await this.announceMessages(...death_messages);
 
 		this.resetTimeout();
 	}
@@ -699,7 +698,7 @@ class Game {
 			messages.push(`**${voter}** voted **${toTitleCase(vote)}**.`)
 		}
 
-		this.announceMessages(...messages);
+		this.announceMessages(messages.join("\n"));
 	}
 
 	async announceTrialVerdict() {
@@ -912,7 +911,7 @@ class Game {
 			this.Players.get(death.victim).isAlive = false;
 
 			const death_messages = this.getDeathMessages(death);
-			this.announceMessages(...death_messages);
+			await this.announceMessages(...death_messages);
 		}
 	}
 
@@ -1834,10 +1833,14 @@ class Game {
 
 		for (const day_num in this.action_log) {
 			const actions = this.action_log[day_num];
+			let action_message = "";
+
+			if (actions && actions.length > 0)
+				action_message = ">>> " + actions.join("\n");
 
 			await this.announceMessages(
-				`_ _\n## Night ${day_num} Actions\n>>> ` +
-				actions.join("\n")
+				`_ _\n## Night ${day_num} Actions\n` +
+				action_message
 			);
 		}
 

@@ -1,4 +1,4 @@
-const { RDMRoles, Announcements, MessageDelays, Feedback, Factions, RoleNames, AbilityTypes, TrialVotes, AbilityName: AbilityName, AbilityArgName, ArgumentSubtypes, Subphases } = require("../enums");
+const { RDMRoles, Announcements, MessageDelays, Feedback, Factions, RoleNames, AbilityTypes, TrialVotes, AbilityName: AbilityName, AbilityArgName, ArgumentSubtypes, Subphases, Votes, Phases } = require("../enums");
 const roles = require("./roles");
 const ids = require("../../databases/ids.json");
 const { Abilities } = require("./ability");
@@ -108,6 +108,7 @@ class Player {
 
 	static MAX_INACTIVE_PHASES = 6;
 	static MIN_INACTIVE_PHASES_FOR_WARNING = 3;
+	static MAJORITY_VOTE_RATIO = 2/3;
 
 	reset() {
 		this.isAlive=true;
@@ -440,7 +441,7 @@ class Player {
 		// Check if player is dead and can't use ability while dead
 		if (!this.isAlive) {
 			if (!(
-				ability_using.phases_can_use.includes(Phases.Limbo) &&
+				ability.phases_can_use.includes(Phases.Limbo) &&
 				this.isInLimbo
 			)) {
 				return `You can't use the ability, **${ability_name}**, while you're not alive`;
@@ -462,7 +463,7 @@ class Player {
 		}
 
 		// Check if valid arguments
-		for (const ability_arg of ability_using.args) {
+		for (const ability_arg of ability.args) {
 			const arg_name = ability_arg.name;
 			let arg_param_value = arg_values[arg_name];
 
@@ -659,7 +660,7 @@ class Player {
 					await this.regainVotingAbility();
 					this.isRoleblocked = false;
 					this.restoreOldDefense();
-					this.addFeedback(Feedback.Unkidnapped);
+					this.sendFeedback(Feedback.Unkidnapped);
 				}
 
 				this.affected_by.splice(affect_num, 1);
@@ -743,7 +744,7 @@ class Player {
 	 */
 	votePlayer(player_voting_for) {
 		let curr_votes = global.Game.votes;
-		let max_voters_count = global.Game.Players.getAlivePlayers().length;
+		let max_voters_count = global.Game.Players.getAlivePlayers().filter(player => player.canVote === true).length;
 		let feedback;
 
 		this.resetInactivity();
@@ -770,6 +771,8 @@ class Player {
 			const isMajorityVote = Player.isMajorityVote(curr_votes, max_voters_count);
 			const num_votes = Object.values(curr_votes).length;
 
+			console.log({isMajorityVote, num_votes, max_voters_count})
+
 			if (isMajorityVote || num_votes >= max_voters_count) {
 				global.Game.startTrial(global.Game.days_passed);
 			}
@@ -788,8 +791,12 @@ class Player {
 			return `We're not in the trial phase yet.`;
 		}
 
-		if (global.Game.on_trial === voter_player.name) {
+		if (global.Game.on_trial === this.name) {
 			return `You can't vote for your own trial.`;
+		}
+
+		if (!this.canVote) {
+			return `Sorry, you have been prevented from voting.`;
 		}
 
 		return true;
@@ -802,7 +809,9 @@ class Player {
 	 */
 	voteForTrialOutcome(trial_outcome) {
 		let curr_votes = global.Game.trial_votes;
-		let max_voters_count = global.Game.Players.getAlivePlayers().length - 1;
+		let max_voters_count = global.Game.Players.getAlivePlayers().filter(
+			player => player.name !== global.Game.on_trial && player.canVote === true
+		).length;
 		let feedback;
 
 		this.resetInactivity();
@@ -845,12 +854,12 @@ class Player {
 	 * @param {Number} num_max_voters the maximum number of possible voters
 	 */
 	static isMajorityVote(player_votes, num_max_voters) {
+		let isMajorityVote = false;
+
 		const total_vote_count = Object.keys(player_votes).length;
 		const majority_player_count = Math.ceil(
-			(num_max_voters) * Game.MAJORITY_VOTE_RATIO
+			(num_max_voters) * Player.MAJORITY_VOTE_RATIO
 		);
-
-		console.log({max_voters_count, majority_player_count, total_vote_count});
 
 		if (total_vote_count >= majority_player_count) {
 			let vote_counts = {};
@@ -875,6 +884,8 @@ class Player {
 				}
 			}
 		}
+
+		return isMajorityVote;
 	}
 }
 
