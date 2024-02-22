@@ -63,132 +63,40 @@ command.parameters = [
 command.execute = async function execute(interaction, isTest=false) {
 	await deferInteraction(interaction);
 
-	let player_voting, max_voters_count
+	let voter_player, max_voters_count
 
 	if (isTest) {
-		player_voting = global.Game.Players.getPlayerFromName(interaction.options.getString("player-voting"));
+		voter_player = global.Game.Players.getPlayerFromName(interaction.options.getString("player-voting"));
 	}
 	else {
-		player_voting = global.Game.Players.getPlayerFromId(interaction.user.id);
+		voter_player = global.Game.Players.getPlayerFromId(interaction.user.id);
 	}
 
-	const
-		subcommand_name = interaction.options.getSubcommand();
-	let
-		vote,
-		curr_votes,
-		total_vote_count,
-		isMajorityVote = false;
-
-	const curr_days_passed = global.Game.days_passed;
-	const announce_chnl = await getChannel(interaction.guild, ids.rapid_discord_mafia.channels.game_announce);
+	const subcommand_name = interaction.options.getSubcommand();
+	let vote;
 
 	// Vote For Player
 	if (subcommand_name === Parameters.ForPlayer.name) {
 		vote = interaction.options.getString(Subparameters.PlayerVotingFor.name);
-		curr_votes = global.Game.votes
-		max_voters_count = global.Game.Players.getAlivePlayers().length;
 
-		console.log(global.Game.phase)
-		console.log(global.Game.subphase)
+		const can_vote_player_feedback = voter_player.canVotePlayer(vote);
+		if (can_vote_player_feedback !== true)
+			return await interaction.editReply(can_vote_player_feedback);
 
-		if (global.Game.subphase !== Subphases.Voting) {
-			return await interaction.editReply(`We're not in the voting phase yet.`);
-		}
-
-		if (player_voting.name === vote) {
-			return await interaction.editReply("You can't vote for yourself!");
-		}
-
-		if (!player_voting.canVote) {
-			return await interaction.editReply("Sorry, you have been prevented from voting.");
-		}
-
-		if (curr_votes[player_voting.name]) {
-			await Game.log(`**${player_voting.name}** changed their vote to **${vote}**`);
-			announce_chnl.send(`**${player_voting.name}** changed their vote to **${vote}**`);
-			interaction.editReply(`You are replacing your previous vote, **${curr_votes[player_voting.name]}**, with **${vote}**`);
-		}
-		else {
-			await Game.log(`**${player_voting.name}** voted **${vote}**.`);
-			announce_chnl.send(`**${player_voting.name}** voted **${vote}**.`);
-			interaction.editReply(`You voted **${vote}**.`);
-		}
-
-		curr_votes[player_voting.name] = vote;
-		global.Game.votes = curr_votes;
-
-		player_voting.resetInactivity();
+		const vote_player_feedback = voter_player.votePlayer(vote);
+		await interaction.editReply(vote_player_feedback);
 	}
 	// Vote For Trial Outcome
 	else if (subcommand_name === Parameters.ForTrialOutcome.name) {
 		vote = interaction.options.getString(Subparameters.TrialOutcome.name);
-		curr_votes = global.Game.trial_votes;
-		max_voters_count = global.Game.Players.getAlivePlayers().length - 1;
 
-		if (global.Game.subphase !== Subphases.Trial) {
-			return await interaction.editReply(`We're not in the trial phase yet.`);
-		}
+		const can_vote_feedback = voter_player.canVoteForTrialOutcome(vote);
+		if (can_vote_feedback !== true)
+			return await interaction.editReply(can_vote_feedback);
 
-		if (
-			global.Game.on_trial === player_voting.name
-		) {
-			return await interaction.editReply(`You can't vote for your own trial.`);
-		}
-
-		if (curr_votes[player_voting.name]) {
-			await Game.log(`**${player_voting.name}** changed their vote to **${toTitleCase(vote)}**`);
-			announce_chnl.send(`**${player_voting.name}** changed their vote.`);
-			interaction.editReply(`You are replacing your previous vote, **${toTitleCase(curr_votes[player_voting.name])}**, with **${toTitleCase(vote)}**`);
-		}
-		else {
-			await Game.log(`**${player_voting.name}** voted **${toTitleCase(vote)}**.`);
-			announce_chnl.send(`**${player_voting.name}** voted.`);
-			interaction.editReply(`You voted **${toTitleCase(vote)}**.`);
-		}
-
-		curr_votes[player_voting.name] = vote;
-		global.Game.trial_votes = curr_votes;
+		const vote_feedback = voter_player.voteForTrialOutcome(vote);
+		await interaction.editReply(vote_feedback);
 	}
-
-	total_vote_count = Object.keys(curr_votes).length;
-
-	console.log("Checking For Early Majority Vote");
-	const majority_player_count = Math.ceil((max_voters_count) * Game.MAJORITY_VOTE_RATIO);
-	console.log({max_voters_count, majority_player_count, total_vote_count});
-
-	if (total_vote_count >= majority_player_count) {
-		let vote_counts = {};
-
-		for (let voter in curr_votes) {
-			let vote = curr_votes[voter];
-
-
-			if (vote.toLowerCase() == Enums.TrialVotes.Abstain.toLowerCase())
-				continue;
-
-			if (!vote_counts[vote])
-				vote_counts[vote] = 1;
-			else
-				vote_counts[vote] += 1;
-
-			if (vote_counts[vote] >= majority_player_count) {
-				isMajorityVote = true;
-				break
-			}
-		}
-	}
-
-	if (isMajorityVote || total_vote_count == max_voters_count) {
-		if (global.Game.subphase === Subphases.Trial) {
-			global.Game.startTrialResults(curr_days_passed, interaction);
-		}
-		else if (global.Game.subphase === Subphases.Voting) {
-			global.Game.startTrial(curr_days_passed, interaction);
-		}
-	}
-
-	player_voting.resetInactivity();
 }
 command.autocomplete = async function(interaction) {
 	let autocomplete_values;

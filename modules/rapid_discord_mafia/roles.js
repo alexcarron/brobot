@@ -152,7 +152,7 @@ const roles = {
 		]
 	}),
 	"Fool": new Role({
-		name: "Fool",
+		name: RoleNames.Fool,
 		faction: Factions.Neutral,
 		alignment: Alignments.Evil,
 		attack: 4,

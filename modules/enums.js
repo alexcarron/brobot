@@ -472,10 +472,12 @@ const Enums = {
 		Track: "Track",
 		Lookout: "Lookout",
 		Nothing: "Nothing",
+		DeathCurse: "Death Curse",
 	},
 
 	AbilityArgName: {
 		PlayerKidnapping: "Player Kidnapping",
+		PlayerKilling: "Player Killing",
 	},
 
 	RoleNames: {

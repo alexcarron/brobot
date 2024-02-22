@@ -1,10 +1,10 @@
-const { RDMRoles, Announcements, MessageDelays, Feedback, Factions, RoleNames, AbilityTypes, TrialVotes, AbilityName: AbilityName, AbilityArgName, ArgumentSubtypes } = require("../enums");
+const { RDMRoles, Announcements, MessageDelays, Feedback, Factions, RoleNames, AbilityTypes, TrialVotes, AbilityName: AbilityName, AbilityArgName, ArgumentSubtypes, Subphases } = require("../enums");
 const roles = require("./roles");
 const ids = require("../../databases/ids.json");
 const { Abilities } = require("./ability");
 
 const
-	{ getGuildMember, getRole, addRole, removeRole, getChannel, wait, getRandArrayItem, getRDMGuild } = require("../functions"),
+	{ getGuildMember, getRole, addRole, removeRole, getChannel, wait, getRandArrayItem, getRDMGuild, toTitleCase } = require("../functions"),
 	{ PermissionFlagsBits, Role } = require('discord.js'),
 	rdm_ids = require("../../databases/ids.json").rapid_discord_mafia;
 
@@ -707,6 +707,168 @@ class Player {
 
 		if (!global.Game.winning_players.includes(this.name))
 			global.Game.winning_players.push(this.name);
+	}
+
+	/**
+	 * Determines if a player can vote a certain player
+	 * @param {String} player_voting_for name of the player voting for
+	 * @returns {true | String} true if you can vote that player. Otherwise, feedback for why you can't
+	 */
+	canVotePlayer(player_voting_for) {
+		if (global.Game.subphase !== Subphases.Voting) {
+			return `We're not in the voting phase yet.`;
+		}
+
+		if (this.name === player_voting_for) {
+			return `You can't vote for yourself!`;
+		}
+
+		if (!this.canVote) {
+			return `Sorry, you have been prevented from voting.`;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Votes for a player to put up on trial, updating votes, announing it, and returning feedback
+	 * @param {String} player_voting_for name of the player voting for
+	 * @returns {String} feedback for vote
+	 */
+	votePlayer(player_voting_for) {
+		let curr_votes = global.Game.votes;
+		let max_voters_count = global.Game.Players.getAlivePlayers().length;
+		let feedback;
+
+		this.resetInactivity();
+
+		if (curr_votes[this.name]) {
+			Game.log(`**${this.name}** changed their vote to **${player_voting_for}**`);
+
+			global.Game.announceMessages(`**${this.name}** changed their vote to **${player_voting_for}**`);
+
+			feedback = `You are replacing your previous vote, **${curr_votes[this.name]}**, with **${player_voting_for}**`;
+		}
+		else {
+			Game.log(`**${this.name}** voted **${player_voting_for}**.`);
+
+			global.Game.announceMessages(`**${this.name}** voted **${player_voting_for}**.`);
+
+			feedback = `You voted **${player_voting_for}**.`;
+		}
+
+		curr_votes[this.name] = player_voting_for;
+		global.Game.votes = curr_votes;
+
+		if (!this.isMockPlayer) {
+			const isMajorityVote = Player.isMajorityVote(curr_votes, max_voters_count);
+			const num_votes = Object.values(curr_votes).length;
+
+			if (isMajorityVote || num_votes >= max_voters_count) {
+				global.Game.startTrial(global.Game.days_passed);
+			}
+		}
+
+		return feedback;
+	}
+
+	/**
+	 * Determines if a player can vote for a certain trial outcome
+	 * @param {String} trial_outcome trial outcome voting for
+	 * @returns {true | String} true if you can vote. Otherwise, feedback for why you can't
+	 */
+	canVoteForTrialOutcome(trial_outcome) {
+		if (global.Game.subphase !== Subphases.Trial) {
+			return `We're not in the trial phase yet.`;
+		}
+
+		if (global.Game.on_trial === voter_player.name) {
+			return `You can't vote for your own trial.`;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Votes for a trial outcome for the current trial, updating votes, announcing it, and returning feedback
+	 * @param {TrialVotes} trial_outcome trial outcome voting for
+	 * @returns {String} feedback for vote
+	 */
+	voteForTrialOutcome(trial_outcome) {
+		let curr_votes = global.Game.trial_votes;
+		let max_voters_count = global.Game.Players.getAlivePlayers().length - 1;
+		let feedback;
+
+		this.resetInactivity();
+
+		if (curr_votes[this.name]) {
+			Game.log(`**${this.name}** changed their vote to **${toTitleCase(trial_outcome)}**`);
+
+			global.Game.announceMessages(`**${this.name}** changed their vote.`);
+
+			feedback = `You are replacing your previous vote, **${toTitleCase(curr_votes[this.name])}**, with **${toTitleCase(trial_outcome)}**`;
+		}
+		else {
+			Game.log(`**${this.name}** voted **${toTitleCase(trial_outcome)}**.`);
+
+			global.Game.announceMessages(`**${this.name}** voted.`);
+
+			feedback = `You voted **${toTitleCase(trial_outcome)}**.`;
+		}
+
+		curr_votes[this.name] = trial_outcome;
+		global.Game.trial_votes = curr_votes;
+
+		if (!this.isMockPlayer) {
+			const isMajorityVote = Player.isMajorityVote(curr_votes, max_voters_count);
+			const num_votes = Object.values(curr_votes).length;
+
+			if (isMajorityVote || num_votes >= max_voters_count) {
+				global.Game.startTrialResults(global.Game.days_passed);
+			}
+		}
+
+		return feedback;
+	}
+
+
+
+	/**
+	 * Determines if a majority vote has been reached for a specific vote
+	 * @param {{[player_name: string]: [vote: string]}} player_votes an object which maps a player name to their vote
+	 * @param {Number} num_max_voters the maximum number of possible voters
+	 */
+	static isMajorityVote(player_votes, num_max_voters) {
+		const total_vote_count = Object.keys(player_votes).length;
+		const majority_player_count = Math.ceil(
+			(num_max_voters) * Game.MAJORITY_VOTE_RATIO
+		);
+
+		console.log({max_voters_count, majority_player_count, total_vote_count});
+
+		if (total_vote_count >= majority_player_count) {
+			let vote_counts = {};
+
+			for (let voter in player_votes) {
+				let vote = player_votes[voter];
+
+				if (
+					vote.toLowerCase() == TrialVotes.Abstain.toLowerCase() ||
+					vote.toLowerCase() == Votes.Abstain.toLowerCase()
+				)
+					continue;
+
+				if (!vote_counts[vote])
+					vote_counts[vote] = 1;
+				else
+					vote_counts[vote] += 1;
+
+				if (vote_counts[vote] >= majority_player_count) {
+					isMajorityVote = true;
+					break
+				}
+			}
+		}
 	}
 }
 

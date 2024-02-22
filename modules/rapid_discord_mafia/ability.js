@@ -25,7 +25,7 @@ class Ability {
 	}
 
 	static Abilities = {
-		"Heal": new Ability({
+		Heal: new Ability({
 			name: "Heal",
 			description: "At night, you can heal a player that's not yourself at night to give them a level two defense for the night and following day. You and your target will be notified if your target was attacked while healed.",
 			type: AbilityTypes.Protection,
@@ -48,7 +48,7 @@ class Ability {
 				})
 			]
 		}),
-		"Heal Self": new Ability({
+		HealSelf: new Ability({
 			name: "Heal Self",
 			description: "At night, you can heal yourself at night to give yourself a level two defense for the night and following day.",
 			type: AbilityTypes.Protection,
@@ -63,7 +63,7 @@ class Ability {
 				return `**${isYou ? "You" : player_name}** will attempt to heal ${player_name==="You" ? "yourself" : "themself"} tonight`
 			},
 		}),
-		"Evaluate": new Ability({
+		Evaluate: new Ability({
 			name: "Evaluate",
 			description: "At night, you can evaluate a player that's not yourself at night to see if their suspicious or innocent. Mafia, Coven, and Neutral Killing seem suspicious. Town and non-Killing Neutrals seem innocent. Those douesd by an Arsonist will be unclear. These results are affected by the players' perceived role.",
 			type: AbilityTypes.Investigative,
@@ -85,7 +85,7 @@ class Ability {
 				})
 			]
 		}),
-		"Track": new Ability({
+		Track: new Ability({
 			name: AbilityName.Track,
 			description: "At night, you can track a player that's not yourself at night to see who they are percieved to be visiting.",
 			type: AbilityTypes.Investigative,
@@ -107,7 +107,7 @@ class Ability {
 				})
 			]
 		}),
-		"Lookout": new Ability({
+		Lookout: new Ability({
 			name: AbilityName.Lookout,
 			description: "At night, watch a player's house that isn't yourself. If any players visited them, you'll be told every player that did that night. This is affected by players' perceived visits.",
 			type: AbilityTypes.Investigative,
@@ -129,7 +129,7 @@ class Ability {
 				})
 			]
 		}),
-		"Roleblock": new Ability({
+		Roleblock: new Ability({
 			name: "Roleblock",
 			description: "At night, you can roleblock a player that is not yourself at night so that they can't perform their ability that night and following day. They will be notified of this.",
 			type: AbilityTypes.Roleblock,
@@ -152,7 +152,7 @@ class Ability {
 				})
 			]
 		}),
-		"Shoot": new Ability({
+		Shoot: new Ability({
 			name: "Shoot",
 			description: "At night, you can shoot a player that isn't yourself at night, attacking them.",
 			type: AbilityTypes.Attacking,
@@ -175,7 +175,7 @@ class Ability {
 				})
 			]
 		}),
-		"Order": new Ability({
+		Order: new Ability({
 			name: "Order",
 			description: "At night, you can order the Mafia to kill a non-mafia player at night so that they become the Mafioso's target. If the Mafioso doesn't exist, is dead, or is roleblocked, you will attack them yourself instead.",
 			type: AbilityTypes.Control,
@@ -198,7 +198,7 @@ class Ability {
 				})
 			]
 		}),
-		"Murder": new Ability({
+		Murder: new Ability({
 			name: AbilityName.Murder,
 			description: "At night, you can murder a non-mafia player at night, attacking them.",
 			type: AbilityTypes.Attacking,
@@ -214,14 +214,14 @@ class Ability {
 			},
 			args: [
 				new Arg({
-					name: "Player Killing",
+					name: AbilityArgName.PlayerKilling,
 					description: "The player your killing",
 					type: ArgumentTypes.Player,
 					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NonMafia]
 				})
 			]
 		}),
-		"Frame": new Ability({
+		Frame: new Ability({
 			name: "Frame",
 			description: "At night, you can frame a non-mafia player at night, making them perceived to be a Mafioso until after they're investigated by a player that gets any information based off of percieved roles.",
 			type: AbilityTypes.Manipulation,
@@ -244,7 +244,7 @@ class Ability {
 				})
 			]
 		}),
-		"Consort": new Ability({
+		Consort: new Ability({
 			name: "Consort",
 			description: "At night, you can consort a player who's not yourself at night, roleblocking them that night and following day. They will be notified.",
 			type: AbilityTypes.Roleblock,
@@ -267,7 +267,7 @@ class Ability {
 				})
 			]
 		}),
-		"Investigate": new Ability({
+		Investigate: new Ability({
 			name: "Investigate",
 			description: "At night, you can investigate a non-mafia player at night, learning their percieved role.",
 			type: AbilityTypes.Investigative,
@@ -287,7 +287,7 @@ class Ability {
 				})
 			]
 		}),
-		"Self Frame": new Ability({
+		SelfFrame: new Ability({
 			name: "Self Frame",
 			description: "At night, you can frame yourself at night, making yourself perceived as a Mafioso until after you're investigated by a player that gets any information based off of percieved roles.",
 			type: AbilityTypes.Manipulation,
@@ -300,8 +300,8 @@ class Ability {
 			],
 			feedback: function(player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to frame ${isYou ? "yourself" : "themself"} as the mafioso tonight`},
 		}),
-		"Death Curse": new Ability({
-			name: "Death Curse",
+		DeathCurse: new Ability({
+			name: AbilityName.DeathCurse,
 			description: "After you've satisfied your win condition and been lynched, you can curse a chosen player who voted guilty during your trial with death at night, attacking them.",
 			type: AbilityTypes.Attacking,
 			priority: Priorities.Attacking,
@@ -314,14 +314,14 @@ class Ability {
 			feedback: function(player_cursing, player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to curse **${player_cursing}** with death tonight`},
 			args: [
 				new Arg({
-					name: "Player Killing",
+					name: AbilityArgName.PlayerKilling,
 					description: "The player your cursing with death",
 					type: ArgumentTypes.Player,
 					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.CertainPlayers]
 				})
 			],
 		}),
-		"Frame Target": new Ability({
+		FrameTarget: new Ability({
 			name: "Frame Target",
 			description: "At night, you can frame your target at night, making them perceived as a Mafioso until after you're investigated by a player that gets any information based off of percieved roles.",
 			type: AbilityTypes.Manipulation,
@@ -334,7 +334,7 @@ class Ability {
 			],
 			feedback: function(player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to frame ${isYou ? "your" : "their"} target as the Mafioso tonight`},
 		}),
-		"Self Vest": new Ability({
+		SelfVest: new Ability({
 			name: "Self Vest",
 			description: "At night, you can put on a vest at night, gaining a level two defense for the night and following day.",
 			type: AbilityTypes.Protection,
@@ -347,7 +347,7 @@ class Ability {
 			],
 			feedback: function(player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to put on a vest tonight`},
 		}),
-		"Knife": new Ability({
+		Knife: new Ability({
 			name: AbilityName.Knife,
 			description: "At night, you can knife a player that's not yourself at night, attacking them.",
 			type: AbilityTypes.Attacking,
@@ -370,7 +370,7 @@ class Ability {
 				})
 			],
 		}),
-		"Cautious": new Ability({
+		Cautious: new Ability({
 			name: "Cautious",
 			description: "At night, you can choose to be cautious at night, not attacking anyone who roleblocks you.",
 			type: AbilityTypes.Modifier,
@@ -383,7 +383,7 @@ class Ability {
 			],
 			feedback: function(player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to be cautious of roleblockers tonight`},
 		}),
-		"Smith": new Ability({
+		Smith: new Ability({
 			name: AbilityName.Smith,
 			description: "At night, you can smith a bulletproof vest for a player that's not yourself at night, giving them a level one defense that night and following day. You and your target will be notified if your target was attacked while wearing the vest.",
 			type: AbilityTypes.Protection,
@@ -404,7 +404,7 @@ class Ability {
 				})
 			],
 		}),
-		"Self Smith": new Ability({
+		SelfSmith: new Ability({
 			name: "Self Smith",
 			description: "At night, you can smith a bulletproof vest for yourself at night, gaining a level one defense that night and following day.",
 			type: AbilityTypes.Protection,
@@ -417,7 +417,7 @@ class Ability {
 			],
 			feedback: function(player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to smith a bulletproof vest for ${isYou ? "yourself" : "themself"} tonight`},
 		}),
-		"Suicide": new Ability({
+		Suicide: new Ability({
 			name: AbilityName.Suicide,
 			description: "You will shoot yourself, attacking yourself with a level four attack.",
 			type: AbilityTypes.Suicide,
@@ -429,7 +429,7 @@ class Ability {
 				perform.attack
 			],
 		}),
-		"Control": new Ability({
+		Control: new Ability({
 			name: "Control",
 			description: "At night, you can control a player that's not yourself, forcing them to use their main ability on another player or themself. You will learn the perceived role of who you controlled and they will be notified that they were controlled. Your control will fail if the player has no ability that can be used on another player or themself.",
 			type: AbilityTypes.Control,
@@ -456,7 +456,7 @@ class Ability {
 				}),
 			],
 		}),
-		"Observe": new Ability({
+		Observe: new Ability({
 			name: "Observe",
 			description: "At night, you can observe a player that isn't yourself and be told if this player and the last one you observed are percieved to be in the same faction. If this is the first player you observe, you are told nothing.",
 			type: AbilityTypes.Investigative,
@@ -486,7 +486,7 @@ class Ability {
 				}),
 			],
 		}),
-		"Replace": new Ability({
+		Replace: new Ability({
 			name: "Replace",
 			description: "At night, you can replace a player that isn't yourself. You will attack them, and if you successfully kill them you will be converted to their actual role. Their role and last will won't be revealed upon death.",
 			type: AbilityTypes.Attacking,
@@ -509,7 +509,7 @@ class Ability {
 				}),
 			],
 		}),
-		"Kidnap": new Ability({
+		Kidnap: new Ability({
 			name: AbilityName.Kidnap,
 			description: "At night, kidnap a non-mafia player. They will gain a level four defense for the night but they will be roleblocked and won't be able to speak or vote the next day. If you kidnap a role with an attack level above zero, they will attack you while kidnapped without using up an ability no matter what.",
 			type: AbilityTypes.Roleblock,

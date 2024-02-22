@@ -1,4 +1,4 @@
-const { GameStates, Phases, Subphases, MessageDelays, Factions, RDMRoles, WinConditions, Feedback, Announcements, RoleNames, PhaseWaitTimes, VotingOutcomes, TrialOutcomes, TrialVotes, RoleIdentifierTypes, ArgumentSubtypes, CoinRewards, ArgumentTypes } = require("../enums.js");
+const { GameStates, Phases, Subphases, MessageDelays, Factions, RDMRoles, WinConditions, Feedback, Announcements, RoleNames, PhaseWaitTimes, VotingOutcomes, TrialOutcomes, TrialVotes, RoleIdentifierTypes, ArgumentSubtypes, CoinRewards, ArgumentTypes, Votes } = require("../enums.js");
 const { getChannel, getGuild, wait, getRandArrayItem, getGuildMember, getRole, removeRole, getCategoryChildren, logColor, getUnixTimestamp, shuffleArray, getRDMGuild, addRole, toTitleCase, saveObjectToGitHubJSON } = require("../functions.js");
 const ids = require("../../databases/ids.json");
 const validator = require('../../utilities/validator.js');
@@ -683,8 +683,10 @@ class Game {
 		death.setToLynch();
 
 		await player_on_trial.kill(death);
-		await this.sendDeathMsg(death, "lynch");
-		this.resetTimeout()
+		const death_messages = this.getDeathMessages(death, "lynch");
+		this.announceMessages(...death_messages);
+
+		this.resetTimeout();
 	}
 
 	async announceRevealedVotes() {
@@ -838,6 +840,7 @@ class Game {
 	}
 
 	async performCurrentNightAbilities() {
+		console.log("Performing Night Abilities");
 		await this.updateCurrentAbilitiesPerformed();
 		console.log("Abilities To Perform:")
 		console.log(this.abilities_performed);
@@ -908,7 +911,8 @@ class Game {
 			await Game.log(`Killing ${death.victim}`);
 			this.Players.get(death.victim).isAlive = false;
 
-			await this.sendDeathMsg(death);
+			const death_messages = this.getDeathMessages(death);
+			this.announceMessages(...death_messages);
 		}
 	}
 
@@ -1026,7 +1030,7 @@ class Game {
 	}
 
 	async sendFeedbackToPlayers() {
-		console.log("Feedback");
+		console.log("Sending Feedback");
 		console.log(this.Players.getPlayers());
 
 		for (let player_name of this.Players.getPlayerNames()) {
@@ -1676,7 +1680,13 @@ class Game {
 		return winning_faction
 	}
 
-	async sendDeathMsg(death, type="attack") {
+	/**
+	 * Gets death messages to announce from a death
+	 * @param {Death} death
+	 * @param {string} type the type of death
+	 * @returns {String[]} the death messages to announce
+	 */
+	getDeathMessages(death, type="attack") {
 		let victim_name = death.victim,
 			victim_player = this.Players.get(victim_name),
 			death_announcement_msgs = [];
@@ -1744,7 +1754,7 @@ class Game {
 			death_announcement_msgs.push(Announcements.RoleReveal(victim_player));
 		}
 
-		await this.announceMessages(...death_announcement_msgs);
+		return death_announcement_msgs;
 	}
 
 	async promoteMafia() {
@@ -2323,7 +2333,7 @@ class Game {
 	 */
 	isValidArgValue(player_using_ability, ability_arg, arg_value) {
 		if (ability_arg.type === ArgumentTypes.Player) {
-			if (!this.Players.getPlayerList().includes(arg_value)) {
+			if (!this.Players.getPlayerNames().includes(arg_value)) {
 				return `**${arg_value}** is not a valid player for the argument **${ability_arg.name}**`
 			}
 		}
