@@ -1,8 +1,23 @@
 const Contestant = require("./Contestant");
+const Game = require("./game.js");
+const Players = require("./players.js");
 
 class RapidDiscordMafia {
 	constructor() {
 		this.contestants = {};
+	}
+
+	static async setUpRapidDiscordMafia(isMockObject = false) {
+		global.Roles = require("./roles");
+		global.abilities = require("./ability.js").Abilities;
+		global.Game = new Game( new Players({}, isMockObject), isMockObject );
+		global.rapid_discord_mafia = new RapidDiscordMafia();
+
+		if (!isMockObject) {
+			const rapid_discord_mafia_obj = await getObjectFromGitHubJSON("rapid_discord_mafia");
+			global.rapid_discord_mafia.setTo(rapid_discord_mafia_obj);
+			console.log("Rapid Discord Mafia Database Downloaded");
+		}
 	}
 
 	getContestantFromPlayer(player) {

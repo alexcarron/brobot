@@ -1,16 +1,46 @@
-const { RDMRoles, Announcements, MessageDelays, Feedback, Factions, RoleNames, AbilityTypes, TrialVotes, AbilityNames } = require("../enums");
+const { RDMRoles, Announcements, MessageDelays, Feedback, Factions, RoleNames, AbilityTypes, TrialVotes, AbilityName: AbilityName, AbilityArgName, ArgumentSubtypes } = require("../enums");
 const roles = require("./roles");
 const ids = require("../../databases/ids.json");
 const { Abilities } = require("./ability");
 
 const
 	{ getGuildMember, getRole, addRole, removeRole, getChannel, wait, getRandArrayItem, getRDMGuild } = require("../functions"),
-	{ PermissionFlagsBits } = require('discord.js'),
+	{ PermissionFlagsBits, Role } = require('discord.js'),
 	rdm_ids = require("../../databases/ids.json").rapid_discord_mafia;
 
 class Player {
-	/** {name: AbilityNameStr, args: {[arg_name: ArgNameStr]: ArgValueStr}} */
+
+	/**
+	 * defense level the player has
+	 * @type {Number}
+	 */
+	defense;
+
+	/**
+	 * attack level the player has
+	 * @type {Number}
+	 */
+	attack;
+
+	/**
+	 * @type {{name: AbilityName, args: {[arg_name: AbilityArgName]: string}}}
+	*/
 	ability_doing;
+
+	/**
+	 * @type {{name: AbilityName, by: string, during_phase: Number}[]}
+	 */
+	affected_by;
+
+	/**
+	 * @type {boolean}
+	 */
+	isMuted;
+
+	/**
+	 * @type {boolean}
+	 */
+	canVote;
 
 	constructor({
 		id = ids.users.LL,
@@ -97,7 +127,6 @@ class Player {
 		this.players_can_use_on = [];
 		this.isMuted = false;
 		this.canVote = true;
-		this.isMockPlayer = false;
 	}
 
 	resetInactivity() {
@@ -240,6 +269,10 @@ class Player {
 		this.percieved = {};
 	}
 
+	/**
+	 * Set a player's role
+	 * @param {Role} role role object you want the player to be set to
+	 */
 	async setRole(role) {
 		this.role = role.name;
 		this.attack = role.attack;
@@ -359,20 +392,122 @@ class Player {
 	}
 
 	/**
-	 * Sets what ability th eplayer is doing in the current phase
-	 *
+	 * Sets what ability th p layer is doing in the current phase
 	 * @param {string} name Name of the ability
-	 * @param {{[arg_name: string]: string}} arg_values An obect with an entry for each argument with the key being the name and the value being the value of the arg
+	 * @param {{[arg_name: string]: [arg_value: string]}} arg_values An obect with an entry for each argument with the key being the name and the value being the value of the arg
 	 */
 	setAbilityDoing(ability_name, arg_values) {
 		this.ability_doing = {
 			name: ability_name,
 			args: arg_values,
-	};
+		};
 
 		if (global.Game.Players.getAlivePlayers().every(player => player.ability_doing && player.ability_doing.name)) {
 			global.Game.startDay(global.Game.days_passed);
 		}
+	}
+
+	/**
+	 * Players does no action for the current phase
+	 */
+	doNothing() {
+		this.setAbilityDoing("nothing", {});
+	}
+
+	/**
+	 * Determines if a certain ability a player uses with specific arguments can be used by that player
+	 * @param {AbilityName} ability_name Name of the ability using
+	 * @param {{[arg_name: string]: [arg_value: string]}} arg_values
+	 * @returns {true | String} true if you can use the ability. Otherwise, feedback for why you can't use the ability
+	 */
+	async canUseAbility(ability_name, arg_values) {
+		const ability = Object.values(Abilities).find(ability =>
+			ability.name === ability_name
+		);
+		const player_role = roles[this.role]
+
+		// Check if role has ability
+		if (player_role.abilities.every(ability => ability.name !== ability_name)) {
+			return `${ability_name} is not an ability you can use`;
+		}
+
+		// Check if player is dead and can't use ability while dead
+		if (!this.isAlive) {
+			if (!(
+				ability_using.phases_can_use.includes(Phases.Limbo) &&
+				this.isInLimbo
+			)) {
+				return `You can't use the ability, **${ability_name}**, while you're not alive`;
+			}
+		}
+
+		// Check if ability can be used during current phase
+		if (!ability.phases_can_use.includes(global.Game.phase)) {
+
+			// Check if ability can be used in limbo and player in limbo
+			if (
+				!(
+					ability.phases_can_use.includes(Phases.Limbo) &&
+					this.isInLimbo
+				)
+			) {
+				return `You can't use this ability during the **${global.Game.phase}** phase`;
+			}
+		}
+
+		// Check if valid arguments
+		for (const ability_arg of ability_using.args) {
+			const arg_name = ability_arg.name;
+			let arg_param_value = arg_values[arg_name];
+
+			const isValidArg = global.Game.isValidArgValue(this, ability_arg, arg_param_value);
+
+			console.log({isValidArg});
+
+			if (isValidArg !== true) {
+				return isValidArg;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * @param {AbilityName} ability_name Name of the ability using
+	 * @param {{[arg_name: string]: [arg_value: string]}} arg_values
+	 * @returns {string} confirmation feedback for using ability
+	 */
+	useAbility(ability_name, arg_values) {
+		this.resetInactivity();
+
+		if (ability_name === AbilityName.Nothing) {
+			this.doNothing();
+			return `You will attempt to do **Nothing**`;
+		}
+
+		const player_role = roles[this.role];
+		const ability_using = Object.values(Abilities).find(ability =>
+			ability.name === ability_name
+		);
+
+		console.log({ability_name, ability_using, player_role});
+
+		for (const arg of ability_using.args) {
+			const arg_name = arg.name;
+			const arg_value = arg_values[arg_name];
+
+			console.log({arg, arg_values, arg_value});
+
+			if (arg.subtypes.includes(ArgumentSubtypes.Visiting)) {
+				this.setVisiting(arg_value);
+			}
+		}
+
+		this.setAbilityDoing(ability_name, arg_values);
+
+		console.log(this);
+
+		return ability_using.feedback(...Object.values(arg_values), this.name);
 	}
 
 	async leaveGame() {
@@ -419,6 +554,11 @@ class Player {
 		await this.sendFeedback(role_info_msg, true);
 	}
 
+	restoreOldDefense() {
+		const old_defense = roles[this.role].defense;
+		this.defense = old_defense;
+	}
+
 	async convertToRole(role_name) {
 		const current_role_name = this.role;
 		const role = Object.values(roles).find(role => role.name ===  role_name);
@@ -431,15 +571,17 @@ class Player {
 	}
 
 	async giveAccessToMafiaChat() {
-		const
-			mafia_channel = await getChannel((await getRDMGuild()), ids.rapid_discord_mafia.channels.mafia_chat),
-			player_guild_member = await getGuildMember((await getRDMGuild()), this.id);
-
-		mafia_channel.permissionOverwrites.edit(player_guild_member.user, {ViewChannel: true});
-
-		mafia_channel.send(`**${this.name}** - ${this.role}`);
-
 		console.log(`Let **${this.name}** see mafia chat.`);
+
+		if (!this.isMockPlayer) {
+			const
+				mafia_channel = await getChannel((await getRDMGuild()), ids.rapid_discord_mafia.channels.mafia_chat),
+				player_guild_member = await getGuildMember((await getRDMGuild()), this.id);
+
+			mafia_channel.permissionOverwrites.edit(player_guild_member.user, {ViewChannel: true});
+
+			mafia_channel.send(`**${this.name}** - ${this.role}`);
+		}
 	}
 
 	async removeAccessFromMafiaChat() {
@@ -462,15 +604,16 @@ class Player {
 				ability.name === affect.name
 			);
 
+			console.log({ability});
+
 			// Don't remove if affect lasts forever
 			if (ability && ability.duration === -1)
 				continue;
 
 			const phase_affect_ends = affect.during_phase + ability.duration;
 
-			// console.log(`Current Phase: ${global.Game.days_passed}`);
-			// console.log({ability});
-			// console.log({phase_affect_ends});
+			console.log(`Days Passed: ${global.Game.days_passed}`);
+			console.log({phase_affect_ends});
 
 			// Delete phase affect ends is current phase or has passed
 			if (phase_affect_ends <= global.Game.days_passed) {
@@ -478,8 +621,7 @@ class Player {
 
 				switch (ability.type) {
 					case AbilityTypes.Protection: {
-						const old_defense = roles[this.role].defense;
-						this.defense = old_defense;
+						this.restoreOldDefense();
 						break;
 					}
 
@@ -506,10 +648,11 @@ class Player {
 					}
 				}
 
-				if (ability.name === AbilityNames.Kidnap) {
+				if (ability.name === AbilityName.Kidnap) {
 					await this.unmute();
 					await this.regainVotingAbility();
 					this.isRoleblocked = false;
+					this.restoreOldDefense();
 					this.addFeedback(Feedback.Unkidnapped);
 				}
 

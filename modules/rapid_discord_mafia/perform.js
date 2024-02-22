@@ -1,5 +1,5 @@
 
-const {Feedback, Phases, AbilityUses, ArgumentTypes, ArgumentSubtypes, Immunities, AbilityNames, RoleNames, Factions, AbilityTypes} = require("../enums.js");
+const {Feedback, Phases, AbilityUses, ArgumentTypes, ArgumentSubtypes, Immunities, AbilityName: AbilityName, RoleNames, Factions, AbilityTypes} = require("../enums.js");
 const addAffect = function(ability_done, target_name) {
 	if (![0, -1].includes(ability_done.uses)) {
 		if (!global.Game.Players.get(ability_done.by).used[ability_done.name]) {
@@ -19,12 +19,12 @@ const addAffect = function(ability_done, target_name) {
 	);
 }
 
-const givePlayerDefense = function(player_healing, defense_level) {
-	console.log(`Healing ${player_healing.name} for ${defense_level} defense`);
+const givePlayerDefense = function(player_giving_defense, defense_level) {
+	console.log(`Giving ${player_giving_defense.name} ${defense_level} defense`);
 
-	if (player_healing.defense < defense_level) {
-		console.log(`Increased ${player_healing.name}'s defense from ${player_healing.defense} to ${defense_level}`);
-		player_healing.defense = defense_level
+	if (player_giving_defense.defense < defense_level) {
+		console.log(`Increased ${player_giving_defense.name}'s defense from ${player_giving_defense.defense} to ${defense_level}`);
+		player_giving_defense.defense = defense_level
 	}
 	else {
 		console.log(`${player_healing_name}'s was already at or above ${defense_level}`);
@@ -50,7 +50,7 @@ const attackPlayer = function(attacker_player, attacked_player) {
 			addAffect(
 				{
 					"by": attacker_player.name,
-					"name": AbilityNames.Suicide
+					"name": AbilityName.Suicide
 				},
 				attacker_player.name
 			);
@@ -77,7 +77,7 @@ const attackPlayer = function(attacker_player, attacked_player) {
 
 				console.log(`${protecter_player.name} has protected the victim ${attacked_player.name}`);
 
-				if (protection_affect.name === AbilityNames.Smith) {
+				if (protection_affect.name === AbilityName.Smith) {
 					console.log(`${protecter_player.name} successfully smithed a vest and achieved their win condition.`);
 
 					protecter_player.addFeedback(Feedback.DidSuccessfulSmith);
@@ -123,7 +123,7 @@ const perform = {
 
 			global.Game.abilities_performed[roleblocked_player_name] =
 				{
-					"name": AbilityNames.Knife,
+					"name": AbilityName.Knife,
 					"by": roleblocked_player_name,
 					"args": [ability_performed.by]
 				}
@@ -174,7 +174,7 @@ const perform = {
 			mafioso_player.visiting = player_killing_name;
 			global.Game.abilities_performed[mafioso_player.name] =
 				{
-					"name": AbilityNames.Murder,
+					"name": AbilityName.Murder,
 					"by": mafioso_player.name,
 					"args": [player_killing_name]
 				}
@@ -185,7 +185,7 @@ const perform = {
 			godfather_player.visiting = player_killing_name;
 			global.Game.abilities_performed[godfather_player.name] =
 				{
-					"name": AbilityNames.Murder,
+					"name": AbilityName.Murder,
 					"by": godfather_player.name,
 					"args": [player_killing_name]
 				}

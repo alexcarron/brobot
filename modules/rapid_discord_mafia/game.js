@@ -1,4 +1,4 @@
-const { GameStates, Phases, Subphases, MessageDelays, Factions, RDMRoles, WinConditions, Feedback, Announcements, RoleNames, PhaseWaitTimes, VotingOutcomes, TrialOutcomes, TrialVotes, RoleIdentifierTypes, ArgumentSubtypes, CoinRewards } = require("../enums.js");
+const { GameStates, Phases, Subphases, MessageDelays, Factions, RDMRoles, WinConditions, Feedback, Announcements, RoleNames, PhaseWaitTimes, VotingOutcomes, TrialOutcomes, TrialVotes, RoleIdentifierTypes, ArgumentSubtypes, CoinRewards, ArgumentTypes } = require("../enums.js");
 const { getChannel, getGuild, wait, getRandArrayItem, getGuildMember, getRole, removeRole, getCategoryChildren, logColor, getUnixTimestamp, shuffleArray, getRDMGuild, addRole, toTitleCase, saveObjectToGitHubJSON } = require("../functions.js");
 const ids = require("../../databases/ids.json");
 const validator = require('../../utilities/validator.js');
@@ -8,8 +8,8 @@ const { PermissionFlagsBits, Role, Interaction } = require("discord.js");
 const Death = require("./death.js");
 const roles = require("./roles.js");
 const Players = require("../rapid_discord_mafia/players.js");
-const RoleIdentifier = require("./RoleIdentifier.js");
-
+const Player = require("./player.js");
+const Arg = require("./arg.js");
 class Game {
 	/**
 	 * Whether this is a mock game used for testing or not
@@ -18,7 +18,7 @@ class Game {
 
 	constructor({players = {}}, isMockGame=false) {
 		this.state = GameStates.Ended;
-		this.Players = new Players(players);
+		this.Players = new Players(players, isMockGame);
 		this.phase = null;
 		this.subphase = null;
 		this.days_passed = 0;
@@ -184,7 +184,8 @@ class Game {
 
 	/**
 	 * Starts the game
-	 * @param {RoleIdentifier[]} role_identifiers The unshuffled role identifiers for the game
+	 * @requires this.Players defined
+	 * @param {RoleIdentifier[]} role_identifiers The unshuffled role identifier strings for the game
 	 */
 	async start(role_identifiers) {
 		const
@@ -213,8 +214,12 @@ class Game {
 		await this.createRoleList();
 		this.role_list = shuffleArray(this.role_list);
 		await this.assignRolesToPlayers();
-		await Game.openGhostChannel();
-		await this.announceRoleList(unshuffled_role_identifiers);
+
+		if (!this.isMockGame) {
+			await Game.openGhostChannel();
+			await this.announceRoleList(unshuffled_role_identifiers);
+		}
+
 		await this.announceMessages(
 			Announcements.LivingPlayers(this.Players.getAlivePlayerNames())
 		);
@@ -265,7 +270,8 @@ class Game {
 		for (let [role_index, role_name] of this.role_list.entries()) {
 			const
 				role = roles[role_name],
-				player = this.Players.getPlayerList()[role_index];
+				players = this.Players.getPlayerList(),
+				player = players[role_index];
 
 			await player.setRole(role);
 			await Game.log(`Sent role info message, ${role.name}, to ${player.name}.`);
@@ -422,8 +428,8 @@ class Game {
 	}
 
 	/**
-	 * @requires this.role_identifiers defined
 	 * Creates and sets the role list based off the current role identifiers
+	 * @requires this.role_identifiers defined
 	 */
 	async createRoleList() {
 		let num_roles_in_faction = {}
@@ -492,18 +498,27 @@ class Game {
 	}
 
 	static async log(message, heading_level=0) {
-		let staff_message = "";
-
 		if (heading_level == 2) {
 			logColor("\n\n" + message, "red");
-			staff_message = "# ";
 		}
 		else if (heading_level == 1) {
 			logColor("\n" + message, "cyan");
-			staff_message = "## ";
 		}
 		else {
 			console.log(message);
+		}
+	}
+
+	async log(message, heading_level=0) {
+		await Game.log(message, heading_level);
+
+		let staff_message = "";
+
+		if (heading_level == 2) {
+			staff_message = "# ";
+		}
+		else if (heading_level == 1) {
+			staff_message = "## ";
 		}
 
 		if (!this.isMockGame) {
@@ -511,10 +526,6 @@ class Game {
 			const staff_chnl = await Game.getStaffChnl();
 			await staff_chnl.send(message);
 		}
-	}
-
-	async log(message, heading_level=0) {
-		await Game.log(message, heading_level);
 	}
 
 	async killDeadPlayers() {
@@ -1024,8 +1035,6 @@ class Game {
 				player_feedback = player.feedback,
 				player_id = player.id;
 
-			console.log({player_name, player_feedback, player_id})
-
 			if (player_feedback.length <= 0)
 				continue;
 
@@ -1106,7 +1115,9 @@ class Game {
 					await game_announce_chnl.send(message);
 
 				console.log(`[ANNOUNCEMENT: ${message}]`);
-				await wait(MessageDelays.Normal, "s");
+
+				if (!this.isMockGame)
+					await wait(MessageDelays.Normal, "s");
 			}
 		}
 	}
@@ -1119,7 +1130,9 @@ class Game {
 			if (!this.isMockGame)
 				await game_announce_chnl.send(message);
 			console.log(message);
-			await wait(MessageDelays.Normal, "s");
+
+			if (!this.isMockGame)
+				await wait(MessageDelays.Normal, "s");
 		}
 	}
 
@@ -1165,10 +1178,12 @@ class Game {
 		if (!this.isMockGame)
 			await Game.openDayChat();
 
-		await Game.log("Waiting For Day 1 to fEnd");
+		await Game.log("Waiting For Day 1 to End");
 
-		await wait(PhaseWaitTimes.FirstDay, "min");
-		await this.startNight(curr_day_num);
+		if (!this.isMockGame) {
+			await wait(PhaseWaitTimes.FirstDay, "min");
+			await this.startNight(curr_day_num);
+		}
 	}
 
 	async startDay(days_passed_last_night) {
@@ -1185,7 +1200,6 @@ class Game {
 
 		await this.setPhaseToNextPhase();
 		const days_passed_last_day = this.days_passed;
-
 
 		for (const player of this.Players.getPlayersInLimbo()) {
 			console.log({player})
@@ -1235,22 +1249,24 @@ class Game {
 
 		await Game.log("Waiting for Voting to End");
 
-		await wait(PhaseWaitTimes.Voting*4/5, "min");
+		if (!this.isMockGame) {
+			await wait(PhaseWaitTimes.Voting*4/5, "min");
 
-		if (
-			this.state === GameStates.InProgress &&
-			this.phase === Phases.Day &&
-			this.subphase === Subphases.Voting &&
-			this.days_passed <= days_passed_last_voting
-		) {
-			this.announceMessages(
-				Announcements.PhaseAlmostOverWarning(PhaseWaitTimes.Voting*1/5)
-			)
+			if (
+				this.state === GameStates.InProgress &&
+				this.phase === Phases.Day &&
+				this.subphase === Subphases.Voting &&
+				this.days_passed <= days_passed_last_voting
+			) {
+				this.announceMessages(
+					Announcements.PhaseAlmostOverWarning(PhaseWaitTimes.Voting*1/5)
+				)
+			}
+
+			await wait(PhaseWaitTimes.Voting*1/5, "min");
+
+			this.startTrial(days_passed_last_voting);
 		}
-
-		await wait(PhaseWaitTimes.Voting*1/5, "min");
-
-		this.startTrial(days_passed_last_voting);
 	}
 
 	async startTrial(days_passed_last_voting) {
@@ -1274,10 +1290,13 @@ class Game {
 
 		await this.announceVotingResults();
 
+		const alive_player_names = this.Players.getAlivePlayerNames();
+
 		// If non-player voting outcome, skip to night
-		if (!this.Players.getAlivePlayerNames().includes(this.on_trial)) {
+		if (!alive_player_names.includes(this.on_trial)) {
 			await this.setPhaseToNextPhase();
 			await this.startNight(days_passed_last_trial);
+			return;
 		}
 
 		const player_on_trial = this.Players.get(this.on_trial);
@@ -1291,22 +1310,24 @@ class Game {
 
 		await Game.log("Waiting for Trial Voting to End");
 
-		await wait(PhaseWaitTimes.Trial*4/5, "min");
+		if (!this.isMockGame) {
+			await wait(PhaseWaitTimes.Trial*4/5, "min");
 
-		if (
-			this.state === GameStates.InProgress &&
-			this.phase === Phases.Day &&
-			this.subphase === Subphases.Trial &&
-			this.days_passed <= days_passed_last_trial
-		) {
-			this.announceMessages(
-				Announcements.PhaseAlmostOverWarning(PhaseWaitTimes.Trial*1/5)
-			)
+			if (
+				this.state === GameStates.InProgress &&
+				this.phase === Phases.Day &&
+				this.subphase === Subphases.Trial &&
+				this.days_passed <= days_passed_last_trial
+			) {
+				this.announceMessages(
+					Announcements.PhaseAlmostOverWarning(PhaseWaitTimes.Trial*1/5)
+				)
+			}
+
+			await wait(PhaseWaitTimes.Trial*1/5, "min");
+
+			await this.startTrialResults(days_passed_last_trial);
 		}
-
-		await wait(PhaseWaitTimes.Trial*1/5, "min");
-
-		await this.startTrialResults(days_passed_last_trial);
 	}
 
 	async startTrialResults(days_passed_last_trial) {
@@ -1375,21 +1396,23 @@ class Game {
 
 		await Game.log("Waiting for Night to End");
 
-		await wait(PhaseWaitTimes.Night * 4/5, "min");
+		if (!this.isMockGame) {
+			await wait(PhaseWaitTimes.Night * 4/5, "min");
 
-		if (
-			this.state === GameStates.InProgress &&
-			this.phase === Phases.Night &&
-			this.days_passed <= days_passed_last_night
-		) {
-			this.announceMessages(
-				Announcements.PhaseAlmostOverWarning(PhaseWaitTimes.Night*1/5)
-			)
+			if (
+				this.state === GameStates.InProgress &&
+				this.phase === Phases.Night &&
+				this.days_passed <= days_passed_last_night
+			) {
+				this.announceMessages(
+					Announcements.PhaseAlmostOverWarning(PhaseWaitTimes.Night*1/5)
+				)
+			}
+
+			await wait(PhaseWaitTimes.Night * 1/5, "min");
+
+			await this.startDay(days_passed_last_night);
 		}
-
-		await wait(PhaseWaitTimes.Night * 1/5, "min");
-
-		await this.startDay(days_passed_last_night);
 	}
 
 	static async getAlivePlayersAutocomplete(interaction) {
@@ -1420,27 +1443,25 @@ class Game {
 	 * @param {string} player_id Discord id of player
 	 * @param {Interaction} interaction Interaction to reply on invalid name
 	 * @param {boolean} isMockUser Whether this is a mock player
-	 * @returns {Player} The created player
 	 */
 	async addPlayerToGame(player_name, player_id, interaction, isMockUser=false) {
 		let player_member;
 
-		const rdm_guild = await getRDMGuild();
-
 		if ( this.Players && this.Players.get(player_name) ) {
 			if (!this.isMockGame)
 				await interaction.editReply(`The name, **${player_name}**, already exists.`);
-			return
+			return new Player();
 		}
 
 		const validator_result = validator.validateName(player_name);
 		if (validator_result !== true) {
 			if (!this.isMockGame)
 				await interaction.editReply(validator_result);
-			return
+			return new Player();
 		}
 
 		if (!isMockUser && !this.isMockGame) {
+			const rdm_guild = await getRDMGuild();
 
 			player_member = await getGuildMember(rdm_guild, player_id);
 			const
@@ -1453,7 +1474,14 @@ class Game {
 			await player_member.setNickname(player_name).catch(console.error());
 		}
 
-		const player = await this.Players.addPlayerFromObj({id: player_id, name: player_name});
+		let player_obj = {id: player_id, name: player_name};
+
+		if (this.isMockGame)
+			player_obj.isMockPlayer = true;
+
+		const player = await this.Players.addPlayerFromObj(player_obj);
+		const players = this.Players.getPlayerList();
+		console.log({players});
 
 		if (!this.isMockGame) {
 			await player.createChannel();
@@ -1529,7 +1557,6 @@ class Game {
 					player_faction != faction_checking  &&
 					!["Neutral Evil", "Neutral Chaos", "Neutral Benign"].includes(player_role_indentifier)
 				) {
-					console.log("Didn't Win");
 					hasFactionWon = false;
 					break;
 				}
@@ -1550,7 +1577,7 @@ class Game {
 
 		}
 
-		console.log("Going through roles that need to survive alone.");
+		// console.log("Going through roles that need to survive alone.");
 		for (let role_checking of living_lone_survival_roles) {
 
 			console.log({role_checking});
@@ -1570,7 +1597,6 @@ class Game {
 					player_role.name != role_checking  &&
 					!["Neutral Evil", "Neutral Chaos", "Neutral Benign"].includes(player_role_indentifier)
 				) {
-					console.log("Didn't Win");
 					hasFactionWon = false;
 					break;
 				}
@@ -1591,7 +1617,7 @@ class Game {
 
 		}
 
-		console.log("Going through roles that need to only survive.");
+		// console.log("Going through roles that need to only survive.");
 		for (let role_checking of living_survival_roles) {
 
 			console.log({role_checking});
@@ -1608,13 +1634,10 @@ class Game {
 				if (hasFactionWon) {
 					winning_faction = role_checking;
 				}
-				else {
-					console.log("Didn't Win");
-				}
 			}
 		}
 
-		console.log("Going through roles that need to only survive while town loses.");
+		// console.log("Going through roles that need to only survive while town loses.");
 		for (let role_checking of living_survival_roles) {
 
 			console.log({role_checking});
@@ -1632,9 +1655,6 @@ class Game {
 
 				if (hasFactionWon) {
 					winning_faction = role_checking;
-				}
-				else {
-					console.log("Didn't Win");
 				}
 			}
 		}
@@ -1745,6 +1765,7 @@ class Game {
 					mafia_channel.send(
 						`**${player_to_promote.name}** has been promoted to **Mafioso**!`
 					);
+					Game.log(`**${player_to_promote.name}** has been promoted to **Mafioso**`);
 				}
 			}
 		}
@@ -1810,10 +1831,10 @@ class Game {
 			);
 		}
 
-		await wait("30", "s");
+		if (!this.isMockGame)
+			await wait("30", "s");
 
-		let resetgame = require("../../commands/rapid_discord_mafia/reset-game.js");
-		await resetgame.execute();
+		await Game.reset();
 	}
 
 	static async convertAllToSpectator() {
@@ -2238,31 +2259,36 @@ class Game {
 			)
 		);
 
-		await wait(PhaseWaitTimes.SignUps*(2/3), "min");
-		console.log(this.state);
-		if (this.state !== GameStates.SignUp) return
+		if (!this.isMockGame) {
 
-		this.announceMessages(
-			Announcements.SignUpsReminder(
-				ids.rapid_discord_mafia.channels.join_chat,
-				starting_unix_timestamp
-			)
-		);
+			await wait(PhaseWaitTimes.SignUps*(2/3), "min");
 
-		await wait(PhaseWaitTimes.SignUps*(4/15), "min");
-		console.log(this.state);
-		if (this.state !== GameStates.SignUp) return
+			console.log(this.state);
+			if (this.state !== GameStates.SignUp) return
 
-		this.announceMessages(
-			Announcements.SignUpsFinalReminder(
-				ids.rapid_discord_mafia.channels.join_chat,
-				starting_unix_timestamp
-			)
-		);
+			this.announceMessages(
+				Announcements.SignUpsReminder(
+					ids.rapid_discord_mafia.channels.join_chat,
+					starting_unix_timestamp
+				)
+			);
 
-		await wait(PhaseWaitTimes.SignUps*(1/15), "min");
-		console.log(this.state);
-		if (this.state !== GameStates.SignUp) return
+			await wait(PhaseWaitTimes.SignUps*(4/15), "min");
+
+			console.log(this.state);
+			if (this.state !== GameStates.SignUp) return
+
+			this.announceMessages(
+				Announcements.SignUpsFinalReminder(
+					ids.rapid_discord_mafia.channels.join_chat,
+					starting_unix_timestamp
+				)
+			);
+
+			await wait(PhaseWaitTimes.SignUps*(1/15), "min");
+			console.log(this.state);
+			if (this.state !== GameStates.SignUp) return
+		}
 
 		const player_count = this.Players.getPlayerCount();
 
@@ -2291,10 +2317,17 @@ class Game {
 	/**
 	 *
 	 * @param {Player} player_using_ability
+	 * @param {Arg} ability_arg argument validating
 	 * @param {string} arg_value
-	 * @returns true if valid or string containing reason if invalid
+	 * @returns {true | String} true if valid. Otherwise, string containing reason if invalid
 	 */
 	isValidArgValue(player_using_ability, ability_arg, arg_value) {
+		if (ability_arg.type === ArgumentTypes.Player) {
+			if (!this.Players.getPlayerList().includes(arg_value)) {
+				return `**${arg_value}** is not a valid player for the argument **${ability_arg.name}**`
+			}
+		}
+
 		if (ability_arg.subtypes.includes(ArgumentSubtypes.NotSelf)) {
 			if (arg_value === player_using_ability.name) {
 				return `You cannot target yourself`;

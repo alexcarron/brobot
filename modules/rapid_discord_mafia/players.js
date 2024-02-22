@@ -48,6 +48,9 @@ class Players {
 		return this.players[name];
 	}
 
+	/**
+	 * @returns {String[]} an array of all player names
+	 */
 	getPlayerList() {
 		return Object.values(this.players);
 	}

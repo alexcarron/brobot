@@ -4,7 +4,8 @@ const { toTitleCase, deferInteraction, getRDMGuild, getChannel } = require("../.
 const { Abilities } = require("../../modules/rapid_discord_mafia/ability");
 const { ArgumentTypes, ArgumentSubtypes, Factions, AbilityUses, Phases } = require("../../modules/enums");
 const roles = require("../../modules/rapid_discord_mafia/roles");
-const ids = require("../../databases/ids.json")
+const ids = require("../../databases/ids.json");
+const Game = require("../../modules/rapid_discord_mafia/game");
 
 const command = new SlashCommand({
 	name: "use",
@@ -80,6 +81,7 @@ command.execute = async function(interaction, isTest) {
 
 	let player, ability_name;
 
+	// Get player from user or player name argument
 	if (isTest) {
 		const player_name = interaction.options.getString("player-name");
 		player = global.Game.Players.getPlayerFromName(player_name);
@@ -92,6 +94,7 @@ command.execute = async function(interaction, isTest) {
 		return await interaction.editReply("You must be a player to use this command");
 	}
 
+	// Parse ability name from command use
 	if (isTest) {
 		ability_name =
 			interaction.options.getString("ability-name")
@@ -104,50 +107,14 @@ command.execute = async function(interaction, isTest) {
 		ability_name = subcommand_name.split("-").map(name => toTitleCase(name)).join(" ");
 	}
 
-	if (ability_name === "Nothing") {
-		player.setAbilityDoing("nothing", {});
-
-		player.resetInactivity();
-
-		return await interaction.editReply(
-			`You will attempt to do **Nothing**`
-		);
-	}
-
-	const ability = Object.values(Abilities).find(ability =>
+	// Organize command parameter values into arg_values
+	const arg_values = {};
+	const ability_using = Object.values(Abilities).find(ability =>
 		ability.name === ability_name
 	);
 
-	console.log({ability_name, ability, player});
-
-	const player_role = roles[player.role]
-
-	if (player_role.abilities.every(ability => ability.name !== ability_name)) {
-		return await interaction.editReply("You can't use this ability.");
-	}
-
-	if (!ability.phases_can_use.includes(global.Game.phase)) {
-		if (
-			!(ability.phases_can_use.includes(Phases.Limbo) &&
-			player.isInLimbo)
-		) {
-			return await interaction.editReply(`You can't use this ability during the** ${global.Game.phase}** phase`)
-		}
-	}
-
-	if (!player.isAlive) {
-		if (!(
-			ability.phases_can_use.includes(Phases.Limbo) &&
-			player.isInLimbo
-		)) {
-			return await interaction.editReply(`You can't use this ability while you're not alive`);
-		}
-	}
-
-	const arg_values = {};
-
-	for (const arg of ability.args) {
-		const arg_param_name = arg.name.split(" ").join("-").toLowerCase();
+	for (const ability_arg of ability_using.args) {
+		const arg_param_name = ability_arg.name.split(" ").join("-").toLowerCase();
 		let arg_param_value;
 
 		if (isTest) {
@@ -163,64 +130,30 @@ command.execute = async function(interaction, isTest) {
 		else {
 			arg_param_value = interaction.options.getString(arg_param_name);
 		}
-		arg_values[arg.name] = arg_param_value;
-
-		console.log({arg, arg_param_name, arg_param_value});
-
-		if (arg_param_value === "N/A") {
-			return await interaction.editReply(`You did not enter in a valid player in the argument **${arg_param_name}**`);
-		}
-
-		const isValidArg = global.Game.isValidArgValue(player, arg, arg_param_value);
-
-		console.log({isValidArg});
-
-		if (isValidArg !== true) {
-			return await interaction.editReply(isValidArg);
-		}
-
-
-
-		console.log({arg_values});
-
-		if (arg.subtypes.includes(ArgumentSubtypes.Visiting)) {
-			player.setVisiting(arg_param_value);
-		}
+		arg_values[ability_arg.name] = arg_param_value;
 	}
 
-	player.setAbilityDoing(ability_name, arg_values);
+	const can_use_ability_feedback = await player.canUseAbility(ability_name, arg_values);
+
+	if (can_use_ability_feedback !== true)
+		return await interaction.editReply(can_use_ability_feedback);
+
+	const ability_feedback = player.useAbility(ability_name, arg_values);
 	await global.Game.saveGameDataToDatabase();
 
-	let arg_values_txt = "";
-	if (Object.entries(arg_values).length > 0) {
-
-		arg_values_txt =
-			" with the arguments " +
-			Object.entries(arg_values).map((entry) => {
-				let name = entry[0];
-				let value = entry[1];
-
-				return `**${name}**: **${value}**`
-			}).join(", ");
-	}
-
-	player.resetInactivity();
-
-	await interaction.editReply(
-		ability.feedback(...Object.values(arg_values), player.name)
-	);
-
-	console.log({player});
+	await interaction.editReply(ability_feedback);
 
 	if (roles[player.role].faction === Factions.Mafia) {
 		const rdm_guild = await getRDMGuild();
 		const mafia_channel = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.mafia_chat);
 
 		mafia_channel.send(
-			ability.feedback(...Object.values(arg_values), player.name, false)
+			ability_using.feedback(...Object.values(arg_values), player.name, false)
 		);
 	}
+
 }
+
 command.autocomplete = async function(interaction) {
 	let autocomplete_values;
 	const focused_param = interaction.options.getFocused(true);

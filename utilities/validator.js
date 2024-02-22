@@ -1,7 +1,5 @@
 const validator = {
 	validateName(name) {
-		console.log(`Validating Name: ${name}`);
-
 		const nameRegex = /^[a-zA-Z0-9 ]+$/;
 
 		if ( name.length > 32 ) {

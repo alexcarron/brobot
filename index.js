@@ -182,16 +182,11 @@ global.client.once(Events.ClientReady, async () => {
 			highWaterMark: 1 << 25
 		}
 	});
-	global.Roles = require("./modules/rapid_discord_mafia/roles");
-	global.abilities = require("./modules/rapid_discord_mafia/ability.js").Abilities;
-	global.Game = new Game( new Players() );
-	global.LLPointManager = new LLPointManager();
-	global.rapid_discord_mafia = new RapidDiscordMafia();
-	console.log("Global module instantiated")
 
-	const rapid_discord_mafia_obj = await getObjectFromGitHubJSON("rapid_discord_mafia");
-	global.rapid_discord_mafia.setTo(rapid_discord_mafia_obj);
-	console.log("Rapid Discord Mafia Database Downloaded");
+	await RapidDiscordMafia.setUpRapidDiscordMafia();
+
+	global.LLPointManager = new LLPointManager();
+	console.log("Global module instantiated");
 
 	global.LLPointManager.setViewers(
 		await getObjectFromGitHubJSON("viewers")

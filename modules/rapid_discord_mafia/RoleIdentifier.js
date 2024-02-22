@@ -80,6 +80,11 @@ class RoleIdentifier {
 		return RoleIdentifierPriorities[role_identifier_priority_key];
 	}
 
+	/**
+	 *
+	 * @param {String[]} role_identifier_strings The list of role identifier strings you want to convert
+	 * @returns {RoleIdentifier[]} The converted role identifiers
+	 */
 	static convertIdentifierStrings(role_identifier_strings) {
 		return role_identifier_strings.map(
 			role_identifer_str => new RoleIdentifier(role_identifer_str)

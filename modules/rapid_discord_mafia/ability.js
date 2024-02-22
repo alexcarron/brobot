@@ -1,9 +1,13 @@
-const { ArgumentSubtypes, ArgumentTypes, AbilityUses, Durations, Phases, AbilityTypes, Priorities, AbilityNames } = require("../enums");
+const { ArgumentSubtypes, ArgumentTypes, AbilityUses, Duration, Phases, AbilityTypes, Priorities, AbilityName: AbilityName, AbilityArgName } = require("../enums");
 const Arg = require("./arg.js");
 const Types = require("./types.js");
 const perform = require("./perform");
 
 class Ability {
+	/**
+	 *
+	 * @param {Duration} OneDay by default
+	 */
 	constructor( { name, type, uses, feedback=()=>``, phases_can_use=[Phases.Night], description, priority, duration=0.5, args=[], effects=[], perform } ) {
 		this.name = name;
 		this.type = type;
@@ -27,7 +31,7 @@ class Ability {
 			type: AbilityTypes.Protection,
 			priority: Priorities.Protection,
 			uses: AbilityUses.Unlimited,
-			duration: Durations.DayAndNight,
+			duration: Duration.DayAndNight,
 			phases_can_use: [Phases.Night],
 			effects: [
 				perform.heal
@@ -50,7 +54,7 @@ class Ability {
 			type: AbilityTypes.Protection,
 			priority: Priorities.Protection,
 			uses: AbilityUses.Amount(1),
-			duration: Durations.DayAndNight,
+			duration: Duration.DayAndNight,
 			phases_can_use: [Phases.Night],
 			effects: [
 				perform.selfHeal
@@ -82,7 +86,7 @@ class Ability {
 			]
 		}),
 		"Track": new Ability({
-			name: AbilityNames.Track,
+			name: AbilityName.Track,
 			description: "At night, you can track a player that's not yourself at night to see who they are percieved to be visiting.",
 			type: AbilityTypes.Investigative,
 			priority: Priorities.Investigative,
@@ -104,7 +108,7 @@ class Ability {
 			]
 		}),
 		"Lookout": new Ability({
-			name: AbilityNames.Lookout,
+			name: AbilityName.Lookout,
 			description: "At night, watch a player's house that isn't yourself. If any players visited them, you'll be told every player that did that night. This is affected by players' perceived visits.",
 			type: AbilityTypes.Investigative,
 			priority: Priorities.Investigative,
@@ -131,7 +135,7 @@ class Ability {
 			type: AbilityTypes.Roleblock,
 			priority: Priorities.Roleblock,
 			uses: AbilityUses.Unlimited,
-			duration: Durations.DayAndNight,
+			duration: Duration.DayAndNight,
 			phases_can_use: [Phases.Night],
 			effects: [
 				perform.roleblock
@@ -154,7 +158,7 @@ class Ability {
 			type: AbilityTypes.Attacking,
 			priority: Priorities.Attacking,
 			uses: AbilityUses.Amount(3),
-			duration: Durations.OneNight,
+			duration: Duration.OneNight,
 			phases_can_use: [Phases.Night],
 			effects: [
 				perform.attack
@@ -177,7 +181,7 @@ class Ability {
 			type: AbilityTypes.Control,
 			priority: Priorities.Control,
 			uses: AbilityUses.Unlimited,
-			duration: Durations.OneNight,
+			duration: Duration.OneNight,
 			phases_can_use: [Phases.Night],
 			effects: [
 				perform.order
@@ -195,12 +199,12 @@ class Ability {
 			]
 		}),
 		"Murder": new Ability({
-			name: AbilityNames.Murder,
+			name: AbilityName.Murder,
 			description: "At night, you can murder a non-mafia player at night, attacking them.",
 			type: AbilityTypes.Attacking,
 			priority: Priorities.Attacking,
 			uses: AbilityUses.Unlimited,
-			duration: Durations.OneNight,
+			duration: Duration.OneNight,
 			phases_can_use: [Phases.Night],
 			effects: [
 				perform.attack
@@ -223,7 +227,7 @@ class Ability {
 			type: AbilityTypes.Manipulation,
 			priority: Priorities.Manipulation,
 			uses: AbilityUses.Unlimited,
-			duration: Durations.DayAndNight,
+			duration: Duration.DayAndNight,
 			phases_can_use: [Phases.Night],
 			effects: [
 				perform.frame
@@ -246,7 +250,7 @@ class Ability {
 			type: AbilityTypes.Roleblock,
 			priority: Priorities.Roleblock,
 			uses: AbilityUses.Unlimited,
-			duration: Durations.DayAndNight,
+			duration: Duration.DayAndNight,
 			phases_can_use: [Phases.Night],
 			effects: [
 				perform.frame
@@ -289,7 +293,7 @@ class Ability {
 			type: AbilityTypes.Manipulation,
 			priority: Priorities.Manipulation,
 			uses: AbilityUses.Amount(1),
-			duration: Durations.Indefinite,
+			duration: Duration.Indefinite,
 			phases_can_use: [Phases.Night],
 			effects: [
 				perform.selfFrame
@@ -302,7 +306,7 @@ class Ability {
 			type: AbilityTypes.Attacking,
 			priority: Priorities.Attacking,
 			uses: AbilityUses.Amount(1),
-			duration: Durations.OneNight,
+			duration: Duration.OneNight,
 			phases_can_use: [Phases.Limbo],
 			effects: [
 				perform.attack
@@ -323,7 +327,7 @@ class Ability {
 			type: AbilityTypes.Manipulation,
 			priority: Priorities.Manipulation,
 			uses: AbilityUses.Amount(1),
-			duration: Durations.Indefinite,
+			duration: Duration.Indefinite,
 			phases_can_use: [Phases.Night],
 			effects: [
 				perform.frameTarget
@@ -336,7 +340,7 @@ class Ability {
 			type: AbilityTypes.Protection,
 			priority: Priorities.Protection,
 			uses: AbilityUses.Amount(4),
-			duration: Durations.DayAndNight,
+			duration: Duration.DayAndNight,
 			phases_can_use: [Phases.Night],
 			effects: [
 				perform.selfHeal
@@ -344,12 +348,12 @@ class Ability {
 			feedback: function(player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to put on a vest tonight`},
 		}),
 		"Knife": new Ability({
-			name: AbilityNames.Knife,
+			name: AbilityName.Knife,
 			description: "At night, you can knife a player that's not yourself at night, attacking them.",
 			type: AbilityTypes.Attacking,
 			priority: Priorities.Attacking,
 			uses: AbilityUses.Unlimited,
-			duration: Durations.OneNight,
+			duration: Duration.OneNight,
 			phases_can_use: [Phases.Night],
 			effects: [
 				perform.attack
@@ -372,7 +376,7 @@ class Ability {
 			type: AbilityTypes.Modifier,
 			priority: Priorities.Modifier,
 			uses: AbilityUses.Unlimited,
-			duration: Durations.OneNight,
+			duration: Duration.OneNight,
 			phases_can_use: [Phases.Night],
 			effects: [
 				perform.cautious
@@ -380,12 +384,12 @@ class Ability {
 			feedback: function(player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to be cautious of roleblockers tonight`},
 		}),
 		"Smith": new Ability({
-			name: AbilityNames.Smith,
+			name: AbilityName.Smith,
 			description: "At night, you can smith a bulletproof vest for a player that's not yourself at night, giving them a level one defense that night and following day. You and your target will be notified if your target was attacked while wearing the vest.",
 			type: AbilityTypes.Protection,
 			priority: Priorities.Protection,
 			uses: AbilityUses.Amount(3),
-			duration: Durations.DayAndNight,
+			duration: Duration.DayAndNight,
 			phases_can_use: [Phases.Night],
 			effects: [
 				perform.smith
@@ -406,7 +410,7 @@ class Ability {
 			type: AbilityTypes.Protection,
 			priority: Priorities.Protection,
 			uses: AbilityUses.Amount(1),
-			duration: Durations.DayAndNight,
+			duration: Duration.DayAndNight,
 			phases_can_use: [Phases.Night],
 			effects: [
 				perform.selfSmith
@@ -414,12 +418,12 @@ class Ability {
 			feedback: function(player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to smith a bulletproof vest for ${isYou ? "yourself" : "themself"} tonight`},
 		}),
 		"Suicide": new Ability({
-			name: AbilityNames.Suicide,
+			name: AbilityName.Suicide,
 			description: "You will shoot yourself, attacking yourself with a level four attack.",
 			type: AbilityTypes.Suicide,
 			priority: Priorities.Attacking,
 			uses: AbilityUses.None,
-			duration: Durations.OneNight,
+			duration: Duration.OneNight,
 			phases_can_use: [],
 			effects: [
 				perform.attack
@@ -431,7 +435,7 @@ class Ability {
 			type: AbilityTypes.Control,
 			priority: Priorities.Control,
 			uses: AbilityUses.Unlimited,
-			duration: Durations.OneNight,
+			duration: Duration.OneNight,
 			phases_can_use: [Phases.Night],
 			effects: [
 				perform.control
@@ -506,7 +510,7 @@ class Ability {
 			],
 		}),
 		"Kidnap": new Ability({
-			name: "Kidnap",
+			name: AbilityName.Kidnap,
 			description: "At night, kidnap a non-mafia player. They will gain a level four defense for the night but they will be roleblocked and won't be able to speak or vote the next day. If you kidnap a role with an attack level above zero, they will attack you while kidnapped without using up an ability no matter what.",
 			type: AbilityTypes.Roleblock,
 			priority: Priorities.Roleblock,
@@ -520,7 +524,7 @@ class Ability {
 			},
 			args: [
 				new Arg({
-					name: "Player Kidnapping",
+					name: AbilityArgName.PlayerKidnapping,
 					description: "The player you're kidnapping",
 					type: ArgumentTypes.Player,
 					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NonMafia, ArgumentSubtypes.NotSelf]

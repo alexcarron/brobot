@@ -79,7 +79,7 @@ const Enums = {
 		Investigative: 6,
 	},
 
-	Durations: {
+	Duration: {
 		DayAndNight: 1,
 		OneDay: 0.5,
 		OneNight: 0.5,
@@ -463,7 +463,7 @@ const Enums = {
 		AnyRole: 4
 	},
 
-	AbilityNames: {
+	AbilityName: {
 		Knife: "Knife",
 		Murder: "Murder",
 		Suicide: "Suicide",
@@ -471,6 +471,11 @@ const Enums = {
 		Kidnap: "Kidnap",
 		Track: "Track",
 		Lookout: "Lookout",
+		Nothing: "Nothing",
+	},
+
+	AbilityArgName: {
+		PlayerKidnapping: "Player Kidnapping",
 	},
 
 	RoleNames: {
