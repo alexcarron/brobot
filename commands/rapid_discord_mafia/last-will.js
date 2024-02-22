@@ -13,7 +13,12 @@ const Subparameters = {
 		type: "string",
 		name: "added-contents",
 		description: "The added contents of your last will",
-		isAutocomplete: true,
+	}),
+	NewLine: new Parameter({
+		type: "boolean",
+		name: "on-new-line",
+		description: "Whether the added contents will be on a new line",
+		isRequired: false,
 	}),
 }
 const Parameters = {
@@ -22,7 +27,7 @@ const Parameters = {
 		name: "create",
 		description: "Create a new last will",
 		subparameters: [
-			Subparameters.Contents
+			Subparameters.Contents,
 		]
 	}),
 	Add: new Parameter({
@@ -30,7 +35,8 @@ const Parameters = {
 		name: "add",
 		description: "Add to your existing last will",
 		subparameters: [
-			Subparameters.AddedContents
+			Subparameters.AddedContents,
+			Subparameters.NewLine,
 		]
 	}),
 	Remove: new Parameter({
@@ -56,13 +62,15 @@ command.execute = async function(interaction) {
 	await deferInteraction(interaction);
 
 	const player = global.Game.Players.getPlayerFromId(interaction.user.id);
-	console.log({player})
+
 	if (!player.isAlive) {
 		return await interaction.editReply("Dead people can't write last wills");
 	}
 
 	if (interaction.options.getSubcommand() === Parameters.Create.name) {
 		const contents = interaction.options.getString(Subparameters.Contents.name);
+
+		console.log({contents});
 
 		if (contents.includes("`")) {
 			return await interaction.editReply(`Your last will contents\n${contents}\nincludes a backtick (\`) which is illegal.`)
@@ -71,12 +79,16 @@ command.execute = async function(interaction) {
 		player.last_will = contents;
 	}
 	else if (interaction.options.getSubcommand() === Parameters.Add.name) {
-		const added_contents = interaction.options.getString(Subparameters.AddedContents.name);
+		let added_contents = interaction.options.getString(Subparameters.AddedContents.name);
+		let isOnNewLine = interaction.options.getBoolean(Subparameters.NewLine.name);
 
 		if (added_contents.includes("`")) {
 			return await interaction.editReply(`Your last will contents:\n${contents}\nincludes a backtick (\`) which is illegal.`)
 		}
 
+		if (isOnNewLine) {
+			added_contents = "\n" + added_contents;
+		}
 		player.last_will += added_contents;
 	}
 	else if (interaction.options.getSubcommand() === Parameters.Remove.name) {
@@ -86,35 +98,4 @@ command.execute = async function(interaction) {
 	await global.Game.log(`**${player.name}** updated their last will to be \n\`\`\`\n${player.last_will}\n\`\`\``);
 	return await interaction.editReply(`Your last will is now: \n\`\`\`\n${player.last_will}\n\`\`\``);
 };
-command.autocomplete = async function(interaction) {
-	const focused_param = await interaction.options.getFocused(true);
-	console.log({focused_param});
-
-	const player = global.Game.Players.getPlayerFromId(interaction.user.id);
-
-	if (!player || !player.isAlive) {
-		return await interaction.respond(
-			[{name: "Sorry, your not allowed to use this command", value: "N/A"}]
-		);
-	}
-
-	let curr_last_will = player.last_will;
-
-	autocomplete_values = [{name: curr_last_will + focused_param.value, value: focused_param.value}];
-
-	if (autocomplete_values[0].name.length <= 0) {
-		autocomplete_values = [{name: "Your last will is currently empty", value: ""}]
-	}
-
-	if (autocomplete_values[0].name.length >= 100) {
-		autocomplete_values = [{name: autocomplete_values[0].name.substring(0, 96) + "...", value: ""}]
-	}
-
-	console.log({autocomplete_values});
-
-	await interaction.respond(
-		autocomplete_values
-	);
-};
-
 module.exports = command;

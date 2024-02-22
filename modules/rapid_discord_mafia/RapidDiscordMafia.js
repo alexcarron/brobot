@@ -1,3 +1,4 @@
+const { getObjectFromGitHubJSON } = require("../functions.js");
 const Contestant = require("./Contestant");
 const Game = require("./game.js");
 const Players = require("./players.js");

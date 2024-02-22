@@ -336,11 +336,16 @@ const Enums = {
 			`No last will could be found.`,
 		LastWillFound: (last_will) =>
 			`They left behind a last will: \`\`\`\n${last_will}\n\`\`\``,
-		CongratulateWinners: (winning_factions, winning_player_names) =>
+		CongratulateWinners: (winning_factions, winning_player_names) => {
+			const bolded_winning_player_names = winning_player_names.map(
+				name => `**${name}**`
+			);
+			const winning_players_sentence = getSentenceFromArray(bolded_winning_player_names);
 			[
 				`_ _\n**${winning_factions.join("**, **")} **won!`,
-				`Congratulations** ${winning_player_names.join("**, **")}**!`
-			],
+				`Congratulations** ${winning_players_sentence}**!`
+			]
+		},
 		Whisper: (player_whispering, player_whispering_to) =>
 			`> **${player_whispering.name}** whispers to **${player_whispering_to.name}**`,
 		WhisperLog: (player_whispering, player_whispering_to, whisper_contents) =>
