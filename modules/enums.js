@@ -394,13 +394,18 @@ const Enums = {
 		GotInnocentEvaluation: (player_evaluating) => {return `**${player_evaluating}** seemed to be innocent.`},
 		LookoutSeesNoVisits: (target_player) =>
 			`It seems like nobody visited **${target_player.name}** last night.`,
+		/**
+		 * @param {string} target_player the player the lookout visits
+		 * @param {string[]} players_seen_visiting an array of the players seen visiting the target
+		 * @returns {string} feedback
+		 */
 		LookoutSeesVisits: (target_player, players_seen_visiting) => {
 			const player_names_visiting =
 			players_seen_visiting.map(player => `**${player.name}**`);
 			return `It seems like **${target_player.name}** was visited by ${getSentenceFromArray(player_names_visiting)} last night.`;
 		},
-		SawPlayerVisit: (player_tracked, percieved_visit) => {return `It looked like **${player_tracked}** visited **${percieved_visit}** last night.`},
-		SawPlayerNotVisit: (player_tracked) => {return `It looked like **${player_tracked}** didn't visit anyone last night.`},
+		TrackerSawPlayerVisit: (player_tracked_name, visited_player_name) => {return `It looked like **${player_tracked_name}** visited **${visited_player_name}** last night.`},
+		TrackerSawPlayerNotVisit: (player_tracked_name) => {return `It looked like **${player_tracked_name}** didn't visit anyone last night.`},
 		AttackFailed: (player_attacking) => {return `You tried to attack **${player_attacking}**, but their defense was too strong.`},
 		KilledPlayer: (player_attacking) => {return `You attacked and killed **${player_attacking}**.`},
 		OrderedByGodfather: (player_attacking) => {return `The Godfather ordered you to attack **${player_attacking}**.`},
@@ -473,11 +478,14 @@ const Enums = {
 		Lookout: "Lookout",
 		Nothing: "Nothing",
 		DeathCurse: "Death Curse",
+		HealSelf: "Heal Self",
 	},
 
 	AbilityArgName: {
 		PlayerKidnapping: "Player Kidnapping",
 		PlayerKilling: "Player Killing",
+		PlayerTracking: "Player Tracking",
+		PlayerWatching: "Player Watching",
 	},
 
 	RoleNames: {

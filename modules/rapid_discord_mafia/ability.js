@@ -49,7 +49,7 @@ class Ability {
 			]
 		}),
 		HealSelf: new Ability({
-			name: "Heal Self",
+			name: AbilityName.HealSelf,
 			description: "At night, you can heal yourself at night to give yourself a level two defense for the night and following day.",
 			type: AbilityTypes.Protection,
 			priority: Priorities.Protection,
@@ -100,7 +100,7 @@ class Ability {
 			},
 			args: [
 				new Arg({
-					name: "Player Tracking",
+					name: AbilityArgName.PlayerTracking,
 					description: "The player whose visit your tracking",
 					type: ArgumentTypes.Player,
 					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf]

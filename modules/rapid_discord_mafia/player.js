@@ -42,6 +42,12 @@ class Player {
 	 */
 	canVote;
 
+	/**
+	 * An array of all feedback messages to be sent to the player
+	 * @type {string[]}
+	 */
+	feedback;
+
 	constructor({
 		id = ids.users.LL,
 		name,

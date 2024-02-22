@@ -91,14 +91,12 @@ const attackPlayer = function(attacker_player, attacked_player) {
 	}
 }
 
-/**
- * AbilityPerformed {
- * 	by: {Player.name},
- * 	name: {Ability.name},
- * 	args: [ ...{Args.value} ]
- * }
- */
+
+
 const perform = {
+	/**
+	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
+	 */
 	async roleblock(ability_performed) {
 		const
 			roleblocker_player_name = ability_performed.by,
@@ -135,6 +133,9 @@ const perform = {
 		roleblocker_player.addFeedback(Feedback.RoleblockedPlayer(roleblocked_player));
 		addAffect(ability_performed, roleblocked_player_name);
 	},
+	/**
+	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
+	 */
 	async cautious(ability_performed) {
 		const
 			serial_killer_name = ability_performed.by,
@@ -143,6 +144,9 @@ const perform = {
 		serial_killer_player.addFeedback(Feedback.DidCautious);
 		addAffect(ability_performed, serial_killer_name);
 	},
+	/**
+	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
+	 */
 	async heal(ability_performed) {
 		const
 			healer_player_name = ability_performed.by,
@@ -154,6 +158,9 @@ const perform = {
 
 		addAffect(ability_performed, player_healing_name);
 	},
+	/**
+	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
+	 */
 	async selfHeal(ability_performed) {
 		const
 			self_healer_player_name = ability_performed.by,
@@ -163,6 +170,9 @@ const perform = {
 
 		addAffect(ability_performed, self_healer_player_name);
 	},
+	/**
+	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
+	 */
 	async order(ability_performed) {
 		const
 			godfather_name = ability_performed.by,
@@ -193,6 +203,9 @@ const perform = {
 			godfather_player.addFeedback(Feedback.KillForMafioso(player_killing_name));
 		}
 	},
+	/**
+	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
+	 */
 	async attack(ability_performed) {
 		const
 			attacker_player_name = ability_performed.by,
@@ -204,6 +217,9 @@ const perform = {
 
 		addAffect(ability_performed, attacked_player_name);
 	},
+	/**
+	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
+	 */
 	async frame(ability_performed) {
 		const
 			framer_player_name = ability_performed.by,
@@ -214,6 +230,9 @@ const perform = {
 		framed_player.percieved.role = "Mafioso";
 		addAffect(ability_performed, framed_player_name);
 	},
+	/**
+	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
+	 */
 	async selfFrame(ability_performed) {
 		const
 			self_framer_player_name = ability_performed.by,
@@ -222,6 +241,9 @@ const perform = {
 		self_framer_player.percieved.role = "Mafioso";
 		addAffect(ability_performed, self_framer_player_name);
 	},
+	/**
+	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
+	 */
 	async frameTarget(ability_performed) {
 		const
 			framer_player_name = ability_performed.by,
@@ -232,6 +254,9 @@ const perform = {
 		exe_target_player.percieved.role = "Mafioso";
 		addAffect(ability_performed, exe_target_name);
 	},
+	/**
+	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
+	 */
 	async evaluate(ability_performed) {
 		const
 			evaluater_player_name = ability_performed.by,
@@ -264,6 +289,9 @@ const perform = {
 		evaluater_player.addFeedback(feedback);
 		addAffect(ability_performed, player_evaluating_name);
 	},
+	/**
+	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
+	 */
 	async track(ability_performed) {
 		const
 			tracker_player_name = ability_performed.by,
@@ -276,14 +304,17 @@ const perform = {
 
 		let feedback = "";
 
-		if (player_seen_visiting)
-			feedback = Feedback.SawPlayerVisit(tracked_player_name, player_seen_visiting);
+		if (player_seen_visiting && player_seen_visiting !== tracked_player_name)
+			feedback = Feedback.TrackerSawPlayerVisit(tracked_player_name, player_seen_visiting);
 		else
-			feedback = Feedback.SawPlayerNotVisit(tracked_player_name);
+			feedback = Feedback.TrackerSawPlayerNotVisit(tracked_player_name);
 
 		tracker_player.addFeedback(feedback);
 		addAffect(ability_performed, tracked_player_name);
 	},
+	/**
+	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
+	 */
 	async lookout(ability_performed) {
 		const
 			lookout_player_name = ability_performed.by,
@@ -296,6 +327,10 @@ const perform = {
 		let players_seen_visiting = [];
 
 		global.Game.Players.getPlayerList().forEach(player => {
+			if (player.name === target_player.name) {
+				return;
+			}
+
 			const player_visiting_name = player.getPercievedVisit();
 
 			if (
@@ -313,6 +348,9 @@ const perform = {
 
 		addAffect(ability_performed, target_player_name);
 	},
+	/**
+	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
+	 */
 	async investigate(ability_performed) {
 		const
 			investigator_player_name = ability_performed.by,
@@ -324,6 +362,9 @@ const perform = {
 		investigator_player.addFeedback(Feedback.EvaluatedPlayersRole(investigated_player_name, evaluated_role_name));
 		addAffect(ability_performed, investigated_player_name);
 	},
+	/**
+	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
+	 */
 	async smith(ability_performed) {
 		const
 			smither_player_name = ability_performed.by,
@@ -339,6 +380,9 @@ const perform = {
 
 		addAffect(ability_performed, smithed_player_name);
 	},
+	/**
+	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
+	 */
 	async selfSmith(ability_performed) {
 		const
 			self_smither_player_name = ability_performed.by,
@@ -348,6 +392,9 @@ const perform = {
 
 		addAffect(ability_performed, self_smither_player_name);
 	},
+	/**
+	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
+	 */
 	async control(ability_performed) {
 		const
 			controller_player_name = ability_performed.by,
@@ -415,6 +462,9 @@ const perform = {
 		controller_player.addFeedback(Feedback.ControlSucceeded(player_controlling_name, player_controlling_into_name));
 		controller_player.addFeedback(Feedback.EvaluatedPlayersRole(player_controlling_name, player_controlling.getPercievedRole()));
 	},
+	/**
+	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
+	 */
 	async observe(ability_performed) {
 		const
 			observer_player = global.Game.Players.get(ability_performed.by),
@@ -456,6 +506,9 @@ const perform = {
 
 		observer_player.addFeedback(feedback);
 	},
+	/**
+	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
+	 */
 	async replace(ability_performed) {
 		const
 			replacer_name = ability_performed.by,
@@ -481,6 +534,9 @@ const perform = {
 			replacer_player.addFeedback(Feedback.ReplaceFailed(player_replacing));
 		}
 	},
+	/**
+	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
+	 */
 	async kidnap(ability_performed) {
 		const
 			kidnaper_name = ability_performed.by,
