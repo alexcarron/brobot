@@ -2,11 +2,13 @@ const { Player } = require('discord-player');
 const RapidDiscordMafia = require('./modules/rapid_discord_mafia/RapidDiscordMafia.js');
 const Event = require('./modules/Event.js');
 const Timer = require('./modules/Timer.js');
-{console.log(`discord.js version: ${require('discord.js').version}`);
+const { joinVoiceChannel, createAudioResource, createAudioPlayer } = require('@discordjs/voice');
+console.log(`discord.js version: ${require('discord.js').version}`);
+
 
 const
 	{ DatabaseURLs, XPRewards, XPTaskKeys, RDMRoles } = require("./modules/enums.js"),
-	ids = require('./databases/ids.json'),
+	ids = require('./data/ids.json'),
 	fs = require("fs"), // Used to interact with file system
 	cron = require("cron"), // Used to have scheduled functions execute
 	Discord = require('discord.js'),
@@ -35,9 +37,10 @@ global.client = new Discord.Client({
 
 // ! Create global paths object to store directories
 const paths = require("./utilities/path.js");
-const { addRole, getRole, getGuild, getChannel, getObjectFromGitHubJSON, saveObjectToGitHubJSON, getRoleById, getJSONFromObj } = require('./modules/functions.js');
+const { addRole, getRole, getGuild, getChannel, getObjectFromGitHubJSON, saveObjectToGitHubJSON, getRoleById, getJSONFromObj, getGuildMember } = require('./modules/functions.js');
 const { Collection } = require('discord.js');
 const SlashCommand = require('./modules/commands/SlashCommand.js');
+const TextToSpeechHandler = require('./modules/TextToSpeechHandler.js');
 global.paths = paths;
 
 // ! Store a list of command cooldowns
@@ -132,7 +135,7 @@ const command_folders = fs.readdirSync(command_folders_path);
 		// .catch(console.error);
 
 		// ! Delete Every Guild Command
-		// rest.put(Routes.applicationGuildCommands(ids.client, ids.servers.rapid_discord_mafia), { body: [] })
+		// rest.put(Routes.applicationGuildCommands(ids.client, ids.servers.ll_game_show_center), { body: [] })
 		// .then(() => console.log('Successfully deleted all guild commands.'))
 		// .catch(console.error);
 
@@ -222,6 +225,8 @@ global.client.once(Events.ClientReady, async () => {
 	global.questions = [];
 	global.messages = await getObjectFromGitHubJSON("messages");
 	console.log("Messages Database Downloaded");
+
+	global.tts = new TextToSpeechHandler();
 
 	const ll_game_show_center_guild = await getGuild(ids.ll_game_shows.server_id);
 	const daily_controversial_msg = new cron.CronJob(
@@ -320,6 +325,36 @@ global.client.on(Events.MessageCreate, async(msg) => {
 			`\n` +
 			`\`\`\`${msg.content}\`\`\``
 		)
+	}
+
+	if (global.tts.isUserToggledWithChannel(msg.author.id, msg.channel.id)) {
+		console.log("message detected: " + msg.content);
+		const guild_member = await getGuildMember(msg.guild, msg.author.id);
+		const voice_channel = guild_member.voice.channel;
+
+		if (voice_channel) {
+			console.log("voice channel detected");
+			const brobot_perms = voice_channel.permissionsFor(msg.client.user);
+
+			if (
+				brobot_perms.has(Discord.PermissionsBitField.Flags.Connect) &&
+				brobot_perms.has(Discord.PermissionsBitField.Flags.Speak)
+			) {
+				console.log("permissions detected");
+
+				const voice_connection = joinVoiceChannel({
+					channelId: voice_channel.id,
+					guildId: msg.guild.id,
+					adapterCreator: msg.guild.voiceAdapterCreator
+				});
+
+				const name = global.tts.getToggledUserName(msg.author.id);
+				if (name && name !== null)
+					global.tts.addMessage(voice_connection, `${name} said ${msg.content}`);
+				else
+					global.tts.addMessage(voice_connection, msg.content);
+			}
+		}
 	}
 
 	// ! GameForge Thread Message Checker
@@ -726,4 +761,4 @@ client.on(Events.GuildMemberAdd, async (guild_member) => {
 
 
 // login to Discord with your app's token
-global.client.login(discord_token);}
+global.client.login(discord_token);

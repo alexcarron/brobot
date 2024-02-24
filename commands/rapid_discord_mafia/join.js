@@ -3,7 +3,7 @@ const SlashCommand = require("../../modules/commands/SlashCommand");
 const { GameStates } = require("../../modules/enums");
 const { deferInteraction } = require("../../modules/functions");
 const
-	ids = require(`${global.paths.databases_dir}/ids.json`);
+	ids = require(`../../data/ids.json`);
 
 
 

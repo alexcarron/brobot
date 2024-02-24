@@ -1,7 +1,7 @@
 const { DatabaseURLs, LLPointTiers, } = require("./enums");
 const Viewer = require("./viewer");
 const { github_token } =  require("../modules/token.js");
-const ids = require("../databases/ids.json");
+const ids = require("../data/ids.json");
 const { addRole, getGuildMember, getGuild, getRoleById, saveObjectToGitHubJSON } = require("./functions");
 
 class LLPointManager {

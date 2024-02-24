@@ -1,6 +1,6 @@
 const validator = require('../../utilities/validator.js');
-const { rdm_server_id } = require("../../databases/ids.json"),
-	ids = require("../../databases/ids.json"),
+const { rdm_server_id } = require("../../data/ids.json"),
+	ids = require("../../data/ids.json"),
 	{ RDMRoles, GameStates } = require("../../modules/enums.js");
 const SlashCommand = require('../../modules/commands/SlashCommand.js');
 const Parameter = require('../../modules/commands/Paramater.js');

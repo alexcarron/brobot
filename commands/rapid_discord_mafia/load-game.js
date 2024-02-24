@@ -1,6 +1,6 @@
 const { PermissionFlagsBits } = require("discord.js");
 const SlashCommand = require("../../modules/commands/SlashCommand");
-const ids = require(`../../databases/ids.json`)
+const ids = require(`../../data/ids.json`)
 
 const command = new SlashCommand({
 	name: "load-game",

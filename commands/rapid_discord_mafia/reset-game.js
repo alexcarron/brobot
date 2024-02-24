@@ -1,13 +1,13 @@
 const SlashCommand = require('../../modules/commands/SlashCommand.js');
-const ids = require(`../../databases/ids.json`);
+const ids = require(`../../data/ids.json`);
 const
 	{ PermissionFlagsBits } = require('discord.js'),
 	Game = require("../../modules/rapid_discord_mafia/game.js"),
 	Players = require("../../modules/rapid_discord_mafia/players.js"),
 	{ getChannel, getRole, getCategoryChildren, deferInteraction, editReplyToInteraction } = require("../../modules/functions.js"),
 	{ rdm_server_id, night_chat_category_id}
-		= require("../../databases/ids.json").rapid_discord_mafia,
-	{ rapid_discord_mafia: rdm_ids } = require("../../databases/ids.json");
+		= require("../../data/ids.json").rapid_discord_mafia,
+	{ rapid_discord_mafia: rdm_ids } = require("../../data/ids.json");
 
 const command = new SlashCommand({
 	name: "reset-game",

@@ -1,5 +1,5 @@
 const Parameter = require("../../modules/commands/Paramater");
-const ids = require("../../databases/ids.json");
+const ids = require("../../data/ids.json");
 const SlashCommand = require("../../modules/commands/SlashCommand");
 const { deferInteraction, confirmAction, getRDMGuild, getGuildMember, getRole } = require("../../modules/functions");
 const { GameStates, RDMRoles } = require("../../modules/enums");
@@ -29,7 +29,7 @@ command.execute = async function(interaction) {
 		) {
 			return
 		}
-		
+
 		player.leaveGameSignUps();
 	}
 	else if (global.Game.state === GameStates.InProgress) {

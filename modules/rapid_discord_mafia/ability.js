@@ -1,6 +1,5 @@
 const { ArgumentSubtypes, ArgumentTypes, AbilityUses, Duration, Phases, AbilityTypes, Priorities, AbilityName: AbilityName, AbilityArgName } = require("../enums");
 const Arg = require("./arg.js");
-const Types = require("./types.js");
 const perform = require("./perform");
 
 class Ability {
@@ -531,19 +530,6 @@ class Ability {
 				}),
 			],
 		}),
-	}
-
-	static getPropertyTypes() {
-		return {
-			'name': Types.string,
-			'type': Types.ability_type,
-			'uses': Types.ability_uses,
-			'phases_can_use': Types.array(Types.phase),
-			'description': Types.string,
-			'priority': Types.priority,
-			'duration': Types.duration,
-			'args': Types.array(Types.ability_arg),
-		}
 	}
 
 	toString() {

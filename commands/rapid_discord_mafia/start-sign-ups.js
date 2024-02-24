@@ -5,16 +5,16 @@ const
 
 	{ PermissionFlagsBits } = require('discord.js'),
 	{ getChannel, getRole, getUnixTimestamp, wait, deferInteraction } = require("../../modules/functions"),
-	ids = require(`${global.paths.databases_dir}/ids.json`),
+	ids = require(`../../data/ids.json`),
 	{
 		rdm_server_id,
 		channels: channel_ids,
 		roles:  role_ids,
 		living_role_id,
 	}
-		= require("../../databases/ids.json").rapid_discord_mafia,
+		= require("../../data/ids.json").rapid_discord_mafia,
 
-	{ min_player_count } = require("../../databases/rapid_discord_mafia/constants.json");
+	{ min_player_count } = require("../../data/rapid_discord_mafia/constants.json");
 
 
 

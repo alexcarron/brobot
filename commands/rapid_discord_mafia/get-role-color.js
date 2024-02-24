@@ -1,6 +1,6 @@
 const Parameter = require("../../modules/commands/Paramater");
 const SlashCommand = require("../../modules/commands/SlashCommand");
-const ids = require("../../databases/ids.json");
+const ids = require("../../data/ids.json");
 const { deferInteraction, getRole, getGuildMember, addRole } = require("../../modules/functions");
 const { playlist_info } = require("play-dl");
 

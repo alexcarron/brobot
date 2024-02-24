@@ -1,6 +1,5 @@
 const { Factions } = require("../enums.js");
 const { toTitleCase } = require("../functions.js");
-const Types = require("./types.js");
 
 class Role {
 	constructor({name, faction, alignment, attack, defense, goal, isUnique = false, immunities = [], abilities = [], notes = ""}) {
@@ -14,21 +13,6 @@ class Role {
 		this.immunities = immunities;
 		this.abilities = abilities
 		this.notes = notes;
-	}
-
-	static getPropertyTypes() {
-		return {
-			'name': Types.string,
-			'faction': Types.faction,
-			'alignment': Types.alignment,
-			'attack': Types.level,
-			'defense': Types.level,
-			'goal': Types.string,
-			'isUnique': Types.boolean,
-			'immunities': Types.array(Types.immunity),
-			'abilities': Types.array(Types.ability),
-			'notes': Types.string,
-		}
 	}
 
 	toString(isInfoOnly = false) {

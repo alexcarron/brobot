@@ -1,7 +1,7 @@
 const { PermissionFlagsBits } = require('discord.js');
 const
-	{ ll_game_shows: llgs, } = require('../../databases/ids.json'),
-	ids = require("../../databases/ids.json");
+	{ ll_game_shows: llgs, } = require('../../data/ids.json'),
+	ids = require("../../data/ids.json");
 const Parameter = require('../../modules/commands/Paramater');
 const SlashCommand = require('../../modules/commands/SlashCommand');
 const { deferInteraction } = require('../../modules/functions');

@@ -18,8 +18,8 @@ const
 		rdm_server_id,
 		roles: role_ids,
 		channels: channel_ids,
-	} = require("../../databases/ids.json").rapid_discord_mafia,
-	ids = require("../../databases/ids.json");
+	} = require("../../data/ids.json").rapid_discord_mafia,
+	ids = require("../../data/ids.json");
 
 const command = new SlashCommand({
 	name: "start-trial",
