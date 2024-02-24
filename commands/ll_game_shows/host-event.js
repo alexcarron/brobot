@@ -360,15 +360,13 @@ command.execute = async function(interaction) {
 	});
 
 	let chosePingRoles = false;
-	let chosen_ping_roles, chosen_ping_names;
+	let chosen_ping_roles = [], chosen_ping_names = [];
 	let ping_role_confirmation_interaction;
 	while (!chosePingRoles) {
 		try {
 			ping_role_confirmation_interaction = await ping_role_message_sent.awaitMessageComponent({ time: 120_000 });
 
 			if (ping_role_confirmation_interaction.customId === "PingRoleSelectMenu") {
-				chosen_ping_roles = [];
-				chosen_ping_names = [];
 				for (const ping_role of ping_role_confirmation_interaction.values) {
 					chosen_ping_roles.push(ping_role_ids[ping_role]);
 					chosen_ping_names.push(ping_role_names[ping_role]);

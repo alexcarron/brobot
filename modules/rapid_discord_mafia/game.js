@@ -58,7 +58,7 @@ class Game {
 		this.isMockGame = isMockGame;
 	}
 
-	static IS_TESTING = true;
+	static IS_TESTING = false;
 	static MAX_TIMEOUT_COUNTER = 3;
 	static MIN_PLAYER_COUNT = 4;
 	static MAX_MAFIA_TO_TOWN_RATIO = 2/3;
