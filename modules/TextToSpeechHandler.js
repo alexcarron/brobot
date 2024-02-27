@@ -1,10 +1,13 @@
 const tts = require('google-tts-api');
-const { joinVoiceChannel, createAudioResource, createAudioPlayer } = require('@discordjs/voice');
+const { joinVoiceChannel, createAudioResource, createAudioPlayer, VoiceConnection } = require('@discordjs/voice');
+const { getGuildMember, getGuild, wait, splitWithNoSplitWords } = require('./functions');
+const ids = require("../data/ids.json");
 
 class TextToSpeechHandler {
 	constructor() {
 		this._messages = [];
 		this._isPlaying = false;
+		this._isWaitingToDie = false;
 		this._toggled_users = [];
 	}
 
@@ -31,19 +34,41 @@ class TextToSpeechHandler {
 		return toggle.name;
 	}
 
-	async addMessage(voice_connection, message) {
-		console.log("Adding message: " + message);
-		this._messages.push(message);
+	async addMessage(voice_connection, message, speaker_name=undefined) {
+		const messages_to_speak = splitWithNoSplitWords(message, 200);
 
-		console.log(this._messages);
+		messages_to_speak.forEach(message => {
+			console.log("Adding message: " + message);
+			this._messages.push(message);
 
-		if (this._messages.length <= 1) {
-			await this.playAudio(voice_connection);
-		}
+			if (this._messages.length <= 1) {
+				this.playAudio(voice_connection, speaker_name);
+			}
+		})
 	}
 
-	async playAudio(voice_connection) {
+	/**
+	 *
+	 * @param {VoiceConnection} voice_connection
+	 */
+	async playAudio(voice_connection, speaker_name=undefined) {
 		console.log("playing audio");
+
+		const connection_guild = await getGuild(voice_connection.joinConfig.guildId);
+		const brobot_member = await getGuildMember(connection_guild, ids.users.Brobot);
+
+		let nickname;
+
+		if (speaker_name !== undefined) {
+			nickname = `${speaker_name} says...`;
+			nickname = nickname.substring(0, 32);
+		}
+		else {
+			nickname = `Someone says...`;
+		}
+
+		if (brobot_member.nickname !== nickname)
+			brobot_member.setNickname(nickname);
 
 		this._isPlaying = true;
 
@@ -73,9 +98,15 @@ class TextToSpeechHandler {
 		console.log(this._messages);
 
 		if (this._messages.length > 0)
-			this.playAudio(voice_connection);
-		else
+			this.playAudio(voice_connection, speaker_name);
+		else {
 			this._isPlaying = false;
+
+			await wait(1, "second");
+
+			if (!this._isPlaying)
+				brobot_member.setNickname(null);
+		}
 	}
 }
 

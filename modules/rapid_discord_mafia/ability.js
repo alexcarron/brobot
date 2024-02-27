@@ -470,7 +470,7 @@ class Ability {
 				const last_player_observed_name = player.last_player_observed_name;
 
 				if (last_player_observed_name) {
-					return `**${isYou ? "You" : player_name}** will attempt to observe **${player_observing}** tonight to see if they're working with the last player you observed, **${last_player_observed_name}**.`;
+					return `**${isYou ? "You" : player_name}** will attempt to observe **${player_observing}** tonight to see if they're working with the last player ${isYou ? "You" : player_name} observed, **${last_player_observed_name}**.`;
 				}
 				else {
 					return `**${isYou ? "You" : player_name}** will attempt to observe **${player_observing}** tonight to see if they're working with the next player you observe`;

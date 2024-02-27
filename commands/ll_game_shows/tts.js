@@ -1,7 +1,7 @@
 const SlashCommand = require('../../modules/commands/SlashCommand.js');
 const Parameter = require('../../modules/commands/Paramater.js');
 const { joinVoiceChannel, createAudioResource, createAudioPlayer } = require('@discordjs/voice');
-const { PermissionsBitField } = require('discord.js');
+const { PermissionsBitField, Interaction } = require('discord.js');
 
 const Parameters = {
 	Message: new Parameter({
@@ -32,11 +32,16 @@ command.parameters = [
 	Parameters.Name,
 	Parameters.ReadAllMessages,
 ]
+/**
+ *
+ * @param {Interaction} interaction
+ * @returns
+ */
 command.execute = async function(interaction) {
 	await interaction.deferReply({ ephemeral: true });
 
 	let message = interaction.options.getString(Parameters.Message.name);
-	const name = interaction.options.getString(Parameters.Name.name);
+	let name = interaction.options.getString(Parameters.Name.name);
 	const isToggled = interaction.options.getBoolean(Parameters.ReadAllMessages.name);
 
 	if (!message)
@@ -75,15 +80,16 @@ command.execute = async function(interaction) {
 		adapterCreator: interaction.guild.voiceAdapterCreator
 	});
 
-	let messages = []
-	for (let i = 0; i < message.length; i += 200) {
-		messages.push(message.substring(i, i + 200));
-	}
+	if (!name)
+		name = interaction.member.nickname;
 
-	messages.forEach(message => {
-		global.tts.addMessage(voice_connection, message);
-	});
+	if (name == null)
+		name = interaction.user.globalName;
 
+	if (name == null)
+		name = interaction.user.username;
+	
+	global.tts.addMessage(voice_connection, message, name);
 	await interaction.editReply("Text to speech sent");
 }
 module.exports = command;

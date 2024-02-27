@@ -24,8 +24,6 @@ command.parameters = [
 command.execute = async function execute(interaction, args, isTest) {
 	await deferInteraction(interaction);
 
-	global.Game.logPlayers();
-
 	let player_id, player_name, isFakeUser;
 
 	if (!isTest) {

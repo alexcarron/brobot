@@ -1205,7 +1205,6 @@ class Game {
 		const days_passed_last_day = this.days_passed;
 
 		for (const player of this.Players.getPlayersInLimbo()) {
-			console.log({player})
 			player.isInLimbo = false;
 		}
 
@@ -1453,14 +1452,14 @@ class Game {
 		if ( this.Players && this.Players.get(player_name) ) {
 			if (!this.isMockGame)
 				await interaction.editReply(`The name, **${player_name}**, already exists.`);
-			return new Player();
+			return new Player({});
 		}
 
 		const validator_result = validator.validateName(player_name);
 		if (validator_result !== true) {
 			if (!this.isMockGame)
 				await interaction.editReply(validator_result);
-			return new Player();
+			return new Player({});
 		}
 
 		if (!isMockUser && !this.isMockGame) {
@@ -1484,7 +1483,6 @@ class Game {
 
 		const player = await this.Players.addPlayerFromObj(player_obj);
 		const players = this.Players.getPlayerList();
-		console.log({players});
 
 		if (!this.isMockGame) {
 			await player.createChannel();

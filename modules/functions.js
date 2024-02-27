@@ -1,5 +1,6 @@
 const ids = require("../data/ids.json")
 const { github_token } =  require("../token.json");
+const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember  } = require('discord.js');
 
 const functions = {
 	toTitleCase(string) {
@@ -170,7 +171,6 @@ const functions = {
 	},
 
 	async confirmAction({interaction, message, confirm_txt, cancel_txt, confirm_update_txt, cancel_update_txt}) {
-		const { ButtonBuilder, ButtonStyle, ActionRowBuilder  } = require('discord.js');
 
 		const confirm_button = new ButtonBuilder()
 			.setCustomId('confirm')
@@ -225,6 +225,12 @@ const functions = {
 		return await global.client.guilds.fetch(guild_id);
 	},
 
+	/**
+	 *
+	 * @param {Guild} guild
+	 * @param {string} user_id
+	 * @returns {Promise<GuildMember>}
+	 */
 	async getGuildMember(guild, user_id) {
 		return await guild.members.fetch(user_id);
 	},
@@ -637,6 +643,27 @@ doesValueMatchType: function doesValueMatchType(value, type) {
 		const non_last_elements = array.slice(0, -1);
 		const last_element = array[array.length-1];
 		return `${non_last_elements.join(", ")}, and ${last_element}`;
+	},
+
+	splitWithNoSplitWords(long_message, max_num_characters) {
+		let messages = [];
+		while (long_message.length > max_num_characters) {
+			let split_message = long_message.substring(0, max_num_characters);
+
+			let char_index = split_message.length;
+			let char = long_message.charAt(char_index);
+			while (char_index >= 0 && char !== ' ') {
+				char_index -= 1;
+				char = long_message.charAt(char_index);
+			}
+
+			split_message = split_message.substring(0, char_index);
+			long_message = long_message.substring(char_index + 1);
+			messages.push(split_message);
+		}
+		messages.push(long_message);
+
+		return messages;
 	}
 }
 

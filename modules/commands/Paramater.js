@@ -37,7 +37,7 @@ class Parameter {
 	subcommands;
 
 	/**
-	 * @param {"subcommand" | "string" | "channel" | "attachment" | "boolean" | "mentionable" | "number" | "integer" | "role" | "user"} type
+	 * @param {"subcommand" | "string" | "channel" | "attachment" | "boolean" | "mentionable" | "number" | "integer" | "role" | "user"} type "subcommand" | "string" | "channel" | "attachment" | "boolean" | "mentionable" | "number" | "integer" | "role" | "user"
 	 * @param {string} name
 	 * @param {string} description
 	 * @param {boolean} [isRequired = true]

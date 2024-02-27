@@ -1,4 +1,4 @@
-const { doArraysHaveSameElements, gcd, lcm, toOrdinal, toWordOrdinal, addOrAssignElementToArray, appendElementToNestedProperty: addElementToNestedProperty, getSentenceFromArray } = require("./functions");
+const { doArraysHaveSameElements, gcd, lcm, toOrdinal, toWordOrdinal, addOrAssignElementToArray, appendElementToNestedProperty: addElementToNestedProperty, getSentenceFromArray, splitWithNoSplitWords } = require("./functions");
 
 // ^ doArraysHaveSameElements
 {
@@ -335,5 +335,18 @@ describe('getSentenceFromArray', () => {
 
 	it('should return "Alex, Brock, Clark, and Doug" for input ["Alex", "Brock", "Clark", "Doug"]', () => {
 		expect(getSentenceFromArray(["Alex", "Brock", "Clark", "Doug"])).toStrictEqual("Alex, Brock, Clark, and Doug");
+	});
+});
+
+// ^ splitWithNoSplitWords
+describe('splitWithNoSplitWords', () => {
+	it('should return expected_return_value for input input_value', () => {
+		expect(splitWithNoSplitWords("a sentence filled with words and words and words", 10)).toStrictEqual([
+			"a sentence",
+			"filled",
+			"with words",
+			"and words",
+			"and words",
+		]);
 	});
 });

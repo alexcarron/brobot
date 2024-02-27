@@ -11,7 +11,7 @@ const Enums = {
 		Fool: "Be successfully lynched.",
 		Executioner: "Get your target successfully lynched.",
 		Blacksmith: "Have a player you smithed a vest for be saved from an attack.",
-		Stranger: "Replace someone and accomplish their win condition.",
+		Impersonator: "Replace someone and accomplish their win condition.",
 	},
 
 	AbilityUses: {
@@ -389,8 +389,8 @@ const Enums = {
 		AnnounceAnotherMurderByFaction: (faction) =>  `They were also killed by the **${faction}**.`,
 		AnnounceMurderByRole: (role) => {
 			switch (role) {
-				case Enums.RoleNames.Stranger:
-					return "They were replaced by a **Stranger**.";
+				case Enums.RoleNames.Impersonator:
+					return `They were replaced by a **${Enums.RoleNames.Impersonator}**.`;
 
 				default:
 					return `They were killed by a(n) **${role}**.`;
@@ -509,11 +509,15 @@ const Enums = {
 		Survivor: "Survivor",
 		Fool: "Fool",
 		Oracle: "Oracle",
-		Stranger: "Stranger",
+		Impersonator: "Impersonator",
 		Kidnapper: "Kidnapper",
 		Vigilante: "Vigilante",
 		Tracker: "Tracker",
 		Lookout: "Lookout",
+	},
+
+	ServerPort: {
+		LMStudioMistral: "1234",
 	},
 
 	LLPointTiers: {

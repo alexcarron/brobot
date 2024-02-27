@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require("discord.js");
+const { SlashCommandBuilder, CommandInteraction } = require("discord.js");
 const Parameter = require("./Paramater");
 
 /**
@@ -33,7 +33,9 @@ class SlashCommand {
 	/** @field {Parameter[]} Parameters that users can enter when running the command */
 	parameters;
 
-	/** @field {async function} The function that executes when the command is run */
+	/**
+	 * @type {(interaction: CommandInteraction) => any} A function which takes a discord.js Interaction that executes when the command is run
+	 * */
 	execute;
 
 	/**
@@ -46,7 +48,7 @@ class SlashCommand {
 	 * @param {string[]} [required_categories] IDs of channel categories this command can only be run in
 	 * @param {string[]} [required_roles] Names of roles users must have to run this command
 	 * @param {PermissionFlagsBits[]} [required_permissions] Permissions that users must have to run this command
-	 * @param {function} [execute = async (interaction) => {}] The function that executes when the command is run
+	 * @param {(Interaction) => any} A function which takes a discord.js Interaction that executes when the command is run
 	 * @param {Parameter[]} [parameters = []] Parameters that users can enter when running the command
 	 */
 	constructor({

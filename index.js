@@ -37,7 +37,7 @@ global.client = new Discord.Client({
 
 // ! Create global paths object to store directories
 const paths = require("./utilities/path.js");
-const { addRole, getRole, getGuild, getChannel, getObjectFromGitHubJSON, saveObjectToGitHubJSON, getRoleById, getJSONFromObj, getGuildMember } = require('./modules/functions.js');
+const { addRole, getRole, getGuild, getChannel, getObjectFromGitHubJSON, saveObjectToGitHubJSON, getRoleById, getJSONFromObj, getGuildMember, getUser } = require('./modules/functions.js');
 const { Collection } = require('discord.js');
 const SlashCommand = require('./modules/commands/SlashCommand.js');
 const TextToSpeechHandler = require('./modules/TextToSpeechHandler.js');
@@ -330,6 +330,7 @@ global.client.on(Events.MessageCreate, async(msg) => {
 	if (global.tts.isUserToggledWithChannel(msg.author.id, msg.channel.id)) {
 		console.log("message detected: " + msg.content);
 		const guild_member = await getGuildMember(msg.guild, msg.author.id);
+		const user = await getUser(msg.author.id);
 		const voice_channel = guild_member.voice.channel;
 
 		if (voice_channel) {
@@ -349,10 +350,22 @@ global.client.on(Events.MessageCreate, async(msg) => {
 				});
 
 				const name = global.tts.getToggledUserName(msg.author.id);
+
+				let username = name;
+
+				if (!username)
+					username = guild_member.nickname;
+
+				if (!username)
+					username = user.globalName;
+
+				if (!username)
+					username = user.username;
+				
 				if (name && name !== null)
-					global.tts.addMessage(voice_connection, `${name} said ${msg.content}`);
+					global.tts.addMessage(voice_connection, `${name} said ${msg.content}`, username);
 				else
-					global.tts.addMessage(voice_connection, msg.content);
+					global.tts.addMessage(voice_connection, msg.content, username);
 			}
 		}
 	}

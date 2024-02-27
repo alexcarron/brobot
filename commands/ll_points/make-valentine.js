@@ -44,6 +44,7 @@ command.parameters = [
 ];
 // command.required_permissions = [ PermissionFlagsBits.Administrator ];
 command.allowsDMs = true;
+command.required_permissions = [PermissionFlagsBits.Administrator];
 command.execute = async function(interaction) {
 	await deferInteraction(interaction, "Adding LL Points...");
 

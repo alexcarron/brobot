@@ -2,9 +2,9 @@ const Parameter = require("../../modules/commands/Paramater");
 const SlashCommand = require("../../modules/commands/SlashCommand");
 const { toTitleCase, deferInteraction, getRDMGuild, getChannel } = require("../../modules/functions");
 const { Abilities } = require("../../modules/rapid_discord_mafia/ability");
-const { ArgumentTypes, ArgumentSubtypes, Factions, AbilityUses, Phases } = require("../../modules/enums");
+const { ArgumentTypes, ArgumentSubtypes, Factions, AbilityUses, Phases, AbilityName } = require("../../modules/enums");
 const roles = require("../../modules/rapid_discord_mafia/roles");
-const ids = require("../../databases/ids.json")
+const ids = require("../../data/ids.json")
 
 const command = new SlashCommand({
 	name: "use",
@@ -106,37 +106,44 @@ command.execute = async function(interaction, isTest) {
 		ability_name = subcommand_name.split("-").map(name => toTitleCase(name)).join(" ");
 	}
 
-	// Organize command parameter values into arg_values
-	const arg_values = {};
-	const ability_using = Object.values(Abilities).find(ability =>
-		ability.name === ability_name
-	);
+	let arg_values = {}, ability_using;
+	if (ability_name !== AbilityName.Nothing) {
+		// Organize command parameter values into arg_values
+		arg_values = {};
+		ability_using = Object.values(Abilities).find(ability =>
+			ability.name === ability_name
+		);
 
-	for (const ability_arg of ability_using.args) {
-		const arg_param_name = ability_arg.name.split(" ").join("-").toLowerCase();
-		let arg_param_value;
-
-		if (isTest) {
-			const ability_arguments_str = interaction.options.getString("ability-arguments");
-
-			const ability_arguments = ability_arguments_str.split(", ").map(str => str.split(": "));
-
-			console.log({ability_arguments, ability_arguments_str});
-
-			const ability_argument = ability_arguments.find(arg => {
-				const arg_name = arg[0];
-				return arg_name.split(" ").join("-").toLowerCase() === arg_param_name
-			});
-
-			if (!ability_argument)
-				return await interaction.editReply(`Arguments do not include \`${arg_param_name}\``);
-
-			arg_param_value = ability_argument[1];
+		if (!ability_using) {
+			return await interaction.editReply(`**${ability_name}** is not a valid ability`);
 		}
-		else {
-			arg_param_value = interaction.options.getString(arg_param_name);
-		}
-		arg_values[ability_arg.name] = arg_param_value;
+
+		for (const ability_arg of ability_using.args) {
+			const arg_param_name = ability_arg.name.split(" ").join("-").toLowerCase();
+			let arg_param_value;
+
+			if (isTest) {
+				const ability_arguments_str = interaction.options.getString("ability-arguments");
+
+				const ability_arguments = ability_arguments_str.split(", ").map(str => str.split(": "));
+
+				console.log({ability_arguments, ability_arguments_str});
+
+				const ability_argument = ability_arguments.find(arg => {
+					const arg_name = arg[0];
+					return arg_name.split(" ").join("-").toLowerCase() === arg_param_name
+				});
+
+				if (!ability_argument)
+					return await interaction.editReply(`Arguments do not include \`${arg_param_name}\``);
+
+				arg_param_value = ability_argument[1];
+			}
+			else {
+				arg_param_value = interaction.options.getString(arg_param_name);
+			}
+			arg_values[ability_arg.name] = arg_param_value;
+		}	
 	}
 
 	const can_use_ability_feedback = await player.canUseAbility(ability_name, arg_values);
@@ -190,15 +197,10 @@ command.autocomplete = async function(interaction) {
 		);
 	}
 
-	console.log({ability_arg})
-
 	if (ability_arg.type === ArgumentTypes.Player) {
 		autocomplete_values =
 			global.Game.Players.getAlivePlayers().filter(
 				(player) => {
-					console.log(ability_arg.subtypes);
-					console.log(player.role);
-					console.log(player.role.faction);
 
 					if (
 						ability_arg.subtypes.includes(ArgumentSubtypes.NonMafia) &&

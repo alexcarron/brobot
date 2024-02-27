@@ -4,9 +4,9 @@ const ids = require("../../data/ids.json");
 const { Abilities } = require("./ability");
 
 const
-	{ getGuildMember, getRole, addRole, removeRole, getChannel, wait, getRandArrayItem, getRDMGuild } = require("../functions"),
+	{ getGuildMember, getRole, addRole, removeRole, getChannel, wait, getRandArrayItem, getRDMGuild, toTitleCase } = require("../functions"),
 	{ PermissionFlagsBits } = require('discord.js'),
-	rdm_ids = require("../../databases/ids.json").rapid_discord_mafia;
+	rdm_ids = require("../../data/ids.json").rapid_discord_mafia;
 
 class Player {
 

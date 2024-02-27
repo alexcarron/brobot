@@ -235,13 +235,13 @@ const roles = {
 			Abilities.Observe
 		],
 	}),
-	[RoleNames.Stranger]: new Role({
-		name: RoleNames.Stranger,
+	[RoleNames.Impersonator]: new Role({
+		name: RoleNames.Impersonator,
 		faction: Factions.Neutral,
 		alignment: Alignments.Chaos,
 		attack: 2,
 		defense: 0,
-		goal: WinConditions.Stranger,
+		goal: WinConditions.Impersonator,
 		abilities: [
 			Abilities.Replace
 		],

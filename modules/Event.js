@@ -52,7 +52,6 @@ class Event {
     this._host = host;
   }
 	async setHost(host) {
-		console.log({host});
 		if (!(host instanceof Viewer) && host) {
 			host = await global.LLPointManager.getViewerById(host.user_id);
 		}
