@@ -559,9 +559,15 @@ class Game {
 		this.resetDeaths();
 	}
 
-	async remindPlayersTo(reminder) {
+	async remindPlayersTo(reminder, votersOnly=false) {
 		for (const player_name of this.Players.getAlivePlayerNames()) {
 			const player = this.Players.get(player_name);
+
+			if (votersOnly) {
+				if (!player.canVote)
+					continue;
+			}
+
 			await player.sendFeedback(`> ${reminder}`);
 		}
 	}
@@ -1244,7 +1250,7 @@ class Game {
 		const days_passed_last_voting = this.days_passed;
 
 		this.resetVotes();
-		this.remindPlayersTo(Announcements.VotingReminder);
+		this.remindPlayersTo(Announcements.VotingReminder, true);
 		this.announceMessages(
 			...Announcements.StartVoting()
 		);
@@ -1308,7 +1314,7 @@ class Game {
 		await this.announceMessages(
 			Announcements.OnTrialPlayerGiveDefense(ids.rapid_discord_mafia.roles.on_trial),
 		);
-		this.remindPlayersTo(Announcements.TrialVotingReminder(player_on_trial));
+		this.remindPlayersTo(Announcements.TrialVotingReminder(player_on_trial), true);
 
 		await Game.log("Waiting for Trial Voting to End");
 
@@ -1863,7 +1869,7 @@ class Game {
 		}
 	}
 
-	static async moveChannelsToArchives() {
+	static async deletePlayerChannels() {
 		const
 			rdm_guild = await getRDMGuild(),
 			player_action_chnls = await getCategoryChildren(rdm_guild, ids.rapid_discord_mafia.category.player_action),
@@ -1871,8 +1877,8 @@ class Game {
 
 		await player_action_chnls.forEach(
 			async (channel) => {
-				await channel.setParent(archive_category);
-				// await channel.delete();
+				// await channel.setParent(archive_category);
+				await channel.delete();
 			}
 		);
 	}
@@ -2222,7 +2228,7 @@ class Game {
 			await Game.convertAllToSpectator();
 			console.timeEnd("convertAllToSpectator");
 			console.time("moveChannelsToArchives");
-			await Game.moveChannelsToArchives();
+			await Game.deletePlayerChannels();
 			console.timeEnd("moveChannelsToArchives");
 			console.time("privateNightChannels");
 			await Game.privateNightChannels();

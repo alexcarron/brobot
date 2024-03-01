@@ -234,16 +234,19 @@ const Enums = {
 	Announcements: {
 		StartSignUps: (sign_up_ping_id, join_chat_id, unix_timestamp) =>
 			`<@&${sign_up_ping_id}> @everyone A Rapid Discord Mafia game is starting <t:${unix_timestamp}:R>.` + "\n" +
-			`To join the game, go to <#${join_chat_id}> and use the command \`/join\`.`,
+			`To join the game, go to <#${join_chat_id}> and use the command \`/join\`.\n` +
+			`While you wait, read <#${ids.rapid_discord_mafia.channels.how_to_play}> and <#${ids.rapid_discord_mafia.channels.rules}>!`,
 		SignUpsReminder: (join_chat_id, unix_timestamp) =>
 			`@here A Rapid Discord Mafia game will begin <t:${unix_timestamp}:R>!` + "\n" +
-			`To join the game, go to <#${join_chat_id}> and use the command \`/join\`.`,
+			`To join the game, go to <#${join_chat_id}> and use the command \`/join\`.\n` +
+			`While you wait, read <#${ids.rapid_discord_mafia.channels.how_to_play}> and <#${ids.rapid_discord_mafia.channels.rules}>!`,
 		SignUpsFinalReminder: (join_chat_id, unix_timestamp) =>
 			`@here Final call to sign up for the Rapid Discord Mafia game!` + "\n" +
 			`Sign-ups will close and the game will begin <t:${unix_timestamp}:R>.` + "\n" +
 			`To join the game, go to <#${join_chat_id}> and use the command \`/join\`.`,
 		SignUpsClosed: (ll_user_id, living_role_id, player_count) =>
 			`<@${ll_user_id}> <@&${living_role_id}> Sign-ups are now closed and the game will now begin with \`${player_count}\` players!` + "\n" +
+			`While you wait, read <#${ids.rapid_discord_mafia.channels.how_to_play}> and <#${ids.rapid_discord_mafia.channels.rules}>\n` +
 			`Standby for role assignments in your player action channel...`,
 		NotEnoughSignUps: (player_count, min_player_count) =>
 			`Unfortunately we didn't get enough players. We needed \`${min_player_count}\` but we got \`${player_count}\`. Game cancelled :(`,
@@ -256,22 +259,30 @@ const Enums = {
 		RoleList: (role_identifiers) =>
 			`# Role List` + "\n" +
 			">>> " + role_identifiers.map(identifier => `**${identifier.name}**\n`).join(""),
+		Commands: [
+			`\`/commands\` See a list of all commands and what they do`,
+			`\`/use\` Use an ability your role has`,
+			`\`/vote\` Vote for a player to put on a trial or vote for a trial outcome`,
+			`\`/whisper\` Privately talk to another player at anytime. When you whisper, it will be announced who you're whispering to but not its contents`,
+			`\`/last-will\` Create and edit a will that's shown to everyone when you die`,
+			`\`/death-note\` Create and edit an anonymous note that's shown to everyone when you kill someone`,
+			`\`/leave-game\` Commit suicide in-game. (For when you have to leave. ONLY use if absolutely necessary)`,
+			`\`/report\` Report bugs and errors you come across, give feedback, and suggest ideas`,
+			`\`/roles\` See every role in Rapid Discord Mafia with their faction and alignment`,
+			`\`/role-info\` See all information about a specific role`,
+			`\`/role-list\` See the role list for the current game`,
+			`\`/rename\` Change your name during sign-ups`,
+			`\`/get-role-color\` Get a custom role color for your name to have while games aren't happening`,
+		],
 		GameStarted: (living_role_id, role_list_chnl_id) => [
 			`<@&${living_role_id}> Good morning! The game will now begin!`,
-			`_ _\n__Helpful Reminders__`,
-			`> — The role list is in <#${role_list_chnl_id}>`,
-			`> — Type a \`/\` to get a list of all the commands you can use.`,
-			`> — You can use \`/whisper\` to secretly talk to another player privately. Brobot will announce that you're whispering to that player, but not the contents of the whisper.`,
-			`> — You can use \`/report\` to report any bugs or errors you come across or give feedback and ideas.`,
-			`> — You can use \`/last-will\` to create, edit, or remove a will that's shown when you die`,
-			`> — You can use \`/death-note\` to create, edit, or remove a note to show on your victim's death.`,
-			`> — You can use \`/roles\` to get a list of all possible roles and their factions and alignments.`,
-			`> — You can use \`/role-info\` to get all the information about a chosen role.`,
-			`> — You can use \`/role-list\` to see the current role list.`,
-			`> — You can use \`/leave-game\` to commit suicide in-game if you have to go. Only do this if absolutely necessary`,
+			`_ _\n## Helpful Reminders`,
+			`> - Type a \`/\` to get a list of all the commands you can use.`,
+			...(Enums.Announcements.Commands.map(string => `- ${string}`))
 		],
 		Day1Started: () => [
 			`_ _\n# Day 1`,
+			`Discuss with your fellow town members any information you want and look over your role information.\n` +
 			`**The day phase will end <t:${getUnixTimestamp() + Enums.PhaseWaitTimes.FirstDay*60}:R>**`,
 		],
 		StartDay: (living_role_id, day_num) => [
@@ -368,8 +379,9 @@ const Enums = {
 	Feedback: {
 		CreatedPlayerActionChannel: (player) =>
 		  `<@${player.id}> Welcome to your player action channel!` + "\n" +
-			// `If your new to Rapid Discord Mafia learn how to play and read the rules in <#${ids.rapid_discord_mafia.channels.how_to_play}> and <#${ids.rapid_discord_mafia.channels.rules}>`
-			`If you'd like to rename yourself use the \`/rename\` command.`,
+			`If your new to Rapid Discord Mafia learn <#${ids.rapid_discord_mafia.channels.how_to_play}> and read <#${ids.rapid_discord_mafia.channels.rules}>\n` +
+			`Here's a list of commands that are good to know:\n` +
+			Enums.Announcements.Commands.map(string => `> - ${string}`).join("\n"),
 		SmithedVestForPlayer: (player_smithed_for) =>
 			`You smited a vest for **${player_smithed_for.name}** last night.`,
 		DidSuccessfulSmith: "You have accomplished your goal and saved someone from death.",
@@ -448,7 +460,7 @@ const Enums = {
 			`You kidnapped **${player_kindapped.name}**. They won't be able to speak or vote tonight and you attempted to roleblock them.`,
 		AttackedByKidnappedPlayer: (player_kindapped) =>
 			`You kidnapped **${player_kindapped.name}**. They won't be able to speak or vote tonight and you attempted to roleblock them, but they were stronger than you thought and attacked you.`,
-		Kidnapped: `You were kidnapped. You may not speak or vote for the rest of the day.`,
+		Kidnapped: `You were kidnapped. You may not speak or vote for the rest of the day. In the meantime, edit your last will and strategize!`,
 		Unkidnapped: `You are no longer kidnapped. You may now speak and vote again.`,
 		AttackedKidnapper: `You retaliated against your kidnapper and attacked them.`,
 		RoleblockedByKidnapper: `Your kidnapper roleblocked you.`,
@@ -457,6 +469,8 @@ const Enums = {
 		WonAsExecutioner: `You win! You have successfully gotten your target lynched. Do whatever you want now. You'll still win if you die.`,
 		ConvertedToRole: (player_converting, last_role_name, new_role_name) =>
 			`<@${player_converting.id}>\n# You've been converted from ${last_role_name} to ${new_role_name}`,
+		KidnapperYells: (kidnapper_player, kidnapped_player, message) =>
+			`_ _\n<@${kidnapper_player.id}> **${kidnapped_player.name}** screams at you:\n>>> ${message}`
 	},
 
 	RoleIdentifierKeywords: {

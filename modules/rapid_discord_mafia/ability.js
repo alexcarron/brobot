@@ -86,7 +86,7 @@ class Ability {
 		}),
 		Track: new Ability({
 			name: AbilityName.Track,
-			description: "At night, you can track a player that's not yourself at night to see who they are percieved to be visiting.",
+			description: "At night, you can track a player that's not yourself at night to see who they are percieved to be visiting. You will never see players visit themself.",
 			type: AbilityTypes.Investigative,
 			priority: Priorities.Investigative,
 			uses: AbilityUses.Unlimited,
@@ -108,7 +108,7 @@ class Ability {
 		}),
 		Lookout: new Ability({
 			name: AbilityName.Lookout,
-			description: "At night, watch a player's house that isn't yourself. If any players visited them, you'll be told every player that did that night. This is affected by players' perceived visits.",
+			description: "At night, watch a player's house that isn't yourself. If any players are percieved to have visited them, you'll be told every player that did that night. You will never see players visit themself.",
 			type: AbilityTypes.Investigative,
 			priority: Priorities.Investigative,
 			uses: AbilityUses.Unlimited,

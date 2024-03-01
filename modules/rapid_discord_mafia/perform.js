@@ -1,22 +1,25 @@
 
 const {Feedback, Phases, AbilityUses, ArgumentTypes, ArgumentSubtypes, Immunities, AbilityName: AbilityName, RoleNames, Factions, AbilityTypes} = require("../enums.js");
 const addAffect = function(ability_done, target_name) {
+	const target_player = global.Game.Players.get(target_name);
+	const ability_user = global.Game.Players.get(ability_done.by);
+
 	if (![0, -1].includes(ability_done.uses)) {
-		if (!global.Game.Players.get(ability_done.by).used[ability_done.name]) {
-			global.Game.Players.get(ability_done.by).used[ability_done.name] = 0;
+		if (!ability_user.used[ability_done.name]) {
+			ability_user.used[ability_done.name] = 0;
 		}
-		global.Game.Players.get(ability_done.by).used[ability_done.name] += 1;
+		ability_user.used[ability_done.name] += 1;
 	}
 
-	console.log("\nAdding uses...");
-	console.log(global.Game.Players.get(ability_done.by).used);
-	global.Game.Players.get(target_name).affected_by.push(
+	target_player.affected_by.push(
 		{
 			"name": ability_done.name,
 			"by": ability_done.by,
 			"during_phase": global.Game.days_passed-0.5,
 		}
 	);
+
+	console.log({target_player})
 }
 
 const givePlayerDefense = function(player_giving_defense, defense_level) {
@@ -577,7 +580,7 @@ const perform = {
 		await kidnapped_player.mute();
 		await kidnapped_player.removeVotingAbility();
 
-		addAffect(ability_performed, kidnapped_player.name);
+		addAffect(ability_performed, kidnapped_player_name);
 	},
 }
 

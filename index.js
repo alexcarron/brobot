@@ -1,4 +1,3 @@
-const { Player } = require('discord-player');
 const RapidDiscordMafia = require('./modules/rapid_discord_mafia/RapidDiscordMafia.js');
 const Event = require('./modules/Event.js');
 const Timer = require('./modules/Timer.js');
@@ -8,7 +7,7 @@ console.log(`discord.js version: ${require('discord.js').version}`);
 
 
 const
-	{ DatabaseURLs, XPRewards, XPTaskKeys, RDMRoles } = require("./modules/enums.js"),
+	{ DatabaseURLs, XPRewards, XPTaskKeys, RDMRoles, GameStates, AbilityName, Feedback } = require("./modules/enums.js"),
 	ids = require('./data/ids.json'),
 	fs = require("fs"), // Used to interact with file system
 	cron = require("cron"), // Used to have scheduled functions execute
@@ -42,6 +41,7 @@ const { addRole, getRole, getGuild, getChannel, getObjectFromGitHubJSON, saveObj
 const { Collection } = require('discord.js');
 const SlashCommand = require('./modules/commands/SlashCommand.js');
 const TextToSpeechHandler = require('./modules/TextToSpeechHandler.js');
+const Player = require('./modules/rapid_discord_mafia/player.js');
 global.paths = paths;
 
 // ! Store a list of command cooldowns
@@ -303,7 +303,13 @@ global.dm = async function(user, message_contents) {
 }
 
 // ! Executed for every message sent
-global.client.on(Events.MessageCreate, async(msg) => {
+global.client.on(Events.MessageCreate,
+	/**
+	 *
+	 * @param {Discord.Message} msg
+	 * @returns
+	 */
+	async(msg) => {
 	// Log DMs
 	if (!msg.guild) {
 		let brobot_server = global.client.guilds.cache.get(ids.servers.brobot_testing),
@@ -366,34 +372,67 @@ global.client.on(Events.MessageCreate, async(msg) => {
 				if (name && name !== null)
 					global.tts.addMessage(voice_connection, `${name} said ${msg.content}`, user.id, username);
 				else
-					global.tts.addMessage(voice_connection, msg.content, user.id, username);
+					global.tts.addMessage(voice_connection, msg.cleanContent, user.id, username);
 			}
 		}
 	}
 
-	// ! GameForge Thread Message Checker
-	// if (
-	// 	msg &&
-	// 	msg.guild &&
-	// 	msg.guild.id === ids.servers.gameforge &&
-	// 	msg.channel.type === Discord.ChannelType.PublicThread
-	// ) {
-	// 	try {
-	// 		const proposed_rule_chnl = await ProposedRule.getProposedRuleChannel();
-	// 		const active_threads = await proposed_rule_chnl.threads.fetchActive()
+	// Rapid Discord Mafia Kidnapper
+	if (
+		global.Game &&
+		global.Game.Players &&
+		global.Game.state === GameStates.InProgress &&
+		msg.channel.parentId === ids.rapid_discord_mafia.category.player_action &&
+		msg.type === Discord.MessageType.Default
+	) {
+		const kidnapped_players = global.Game.Players.getPlayerList()
+			.filter(
+				/**
+				 * @param {Player} player
+				 */
+				(player) => {
+					const affected_by = player.affected_by;
 
-	// 		if (active_threads.threads.some(thread => thread.id === msg.channel.id)) {
-	// 			console.log(msg.channel.name);
-	// 			const host = await global.GameForge.getHostByID(msg.author.id);
-	// 			if (host && host instanceof Host) {
-	// 				host.rewardXPFor(XPTaskKeys.Discuss);
-	// 			}
-	// 		}
-	// 	}
-	// 	catch (error) {
-	// 		console.error(error);
-	// 	}
-	// }
+					const isKidnapped = affected_by
+						.some(affect => {
+							return affect.name === AbilityName.Kidnap
+						});
+
+					return isKidnapped;
+				}
+			);
+
+		kidnapped_players.forEach(
+			/**
+			 * @param {Player} kidnapped_player
+			 */
+			(kidnapped_player) => {
+				console.log(kidnapped_player.channel_id + " VS " + msg.channel.id);
+				if (
+					kidnapped_player.channel_id === msg.channel.id &&
+					kidnapped_player.id === msg.author.id
+				) {
+					const affected_by = kidnapped_player.affected_by;
+
+					const kidnapper_player_names = affected_by
+					.filter(affect => {
+						return affect.name === AbilityName.Kidnap
+					})
+					.map(affect => affect.by);
+
+					const kidnapper_players = kidnapper_player_names
+						.map(player_name => {
+							return global.Game.Players.get(player_name)
+						});
+
+					kidnapper_players.forEach(player => {
+						player.sendFeedback(Feedback.KidnapperYells(player, kidnapped_player, msg.content));
+					})
+				}
+
+			}
+		)
+	}
 
 	// Stop if not command
 	if (
