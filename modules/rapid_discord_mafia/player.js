@@ -5,7 +5,7 @@ const { Abilities } = require("./ability");
 
 const
 	{ getGuildMember, getRole, addRole, removeRole, getChannel, wait, getRandArrayItem, getRDMGuild, toTitleCase } = require("../functions"),
-	{ PermissionFlagsBits } = require('discord.js'),
+	{ PermissionFlagsBits, PermissionOverwriteManager, PermissionOverwrites } = require('discord.js'),
 	rdm_ids = require("../../data/ids.json").rapid_discord_mafia;
 
 class Player {
@@ -147,9 +147,24 @@ class Player {
 			const
 				rdm_guild = await getRDMGuild(),
 				town_discussion_chnl = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.town_discussion),
+				game_announce_chnl = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.game_announce),
 				player_guild_member = await getGuildMember(rdm_guild, this.id);
 
-			await town_discussion_chnl.permissionOverwrites.edit(player_guild_member.user, {SendMessages: false, AddReactions: false});
+			await town_discussion_chnl.permissionOverwrites.edit(
+				player_guild_member.user,
+				{
+					SendMessages: false,
+					AddReactions: false
+				}
+			);
+
+			await game_announce_chnl.permissionOverwrites.edit(
+				player_guild_member.user,
+				{
+					SendMessages: false,
+					AddReactions: false
+				}
+			);
 		}
 
 		console.log(`Muted **${this.name}**.`);
@@ -162,9 +177,24 @@ class Player {
 			const
 				rdm_guild = await getRDMGuild(),
 				town_discussion_chnl = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.town_discussion),
+				game_announce_chnl = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.game_announce),
 				player_guild_member = await getGuildMember(rdm_guild, this.id);
 
-			town_discussion_chnl.permissionOverwrites.edit(player_guild_member.user, {SendMessages: true});
+			await town_discussion_chnl.permissionOverwrites.edit(
+				player_guild_member.user,
+				{
+					SendMessages: null,
+					AddReactions: null,
+				}
+			);
+
+			await game_announce_chnl.permissionOverwrites.edit(
+				player_guild_member.user,
+				{
+					SendMessages: null,
+					AddReactions: null,
+				}
+			);
 		}
 
 		console.log(`Unmuted **${this.name}**.`);
