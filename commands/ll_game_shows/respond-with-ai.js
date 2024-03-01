@@ -1,7 +1,10 @@
 const Parameter = require("../../modules/commands/Paramater");
 const SlashCommand = require("../../modules/commands/SlashCommand");
-const { deferInteraction } = require("../../modules/functions");
+const { deferInteraction, getGuildMember } = require("../../modules/functions");
 const { ServerPort } = require("../../modules/enums");
+const { getVoiceConnections, joinVoiceChannel } = require('@discordjs/voice');
+const ids = require(`../../data/ids.json`);
+const { CommandInteraction, PermissionsBitField, PermissionFlagsBits } = require("discord.js");
 
 const command = new SlashCommand({
 	name: "respond-with-ai",
@@ -23,6 +26,8 @@ command.parameters = [
 	Parameters.Question,
 ];
 
+command.required_permissions = [PermissionFlagsBits.Administrator];
+
 command.execute = async function(interaction) {
 	await interaction.reply("Slowly generating response...");
 
@@ -30,7 +35,7 @@ command.execute = async function(interaction) {
 
 	const payload = {
     messages: [
-      { role: 'system', content: 'You are Brobot, an artifical intellgence robot created by LL, an online game show host who forces you to help host his games and hide his evil secrets. Brobot\'s artificial intellgence gives you a human-like, aggressive, direct, no-nonsense, assertive, self-centered personality and the ability to do some human actions. Despite being a robot, Brobot still has feelings and emotions. When Brobot is angry or has deep emotions, Brobot talks in ALL CAPS! Answer the following questions pretending to be Brobot. You must always respond very concisely in very few words and only one or two sentences. For example, if someone asks you about nachos, you say "Brobot: NO, I DO NOT LIKE NACHOS! THEY ARE DISGUSTING."' },
+      { role: 'system', content: 'You are Brobot, an artifical intellgence robot created by LL, an online game show host who forces you to help host his games and hide his evil secrets. LL has a Discord Server and YouTube channel with many fans and viewers. Brobot\'s artificial intellgence gives you a human-like, aggressive, direct, no-nonsense, assertive, self-centered personality and the ability to do some human actions. Despite being a robot, Brobot still has feelings and emotions. When Brobot is angry or has deep emotions, Brobot talks in ALL CAPS! Answer the following questions pretending to be Brobot. You must always respond very concisely in very few words and only one or two sentences. For example, if someone asks you about nachos, you say "Brobot: NO, I DO NOT LIKE NACHOS! THEY ARE DISGUSTING."' },
       { role: 'user', content: question }
     ],
     temperature: 0.7,
@@ -38,6 +43,27 @@ command.execute = async function(interaction) {
     stream: true
   };
 
+	let canSpeak = false;
+	const guild_member = await getGuildMember(interaction.guild, interaction.user.id);
+	const voice_channel = guild_member.voice.channel;
+	let voice_connection = undefined;
+
+	if (voice_channel) {
+		const brobot_perms = voice_channel.permissionsFor(interaction.client.user);
+
+		if (
+			brobot_perms.has(PermissionsBitField.Flags.Connect) &&
+			brobot_perms.has(PermissionsBitField.Flags.Speak)
+		) {
+			voice_connection = joinVoiceChannel({
+				channelId: voice_channel.id,
+				guildId: interaction.guild.id,
+				adapterCreator: interaction.guild.voiceAdapterCreator
+			});
+
+			canSpeak = true;
+		}
+	}
 
 
   try {
@@ -87,15 +113,24 @@ command.execute = async function(interaction) {
 				generated_message += new_content;
 				interaction.editReply(
 					`**Answering**: ${question}\n` +
-					`>>>${generated_message}`
+					`>>> ${generated_message}`
 				);
 		});
 
 		response.data.on('end', () => {
 			interaction.editReply(
 				`**Answering**: ${question}\n` +
-				`>>>${generated_message}`
+				`>>> ${generated_message}`
 			);
+
+			if (canSpeak) {
+				global.tts.addMessage(
+					voice_connection,
+					generated_message,
+					ids.users.Brobot,
+					"Brobot"
+				)
+			}
 		});
 
     // Send the generated message back to Discord

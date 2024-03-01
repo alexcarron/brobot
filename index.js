@@ -2,7 +2,8 @@ const { Player } = require('discord-player');
 const RapidDiscordMafia = require('./modules/rapid_discord_mafia/RapidDiscordMafia.js');
 const Event = require('./modules/Event.js');
 const Timer = require('./modules/Timer.js');
-const { joinVoiceChannel, createAudioResource, createAudioPlayer } = require('@discordjs/voice');
+const { getVoiceConnections, joinVoiceChannel } = require('@discordjs/voice');
+
 console.log(`discord.js version: ${require('discord.js').version}`);
 
 
@@ -361,11 +362,11 @@ global.client.on(Events.MessageCreate, async(msg) => {
 
 				if (!username)
 					username = user.username;
-				
+
 				if (name && name !== null)
-					global.tts.addMessage(voice_connection, `${name} said ${msg.content}`, username);
+					global.tts.addMessage(voice_connection, `${name} said ${msg.content}`, user.id, username);
 				else
-					global.tts.addMessage(voice_connection, msg.content, username);
+					global.tts.addMessage(voice_connection, msg.content, user.id, username);
 			}
 		}
 	}
