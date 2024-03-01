@@ -36,7 +36,6 @@ command.execute = async function execute(interaction) {
 	else {
 		interaction.editReply("Attemping to start sign-ups. Once sign-ups is over, use the command `/startgame` to begin the game.");
 	}
-	console.timeEnd("editReply");
 
 	console.time("Game.reset()");
 	await Game.reset();

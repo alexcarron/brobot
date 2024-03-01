@@ -112,8 +112,8 @@ command.parameters = [
 	}),
 	new Parameter({
 		type: "subcommand",
-		name: "fake-joins",
-		description: "Add a bunch of fake test users at once",
+		name: "start-with-fake-joins",
+		description: "Start sign ups and add multiple fake test users",
 		subparameters: [
 			new Parameter({
 				type: "string",
@@ -139,6 +139,20 @@ command.execute = async function execute(interaction) {
 
 	// Fake Joins
 	if (subcommand === FakeJoinSubcommand.name) {
+
+		if ( [Enums.GameStates.SignUp, Enums.GameStates.InProgress].includes(global.Game.state) ) {
+			return interaction.editReply("There's already a game in sign-ups or in progress.");
+		}
+		else {
+			interaction.editReply("Attemping to start sign-ups. Once sign-ups is over, use the command `/startgame` to begin the game.");
+		}
+
+		console.time("Game.reset()");
+		await Game.reset();
+		console.timeEnd("Game.reset()");
+
+		global.Game.startSignUps();
+
 		const player_names_str = await interaction.options.getString(
 			FakeJoinSubcommand.subparameters[0].name
 		);

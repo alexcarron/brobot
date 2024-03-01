@@ -428,6 +428,9 @@ class Player {
 	 * @returns {true | String} true if you can use the ability. Otherwise, feedback for why you can't use the ability
 	 */
 	async canUseAbility(ability_name, arg_values) {
+		if (ability_name === AbilityName.Nothing)
+			return true;
+
 		const ability = Object.values(Abilities).find(ability =>
 			ability.name === ability_name
 		);
