@@ -1,6 +1,6 @@
 const ids = require("../data/ids.json")
 const { github_token } =  require("../token.json");
-const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember  } = require('discord.js');
+const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle  } = require('discord.js');
 
 const functions = {
 	toTitleCase(string) {
@@ -664,6 +664,93 @@ doesValueMatchType: function doesValueMatchType(value, type) {
 		messages.push(long_message);
 
 		return messages;
+	},
+
+	/**
+	 *
+	 * @param {{channel_send}} param0
+	 * @returns
+	 */
+	async getModalTextFieldInput({
+		channel_sending_in,
+		title="",
+		button_text="",
+		prompt="",
+		placeholder="",
+		confirmation_message="✅ Confirmed",
+	}) {
+		if (!channel_sending_in) return;
+
+		const BUTTON_ID = button_text.replace(" ", "");
+		const MODAL_ID = `${title.replace(" ", "")}Modal`;
+		const TEXT_INPUT_ID = `${title.replace(" ", "")}TextInput`;
+
+		const show_modal_button = new ButtonBuilder()
+			.setCustomId(BUTTON_ID)
+			.setLabel(button_text)
+			.setStyle(ButtonStyle.Primary);
+
+		const show_modal_button_action_row = new ActionRowBuilder()
+			.addComponents(show_modal_button);
+
+		const message_sent = await channel_sending_in.send({
+			content: prompt,
+			components: [show_modal_button_action_row],
+		});
+
+		const modal = new ModalBuilder()
+			.setCustomId(MODAL_ID)
+			.setTitle(title);
+
+		// Create the text input components
+		const text_input = new TextInputBuilder()
+			.setCustomId(TEXT_INPUT_ID)
+			.setLabel(title)
+			.setMaxLength(1_900)
+			.setPlaceholder(placeholder)
+			.setValue(placeholder)
+			.setRequired(true)
+			.setStyle(TextInputStyle.Paragraph);
+
+		const text_action_row = new ActionRowBuilder().addComponents(text_input);
+
+		// Add inputs to the modal
+		modal.addComponents(text_action_row);
+
+		let confirmation_interaction;
+		try {
+			let hasPressedButton = false;
+			let hasSubmittedModal = false;
+
+			while (!hasSubmittedModal) {
+				while (!hasPressedButton) {
+					// Wait for button press
+					confirmation_interaction = await message_sent.awaitMessageComponent({ time: 1_000_000 });
+					if (confirmation_interaction.customId === BUTTON_ID)
+						hasPressedButton = true;
+				}
+
+				await confirmation_interaction.showModal(modal);
+
+				// Wait for button press
+				confirmation_interaction = await message_sent.awaitMessageComponent({ time: 1_000_000 });
+				if (confirmation_interaction.customId === MODAL_ID)
+					hasSubmittedModal = true;
+			}
+		}
+		catch {
+			await message_sent.edit({ content: `\`Response not recieved in time\``, components: [] });
+			return undefined;
+		}
+
+		// Get the data entered by the user
+		const text_response = confirmation_interaction.fields.getTextInputValue(TEXT_INPUT_ID);
+
+		const reply = await confirmation_interaction.reply("Confirmed");
+		reply.delete();
+		message_sent.delete();
+
+		return text_response;
 	}
 }
 

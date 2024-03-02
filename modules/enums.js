@@ -264,6 +264,7 @@ const Enums = {
 			`\`/use\` Use an ability your role has`,
 			`\`/vote\` Vote for a player to put on a trial or vote for a trial outcome`,
 			`\`/whisper\` Privately talk to another player at anytime. When you whisper, it will be announced who you're whispering to but not its contents`,
+			`\`/whisper\` Privately talk to another player at anytime. When you whisper, it will be announced who you're whispering to but not its contents`,
 			`\`/last-will\` Create and edit a will that's shown to everyone when you die`,
 			`\`/death-note\` Create and edit an anonymous note that's shown to everyone when you kill someone`,
 			`\`/leave-game\` Commit suicide in-game. (For when you have to leave. ONLY use if absolutely necessary)`,
@@ -282,7 +283,7 @@ const Enums = {
 		],
 		Day1Started: () => [
 			`_ _\n# Day 1`,
-			`Discuss with your fellow town members any information you want and look over your role information.\n` +
+			`Look over your role information, come up with a plan, and discuss with your fellow town members your game plan.\n` +
 			`**The day phase will end <t:${getUnixTimestamp() + Enums.PhaseWaitTimes.FirstDay*60}:R>**`,
 		],
 		StartDay: (living_role_id, day_num) => [
