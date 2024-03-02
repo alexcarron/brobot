@@ -22,77 +22,6 @@ const addAffect = function(ability_done, target_name) {
 	console.log({target_player})
 }
 
-const givePlayerDefense = function(player_giving_defense, defense_level) {
-	console.log(`Giving ${player_giving_defense.name} ${defense_level} defense`);
-
-	if (player_giving_defense.defense < defense_level) {
-		console.log(`Increased ${player_giving_defense.name}'s defense from ${player_giving_defense.defense} to ${defense_level}`);
-		player_giving_defense.defense = defense_level
-	}
-	else {
-		console.log(`${player_healing_name}'s was already at or above ${defense_level}`);
-	}
-}
-
-const attackPlayer = function(attacker_player, attacked_player) {
-	console.log(`${attacker_player.name} attacks ${attacked_player.name} with ${attacker_player.attack} attack level against ${attacked_player.defense} defense level.`);
-
-	// Attack Success
-	if (attacked_player.defense < attacker_player.attack) {
-		console.log("Attack Success");
-
-		global.Game.addDeath(attacked_player, attacker_player);
-
-		attacked_player.addFeedback(Feedback.KilledByAttack);
-		attacker_player.addFeedback(Feedback.KilledPlayer(attacked_player.name));
-
-		const target_role = global.Roles[attacked_player.role];
-		if (attacker_player.role === RoleNames.Vigilante && target_role.faction === Factions.Town) {
-			console.log("Vigilante Suicide Confirmed");
-
-			addAffect(
-				{
-					"by": attacker_player.name,
-					"name": AbilityName.Suicide
-				},
-				attacker_player.name
-			);
-		}
-	}
-	// Attack Failed
-	else {
-		console.log("Attack Failed");
-
-		const protection_affects_on_target = attacked_player.affected_by.filter(
-			affect => {
-				console.log({affect});
-				const ability = global.abilities[affect.name]
-				return ability.type == AbilityTypes.Protection;
-			}
-		);
-
-		if ( protection_affects_on_target.length > 0 ) {
-			console.log("Victim has heal affects");
-
-			for (let protection_affect of protection_affects_on_target) {
-				const protecter_player = global.Game.Players.get(protection_affect.by);
-				protecter_player.addFeedback(Feedback.ProtectedAnAttackedPlayer);
-
-				console.log(`${protecter_player.name} has protected the victim ${attacked_player.name}`);
-
-				if (protection_affect.name === AbilityName.Smith) {
-					console.log(`${protecter_player.name} successfully smithed a vest and achieved their win condition.`);
-
-					protecter_player.addFeedback(Feedback.DidSuccessfulSmith);
-					protecter_player.makeAWinner();
-				}
-			}
-		}
-
-		attacked_player.addFeedback(Feedback.AttackedButSurvived);
-		attacker_player.addFeedback(Feedback.AttackFailed(attacked_player.name));
-	}
-}
 
 
 
@@ -157,7 +86,7 @@ const perform = {
 			player_healing_name = healer_player.visiting,
 			player_healing = global.Game.Players.get(player_healing_name);
 
-		givePlayerDefense(player_healing, 2);
+		player_healing.giveDefenseLevel(2);
 
 		addAffect(ability_performed, player_healing_name);
 	},
@@ -169,7 +98,7 @@ const perform = {
 			self_healer_player_name = ability_performed.by,
 			self_healer_player = global.Game.Players.get(self_healer_player_name);
 
-		givePlayerDefense(self_healer_player, 2);
+		self_healer_player.giveDefenseLevel(2);
 
 		addAffect(ability_performed, self_healer_player_name);
 	},
@@ -216,7 +145,7 @@ const perform = {
 			attacked_player_name = attacker_player.visiting,
 			attacked_player = global.Game.Players.get(attacked_player_name);
 
-		attackPlayer(attacker_player, attacked_player);
+		attacker_player.attack(attacked_player);
 
 		addAffect(ability_performed, attacked_player_name);
 	},
@@ -379,7 +308,7 @@ const perform = {
 
 		smither_player.addFeedback(Feedback.SmithedVestForPlayer(smithed_player))
 
-		givePlayerDefense(smithed_player, 1);
+		smithed_player.giveDefenseLevel(1);
 
 		addAffect(ability_performed, smithed_player_name);
 	},
@@ -391,7 +320,7 @@ const perform = {
 			self_smither_player_name = ability_performed.by,
 			self_smither_player = global.Game.Players.get(self_smither_player_name);
 
-		givePlayerDefense(self_smither_player, 1);
+		self_smither_player.giveDefenseLevel(1);
 
 		addAffect(ability_performed, self_smither_player_name);
 	},
@@ -559,7 +488,7 @@ const perform = {
 			console.log("AFFECTED BY")
 			console.log(kidnapped_player.affected_by);
 
-			attackPlayer(kidnapped_player, kidnaper_player);
+			kidnapped_player.attack(kidnaper_player);
 		}
 		else {
 			kidnaper_player.addFeedback(Feedback.KidnappedPlayer(kidnapped_player));
@@ -576,7 +505,8 @@ const perform = {
 			kidnapped_player.addFeedback(Feedback.RoleblockedByKidnapperButImmune);
 		}
 
-		givePlayerDefense(kidnapped_player, 4);
+		kidnaper_player.giveDefenseLevel(4);
+
 		await kidnapped_player.mute();
 		await kidnapped_player.removeVotingAbility();
 

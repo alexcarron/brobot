@@ -1,4 +1,4 @@
-const { RDMRoles, Announcements, MessageDelays, Feedback, Factions, RoleNames, AbilityTypes, TrialVotes, AbilityName: AbilityName, AbilityArgName, ArgumentSubtypes, Subphases, Votes, Phases } = require("../enums");
+const { RDMRoles, Announcements, MessageDelays, Feedback, Factions, RoleNames, AbilityTypes, TrialVotes, AbilityName: AbilityName, AbilityArgName, ArgumentSubtypes, Subphases, Votes, Phases, AbilityUses } = require("../enums");
 const roles = require("./roles");
 const ids = require("../../data/ids.json");
 const { Abilities } = require("./ability");
@@ -336,6 +336,91 @@ class Player {
 	}
 
 	/**
+	 * @param {AbilityName} ability_name
+	 */
+	addAbilityUse(ability_name) {
+		if (!this.used[ability_name]) {
+			this.used[ability_name] = 0;
+		}
+
+		this.used[ability_name] += 1;
+	}
+
+	/**
+	 * Adds an ability used on a player to their affected_by array
+	 * @param {Player} player_using_ability
+	 * @param {AbilityName} ability_name
+	 */
+	addAbilityAffectedBy(player_using_ability, ability_name) {
+		player_using_ability.addAbilityUse(ability_name);
+
+		this.affected_by.push(
+			{
+				name: ability_name,
+				by: player_using_ability.name,
+				during_phase: global.Game.days_passed-0.5
+			}
+		)
+	}
+
+	attack(attacker_player) {
+		console.log(`${attacker_player.name} attacks ${this.name} with ${attacker_player.attack} attack level against ${this.defense} defense level.`);
+
+		// Attack Success
+		if (this.defense < attacker_player.attack) {
+			console.log("Attack Success");
+
+			global.Game.addDeath(this, attacker_player);
+
+			this.addFeedback(Feedback.KilledByAttack);
+			attacker_player.addFeedback(Feedback.KilledPlayer(this.name));
+
+			const target_role = global.Roles[this.role];
+			if (
+				attacker_player.role === RoleNames.Vigilante &&
+				target_role.faction === Factions.Town
+			) {
+				console.log("Vigilante Suicide Confirmed");
+
+				attacker_player.addAbilityAffectedBy(attacker_player, AbilityName.Suicide);
+			}
+		}
+		// Attack Failed
+		else {
+			console.log("Attack Failed");
+
+			const protection_affects_on_target = this.affected_by.filter(
+				affect => {
+					console.log({affect});
+					const ability = global.abilities[affect.name]
+					return ability.type == AbilityTypes.Protection;
+				}
+			);
+
+			if ( protection_affects_on_target.length > 0 ) {
+				console.log("Victim has heal affects");
+
+				for (let protection_affect of protection_affects_on_target) {
+					const protecter_player = global.Game.Players.get(protection_affect.by);
+					protecter_player.addFeedback(Feedback.ProtectedAnAttackedPlayer);
+
+					console.log(`${protecter_player.name} has protected the victim ${this.name}`);
+
+					if (protection_affect.name === AbilityName.Smith) {
+						console.log(`${protecter_player.name} successfully smithed a vest and achieved their win condition.`);
+
+						protecter_player.addFeedback(Feedback.DidSuccessfulSmith);
+						protecter_player.makeAWinner();
+					}
+				}
+			}
+
+			this.addFeedback(Feedback.AttackedButSurvived);
+			attacker_player.addFeedback(Feedback.AttackFailed(this.name));
+		}
+	}
+
+	/**
 		 * {
 				"victim": Player.name,
 				"kills": {
@@ -597,6 +682,19 @@ class Player {
 	restoreOldDefense() {
 		const old_defense = roles[this.role].defense;
 		this.defense = old_defense;
+	}
+
+	giveDefenseLevel(defense_level) {
+		console.log(`Giving ${this.name} ${defense_level} defense`);
+
+		if (this.defense < defense_level) {
+			console.log(`Increased ${this.name}'s defense from ${this.defense} to ${defense_level}`);
+
+			this.defense = defense_level
+		}
+		else {
+			console.log(`${this.name}'s was already at or above ${defense_level}`);
+		}
 	}
 
 	async convertToRole(role_name) {
