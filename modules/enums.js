@@ -503,7 +503,10 @@ const Enums = {
 		Lookout: "Lookout",
 		Nothing: "Nothing",
 		DeathCurse: "Death Curse",
+		Heal: "Heal",
 		HealSelf: "Heal Self",
+		Roleblock: "Roleblock",
+		Cautious: "Cautious",
 	},
 
 	AbilityArgName: {
@@ -529,6 +532,7 @@ const Enums = {
 		Vigilante: "Vigilante",
 		Tracker: "Tracker",
 		Lookout: "Lookout",
+		SerialKiller: "Serial Killer",
 	},
 
 	ServerPort: {

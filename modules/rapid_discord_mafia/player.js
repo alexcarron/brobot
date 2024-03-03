@@ -363,7 +363,7 @@ class Player {
 		)
 	}
 
-	attack(attacker_player) {
+	receiveAttackFrom(attacker_player) {
 		console.log(`${attacker_player.name} attacks ${this.name} with ${attacker_player.attack} attack level against ${this.defense} defense level.`);
 
 		// Attack Success
@@ -1017,6 +1017,13 @@ class Player {
 		}
 
 		return isMajorityVote;
+	}
+
+	/**
+	 *
+	 */
+	frame() {
+		this.percieved.role = RoleNames.Mafioso;
 	}
 }
 

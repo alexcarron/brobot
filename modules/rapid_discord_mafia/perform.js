@@ -1,29 +1,26 @@
 
 const {Feedback, Phases, AbilityUses, ArgumentTypes, ArgumentSubtypes, Immunities, AbilityName: AbilityName, RoleNames, Factions, AbilityTypes} = require("../enums.js");
-const addAffect = function(ability_done, target_name) {
-	const target_player = global.Game.Players.get(target_name);
-	const ability_user = global.Game.Players.get(ability_done.by);
+// const addAffect = function(ability_done, target_name) {
+// 	const target_player = global.Game.Players.get(target_name);
+// 	const ability_user = global.Game.Players.get(ability_done.by);
 
-	if (![0, -1].includes(ability_done.uses)) {
-		if (!ability_user.used[ability_done.name]) {
-			ability_user.used[ability_done.name] = 0;
-		}
-		ability_user.used[ability_done.name] += 1;
-	}
+// 	if (![0, -1].includes(ability_done.uses)) {
+// 		if (!ability_user.used[ability_done.name]) {
+// 			ability_user.used[ability_done.name] = 0;
+// 		}
+// 		ability_user.used[ability_done.name] += 1;
+// 	}
 
-	target_player.affected_by.push(
-		{
-			"name": ability_done.name,
-			"by": ability_done.by,
-			"during_phase": global.Game.days_passed-0.5,
-		}
-	);
+// 	target_player.affected_by.push(
+// 		{
+// 			"name": ability_done.name,
+// 			"by": ability_done.by,
+// 			"during_phase": global.Game.days_passed-0.5,
+// 		}
+// 	);
 
-	console.log({target_player})
-}
-
-
-
+// 	console.log({target_player})
+// }
 
 const perform = {
 	/**
@@ -63,7 +60,8 @@ const perform = {
 		}
 
 		roleblocker_player.addFeedback(Feedback.RoleblockedPlayer(roleblocked_player));
-		addAffect(ability_performed, roleblocked_player_name);
+
+		roleblocked_player.addAbilityAffectedBy(roleblocker_player, ability_performed.name);
 	},
 	/**
 	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
@@ -71,10 +69,11 @@ const perform = {
 	async cautious(ability_performed) {
 		const
 			serial_killer_name = ability_performed.by,
-			serial_killer_player = global.Game.Players.get(serial_killer_name);
+			serial_killer = global.Game.Players.get(serial_killer_name);
 
-		serial_killer_player.addFeedback(Feedback.DidCautious);
-		addAffect(ability_performed, serial_killer_name);
+		serial_killer.addFeedback(Feedback.DidCautious);
+
+		serial_killer.addAbilityAffectedBy(serial_killer, ability_performed.name);
 	},
 	/**
 	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
@@ -88,7 +87,7 @@ const perform = {
 
 		player_healing.giveDefenseLevel(2);
 
-		addAffect(ability_performed, player_healing_name);
+		player_healing.addAbilityAffectedBy(healer_player, ability_performed.name);
 	},
 	/**
 	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
@@ -100,7 +99,7 @@ const perform = {
 
 		self_healer_player.giveDefenseLevel(2);
 
-		addAffect(ability_performed, self_healer_player_name);
+		self_healer_player.addAbilityAffectedBy(self_healer_player, ability_performed.name);
 	},
 	/**
 	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
@@ -145,9 +144,10 @@ const perform = {
 			attacked_player_name = attacker_player.visiting,
 			attacked_player = global.Game.Players.get(attacked_player_name);
 
-		attacker_player.attack(attacked_player);
+		console.log({attacked_player});
+		attacked_player.receiveAttackFrom(attacker_player);
 
-		addAffect(ability_performed, attacked_player_name);
+		attacked_player.addAbilityAffectedBy(attacker_player, ability_performed.name)
 	},
 	/**
 	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
@@ -160,7 +160,8 @@ const perform = {
 			framed_player = global.Game.Players.get(framed_player_name);
 
 		framed_player.percieved.role = "Mafioso";
-		addAffect(ability_performed, framed_player_name);
+
+		framed_player.addAbilityAffectedBy(framer_player, ability_performed.name);
 	},
 	/**
 	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
@@ -171,7 +172,8 @@ const perform = {
 			self_framer_player = global.Game.Players.get(self_framer_player_name);
 
 		self_framer_player.percieved.role = "Mafioso";
-		addAffect(ability_performed, self_framer_player_name);
+
+		self_framer_player.addAbilityAffectedBy(self_framer_player, ability_performed.name);
 	},
 	/**
 	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
@@ -184,7 +186,8 @@ const perform = {
 			exe_target_player = global.Game.Players.get(exe_target_name);
 
 		exe_target_player.percieved.role = "Mafioso";
-		addAffect(ability_performed, exe_target_name);
+
+		exe_target_player.addAbilityAffectedBy(framer_player, ability_performed.name);
 	},
 	/**
 	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
@@ -219,7 +222,8 @@ const perform = {
 		player_evaluating.removeManipulationAffects();
 
 		evaluater_player.addFeedback(feedback);
-		addAffect(ability_performed, player_evaluating_name);
+
+		player_evaluating.addAbilityAffectedBy(evaluater_player, ability_performed.name);
 	},
 	/**
 	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
@@ -242,7 +246,8 @@ const perform = {
 			feedback = Feedback.TrackerSawPlayerNotVisit(tracked_player_name);
 
 		tracker_player.addFeedback(feedback);
-		addAffect(ability_performed, tracked_player_name);
+
+		tracked_player.addAbilityAffectedBy(tracker_player, ability_performed.name);
 	},
 	/**
 	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
@@ -278,7 +283,7 @@ const perform = {
 		else
 			lookout_player.addFeedback(Feedback.LookoutSeesNoVisits(target_player));
 
-		addAffect(ability_performed, target_player_name);
+		target_player.addAbilityAffectedBy(lookout_player, ability_performed.name);
 	},
 	/**
 	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
@@ -292,7 +297,8 @@ const perform = {
 			evaluated_role_name = investigated_player.getPercievedRole();
 
 		investigator_player.addFeedback(Feedback.EvaluatedPlayersRole(investigated_player_name, evaluated_role_name));
-		addAffect(ability_performed, investigated_player_name);
+
+		investigated_player.addAbilityAffectedBy(investigator_player, ability_performed.name);
 	},
 	/**
 	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
@@ -310,7 +316,7 @@ const perform = {
 
 		smithed_player.giveDefenseLevel(1);
 
-		addAffect(ability_performed, smithed_player_name);
+		smithed_player.addAbilityAffectedBy(smither_player, ability_performed.name);
 	},
 	/**
 	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
@@ -322,7 +328,7 @@ const perform = {
 
 		self_smither_player.giveDefenseLevel(1);
 
-		addAffect(ability_performed, self_smither_player_name);
+		self_smither_player.addAbilityAffectedBy(self_smither_player, ability_performed.name);
 	},
 	/**
 	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed
@@ -430,8 +436,8 @@ const perform = {
 			player_observing.removeManipulationAffects();
 			last_player_observed.removeManipulationAffects();
 
-			addAffect(ability_performed, player_observing.name);
-			addAffect(ability_performed, last_player_observed.name);
+			player_observing.addAbilityAffectedBy(observer_player, ability_performed.name);
+			last_player_observed.addAbilityAffectedBy(observer_player, ability_performed.name);
 		}
 
 		observer_player.last_player_observed_name = player_observing.name;
@@ -459,7 +465,7 @@ const perform = {
 			replacer_player.addFeedback(Feedback.ReplacedPlayer(player_replacing));
 			player_replacing.addFeedback(Feedback.ReplacedByReplacer());
 
-			addAffect(ability_performed, player_replacing_name);
+			player_replacing.addAbilityAffectedBy(replacer_player, ability_performed.name);
 		}
 		// Attack Failed
 		else {
@@ -488,7 +494,7 @@ const perform = {
 			console.log("AFFECTED BY")
 			console.log(kidnapped_player.affected_by);
 
-			kidnapped_player.attack(kidnaper_player);
+			kidnapped_player.receiveAttackFrom(kidnaper_player);
 		}
 		else {
 			kidnaper_player.addFeedback(Feedback.KidnappedPlayer(kidnapped_player));
@@ -505,12 +511,12 @@ const perform = {
 			kidnapped_player.addFeedback(Feedback.RoleblockedByKidnapperButImmune);
 		}
 
-		kidnaper_player.giveDefenseLevel(4);
+		kidnapped_player.giveDefenseLevel(4);
 
 		await kidnapped_player.mute();
 		await kidnapped_player.removeVotingAbility();
 
-		addAffect(ability_performed, kidnapped_player_name);
+		kidnapped_player.addAbilityAffectedBy(kidnaper_player, ability_performed.name);
 	},
 }
 
