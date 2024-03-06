@@ -10,11 +10,11 @@ const roles = require("./roles");
 
 describe('Game', () => {
 	// ^ .createRoleList()
-	{
+	describe('createRoleList', () => {
 		test.concurrent(
 			".createRoleList() should convert Mafioso identifier to Mafioso role",
 			() => {
-				const rdm_game = Game.getEmptyGame();
+				const rdm_game = RapidDiscordMafia.getEmptyGame();
 				rdm_game.role_identifiers = RoleIdentifier.convertIdentifierStrings(["Mafioso"]);
 				rdm_game.createRoleList();
 
@@ -25,7 +25,7 @@ describe('Game', () => {
 		test.concurrent(
 			".createRoleList() should convert [Town Protective, Mafioso] identifiers to [Doctor, Mafioso]",
 			async () => {
-				const rdm_game = Game.getEmptyGame();
+				const rdm_game = RapidDiscordMafia.getEmptyGame();
 				rdm_game.role_identifiers = RoleIdentifier.convertIdentifierStrings(
 					[
 						"Town Protective",
@@ -46,7 +46,7 @@ describe('Game', () => {
 		test.concurrent(
 			".createRoleList() should assign NK and RT before NB on [Neutral Benign, Neutral Killing, Random Town]",
 			async () => {
-				const rdm_game = Game.getEmptyGame();
+				const rdm_game = RapidDiscordMafia.getEmptyGame();
 				rdm_game.role_identifiers = RoleIdentifier.convertIdentifierStrings(
 					[
 						Factions.Neutral + " " + Alignments.Benign,
@@ -70,7 +70,7 @@ describe('Game', () => {
 		test.concurrent(
 			".createRoleList() should assign RM and RT before NB on [Neutral Benign, Random Mafia, Random Town]",
 			async () => {
-				const rdm_game = Game.getEmptyGame();
+				const rdm_game = RapidDiscordMafia.getEmptyGame();
 				rdm_game.role_identifiers = RoleIdentifier.convertIdentifierStrings(
 					[
 						Factions.Neutral + " " + Alignments.Benign,
@@ -90,10 +90,10 @@ describe('Game', () => {
 				expect(actual_role_list.length).toStrictEqual(3);
 			}
 		);
-	}
+	});
 
 	// ^ .getRoleFromRoleIdentifier()
-	{
+	describe('getRoleFromRoleIdentifier', () => {
 		test.concurrent(
 			`.getRoleFromRoleIdentifier(RoleIdentifier.Sheriff) should return Sheriff role`,
 			async () => {
@@ -106,7 +106,7 @@ describe('Game', () => {
 				);
 				const expected_output = roles[RoleNames.Sheriff];
 
-				const rdm_game = Game.getEmptyGame();
+				const rdm_game = RapidDiscordMafia.getEmptyGame();
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -128,7 +128,7 @@ describe('Game', () => {
 				);
 				const expected_output = roles[RoleNames.Townie];
 
-				const rdm_game = Game.getEmptyGame();
+				const rdm_game = RapidDiscordMafia.getEmptyGame();
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -149,7 +149,7 @@ describe('Game', () => {
 					]
 				);
 
-				const rdm_game = Game.getEmptyGame();
+				const rdm_game = RapidDiscordMafia.getEmptyGame();
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -171,7 +171,7 @@ describe('Game', () => {
 					]
 				);
 
-				const rdm_game = Game.getEmptyGame();
+				const rdm_game = RapidDiscordMafia.getEmptyGame();
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -180,10 +180,10 @@ describe('Game', () => {
 				expect(actual_output.faction).toStrictEqual(Factions.Town);
 			}
 		)
-	}
+	});
 
 	// ^ .getPossibleRolesFromIdentifier()
-	{
+	describe('getPossibleRolesFromIdentifier', () => {
 		const getNumMafiaTownFromRatio = function(ratio, isMafia) {
 			let num_mafia = 1;
 			let num_town = 1;
@@ -223,7 +223,7 @@ describe('Game', () => {
 				);
 				const expected_output = [roles[RoleNames.Sheriff]];
 
-				const rdm_game = Game.getEmptyGame();
+				const rdm_game = RapidDiscordMafia.getEmptyGame();
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -246,7 +246,7 @@ describe('Game', () => {
 
 				const expected_output = [roles[RoleNames.Townie]];
 
-				const rdm_game = Game.getEmptyGame();
+				const rdm_game = RapidDiscordMafia.getEmptyGame();
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -272,7 +272,7 @@ describe('Game', () => {
 					role.alignment === Alignments.Killing
 				);
 
-				const rdm_game = Game.getEmptyGame();
+				const rdm_game = RapidDiscordMafia.getEmptyGame();
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -306,7 +306,7 @@ describe('Game', () => {
 					role.faction === Factions.Neutral
 				);
 
-				const rdm_game = Game.getEmptyGame();
+				const rdm_game = RapidDiscordMafia.getEmptyGame();
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -328,7 +328,7 @@ describe('Game', () => {
 					]
 				);
 
-				const rdm_game = Game.getEmptyGame();
+				const rdm_game = RapidDiscordMafia.getEmptyGame();
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -376,7 +376,7 @@ describe('Game', () => {
 				);
 
 
-				const rdm_game = Game.getEmptyGame();
+				const rdm_game = RapidDiscordMafia.getEmptyGame();
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -409,7 +409,7 @@ describe('Game', () => {
 					]
 				);
 
-				const rdm_game = Game.getEmptyGame();
+				const rdm_game = RapidDiscordMafia.getEmptyGame();
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -439,7 +439,7 @@ describe('Game', () => {
 					]
 				);
 
-				const rdm_game = Game.getEmptyGame();
+				const rdm_game = RapidDiscordMafia.getEmptyGame();
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -480,7 +480,7 @@ describe('Game', () => {
 					]
 				);
 
-				const rdm_game = Game.getEmptyGame();
+				const rdm_game = RapidDiscordMafia.getEmptyGame();
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -518,7 +518,7 @@ describe('Game', () => {
 					]
 				);
 
-				const rdm_game = Game.getEmptyGame();
+				const rdm_game = RapidDiscordMafia.getEmptyGame();
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -551,7 +551,7 @@ describe('Game', () => {
 					]
 				);
 
-				const rdm_game = Game.getEmptyGame();
+				const rdm_game = RapidDiscordMafia.getEmptyGame();
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -587,7 +587,7 @@ describe('Game', () => {
 					]
 				);
 
-				const rdm_game = Game.getEmptyGame();
+				const rdm_game = RapidDiscordMafia.getEmptyGame();
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -625,7 +625,7 @@ describe('Game', () => {
 					]
 				);
 
-				const rdm_game = Game.getEmptyGame();
+				const rdm_game = RapidDiscordMafia.getEmptyGame();
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -643,7 +643,7 @@ describe('Game', () => {
 				).toStrictEqual(true);
 			}
 		)
-	}
+	});
 
 
 	// ^ isValidArgValue
@@ -653,7 +653,7 @@ describe('Game', () => {
 			const player_using_ability = new Player({name: "name"});
 			const arg_value = "mafia";
 
-			const rdm_game = Game.getEmptyGame();
+			const rdm_game = RapidDiscordMafia.getEmptyGame();
 			const mafia_player = new Player({
 				name: "mafia",
 				role: RoleNames.Mafioso,
@@ -671,7 +671,7 @@ describe('Game', () => {
 			const player_using_ability = new Player({name: "name", role: RoleNames.Doctor});
 			const arg_value = "name";
 
-			const rdm_game = Game.getEmptyGame();
+			const rdm_game = RapidDiscordMafia.getEmptyGame();
 			rdm_game.Players.addPlayer(player_using_ability);
 			expect(
 				rdm_game.isValidArgValue(player_using_ability, player_framing_arg, arg_value)

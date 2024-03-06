@@ -1,5 +1,6 @@
 const { getObjectFromGitHubJSON } = require("../functions.js");
 const Contestant = require("./Contestant");
+const Logger = require("./Logger.js");
 const Game = require("./game.js");
 const Players = require("./players.js");
 
@@ -11,7 +12,11 @@ class RapidDiscordMafia {
 	static async setUpRapidDiscordMafia(isMockObject = false) {
 		global.Roles = require("./roles");
 		global.abilities = require("./ability.js").Abilities;
-		global.Game = new Game( new Players({}, isMockObject), isMockObject );
+		global.Game = new Game(
+			new Players({}, isMockObject),
+			new Logger(),
+			isMockObject
+		);
 		global.rapid_discord_mafia = new RapidDiscordMafia();
 
 		if (!isMockObject) {
@@ -19,6 +24,10 @@ class RapidDiscordMafia {
 			global.rapid_discord_mafia.setTo(rapid_discord_mafia_obj);
 			console.log("Rapid Discord Mafia Database Downloaded");
 		}
+	}
+
+	static getEmptyGame(isMockGame=false) {
+		return new Game(new Players, new Logger, isMockGame)
 	}
 
 	getContestantFromPlayer(player) {

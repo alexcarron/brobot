@@ -1,13 +1,19 @@
 const { ArgumentSubtypes, ArgumentTypes, AbilityUses, Duration, Phases, AbilityTypes, Priorities, AbilityName: AbilityName, AbilityArgName } = require("../enums");
+const { EffectName } = require("./EffectManager.js");
 const Arg = require("./arg.js");
-const perform = require("./perform");
 
 class Ability {
+
+	/**
+	 * @type {EffectName[]}
+	 */
+	effects;
+
 	/**
 	 *
 	 * @param {Duration} OneDay by default
 	 */
-	constructor( { name, type, uses, feedback=()=>``, phases_can_use=[Phases.Night], description, priority, duration=0.5, args=[], effects=[], perform } ) {
+	constructor( { name, type, uses, feedback=()=>``, phases_can_use=[Phases.Night], description, priority, duration=0.5, args=[], effects=[] } ) {
 		this.name = name;
 		this.type = type;
 		this.priority = priority;
@@ -33,7 +39,7 @@ class Ability {
 			duration: Duration.DayAndNight,
 			phases_can_use: [Phases.Night],
 			effects: [
-				perform.heal
+				EffectName.Heal
 			],
 			feedback: function(player_healing, player_name="You", isYou=true) {
 				return `**${isYou ? "You" : player_name}** will attempt to heal **${player_healing}** tonight`
@@ -56,7 +62,7 @@ class Ability {
 			duration: Duration.DayAndNight,
 			phases_can_use: [Phases.Night],
 			effects: [
-				perform.selfHeal
+				EffectName.SelfHeal
 			],
 			feedback: function(player_name="You", isYou=true) {
 				return `**${isYou ? "You" : player_name}** will attempt to heal ${player_name==="You" ? "yourself" : "themself"} tonight`
@@ -70,7 +76,7 @@ class Ability {
 			uses: AbilityUses.Unlimited,
 			phases_can_use: [Phases.Night],
 			effects: [
-				perform.evaluate
+				EffectName.Evaluate
 			],
 			feedback: function(player_evaluating, player_name="You", isYou=true) {
 				return `**${isYou ? "You" : player_name}** will attempt to evaluate **${player_evaluating}** tonight`
@@ -92,7 +98,7 @@ class Ability {
 			uses: AbilityUses.Unlimited,
 			phases_can_use: [Phases.Night],
 			effects: [
-				perform.track
+				EffectName.Track
 			],
 			feedback: function(player_tracking, player_name="You", isYou=true) {
 				return `**${isYou ? "You" : player_name}** will attempt to track the visit of **${player_tracking}** tonight`
@@ -114,7 +120,7 @@ class Ability {
 			uses: AbilityUses.Unlimited,
 			phases_can_use: [Phases.Night],
 			effects: [
-				perform.lookout
+				EffectName.Lookout
 			],
 			feedback: function(player_tracking, player_name="You", isYou=true) {
 				return `**${isYou ? "You" : player_name}** will watch **${player_tracking}**'s house tonight to see who visits them.`
@@ -137,7 +143,7 @@ class Ability {
 			duration: Duration.DayAndNight,
 			phases_can_use: [Phases.Night],
 			effects: [
-				perform.roleblock
+				EffectName.Roleblock
 			],
 			feedback: function(player_roleblocking, player_name="You", isYou=true) {
 				return `**${isYou ? "You" : player_name}** will attempt to roleblock **${player_roleblocking}** tonight`
@@ -160,7 +166,7 @@ class Ability {
 			duration: Duration.OneNight,
 			phases_can_use: [Phases.Night],
 			effects: [
-				perform.attack
+				EffectName.Attack
 			],
 			feedback: function(player_shooting, player_name="You", isYou=true) {
 				return `**${isYou ? "You" : player_name}** will attempt to shoot **${player_shooting}** tonight`
@@ -183,7 +189,7 @@ class Ability {
 			duration: Duration.OneNight,
 			phases_can_use: [Phases.Night],
 			effects: [
-				perform.order
+				EffectName.Order
 			],
 			feedback: function(player_ordering_to_kill, player_name="You", isYou=true) {
 				return `**${isYou ? "You" : player_name}** will attempt to order the Mafioso to murder **${player_ordering_to_kill}** tonight`
@@ -206,7 +212,7 @@ class Ability {
 			duration: Duration.OneNight,
 			phases_can_use: [Phases.Night],
 			effects: [
-				perform.attack
+				EffectName.Attack
 			],
 			feedback: function(player_murdering, player_name="You", isYou=true) {
 				return `**${isYou ? "You" : player_name}** will attempt to murder **${player_murdering}** tonight`
@@ -229,7 +235,7 @@ class Ability {
 			duration: Duration.DayAndNight,
 			phases_can_use: [Phases.Night],
 			effects: [
-				perform.frame
+				EffectName.Frame
 			],
 			feedback: function(player_frame, player_name="You", isYou=true) {
 				return `**${isYou ? "You" : player_name}** will attempt to frame **${player_frame}** as the Mafioso tonight`
@@ -252,7 +258,7 @@ class Ability {
 			duration: Duration.DayAndNight,
 			phases_can_use: [Phases.Night],
 			effects: [
-				perform.frame
+				EffectName.Roleblock
 			],
 			feedback: function(player_roleblocking, player_name="You", isYou=true) {
 				return `**${isYou ? "You" : player_name}** will attempt to roleblock **${player_roleblocking}** tonight`
@@ -274,7 +280,7 @@ class Ability {
 			uses: AbilityUses.Unlimited,
 			phases_can_use: [Phases.Night],
 			effects: [
-				perform.investigate
+				EffectName.Investigate
 			],
 			feedback: function(player_investigating, player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to investigate the role of **${player_investigating}** tonight`},
 			args: [
@@ -295,7 +301,7 @@ class Ability {
 			duration: Duration.Indefinite,
 			phases_can_use: [Phases.Night],
 			effects: [
-				perform.selfFrame
+				EffectName.SelfFrame
 			],
 			feedback: function(player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to frame ${isYou ? "yourself" : "themself"} as the mafioso tonight`},
 		}),
@@ -308,7 +314,7 @@ class Ability {
 			duration: Duration.OneNight,
 			phases_can_use: [Phases.Limbo],
 			effects: [
-				perform.attack
+				EffectName.Attack
 			],
 			feedback: function(player_cursing, player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to curse **${player_cursing}** with death tonight`},
 			args: [
@@ -329,7 +335,7 @@ class Ability {
 			duration: Duration.Indefinite,
 			phases_can_use: [Phases.Night],
 			effects: [
-				perform.frameTarget
+				EffectName.FrameTarget
 			],
 			feedback: function(player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to frame ${isYou ? "your" : "their"} target as the Mafioso tonight`},
 		}),
@@ -342,7 +348,7 @@ class Ability {
 			duration: Duration.DayAndNight,
 			phases_can_use: [Phases.Night],
 			effects: [
-				perform.selfHeal
+				EffectName.SelfHeal
 			],
 			feedback: function(player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to put on a vest tonight`},
 		}),
@@ -355,7 +361,7 @@ class Ability {
 			duration: Duration.OneNight,
 			phases_can_use: [Phases.Night],
 			effects: [
-				perform.attack
+				EffectName.Attack
 			],
 			feedback(player_knifing, player_name="You", isYou=true) {
 				return `**${isYou ? "You" : player_name}** will attempt to knife ${player_knifing} to death tonight`
@@ -378,7 +384,7 @@ class Ability {
 			duration: Duration.OneNight,
 			phases_can_use: [Phases.Night],
 			effects: [
-				perform.cautious
+				EffectName.Cautious
 			],
 			feedback: function(player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to be cautious of roleblockers tonight`},
 		}),
@@ -391,7 +397,7 @@ class Ability {
 			duration: Duration.DayAndNight,
 			phases_can_use: [Phases.Night],
 			effects: [
-				perform.smith
+				EffectName.Smith
 			],
 			feedback: function(player_smithing_for, player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to smith a bulletproof vest for **${player_smithing_for}** tonight`},
 			args: [
@@ -412,7 +418,7 @@ class Ability {
 			duration: Duration.DayAndNight,
 			phases_can_use: [Phases.Night],
 			effects: [
-				perform.selfSmith
+				EffectName.SelfSmith
 			],
 			feedback: function(player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to smith a bulletproof vest for ${isYou ? "yourself" : "themself"} tonight`},
 		}),
@@ -425,7 +431,7 @@ class Ability {
 			duration: Duration.OneNight,
 			phases_can_use: [],
 			effects: [
-				perform.attack
+				EffectName.Attack
 			],
 		}),
 		Control: new Ability({
@@ -437,7 +443,7 @@ class Ability {
 			duration: Duration.OneNight,
 			phases_can_use: [Phases.Night],
 			effects: [
-				perform.control
+				EffectName.Control
 			],
 			feedback: function(player_controlling, player_controlled_into, player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to control **${player_controlling}** into using their ability on **${player_controlled_into}** tonight`},
 			args: [
@@ -463,7 +469,7 @@ class Ability {
 			uses: AbilityUses.Unlimited,
 			phases_can_use: [Phases.Night],
 			effects: [
-				perform.observe
+				EffectName.Observe
 			],
 			feedback: function(player_observing, player_name="You", isYou=true) {
 				const player = global.Game.Players.get(player_name);
@@ -493,8 +499,8 @@ class Ability {
 			uses: AbilityUses.Unlimited,
 			phases_can_use: [Phases.Night],
 			effects: [
-				perform.attack,
-				perform.replace,
+				EffectName.Attack,
+				EffectName.Replace,
 			],
 			feedback: function(player_replacing_name, player_name="You", isYou=true) {
 				return `**${isYou ? "You" : player_name}** will attempt to replace **${player_replacing_name}** tonight`
@@ -516,7 +522,7 @@ class Ability {
 			uses: AbilityUses.Unlimited,
 			phases_can_use: [Phases.Night],
 			effects: [
-				perform.kidnap,
+				EffectName.Kidnap,
 			],
 			feedback: function(player_kidnapping_name, player_name="You", isYou=true) {
 				return `**${isYou ? "You" : player_name}** will attempt to kidnap **${player_kidnapping_name}** tonight`

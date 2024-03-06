@@ -1,4 +1,4 @@
-const { RDMRoles, Announcements, MessageDelays, Feedback, Factions, RoleNames, AbilityTypes, TrialVotes, AbilityName: AbilityName, AbilityArgName, ArgumentSubtypes, Subphases, Votes, Phases, AbilityUses } = require("../enums");
+const { RDMRoles, Announcements, MessageDelays, Feedback, Factions, RoleNames, AbilityTypes, TrialVotes, AbilityName: AbilityName, AbilityArgName, ArgumentSubtypes, Subphases, Votes, Phases } = require("../enums");
 const roles = require("./roles");
 const ids = require("../../data/ids.json");
 const { Abilities } = require("./ability");
@@ -684,6 +684,9 @@ class Player {
 		this.defense = old_defense;
 	}
 
+	/**
+	 * @param {number} defense_level the level of defense giving to player
+	 */
 	giveDefenseLevel(defense_level) {
 		console.log(`Giving ${this.name} ${defense_level} defense`);
 
@@ -1020,7 +1023,7 @@ class Player {
 	}
 
 	/**
-	 *
+	 * Frames player as mafioso
 	 */
 	frame() {
 		this.percieved.role = RoleNames.Mafioso;

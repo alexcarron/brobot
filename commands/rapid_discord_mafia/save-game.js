@@ -17,7 +17,7 @@ command.execute = async function execute(interaction) {
 	await interaction.deferReply({ephemeral: true});
 
 	await global.Game.saveGameDataToDatabase();
-	global.Game.logGame();
+	console.log(this);
 
 	editReplyToInteraction(interaction, "Game successfully saved.")
 }

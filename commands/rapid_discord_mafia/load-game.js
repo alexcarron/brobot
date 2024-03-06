@@ -13,7 +13,6 @@ command.execute = async function execute(interaction) {
 
 	await global.Game.loadGameDataFromDatabase();
 	interaction.editReply("Game successfully loaded.");
-	global.Game.logGame();
 }
 
 module.exports = command;

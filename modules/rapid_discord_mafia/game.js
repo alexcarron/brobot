@@ -10,15 +10,43 @@ const roles = require("./roles.js");
 const Players = require("../rapid_discord_mafia/players.js");
 const Player = require("./player.js");
 const Arg = require("./arg.js");
+const EffectManager = require("./EffectManager.js");
 class Game {
+	/**
+	 * An object map of players to the ability they performed
+	 * @ type {{[player_name: string]: {by: PlayerName, name: AbilityName, args: {[ability_arg_name: string]: [ability_arg_value: string]}}}}
+	*/
+	abilities_performed;
+
 	/**
 	 * Whether this is a mock game used for testing or not
 	 */
 	isMockGame;
 
-	constructor({players = {}}, isMockGame=false) {
+	/**
+	 * A player manager service to keep track of players in the game
+	 * @type {Players}
+	 */
+	Players;
+
+	/**
+	 * A logger to log messages
+	 * @type {Logger}
+	 */
+	logger;
+
+	/**
+	 *
+	 * @param {Players} players - An instance of the players class
+	 * @param {Logger} logger - An instance of a logger
+	 * @param {boolean} isMockGame
+	 */
+	constructor(players, logger, isMockGame=false) {
+		this.effect_manager = new EffectManager(this, logger);
+		this.logger = logger;
+
 		this.state = GameStates.Ended;
-		this.Players = new Players(players, isMockGame);
+		this.Players = players;
 		this.phase = null;
 		this.subphase = null;
 		this.days_passed = 0;
@@ -44,16 +72,6 @@ class Game {
 		this.role_list = [];
 		this.action_log = {};
 		this.role_log = {};
-
-		/**
-		 * {
-		 *   by: Player.name
-		 *   name: Ability.name
-		 *   args: {
-		 *     [Ability.Arg.name]: Ability.Arg.value
-		 *   }
-		 * }
-		 */
 		this.abilities_performed = {}
 		this.isMockGame = isMockGame;
 	}
@@ -71,13 +89,6 @@ class Game {
 			.map((role) => role.name)
 	];
 
-	logGame() {
-		let simple_game_obj = JSON.parse(JSON.stringify(this));
-		delete simple_game_obj.all_abilities;
-		console.log(`\x1b[36m Logging Game: \x1b[0m`);
-		console.log(JSON.stringify(simple_game_obj, null, 2));
-	}
-
 	logPlayers() {
 		console.log(JSON.stringify(this.Players, null, 2));
 	}
@@ -86,15 +97,6 @@ class Game {
 	 * Looks at all the player's abilities performed fields and adds them to the current abilities performed
 	 */
 	async updateCurrentAbilitiesPerformed() {
-		/**
-		 * {
-		 *   by: Player.name
-		 *   name: Ability.name
-		 *   args: {
-		 *     [Ability.Arg.name]: Ability.Arg.value
-		 *   }
-		 * }
-		 */
 		this.abilities_performed = await this.Players.getPlayerList()
 		.filter(player =>  !player.isDoingNothing())
 		.map(
@@ -901,9 +903,27 @@ class Game {
 
 			if (ability.effects) {
 				console.log({ability_performed});
-				ability.effects.forEach( async (effect) => {
-					await effect(ability_performed);
-				})
+
+				const player_using_ability_name = ability_performed.by;
+				const player_using_ability = this.Players.get(player_using_ability_name);
+
+				const ability_name = ability_performed.name;
+				const ability_using = Object.values(Abilities).find(ability =>
+					ability.name === ability_name
+				);
+
+				const arg_values = ability_performed.args ?? {};
+
+				ability.effects.forEach(
+					async (effect_name) => {
+						await this.effect_manager.useEffect({
+							effect_name: effect_name,
+							player_using_ability: player_using_ability,
+							ability: ability_using,
+							arg_values: arg_values,
+						});
+					}
+				)
 				console.table(this.abilities_performed);
 			}
 
@@ -1088,7 +1108,6 @@ class Game {
 
 	async resetAllPlayersNightInfo() {
 		await Game.log("Reseting Every Player's Night Info");
-		this.logGame();
 
 		for (const player_name of this.Players.getPlayerNames()) {
 			const player = this.Players.get(player_name);
@@ -2256,11 +2275,7 @@ class Game {
 			// console.timeEnd("setDefenseChannelPerms");
 		}
 
-		global.Game = new Game( new Players() );
-	}
-
-	static getEmptyGame() {
-		return new Game( new Players() );
+		global.Game = new Game( new Players(), this.logger, this.isMockGame );
 	}
 
 	async startSignUps() {
