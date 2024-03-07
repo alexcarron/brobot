@@ -102,7 +102,7 @@ test.concurrent(
 // ^ RoleIdentfier.isValidIdentfierStr
 {
 	test.concurrent(
-		"isValidIdentfierStr should return false for \"Random\"",
+		"isValidIdentfierStr SHOULD return false for \"Random\"",
 		() => {
 			const input_identfier_str = RoleIdentifierKeywords.Random;
 			const expected_output = false;
@@ -114,7 +114,7 @@ test.concurrent(
 	)
 
 	test.concurrent(
-		"isValidIdentfierStr should return true for \"any\"",
+		"isValidIdentfierStr SHOULD return true for \"any\"",
 		() => {
 			const input_identfier_str = RoleIdentifierKeywords.Any.toLowerCase();
 			const expected_output = true;
@@ -126,7 +126,7 @@ test.concurrent(
 	)
 
 	test.concurrent(
-		"isValidIdentfierStr should return false for \"Seer\"",
+		"isValidIdentfierStr SHOULD return false for \"Seer\"",
 		() => {
 			const input_identfier_str = "Seer";
 			const expected_output = false;
@@ -138,7 +138,7 @@ test.concurrent(
 	)
 
 	test.concurrent(
-		"isValidIdentfierStr should return true for \"A mAfioso\"",
+		"isValidIdentfierStr SHOULD return true for \"A mAfioso\"",
 		() => {
 			const input_identfier_str = "A mAfioso";
 			const expected_output = true;
@@ -150,7 +150,7 @@ test.concurrent(
 	)
 
 	test.concurrent(
-		"isValidIdentfierStr should return false for \"Any Town\"",
+		"isValidIdentfierStr SHOULD return false for \"Any Town\"",
 		() => {
 			const input_identfier_str = `${RoleIdentifierKeywords.Any} Town`;
 			const expected_output = false;
@@ -162,7 +162,7 @@ test.concurrent(
 	)
 
 	test.concurrent(
-		"isValidIdentfierStr should return true for \"a mafia random\"",
+		"isValidIdentfierStr SHOULD return true for \"a mafia random\"",
 		() => {
 			const input_identfier_str = "a mafia random";
 			const expected_output = true;
@@ -174,7 +174,7 @@ test.concurrent(
 	)
 
 	test.concurrent(
-		"isValidIdentfierStr should return false for \"Random Killing\"",
+		"isValidIdentfierStr SHOULD return false for \"Random Killing\"",
 		() => {
 			const input_identfier_str = `${RoleIdentifierKeywords.Random} ${Alignments.Killing}`;
 			const expected_output = false;
@@ -186,7 +186,7 @@ test.concurrent(
 	)
 
 	test.concurrent(
-		"isValidIdentfierStr should return true for \"a decepTION of mafIA\"",
+		"isValidIdentfierStr SHOULD return true for \"a decepTION of mafIA\"",
 		() => {
 			const input_identfier_str = "a decepTION of mafIA";
 			const expected_output = true;
@@ -328,7 +328,7 @@ test.concurrent(
 // ^ .getPossibleRoles()
 {
 	test.concurrent(
-		".getPossibleRoles() on Mafioso should return just Mafioso",
+		".getPossibleRoles() on Mafioso SHOULD return just Mafioso",
 		() => {
 			const input_role_identifier = new RoleIdentifier(RoleNames.Mafioso);
 			const expected_output = [roles[RoleNames.Mafioso]];
@@ -340,7 +340,7 @@ test.concurrent(
 	)
 
 	test.concurrent(
-		".getPossibleRoles() on Town Protective should return just Doctor",
+		".getPossibleRoles() on Town Protective SHOULD return just Doctor",
 		() => {
 			const input_role_identifier = new RoleIdentifier(`${Factions.Town} ${Alignments.Protective}`);
 			const expected_output = [roles[RoleNames.Doctor]];
@@ -352,7 +352,7 @@ test.concurrent(
 	)
 
 	test.concurrent(
-		".getPossibleRoles() on Neutral Random should return just Neutral Roles",
+		".getPossibleRoles() on Neutral Random SHOULD return just Neutral Roles",
 		() => {
 			const input_role_identifier = new RoleIdentifier(`${Factions.Neutral} ${RoleIdentifierKeywords.Random}`);
 			const expected_output = Object.values(roles).filter(role => role.faction === Factions.Neutral);
@@ -364,7 +364,7 @@ test.concurrent(
 	)
 
 	test.concurrent(
-		".getPossibleRoles() on Any should return all roles but Town Crowd",
+		".getPossibleRoles() on Any SHOULD return all roles but Town Crowd",
 		() => {
 			const input_role_identifier = new RoleIdentifier(`${RoleIdentifierKeywords.Any}`);
 			const expected_output = Object.values(roles).filter(role => !(role.faction === Factions.Town && role.alignment === Alignments.Crowd));
@@ -378,7 +378,7 @@ test.concurrent(
 
 // ^ RoleIdentfier Sorting
 test.concurrent(
-	"RoleIdentifiers.compare() should sort by priority",
+	"RoleIdentifiers.compare() SHOULD sort by priority",
 	() => {
 		const input_role_identifiers = [
 			new RoleIdentifier(`${RoleIdentifierKeywords.Random} ${Factions.Town}`),
@@ -401,35 +401,35 @@ test.concurrent(
 
 // ^ .getPriority()
 describe('.getPriority()', () => {
-	it('should return 6 for input neutral_benign_role_identifier', () => {
+	it('SHOULD return 6 for input neutral_benign_role_identifier', () => {
 		const neutral_benign_role_identifier = new RoleIdentifier(Factions.Neutral + " " + Alignments.Benign);
 
 		expect(neutral_benign_role_identifier.priority)
 		.toStrictEqual(6);
 	});
 
-	it('should return 2 for input neutral_killing_role_identifier', () => {
+	it('SHOULD return 2 for input neutral_killing_role_identifier', () => {
 		const neutral_killing_role_identifier = new RoleIdentifier(`${Factions.Neutral} ${Alignments.Killing}`);
 
 		expect(neutral_killing_role_identifier.priority)
 		.toStrictEqual(2);
 	});
 
-	it('should return 1 for input survivor_role_identifier despite being a non-faction', () => {
+	it('SHOULD return 1 for input survivor_role_identifier despite being a non-faction', () => {
 		const survivor_role_identifier = new RoleIdentifier(RoleNames.Survivor);
 
 		expect(survivor_role_identifier.priority)
 		.toStrictEqual(1);
 	});
 
-	it('should return 1 for input mafioso_role_identifier', () => {
+	it('SHOULD return 1 for input mafioso_role_identifier', () => {
 		const mafioso_role_identifier = new RoleIdentifier(RoleNames.Mafioso);
 
 		expect(mafioso_role_identifier.priority)
 		.toStrictEqual(1);
 	});
 
-	it('should return 3 for input random_neutral_role_identifier', () => {
+	it('SHOULD return 3 for input random_neutral_role_identifier', () => {
 		const random_neutral_role_identifier = new RoleIdentifier(
 			`${RoleIdentifierKeywords.Random} ${Factions.Neutral}`
 		);
@@ -438,7 +438,7 @@ describe('.getPriority()', () => {
 		.toStrictEqual(3);
 	});
 
-	it('should return 4 for input any_role_identifier', () => {
+	it('SHOULD return 4 for input any_role_identifier', () => {
 		const any_role_identifier = new RoleIdentifier(RoleIdentifierKeywords.Any);
 
 		expect(any_role_identifier.priority)

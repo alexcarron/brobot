@@ -1,16 +1,16 @@
-const { Factions, Alignments, Immunities, WinConditions, RoleNames } = require("../enums.js");
+const { Factions, Alignments, Immunities, WinConditions, RoleNames, AbilityUses } = require("../enums.js");
 const { Abilities } = require("./ability.js");
 const Role = require("./role.js");
 
 const roles = {
-	[RoleNames.Townie]: new Role({
-		name: RoleNames.Townie,
-		faction: Factions.Town,
-		alignment: Alignments.Crowd,
-		attack: 0,
-		defense: 0,
-		goal: WinConditions.EliminateOtherFactions,
-	}),
+	// [RoleNames.Townie]: new Role({
+	// 	name: RoleNames.Townie,
+	// 	faction: Factions.Town,
+	// 	alignment: Alignments.Crowd,
+	// 	attack: 0,
+	// 	defense: 0,
+	// 	goal: WinConditions.EliminateOtherFactions,
+	// }),
 	[RoleNames.Doctor]: new Role({
 		name: RoleNames.Doctor,
 		faction: Factions.Town,
@@ -56,8 +56,8 @@ const roles = {
 			Abilities.Lookout,
 		]
 	}),
-	"Escort": new Role({
-		name: "Escort",
+	[RoleNames.Escort]: new Role({
+		name: RoleNames.Escort,
 		faction: Factions.Town,
 		alignment: Alignments.Support,
 		immunities: [Immunities.Roleblock],
@@ -68,8 +68,8 @@ const roles = {
 			Abilities.Roleblock,
 		]
 	}),
-	"Vigilante": new Role({
-		name: "Vigilante",
+	[RoleNames.Vigilante]: new Role({
+		name: RoleNames.Vigilante,
 		faction: Factions.Town,
 		alignment: Alignments.Killing,
 		attack: 1,
@@ -106,8 +106,8 @@ const roles = {
 		],
 		notes: "If you are not alive, a random mafia member will be converted to the Mafioso and take your place."
 	}),
-	"Framer": new Role({
-		name: "Framer",
+	[RoleNames.Framer]: new Role({
+		name: RoleNames.Framer,
 		faction: Factions.Mafia,
 		alignment: Alignments.Deception,
 		attack: 0,
@@ -117,8 +117,8 @@ const roles = {
 			Abilities.Frame,
 		]
 	}),
-	"Consort": new Role({
-		name: "Consort",
+	[RoleNames.Consort]: new Role({
+		name: RoleNames.Consort,
 		faction: Factions.Mafia,
 		alignment: Alignments.Support,
 		immunities: [Immunities.Roleblock],
@@ -129,8 +129,8 @@ const roles = {
 			Abilities.Consort,
 		]
 	}),
-	"Consigliere": new Role({
-		name: "Consigliere",
+	[RoleNames.Consigliere]: new Role({
+		name: RoleNames.Consigliere,
 		faction: Factions.Mafia,
 		alignment: Alignments.Support,
 		attack: 0,
@@ -151,7 +151,7 @@ const roles = {
 			Abilities.Kidnap,
 		]
 	}),
-	"Fool": new Role({
+	[RoleNames.Fool]: new Role({
 		name: RoleNames.Fool,
 		faction: Factions.Neutral,
 		alignment: Alignments.Evil,
@@ -186,12 +186,12 @@ const roles = {
 			Abilities.SelfVest,
 		]
 	}),
-	"Serial Killer": new Role({
-		name: "Serial Killer",
+	[RoleNames.SerialKiller]: new Role({
+		name: RoleNames.SerialKiller,
 		faction: Factions.Neutral,
 		alignment: Alignments.Killing,
 		immunities: [Immunities.Roleblock],
-		attack: 1,
+	attack: 1,
 		defense: 1,
 		goal: WinConditions.SurviveEliminateOtherFactions,
 		abilities: [
@@ -200,8 +200,8 @@ const roles = {
 		],
 		"notes": "You'll automatically attack anybody who roleblocks you instead of your original target."
 	}),
-	"Blacksmith": new Role({
-		name: "Blacksmith",
+	[RoleNames.Blacksmith]: new Role({
+		name: RoleNames.Blacksmith,
 		faction: Factions.Neutral,
 		alignment: Alignments.Benign,
 		attack: 0,

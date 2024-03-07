@@ -21,7 +21,7 @@ describe('perform', () => {
 
 	// ^ track
 	describe('track', () => {
-		it('should not give feedback when tracked player visits self', async () => {
+		it('SHOULD not give feedback when tracked player visits self', async () => {
 			let doctor_player = await mock_game.addPlayerToGame(RoleNames.Doctor);
 			let tracker_player = await mock_game.addPlayerToGame(RoleNames.Tracker);
 
@@ -68,7 +68,7 @@ describe('perform', () => {
 
 	// ^ lookout
 	describe('lookout', () => {
-		it('should not give feedback when a target player visits self', async () => {
+		it('SHOULD not give feedback when a target player visits self', async () => {
 			let doctor_player = await mock_game.addPlayerToGame(RoleNames.Doctor);
 			let lookout_player = await mock_game.addPlayerToGame(RoleNames.Lookout);
 

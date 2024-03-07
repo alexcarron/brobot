@@ -1,8 +1,10 @@
 const { getObjectFromGitHubJSON } = require("../functions.js");
 const Contestant = require("./Contestant");
 const Logger = require("./Logger.js");
+const RoleIdentifier = require("./RoleIdentifier.js");
 const Game = require("./game.js");
 const Players = require("./players.js");
+const roles = require("./roles");
 
 class RapidDiscordMafia {
 	constructor() {
@@ -28,6 +30,42 @@ class RapidDiscordMafia {
 
 	static getEmptyGame(isMockGame=false) {
 		return new Game(new Players, new Logger, isMockGame)
+	}
+
+	/**
+	 * @param {Game} mock_game
+	 * @param {string[]} roles_in_game - An array of all role names in the game
+	 */
+	static async startMockGameWithRoles(mock_game, roles_in_game) {
+		roles_in_game.forEach(async role_name => {
+			let name = role_name;
+			let num_players_with_role = 1;
+			let player_name = name;
+
+			while ( mock_game.Players.getPlayerNames().includes(player_name) ) {
+				num_players_with_role += 1;
+				player_name = name + num_players_with_role;
+			}
+
+			await mock_game.addPlayerToGame(player_name);
+		});
+
+		const role_identifiers = RoleIdentifier.convertIdentifierStrings(roles_in_game);
+		await mock_game.start(role_identifiers);
+
+		[...new Set(roles_in_game)].forEach(async role_name => {
+			const role = roles[role_name];
+
+			const players_with_role = mock_game.Players.getPlayerList().filter(player => {
+				return player.name.startsWith(role_name)
+			});
+
+			players_with_role.forEach(async player => {
+				await player.setRole(role);
+			});
+		});
+
+		await mock_game.giveAllExesTargets();
 	}
 
 	getContestantFromPlayer(player) {

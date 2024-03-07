@@ -22,7 +22,7 @@ describe('Player', () => {
 
 	// ^ removeAffects
 	describe('removeAffects', () => {
-		it('should remove kidnapped affect entry from affected_by property of player given a night and day has passed', async () => {
+		it('SHOULD remove kidnapped affect entry from affected_by property of player given a night and day has passed', async () => {
 			expect(mock_game.isMockGame).toBe(true);
 
 			let mafioso_name = RoleNames.Mafioso
@@ -62,7 +62,7 @@ describe('Player', () => {
 			await mock_game.startDay(mock_game.days_passed);
 
 			// Should Apply effects
-			expect(townie_player.defense).toBe(4); // ! FAILED
+			expect(townie_player.defense).toBe(4);
 			expect(townie_player.isRoleblocked).toBe(true);
 			expect(townie_player.isMuted).toBe(true);
 			expect(townie_player.canVote).toBe(false);
@@ -70,7 +70,7 @@ describe('Player', () => {
 			await mock_game.startTrial(mock_game.days_passed);
 			// Skips to night because no vote
 
-			// Kidnapping effects should be reversed
+			// Kidnapping effects SHOULD be reversed
 			expect(townie_player.defense).toBe(0);
 			expect(townie_player.isRoleblocked).toBe(false);
 			expect(townie_player.isMuted).toBe(false);

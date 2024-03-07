@@ -1142,7 +1142,7 @@ class Game {
 				if (!this.isMockGame)
 					await game_announce_chnl.send(message);
 
-				console.log(`[ANNOUNCEMENT: ${message}]`);
+				// console.log(`[ANNOUNCEMENT: ${message}]`);
 
 				if (!this.isMockGame && !Game.IS_TESTING)
 					await wait(MessageDelays.Normal, "s");

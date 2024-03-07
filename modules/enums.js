@@ -411,20 +411,21 @@ const Enums = {
 		},
 		AnnounceAnotherMurderByRole: (role) =>  `They were also killed by a(n) **${role}**.`,
 		Controlled: "You were controlled.",
-		EvaluatedPlayersRole: (player_evaluating, player_role) => {return `**${player_evaluating}** seemed to be the role, **${player_role}**.`},
+		InvestigatedPlayersRole: (player_evaluating, player_role) => {return `**${player_evaluating}** seemed to be the role, **${player_role}**.`},
 		GotUnclearEvaluation: (player_evaluating) => {return `The results on **${player_evaluating}** were unclear.`},
-		GotSuspiciousEvaluation: (player_evaluating) => {return `**${player_evaluating}** seemed to be suspicious.`},
+		GotSuspiciousEvaluation: (player_evaluating_name) => {return `**${player_evaluating_name}** seemed to be suspicious.`},
 		GotInnocentEvaluation: (player_evaluating) => {return `**${player_evaluating}** seemed to be innocent.`},
 		LookoutSeesNoVisits: (target_player) =>
 			`It seems like nobody visited **${target_player.name}** last night.`,
+
 		/**
-		 * @param {string} target_player the player the lookout visits
-		 * @param {string[]} players_seen_visiting an array of the players seen visiting the target
+		 * @param {Player} target_player - The player the lookout visited.
+		 * @param {Player[]} player_seen_visiting - An array of the players seen visiting the target
 		 * @returns {string} feedback
 		 */
-		LookoutSeesVisits: (target_player, players_seen_visiting) => {
+		LookoutSeesVisits: (target_player, player_seen_visiting) => {
 			const player_names_visiting =
-			players_seen_visiting.map(player => `**${player.name}**`);
+			player_seen_visiting.map(player => `**${player.name}**`);
 			return `It seems like **${target_player.name}** was visited by ${getSentenceFromArray(player_names_visiting)} last night.`;
 		},
 		TrackerSawPlayerVisit: (player_tracked_name, visited_player_name) => {return `It looked like **${player_tracked_name}** visited **${visited_player_name}** last night.`},
@@ -498,12 +499,27 @@ const Enums = {
 		Murder: "Murder",
 		Suicide: "Suicide",
 		Smith: "Smith",
+		SelfSmith: "Self Smith",
 		Kidnap: "Kidnap",
 		Track: "Track",
 		Lookout: "Lookout",
 		Nothing: "Nothing",
 		DeathCurse: "Death Curse",
+		Heal: "Heal",
 		HealSelf: "Heal Self",
+		Roleblock: "Roleblock",
+		Cautious: "Cautious",
+		Shoot: "Shoot",
+		Frame: "Frame",
+		SelfFrame: "Self Frame",
+		FrameTarget: "Frame Target",
+		Evaluate: "Evaluate",
+		Investigate: "Investigate",
+		Consort: "Consort",
+		SelfVest: "Self Vest",
+		Control: "Control",
+		Observe: "Observe",
+		Replace: "Replace",
 	},
 
 	AbilityArgName: {
@@ -511,14 +527,30 @@ const Enums = {
 		PlayerKilling: "Player Killing",
 		PlayerTracking: "Player Tracking",
 		PlayerWatching: "Player Watching",
+		PlayerRoleblocking: "Player Roleblocking",
+		PlayerHealing: "Player Healing",
+		PlayerShooting: "Player Shooting",
+		PlayerFraming: "Player Framing",
+		PlayerEvaluating: "Player Evaluating",
+		PlayerInvestigating: "Player Investigating",
+		PlayerConsorting: "Player Consorting",
+		PlayerKnifing: "Player Knifing",
+		PlayerSmithingFor: "Player Smithing For",
+		PlayerControlling: "Player Controlling",
+		PlayerControlledInto: "Player Target Is Controlled Into",
+		PlayerObserving: "Player Observing",
+		PlayerReplacing: "Player Replacing",
 	},
 
 	RoleNames: {
 		Mafioso: "Mafioso",
 		Godfather: "Godfather",
+		Framer: "Framer",
+		Consort: "Consort",
 		Executioner: "Executioner",
 		Doctor: "Doctor",
 		Witch: "Witch",
+		Escort: "Escort",
 		Townie: "Townie",
 		Sheriff: "Sheriff",
 		Survivor: "Survivor",
@@ -529,6 +561,9 @@ const Enums = {
 		Vigilante: "Vigilante",
 		Tracker: "Tracker",
 		Lookout: "Lookout",
+		SerialKiller: "Serial Killer",
+		Consigliere: "Consigliere",
+		Blacksmith: "Blacksmith",
 	},
 
 	ServerPort: {

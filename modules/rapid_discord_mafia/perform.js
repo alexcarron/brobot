@@ -363,7 +363,7 @@ const perform = {
 			investigated_player = global.Game.Players.get(investigated_player_name),
 			evaluated_role_name = investigated_player.getPercievedRole();
 
-		investigator_player.addFeedback(Feedback.EvaluatedPlayersRole(investigated_player_name, evaluated_role_name));
+		investigator_player.addFeedback(Feedback.InvestigatedPlayersRole(investigated_player_name, evaluated_role_name));
 		addAffect(ability_performed, investigated_player_name);
 	},
 	/**
@@ -464,7 +464,7 @@ const perform = {
 
 		player_controlling.addFeedback(Feedback.Controlled);
 		controller_player.addFeedback(Feedback.ControlSucceeded(player_controlling_name, player_controlling_into_name));
-		controller_player.addFeedback(Feedback.EvaluatedPlayersRole(player_controlling_name, player_controlling.getPercievedRole()));
+		controller_player.addFeedback(Feedback.InvestigatedPlayersRole(player_controlling_name, player_controlling.getPercievedRole()));
 	},
 	/**
 	 * @param {{by: [player_name: string], name: AbilityName, args: {arg_name: arg_value}} ability_performed

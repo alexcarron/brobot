@@ -1,5 +1,5 @@
 const Effect = require("./Effect");
-const { RoleNames, AbilityName, AbilityArgName, Factions, Alignments, Feedback } = require("../enums");
+const { RoleNames, AbilityName, AbilityArgName, Factions, Alignments, Feedback, Immunities, AbilityUses, ArgumentTypes, ArgumentSubtypes } = require("../enums");
 const Logger = require("./Logger");
 
 /**
@@ -13,14 +13,6 @@ class EffectManager {
 	constructor(game, logger) {
 		console.log({game});
 		this.game = game;
-		this.logger = logger;
-	}
-
-	setGame(game) {
-		this.game = game;
-	}
-
-	setLogger(logger) {
 		this.logger = logger;
 	}
 
@@ -53,10 +45,13 @@ class EffectManager {
 		[this.EffectName.Roleblock]: new Effect({
 			name: this.EffectName.Roleblock,
 			applyEffect: async function(game, player_using_ability, ability, arg_values) {
+				console.log({game, player_using_ability, ability, arg_values})
 				const
 					roleblocked_player_name = player_using_ability.visiting,
 					roleblocked_player = game.Players.get(roleblocked_player_name),
 					roleblocked_player_role = global.Roles[ roleblocked_player.role ];
+
+				console.log({roleblocked_player_name, roleblocked_player, roleblocked_player_role});
 
 				if (
 					!(
@@ -73,7 +68,9 @@ class EffectManager {
 
 				if (
 					roleblocked_player_role.name === RoleNames.SerialKiller &&
-					!roleblocked_player.affected_by.some(affect => affect.name === AbilityName.Cautious)
+					!roleblocked_player.affected_by.some(
+						affect => affect.name === AbilityName.Cautious
+					)
 				) {
 					console.log(`${RoleNames.SerialKiller} ${roleblocked_player_name} stabs ${player_using_ability.name} as revenge for roleblocking them`);
 
@@ -123,44 +120,42 @@ class EffectManager {
 			}
 		}),
 
-		[this.EffectName.Order]: new Effect({
-			name: this.EffectName.Order,
-			applyEffect: async function(game, player_using_ability, ability, arg_values) {
-				const
-					player_killing_name = arg_values[AbilityArgName.PlayerKilling],
-					mafioso_player = game.Players.getPlayerWithRole(RoleNames.Mafioso);
+		// [this.EffectName.Order]: new Effect({
+		// 	name: this.EffectName.Order,
+		// 	applyEffect: async function(game, player_using_ability, ability, arg_values) {
+		// 		const
+		// 			player_killing_name = arg_values[AbilityArgName.PlayerKilling],
+		// 			mafioso_player = game.Players.getPlayerWithRole(RoleNames.Mafioso);
 
-				if (mafioso_player) {
-					mafioso_player.visiting = player_killing_name;
-					game.abilities_performed[mafioso_player.name] =
-						{
-							"name": AbilityName.Murder,
-							"by": mafioso_player.name,
-							"args": [player_killing_name]
-						}
+		// 		if (mafioso_player) {
+		// 			mafioso_player.visiting = player_killing_name;
+		// 			game.abilities_performed[mafioso_player.name] =
+		// 				{
+		// 					"name": AbilityName.Murder,
+		// 					"by": mafioso_player.name,
+		// 					"args": [player_killing_name]
+		// 				}
 
-					mafioso_player.addFeedback(Feedback.OrderedByGodfather(player_killing_name));
-				}
-				else {
-					player_using_ability.visiting = player_killing_name;
-					game.abilities_performed[player_using_ability.name] =
-						{
-							"name": AbilityName.Murder,
-							"by": player_using_ability.name,
-							"args": [player_killing_name]
-						}
+		// 			mafioso_player.addFeedback(Feedback.OrderedByGodfather(player_killing_name));
+		// 		}
+		// 		else {
+		// 			player_using_ability.visiting = player_killing_name;
+		// 			game.abilities_performed[player_using_ability.name] =
+		// 				{
+		// 					"name": AbilityName.Murder,
+		// 					"by": player_using_ability.name,
+		// 					"args": [player_killing_name]
+		// 				}
 
-					player_using_ability.addFeedback(Feedback.KillForMafioso(player_killing_name));
-				}
+		// 			player_using_ability.addFeedback(Feedback.KillForMafioso(player_killing_name));
+		// 		}
 
-			}
-		}),
+		// 	}
+		// }),
 
 		[this.EffectName.Attack]: new Effect({
 			name: this.EffectName.Attack,
 			applyEffect: async function(game, player_using_ability, ability, arg_values) {
-				console.log({player_using_ability, ability, arg_values});
-
 				const
 					attacked_player_name = player_using_ability.visiting,
 					attacked_player = game.Players.get(attacked_player_name);
@@ -214,6 +209,14 @@ class EffectManager {
 					player_evaluating = game.Players.get(player_evaluating_name),
 					evaluated_role = global.Roles[ player_evaluating.getPercievedRole() ];
 
+				const evaluatedPlayerInMafia =
+					[Factions.Mafia].includes(evaluated_role.faction);
+
+				const evaluatedPlayerIsNeutralKilling = (
+					evaluated_role.faction === Factions.Neutral &&
+					evaluated_role.alignment === Alignments.Killing
+				);
+
 				let feedback = "";
 
 				if (player_evaluating.isDoused) {
@@ -221,11 +224,8 @@ class EffectManager {
 					feedback = Feedback.GotUnclearEvaluation(player_evaluating_name);
 				}
 				else if (
-					[Factions.Mafia].includes(evaluated_role.faction) ||
-					(
-						evaluated_role.faction === Factions.Neutral &&
-						evaluated_role.alignment === Alignments.Killing
-					)
+					evaluatedPlayerInMafia ||
+					evaluatedPlayerIsNeutralKilling
 				) {
 					console.log("Evaluatee suspicious.");
 					feedback = Feedback.GotSuspiciousEvaluation(player_evaluating_name);
@@ -285,15 +285,16 @@ class EffectManager {
 				let players_seen_visiting = [];
 
 				game.Players.getPlayerList().forEach(player => {
-					if (player.name === target_player.name) {
-						return;
-					}
-
 					const player_visiting_name = player.getPercievedVisit();
 
+					const isPlayerTarget = player.name === target_player.name;
+					const isPlayerLookout = player.name === player_using_ability.name;
+					const isPlayerVisitingTarget = player_visiting_name === target_player_name;
+
 					if (
-						player_visiting_name === target_player_name &&
-						player.name !== player_using_ability.name
+						!isPlayerTarget &&
+						!isPlayerLookout &&
+						isPlayerVisitingTarget
 					) {
 						players_seen_visiting.push(player);
 					}
@@ -316,7 +317,7 @@ class EffectManager {
 					investigated_player = game.Players.get(investigated_player_name),
 					evaluated_role_name = investigated_player.getPercievedRole();
 
-				player_using_ability.addFeedback(Feedback.EvaluatedPlayersRole(investigated_player_name, evaluated_role_name));
+				player_using_ability.addFeedback(Feedback.InvestigatedPlayersRole(investigated_player_name, evaluated_role_name));
 
 				investigated_player.addAbilityAffectedBy(player_using_ability, ability.name);
 			}
@@ -355,63 +356,99 @@ class EffectManager {
 					player_controlling_into_name = arg_values[AbilityArgName.PlayerControlledInto],
 					player_controlling = game.Players.get(player_controlling_name),
 					player_controlling_role = global.Roles[player_controlling.role],
-					ability_controlling = player_controlling_role.abilities[0];
+					ability_to_control = player_controlling_role.abilities[0];
 
-				let num_player_args = 0;
-				let num_non_player_args = 0;
+				const abilityToControlExists = ability_to_control !== null && ability_to_control !== undefined;
 
-				if (ability_controlling) {
-					const player_args = ability_controlling.args
+				const isTargetImmune = player_controlling_role.immunities.includes(Immunities.Control);
+
+				let num_ability_player_args = 0;
+				let num_ability_non_player_args = 0;
+				let isAbilityUsedUp = false;
+
+				if (abilityToControlExists) {
+					const ability_player_args =
+						ability_to_control.args
 						.filter(arg => arg.type === ArgumentTypes.Player);
 
-					num_player_args = player_args.length;
+					num_ability_player_args = ability_player_args.length;
+					num_ability_non_player_args = ability_to_control.args.length - ability_player_args.length;
 
-					num_non_player_args = ability_controlling.args.length - player_args.length;
+					const num_times_used = player_controlling.used[ability_to_control.name] ?? 0;
+
+					isAbilityUsedUp = (
+						ability_to_control.uses === AbilityUses.None ||
+						(
+							ability_to_control.uses !== AbilityUses.Unlimited &&
+							num_times_used >= ability_to_control.uses
+						)
+					);
 				}
 
-				console.log({controller_player: player_using_ability, player_controlling, num_player_args, num_non_player_args, ability_controlling})
+				console.log({
+					controller_player: player_using_ability,
+					player_controlling,
+					num_ability_player_args,
+					num_ability_non_player_args,
+					player_controlling_role, ability_to_control,
+					abilityToControlExists,
+					isAbilityUsedUp,
+					isTargetImmune,
+				})
 
 				if (
-					!ability_controlling ||
-					ability_controlling.uses === 0 ||
-					!ability_controlling.phases_can_use.includes(Phases.Night) ||
-					(
-						player_controlling.used[ability_controlling.name] &&
-						ability_controlling.uses !== AbilityUses.Unlimited &&
-						player_controlling.used[ability_controlling.name] >= ability_controlling.uses
-					) ||
-					num_player_args > 1 ||
-					num_non_player_args > 0 ||
-					player_controlling_role.immunities.includes(Immunities.Control)
+					!abilityToControlExists ||
+					isAbilityUsedUp ||
+					num_ability_player_args > 1 ||
+					num_ability_non_player_args !== 0 ||
+					isTargetImmune
 				) {
 					console.log("Control failed");
 
-					console.log(Feedback.ControlFailed(player_controlling_name));
-					player_using_ability.addFeedback(Feedback.ControlFailed(player_controlling_name));
+					player_using_ability.addFeedback(
+						Feedback.ControlFailed(player_controlling_name)
+					);
 					return;
 				}
 
-				const
-					isVisitingControlledInto = !!ability_controlling.args[0] && ability_controlling.args[0].subtypes.includes(ArgumentSubtypes.Visiting),
-					ability_arguments = isVisitingControlledInto ? [player_controlling_into_name] : [];
 
-				if (isVisitingControlledInto) {
-					console.log(`Forcing ${player_controlling.name} to visit ${player_controlling_into_name}`)
+				let willForceTargetToVisit = false;
 
-					player_controlling.visiting = player_controlling_into_name;
+				const doesAbilityArgExist = ability_to_control.args[0] !== undefined;
+				if (doesAbilityArgExist) {
+					const ability_arg = ability_to_control.args[0];
+
+					const isAbilityArgVisitingSubtype = ability_arg.subtypes.includes(ArgumentSubtypes.Visiting);
+
+					willForceTargetToVisit = isAbilityArgVisitingSubtype;
+
+					if (willForceTargetToVisit) {
+						console.log(`Forcing ${player_controlling.name} to visit ${player_controlling_into_name}`)
+
+						player_controlling.visiting = player_controlling_into_name;
+					}
 				}
+
+				const ability_arguments = willForceTargetToVisit ? [player_controlling_into_name] : [];
 
 				game.makePlayerDoAbility({
 					player: player_controlling,
-					ability_name: ability_controlling.name,
+					ability_name: ability_to_control.name,
 					ability_arguments: ability_arguments,
 				});
 
-				console.table(game.abilities_performed);
-
 				player_controlling.addFeedback(Feedback.Controlled);
-				player_using_ability.addFeedback(Feedback.ControlSucceeded(player_controlling_name, player_controlling_into_name));
-				player_using_ability.addFeedback(Feedback.EvaluatedPlayersRole(player_controlling_name, player_controlling.getPercievedRole()));
+
+				player_using_ability.addFeedback(
+					Feedback.ControlSucceeded(player_controlling_name, player_controlling_into_name)
+				);
+
+				player_using_ability.addFeedback(
+					Feedback.InvestigatedPlayersRole(
+						player_controlling_name,
+						player_controlling.getPercievedRole()
+					)
+				);
 			}
 		}),
 

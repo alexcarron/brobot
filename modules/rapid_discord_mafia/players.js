@@ -49,7 +49,7 @@ class Players {
 	}
 
 	/**
-	 * @returns {String[]} an array of all player names
+	 * @returns {Player[]} An array of all players
 	 */
 	getPlayerList() {
 		return Object.values(this.players);

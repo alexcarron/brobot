@@ -12,7 +12,7 @@ describe('Game', () => {
 	// ^ .createRoleList()
 	describe('createRoleList', () => {
 		test.concurrent(
-			".createRoleList() should convert Mafioso identifier to Mafioso role",
+			".createRoleList() SHOULD convert Mafioso identifier to Mafioso role",
 			() => {
 				const rdm_game = RapidDiscordMafia.getEmptyGame();
 				rdm_game.role_identifiers = RoleIdentifier.convertIdentifierStrings(["Mafioso"]);
@@ -23,7 +23,7 @@ describe('Game', () => {
 		);
 
 		test.concurrent(
-			".createRoleList() should convert [Town Protective, Mafioso] identifiers to [Doctor, Mafioso]",
+			".createRoleList() SHOULD convert [Town Protective, Mafioso] identifiers to [Doctor, Mafioso]",
 			async () => {
 				const rdm_game = RapidDiscordMafia.getEmptyGame();
 				rdm_game.role_identifiers = RoleIdentifier.convertIdentifierStrings(
@@ -44,7 +44,7 @@ describe('Game', () => {
 		);
 
 		test.concurrent(
-			".createRoleList() should assign NK and RT before NB on [Neutral Benign, Neutral Killing, Random Town]",
+			".createRoleList() SHOULD assign NK and RT before NB on [Neutral Benign, Neutral Killing, Random Town]",
 			async () => {
 				const rdm_game = RapidDiscordMafia.getEmptyGame();
 				rdm_game.role_identifiers = RoleIdentifier.convertIdentifierStrings(
@@ -68,7 +68,7 @@ describe('Game', () => {
 		);
 
 		test.concurrent(
-			".createRoleList() should assign RM and RT before NB on [Neutral Benign, Random Mafia, Random Town]",
+			".createRoleList() SHOULD assign RM and RT before NB on [Neutral Benign, Random Mafia, Random Town]",
 			async () => {
 				const rdm_game = RapidDiscordMafia.getEmptyGame();
 				rdm_game.role_identifiers = RoleIdentifier.convertIdentifierStrings(
@@ -95,7 +95,7 @@ describe('Game', () => {
 	// ^ .getRoleFromRoleIdentifier()
 	describe('getRoleFromRoleIdentifier', () => {
 		test.concurrent(
-			`.getRoleFromRoleIdentifier(RoleIdentifier.Sheriff) should return Sheriff role`,
+			`.getRoleFromRoleIdentifier(RoleIdentifier.Sheriff) SHOULD return Sheriff role`,
 			async () => {
 				const input_identifier = new RoleIdentifier(RoleNames.Sheriff);
 				const existing_role_list = [];
@@ -117,7 +117,7 @@ describe('Game', () => {
 		)
 
 		test.concurrent(
-			`.getRoleFromRoleIdentifier(RoleIdentifier("Town Crowd")) should return Townie role`,
+			`.getRoleFromRoleIdentifier(RoleIdentifier("Town Crowd")) SHOULD return Townie role`,
 			async () => {
 				const input_identifier = new RoleIdentifier(`${Factions.Town} ${Alignments.Crowd}`);
 				const existing_role_list = [];
@@ -139,7 +139,7 @@ describe('Game', () => {
 		)
 
 		test.concurrent(
-			`.getRoleFromRoleIdentifier(RoleIdentifier("Neutral Killing")) should return role in Neutral faction and Killing alignment`,
+			`.getRoleFromRoleIdentifier(RoleIdentifier("Neutral Killing")) SHOULD return role in Neutral faction and Killing alignment`,
 			async () => {
 				const input_identifier = new RoleIdentifier(`${Factions.Neutral} ${Alignments.Killing}`);
 				const existing_role_list = [];
@@ -161,7 +161,7 @@ describe('Game', () => {
 		)
 
 		test.concurrent(
-			`.getRoleFromRoleIdentifier(RoleIdentifier("Town Random")) should return role in Town faction`,
+			`.getRoleFromRoleIdentifier(RoleIdentifier("Town Random")) SHOULD return role in Town faction`,
 			async () => {
 				const input_identifier = new RoleIdentifier(`${Factions.Town} ${RoleIdentifierKeywords.Random}`);
 				const existing_role_list = [];
@@ -212,7 +212,7 @@ describe('Game', () => {
 		}
 
 		test.concurrent(
-			`.getPossibleRolesFromIdentifier(RoleIdentifier.Sheriff) should return [Sheriff Role]`,
+			`.getPossibleRolesFromIdentifier(RoleIdentifier.Sheriff) SHOULD return [Sheriff Role]`,
 			async () => {
 				const input_identifier = new RoleIdentifier(RoleNames.Sheriff);
 				const existing_role_list = [];
@@ -234,7 +234,7 @@ describe('Game', () => {
 		)
 
 		test.concurrent(
-			`.getPossibleRolesFromIdentifier(RoleIdentifier("Town Crowd")) should return [Townie]`,
+			`.getPossibleRolesFromIdentifier(RoleIdentifier("Town Crowd")) SHOULD return [Townie]`,
 			async () => {
 				const input_identifier = new RoleIdentifier(`${Factions.Town} ${Alignments.Crowd}`);
 				const existing_role_list = [];
@@ -257,7 +257,7 @@ describe('Game', () => {
 		)
 
 		test.concurrent(
-			`.getPossibleRolesFromIdentifier(RoleIdentifier("Neutral Killing")) should return list of roles in Neutral faction and Killing alignment`,
+			`.getPossibleRolesFromIdentifier(RoleIdentifier("Neutral Killing")) SHOULD return list of roles in Neutral faction and Killing alignment`,
 			async () => {
 				const input_identifier = new RoleIdentifier(`${Factions.Neutral} ${Alignments.Killing}`);
 				const existing_role_list = [];
@@ -283,7 +283,7 @@ describe('Game', () => {
 		)
 
 		test.concurrent(
-			`.getPossibleRolesFromIdentifier(RoleIdentifier("Neutral Random")) should return list of roles in Neutral faction when we already have opposing factions`,
+			`.getPossibleRolesFromIdentifier(RoleIdentifier("Neutral Random")) SHOULD return list of roles in Neutral faction when we already have opposing factions`,
 			async () => {
 				const input_identifier = new RoleIdentifier(`${Factions.Neutral} ${RoleIdentifierKeywords.Random}`);
 				const existing_role_list = [
@@ -317,7 +317,7 @@ describe('Game', () => {
 		)
 
 		test.concurrent(
-			`.getPossibleRolesFromIdentifier(Any, {}) should not return any Town Crowd roles or Mafia that isn't Mafioso when we have no roles`,
+			`.getPossibleRolesFromIdentifier(Any, {}) SHOULD not return any Town Crowd roles or Mafia that isn't Mafioso when we have no roles`,
 			async () => {
 				const input_identifier = new RoleIdentifier(RoleIdentifierKeywords.Any);
 				const existing_role_list = [
@@ -353,7 +353,7 @@ describe('Game', () => {
 		)
 
 		test.concurrent(
-			`.getPossibleRolesFromIdentifier(Any) should not return any mafia roles if adding mafia would exceed mafia town max ratio`,
+			`.getPossibleRolesFromIdentifier(Any) SHOULD not return any mafia roles if adding mafia would exceed mafia town max ratio`,
 			async () => {
 				const input_identifier = new RoleIdentifier(RoleIdentifierKeywords.Any);
 
@@ -387,7 +387,7 @@ describe('Game', () => {
 		)
 
 		test.concurrent(
-			`.getPossibleRolesFromIdentifier(Any) should not return any town roles if adding town would exceed town mafia max ratio`,
+			`.getPossibleRolesFromIdentifier(Any) SHOULD not return any town roles if adding town would exceed town mafia max ratio`,
 			async () => {
 				const input_identifier = new RoleIdentifier(RoleIdentifierKeywords.Any);
 
@@ -422,7 +422,7 @@ describe('Game', () => {
 		)
 
 		test.concurrent(
-			`.getPossibleRolesFromIdentifier(Any) should not return non-Mafioso Mafia if Mafioso doesn't exist`,
+			`.getPossibleRolesFromIdentifier(Any) SHOULD not return non-Mafioso Mafia if Mafioso doesn't exist`,
 			async () => {
 				const input_identifier = new RoleIdentifier(RoleIdentifierKeywords.Any);
 
@@ -457,7 +457,7 @@ describe('Game', () => {
 		)
 
 		test.concurrent(
-			`.getPossibleRolesFromIdentifier(Any) should not return Mafioso when they are already in the role list because they are unique`,
+			`.getPossibleRolesFromIdentifier(Any) SHOULD not return Mafioso when they are already in the role list because they are unique`,
 			async () => {
 				const input_identifier = new RoleIdentifier(RoleIdentifierKeywords.Any);
 				const existing_role_list = [
@@ -497,7 +497,7 @@ describe('Game', () => {
 		)
 
 		test.concurrent(
-			`.getPossibleRolesFromIdentifier(Any) should not return Mafioso when they are coming up in the role identifiers because they are unique`,
+			`.getPossibleRolesFromIdentifier(Any) SHOULD not return Mafioso when they are coming up in the role identifiers because they are unique`,
 			async () => {
 				const input_identifier = new RoleIdentifier(RoleIdentifierKeywords.Any);
 				const existing_role_list = [
@@ -535,7 +535,7 @@ describe('Game', () => {
 		)
 
 		test.concurrent(
-			`.getPossibleRolesFromIdentifier(Any) should return only roles in a faction that's not Town when Town is the only faction in the role list`,
+			`.getPossibleRolesFromIdentifier(Any) SHOULD return only roles in a faction that's not Town when Town is the only faction in the role list`,
 			async () => {
 				const input_identifier = new RoleIdentifier(RoleIdentifierKeywords.Any);
 				const existing_role_list = [
@@ -571,7 +571,7 @@ describe('Game', () => {
 		)
 
 		test.concurrent(
-			`.getPossibleRolesFromIdentifier(Random Neutral) should return only roles in a faction when Town is the only faction in the role list`,
+			`.getPossibleRolesFromIdentifier(Random Neutral) SHOULD return only roles in a faction when Town is the only faction in the role list`,
 			async () => {
 				const input_identifier = new RoleIdentifier(`${Factions.Neutral} ${RoleIdentifierKeywords.Random}`);
 				const existing_role_list = [
@@ -607,7 +607,7 @@ describe('Game', () => {
 		)
 
 		test.concurrent(
-			`.getPossibleRolesFromIdentifier(Any) should return only roles in a non-Town faction when Doctor is the only role in the role list`,
+			`.getPossibleRolesFromIdentifier(Any) SHOULD return only roles in a non-Town faction when Doctor is the only role in the role list`,
 			async () => {
 				const input_identifier = new RoleIdentifier(RoleIdentifierKeywords.Any);
 				const existing_role_list = [
@@ -648,7 +648,7 @@ describe('Game', () => {
 
 	// ^ isValidArgValue
 	describe('isValidArgValue', () => {
-		it('should return NOT true for input framer using frame on mafioso', () => {
+		it('SHOULD return NOT true for input framer using frame on mafioso', () => {
 			const player_framing_arg = Abilities.Frame.args[0];
 			const player_using_ability = new Player({name: "name"});
 			const arg_value = "mafia";
@@ -666,7 +666,7 @@ describe('Game', () => {
 			);
 		});
 
-		it('should return NOT true for input doctor using heal on themselves', () => {
+		it('SHOULD return NOT true for input doctor using heal on themselves', () => {
 			const player_framing_arg = Abilities.Heal.args[0];
 			const player_using_ability = new Player({name: "name", role: RoleNames.Doctor});
 			const arg_value = "name";
@@ -697,7 +697,7 @@ describe('Game', () => {
 
 	// ^ getDeathMessages
 	describe('getDeathMessages', () => {
-		it('should announce cause of death from Mafia and Fool when killed by both in the same night', async () => {
+		it('SHOULD announce cause of death from Mafia and Fool when killed by both in the same night', async () => {
 			let mafioso_player = await mock_game.addPlayerToGame(RoleNames.Mafioso);
 			let fool_player = await mock_game.addPlayerToGame(RoleNames.Fool);
 			let townie_player = await mock_game.addPlayerToGame(RoleNames.Townie);

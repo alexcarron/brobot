@@ -9,15 +9,20 @@ const
 	rdm_ids = require("../../data/ids.json").rapid_discord_mafia;
 
 class Player {
+	/**
+	 * The name of the player.
+	 * @type {string}
+	 */
+	name;
 
 	/**
-	 * defense level the player has
+	 * The defense level of the player.
 	 * @type {Number}
 	 */
 	defense;
 
 	/**
-	 * attack level the player has
+	 * The attack level of the player.
 	 * @type {Number}
 	 */
 	attack;
@@ -31,6 +36,12 @@ class Player {
 	 * @type {{name: AbilityName, by: string, during_phase: Number}[]}
 	 */
 	affected_by;
+
+	/**
+	 * Player name of executioner player's target.
+	 * @type {String}
+	 */
+	exe_target;
 
 	/**
 	 * @type {boolean}
@@ -200,12 +211,19 @@ class Player {
 		console.log(`Unmuted **${this.name}**.`);
 	}
 
-	async removeVotingAbility() {
+	removeVotingAbility() {
 		this.canVote = false;
 	}
 
-	async regainVotingAbility() {
+	regainVotingAbility() {
 		this.canVote = true;
+	}
+
+	/**
+	 * Douses player in gasoline.
+	 */
+	douse() {
+		this.isDoused = true;
 	}
 
 	async incrementInactvity() {
@@ -274,7 +292,7 @@ class Player {
 				message_sent.pin();
 		}
 		else {
-			console.log(`{${this.name}: ${feedback}}`);
+			// console.log(`{${this.name}: ${feedback}}`);
 		}
 	}
 
@@ -598,11 +616,11 @@ class Player {
 	}
 
 	/**
-	 * @param {AbilityName} ability_name Name of the ability using
-	 * @param {{[arg_name: string]: [arg_value: string]}} arg_values
+ * @param {string} ability_name - Name of the ability using.
+	 * @param {{[arg_name: string]: [arg_value: string]}} arg_values - An object map from the argument name to it's passed value. Empty object by default.
 	 * @returns {string} confirmation feedback for using ability
 	 */
-	useAbility(ability_name, arg_values) {
+	useAbility(ability_name, arg_values={}) {
 		this.resetInactivity();
 
 		if (ability_name === AbilityName.Nothing) {
@@ -709,6 +727,16 @@ class Player {
 
 		await this.sendFeedback(Feedback.ConvertedToRole(this, current_role_name, role_name));
 		await this.sendFeedback(role.toString(), true);
+
+		if (role_name === RoleNames.Executioner) {
+			const alive_town_players = global.Game.Players.getTownPlayers().filter(player => player.isAlive);
+			const rand_town_player = getRandArrayItem(alive_town_players);
+
+			if (rand_town_player)
+				this.setExeTarget(rand_town_player);
+			else
+				this.convertToRole(RoleNames.Fool);
+		}
 	}
 
 	async giveAccessToMafiaChat() {

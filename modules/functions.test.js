@@ -3,7 +3,7 @@ const { doArraysHaveSameElements, gcd, lcm, toOrdinal, toWordOrdinal, addOrAssig
 // ^ doArraysHaveSameElements
 {
 	test.concurrent(
-		"doArraysHaveSameElements() should return true for [1, 2, 3] and [3, 2, 1]",
+		"doArraysHaveSameElements() SHOULD return true for [1, 2, 3] and [3, 2, 1]",
 		() => {
 			const input_array1 = [1, 2, 3];
 			const input_array2 = [3, 2, 1];
@@ -16,7 +16,7 @@ const { doArraysHaveSameElements, gcd, lcm, toOrdinal, toWordOrdinal, addOrAssig
 	)
 
 	test.concurrent(
-		"doArraysHaveSameElements() should return false for [1, 2, 3] and [1, 2, 3, 4]",
+		"doArraysHaveSameElements() SHOULD return false for [1, 2, 3] and [1, 2, 3, 4]",
 		() => {
 			const input_array1 = [1, 2, 3];
 			const input_array2 = [1, 2, 3, 4];
@@ -29,7 +29,7 @@ const { doArraysHaveSameElements, gcd, lcm, toOrdinal, toWordOrdinal, addOrAssig
 	)
 
 	test.concurrent(
-		"doArraysHaveSameElements() should return false for [1, 2, 3, 4] and [1, 2, 3]",
+		"doArraysHaveSameElements() SHOULD return false for [1, 2, 3, 4] and [1, 2, 3]",
 		() => {
 			const input_array1 = [1, 2, 3, 4];
 			const input_array2 = [1, 2, 3];
@@ -42,7 +42,7 @@ const { doArraysHaveSameElements, gcd, lcm, toOrdinal, toWordOrdinal, addOrAssig
 	)
 
 	test.concurrent(
-		"doArraysHaveSameElements() should return false for [1, 2, 3] and [1, 2, 4]",
+		"doArraysHaveSameElements() SHOULD return false for [1, 2, 3] and [1, 2, 4]",
 		() => {
 			const input_array1 = [1, 2, 3];
 			const input_array2 = [1, 2, 4];
@@ -136,50 +136,50 @@ describe('toOrdinal function tests', () => {
 
 // ^ toWordOrdinal(number)
 describe('toWordOrdinal', () => {
-	it('should return "first" for input 1', () => {
+	it('SHOULD return "first" for input 1', () => {
 			expect(toWordOrdinal(1)).toBe('first');
 	});
 
-	it('should return "second" for input 2', () => {
+	it('SHOULD return "second" for input 2', () => {
 			expect(toWordOrdinal(2)).toBe('second');
 	});
 
-	it('should return "third" for input 3', () => {
+	it('SHOULD return "third" for input 3', () => {
 			expect(toWordOrdinal(3)).toBe('third');
 	});
 
-	it('should return "fourth" for input 4', () => {
+	it('SHOULD return "fourth" for input 4', () => {
 			expect(toWordOrdinal(4)).toBe('fourth');
 	});
 
-	it('should return "eleventh" for input 11', () => {
+	it('SHOULD return "eleventh" for input 11', () => {
 			expect(toWordOrdinal(11)).toBe('eleventh');
 	});
 
-	it('should return "fifteenth" for input 15', () => {
+	it('SHOULD return "fifteenth" for input 15', () => {
 			expect(toWordOrdinal(15)).toBe('fifteenth');
 	});
 
-	it('should return "twentieth" for input 20', () => {
+	it('SHOULD return "twentieth" for input 20', () => {
 			expect(toWordOrdinal(20)).toBe('twentieth');
 	});
 
-	it('should return "thirty-first" for input 31', () => {
+	it('SHOULD return "thirty-first" for input 31', () => {
 			expect(toWordOrdinal(31)).toBe('thirty-first');
 	});
 
-	it('should return "fifty-second" for input 52', () => {
+	it('SHOULD return "fifty-second" for input 52', () => {
 			expect(toWordOrdinal(52)).toBe('fifty-second');
 	});
 
-	it('should return "ninety-ninth" for input 99', () => {
+	it('SHOULD return "ninety-ninth" for input 99', () => {
 			expect(toWordOrdinal(99)).toBe('ninety-ninth');
 	});
 });
 
 // ^ addElementToNestedProperty
 describe('addElementToNestedProperty', () => {
-	it('should return {"first_level": {"second_level": {"third_level": ["element"]}}} for input "element", {}, "first_level", "second_level", "third_level"', () => {
+	it('SHOULD return {"first_level": {"second_level": {"third_level": ["element"]}}} for input "element", {}, "first_level", "second_level", "third_level"', () => {
 		const element_adding = "element";
 		const object_adding_to = {};
 		const nested_properties = [
@@ -202,7 +202,7 @@ describe('addElementToNestedProperty', () => {
 	});
 
 
-	it('should add element to empty array in top level property"', () => {
+	it('SHOULD add element to empty array in top level property"', () => {
 		const element_adding = "element";
 		const object_adding_to = {
 			"elements": []
@@ -218,7 +218,7 @@ describe('addElementToNestedProperty', () => {
 	});
 
 
-	it('should append element to existing array in top level property"', () => {
+	it('SHOULD append element to existing array in top level property"', () => {
 		const element_adding = "element";
 		const object_adding_to = {
 			"elements": [1, true, null, undefined]
@@ -234,7 +234,7 @@ describe('addElementToNestedProperty', () => {
 	});
 
 
-	it('should assign array with single element in top level property"', () => {
+	it('SHOULD assign array with single element in top level property"', () => {
 		const element_adding = "element";
 		const object_adding_to = {
 			"colors": ["red"]
@@ -249,7 +249,7 @@ describe('addElementToNestedProperty', () => {
 			}
 		);
 	});
-	it('should ignore other properties in levels and go any depth', () => {
+	it('SHOULD ignore other properties in levels and go any depth', () => {
 		const element_adding = "element";
 		const object_adding_to = {
 			"first_level": {
@@ -313,34 +313,34 @@ describe('addElementToNestedProperty', () => {
 
 // ^ getSentenceFromArray
 describe('getSentenceFromArray', () => {
-	it('should return "" for input undefined', () => {
+	it('SHOULD return "" for input undefined', () => {
 		expect(getSentenceFromArray(undefined)).toStrictEqual("");
 	});
 
-	it('should return "" for input []', () => {
+	it('SHOULD return "" for input []', () => {
 		expect(getSentenceFromArray([])).toStrictEqual("");
 	});
 
-	it('should return "Alex" for input ["Alex"]', () => {
+	it('SHOULD return "Alex" for input ["Alex"]', () => {
 		expect(getSentenceFromArray(["Alex"])).toStrictEqual("Alex");
 	});
 
-	it('should return "Alex and Brock" for input ["Alex", "Brock"]', () => {
+	it('SHOULD return "Alex and Brock" for input ["Alex", "Brock"]', () => {
 		expect(getSentenceFromArray(["Alex", "Brock"])).toStrictEqual("Alex and Brock");
 	});
 
-	it('should return "Alex, Brock, and Clark" for input ["Alex", "Brock", "Clark"]', () => {
+	it('SHOULD return "Alex, Brock, and Clark" for input ["Alex", "Brock", "Clark"]', () => {
 		expect(getSentenceFromArray(["Alex", "Brock", "Clark"])).toStrictEqual("Alex, Brock, and Clark");
 	});
 
-	it('should return "Alex, Brock, Clark, and Doug" for input ["Alex", "Brock", "Clark", "Doug"]', () => {
+	it('SHOULD return "Alex, Brock, Clark, and Doug" for input ["Alex", "Brock", "Clark", "Doug"]', () => {
 		expect(getSentenceFromArray(["Alex", "Brock", "Clark", "Doug"])).toStrictEqual("Alex, Brock, Clark, and Doug");
 	});
 });
 
 // ^ splitWithNoSplitWords
 describe('splitWithNoSplitWords', () => {
-	it('should return expected_return_value for input input_value', () => {
+	it('SHOULD return expected_return_value for input input_value', () => {
 		expect(splitWithNoSplitWords("a sentence filled with words and words and words", 10)).toStrictEqual([
 			"a sentence",
 			"filled",
