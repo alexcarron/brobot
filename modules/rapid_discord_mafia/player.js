@@ -620,9 +620,9 @@ class Player {
 		return ability_using.feedback(...Object.values(arg_values), this.name);
 	}
 
-	async leaveGame() {
-		await global.Game.log(`**${this.name}** left the game.`);
-		global.Game.addDeath(this, this, Announcements.PlayerSuicide);
+	async leaveGame(game) {
+		await game.log(`**${this.name}** left the game.`);
+		game.addDeath(this, this, Announcements.PlayerSuicide);
 	}
 
 	async leaveGameSignUps() {

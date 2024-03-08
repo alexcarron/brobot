@@ -50,7 +50,7 @@ command.execute = async function(interaction) {
 			return
 		}
 
-		player.leaveGame();
+		player.leaveGame(global.Game);
 	}
 	else {
 		return await interaction.editReply("The game has to be in progress or in sign-ups for you to leave");
