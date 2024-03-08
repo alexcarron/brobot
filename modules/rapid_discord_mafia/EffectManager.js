@@ -508,7 +508,7 @@ class EffectManager {
 
 				// Attack Success
 				if (player_replacing.defense < player_using_ability.attack) {
-					player_using_ability.convertToRole(player_replacing.role);
+					player_using_ability.convertToRole(player_replacing.role, game);
 
 					player_replacing.isUnidentifiable = true;
 

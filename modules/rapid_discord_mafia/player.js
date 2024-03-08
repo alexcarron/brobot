@@ -685,24 +685,24 @@ class Player {
 		}
 	}
 
-	async convertToRole(role_name) {
+	async convertToRole(role_name, game) {
 		const current_role_name = this.role;
 		const role = Object.values(roles).find(role => role.name ===  role_name);
 		this.setRole(role);
 
-		global.Game.role_log[this.name] += " -> " + role_name;
+		game.role_log[this.name] += " -> " + role_name;
 
 		await this.sendFeedback(Feedback.ConvertedToRole(this, current_role_name, role_name));
 		await this.sendFeedback(role.toString(), true);
 
 		if (role_name === RoleNames.Executioner) {
-			const alive_town_players = global.Game.player_manager.getTownPlayers().filter(player => player.isAlive);
+			const alive_town_players = game.player_manager.getTownPlayers().filter(player => player.isAlive);
 			const rand_town_player = getRandArrayItem(alive_town_players);
 
 			if (rand_town_player)
 				this.setExeTarget(rand_town_player);
 			else
-				this.convertToRole(RoleNames.Fool);
+				this.convertToRole(RoleNames.Fool, game);
 		}
 	}
 

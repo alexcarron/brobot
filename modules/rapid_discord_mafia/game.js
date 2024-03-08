@@ -311,7 +311,7 @@ class Game {
 				if (rand_town_player)
 					player.setExeTarget(rand_town_player);
 				else
-					player.convertToRole(RoleNames.Fool);
+					player.convertToRole(RoleNames.Fool, this);
 			}
 		}
 	}
@@ -1843,7 +1843,7 @@ class Game {
 				const mafia_players = this.player_manager.getAlivePlayersInFaction(Factions.Mafia)
 
 				const player_to_promote = getRandArrayItem(mafia_players);
-				player_to_promote.convertToRole(RoleNames.Mafioso);
+				player_to_promote.convertToRole(RoleNames.Mafioso, this);
 
 				if (!this.isMockGame) {
 					const rdm_guild = await getRDMGuild();
