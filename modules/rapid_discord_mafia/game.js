@@ -3,7 +3,6 @@ const { getChannel, getGuild, wait, getRandArrayItem, getGuildMember, getRole, r
 const ids = require("../../data/ids.json");
 const validator = require('../../utilities/validator.js');
 const { github_token } =  require("../token.js");
-const { Abilities } = require("./Ability.js");
 const { PermissionFlagsBits, Role, Interaction } = require("discord.js");
 const Death = require("./death.js");
 const roles = require("./roles.js");
@@ -11,6 +10,7 @@ const Players = require("../rapid_discord_mafia/players.js");
 const Player = require("./player.js");
 const Arg = require("./arg.js");
 const EffectManager = require("./EffectManager.js");
+const AbilityManager = require("./AbilityManager.js");
 class Game {
 	/**
 	 * An object map of players to the ability they performed
@@ -22,6 +22,16 @@ class Game {
 	 * Whether this is a mock game used for testing or not
 	 */
 	isMockGame;
+
+	/**
+	 * @type {EffectManager}
+	 */
+	effect_manager;
+
+	/**
+	 * @type {AbilityManager}
+	 */
+	ability_manager;
 
 	/**
 	 * A player manager service to keep track of players in the game
@@ -49,6 +59,7 @@ class Game {
 	 */
 	constructor(players, logger, isMockGame=false) {
 		this.effect_manager = new EffectManager(this, logger);
+		this.ability_manager = new AbilityManager();
 		this.logger = logger;
 
 		this.state = GameStates.Ended;
@@ -133,8 +144,9 @@ class Game {
 		.sort(
 			(ability_done1, ability_done2) => {
 				console.log({ability_done1, ability_done2});
-				const ability1 = Object.values(Abilities).find(ability => ability.name === ability_done1.name);
-				const ability2 = Object.values(Abilities).find(ability => ability.name === ability_done2.name);
+
+				const ability1 = this.ability_manager.getAbility(ability_done1.name);
+				const ability2 = this.ability_manager.getAbility(ability_done2.name);
 
 				let ability1_priority = ability1.priority,
 					ability2_priority = ability2.priority;
@@ -868,7 +880,7 @@ class Game {
 			let player_name = Object.keys(this.abilities_performed)[i],
 				player = this.Players.get(player_name),
 				ability_performed = this.abilities_performed[player_name],
-				ability = Object.values(Abilities).find(ability => ability.name === ability_performed.name);
+				ability = this.ability_manager.getAbility(ability_performed.name);
 
 			let arg_values_txt = "";
 			if (Object.values(ability_performed.args) > 0) {
@@ -914,9 +926,7 @@ class Game {
 				const player_using_ability = this.Players.get(player_using_ability_name);
 
 				const ability_name = ability_performed.name;
-				const ability_using = Object.values(Abilities).find(ability =>
-					ability.name === ability_name
-				);
+				const ability_using = this.ability_manager.getAbility(ability_name);
 
 				const arg_values = ability_performed.args ?? {};
 

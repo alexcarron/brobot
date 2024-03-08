@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">55.5% </span>
+                <span class="strong">55.2% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>232/418</span>
+                <span class='fraction'>228/413</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">64.28% </span>
+                <span class="strong">63.63% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>45/70</span>
+                <span class='fraction'>42/66</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">55.47% </span>
+                <span class="strong">55.28% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>228/411</span>
+                <span class='fraction'>225/407</span>
             </div>
         
             
@@ -1125,12 +1125,7 @@
 <a name='L1060'></a><a href='#L1060'>1060</a>
 <a name='L1061'></a><a href='#L1061'>1061</a>
 <a name='L1062'></a><a href='#L1062'>1062</a>
-<a name='L1063'></a><a href='#L1063'>1063</a>
-<a name='L1064'></a><a href='#L1064'>1064</a>
-<a name='L1065'></a><a href='#L1065'>1065</a>
-<a name='L1066'></a><a href='#L1066'>1066</a>
-<a name='L1067'></a><a href='#L1067'>1067</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">5x</span>
+<a name='L1063'></a><a href='#L1063'>1063</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1547,6 +1542,7 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1701,9 +1697,9 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1767,8 +1763,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">56x</span>
 <span class="cline-any cline-yes">56x</span>
-<span class="cline-any cline-yes">643x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">56x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1907,8 +1901,6 @@
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">47x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1972,7 +1964,7 @@
 <span class="cline-any cline-yes">10x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -2198,7 +2190,6 @@
 <span class="cline-any cline-yes">5x</span></td><td class="text"><pre class="prettyprint lang-js">const { RDMRoles, Announcements, MessageDelays, Feedback, Factions, RoleNames, AbilityTypes, TrialVotes, AbilityName: AbilityName, AbilityArgName, ArgumentSubtypes, Subphases, Votes, Phases } = require("../enums");
 const roles = require("./roles");
 const ids = require("../../data/ids.json");
-const { Abilities } = require("./Ability");
 &nbsp;
 const
 	{ getGuildMember, getRole, addRole, removeRole, getChannel, wait, getRandArrayItem, getRDMGuild, toTitleCase } = require("../functions"),
@@ -2612,8 +2603,9 @@ class Player {
 &nbsp;
 			const protection_affects_on_target = this.affected_by.filter(
 				affect =&gt; {
-					console.log({affect});
-					const ability = global.abilities[affect.name]
+					const ability_name = affect.name;
+&nbsp;
+					const ability = global.Game.ability_manager.getAbility(ability_name);
 					return ability.type == AbilityTypes.Protection;
 				}
 			);
@@ -2767,9 +2759,9 @@ class Player {
 <span class="cstat-no" title="statement not covered" >		if (ability_name === AbilityName.Nothing)</span>
 <span class="cstat-no" title="statement not covered" >			return true;</span>
 &nbsp;
-		const ability = <span class="cstat-no" title="statement not covered" >Object.values(Abilities).find(<span class="fstat-no" title="function not covered" >ab</span>ility =&gt;</span>
-<span class="cstat-no" title="statement not covered" >			ability.name === ability_name</span>
-		);
+&nbsp;
+&nbsp;
+		const ability = <span class="cstat-no" title="statement not covered" >global.Game.ability_manager.getAbility(ability_name);</span>
 		const player_role = <span class="cstat-no" title="statement not covered" >roles[this.role]</span>
 &nbsp;
 		// Check if role has ability
@@ -2832,9 +2824,7 @@ class Player {
 		}
 &nbsp;
 		const player_role = roles[this.role];
-		const ability_using = Object.values(Abilities).find(ability =&gt;
-			ability.name === ability_name
-		);
+		const ability_using = global.Game.ability_manager.getAbility(ability_name);
 &nbsp;
 		console.log({ability_name, ability_using, player_role});
 &nbsp;
@@ -2972,9 +2962,7 @@ class Player {
 			console.log("Affect Before:");
 			console.log({affect});
 &nbsp;
-			const ability = Object.values(Abilities).find(ability =&gt;
-				ability.name === affect.name
-			);
+			const ability = global.Game.ability_manager.getAbility(affect.name);
 &nbsp;
 			console.log({ability});
 &nbsp;
@@ -3038,7 +3026,7 @@ class Player {
 			for (let [index, affect] of this.affected_by.entries()) {
 				console.log({affect});
 &nbsp;
-				const ability_affected_by = Object.values(Abilities).find(ability =&gt; ability.name === affect.name);
+				const ability_affected_by = global.Game.ability_manager.getAbility(affect.name);
 &nbsp;
 				<span class="missing-if-branch" title="else path not taken" >E</span>if (ability_affected_by.type === AbilityTypes.Manipulation) {
 					console.log("Found manipulation affect. Removing affect and reseting percieved.");
@@ -3268,7 +3256,7 @@ module.exports = Player;</pre></td></tr></table></pre>
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2024-03-08T01:27:05.570Z
+                at 2024-03-08T02:22:29.494Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

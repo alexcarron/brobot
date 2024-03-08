@@ -1,10 +1,10 @@
 const Parameter = require("../../modules/commands/Paramater");
 const SlashCommand = require("../../modules/commands/SlashCommand");
 const { toTitleCase, deferInteraction, getRDMGuild, getChannel } = require("../../modules/functions");
-const { Abilities } = require("../../modules/rapid_discord_mafia/ability");
 const { ArgumentTypes, ArgumentSubtypes, Factions, AbilityUses, Phases, AbilityName } = require("../../modules/enums");
 const roles = require("../../modules/rapid_discord_mafia/roles");
-const ids = require("../../data/ids.json")
+const ids = require("../../data/ids.json");
+const AbilityManager = require("../../modules/rapid_discord_mafia/AbilityManager");
 
 const command = new SlashCommand({
 	name: "use",
@@ -18,8 +18,9 @@ command.parameters.push(new Parameter({
 	description: "Use to do nothing for the night and speed things up"
 }));
 
-for (const ability_name in Abilities) {
-	const ability = Abilities[ability_name];
+for (const ability_name in AbilityManager.abilities) {
+	const ability = AbilityManager.abilities[ability_name];
+
 
 	if (
 		(!ability.uses || ability.uses === AbilityUses.None) ||
@@ -110,7 +111,7 @@ command.execute = async function(interaction, isTest) {
 	if (ability_name !== AbilityName.Nothing) {
 		// Organize command parameter values into arg_values
 		arg_values = {};
-		ability_using = Object.values(Abilities).find(ability =>
+		ability_using = Object.values(AbilityManager.abilities).find(ability =>
 			ability.name === ability_name
 		);
 
@@ -143,7 +144,7 @@ command.execute = async function(interaction, isTest) {
 				arg_param_value = interaction.options.getString(arg_param_name);
 			}
 			arg_values[ability_arg.name] = arg_param_value;
-		}	
+		}
 	}
 
 	const can_use_ability_feedback = await player.canUseAbility(ability_name, arg_values);
@@ -186,7 +187,7 @@ command.autocomplete = async function(interaction) {
 
 	const arg_name = focused_param.name.split("-").map(name => toTitleCase(name)).join(" ");
 
-	const ability = Object.values(Abilities).find(ability => ability.name === ability_name);
+	const ability = Object.values(AbilityManager.abilities).find(ability => ability.name === ability_name);
 	const ability_arg = ability.args.find(arg => arg.name === arg_name);
 
 	const player_role = roles[player_using_command.role]

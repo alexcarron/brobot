@@ -574,7 +574,7 @@ class EffectManager {
 
 	/**
 	 * Get an effect object from an effect name
-	 * @param {EffectManager.EffectName} effect_name
+	 * @param {string} effect_name
 	 * @returns {Effect | undefined} undefined if effect name doesn't exist
 	 */
 	getEffect(effect_name) {

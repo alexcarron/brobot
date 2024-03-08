@@ -13,7 +13,6 @@ class RapidDiscordMafia {
 
 	static async setUpRapidDiscordMafia(isMockObject = false) {
 		global.Roles = require("./roles");
-		global.abilities = require("./Ability.js").Abilities;
 		global.Game = new Game(
 			new Players({}, isMockObject),
 			new Logger(),

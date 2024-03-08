@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">57.58% </span>
+                <span class="strong">57.45% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>554/962</span>
+                <span class='fraction'>551/959</span>
             </div>
         
             
@@ -37,9 +37,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">60.13% </span>
+                <span class="strong">59.06% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>92/153</span>
+                <span class='fraction'>88/149</span>
             </div>
         
             
@@ -2452,7 +2452,17 @@
 <a name='L2387'></a><a href='#L2387'>2387</a>
 <a name='L2388'></a><a href='#L2388'>2388</a>
 <a name='L2389'></a><a href='#L2389'>2389</a>
-<a name='L2390'></a><a href='#L2390'>2390</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">5x</span>
+<a name='L2390'></a><a href='#L2390'>2390</a>
+<a name='L2391'></a><a href='#L2391'>2391</a>
+<a name='L2392'></a><a href='#L2392'>2392</a>
+<a name='L2393'></a><a href='#L2393'>2393</a>
+<a name='L2394'></a><a href='#L2394'>2394</a>
+<a name='L2395'></a><a href='#L2395'>2395</a>
+<a name='L2396'></a><a href='#L2396'>2396</a>
+<a name='L2397'></a><a href='#L2397'>2397</a>
+<a name='L2398'></a><a href='#L2398'>2398</a>
+<a name='L2399'></a><a href='#L2399'>2399</a>
+<a name='L2400'></a><a href='#L2400'>2400</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-yes">5x</span>
@@ -2502,6 +2512,17 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">66x</span>
 <span class="cline-any cline-yes">66x</span>
 <span class="cline-any cline-yes">66x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -2587,8 +2608,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">12x</span>
-<span class="cline-any cline-yes">87x</span>
-<span class="cline-any cline-yes">128x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">12x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">12x</span>
 <span class="cline-any cline-yes">12x</span>
@@ -3322,7 +3344,7 @@
 <span class="cline-any cline-yes">57x</span>
 <span class="cline-any cline-yes">57x</span>
 <span class="cline-any cline-yes">57x</span>
-<span class="cline-any cline-yes">684x</span>
+<span class="cline-any cline-yes">57x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">57x</span>
 <span class="cline-any cline-yes">57x</span>
@@ -3369,8 +3391,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">57x</span>
 <span class="cline-any cline-yes">57x</span>
-<span class="cline-any cline-yes">684x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">57x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -4846,7 +4866,6 @@ const { getChannel, getGuild, wait, getRandArrayItem, getGuildMember, getRole, r
 const ids = require("../../data/ids.json");
 const validator = require('../../utilities/validator.js');
 const { github_token } =  require("../token.js");
-const { Abilities } = require("./Ability.js");
 const { PermissionFlagsBits, Role, Interaction } = require("discord.js");
 const Death = require("./death.js");
 const roles = require("./roles.js");
@@ -4854,6 +4873,7 @@ const Players = require("../rapid_discord_mafia/players.js");
 const Player = require("./player.js");
 const Arg = require("./arg.js");
 const EffectManager = require("./EffectManager.js");
+const AbilityManager = require("./AbilityManager.js");
 class Game {
 	/**
 	 * An object map of players to the ability they performed
@@ -4865,6 +4885,16 @@ class Game {
 	 * Whether this is a mock game used for testing or not
 	 */
 	isMockGame;
+&nbsp;
+	/**
+	 * @type {EffectManager}
+	 */
+	effect_manager;
+&nbsp;
+	/**
+	 * @type {AbilityManager}
+	 */
+	ability_manager;
 &nbsp;
 	/**
 	 * A player manager service to keep track of players in the game
@@ -4892,6 +4922,7 @@ class Game {
 	 */
 	constructor(players, logger, isMockGame=<span class="branch-0 cbranch-no" title="branch not covered" >false)</span> {
 		this.effect_manager = new EffectManager(this, logger);
+		this.ability_manager = new AbilityManager();
 		this.logger = logger;
 &nbsp;
 		this.state = GameStates.Ended;
@@ -4976,8 +5007,9 @@ class Game {
 		.sort(
 			(ability_done1, ability_done2) =&gt; {
 				console.log({ability_done1, ability_done2});
-				const ability1 = Object.values(Abilities).find(ability =&gt; ability.name === ability_done1.name);
-				const ability2 = Object.values(Abilities).find(ability =&gt; ability.name === ability_done2.name);
+&nbsp;
+				const ability1 = this.ability_manager.getAbility(ability_done1.name);
+				const ability2 = this.ability_manager.getAbility(ability_done2.name);
 &nbsp;
 				let ability1_priority = ability1.priority,
 					ability2_priority = ability2.priority;
@@ -5711,7 +5743,7 @@ class Game {
 			let player_name = Object.keys(this.abilities_performed)[i],
 				player = this.Players.get(player_name),
 				ability_performed = this.abilities_performed[player_name],
-				ability = Object.values(Abilities).find(ability =&gt; ability.name === ability_performed.name);
+				ability = this.ability_manager.getAbility(ability_performed.name);
 &nbsp;
 			let arg_values_txt = "";
 			<span class="missing-if-branch" title="if path not taken" >I</span>if (Object.values(ability_performed.args) &gt; 0) {
@@ -5757,9 +5789,7 @@ class Game {
 				const player_using_ability = this.Players.get(player_using_ability_name);
 &nbsp;
 				const ability_name = ability_performed.name;
-				const ability_using = Object.values(Abilities).find(ability =&gt;
-					ability.name === ability_name
-				);
+				const ability_using = this.ability_manager.getAbility(ability_name);
 &nbsp;
 				const arg_values = ability_performed.args ?? <span class="branch-1 cbranch-no" title="branch not covered" >{};</span>
 &nbsp;
@@ -7237,7 +7267,7 @@ module.exports = Game;</pre></td></tr></table></pre>
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2024-03-08T01:27:05.570Z
+                at 2024-03-08T02:22:29.494Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

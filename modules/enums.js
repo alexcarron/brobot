@@ -66,7 +66,7 @@ const Enums = {
 		RoleChange: "role change",
 	},
 
-	Priorities: {
+	AbilityPriority: {
 		Muting: 1,
 		RoleChange: 1,
 		Modifier: 1,

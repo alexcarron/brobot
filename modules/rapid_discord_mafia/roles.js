@@ -1,5 +1,5 @@
 const { Factions, Alignments, Immunities, WinConditions, RoleNames, AbilityUses } = require("../enums.js");
-const { Abilities } = require("./Ability.js");
+const { abilities, AbilityName } = require("./AbilityManager.js");
 const Role = require("./role.js");
 
 const roles = {
@@ -19,8 +19,8 @@ const roles = {
 		defense: 0,
 		goal: WinConditions.EliminateOtherFactions,
 		abilities: [
-			Abilities.Heal,
-			Abilities.HealSelf,
+			abilities[AbilityName.Heal],
+			abilities[AbilityName.HealSelf],
 		]
 	}),
 	[RoleNames.Sheriff]: new Role({
@@ -31,7 +31,7 @@ const roles = {
 		defense: 0,
 		goal: WinConditions.EliminateOtherFactions,
 		abilities: [
-			Abilities.Evaluate,
+			abilities[AbilityName.Evaluate],
 		]
 	}),
 	[RoleNames.Tracker]: new Role({
@@ -42,7 +42,7 @@ const roles = {
 		defense: 0,
 		goal: WinConditions.EliminateOtherFactions,
 		abilities: [
-			Abilities.Track,
+			abilities[AbilityName.Track],
 		]
 	}),
 	[RoleNames.Lookout]: new Role({
@@ -53,7 +53,7 @@ const roles = {
 		defense: 0,
 		goal: WinConditions.EliminateOtherFactions,
 		abilities: [
-			Abilities.Lookout,
+			abilities[AbilityName.Lookout],
 		]
 	}),
 	[RoleNames.Escort]: new Role({
@@ -65,7 +65,7 @@ const roles = {
 		defense: 0,
 		goal: WinConditions.EliminateOtherFactions,
 		abilities: [
-			Abilities.Roleblock,
+			abilities[AbilityName.Roleblock],
 		]
 	}),
 	[RoleNames.Vigilante]: new Role({
@@ -76,10 +76,11 @@ const roles = {
 		defense: 0,
 		goal: WinConditions.EliminateOtherFactions,
 		abilities: [
-			Abilities.Shoot,
+			abilities[AbilityName.Shoot],
 		],
 		notes: "If you shoot a town player, you will shoot yourself the next night with an attack level of four."
 	}),
+
 	// [RoleNames.Godfather]: new Role({
 	// 	name: RoleNames.Godfather,
 	// 	faction: Factions.Mafia,
@@ -90,9 +91,10 @@ const roles = {
 	// 	goal: WinConditions.EliminateOtherFactions,
 	// 	immunities: [Immunities.Control],
 	// 	abilities: [
-	// 		Abilities.Order,
+	// 		abilities[AbilityName.Order,
 	// 	],
 	// }),
+
 	[RoleNames.Mafioso]: new Role({
 		name: RoleNames.Mafioso,
 		faction: Factions.Mafia,
@@ -102,7 +104,7 @@ const roles = {
 		defense: 0,
 		goal: WinConditions.EliminateOtherFactions,
 		abilities: [
-			Abilities.Murder,
+			abilities[AbilityName.Murder],
 		],
 		notes: "If you are not alive, a random mafia member will be converted to the Mafioso and take your place."
 	}),
@@ -114,7 +116,7 @@ const roles = {
 		defense: 0,
 		goal: WinConditions.EliminateOtherFactions,
 		abilities: [
-			Abilities.Frame,
+			abilities[AbilityName.Frame],
 		]
 	}),
 	[RoleNames.Consort]: new Role({
@@ -126,7 +128,7 @@ const roles = {
 		defense: 0,
 		goal: WinConditions.EliminateOtherFactions,
 		abilities: [
-			Abilities.Consort,
+			abilities[AbilityName.Consort],
 		]
 	}),
 	[RoleNames.Consigliere]: new Role({
@@ -137,7 +139,7 @@ const roles = {
 		defense: 0,
 		goal: WinConditions.EliminateOtherFactions,
 		abilities: [
-			Abilities.Investigate,
+			abilities[AbilityName.Investigate],
 		]
 	}),
 	[RoleNames.Kidnapper]: new Role({
@@ -148,7 +150,7 @@ const roles = {
 		defense: 0,
 		goal: WinConditions.EliminateOtherFactions,
 		abilities: [
-			Abilities.Kidnap,
+			abilities[AbilityName.Kidnap],
 		]
 	}),
 	[RoleNames.Fool]: new Role({
@@ -159,8 +161,8 @@ const roles = {
 		defense: 0,
 		goal: WinConditions.Fool,
 		abilities: [
-			Abilities.SelfFrame,
-			Abilities.DeathCurse,
+			abilities[AbilityName.SelfFrame],
+			abilities[AbilityName.DeathCurse],
 		],
 	}),
 	[RoleNames.Executioner]: new Role({
@@ -171,7 +173,7 @@ const roles = {
 		defense: 1,
 		goal: WinConditions.Executioner,
 		abilities: [
-			Abilities.FrameTarget,
+			abilities[AbilityName.FrameTarget],
 		],
 		"notes": "At the beginning of the game, you will be given a town player target that you must try to get lynched before the end of the game. If your target dies before then, you'll become a Fool."
 	}),
@@ -183,7 +185,7 @@ const roles = {
 		defense: 0,
 		goal: WinConditions.Survive,
 		abilities: [
-			Abilities.SelfVest,
+			abilities[AbilityName.SelfVest],
 		]
 	}),
 	[RoleNames.SerialKiller]: new Role({
@@ -195,8 +197,8 @@ const roles = {
 		defense: 1,
 		goal: WinConditions.SurviveEliminateOtherFactions,
 		abilities: [
-			Abilities.Knife,
-			Abilities.Cautious,
+			abilities[AbilityName.Knife],
+			abilities[AbilityName.Cautious],
 		],
 		"notes": "You'll automatically attack anybody who roleblocks you instead of your original target."
 	}),
@@ -208,8 +210,8 @@ const roles = {
 		defense: 0,
 		goal: WinConditions.Blacksmith,
 		abilities: [
-			Abilities.Smith,
-			Abilities.SelfSmith,
+			abilities[AbilityName.Smith],
+			abilities[AbilityName.SelfSmith],
 		],
 	}),
 	[RoleNames.Witch]: new Role({
@@ -221,7 +223,7 @@ const roles = {
 		goal: WinConditions.SurviveTownLose,
 		immunities: [Immunities.Roleblock, Immunities.Control],
 		abilities: [
-			Abilities.Control,
+			abilities[AbilityName.Control],
 		],
 	}),
 	[RoleNames.Oracle]: new Role({
@@ -232,7 +234,7 @@ const roles = {
 		defense: 0,
 		goal: WinConditions.EliminateOtherFactions,
 		abilities: [
-			Abilities.Observe
+			abilities[AbilityName.Observe],
 		],
 	}),
 	[RoleNames.Impersonator]: new Role({
@@ -243,7 +245,7 @@ const roles = {
 		defense: 0,
 		goal: WinConditions.Impersonator,
 		abilities: [
-			Abilities.Replace
+			abilities[AbilityName.Replace],
 		],
 	}),
 }

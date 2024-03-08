@@ -2,10 +2,10 @@ const { RoleNames, Factions, Alignments, RoleIdentifierKeywords, TrialOutcomes, 
 const { doArraysHaveSameElements } = require("../functions");
 const RapidDiscordMafia = require("./RapidDiscordMafia");
 const RoleIdentifier = require("./RoleIdentifier");
-const { Abilities } = require("./Ability");
 const Game = require("./game");
 const Player = require("./player");
 const roles = require("./roles");
+const { abilities } = require("./AbilityManager");
 
 
 describe('Game', () => {
@@ -649,7 +649,7 @@ describe('Game', () => {
 	// ^ isValidArgValue
 	describe('isValidArgValue', () => {
 		it('SHOULD return NOT true for input framer using frame on mafioso', () => {
-			const player_framing_arg = Abilities.Frame.args[0];
+			const player_framing_arg = abilities[AbilityName.Frame].args[0];
 			const player_using_ability = new Player({name: "name"});
 			const arg_value = "mafia";
 
@@ -667,7 +667,8 @@ describe('Game', () => {
 		});
 
 		it('SHOULD return NOT true for input doctor using heal on themselves', () => {
-			const player_framing_arg = Abilities.Heal.args[0];
+
+			const player_framing_arg = abilities[AbilityName.Heal].args[0];
 			const player_using_ability = new Player({name: "name", role: RoleNames.Doctor});
 			const arg_value = "name";
 

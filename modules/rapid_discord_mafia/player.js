@@ -1,7 +1,6 @@
 const { RDMRoles, Announcements, MessageDelays, Feedback, Factions, RoleNames, AbilityTypes, TrialVotes, AbilityName: AbilityName, AbilityArgName, ArgumentSubtypes, Subphases, Votes, Phases } = require("../enums");
 const roles = require("./roles");
 const ids = require("../../data/ids.json");
-const { Abilities } = require("./Ability");
 
 const
 	{ getGuildMember, getRole, addRole, removeRole, getChannel, wait, getRandArrayItem, getRDMGuild, toTitleCase } = require("../functions"),
@@ -415,8 +414,9 @@ class Player {
 
 			const protection_affects_on_target = this.affected_by.filter(
 				affect => {
-					console.log({affect});
-					const ability = global.abilities[affect.name]
+					const ability_name = affect.name;
+
+					const ability = global.Game.ability_manager.getAbility(ability_name);
 					return ability.type == AbilityTypes.Protection;
 				}
 			);
@@ -570,9 +570,9 @@ class Player {
 		if (ability_name === AbilityName.Nothing)
 			return true;
 
-		const ability = Object.values(Abilities).find(ability =>
-			ability.name === ability_name
-		);
+
+
+		const ability = global.Game.ability_manager.getAbility(ability_name);
 		const player_role = roles[this.role]
 
 		// Check if role has ability
@@ -635,9 +635,7 @@ class Player {
 		}
 
 		const player_role = roles[this.role];
-		const ability_using = Object.values(Abilities).find(ability =>
-			ability.name === ability_name
-		);
+		const ability_using = global.Game.ability_manager.getAbility(ability_name);
 
 		console.log({ability_name, ability_using, player_role});
 
@@ -775,9 +773,7 @@ class Player {
 			console.log("Affect Before:");
 			console.log({affect});
 
-			const ability = Object.values(Abilities).find(ability =>
-				ability.name === affect.name
-			);
+			const ability = global.Game.ability_manager.getAbility(affect.name);
 
 			console.log({ability});
 
@@ -841,7 +837,7 @@ class Player {
 			for (let [index, affect] of this.affected_by.entries()) {
 				console.log({affect});
 
-				const ability_affected_by = Object.values(Abilities).find(ability => ability.name === affect.name);
+				const ability_affected_by = global.Game.ability_manager.getAbility(affect.name);
 
 				if (ability_affected_by.type === AbilityTypes.Manipulation) {
 					console.log("Found manipulation affect. Removing affect and reseting percieved.");

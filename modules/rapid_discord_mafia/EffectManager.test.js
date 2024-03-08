@@ -1641,8 +1641,5 @@ describe('EffectManager', () => {
 			)
 			.toBe(true);
 		});
-
-
-		// @ TODO add if attacked
 	});
 });
