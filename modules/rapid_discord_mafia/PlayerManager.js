@@ -1,8 +1,19 @@
 const { setNickname } = require("../functions");
 const Player = require("./player");
-const roles = require("./roles");
 
-class Players {
+class PlayerManager {
+	/**
+	 * A map of player names to their player object
+	 * @type {[player_name: string]: Player}
+	 */
+	players;
+
+	/**
+	 * Whether or not this is a mock player manager used for testing
+	 * @type {boolean}
+	 */
+	isMockPlayerManager;
+
 	constructor(players = {}, isMockPlayerManager=false) {
 		this.players = players;
 		this.isMockPlayerManager = isMockPlayerManager;
@@ -80,7 +91,7 @@ class Players {
 	}
 
 	getTownPlayers() {
-		return this.getPlayerList().filter( player => global.Roles[player.role].faction === "Town" );
+		return this.getPlayerList().filter( player => player.isTown() );
 	}
 
 	getAlivePlayers() {
@@ -88,11 +99,20 @@ class Players {
 	}
 
 	getPlayersInFaction(faction) {
-		return this.getPlayerList().filter( player => roles[player.role].faction === faction );
+		return this.getPlayerList().filter(
+			player =>
+				player.getRole() &&
+				player.getRole().faction === faction
+		);
 	}
 
 	getAlivePlayersInFaction(faction) {
-		return this.getAlivePlayers().filter( player => roles[player.role].faction === faction );
+		return this.getAlivePlayers().filter(
+			player =>
+				player.getRole() &&
+				player.getRole().faction === faction
+		);
+
 	}
 
 	getAlivePlayerNames() {
@@ -132,8 +152,10 @@ class Players {
 	}
 
 	isFactionAlive(faction) {
-		return this.getAlivePlayers().some(player =>
-			roles[player.role].faction === faction
+		return this.getAlivePlayers().some(
+			player =>
+				player.getRole() &&
+				player.getRole().faction === faction
 		)
 	}
 
@@ -144,4 +166,4 @@ class Players {
 	}
 }
 
-module.exports = Players;
+module.exports = PlayerManager;

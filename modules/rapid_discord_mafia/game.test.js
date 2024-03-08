@@ -658,7 +658,7 @@ describe('Game', () => {
 				name: "mafia",
 				role: RoleNames.Mafioso,
 			})
-			rdm_game.Players.addPlayer(mafia_player);
+			rdm_game.player_manager.addPlayer(mafia_player);
 			expect(
 				rdm_game.isValidArgValue(player_using_ability, player_framing_arg, arg_value)
 			).toStrictEqual(
@@ -673,7 +673,7 @@ describe('Game', () => {
 			const arg_value = "name";
 
 			const rdm_game = RapidDiscordMafia.getEmptyGame();
-			rdm_game.Players.addPlayer(player_using_ability);
+			rdm_game.player_manager.addPlayer(player_using_ability);
 			expect(
 				rdm_game.isValidArgValue(player_using_ability, player_framing_arg, arg_value)
 			).toStrictEqual(
@@ -751,7 +751,7 @@ describe('Game', () => {
 			// Set phase to day
 			await mock_game.setPhaseToNextPhase();
 
-			for (const player of mock_game.Players.getPlayersInLimbo()) {
+			for (const player of mock_game.player_manager.getPlayersInLimbo()) {
 				player.isInLimbo = false;
 			}
 

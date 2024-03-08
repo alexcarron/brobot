@@ -28,8 +28,8 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const escort_player = mock_game.Players.get(RoleNames.Escort);
-			const mafioso_player = mock_game.Players.get(RoleNames.Mafioso);
+			const escort_player = mock_game.player_manager.get(RoleNames.Escort);
+			const mafioso_player = mock_game.player_manager.get(RoleNames.Mafioso);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -78,9 +78,9 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const escort_player = mock_game.Players.get(RoleNames.Escort);
-			const escort2_player = mock_game.Players.get(RoleNames.Escort + "2");
-			const mafioso_player = mock_game.Players.get(RoleNames.Mafioso);
+			const escort_player = mock_game.player_manager.get(RoleNames.Escort);
+			const escort2_player = mock_game.player_manager.get(RoleNames.Escort + "2");
+			const mafioso_player = mock_game.player_manager.get(RoleNames.Mafioso);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -120,8 +120,8 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const escort_player = mock_game.Players.get(RoleNames.Escort);
-			const serial_killer_player = mock_game.Players.get(RoleNames.SerialKiller);
+			const escort_player = mock_game.player_manager.get(RoleNames.Escort);
+			const serial_killer_player = mock_game.player_manager.get(RoleNames.SerialKiller);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -170,8 +170,8 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const escort_player = mock_game.Players.get(RoleNames.Escort);
-			const serial_killer_player = mock_game.Players.get(RoleNames.SerialKiller);
+			const escort_player = mock_game.player_manager.get(RoleNames.Escort);
+			const serial_killer_player = mock_game.player_manager.get(RoleNames.SerialKiller);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -223,7 +223,7 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const serial_killer_player = mock_game.Players.get(RoleNames.SerialKiller);
+			const serial_killer_player = mock_game.player_manager.get(RoleNames.SerialKiller);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -262,8 +262,8 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const mafioso_player = mock_game.Players.get(RoleNames.Mafioso);
-			const doctor_player = mock_game.Players.get(RoleNames.Doctor);
+			const mafioso_player = mock_game.player_manager.get(RoleNames.Mafioso);
+			const doctor_player = mock_game.player_manager.get(RoleNames.Doctor);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -299,8 +299,8 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const mafioso_player = mock_game.Players.get(RoleNames.Mafioso);
-			const doctor_player = mock_game.Players.get(RoleNames.Doctor);
+			const mafioso_player = mock_game.player_manager.get(RoleNames.Mafioso);
+			const doctor_player = mock_game.player_manager.get(RoleNames.Doctor);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -336,9 +336,9 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const mafioso_player = mock_game.Players.get(RoleNames.Mafioso);
-			const doctor_player = mock_game.Players.get(RoleNames.Doctor);
-			const blacksmith_player = mock_game.Players.get(RoleNames.Blacksmith);
+			const mafioso_player = mock_game.player_manager.get(RoleNames.Mafioso);
+			const doctor_player = mock_game.player_manager.get(RoleNames.Doctor);
+			const blacksmith_player = mock_game.player_manager.get(RoleNames.Blacksmith);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -382,7 +382,7 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const blacksmith_player = mock_game.Players.get(RoleNames.Blacksmith);
+			const blacksmith_player = mock_game.player_manager.get(RoleNames.Blacksmith);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -417,8 +417,8 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const mafioso_player = mock_game.Players.get(RoleNames.Mafioso);
-			const vigilante_player = mock_game.Players.get(RoleNames.Vigilante);
+			const mafioso_player = mock_game.player_manager.get(RoleNames.Mafioso);
+			const vigilante_player = mock_game.player_manager.get(RoleNames.Vigilante);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -458,8 +458,8 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const framer_player = mock_game.Players.get(RoleNames.Framer);
-			const vigilante_player = mock_game.Players.get(RoleNames.Vigilante);
+			const framer_player = mock_game.player_manager.get(RoleNames.Framer);
+			const vigilante_player = mock_game.player_manager.get(RoleNames.Vigilante);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -497,7 +497,7 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const framer_player = mock_game.Players.get(RoleNames.Framer);
+			const framer_player = mock_game.player_manager.get(RoleNames.Framer);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -533,8 +533,8 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const executioner_player = mock_game.Players.get(RoleNames.Executioner);
-			const exe_target_player = mock_game.Players.get(executioner_player.exe_target);
+			const executioner_player = mock_game.player_manager.get(RoleNames.Executioner);
+			const exe_target_player = mock_game.player_manager.get(executioner_player.exe_target);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -570,9 +570,9 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const sheriff_player = mock_game.Players.get(RoleNames.Sheriff);
-			const doctor_player = mock_game.Players.get(RoleNames.Doctor);
-			const framer_player = mock_game.Players.get(RoleNames.Framer);
+			const sheriff_player = mock_game.player_manager.get(RoleNames.Sheriff);
+			const doctor_player = mock_game.player_manager.get(RoleNames.Doctor);
+			const framer_player = mock_game.player_manager.get(RoleNames.Framer);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -626,8 +626,8 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const sheriff_player = mock_game.Players.get(RoleNames.Sheriff);
-			const mafioso_player = mock_game.Players.get(RoleNames.Mafioso);
+			const sheriff_player = mock_game.player_manager.get(RoleNames.Sheriff);
+			const mafioso_player = mock_game.player_manager.get(RoleNames.Mafioso);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -657,8 +657,8 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const sheriff_player = mock_game.Players.get(RoleNames.Sheriff);
-			const serial_killer_player = mock_game.Players.get(RoleNames.SerialKiller);
+			const sheriff_player = mock_game.player_manager.get(RoleNames.Sheriff);
+			const serial_killer_player = mock_game.player_manager.get(RoleNames.SerialKiller);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -686,8 +686,8 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const sheriff_player = mock_game.Players.get(RoleNames.Sheriff);
-			const impersonator_player = mock_game.Players.get(RoleNames.Impersonator);
+			const sheriff_player = mock_game.player_manager.get(RoleNames.Sheriff);
+			const impersonator_player = mock_game.player_manager.get(RoleNames.Impersonator);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -718,9 +718,9 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const tracker_player = mock_game.Players.get(RoleNames.Tracker);
-			const doctor_player = mock_game.Players.get(RoleNames.Doctor);
-			const mafioso_player = mock_game.Players.get(RoleNames.Mafioso);
+			const tracker_player = mock_game.player_manager.get(RoleNames.Tracker);
+			const doctor_player = mock_game.player_manager.get(RoleNames.Doctor);
+			const mafioso_player = mock_game.player_manager.get(RoleNames.Mafioso);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -763,9 +763,9 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const tracker_player = mock_game.Players.get(RoleNames.Tracker);
-			const doctor_player = mock_game.Players.get(RoleNames.Doctor);
-			const mafioso_player = mock_game.Players.get(RoleNames.Mafioso);
+			const tracker_player = mock_game.player_manager.get(RoleNames.Tracker);
+			const doctor_player = mock_game.player_manager.get(RoleNames.Doctor);
+			const mafioso_player = mock_game.player_manager.get(RoleNames.Mafioso);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -804,9 +804,9 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const tracker_player = mock_game.Players.get(RoleNames.Tracker);
-			const doctor_player = mock_game.Players.get(RoleNames.Doctor);
-			const mafioso_player = mock_game.Players.get(RoleNames.Mafioso);
+			const tracker_player = mock_game.player_manager.get(RoleNames.Tracker);
+			const doctor_player = mock_game.player_manager.get(RoleNames.Doctor);
+			const mafioso_player = mock_game.player_manager.get(RoleNames.Mafioso);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -849,9 +849,9 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const lookout_player = mock_game.Players.get(RoleNames.Lookout);
-			const doctor_player = mock_game.Players.get(RoleNames.Doctor);
-			const mafioso_player = mock_game.Players.get(RoleNames.Mafioso);
+			const lookout_player = mock_game.player_manager.get(RoleNames.Lookout);
+			const doctor_player = mock_game.player_manager.get(RoleNames.Doctor);
+			const mafioso_player = mock_game.player_manager.get(RoleNames.Mafioso);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -892,9 +892,9 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const lookout_player = mock_game.Players.get(RoleNames.Lookout);
-			const doctor_player = mock_game.Players.get(RoleNames.Doctor);
-			const mafioso_player = mock_game.Players.get(RoleNames.Mafioso);
+			const lookout_player = mock_game.player_manager.get(RoleNames.Lookout);
+			const doctor_player = mock_game.player_manager.get(RoleNames.Doctor);
+			const mafioso_player = mock_game.player_manager.get(RoleNames.Mafioso);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -933,9 +933,9 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const lookout_player = mock_game.Players.get(RoleNames.Lookout);
-			const doctor_player = mock_game.Players.get(RoleNames.Doctor);
-			const mafioso_player = mock_game.Players.get(RoleNames.Mafioso);
+			const lookout_player = mock_game.player_manager.get(RoleNames.Lookout);
+			const doctor_player = mock_game.player_manager.get(RoleNames.Doctor);
+			const mafioso_player = mock_game.player_manager.get(RoleNames.Mafioso);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -970,9 +970,9 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const consig_player = mock_game.Players.get(RoleNames.Consigliere);
-			const doctor_player = mock_game.Players.get(RoleNames.Doctor);
-			const mafioso_player = mock_game.Players.get(RoleNames.Mafioso);
+			const consig_player = mock_game.player_manager.get(RoleNames.Consigliere);
+			const doctor_player = mock_game.player_manager.get(RoleNames.Doctor);
+			const mafioso_player = mock_game.player_manager.get(RoleNames.Mafioso);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -1014,8 +1014,8 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const witch_player = mock_game.Players.get(RoleNames.Witch);
-			const executioner_player = mock_game.Players.get(RoleNames.Executioner);
+			const witch_player = mock_game.player_manager.get(RoleNames.Witch);
+			const executioner_player = mock_game.player_manager.get(RoleNames.Executioner);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -1053,8 +1053,8 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const witch_player = mock_game.Players.get(RoleNames.Witch);
-			const witch2_player = mock_game.Players.get(RoleNames.Witch + "2");
+			const witch_player = mock_game.player_manager.get(RoleNames.Witch);
+			const witch2_player = mock_game.player_manager.get(RoleNames.Witch + "2");
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -1088,8 +1088,8 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const witch_player = mock_game.Players.get(RoleNames.Witch);
-			const executioner_player = mock_game.Players.get(RoleNames.Executioner);
+			const witch_player = mock_game.player_manager.get(RoleNames.Witch);
+			const executioner_player = mock_game.player_manager.get(RoleNames.Executioner);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -1144,8 +1144,8 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const witch_player = mock_game.Players.get(RoleNames.Witch);
-			const doctor_player = mock_game.Players.get(RoleNames.Doctor);
+			const witch_player = mock_game.player_manager.get(RoleNames.Witch);
+			const doctor_player = mock_game.player_manager.get(RoleNames.Doctor);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -1205,8 +1205,8 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const oracle_player = mock_game.Players.get(RoleNames.Oracle);
-			const doctor_player = mock_game.Players.get(RoleNames.Doctor);
+			const oracle_player = mock_game.player_manager.get(RoleNames.Oracle);
+			const doctor_player = mock_game.player_manager.get(RoleNames.Doctor);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -1239,9 +1239,9 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const oracle_player = mock_game.Players.get(RoleNames.Oracle);
-			const doctor_player = mock_game.Players.get(RoleNames.Doctor);
-			const framer_player = mock_game.Players.get(RoleNames.Framer);
+			const oracle_player = mock_game.player_manager.get(RoleNames.Oracle);
+			const doctor_player = mock_game.player_manager.get(RoleNames.Doctor);
+			const framer_player = mock_game.player_manager.get(RoleNames.Framer);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -1300,9 +1300,9 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const oracle_player = mock_game.Players.get(RoleNames.Oracle);
-			const mafioso_player = mock_game.Players.get(RoleNames.Mafioso);
-			const framer_player = mock_game.Players.get(RoleNames.Framer);
+			const oracle_player = mock_game.player_manager.get(RoleNames.Oracle);
+			const mafioso_player = mock_game.player_manager.get(RoleNames.Mafioso);
+			const framer_player = mock_game.player_manager.get(RoleNames.Framer);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -1362,9 +1362,9 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const oracle_player = mock_game.Players.get(RoleNames.Oracle);
-			const doctor_player = mock_game.Players.get(RoleNames.Doctor);
-			const framer_player = mock_game.Players.get(RoleNames.Framer);
+			const oracle_player = mock_game.player_manager.get(RoleNames.Oracle);
+			const doctor_player = mock_game.player_manager.get(RoleNames.Doctor);
+			const framer_player = mock_game.player_manager.get(RoleNames.Framer);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -1425,8 +1425,8 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const impersonator_player = mock_game.Players.get(RoleNames.Impersonator);
-			const doctor_player = mock_game.Players.get(RoleNames.Doctor);
+			const impersonator_player = mock_game.player_manager.get(RoleNames.Impersonator);
+			const doctor_player = mock_game.player_manager.get(RoleNames.Doctor);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -1475,9 +1475,9 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const impersonator_player = mock_game.Players.get(RoleNames.Impersonator);
-			const doctor_player = mock_game.Players.get(RoleNames.Doctor);
-			const mafioso_player = mock_game.Players.get(RoleNames.Mafioso);
+			const impersonator_player = mock_game.player_manager.get(RoleNames.Impersonator);
+			const doctor_player = mock_game.player_manager.get(RoleNames.Doctor);
+			const mafioso_player = mock_game.player_manager.get(RoleNames.Mafioso);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -1523,8 +1523,8 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const kidnapper_player = mock_game.Players.get(RoleNames.Kidnapper);
-			const doctor_player = mock_game.Players.get(RoleNames.Doctor);
+			const kidnapper_player = mock_game.player_manager.get(RoleNames.Kidnapper);
+			const doctor_player = mock_game.player_manager.get(RoleNames.Doctor);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -1575,8 +1575,8 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const kidnapper_player = mock_game.Players.get(RoleNames.Kidnapper);
-			const vigilante_player = mock_game.Players.get(RoleNames.Vigilante);
+			const kidnapper_player = mock_game.player_manager.get(RoleNames.Kidnapper);
+			const vigilante_player = mock_game.player_manager.get(RoleNames.Vigilante);
 
 			await mock_game.startNight(mock_game.days_passed);
 
@@ -1619,8 +1619,8 @@ describe('EffectManager', () => {
 				]
 			);
 
-			const kidnapper_player = mock_game.Players.get(RoleNames.Kidnapper);
-			const escort_player = mock_game.Players.get(RoleNames.Escort);
+			const kidnapper_player = mock_game.player_manager.get(RoleNames.Kidnapper);
+			const escort_player = mock_game.player_manager.get(RoleNames.Escort);
 
 			await mock_game.startNight(mock_game.days_passed);
 

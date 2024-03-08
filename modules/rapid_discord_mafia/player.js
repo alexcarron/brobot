@@ -1,6 +1,7 @@
 const { RDMRoles, Announcements, MessageDelays, Feedback, Factions, RoleNames, AbilityTypes, TrialVotes, AbilityName: AbilityName, AbilityArgName, ArgumentSubtypes, Subphases, Votes, Phases } = require("../enums");
 const roles = require("./roles");
 const ids = require("../../data/ids.json");
+const Role = require("./role");
 
 const
 	{ getGuildMember, getRole, addRole, removeRole, getChannel, wait, getRandArrayItem, getRDMGuild, toTitleCase } = require("../functions"),
@@ -425,7 +426,7 @@ class Player {
 				console.log("Victim has heal affects");
 
 				for (let protection_affect of protection_affects_on_target) {
-					const protecter_player = global.Game.Players.get(protection_affect.by);
+					const protecter_player = global.Game.player_manager.get(protection_affect.by);
 					protecter_player.addFeedback(Feedback.ProtectedAnAttackedPlayer);
 
 					console.log(`${protecter_player.name} has protected the victim ${this.name}`);
@@ -473,7 +474,7 @@ class Player {
 				global.Game.winning_players.push(this.name);
 			}
 
-			let executioners = global.Game.Players.getExecutioners();
+			let executioners = global.Game.player_manager.getExecutioners();
 
 			console.log("Checking for exe wins");
 			for (let exe of executioners) {
@@ -482,7 +483,7 @@ class Player {
 				if ( exe.exe_target == this.name ) {
 					console.log("Announcing win and giving player win.");
 
-					const exe_player = global.Game.Players.get(exe.name);
+					const exe_player = global.Game.player_manager.get(exe.name);
 					await exe_player.sendFeedback(Feedback.WonAsExecutioner);
 					exe_player.makeAWinner();
 				}
@@ -548,7 +549,7 @@ class Player {
 			args: arg_values,
 		};
 
-		if (global.Game.Players.getAlivePlayers().every(player => player.ability_doing && player.ability_doing.name)) {
+		if (global.Game.player_manager.getAlivePlayers().every(player => player.ability_doing && player.ability_doing.name)) {
 			global.Game.startDay(global.Game.days_passed);
 		}
 	}
@@ -682,7 +683,7 @@ class Player {
 			await player_channel.delete();
 		}
 
-		global.Game.Players.removePlayer(this.name);
+		global.Game.player_manager.removePlayer(this.name);
 	}
 
 	async smite() {
@@ -733,7 +734,7 @@ class Player {
 		await this.sendFeedback(role.toString(), true);
 
 		if (role_name === RoleNames.Executioner) {
-			const alive_town_players = global.Game.Players.getTownPlayers().filter(player => player.isAlive);
+			const alive_town_players = global.Game.player_manager.getTownPlayers().filter(player => player.isAlive);
 			const rand_town_player = getRandArrayItem(alive_town_players);
 
 			if (rand_town_player)
@@ -908,7 +909,7 @@ class Player {
 	 */
 	votePlayer(player_voting_for) {
 		let curr_votes = global.Game.votes;
-		let max_voters_count = global.Game.Players.getAlivePlayers().filter(player => player.canVote === true).length;
+		let max_voters_count = global.Game.player_manager.getAlivePlayers().filter(player => player.canVote === true).length;
 		let feedback;
 
 		this.resetInactivity();
@@ -973,7 +974,7 @@ class Player {
 	 */
 	voteForTrialOutcome(trial_outcome) {
 		let curr_votes = global.Game.trial_votes;
-		let max_voters_count = global.Game.Players.getAlivePlayers().filter(
+		let max_voters_count = global.Game.player_manager.getAlivePlayers().filter(
 			player => player.name !== global.Game.on_trial && player.canVote === true
 		).length;
 		let feedback;
@@ -1057,6 +1058,35 @@ class Player {
 	 */
 	frame() {
 		this.percieved.role = RoleNames.Mafioso;
+	}
+
+	/**
+	 * @returns {boolean} True if player is in town faction, false otherwise
+	 */
+	isTown() {
+		if (this.role) {
+			const role = global.Roles[this.role]
+			if (role && role.faction === Factions.Town) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Gets the players role as a Role instance
+	 * @returns {Role | undefined} Returns role if player has valid role, otherwise undefined
+	 */
+	getRole() {
+		if (this.role) {
+			const role = global.Roles[this.role]
+			if (role) {
+				return role;
+			}
+		}
+
+		return undefined;
 	}
 }
 

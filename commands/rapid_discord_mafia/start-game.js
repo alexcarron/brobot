@@ -6,33 +6,16 @@ const Game = require("../../modules/rapid_discord_mafia/game");
 /* eslint-disable no-unused-vars */
 const
 	{ PermissionFlagsBits } = require("discord.js"),
-	{ faction_names, max_ratios } = require("../../data/rapid_discord_mafia/constants"),
-	{ Phases, GameStates, Subphases, Factions, AbilityUses, Announcements, PhaseWaitTimes, MessageDelays } = require("../../modules/enums"),
+	{ GameStates } = require("../../modules/enums"),
 	{
-		getChannel,
-		shuffleArray,
-		getRandArrayItem,
-		getGuildMember,
-		getCategoryChildren,
-		getRole,
-		logColor,
-		wait,
-		getUnixTimestamp,
 		deferInteraction
 	} = require("../../modules/functions"),
-	{
-		town_discussion_channel_id: day_chat_chnl_id,
-		living_role_id,
-		pre_game_category_id,
-		channels: channel_ids
-	} = require("../../data/ids.json").rapid_discord_mafia,
-	rdm_ids = require("../../data/ids.json").rapid_discord_mafia,
 	ids = require("../../data/ids.json");
 
 
 const command = new SlashCommand({
 	name: "start-game",
-	description: "Start an RDM game. Required: Players in players.json, player text channels",
+	description: "Start an RDM game.",
 });
 command.required_servers = [ids.servers.rapid_discord_mafia];
 command.required_permissions = [PermissionFlagsBits.Administrator];
@@ -49,7 +32,7 @@ command.execute = async function execute(interaction, role_identifiers_str) {
 	role_identifiers_str = interaction.options.getString(command.parameters[0].name);
 	const role_identifier_strings = role_identifiers_str.split(', ');
 
-	const player_count = global.Game.Players.getPlayerCount();
+	const player_count = global.Game.player_manager.getPlayerCount();
 
 	// Check if players exist
 	if (player_count <= 0) {

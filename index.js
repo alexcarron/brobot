@@ -161,8 +161,6 @@ const command_folders = fs.readdirSync(command_folders_path);
 // ! Set up Brobot
 global.client.once(Events.ClientReady, async () => {
 	const
-		Game = require("./modules/rapid_discord_mafia/game.js"),
-		Players = require("./modules/rapid_discord_mafia/players.js"),
 		LLPointManager = require("./modules/llpointmanager.js"),
 		config = require('./utilities/config.json');
 
@@ -380,12 +378,12 @@ global.client.on(Events.MessageCreate,
 	// Rapid Discord Mafia Kidnapper
 	if (
 		global.Game &&
-		global.Game.Players &&
+		global.Game.player_manager &&
 		global.Game.state === GameStates.InProgress &&
 		msg.channel.parentId === ids.rapid_discord_mafia.category.player_action &&
 		msg.type === Discord.MessageType.Default
 	) {
-		const kidnapped_players = global.Game.Players.getPlayerList()
+		const kidnapped_players = global.Game.player_manager.getPlayerList()
 			.filter(
 				/**
 				 * @param {Player} player
@@ -422,7 +420,7 @@ global.client.on(Events.MessageCreate,
 
 					const kidnapper_players = kidnapper_player_names
 						.map(player_name => {
-							return global.Game.Players.get(player_name)
+							return global.Game.player_manager.get(player_name)
 						});
 
 					kidnapper_players.forEach(player => {

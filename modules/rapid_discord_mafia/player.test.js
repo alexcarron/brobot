@@ -2,8 +2,6 @@ const { RoleNames, AbilityName: AbilityName, AbilityArgName } = require("../enum
 const RapidDiscordMafia = require("./RapidDiscordMafia");
 const RoleIdentifier = require("./RoleIdentifier");
 const Game = require("./game");
-const Player = require("./player");
-const Players = require("./PlayerManager");
 
 describe('Player', () => {
 	/**

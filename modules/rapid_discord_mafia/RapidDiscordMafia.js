@@ -3,7 +3,7 @@ const Contestant = require("./Contestant");
 const Logger = require("./Logger.js");
 const RoleIdentifier = require("./RoleIdentifier.js");
 const Game = require("./game.js");
-const Players = require("./PlayerManager.js");
+const PlayerManager = require("./PlayerManager.js");
 const roles = require("./roles");
 
 class RapidDiscordMafia {
@@ -14,7 +14,7 @@ class RapidDiscordMafia {
 	static async setUpRapidDiscordMafia(isMockObject = false) {
 		global.Roles = require("./roles");
 		global.Game = new Game(
-			new Players({}, isMockObject),
+			new PlayerManager({}, isMockObject),
 			new Logger(),
 			isMockObject
 		);
@@ -28,7 +28,7 @@ class RapidDiscordMafia {
 	}
 
 	static getEmptyGame(isMockGame=false) {
-		return new Game(new Players, new Logger, isMockGame)
+		return new Game(new PlayerManager, new Logger, isMockGame)
 	}
 
 	/**
@@ -41,7 +41,7 @@ class RapidDiscordMafia {
 			let num_players_with_role = 1;
 			let player_name = name;
 
-			while ( mock_game.Players.getPlayerNames().includes(player_name) ) {
+			while ( mock_game.player_manager.getPlayerNames().includes(player_name) ) {
 				num_players_with_role += 1;
 				player_name = name + num_players_with_role;
 			}
@@ -55,7 +55,7 @@ class RapidDiscordMafia {
 		[...new Set(roles_in_game)].forEach(async role_name => {
 			const role = roles[role_name];
 
-			const players_with_role = mock_game.Players.getPlayerList().filter(player => {
+			const players_with_role = mock_game.player_manager.getPlayerList().filter(player => {
 				return player.name.startsWith(role_name)
 			});
 

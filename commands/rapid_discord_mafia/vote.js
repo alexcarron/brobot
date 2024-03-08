@@ -66,10 +66,10 @@ command.execute = async function execute(interaction, isTest=false) {
 	let voter_player, max_voters_count
 
 	if (isTest) {
-		voter_player = global.Game.Players.getPlayerFromName(interaction.options.getString("player-voting"));
+		voter_player = global.Game.player_manager.getPlayerFromName(interaction.options.getString("player-voting"));
 	}
 	else {
-		voter_player = global.Game.Players.getPlayerFromId(interaction.user.id);
+		voter_player = global.Game.player_manager.getPlayerFromId(interaction.user.id);
 	}
 
 	const subcommand_name = interaction.options.getSubcommand();
@@ -104,7 +104,7 @@ command.autocomplete = async function(interaction) {
 	if (!focused_param) return;
 	const entered_value = focused_param.value;
 
-	autocomplete_values = global.Game.Players.getAlivePlayers()
+	autocomplete_values = global.Game.player_manager.getAlivePlayers()
 		.map((player) => {return {name: player.name, value: Enums.Votes.Player(player.name)}})
 
 	autocomplete_values.push({name: "Abstain", value: Enums.Votes.Abstain});

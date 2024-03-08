@@ -72,7 +72,7 @@ class Ability {
 		name,
 		type,
 		uses,
-		feedback=()=>``,
+		feedback,
 		phases_can_use=[Phases.Night],
 		description,
 		priority,

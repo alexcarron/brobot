@@ -48,7 +48,7 @@ class EffectManager {
 				console.log({game, player_using_ability, ability, arg_values})
 				const
 					roleblocked_player_name = player_using_ability.visiting,
-					roleblocked_player = game.Players.get(roleblocked_player_name),
+					roleblocked_player = game.player_manager.get(roleblocked_player_name),
 					roleblocked_player_role = global.Roles[ roleblocked_player.role ];
 
 				console.log({roleblocked_player_name, roleblocked_player, roleblocked_player_role});
@@ -104,7 +104,7 @@ class EffectManager {
 			applyEffect: async function(game, player_using_ability, ability, arg_values) {
 				const
 					player_healing_name = player_using_ability.visiting,
-					player_healing = game.Players.get(player_healing_name);
+					player_healing = game.player_manager.get(player_healing_name);
 
 				player_healing.giveDefenseLevel(2);
 
@@ -125,7 +125,7 @@ class EffectManager {
 		// 	applyEffect: async function(game, player_using_ability, ability, arg_values) {
 		// 		const
 		// 			player_killing_name = arg_values[AbilityArgName.PlayerKilling],
-		// 			mafioso_player = game.Players.getPlayerWithRole(RoleNames.Mafioso);
+		// 			mafioso_player = game.player_manager.getPlayerWithRole(RoleNames.Mafioso);
 
 		// 		if (mafioso_player) {
 		// 			mafioso_player.visiting = player_killing_name;
@@ -158,7 +158,7 @@ class EffectManager {
 			applyEffect: async function(game, player_using_ability, ability, arg_values) {
 				const
 					attacked_player_name = player_using_ability.visiting,
-					attacked_player = game.Players.get(attacked_player_name);
+					attacked_player = game.player_manager.get(attacked_player_name);
 
 				attacked_player.receiveAttackFrom(player_using_ability);
 
@@ -171,7 +171,7 @@ class EffectManager {
 			applyEffect: async function(game, player_using_ability, ability, arg_values) {
 				const
 					framed_player_name = player_using_ability.visiting,
-					framed_player = game.Players.get(framed_player_name);
+					framed_player = game.player_manager.get(framed_player_name);
 
 				framed_player.frame();
 
@@ -193,7 +193,7 @@ class EffectManager {
 			applyEffect: async function(game, player_using_ability, ability, arg_values) {
 				const
 					exe_target_name = player_using_ability.exe_target,
-					exe_target_player = game.Players.get(exe_target_name);
+					exe_target_player = game.player_manager.get(exe_target_name);
 
 				exe_target_player.frame();
 
@@ -206,7 +206,7 @@ class EffectManager {
 			applyEffect: async function(game, player_using_ability, ability, arg_values) {
 				const
 					player_evaluating_name = player_using_ability.visiting,
-					player_evaluating = game.Players.get(player_evaluating_name),
+					player_evaluating = game.player_manager.get(player_evaluating_name),
 					evaluated_role = global.Roles[ player_evaluating.getPercievedRole() ];
 
 				const evaluatedPlayerInMafia =
@@ -249,7 +249,7 @@ class EffectManager {
 			applyEffect: async function(game, player_using_ability, ability, arg_values) {
 				const
 					tracked_player_name = player_using_ability.visiting,
-					tracked_player = game.Players.get(tracked_player_name),
+					tracked_player = game.player_manager.get(tracked_player_name),
 					player_seen_visiting = tracked_player.getPercievedVisit();
 
 				console.log({tracker_player_name: player_using_ability.name, tracked_player_name, player_seen_visiting});
@@ -278,13 +278,13 @@ class EffectManager {
 
 				const
 					target_player_name = player_using_ability.visiting,
-					target_player = game.Players.get(target_player_name);
+					target_player = game.player_manager.get(target_player_name);
 
 				console.log(`${player_using_ability.name} looks out at ${target_player_name}'s house`);
 
 				let players_seen_visiting = [];
 
-				game.Players.getPlayerList().forEach(player => {
+				game.player_manager.getPlayerList().forEach(player => {
 					const player_visiting_name = player.getPercievedVisit();
 
 					const isPlayerTarget = player.name === target_player.name;
@@ -314,7 +314,7 @@ class EffectManager {
 			applyEffect: async function(game, player_using_ability, ability, arg_values) {
 				const
 					investigated_player_name = player_using_ability.visiting,
-					investigated_player = game.Players.get(investigated_player_name),
+					investigated_player = game.player_manager.get(investigated_player_name),
 					evaluated_role_name = investigated_player.getPercievedRole();
 
 				player_using_ability.addFeedback(Feedback.InvestigatedPlayersRole(investigated_player_name, evaluated_role_name));
@@ -328,7 +328,7 @@ class EffectManager {
 			applyEffect: async function(game, player_using_ability, ability, arg_values) {
 				const
 					smithed_player_name = player_using_ability.visiting,
-					smithed_player = game.Players.get(smithed_player_name);
+					smithed_player = game.player_manager.get(smithed_player_name);
 
 				console.log({smither_player_name: player_using_ability.name, smithed_player_name});
 
@@ -354,7 +354,7 @@ class EffectManager {
 				const
 					player_controlling_name = arg_values[AbilityArgName.PlayerControlling],
 					player_controlling_into_name = arg_values[AbilityArgName.PlayerControlledInto],
-					player_controlling = game.Players.get(player_controlling_name),
+					player_controlling = game.player_manager.get(player_controlling_name),
 					player_controlling_role = global.Roles[player_controlling.role],
 					ability_to_control = player_controlling_role.abilities[0];
 
@@ -456,7 +456,7 @@ class EffectManager {
 			name: this.EffectName.Observe,
 			applyEffect: async function(game, player_using_ability, ability, arg_values) {
 				const
-					player_observing = game.Players.get(player_using_ability.visiting),
+					player_observing = game.player_manager.get(player_using_ability.visiting),
 					percieved_role_of_target = global.Roles[ player_observing.getPercievedRole() ],
 					percieved_faction_of_target = percieved_role_of_target.faction,
 					last_player_observed_name = player_using_ability.last_player_observed_name,
@@ -469,7 +469,7 @@ class EffectManager {
 				}
 				else {
 					const
-						last_player_observed = game.Players.get(last_player_observed_name),
+						last_player_observed = game.player_manager.get(last_player_observed_name),
 						percieved_role_of_last_target = global.Roles[ last_player_observed.getPercievedRole() ],
 						percieved_faction_of_last_target = percieved_role_of_last_target.faction;
 
@@ -502,7 +502,7 @@ class EffectManager {
 			applyEffect: async function(game, player_using_ability, ability, arg_values) {
 				const
 					player_replacing_name = player_using_ability.visiting,
-					player_replacing = game.Players.get(player_replacing_name);
+					player_replacing = game.player_manager.get(player_replacing_name);
 
 				console.log(`${player_using_ability.name} attempts to replace ${player_replacing_name}.`);
 
@@ -529,7 +529,7 @@ class EffectManager {
 			applyEffect: async function(game, player_using_ability, ability, arg_values) {
 				const
 					kidnapped_player_name = player_using_ability.visiting,
-					kidnapped_player = game.Players.get(kidnapped_player_name),
+					kidnapped_player = game.player_manager.get(kidnapped_player_name),
 					kidnapped_player_role = global.Roles[kidnapped_player.role];
 
 				console.log({kidnapped_player_name, kidnapped_player, kidnapped_player_role});

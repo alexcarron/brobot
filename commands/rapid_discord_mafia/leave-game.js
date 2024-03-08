@@ -14,7 +14,7 @@ command.required_roles = [ids.rapid_discord_mafia.roles.living];
 command.execute = async function(interaction) {
 	await deferInteraction(interaction);
 
-	const player = global.Game.Players.getPlayerFromId(interaction.user.id);
+	const player = global.Game.player_manager.getPlayerFromId(interaction.user.id);
 
 	if (global.Game.state === GameStates.SignUp) {
 		if (

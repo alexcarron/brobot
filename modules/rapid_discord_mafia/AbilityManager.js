@@ -499,7 +499,7 @@ class AbilityManager {
 				EffectName.Observe
 			],
 			feedback: function(player_observing, player_name="You", isYou=true) {
-				const player = global.Game.Players.get(player_name);
+				const player = global.Game.player_manager.get(player_name);
 				const last_player_observed_name = player.last_player_observed_name;
 
 				if (last_player_observed_name) {

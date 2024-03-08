@@ -23,7 +23,7 @@ command.execute = async function execute(interaction) {
 	await interaction.deferReply({ephemeral: true});
 
 	let player_id = interaction.user.id,
-		old_player_name = global.Game.Players.getPlayerFromId(player_id).name,
+		old_player_name = global.Game.player_manager.getPlayerFromId(player_id).name,
 		new_player_name = interaction.options.getString(command.parameters[0].name);
 
 
@@ -31,7 +31,7 @@ command.execute = async function execute(interaction) {
 		return await interaction.editReply(`Sorry, you can only change your name during sign-ups.`);
 	}
 
-	if ( this.Players && this.Players.get(new_player_name) ) {
+	if ( global.Game.player_manager && global.Game.player_manager.get(new_player_name) ) {
 		return await interaction.editReply(`The name, **${new_player_name}**, already exists.`)
 	}
 
@@ -39,7 +39,7 @@ command.execute = async function execute(interaction) {
 	if (validator_result !== true)
 		return await interaction.editReply(validator_result);
 
-	await global.Game.Players.renamePlayer(old_player_name, new_player_name);
+	await global.Game.player_manager.renamePlayer(old_player_name, new_player_name);
 
 	await interaction.editReply(`You, **${old_player_name}**, changed your name to **${new_player_name}**.`);
 	await global.Game.announceMessages(`**${old_player_name}** changed their name to **${new_player_name}**.`);

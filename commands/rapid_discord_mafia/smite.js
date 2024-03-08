@@ -24,7 +24,7 @@ command.execute = async function execute(interaction, isTest=false) {
 	await deferInteraction(interaction);
 
 	const player_name = interaction.options.getString(Parameters.PlayerSmiting.name);
-	const player = global.Game.Players.getPlayerFromName(player_name);
+	const player = global.Game.player_manager.getPlayerFromName(player_name);
 	await player.smite();
 	await interaction.editReply(`You have smited **${player.name}**`);
 }
@@ -34,7 +34,7 @@ command.autocomplete = async function(interaction) {
 	if (!focused_param) return;
 	const entered_value = focused_param.value;
 
-	autocomplete_values = global.Game.Players.getAlivePlayers()
+	autocomplete_values = global.Game.player_manager.getAlivePlayers()
 		.map((player) => {return {name: player.name, value: player.name}})
 
 	autocomplete_values = autocomplete_values

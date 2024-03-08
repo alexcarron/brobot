@@ -6,7 +6,7 @@ const { github_token } =  require("../token.js");
 const { PermissionFlagsBits, Role, Interaction } = require("discord.js");
 const Death = require("./death.js");
 const roles = require("./roles.js");
-const Players = require("./PlayerManager.js");
+const PlayerManager = require("./PlayerManager.js");
 const Player = require("./player.js");
 const Arg = require("./arg.js");
 const EffectManager = require("./EffectManager.js");
@@ -35,9 +35,9 @@ class Game {
 
 	/**
 	 * A player manager service to keep track of players in the game
-	 * @type {Players}
+	 * @type {PlayerManager}
 	 */
-	Players;
+	player_manager;
 
 	/**
 	 * A logger to log messages
@@ -53,17 +53,17 @@ class Game {
 
 	/**
 	 *
-	 * @param {Players} players - An instance of the players class
+	 * @param {PlayerManager} player_manager
 	 * @param {Logger} logger - An instance of a logger
 	 * @param {boolean} isMockGame
 	 */
-	constructor(players, logger, isMockGame=false) {
+	constructor(player_manager, logger, isMockGame=false) {
 		this.effect_manager = new EffectManager(this, logger);
 		this.ability_manager = new AbilityManager();
 		this.logger = logger;
 
 		this.state = GameStates.Ended;
-		this.Players = players;
+		this.player_manager = player_manager;
 		this.phase = null;
 		this.subphase = null;
 		this.days_passed = 0;
@@ -107,14 +107,14 @@ class Game {
 	];
 
 	logPlayers() {
-		console.log(JSON.stringify(this.Players, null, 2));
+		console.log(JSON.stringify(this.player_manager, null, 2));
 	}
 
 	/**
 	 * Looks at all the player's abilities performed fields and adds them to the current abilities performed
 	 */
 	async updateCurrentAbilitiesPerformed() {
-		this.abilities_performed = await this.Players.getPlayerList()
+		this.abilities_performed = await this.player_manager.getPlayerList()
 		.filter(player =>  !player.isDoingNothing())
 		.map(
 			player => {
@@ -194,10 +194,10 @@ class Game {
 
 		}
 
-		this.Players = new Players();
+		this.player_manager = new PlayerManager();
 
-		for (const player_obj of Object.values(game_json.Players.players)) {
-			await this.Players.addPlayerFromObj(player_obj);
+		for (const player_obj of Object.values(game_json.player_manager.players)) {
+			await this.player_manager.addPlayerFromObj(player_obj);
 		}
 	}
 
@@ -228,7 +228,7 @@ class Game {
 		this.winning_players = [];
 		this.role_list = [];
 		this.abilities_performed = {};
-		this.Players.reset();
+		this.player_manager.reset();
 
 		await this.createRoleList();
 		this.role_list = shuffleArray(this.role_list);
@@ -240,10 +240,10 @@ class Game {
 		}
 
 		await this.announceMessages(
-			Announcements.LivingPlayers(this.Players.getAlivePlayerNames())
+			Announcements.LivingPlayers(this.player_manager.getAlivePlayerNames())
 		);
 
-		this.Players.getPlayerList().forEach(player => {
+		this.player_manager.getPlayerList().forEach(player => {
 			this.role_log[player.name] = player.role;
 		})
 
@@ -289,7 +289,7 @@ class Game {
 		for (let [role_index, role_name] of this.role_list.entries()) {
 			const
 				role = roles[role_name],
-				players = this.Players.getPlayerList(),
+				players = this.player_manager.getPlayerList(),
 				player = players[role_index];
 
 			await player.setRole(role);
@@ -303,10 +303,10 @@ class Game {
 	 * Sets and sends a target for all executioner players
 	 */
 	async giveAllExesTargets() {
-		for (const player of this.Players.getPlayerList()) {
+		for (const player of this.player_manager.getPlayerList()) {
 
 			if (player.role === RoleNames.Executioner) {
-				const rand_town_player = getRandArrayItem(this.Players.getTownPlayers());
+				const rand_town_player = getRandArrayItem(this.player_manager.getTownPlayers());
 
 				if (rand_town_player)
 					player.setExeTarget(rand_town_player);
@@ -550,7 +550,7 @@ class Game {
 	async killDeadPlayers() {
 		await this.announceAllDeaths();
 		await this.announceMessages(
-			Announcements.LivingPlayers(this.Players.getAlivePlayerNames())
+			Announcements.LivingPlayers(this.player_manager.getAlivePlayerNames())
 		);
 
 		console.log(this.next_deaths);
@@ -565,7 +565,7 @@ class Game {
 				}
 		 */
 		for (let death of this.next_deaths) {
-			const victim_player = this.Players.get(death.victim);
+			const victim_player = this.player_manager.get(death.victim);
 			await victim_player.kill(death);
 		}
 
@@ -580,8 +580,8 @@ class Game {
 	}
 
 	async remindPlayersTo(reminder, votersOnly=false) {
-		for (const player_name of this.Players.getAlivePlayerNames()) {
-			const player = this.Players.get(player_name);
+		for (const player_name of this.player_manager.getAlivePlayerNames()) {
+			const player = this.player_manager.get(player_name);
 
 			if (votersOnly) {
 				if (!player.canVote)
@@ -625,7 +625,7 @@ class Game {
 		this.days_passed += 0.5;
 
 		await Game.log("Incrementing Inactvity")
-		this.Players.getAlivePlayers().forEach(player => {
+		this.player_manager.getAlivePlayers().forEach(player => {
 				if (!Game.IS_TESTING) player.incrementInactvity();
 		});
 	}
@@ -640,7 +640,7 @@ class Game {
 		this.days_passed += 0.5;
 
 		await Game.log("Incrementing Inactvity")
-		this.Players.getAlivePlayers().forEach(player => {
+		this.player_manager.getAlivePlayers().forEach(player => {
 			if (!Game.IS_TESTING) player.incrementInactvity();
 		});
 	}
@@ -662,7 +662,7 @@ class Game {
 		this.on_trial = this.getMajorityVote(this.votes);
 
 		await Game.log("Incrementing Inactvity")
-		this.Players.getAlivePlayers().forEach(player => {
+		this.player_manager.getAlivePlayers().forEach(player => {
 			if (!Game.IS_TESTING) player.incrementInactvity();
 		});
 	}
@@ -674,9 +674,9 @@ class Game {
 
 		this.subphase = Subphases.TrialResults;
 
-		if (this.Players.getAlivePlayerNames().includes(this.on_trial)) {
+		if (this.player_manager.getAlivePlayerNames().includes(this.on_trial)) {
 			await Game.log("Incrementing Inactvity")
-			this.Players.getAlivePlayers().forEach(player => {
+			this.player_manager.getAlivePlayers().forEach(player => {
 				if (player.name !== this.on_trial) {
 					if (!Game.IS_TESTING) player.incrementInactvity();
 				}
@@ -686,7 +686,7 @@ class Game {
 	}
 
 	async resetPlayerOnTrial() {
-		const player_on_trial = this.Players.get(this.on_trial);
+		const player_on_trial = this.player_manager.get(this.on_trial);
 
 		if (!this.isMockGame) {
 			const rdm_guild = await getRDMGuild();
@@ -700,7 +700,7 @@ class Game {
 	}
 
 	async lynchPlayerOnTrial() {
-		const player_on_trial = this.Players.get(this.on_trial);
+		const player_on_trial = this.player_manager.get(this.on_trial);
 
 		const death = new Death({
 			victim: player_on_trial.name
@@ -729,7 +729,7 @@ class Game {
 
 	async announceTrialVerdict() {
 		let trial_outcome_message = ""
-		const player_on_trial = this.Players.get(this.on_trial);
+		const player_on_trial = this.player_manager.get(this.on_trial);
 
 		if (this.verdict === TrialOutcomes.Tie) {
 			trial_outcome_message = Announcements.TrialOutcomeTie(player_on_trial);
@@ -878,7 +878,7 @@ class Game {
 			console.log(Object.keys(this.abilities_performed));
 
 			let player_name = Object.keys(this.abilities_performed)[i],
-				player = this.Players.get(player_name),
+				player = this.player_manager.get(player_name),
 				ability_performed = this.abilities_performed[player_name],
 				ability = this.ability_manager.getAbility(ability_performed.name);
 
@@ -911,7 +911,7 @@ class Game {
 				)
 			);
 
-			if (this.Players.get(player_name).isRoleblocked) {
+			if (this.player_manager.get(player_name).isRoleblocked) {
 				await Game.log(`${player_name} is roleblocked, so they can't do ${ability_performed.name}`);
 				continue;
 			}
@@ -923,7 +923,7 @@ class Game {
 				console.log({ability_performed});
 
 				const player_using_ability_name = ability_performed.by;
-				const player_using_ability = this.Players.get(player_using_ability_name);
+				const player_using_ability = this.player_manager.get(player_using_ability_name);
 
 				const ability_name = ability_performed.name;
 				const ability_using = this.ability_manager.getAbility(ability_name);
@@ -953,7 +953,7 @@ class Game {
 	async announceAllDeaths() {
 		for (let death of this.next_deaths) {
 			await Game.log(`Killing ${death.victim}`);
-			this.Players.get(death.victim).isAlive = false;
+			this.player_manager.get(death.victim).isAlive = false;
 
 			const death_messages = this.getDeathMessages(death);
 			await this.announceMessages(...death_messages);
@@ -1075,11 +1075,11 @@ class Game {
 
 	async sendFeedbackToPlayers() {
 		console.log("Sending Feedback");
-		console.log(this.Players.getPlayers());
+		console.log(this.player_manager.getPlayers());
 
-		for (let player_name of this.Players.getPlayerNames()) {
+		for (let player_name of this.player_manager.getPlayerNames()) {
 			const
-				player = this.Players.get(player_name),
+				player = this.player_manager.get(player_name),
 				player_feedback = player.feedback,
 				player_id = player.id;
 
@@ -1098,7 +1098,7 @@ class Game {
 	}
 
 	resetPlayers() {
-		this.Players = new Players();
+		this.player_manager = new PlayerManager();
 	}
 
 	resetVotes() {
@@ -1128,8 +1128,8 @@ class Game {
 	async resetAllPlayersNightInfo() {
 		await Game.log("Reseting Every Player's Night Info");
 
-		for (const player_name of this.Players.getPlayerNames()) {
-			const player = this.Players.get(player_name);
+		for (const player_name of this.player_manager.getPlayerNames()) {
+			const player = this.player_manager.get(player_name);
 
 			player.resetVisiting();
 			player.resetAbilityDoing();
@@ -1248,7 +1248,7 @@ class Game {
 		await this.setPhaseToNextPhase();
 		const days_passed_last_day = this.days_passed;
 
-		for (const player of this.Players.getPlayersInLimbo()) {
+		for (const player of this.player_manager.getPlayersInLimbo()) {
 			player.isInLimbo = false;
 		}
 
@@ -1336,7 +1336,7 @@ class Game {
 
 		await this.announceVotingResults();
 
-		const alive_player_names = this.Players.getAlivePlayerNames();
+		const alive_player_names = this.player_manager.getAlivePlayerNames();
 
 		// If non-player voting outcome, skip to night
 		if (!alive_player_names.includes(this.on_trial)) {
@@ -1345,7 +1345,7 @@ class Game {
 			return;
 		}
 
-		const player_on_trial = this.Players.get(this.on_trial);
+		const player_on_trial = this.player_manager.get(this.on_trial);
 
 		await this.announceMessages(...Announcements.StartTrial(player_on_trial));
 		await this.givePlayerOnTrialRole(player_on_trial);
@@ -1467,7 +1467,7 @@ class Game {
 		if (!focused_param) return;
 		const entered_value = focused_param.value;
 
-		autocomplete_values = global.Game.Players.getAlivePlayers()
+		autocomplete_values = global.Game.player_manager.getAlivePlayers()
 			.map((player) => {return {name: player.name, value: player.name}})
 			.filter(autocomplete_entry => autocomplete_entry.value.toLowerCase().startsWith(entered_value.toLowerCase()));
 
@@ -1493,7 +1493,7 @@ class Game {
 	async addPlayerToGame(player_name, player_id, interaction, isMockUser=false) {
 		let player_member;
 
-		if ( this.Players && this.Players.get(player_name) ) {
+		if ( this.player_manager && this.player_manager.get(player_name) ) {
 			if (!this.isMockGame)
 				await interaction.editReply(`The name, **${player_name}**, already exists.`);
 			return new Player({});
@@ -1525,8 +1525,8 @@ class Game {
 		if (this.isMockGame)
 			player_obj.isMockPlayer = true;
 
-		const player = await this.Players.addPlayerFromObj(player_obj);
-		const players = this.Players.getPlayerList();
+		const player = await this.player_manager.addPlayerFromObj(player_obj);
+		const players = this.player_manager.getPlayerList();
 
 		if (!this.isMockGame) {
 			await player.createChannel();
@@ -1550,7 +1550,7 @@ class Game {
 			living_lone_survival_roles = [], // Roles that need to survive while eliminating every other faction
 			living_survival_roles = [], // Roles that only need to survive to the end
 			living_survive_without_town_roles = [], // Roles that only need to survive to the end
-			alive_players = this.Players.getAlivePlayers()
+			alive_players = this.player_manager.getAlivePlayers()
 
 		for (let player_info of alive_players) {
 			const player_role = global.Roles[player_info.role];
@@ -1611,7 +1611,7 @@ class Game {
 				winning_faction = faction_checking;
 				winning_players = [
 					...winning_players,
-					...this.Players.getPlayerList()
+					...this.player_manager.getPlayerList()
 						.filter(p =>
 							roles[p.role].faction == faction_checking && !winning_players.includes(p.name)
 						)
@@ -1729,7 +1729,7 @@ class Game {
 	 */
 	getDeathMessages(death, type="attack") {
 		let victim_name = death.victim,
-			victim_player = this.Players.get(victim_name),
+			victim_player = this.player_manager.get(victim_name),
 			death_announcement_msgs = [];
 
 		// Make cause of death message
@@ -1738,7 +1738,7 @@ class Game {
 
 
 			for (let [index, kill] of death.kills.entries()) {
-				const killer = this.Players.get(kill.killer_name);
+				const killer = this.player_manager.get(kill.killer_name);
 
 				if (kill.flavor_text) {
 					death_announcement_msgs.push(kill.flavor_text);
@@ -1799,12 +1799,12 @@ class Game {
 	}
 
 	async promoteMafia() {
-		if (this.Players.isFactionAlive(Factions.Mafia)) {
+		if (this.player_manager.isFactionAlive(Factions.Mafia)) {
 			if (
-				!this.Players.isRoleAlive(RoleNames.Mafioso) &&
-				!this.Players.isRoleAlive(RoleNames.Godfather)
+				!this.player_manager.isRoleAlive(RoleNames.Mafioso) &&
+				!this.player_manager.isRoleAlive(RoleNames.Godfather)
 			) {
-				const mafia_players = this.Players.getAlivePlayersInFaction(Factions.Mafia)
+				const mafia_players = this.player_manager.getAlivePlayersInFaction(Factions.Mafia)
 
 				const player_to_promote = getRandArrayItem(mafia_players);
 				player_to_promote.convertToRole(RoleNames.Mafioso);
@@ -1837,20 +1837,20 @@ class Game {
 			);
 		}
 
-		this.Players.getPlayerList().forEach(async player => {
+		this.player_manager.getPlayerList().forEach(async player => {
 			const contestant = global.rapid_discord_mafia.getContestantFromPlayer(player);
 			contestant.giveCoins(CoinRewards.Participation);
 		});
 
 		await global.Game.announceMessages(
 			Announcements.RewardCoinsToPlayers(
-				this.Players.getPlayerList().map(player => player.name),
+				this.player_manager.getPlayerList().map(player => player.name),
 				CoinRewards.Participation
 			)
 		);
 
 		this.winning_players.forEach(async player_name => {
-			const player = this.Players.get(player_name);
+			const player = this.player_manager.get(player_name);
 			const contestant = global.rapid_discord_mafia.getContestantFromPlayer(player);
 			const coins_rewarded = CoinRewards.Winning;
 
@@ -2294,7 +2294,7 @@ class Game {
 			// console.timeEnd("setDefenseChannelPerms");
 		}
 
-		global.Game = new Game( new Players(), this.logger, this.isMockGame );
+		global.Game = new Game( new PlayerManager(), this.logger, this.isMockGame );
 	}
 
 	async startSignUps() {
@@ -2341,7 +2341,7 @@ class Game {
 			if (this.state !== GameStates.SignUp) return
 		}
 
-		const player_count = this.Players.getPlayerCount();
+		const player_count = this.player_manager.getPlayerCount();
 
 		if (player_count >= Game.MIN_PLAYER_COUNT) {
 			await this.announceMessages(
@@ -2374,7 +2374,7 @@ class Game {
 	 */
 	isValidArgValue(player_using_ability, ability_arg, arg_value) {
 		if (ability_arg.type === ArgumentTypes.Player) {
-			if (!this.Players.getPlayerNames().includes(arg_value)) {
+			if (!this.player_manager.getPlayerNames().includes(arg_value)) {
 				return `**${arg_value}** is not a valid player for the argument **${ability_arg.name}**`
 			}
 		}
@@ -2386,7 +2386,7 @@ class Game {
 		}
 
 		if (ability_arg.subtypes.includes(ArgumentSubtypes.NonMafia)) {
-			const player_targeting = this.Players.get(arg_value);
+			const player_targeting = this.player_manager.get(arg_value);
 			const player_targeting_role = roles[player_targeting.role];
 			if (player_targeting_role.faction === Factions.Mafia) {
 				return `You cannot target **${player_targeting.name}** as you may only target non-mafia`;

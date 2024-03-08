@@ -84,10 +84,10 @@ command.execute = async function(interaction, isTest) {
 	// Get player from user or player name argument
 	if (isTest) {
 		const player_name = interaction.options.getString("player-name");
-		player = global.Game.Players.getPlayerFromName(player_name);
+		player = global.Game.player_manager.getPlayerFromName(player_name);
 	}
 	else {
-		player = global.Game.Players.getPlayerFromId(interaction.user.id);
+		player = global.Game.player_manager.getPlayerFromId(interaction.user.id);
 	}
 
 	if (!player) {
@@ -174,7 +174,7 @@ command.autocomplete = async function(interaction) {
 
 	if (!focused_param) return;
 
-	const player_using_command = global.Game.Players.getPlayerFromId(interaction.user.id);
+	const player_using_command = global.Game.player_manager.getPlayerFromId(interaction.user.id);
 
 	if (!player_using_command) {
 		return await interaction.respond(
@@ -200,7 +200,7 @@ command.autocomplete = async function(interaction) {
 
 	if (ability_arg.type === ArgumentTypes.Player) {
 		autocomplete_values =
-			global.Game.Players.getAlivePlayers().filter(
+			global.Game.player_manager.getAlivePlayers().filter(
 				(player) => {
 
 					if (
