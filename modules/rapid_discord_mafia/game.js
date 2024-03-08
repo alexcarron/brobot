@@ -36,6 +36,12 @@ class Game {
 	logger;
 
 	/**
+	 * A list of all the next deaths to execute
+	 * @type {Death[]}
+	 */
+	next_deaths;
+
+	/**
 	 *
 	 * @param {Players} players - An instance of the players class
 	 * @param {Logger} logger - An instance of a logger
@@ -914,16 +920,19 @@ class Game {
 
 				const arg_values = ability_performed.args ?? {};
 
-				ability.effects.forEach(
-					async (effect_name) => {
-						await this.effect_manager.useEffect({
-							effect_name: effect_name,
-							player_using_ability: player_using_ability,
-							ability: ability_using,
-							arg_values: arg_values,
-						});
-					}
-				)
+				for (let effect_name of ability.effects) {
+					console.log("Using effect " + effect_name);
+
+					await this.effect_manager.useEffect({
+						effect_name: effect_name,
+						player_using_ability: player_using_ability,
+						ability: ability_using,
+						arg_values: arg_values,
+					});
+
+					console.log("Effected used")
+				}
+
 				console.table(this.abilities_performed);
 			}
 

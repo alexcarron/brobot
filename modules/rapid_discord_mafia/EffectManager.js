@@ -459,11 +459,12 @@ class EffectManager {
 					player_observing = game.Players.get(player_using_ability.visiting),
 					percieved_role_of_target = global.Roles[ player_observing.getPercievedRole() ],
 					percieved_faction_of_target = percieved_role_of_target.faction,
-					last_player_observed_name = player_using_ability.last_player_observed_name;
+					last_player_observed_name = player_using_ability.last_player_observed_name,
+					hasObservedPlayerBefore = last_player_observed_name !== undefined;
 
 				let feedback = "";
 
-				if (!last_player_observed_name) {
+				if (!hasObservedPlayerBefore) {
 					feedback = Feedback.ObservedWithNoPreviousObserve(player_observing);
 				}
 				else {
@@ -512,7 +513,7 @@ class EffectManager {
 					player_replacing.isUnidentifiable = true;
 
 					player_using_ability.addFeedback(Feedback.ReplacedPlayer(player_replacing));
-					player_replacing.addFeedback(Feedback.ReplacedByReplacer());
+					player_replacing.addFeedback(Feedback.ReplacedByReplacer);
 
 					player_replacing.addAbilityAffectedBy(player_using_ability, ability.name);
 				}
@@ -526,8 +527,6 @@ class EffectManager {
 		[this.EffectName.Kidnap]: new Effect({
 			name: this.EffectName.Kidnap,
 			applyEffect: async function(game, player_using_ability, ability, arg_values) {
-				console.log({game});
-				console.log(game.Players);
 				const
 					kidnapped_player_name = player_using_ability.visiting,
 					kidnapped_player = game.Players.get(kidnapped_player_name),
@@ -543,17 +542,14 @@ class EffectManager {
 					player_using_ability.addFeedback(Feedback.AttackedByKidnappedPlayer(kidnapped_player));
 					kidnapped_player.addFeedback(Feedback.AttackedKidnapper);
 
-					console.log("AFFECTED BY")
-					console.log(kidnapped_player.affected_by);
-
-					kidnapped_player.receiveAttackFrom(player_using_ability);
+					player_using_ability.receiveAttackFrom(kidnapped_player);
 				}
 				else {
 					player_using_ability.addFeedback(Feedback.KidnappedPlayer(kidnapped_player));
 				}
 
 				if (
-					!(kidnapped_player.immunities &&
+					!(kidnapped_player_role.immunities &&
 						kidnapped_player_role.immunities.includes(Immunities.Roleblock))
 				) {
 					kidnapped_player.isRoleblocked = true;
@@ -568,7 +564,9 @@ class EffectManager {
 				await kidnapped_player.mute();
 				await kidnapped_player.removeVotingAbility();
 
-				kidnapped_player.addAbilityAffectedBy(player_using_ability, ability.name);
+				console.log("Adding ability affected by");
+				await kidnapped_player.addAbilityAffectedBy(player_using_ability, ability.name);
+				console.log("Added ability affected by");
 			}
 		}),
 

@@ -54,6 +54,11 @@ class Player {
 	canVote;
 
 	/**
+	 * @type {{role: string, visiting: string}}
+	 */
+	percieved;
+
+	/**
 	 * An array of all feedback messages to be sent to the player
 	 * @type {string[]}
 	 */
@@ -211,11 +216,11 @@ class Player {
 		console.log(`Unmuted **${this.name}**.`);
 	}
 
-	removeVotingAbility() {
+	async removeVotingAbility() {
 		this.canVote = false;
 	}
 
-	regainVotingAbility() {
+	async regainVotingAbility() {
 		this.canVote = true;
 	}
 
@@ -370,6 +375,7 @@ class Player {
 	 * @param {AbilityName} ability_name
 	 */
 	addAbilityAffectedBy(player_using_ability, ability_name) {
+		console.log({player_using_ability, ability_name});
 		player_using_ability.addAbilityUse(ability_name);
 
 		this.affected_by.push(

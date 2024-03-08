@@ -18,7 +18,7 @@ describe('EffectManager', () => {
 		await setupMockGame();
   });
 
-	describe('Roleblock Effect.applyEffect', () => {
+	describe('RoleblockEffect.applyEffect()', () => {
 		it('SHOULD set player roleblock property to true', async () => {
 			await RapidDiscordMafia.startMockGameWithRoles(
 				mock_game,
@@ -213,7 +213,7 @@ describe('EffectManager', () => {
 		});
 	});
 
-	describe('Cautious Effect.applyEffect', () => {
+	describe('CautiousEffect.applyEffect()', () => {
 		it('SHOULD add feedback and add to their abilities affected by', async () => {
 			await RapidDiscordMafia.startMockGameWithRoles(
 				mock_game,
@@ -252,7 +252,7 @@ describe('EffectManager', () => {
 		});
 	});
 
-	describe('Heal Effect.applyEffect', () => {
+	describe('HealEffect.applyEffect()', () => {
 		it('SHOULD give player defense level 2 and add to their abilities affected by', async () => {
 			await RapidDiscordMafia.startMockGameWithRoles(
 				mock_game,
@@ -289,7 +289,7 @@ describe('EffectManager', () => {
 		});
 	});
 
-	describe('Self Heal Effect.applyEffect', () => {
+	describe('Self HealEffect.applyEffect()', () => {
 		it('SHOULD give self defense level 2 and add to their abilities affected by', async () => {
 			await RapidDiscordMafia.startMockGameWithRoles(
 				mock_game,
@@ -325,7 +325,7 @@ describe('EffectManager', () => {
 		});
 	});
 
-	describe('Smith Effect.applyEffect', () => {
+	describe('SmithEffect.applyEffect()', () => {
 		it('SHOULD give feedback to smither, give player defense level 1, and add to their abilities affected by', async () => {
 			await RapidDiscordMafia.startMockGameWithRoles(
 				mock_game,
@@ -371,7 +371,7 @@ describe('EffectManager', () => {
 		});
 	});
 
-	describe('Self Heal Effect.applyEffect', () => {
+	describe('Self HealEffect.applyEffect()', () => {
 		it('SHOULD give self defense level 1 and add to their abilities affected by', async () => {
 			await RapidDiscordMafia.startMockGameWithRoles(
 				mock_game,
@@ -407,7 +407,7 @@ describe('EffectManager', () => {
 		});
 	});
 
-	describe('Attack Effect.applyEffect', () => {
+	describe('AttackEffect.applyEffect()', () => {
 		it('SHOULD have attacked player recieve attack and add to abilities affected by', async () => {
 			await RapidDiscordMafia.startMockGameWithRoles(
 				mock_game,
@@ -447,7 +447,7 @@ describe('EffectManager', () => {
 		});
 	});
 
-	describe('Frame Effect.applyEffect', () => {
+	describe('FrameEffect.applyEffect()', () => {
 		it('SHOULD frame player as mafioso and add to abilities affected by', async () => {
 			await RapidDiscordMafia.startMockGameWithRoles(
 				mock_game,
@@ -486,7 +486,7 @@ describe('EffectManager', () => {
 		});
 	});
 
-	describe('Self Frame Effect.applyEffect', () => {
+	describe('Self FrameEffect.applyEffect()', () => {
 		it('SHOULD frame self as mafioso and add to abilities affected by', async () => {
 			await RapidDiscordMafia.startMockGameWithRoles(
 				mock_game,
@@ -521,7 +521,7 @@ describe('EffectManager', () => {
 		});
 	});
 
-	describe('Frame Exe Target Effect.applyEffect', () => {
+	describe('Frame Exe TargetEffect.applyEffect()', () => {
 		it('SHOULD frame executioner target as mafioso and add to abilities affected by', async () => {
 			await RapidDiscordMafia.startMockGameWithRoles(
 				mock_game,
@@ -558,7 +558,7 @@ describe('EffectManager', () => {
 		});
 	});
 
-	describe('Evaluate Effect.applyEffect', () => {
+	describe('EvaluateEffect.applyEffect()', () => {
 		it('SHOULD remove manipulation affects, give suspicious feedback, and add to abilities affected by WHEN evaluating Mafioso', async () => {
 			await RapidDiscordMafia.startMockGameWithRoles(
 				mock_game,
@@ -707,7 +707,7 @@ describe('EffectManager', () => {
 		});
 	});
 
-	describe('Track Effect.applyEffect', () => {
+	describe('TrackEffect.applyEffect()', () => {
 		it('SHOULD give correct feedback and add to abilities affected by WHEN target visits a player who isn\'t themself', async () => {
 			await RapidDiscordMafia.startMockGameWithRoles(
 				mock_game,
@@ -838,7 +838,7 @@ describe('EffectManager', () => {
 		});
 	});
 
-	describe('Lookout Effect.applyEffect', () => {
+	describe('LookoutEffect.applyEffect()', () => {
 		it('SHOULD not show player visiting target and add ability affected by WHEN player is target', async () => {
 			await RapidDiscordMafia.startMockGameWithRoles(
 				mock_game,
@@ -959,7 +959,7 @@ describe('EffectManager', () => {
 		});
 	});
 
-	describe('Investigate Effect.applyEffect', () => {
+	describe('InvestigateEffect.applyEffect()', () => {
 		it('SHOULD get feedback that target is Doctor and add ability affected by WHEN target is Doctor', async () => {
 			await RapidDiscordMafia.startMockGameWithRoles(
 				mock_game,
@@ -1002,7 +1002,7 @@ describe('EffectManager', () => {
 		});
 	});
 
-	describe('Control Effect.applyEffect', () => {
+	describe('ControlEffect.applyEffect()', () => {
 		it('SHOULD get feedback that cannot control WHEN target ability has limited uses and target used all uses', async () => {
 			await RapidDiscordMafia.startMockGameWithRoles(
 				mock_game,
@@ -1194,7 +1194,455 @@ describe('EffectManager', () => {
 		});
 	});
 
-	// @ TODO: Observe
-	// @ TODO: Replace
-	// @ TODO: Kidnap
+	describe('ObserveEffect.applyEffect()', () => {
+		it('SHOULD get feedback and update last player observed WHEN first time observing player', async () => {
+			await RapidDiscordMafia.startMockGameWithRoles(
+				mock_game,
+				[
+					RoleNames.Oracle,
+					RoleNames.Doctor,
+					RoleNames.Mafioso,
+				]
+			);
+
+			const oracle_player = mock_game.Players.get(RoleNames.Oracle);
+			const doctor_player = mock_game.Players.get(RoleNames.Doctor);
+
+			await mock_game.startNight(mock_game.days_passed);
+
+			oracle_player.useAbility(AbilityName.Observe, {
+				[AbilityArgName.PlayerObserving]: doctor_player.name
+			});
+
+			await mock_game.setPhaseToNextPhase();
+			await mock_game.performCurrentNightAbilities();
+
+			expect(
+				oracle_player.feedback.includes(
+					Feedback.ObservedWithNoPreviousObserve(doctor_player)
+				)
+			)
+			.toBe(true);
+
+			expect(oracle_player.last_player_observed_name)
+			.toBe(doctor_player.name);
+		});
+
+		it('SHOULD get feedback that observed same person, update last player observed, remove target manipulation effects, and add ability affected by WHEN observing player after observing same player', async () => {
+			await RapidDiscordMafia.startMockGameWithRoles(
+				mock_game,
+				[
+					RoleNames.Oracle,
+					RoleNames.Doctor,
+					RoleNames.Mafioso,
+					RoleNames.Framer,
+				]
+			);
+
+			const oracle_player = mock_game.Players.get(RoleNames.Oracle);
+			const doctor_player = mock_game.Players.get(RoleNames.Doctor);
+			const framer_player = mock_game.Players.get(RoleNames.Framer);
+
+			await mock_game.startNight(mock_game.days_passed);
+
+			oracle_player.useAbility(AbilityName.Observe, {
+				[AbilityArgName.PlayerObserving]: doctor_player.name
+			});
+
+			framer_player.useAbility(AbilityName.Frame, {
+				[AbilityArgName.PlayerFraming]: doctor_player.name
+			});
+
+			await mock_game.startDay();
+
+			expect(doctor_player.percieved.role).toBe(RoleNames.Mafioso);
+
+			await mock_game.startTrial();
+
+			oracle_player.useAbility(AbilityName.Observe, {
+				[AbilityArgName.PlayerObserving]: doctor_player.name
+			});
+
+			await mock_game.setPhaseToNextPhase();
+			await mock_game.performCurrentNightAbilities();
+
+			expect(
+				oracle_player.feedback.includes(
+					Feedback.ObservedSamePerson(doctor_player)
+				)
+			)
+			.toBe(true);
+
+			expect(oracle_player.last_player_observed_name)
+			.toBe(doctor_player.name);
+
+			expect(doctor_player.percieved.role).not.toBe(RoleNames.Doctor);
+
+			expect(
+				doctor_player.affected_by.some(affect => {
+					return (
+						affect.by === oracle_player.name &&
+						affect.name === AbilityName.Observe
+					)
+				})
+			)
+			.toBe(true);
+		});
+
+		it('SHOULD get feedback that targets in same faction, update last player observed, and add ability affected by WHEN observing player in Mafia after observing player in Mafia', async () => {
+			await RapidDiscordMafia.startMockGameWithRoles(
+				mock_game,
+				[
+					RoleNames.Oracle,
+					RoleNames.Doctor,
+					RoleNames.Mafioso,
+					RoleNames.Framer,
+				]
+			);
+
+			const oracle_player = mock_game.Players.get(RoleNames.Oracle);
+			const mafioso_player = mock_game.Players.get(RoleNames.Mafioso);
+			const framer_player = mock_game.Players.get(RoleNames.Framer);
+
+			await mock_game.startNight(mock_game.days_passed);
+
+			oracle_player.useAbility(AbilityName.Observe, {
+				[AbilityArgName.PlayerObserving]: framer_player.name
+			});
+
+			await mock_game.startDay();
+			await mock_game.startTrial();
+
+			oracle_player.useAbility(AbilityName.Observe, {
+				[AbilityArgName.PlayerObserving]: mafioso_player.name
+			});
+
+			await mock_game.setPhaseToNextPhase();
+			await mock_game.performCurrentNightAbilities();
+
+			expect(
+				oracle_player.feedback.includes(
+					Feedback.ObservedWorkingTogether(mafioso_player, framer_player)
+				)
+			)
+			.toBe(true);
+
+			expect(oracle_player.last_player_observed_name)
+			.toBe(mafioso_player.name);
+
+			expect(
+				framer_player.affected_by.some(affect => {
+					return (
+						affect.by === oracle_player.name &&
+						affect.name === AbilityName.Observe
+					)
+				})
+			)
+			.toBe(true);
+
+			expect(
+				mafioso_player.affected_by.some(affect => {
+					return (
+						affect.by === oracle_player.name &&
+						affect.name === AbilityName.Observe
+					)
+				})
+			)
+			.toBe(true);
+		});
+
+		it('SHOULD get feedback that targets are not in same faction, update last player observed, and add ability affected by WHEN observing player in Mafia after observing player in Mafia', async () => {
+			await RapidDiscordMafia.startMockGameWithRoles(
+				mock_game,
+				[
+					RoleNames.Oracle,
+					RoleNames.Doctor,
+					RoleNames.Mafioso,
+					RoleNames.Framer,
+				]
+			);
+
+			const oracle_player = mock_game.Players.get(RoleNames.Oracle);
+			const doctor_player = mock_game.Players.get(RoleNames.Doctor);
+			const framer_player = mock_game.Players.get(RoleNames.Framer);
+
+			await mock_game.startNight(mock_game.days_passed);
+
+			oracle_player.useAbility(AbilityName.Observe, {
+				[AbilityArgName.PlayerObserving]: framer_player.name
+			});
+
+			await mock_game.startDay();
+			await mock_game.startTrial();
+
+			oracle_player.useAbility(AbilityName.Observe, {
+				[AbilityArgName.PlayerObserving]: doctor_player.name
+			});
+
+			await mock_game.setPhaseToNextPhase();
+			await mock_game.performCurrentNightAbilities();
+
+			expect(
+				oracle_player.feedback.includes(
+					Feedback.ObservedNotWorkingTogether(doctor_player, framer_player)
+				)
+			)
+			.toBe(true);
+
+			expect(oracle_player.last_player_observed_name)
+			.toBe(doctor_player.name);
+
+			expect(
+				framer_player.affected_by.some(affect => {
+					return (
+						affect.by === oracle_player.name &&
+						affect.name === AbilityName.Observe
+					)
+				})
+			)
+			.toBe(true);
+
+			expect(
+				doctor_player.affected_by.some(affect => {
+					return (
+						affect.by === oracle_player.name &&
+						affect.name === AbilityName.Observe
+					)
+				})
+			)
+			.toBe(true);
+		});
+	});
+
+	describe('ReplaceEffect.applyEffect()', () => {
+		it('SHOULD convert player to Doctor, make target unidentifiable, add feedback to player and target, and add to abilities affected by WHEN target is Doctor and has no defense', async () => {
+			await RapidDiscordMafia.startMockGameWithRoles(
+				mock_game,
+				[
+					RoleNames.Impersonator,
+					RoleNames.Doctor,
+					RoleNames.Mafioso,
+				]
+			);
+
+			const impersonator_player = mock_game.Players.get(RoleNames.Impersonator);
+			const doctor_player = mock_game.Players.get(RoleNames.Doctor);
+
+			await mock_game.startNight(mock_game.days_passed);
+
+			impersonator_player.useAbility(AbilityName.Replace, {
+				[AbilityArgName.PlayerReplacing]: doctor_player.name
+			});
+
+			await mock_game.setPhaseToNextPhase();
+			await mock_game.performCurrentNightAbilities();
+
+			expect(impersonator_player.role).toBe(RoleNames.Doctor);
+			expect(doctor_player.isUnidentifiable).toBe(true);
+
+			expect(
+				impersonator_player.feedback.includes(
+					Feedback.ReplacedPlayer(doctor_player)
+				)
+			)
+			.toBe(true);
+
+			expect(
+				doctor_player.feedback.includes(
+					Feedback.ReplacedByReplacer
+				)
+			)
+			.toBe(true);
+
+			expect(
+				doctor_player.affected_by.some(affect => {
+					return (
+						affect.by === impersonator_player.name &&
+						affect.name === AbilityName.Replace
+					)
+				})
+			)
+			.toBe(true);
+		});
+
+		it('SHOULD get feedback that replace failed and not convert to Mafioso WHEN Mafioso has defense', async () => {
+			await RapidDiscordMafia.startMockGameWithRoles(
+				mock_game,
+				[
+					RoleNames.Impersonator,
+					RoleNames.Doctor,
+					RoleNames.Mafioso,
+				]
+			);
+
+			const impersonator_player = mock_game.Players.get(RoleNames.Impersonator);
+			const doctor_player = mock_game.Players.get(RoleNames.Doctor);
+			const mafioso_player = mock_game.Players.get(RoleNames.Mafioso);
+
+			await mock_game.startNight(mock_game.days_passed);
+
+			doctor_player.useAbility(AbilityName.Heal, {
+				[AbilityArgName.PlayerHealing]: mafioso_player.name
+			});
+
+			impersonator_player.useAbility(AbilityName.Replace, {
+				[AbilityArgName.PlayerReplacing]: mafioso_player.name
+			});
+
+			await mock_game.setPhaseToNextPhase();
+			await mock_game.performCurrentNightAbilities();
+
+			expect(impersonator_player.role).not.toBe(RoleNames.Doctor);
+			expect(mafioso_player.isUnidentifiable).toBe(false);
+
+			expect(
+				impersonator_player.feedback.includes(
+					Feedback.ReplaceFailed(mafioso_player)
+				)
+			)
+			.toBe(true);
+
+			expect(
+				mafioso_player.feedback.includes(
+					Feedback.ReplacedByReplacer
+				)
+			)
+			.toBe(false);
+		});
+
+	});
+
+	describe('KidnapEffect.applyEffect()', () => {
+		it('SHOULD add kidnapped feedback to target and player, roleblock player, add roleblocked feedback to target, give target defense level of four, mute target, remove target voting ability, and add to abilities affected by WHEN target has no attack level and is not immune to roleblocking', async () => {
+			await RapidDiscordMafia.startMockGameWithRoles(
+				mock_game,
+				[
+					RoleNames.Kidnapper,
+					RoleNames.Doctor,
+					RoleNames.Mafioso,
+				]
+			);
+
+			const kidnapper_player = mock_game.Players.get(RoleNames.Kidnapper);
+			const doctor_player = mock_game.Players.get(RoleNames.Doctor);
+
+			await mock_game.startNight(mock_game.days_passed);
+
+			kidnapper_player.useAbility(AbilityName.Kidnap, {
+				[AbilityArgName.PlayerKidnapping]: doctor_player.name
+			});
+
+			await mock_game.setPhaseToNextPhase();
+			await mock_game.performCurrentNightAbilities();
+
+			expect( doctor_player.feedback.includes(Feedback.Kidnapped) )
+			.toBe(true);
+
+			expect( doctor_player.feedback.includes(
+				Feedback.RoleblockedByKidnapper
+			) )
+			.toBe(true);
+
+			expect( kidnapper_player.feedback.includes(
+				Feedback.KidnappedPlayer(doctor_player)
+			) )
+			.toBe(true);
+
+			expect(doctor_player.isRoleblocked).toBe(true);
+			expect(doctor_player.defense).toBe(4);
+			expect(doctor_player.isMuted).toBe(true);
+			expect(doctor_player.canVote).toBe(false);
+
+			console.log(doctor_player.affected_by);
+			expect(
+				doctor_player.affected_by.some(affect => {
+					return (
+						affect.by === kidnapper_player.name &&
+						affect.name === AbilityName.Kidnap
+					)
+				})
+			)
+			.toBe(true);
+		});
+
+		it('SHOULD add attacked by kidnapped feedback to target and player and target attacks plater WHEN target has attack level', async () => {
+			await RapidDiscordMafia.startMockGameWithRoles(
+				mock_game,
+				[
+					RoleNames.Kidnapper,
+					RoleNames.Vigilante,
+					RoleNames.Mafioso,
+				]
+			);
+
+			const kidnapper_player = mock_game.Players.get(RoleNames.Kidnapper);
+			const vigilante_player = mock_game.Players.get(RoleNames.Vigilante);
+
+			await mock_game.startNight(mock_game.days_passed);
+
+			kidnapper_player.useAbility(AbilityName.Kidnap, {
+				[AbilityArgName.PlayerKidnapping]: vigilante_player.name
+			});
+
+			await mock_game.setPhaseToNextPhase();
+			await mock_game.performCurrentNightAbilities();
+
+			expect(
+				mock_game.next_deaths.some(death => {
+					return death.victim === kidnapper_player.name
+				})
+			)
+			.toBe(true);
+
+			expect(
+				vigilante_player.feedback.includes(
+					Feedback.AttackedKidnapper
+				)
+			)
+			.toBe(true);
+
+			expect(
+				kidnapper_player.feedback.includes(
+					Feedback.AttackedByKidnappedPlayer(vigilante_player)
+				)
+			)
+			.toBe(true);
+		});
+
+		it('SHOULD not be roleblocked and recieve feedback WHEN target is immune to roleblocks', async () => {
+			await RapidDiscordMafia.startMockGameWithRoles(
+				mock_game,
+				[
+					RoleNames.Kidnapper,
+					RoleNames.Escort,
+					RoleNames.Mafioso,
+				]
+			);
+
+			const kidnapper_player = mock_game.Players.get(RoleNames.Kidnapper);
+			const escort_player = mock_game.Players.get(RoleNames.Escort);
+
+			await mock_game.startNight(mock_game.days_passed);
+
+			kidnapper_player.useAbility(AbilityName.Kidnap, {
+				[AbilityArgName.PlayerKidnapping]: escort_player.name
+			});
+
+			await mock_game.setPhaseToNextPhase();
+			await mock_game.performCurrentNightAbilities();
+
+			expect(escort_player.isRoleblocked)
+			.toBe(false);
+
+			expect(
+				escort_player.feedback.includes(
+					Feedback.RoleblockedByKidnapperButImmune
+				)
+			)
+			.toBe(true);
+		});
+
+
+		// @ TODO add if attacked
+	});
 });

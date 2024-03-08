@@ -3,14 +3,14 @@ const { Abilities } = require("./ability.js");
 const Role = require("./role.js");
 
 const roles = {
-	// [RoleNames.Townie]: new Role({
-	// 	name: RoleNames.Townie,
-	// 	faction: Factions.Town,
-	// 	alignment: Alignments.Crowd,
-	// 	attack: 0,
-	// 	defense: 0,
-	// 	goal: WinConditions.EliminateOtherFactions,
-	// }),
+	[RoleNames.Townie]: new Role({
+		name: RoleNames.Townie,
+		faction: Factions.Town,
+		alignment: Alignments.Crowd,
+		attack: 0,
+		defense: 0,
+		goal: WinConditions.EliminateOtherFactions,
+	}),
 	[RoleNames.Doctor]: new Role({
 		name: RoleNames.Doctor,
 		faction: Factions.Town,

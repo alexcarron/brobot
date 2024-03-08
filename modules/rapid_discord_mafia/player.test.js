@@ -31,11 +31,11 @@ describe('Player', () => {
 			let kidnapper_name = RoleNames.Kidnapper
 			let kidnapper_player = await mock_game.addPlayerToGame(kidnapper_name);
 
-			let townie_name = RoleNames.Townie;
-			let townie_player = await mock_game.addPlayerToGame(townie_name);
+			let doctor_name = RoleNames.Doctor;
+			let doctor_player = await mock_game.addPlayerToGame(doctor_name);
 
 			const role_identifiers = RoleIdentifier.convertIdentifierStrings([
-				RoleNames.Townie,
+				RoleNames.Doctor,
 				RoleNames.Kidnapper,
 				RoleNames.Mafioso,
 			]);
@@ -44,40 +44,40 @@ describe('Player', () => {
 
 			const mafioso_role = global.Roles[RoleNames.Mafioso];
 			const kidnapper_role = global.Roles[RoleNames.Kidnapper];
-			const townie_role = global.Roles[RoleNames.Townie];
+			const doctor_role = global.Roles[RoleNames.Doctor];
 
 			// Fix role not being set right
 			kidnapper_player.setRole(kidnapper_role);
-			townie_player.setRole(townie_role);
+			doctor_player.setRole(doctor_role);
 			mafioso_player.setRole(mafioso_role);
 
 			await mock_game.startNight(mock_game.days_passed);
 
 			const feedback = kidnapper_player.useAbility(
 				AbilityName.Kidnap,
-				{ [AbilityArgName.PlayerKidnapping]: townie_name }
+				{ [AbilityArgName.PlayerKidnapping]: doctor_name }
 			);
 			console.log({feedback})
 
 			await mock_game.startDay(mock_game.days_passed);
 
 			// Should Apply effects
-			expect(townie_player.defense).toBe(4);
-			expect(townie_player.isRoleblocked).toBe(true);
-			expect(townie_player.isMuted).toBe(true);
-			expect(townie_player.canVote).toBe(false);
+			expect(doctor_player.defense).toBe(4);
+			expect(doctor_player.isRoleblocked).toBe(true);
+			expect(doctor_player.isMuted).toBe(true);
+			expect(doctor_player.canVote).toBe(false);
 
 			await mock_game.startTrial(mock_game.days_passed);
 			// Skips to night because no vote
 
 			// Kidnapping effects SHOULD be reversed
-			expect(townie_player.defense).toBe(0);
-			expect(townie_player.isRoleblocked).toBe(false);
-			expect(townie_player.isMuted).toBe(false);
-			expect(townie_player.canVote).toBe(true);
+			expect(doctor_player.defense).toBe(0);
+			expect(doctor_player.isRoleblocked).toBe(false);
+			expect(doctor_player.isMuted).toBe(false);
+			expect(doctor_player.canVote).toBe(true);
 
 			const isAffectedByKidnap =
-				townie_player.affected_by.some((affect) => {
+				doctor_player.affected_by.some((affect) => {
 					affect.name === AbilityName.Kidnap;
 				});
 

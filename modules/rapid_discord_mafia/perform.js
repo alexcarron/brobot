@@ -529,7 +529,7 @@ const perform = {
 			player_replacing.isUnidentifiable = true;
 
 			replacer_player.addFeedback(Feedback.ReplacedPlayer(player_replacing));
-			player_replacing.addFeedback(Feedback.ReplacedByReplacer());
+			player_replacing.addFeedback(Feedback.ReplacedByReplacer);
 
 			addAffect(ability_performed, player_replacing_name);
 		}

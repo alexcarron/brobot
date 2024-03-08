@@ -1,6 +1,10 @@
 const { Factions } = require("../enums");
 
 class Death {
+	/**
+	 * The name of the player who has died
+	 * @type {string}
+	 */
 	victim;
 	kills;
 

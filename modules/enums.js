@@ -452,7 +452,7 @@ const Enums = {
 			`You observed **${player_observing.name}** last night and it seems like they're NOT in the same faction as **${previous_player_observed.name}**, the previous player you observed.`,
 		ObservedSamePerson: (player_observing) =>
 			`You observed **${player_observing.name}** last night, but it was pretty obvious they were in the same faction as themselves.`,
-		ReplacedByReplacer: () =>
+		ReplacedByReplacer:
 			`Don't worry, you have been replaced by someone.`,
 		ReplacedPlayer: (player_replacing) =>
 			`You have successfully replaced **${player_replacing.name}**'s role as **${player_replacing.role}**`,
