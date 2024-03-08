@@ -3,7 +3,7 @@ const Contestant = require("./Contestant");
 const Logger = require("./Logger.js");
 const RoleIdentifier = require("./RoleIdentifier.js");
 const Game = require("./game.js");
-const Players = require("./players.js");
+const Players = require("./PlayerManager.js");
 const roles = require("./roles");
 
 class RapidDiscordMafia {
