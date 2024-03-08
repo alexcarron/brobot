@@ -844,8 +844,8 @@ class Player {
 	 * @param {String} player_voting_for name of the player voting for
 	 * @returns {true | String} true if you can vote that player. Otherwise, feedback for why you can't
 	 */
-	canVotePlayer(player_voting_for) {
-		if (global.Game.subphase !== Subphases.Voting) {
+	canVotePlayer(player_voting_for, game) {
+		if (game.subphase !== Subphases.Voting) {
 			return `We're not in the voting phase yet.`;
 		}
 
@@ -865,30 +865,30 @@ class Player {
 	 * @param {String} player_voting_for name of the player voting for
 	 * @returns {String} feedback for vote
 	 */
-	votePlayer(player_voting_for) {
-		let curr_votes = global.Game.votes;
-		let max_voters_count = global.Game.player_manager.getAlivePlayers().filter(player => player.canVote === true).length;
+	votePlayer(player_voting_for, game) {
+		let curr_votes = game.votes;
+		let max_voters_count = game.player_manager.getAlivePlayers().filter(player => player.canVote === true).length;
 		let feedback;
 
 		this.resetInactivity();
 
 		if (curr_votes[this.name]) {
-			Game.log(`**${this.name}** changed their vote to **${player_voting_for}**`);
+			game.log(`**${this.name}** changed their vote to **${player_voting_for}**`);
 
-			global.Game.announceMessages(`**${this.name}** changed their vote to **${player_voting_for}**`);
+			game.announceMessages(`**${this.name}** changed their vote to **${player_voting_for}**`);
 
 			feedback = `You are replacing your previous vote, **${curr_votes[this.name]}**, with **${player_voting_for}**`;
 		}
 		else {
-			Game.log(`**${this.name}** voted **${player_voting_for}**.`);
+			game.log(`**${this.name}** voted **${player_voting_for}**.`);
 
-			global.Game.announceMessages(`**${this.name}** voted **${player_voting_for}**.`);
+			game.announceMessages(`**${this.name}** voted **${player_voting_for}**.`);
 
 			feedback = `You voted **${player_voting_for}**.`;
 		}
 
 		curr_votes[this.name] = player_voting_for;
-		global.Game.votes = curr_votes;
+		game.votes = curr_votes;
 
 		if (!this.isMockPlayer) {
 			const isMajorityVote = Player.isMajorityVote(curr_votes, max_voters_count);
@@ -897,7 +897,7 @@ class Player {
 			console.log({isMajorityVote, num_votes, max_voters_count})
 
 			if (isMajorityVote || num_votes >= max_voters_count) {
-				global.Game.startTrial(global.Game.days_passed);
+				game.startTrial(game.days_passed);
 			}
 		}
 

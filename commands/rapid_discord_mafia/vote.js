@@ -79,11 +79,11 @@ command.execute = async function execute(interaction, isTest=false) {
 	if (subcommand_name === Parameters.ForPlayer.name) {
 		vote = interaction.options.getString(Subparameters.PlayerVotingFor.name);
 
-		const can_vote_player_feedback = voter_player.canVotePlayer(vote);
+		const can_vote_player_feedback = voter_player.canVotePlayer(vote, global.Game);
 		if (can_vote_player_feedback !== true)
 			return await interaction.editReply(can_vote_player_feedback);
 
-		const vote_player_feedback = voter_player.votePlayer(vote);
+		const vote_player_feedback = voter_player.votePlayer(vote, global.Game);
 		await interaction.editReply(vote_player_feedback);
 	}
 	// Vote For Trial Outcome

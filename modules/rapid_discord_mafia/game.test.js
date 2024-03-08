@@ -723,8 +723,8 @@ describe('Game', () => {
 			await mock_game.startNight(mock_game.days_passed);
 			await mock_game.startDay(mock_game.days_passed);
 
-			townie_player.votePlayer(fool_player.name);
-			mafioso_player.votePlayer(fool_player.name);
+			townie_player.votePlayer(fool_player.name, mock_game);
+			mafioso_player.votePlayer(fool_player.name, mock_game);
 
 			await mock_game.startTrial(mock_game.days_passed);
 
