@@ -728,8 +728,8 @@ describe('Game', () => {
 
 			await mock_game.startTrial(mock_game.days_passed);
 
-			townie_player.voteForTrialOutcome(TrialOutcomes.Guilty);
-			mafioso_player.voteForTrialOutcome(TrialOutcomes.Guilty);
+			townie_player.voteForTrialOutcome(TrialOutcomes.Guilty, mock_game);
+			mafioso_player.voteForTrialOutcome(TrialOutcomes.Guilty, mock_game);
 
 			await mock_game.startTrialResults(mock_game.days_passed);
 			// Fool Lynched

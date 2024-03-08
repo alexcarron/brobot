@@ -909,12 +909,12 @@ class Player {
 	 * @param {String} trial_outcome trial outcome voting for
 	 * @returns {true | String} true if you can vote. Otherwise, feedback for why you can't
 	 */
-	canVoteForTrialOutcome(trial_outcome) {
-		if (global.Game.subphase !== Subphases.Trial) {
+	canVoteForTrialOutcome(trial_outcome, game) {
+		if (game.subphase !== Subphases.Trial) {
 			return `We're not in the trial phase yet.`;
 		}
 
-		if (global.Game.on_trial === this.name) {
+		if (game.on_trial === this.name) {
 			return `You can't vote for your own trial.`;
 		}
 
@@ -930,39 +930,39 @@ class Player {
 	 * @param {TrialVotes} trial_outcome trial outcome voting for
 	 * @returns {String} feedback for vote
 	 */
-	voteForTrialOutcome(trial_outcome) {
-		let curr_votes = global.Game.trial_votes;
-		let max_voters_count = global.Game.player_manager.getAlivePlayers().filter(
-			player => player.name !== global.Game.on_trial && player.canVote === true
+	voteForTrialOutcome(trial_outcome, game) {
+		let curr_votes = game.trial_votes;
+		let max_voters_count = game.player_manager.getAlivePlayers().filter(
+			player => player.name !== game.on_trial && player.canVote === true
 		).length;
 		let feedback;
 
 		this.resetInactivity();
 
 		if (curr_votes[this.name]) {
-			Game.log(`**${this.name}** changed their vote to **${toTitleCase(trial_outcome)}**`);
+			game.log(`**${this.name}** changed their vote to **${toTitleCase(trial_outcome)}**`);
 
-			global.Game.announceMessages(`**${this.name}** changed their vote.`);
+			game.announceMessages(`**${this.name}** changed their vote.`);
 
 			feedback = `You are replacing your previous vote, **${toTitleCase(curr_votes[this.name])}**, with **${toTitleCase(trial_outcome)}**`;
 		}
 		else {
-			Game.log(`**${this.name}** voted **${toTitleCase(trial_outcome)}**.`);
+			game.log(`**${this.name}** voted **${toTitleCase(trial_outcome)}**.`);
 
-			global.Game.announceMessages(`**${this.name}** voted.`);
+			game.announceMessages(`**${this.name}** voted.`);
 
 			feedback = `You voted **${toTitleCase(trial_outcome)}**.`;
 		}
 
 		curr_votes[this.name] = trial_outcome;
-		global.Game.trial_votes = curr_votes;
+		game.trial_votes = curr_votes;
 
 		if (!this.isMockPlayer) {
 			const isMajorityVote = Player.isMajorityVote(curr_votes, max_voters_count);
 			const num_votes = Object.values(curr_votes).length;
 
 			if (isMajorityVote || num_votes >= max_voters_count) {
-				global.Game.startTrialResults(global.Game.days_passed);
+				game.startTrialResults(game.days_passed);
 			}
 		}
 
