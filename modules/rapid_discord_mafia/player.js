@@ -399,7 +399,7 @@ class Player {
 		if (this.defense < attacker_player.attack) {
 			console.log("Attack Success");
 
-			global.Game.addDeath(this, attacker_player);
+			game.addDeath(this, attacker_player);
 
 			this.addFeedback(Feedback.KilledByAttack);
 			attacker_player.addFeedback(Feedback.KilledPlayer(this.name));
@@ -422,7 +422,7 @@ class Player {
 				affect => {
 					const ability_name = affect.name;
 
-					const ability = global.Game.ability_manager.getAbility(ability_name);
+					const ability = game.ability_manager.getAbility(ability_name);
 					return ability.type == AbilityTypes.Protection;
 				}
 			);
@@ -431,7 +431,7 @@ class Player {
 				console.log("Victim has heal affects");
 
 				for (let protection_affect of protection_affects_on_target) {
-					const protecter_player = global.Game.player_manager.get(protection_affect.by);
+					const protecter_player = game.player_manager.get(protection_affect.by);
 					protecter_player.addFeedback(Feedback.ProtectedAnAttackedPlayer);
 
 					console.log(`${protecter_player.name} has protected the victim ${this.name}`);
@@ -462,39 +462,6 @@ class Player {
 	async kill(death) {
 		this.isAlive = false;
 
-		if (death.isLynch()) {
-			if (this.role == RoleNames.Fool) {
-				await this.sendFeedback(Feedback.WonAsFool);
-				await global.Game.announceMessages("_ _\nYou feel like you've made a terrible mistake...");
-				const players_voting_guilty =
-					Object.entries(global.Game.trial_votes)
-						.filter(entry => entry[1] === TrialVotes.Guilty)
-						.map(entry => entry[0]);
-
-				this.players_can_use_on = players_voting_guilty;
-				this.isInLimbo = true;
-				this.hasWon = true;
-
-				global.Game.winning_factions.push("Fool");
-				global.Game.winning_players.push(this.name);
-			}
-
-			let executioners = global.Game.player_manager.getExecutioners();
-
-			console.log("Checking for exe wins");
-			for (let exe of executioners) {
-				console.log({exe, victim_name: this.name});
-
-				if ( exe.exe_target == this.name ) {
-					console.log("Announcing win and giving player win.");
-
-					const exe_player = global.Game.player_manager.get(exe.name);
-					await exe_player.sendFeedback(Feedback.WonAsExecutioner);
-					exe_player.makeAWinner();
-				}
-			}
-		}
-
 		try {
 			if (!this.isMockPlayer) {
 				let ghost_role = await getRole((await getRDMGuild()), RDMRoles.Ghosts),
@@ -513,7 +480,7 @@ class Player {
 			}
 		}
 		catch {
-			await global.Game.log(`**${this.name}** user not found. Possibly left the game.`);
+			console.log(`**${this.name}** user not found. Possibly left the game.`);
 		}
 	}
 

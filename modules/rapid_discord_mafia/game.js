@@ -708,6 +708,42 @@ class Game {
 		death.setToLynch();
 
 		await player_on_trial.kill(death);
+
+		if (player_on_trial.role === RoleNames.Fool) {
+			await player_on_trial.sendFeedback(Feedback.WonAsFool);
+
+			await this.announceMessages("_ _\n" + Announcements.LynchedFool);
+
+			const players_voting_guilty =
+				Object.entries(this.trial_votes)
+					.filter(entry => entry[1] === TrialVotes.Guilty)
+					.map(entry => entry[0]);
+
+			player_on_trial.players_can_use_on = players_voting_guilty;
+			player_on_trial.isInLimbo = true;
+			player_on_trial.hasWon = true;
+
+			this.winning_factions.push("Fool");
+			this.winning_players.push(this.name);
+
+		}
+
+
+		let executioners = this.player_manager.getExecutioners();
+
+		console.log("Checking for exe wins");
+		for (let exe of executioners) {
+			console.log({exe, victim_name: player_on_trial.name});
+
+			if ( exe.exe_target === player_on_trial.name ) {
+				console.log("Announcing win and giving player win.");
+
+				const exe_player = this.player_manager.get(exe.name);
+				await exe_player.sendFeedback(Feedback.WonAsExecutioner);
+				exe_player.makeAWinner();
+			}
+		}
+
 		const death_messages = this.getDeathMessages(death, "lynch");
 		await this.announceMessages(...death_messages);
 

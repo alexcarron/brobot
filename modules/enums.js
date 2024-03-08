@@ -375,6 +375,7 @@ const Enums = {
 			`There have been no deaths for the past **${num_days_since_deaths} day(s)**, so it's a draw!`,
 		TimeoutWarning: (max_days_since_death, num_days_since_deaths) =>
 			`Nobody has died in the past **${num_days_since_deaths} day(s)**. **${max_days_since_death - num_days_since_deaths}** more days without bloodshed and the game ends in a draw.`,
+		LynchedFool: `You feel like you've made a terrible mistake...`,
 	},
 
 	Feedback: {
