@@ -440,7 +440,7 @@ class Player {
 						console.log(`${protecter_player.name} successfully smithed a vest and achieved their win condition.`);
 
 						protecter_player.addFeedback(Feedback.DidSuccessfulSmith);
-						protecter_player.makeAWinner();
+						protecter_player.makeAWinner(this);
 					}
 				}
 			}
@@ -824,23 +824,19 @@ class Player {
 			const player_whispering_to_chnl = await player_whispering_to.getPlayerChannel();
 			player_whispering_to_chnl.send(Feedback.WhisperedTo(this, whisper_contents));
 		}
-
-		await global.Game.log(
-			Announcements.WhisperLog(this, player_whispering_to, whisper_contents)
-		);
 	}
 
-	makeAWinner() {
+	makeAWinner(game) {
 		this.hasWon = true;
 
 		const player_role = global.Roles[this.role];
 		const player_faction = player_role.getFaction();
 
-		if (!global.Game.winning_factions.includes(player_faction))
-			global.Game.winning_factions.push(player_faction);
+		if (!game.winning_factions.includes(player_faction))
+		game.winning_factions.push(player_faction);
 
-		if (!global.Game.winning_players.includes(this.name))
-			global.Game.winning_players.push(this.name);
+		if (!game.winning_players.includes(this.name))
+			game.winning_players.push(this.name);
 	}
 
 	/**

@@ -740,7 +740,7 @@ class Game {
 
 				const exe_player = this.player_manager.get(exe.name);
 				await exe_player.sendFeedback(Feedback.WonAsExecutioner);
-				exe_player.makeAWinner();
+				exe_player.makeAWinner(this);
 			}
 		}
 
