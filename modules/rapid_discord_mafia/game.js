@@ -1172,7 +1172,7 @@ class Game {
 			player.resetFeedback();
 
 			if (player.affected_by) {
-				await player.removeAffects();
+				await player.removeAffects(this);
 			}
 
 			// console.log("After:")

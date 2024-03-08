@@ -730,13 +730,13 @@ class Player {
 		console.log(`Let **${this.name}** not see mafia chat.`);
 	}
 
-	async removeAffects() {
+	async removeAffects(game) {
 		for (const [affect_num, affect] of this.affected_by.entries()) {
 			console.log("Removing Affects From Player " + this.name);
 			console.log("Affect Before:");
 			console.log({affect});
 
-			const ability = global.Game.ability_manager.getAbility(affect.name);
+			const ability = game.ability_manager.getAbility(affect.name);
 
 			console.log({ability});
 
@@ -746,11 +746,11 @@ class Player {
 
 			const phase_affect_ends = affect.during_phase + ability.duration;
 
-			console.log(`Days Passed: ${global.Game.days_passed}`);
+			console.log(`Days Passed: ${game.days_passed}`);
 			console.log({phase_affect_ends});
 
 			// Delete phase affect ends is current phase or has passed
-			if (phase_affect_ends <= global.Game.days_passed) {
+			if (phase_affect_ends <= game.days_passed) {
 				// console.log("Deleting Affect");
 
 				switch (ability.type) {
@@ -774,7 +774,7 @@ class Player {
 					}
 
 					case AbilityTypes.Suicide: {
-						global.Game.addDeath(this, this, Announcements.VigilanteSuicide);
+						game.addDeath(this, this, Announcements.VigilanteSuicide);
 
 						await this.sendFeedback(Feedback.ComittingSuicide);
 						this.addFeedback(Feedback.ComittedSuicide);
