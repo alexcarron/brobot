@@ -795,12 +795,12 @@ class Player {
 		}
 	}
 
-	removeManipulationAffects() {
+	removeManipulationAffects(game) {
 		if (this.affected_by) {
 			for (let [index, affect] of this.affected_by.entries()) {
 				console.log({affect});
 
-				const ability_affected_by = global.Game.ability_manager.getAbility(affect.name);
+				const ability_affected_by = game.ability_manager.getAbility(affect.name);
 
 				if (ability_affected_by.type === AbilityTypes.Manipulation) {
 					console.log("Found manipulation affect. Removing affect and reseting percieved.");

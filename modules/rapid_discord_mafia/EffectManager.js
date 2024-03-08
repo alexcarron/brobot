@@ -236,7 +236,7 @@ class EffectManager {
 				}
 
 				console.log("Checking to get rid of manipulation affects");
-				player_evaluating.removeManipulationAffects();
+				player_evaluating.removeManipulationAffects(game);
 
 				player_using_ability.addFeedback(feedback);
 
@@ -484,8 +484,8 @@ class EffectManager {
 					}
 
 					console.log("Checking to get rid of manipulation affects");
-					player_observing.removeManipulationAffects();
-					last_player_observed.removeManipulationAffects();
+					player_observing.removeManipulationAffects(game);
+					last_player_observed.removeManipulationAffects(game);
 
 					player_observing.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5);
 					last_player_observed.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5);
