@@ -53,7 +53,8 @@ describe('Player', () => {
 
 			const feedback = kidnapper_player.useAbility(
 				AbilityName.Kidnap,
-				{ [AbilityArgName.PlayerKidnapping]: doctor_name }
+				{ [AbilityArgName.PlayerKidnapping]: doctor_name },
+				mock_game,
 			);
 			console.log({feedback})
 

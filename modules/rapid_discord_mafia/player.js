@@ -520,10 +520,6 @@ class Player {
 			name: ability_name,
 			args: arg_values,
 		};
-
-		if (global.Game.player_manager.getAlivePlayers().every(player => player.ability_doing && player.ability_doing.name)) {
-			global.Game.startDay(global.Game.days_passed);
-		}
 	}
 
 	/**
@@ -535,22 +531,16 @@ class Player {
 
 	/**
 	 * Determines if a certain ability a player uses with specific arguments can be used by that player
-	 * @param {AbilityName} ability_name Name of the ability using
+	 * @param {Ability} Ability using
 	 * @param {{[arg_name: string]: [arg_value: string]}} arg_values
 	 * @returns {true | String} true if you can use the ability. Otherwise, feedback for why you can't use the ability
 	 */
-	async canUseAbility(ability_name, arg_values) {
-		if (ability_name === AbilityName.Nothing)
-			return true;
-
-
-
-		const ability = global.Game.ability_manager.getAbility(ability_name);
+	async canUseAbility(ability, arg_values, game) {
 		const player_role = roles[this.role]
 
 		// Check if role has ability
-		if (player_role.abilities.every(ability => ability.name !== ability_name)) {
-			return `${ability_name} is not an ability you can use`;
+		if (player_role.abilities.every(ability => ability.name !== ability.name)) {
+			return `${ability.name} is not an ability you can use`;
 		}
 
 		// Check if player is dead and can't use ability while dead
@@ -559,12 +549,12 @@ class Player {
 				ability.phases_can_use.includes(Phases.Limbo) &&
 				this.isInLimbo
 			)) {
-				return `You can't use the ability, **${ability_name}**, while you're not alive`;
+				return `You can't use the ability, **${ability.name}**, while you're not alive`;
 			}
 		}
 
 		// Check if ability can be used during current phase
-		if (!ability.phases_can_use.includes(global.Game.phase)) {
+		if (!ability.phases_can_use.includes(game.phase)) {
 
 			// Check if ability can be used in limbo and player in limbo
 			if (
@@ -573,7 +563,7 @@ class Player {
 					this.isInLimbo
 				)
 			) {
-				return `You can't use this ability during the **${global.Game.phase}** phase`;
+				return `You can't use this ability during the **${game.phase}** phase`;
 			}
 		}
 
@@ -582,7 +572,7 @@ class Player {
 			const arg_name = ability_arg.name;
 			let arg_param_value = arg_values[arg_name];
 
-			const isValidArg = global.Game.isValidArgValue(this, ability_arg, arg_param_value);
+			const isValidArg = game.isValidArgValue(this, ability_arg, arg_param_value);
 
 			console.log({isValidArg});
 
@@ -599,7 +589,7 @@ class Player {
 	 * @param {{[arg_name: string]: [arg_value: string]}} arg_values - An object map from the argument name to it's passed value. Empty object by default.
 	 * @returns {string} confirmation feedback for using ability
 	 */
-	useAbility(ability_name, arg_values={}) {
+	useAbility(ability_name, arg_values={}, game) {
 		this.resetInactivity();
 
 		if (ability_name === AbilityName.Nothing) {
@@ -608,7 +598,7 @@ class Player {
 		}
 
 		const player_role = roles[this.role];
-		const ability_using = global.Game.ability_manager.getAbility(ability_name);
+		const ability_using = game.ability_manager.getAbility(ability_name);
 
 		console.log({ability_name, ability_using, player_role});
 
@@ -1059,6 +1049,17 @@ class Player {
 		}
 
 		return undefined;
+	}
+
+	/**
+	 * Checks if player has attempted to use any ability or nothing
+	 * @returns {boolean}
+	 */
+	hasDoneAbility() {
+		return (
+			this.ability_doing &&
+			this.ability_doing.name
+		)
 	}
 }
 

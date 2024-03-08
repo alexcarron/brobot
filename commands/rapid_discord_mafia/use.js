@@ -147,12 +147,20 @@ command.execute = async function(interaction, isTest) {
 		}
 	}
 
-	const can_use_ability_feedback = await player.canUseAbility(ability_name, arg_values);
+	let can_use_ability_feedback = true;
+	if (ability_name !== AbilityName.Nothing) {
+		const ability = AbilityManager.abilities[ability_name];
+
+		if (ability)
+			can_use_ability_feedback = await player.canUseAbility(ability, arg_values, global.Game);
+		else
+			can_use_ability_feedback = `**${ability_name}** is not a valid ability`;
+	}
 
 	if (can_use_ability_feedback !== true)
 		return await interaction.editReply(can_use_ability_feedback);
 
-	const ability_feedback = player.useAbility(ability_name, arg_values);
+	const ability_feedback = player.useAbility(ability_name, arg_values, global.Game, {}, mock_game);
 	await global.Game.saveGameDataToDatabase();
 
 	await interaction.editReply(ability_feedback);
@@ -166,6 +174,7 @@ command.execute = async function(interaction, isTest) {
 		);
 	}
 
+	global.Game.startDayIfAllPlayersActed();
 }
 
 command.autocomplete = async function(interaction) {

@@ -740,12 +740,14 @@ describe('Game', () => {
 				{
 					[AbilityArgName.PlayerKilling]: townie_player.name,
 				},
+				mock_game,
 			);
 			fool_player.useAbility(
 				AbilityName.DeathCurse,
 				{
 					[AbilityArgName.PlayerKilling]: townie_player.name,
 				},
+				mock_game,
 			);
 
 			// Set phase to day

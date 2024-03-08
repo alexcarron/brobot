@@ -2431,6 +2431,20 @@ class Game {
 
 		return true;
 	}
+
+	/**
+	 * Checks if every player has acted for the night and if so, starts the day
+	 */
+	startDayIfAllPlayersActed() {
+		const alive_players = this.player_manager.getAlivePlayers();
+		const didEveryPlayerDoAnAbility = alive_players.every(
+			player => player.hasDoneAbility()
+		)
+
+		if (didEveryPlayerDoAnAbility) {
+			this.startDay(this.days_passed);
+		}
+	}
 }
 
 module.exports = Game;
