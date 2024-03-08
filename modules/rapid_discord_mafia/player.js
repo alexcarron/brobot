@@ -1,7 +1,7 @@
 const { RDMRoles, Announcements, MessageDelays, Feedback, Factions, RoleNames, AbilityTypes, TrialVotes, AbilityName: AbilityName, AbilityArgName, ArgumentSubtypes, Subphases, Votes, Phases } = require("../enums");
 const roles = require("./roles");
 const ids = require("../../data/ids.json");
-const { Abilities } = require("./ability");
+const { Abilities } = require("./Ability");
 
 const
 	{ getGuildMember, getRole, addRole, removeRole, getChannel, wait, getRandArrayItem, getRDMGuild, toTitleCase } = require("../functions"),

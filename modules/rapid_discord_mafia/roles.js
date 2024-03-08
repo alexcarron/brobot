@@ -1,5 +1,5 @@
 const { Factions, Alignments, Immunities, WinConditions, RoleNames, AbilityUses } = require("../enums.js");
-const { Abilities } = require("./ability.js");
+const { Abilities } = require("./Ability.js");
 const Role = require("./role.js");
 
 const roles = {

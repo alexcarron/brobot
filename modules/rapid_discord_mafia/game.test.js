@@ -2,7 +2,7 @@ const { RoleNames, Factions, Alignments, RoleIdentifierKeywords, TrialOutcomes, 
 const { doArraysHaveSameElements } = require("../functions");
 const RapidDiscordMafia = require("./RapidDiscordMafia");
 const RoleIdentifier = require("./RoleIdentifier");
-const { Abilities } = require("./ability");
+const { Abilities } = require("./Ability");
 const Game = require("./game");
 const Player = require("./player");
 const roles = require("./roles");

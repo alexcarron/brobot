@@ -3,7 +3,7 @@ const { getChannel, getGuild, wait, getRandArrayItem, getGuildMember, getRole, r
 const ids = require("../../data/ids.json");
 const validator = require('../../utilities/validator.js');
 const { github_token } =  require("../token.js");
-const { Abilities } = require("./ability.js");
+const { Abilities } = require("./Ability.js");
 const { PermissionFlagsBits, Role, Interaction } = require("discord.js");
 const Death = require("./death.js");
 const roles = require("./roles.js");
