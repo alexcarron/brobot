@@ -25,7 +25,7 @@ command.execute = async function execute(interaction, isTest=false) {
 
 	const player_name = interaction.options.getString(Parameters.PlayerSmiting.name);
 	const player = global.Game.player_manager.getPlayerFromName(player_name);
-	await player.smite();
+	await player.smite(global.Game);
 	await interaction.editReply(`You have smited **${player.name}**`);
 }
 command.autocomplete = async function(interaction) {

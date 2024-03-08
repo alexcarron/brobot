@@ -626,7 +626,7 @@ class Game {
 
 		await Game.log("Incrementing Inactvity")
 		this.player_manager.getAlivePlayers().forEach(player => {
-				if (!Game.IS_TESTING) player.incrementInactvity();
+				if (!Game.IS_TESTING) player.incrementInactvity(this);
 		});
 	}
 
@@ -641,7 +641,7 @@ class Game {
 
 		await Game.log("Incrementing Inactvity")
 		this.player_manager.getAlivePlayers().forEach(player => {
-			if (!Game.IS_TESTING) player.incrementInactvity();
+			if (!Game.IS_TESTING) player.incrementInactvity(this);
 		});
 	}
 
@@ -663,7 +663,7 @@ class Game {
 
 		await Game.log("Incrementing Inactvity")
 		this.player_manager.getAlivePlayers().forEach(player => {
-			if (!Game.IS_TESTING) player.incrementInactvity();
+			if (!Game.IS_TESTING) player.incrementInactvity(this);
 		});
 	}
 
@@ -678,7 +678,7 @@ class Game {
 			await Game.log("Incrementing Inactvity")
 			this.player_manager.getAlivePlayers().forEach(player => {
 				if (player.name !== this.on_trial) {
-					if (!Game.IS_TESTING) player.incrementInactvity();
+					if (!Game.IS_TESTING) player.incrementInactvity(this);
 				}
 			});
 		}

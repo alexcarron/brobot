@@ -231,12 +231,12 @@ class Player {
 		this.isDoused = true;
 	}
 
-	async incrementInactvity() {
+	async incrementInactvity(game) {
 		this.num_phases_inactive += 1;
 		const actual_phases_inactive = this.num_phases_inactive-1;
 
 		if (actual_phases_inactive === Player.MAX_INACTIVE_PHASES) {
-			await this.smite();
+			await this.smite(game);
 		}
 		else if (
 			actual_phases_inactive >= Player.MIN_INACTIVE_PHASES_FOR_WARNING &&
@@ -648,9 +648,9 @@ class Player {
 		game.player_manager.removePlayer(this.name);
 	}
 
-	async smite() {
+	async smite(game) {
 		await this.sendFeedback(Feedback.Smitten(this));
-		global.Game.addDeath(this, this, Announcements.PlayerSmitten);
+		game.addDeath(this, this, Announcements.PlayerSmitten);
 	}
 
 	async getPlayerChannel() {
