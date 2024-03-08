@@ -30,7 +30,7 @@ command.execute = async function(interaction) {
 			return
 		}
 
-		player.leaveGameSignUps();
+		player.leaveGameSignUps(global.Game);
 	}
 	else if (global.Game.state === GameStates.InProgress) {
 		if (!player.isAlive) {

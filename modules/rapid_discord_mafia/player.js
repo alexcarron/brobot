@@ -625,10 +625,10 @@ class Player {
 		game.addDeath(this, this, Announcements.PlayerSuicide);
 	}
 
-	async leaveGameSignUps() {
-		await global.Game.log(`**${this.name}** left the game`);
+	async leaveGameSignUps(game) {
+		await game.log(`**${this.name}** left the game`);
 
-		await global.Game.announceMessages(
+		await game.announceMessages(
 			`**${this.name}** left the game`
 		);
 
@@ -645,7 +645,7 @@ class Player {
 			await player_channel.delete();
 		}
 
-		global.Game.player_manager.removePlayer(this.name);
+		game.player_manager.removePlayer(this.name);
 	}
 
 	async smite() {
