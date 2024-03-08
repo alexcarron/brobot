@@ -87,7 +87,7 @@ class EffectManager {
 
 				player_using_ability.addFeedback(Feedback.RoleblockedPlayer(roleblocked_player));
 
-				roleblocked_player.addAbilityAffectedBy(player_using_ability, ability.name);
+				roleblocked_player.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5);
 			}
 		}),
 
@@ -95,7 +95,7 @@ class EffectManager {
 			name: this.EffectName.Cautious,
 			applyEffect: async function(game, player_using_ability, ability, arg_values) {
 				player_using_ability.addFeedback(Feedback.DidCautious);
-				player_using_ability.addAbilityAffectedBy(player_using_ability, ability.name);
+				player_using_ability.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5);
 			}
 		}),
 
@@ -108,7 +108,7 @@ class EffectManager {
 
 				player_healing.giveDefenseLevel(2);
 
-				player_healing.addAbilityAffectedBy(player_using_ability, ability.name);
+				player_healing.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5);
 			}
 		}),
 
@@ -116,7 +116,7 @@ class EffectManager {
 			name: this.EffectName.SelfHeal,
 			applyEffect: async function(game, player_using_ability, ability, arg_values) {
 				player_using_ability.giveDefenseLevel(2);
-				player_using_ability.addAbilityAffectedBy(player_using_ability, ability.name);
+				player_using_ability.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5);
 			}
 		}),
 
@@ -160,9 +160,9 @@ class EffectManager {
 					attacked_player_name = player_using_ability.visiting,
 					attacked_player = game.player_manager.get(attacked_player_name);
 
-				attacked_player.receiveAttackFrom(player_using_ability);
+				attacked_player.receiveAttackFrom(player_using_ability, game);
 
-				attacked_player.addAbilityAffectedBy(player_using_ability, ability.name)
+				attacked_player.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5)
 			}
 		}),
 
@@ -175,7 +175,7 @@ class EffectManager {
 
 				framed_player.frame();
 
-				framed_player.addAbilityAffectedBy(player_using_ability, ability.name);
+				framed_player.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5);
 			}
 		}),
 
@@ -184,7 +184,7 @@ class EffectManager {
 			applyEffect: async function(game, player_using_ability, ability, arg_values) {
 				player_using_ability.frame();
 
-				player_using_ability.addAbilityAffectedBy(player_using_ability, ability.name);
+				player_using_ability.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5);
 			}
 		}),
 
@@ -197,7 +197,7 @@ class EffectManager {
 
 				exe_target_player.frame();
 
-				exe_target_player.addAbilityAffectedBy(player_using_ability, ability.name);
+				exe_target_player.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5);
 			}
 		}),
 
@@ -240,7 +240,7 @@ class EffectManager {
 
 				player_using_ability.addFeedback(feedback);
 
-				player_evaluating.addAbilityAffectedBy(player_using_ability, ability.name);
+				player_evaluating.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5);
 			}
 		}),
 
@@ -268,7 +268,7 @@ class EffectManager {
 
 				player_using_ability.addFeedback(feedback);
 
-				tracked_player.addAbilityAffectedBy(player_using_ability, ability.name);
+				tracked_player.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5);
 			}
 		}),
 
@@ -305,7 +305,7 @@ class EffectManager {
 				else
 					player_using_ability.addFeedback(Feedback.LookoutSeesNoVisits(target_player));
 
-				target_player.addAbilityAffectedBy(player_using_ability, ability.name);
+				target_player.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5);
 			}
 		}),
 
@@ -319,7 +319,7 @@ class EffectManager {
 
 				player_using_ability.addFeedback(Feedback.InvestigatedPlayersRole(investigated_player_name, evaluated_role_name));
 
-				investigated_player.addAbilityAffectedBy(player_using_ability, ability.name);
+				investigated_player.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5);
 			}
 		}),
 
@@ -336,7 +336,7 @@ class EffectManager {
 
 				smithed_player.giveDefenseLevel(1);
 
-				smithed_player.addAbilityAffectedBy(player_using_ability, ability.name);
+				smithed_player.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5);
 			}
 		}),
 
@@ -344,7 +344,7 @@ class EffectManager {
 			name: this.EffectName.SelfSmith,
 			applyEffect: async function(game, player_using_ability, ability, arg_values) {
 				player_using_ability.giveDefenseLevel(1);
-				player_using_ability.addAbilityAffectedBy(player_using_ability, ability.name);
+				player_using_ability.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5);
 			}
 		}),
 
@@ -487,8 +487,8 @@ class EffectManager {
 					player_observing.removeManipulationAffects();
 					last_player_observed.removeManipulationAffects();
 
-					player_observing.addAbilityAffectedBy(player_using_ability, ability.name);
-					last_player_observed.addAbilityAffectedBy(player_using_ability, ability.name);
+					player_observing.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5);
+					last_player_observed.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5);
 				}
 
 				player_using_ability.last_player_observed_name = player_observing.name;
@@ -515,7 +515,7 @@ class EffectManager {
 					player_using_ability.addFeedback(Feedback.ReplacedPlayer(player_replacing));
 					player_replacing.addFeedback(Feedback.ReplacedByReplacer);
 
-					player_replacing.addAbilityAffectedBy(player_using_ability, ability.name);
+					player_replacing.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5);
 				}
 				// Attack Failed
 				else {
@@ -542,7 +542,7 @@ class EffectManager {
 					player_using_ability.addFeedback(Feedback.AttackedByKidnappedPlayer(kidnapped_player));
 					kidnapped_player.addFeedback(Feedback.AttackedKidnapper);
 
-					player_using_ability.receiveAttackFrom(kidnapped_player);
+					player_using_ability.receiveAttackFrom(kidnapped_player, game);
 				}
 				else {
 					player_using_ability.addFeedback(Feedback.KidnappedPlayer(kidnapped_player));
@@ -565,7 +565,7 @@ class EffectManager {
 				await kidnapped_player.removeVotingAbility();
 
 				console.log("Adding ability affected by");
-				await kidnapped_player.addAbilityAffectedBy(player_using_ability, ability.name);
+				await kidnapped_player.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5);
 				console.log("Added ability affected by");
 			}
 		}),

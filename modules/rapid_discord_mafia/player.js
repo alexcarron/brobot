@@ -373,8 +373,9 @@ class Player {
 	 * Adds an ability used on a player to their affected_by array
 	 * @param {Player} player_using_ability
 	 * @param {AbilityName} ability_name
+	 * @param {number} The day number the ability was used
 	 */
-	addAbilityAffectedBy(player_using_ability, ability_name) {
+	addAbilityAffectedBy(player_using_ability, ability_name, day_used) {
 		console.log({player_using_ability, ability_name});
 		player_using_ability.addAbilityUse(ability_name);
 
@@ -382,12 +383,16 @@ class Player {
 			{
 				name: ability_name,
 				by: player_using_ability.name,
-				during_phase: global.Game.days_passed-0.5
+				during_phase: day_used,
 			}
 		)
 	}
 
-	receiveAttackFrom(attacker_player) {
+	/**
+	 * @param {Player} attacker_player The player who is attacking this player
+	 * @param {Game} game The passed game instance
+	 */
+	receiveAttackFrom(attacker_player, game) {
 		console.log(`${attacker_player.name} attacks ${this.name} with ${attacker_player.attack} attack level against ${this.defense} defense level.`);
 
 		// Attack Success
@@ -406,7 +411,7 @@ class Player {
 			) {
 				console.log("Vigilante Suicide Confirmed");
 
-				attacker_player.addAbilityAffectedBy(attacker_player, AbilityName.Suicide);
+				attacker_player.addAbilityAffectedBy(attacker_player, AbilityName.Suicide, game.days_passed - 0.5);
 			}
 		}
 		// Attack Failed
