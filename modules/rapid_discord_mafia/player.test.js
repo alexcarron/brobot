@@ -70,8 +70,6 @@ describe('Player', () => {
 			await mock_game.startTrial(mock_game.days_passed);
 			// Skips to night because no vote
 
-			console.log(mock_game.phase);
-
 			// Kidnapping effects SHOULD be reversed
 			expect(doctor_player.defense).toBe(0);
 			expect(doctor_player.isRoleblocked).toBe(false);

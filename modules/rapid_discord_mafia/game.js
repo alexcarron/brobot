@@ -1137,8 +1137,9 @@ class Game {
 	async startDay1(days_passed_at_sign_ups) {
 		console.log({days_passed_at_sign_ups});
 
-		if (this.state_manager.canStartFirstDay())
+		if (!this.state_manager.canStartFirstDay()) {
 			return false;
+		}
 
 		this.state_manager.setToFirstDay();
 		const curr_day_num = this.days_passed;
@@ -1174,12 +1175,7 @@ class Game {
 	async startDay(days_passed_last_night) {
 		console.log({days_passed_last_night});
 
-		if (
-			days_passed_last_night !== undefined &&
-			(this.state !== GameStates.InProgress ||
-			this.phase !== Phases.Night ||
-			this.days_passed > days_passed_last_night)
-		) {
+		if (!this.state_manager.canStartDay(days_passed_last_night)) {
 			return
 		}
 
@@ -1218,13 +1214,7 @@ class Game {
 	async startVoting(days_passed_last_day) {
 		console.log({days_passed_last_day});
 
-		if (
-			days_passed_last_day !== undefined &&
-			(this.state !== GameStates.InProgress ||
-			this.phase !== Phases.Day ||
-			this.subphase !== Subphases.Announcements ||
-			this.days_passed >days_passed_last_day)
-		) {
+		if (!this.state_manager.canStartVoting(days_passed_last_day)) {
 			return
 		}
 
@@ -1242,12 +1232,7 @@ class Game {
 		if (!this.isMockGame) {
 			await wait(PhaseWaitTimes.Voting*4/5, "min");
 
-			if (
-				this.state === GameStates.InProgress &&
-				this.phase === Phases.Day &&
-				this.subphase === Subphases.Voting &&
-				this.days_passed <= days_passed_last_voting
-			) {
+			if (!this.state_manager.canStartTrial(days_passed_last_voting)) {
 				this.announceMessages(
 					Announcements.PhaseAlmostOverWarning(PhaseWaitTimes.Voting*1/5)
 				)
@@ -1262,13 +1247,7 @@ class Game {
 	async startTrial(days_passed_last_voting) {
 		console.log({days_passed_last_voting});
 
-		if (
-			days_passed_last_voting !== undefined &&
-			(this.state !== GameStates.InProgress ||
-			this.phase !== Phases.Day ||
-			this.subphase !== Subphases.Voting ||
-			this.days_passed >days_passed_last_voting)
-		) {
+		if (!this.state_manager.canStartTrial(days_passed_last_voting)) {
 			return
 		}
 
@@ -1312,12 +1291,7 @@ class Game {
 		if (!this.isMockGame) {
 			await wait(PhaseWaitTimes.Trial*4/5, "min");
 
-			if (
-				this.state === GameStates.InProgress &&
-				this.phase === Phases.Day &&
-				this.subphase === Subphases.Trial &&
-				this.days_passed <= days_passed_last_trial
-			) {
+			if (!this.state_manager.canStartTrialResults(days_passed_last_trial)) {
 				this.announceMessages(
 					Announcements.PhaseAlmostOverWarning(PhaseWaitTimes.Trial*1/5)
 				)
@@ -1332,13 +1306,7 @@ class Game {
 	async startTrialResults(days_passed_last_trial) {
 		console.log({days_passed_last_trial});
 
-		if (
-			days_passed_last_trial !== undefined &&
-			(this.state !== GameStates.InProgress ||
-			this.phase !== Phases.Day ||
-			this.subphase !== Subphases.Trial ||
-			this.days_passed > days_passed_last_trial)
-		) {
+		if (!this.state_manager.canStartTrialResults(days_passed_last_trial)) {
 			return
 		}
 
@@ -1372,12 +1340,7 @@ class Game {
 	async startNight(days_passed_last_day) {
 		console.log({days_passed_last_day});
 
-		if (
-			days_passed_last_day !== undefined &&
-			(this.state !== GameStates.InProgress ||
-			this.phase !== Phases.Day ||
-			this.days_passed > days_passed_last_day)
-		) {
+		if (!this.state_manager.canStartNight(days_passed_last_day)) {
 			return
 		}
 
@@ -1400,11 +1363,7 @@ class Game {
 		if (!this.isMockGame) {
 			await wait(PhaseWaitTimes.Night * 4/5, "min");
 
-			if (
-				this.state === GameStates.InProgress &&
-				this.phase === Phases.Night &&
-				this.days_passed <= days_passed_last_night
-			) {
+			if (!this.state_manager.canStartDay(days_passed_last_night)) {
 				this.announceMessages(
 					Announcements.PhaseAlmostOverWarning(PhaseWaitTimes.Night*1/5)
 				)

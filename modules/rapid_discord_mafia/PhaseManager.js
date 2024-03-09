@@ -23,7 +23,7 @@ class GameStateManager {
 	 * @type {Phases}
 	 */
 	get phase() {
-		this.game.phase;
+		return this.game.phase;
 	}
 	set phase(phase) {
 		this.game.phase = phase
@@ -80,8 +80,6 @@ class GameStateManager {
 		this.phase = Phases.None;
 		this.subphase = Subphases.None;
 		this.days_passed = 0;
-
-		console.log(this.game);
 	}
 
 	/**
@@ -94,7 +92,6 @@ class GameStateManager {
 		this.phase = Phases.None;
 		this.subphase = Phases.None;
 		this.days_passed = 0;
-		console.log(this.game);
 	}
 
 	/**
@@ -106,7 +103,6 @@ class GameStateManager {
 		this.phase = Phases.Day;
 		this.subphase = Subphases.None;
 		this.days_passed += GameStateManager.DAY_PHASE_LENGTH;
-		console.log(this.game);
 	}
 
 	/**
@@ -118,7 +114,6 @@ class GameStateManager {
 		this.phase = Phases.Day;
 		this.subphase = Subphases.Announcements;
 		this.days_passed += GameStateManager.DAY_PHASE_LENGTH;
-		console.log(this.game);
 	}
 
 	/**
@@ -129,7 +124,6 @@ class GameStateManager {
 
 		this.phase = Phases.Day;
 		this.subphase = Subphases.Voting;
-		console.log(this.game);
 	}
 
 	/**
@@ -140,7 +134,6 @@ class GameStateManager {
 
 		this.phase = Phases.Day;
 		this.subphase = Subphases.Trial;
-		console.log(this.game);
 	}
 
 	/**
@@ -151,7 +144,6 @@ class GameStateManager {
 
 		this.phase = Phases.Day;
 		this.subphase = Subphases.TrialResults;
-		console.log(this.game);
 	}
 
 	/**
@@ -163,7 +155,6 @@ class GameStateManager {
 		this.phase = Phases.Night;
 		this.subphase = Subphases.None;
 		this.days_passed += GameStateManager.NIGHT_PHASE_LENGTH;
-		console.log(this.game);
 	}
 
 	/**
@@ -217,6 +208,67 @@ class GameStateManager {
 	}
 
 	/**
+	 * Get whether or not the game is in the voting phase
+	 * @returns {boolean}
+	 */
+	isInVotingPhase() {
+		return (
+			this.state === GameStates.InProgress &&
+			this.phase === Phases.Day &&
+			this.subphase === Subphases.Voting
+		)
+	}
+
+	/**
+	 * Get whether or not the game is in the trial phase
+	 * @returns {boolean}
+	 */
+	isInTrialPhase() {
+		return (
+			this.state === GameStates.InProgress &&
+			this.phase === Phases.Day &&
+			this.subphase === Subphases.Trial
+		)
+	}
+
+	/**
+	 * Get whether or not the game is in the trial results phase
+	 * @returns {boolean}
+	 */
+	isInTrialResultsPhase() {
+		return (
+			this.state === GameStates.InProgress &&
+			this.phase === Phases.Day &&
+			this.subphase === Subphases.TrialResults
+		)
+	}
+
+	/**
+	 * Get whether or not the game is in the night phase
+	 * @returns {boolean}
+	 */
+	isInNightPhase() {
+		return (
+			this.state === GameStates.InProgress &&
+			this.phase === Phases.Night &&
+			this.subphase === Subphases.None
+		)
+	}
+
+	/**
+	 * Get whether or not it's currently the first day of the game
+	 * @returns {boolean}
+	 */
+	isFirstDay() {
+		return (
+			this.state === GameStates.InProgress &&
+			this.phase === Phases.Day &&
+			this.subphase === Subphases.None &&
+			this.days_passed === GameStateManager.DAY_PHASE_LENGTH
+		)
+	}
+
+	/**
 	 * Checks if it is just before the first day, indicating readiness to start first day.
 	 * @returns {boolean} True if it's just before the first day, otherwise false.
 	 */
@@ -224,8 +276,99 @@ class GameStateManager {
 		return (
 			this.state === GameStates.InProgress &&
 			this.phase === Phases.None &&
+			this.subphase === Phases.None &&
 			this.days_passed === 0
 		)
+	}
+
+	/**
+	 * Checks if it is just before a specific day phase, indicating readiness to start that day.
+	 * @param {number | undefined} day_night_before_ended - The amount of days that passed when the night before that specific day phase ended. Undefined if impossible to determine.
+	 * @returns {boolean} True if it's just before that specific day phase, otherwise false.
+	 */
+	canStartDay(day_night_before_ended) {
+		if (day_night_before_ended === undefined)
+			return true;
+
+		return (
+			this.isInNightPhase() &&
+			this.days_passed === day_night_before_ended
+		)
+	}
+
+	/**
+	 * Checks if it is just before a specific voting subphase, indicating readiness to start that subphase.
+	 * @param {number | undefined} day_this_day_started - The amount of days that passed when the day that specific voting subphase is in started. Undefined if impossible to determine.
+	 * @returns {boolean} True if it's just before that specific voting subphase, otherwise false.
+	 */
+	canStartVoting(day_this_day_started) {
+		if (day_this_day_started === undefined)
+			return true;
+
+		return (
+			this.isInAnnouncementsPhase() &&
+			this.days_passed === day_this_day_started
+		)
+	}
+
+	/**
+	 * Checks if it is just before a specific trial subphase, indicating readiness to start that subphase.
+	 * @param {number | undefined} day_voting_subphase_before_ended - The amount of days that passed when the voting subphase before this specific trial subphase ended. Undefined if impossible to determine.
+	 * @returns {boolean} True if it's just before that specific trial subphase, otherwise false.
+	 */
+	canStartTrial(day_voting_subphase_before_ended) {
+		if (day_voting_subphase_before_ended === undefined)
+			return true;
+
+		return (
+			this.isInVotingPhase() &&
+			this.days_passed === day_voting_subphase_before_ended
+		)
+	}
+
+	/**
+	 * Checks if it is just before a specific trial results subphase, indicating readiness to start that subphase.
+	 * @param {number | undefined} day_trial_subphase_before_ended - The amount of days that passed when the trial subphase before this specific trial results subphase ended. Undefined if impossible to determine.
+	 * @returns {boolean} True if it's just before that specific trial results subphase, otherwise false.
+	 */
+	canStartTrialResults(day_trial_subphase_before_ended) {
+		if (day_trial_subphase_before_ended === undefined)
+			return true;
+
+		return (
+			this.isInTrialPhase() &&
+			this.days_passed === day_trial_subphase_before_ended
+		)
+	}
+
+	/**
+	 * Checks if it is just before a specific night phase, indicating readiness to start that phase.
+	 * @param {number | undefined} day_the_day_before_ended - The amount of days that passed when the day phase before this specific night phase ended. Undefined if impossible to determine.
+	 * @returns {boolean} True if it's just before that specific night phase, otherwise false.
+	 */
+	canStartNight(day_the_day_before_ended) {
+		this.logCurrentState();
+		if (day_the_day_before_ended === undefined)
+			return true;
+
+		return (
+			(
+				this.isInTrialResultsPhase() ||
+				this.isInTrialPhase() || // Town voting nobody
+				this.isFirstDay()
+			)
+			&&
+			this.days_passed === day_the_day_before_ended
+		)
+	}
+
+	logCurrentState() {
+		console.log({
+			state: this.state,
+			phase: this.phase,
+			subphase: this.subphase,
+			days_passed: this.days_passed,
+		})
 	}
 }
 
