@@ -83,7 +83,31 @@ class GameStateManager {
 	}
 
 	/**
-	 * Sets the state and phase of the game when game is officially started
+	 * Changes the state and phase of the game when game is officially in sign ups
+	 */
+	changeToSignUps() {
+		this.logger.log("Changing game state to sign ups");
+
+		this.state = GameStates.SignUp;
+		this.phase = Phases.None;
+		this.subphase = Phases.None;
+		this.days_passed = 0;
+	}
+
+	/**
+	 * Changes the state and phase of the game when game is officially ready to start
+	 */
+	changeToReadyToStart() {
+		this.logger.log("Changing game state to ready to start");
+
+		this.state = GameStates.ReadyToBegin;
+		this.phase = Phases.None;
+		this.subphase = Phases.None;
+		this.days_passed = 0;
+	}
+
+	/**
+	 * Changes the state and phase of the game when game is officially started
 	 */
 	changeToStarted() {
 		this.logger.log("Changing game state to started");
@@ -92,6 +116,17 @@ class GameStateManager {
 		this.phase = Phases.None;
 		this.subphase = Phases.None;
 		this.days_passed = 0;
+	}
+
+	/**
+	 * Changes the state and phase of the game when game is officially over
+	 */
+	changeToEnded() {
+		this.logger.log("Changing game state to be ended");
+
+		this.state = GameStates.Ended;
+		this.phase = Phases.None;
+		this.subphase = Phases.None;
 	}
 
 	/**
@@ -265,6 +300,42 @@ class GameStateManager {
 			this.phase === Phases.Day &&
 			this.subphase === Subphases.None &&
 			this.days_passed === GameStateManager.DAY_PHASE_LENGTH
+		)
+	}
+
+	/**
+	 * Get whether or not the game is in sign ups
+	 * @returns {boolean}
+	 */
+	isInSignUps() {
+		return (
+			this.state === GameStates.SignUp &&
+			this.phase === Phases.None &&
+			this.subphase === Subphases.None
+		)
+	}
+
+	/**
+	 * Get whether or not the game is ready to start
+	 * @returns {boolean}
+	 */
+	isReadyToStart() {
+		return (
+			this.state === GameStates.ReadyToBegin &&
+			this.phase === Phases.None &&
+			this.subphase === Subphases.None
+		)
+	}
+
+	/**
+	 * Get whether or not the game ended
+	 * @returns {boolean}
+	 */
+	isEnded() {
+		return (
+			this.state === GameStates.Ended &&
+			this.phase === Phases.None &&
+			this.subphase === Subphases.None
 		)
 	}
 

@@ -1130,10 +1130,6 @@ class Game {
 		}
 	}
 
-	end() {
-		this.state = GameStates.Ended;
-	}
-
 	async startDay1(days_passed_at_sign_ups) {
 		console.log({days_passed_at_sign_ups});
 
@@ -1142,7 +1138,7 @@ class Game {
 		}
 
 		this.state_manager.setToFirstDay();
-		const curr_day_num = this.days_passed;
+		const day_first_day_ended = this.days_passed;
 		await this.saveGameDataToDatabase();
 
 		await Game.log("Incrementing Inactvity")
@@ -1168,7 +1164,7 @@ class Game {
 
 		if (!this.isMockGame) {
 			await wait(PhaseWaitTimes.FirstDay, "min");
-			await this.startNight(curr_day_num);
+			await this.startNight(day_first_day_ended);
 		}
 	}
 
@@ -2213,7 +2209,7 @@ class Game {
 
 	async startSignUps() {
 		await Game.openJoinChannel();
-		await this.setState(GameStates.SignUp);
+		this.state_manager.changeToSignUps();
 		const starting_unix_timestamp = getUnixTimestamp() + PhaseWaitTimes.SignUps*60;
 
 		this.announceMessages(
@@ -2228,8 +2224,7 @@ class Game {
 
 			await wait(PhaseWaitTimes.SignUps*(2/3), "min");
 
-			console.log(this.state);
-			if (this.state !== GameStates.SignUp) return
+			if (!this.state_manager.isInSignUps()) return;
 
 			this.announceMessages(
 				Announcements.SignUpsReminder(
@@ -2240,8 +2235,7 @@ class Game {
 
 			await wait(PhaseWaitTimes.SignUps*(4/15), "min");
 
-			console.log(this.state);
-			if (this.state !== GameStates.SignUp) return
+			if (!this.state_manager.isInSignUps()) return;
 
 			this.announceMessages(
 				Announcements.SignUpsFinalReminder(
@@ -2251,8 +2245,8 @@ class Game {
 			);
 
 			await wait(PhaseWaitTimes.SignUps*(1/15), "min");
-			console.log(this.state);
-			if (this.state !== GameStates.SignUp) return
+
+			if (!this.state_manager.isInSignUps()) return;
 		}
 
 		const player_count = this.player_manager.getPlayerCount();
@@ -2262,7 +2256,7 @@ class Game {
 				Announcements.SignUpsClosed(ids.users.LL, ids.rapid_discord_mafia.roles.living, player_count)
 			);
 
-			await this.setState(GameStates.ReadyToBegin);
+			this.state_manager.changeToReadyToStart();
 		}
 		else {
 			await this.announceMessages(
@@ -2272,11 +2266,6 @@ class Game {
 		}
 
 		await Game.closeJoinChannel();
-	}
-
-	async setState(state) {
-		this.state = state;
-		await Game.log(`Setting state to ${state}`, 2)
 	}
 
 	/**
@@ -2320,7 +2309,7 @@ class Game {
 		)
 
 		if (didEveryPlayerDoAnAbility) {
-			this.startDay(this.days_passed);
+			this.startDay();
 		}
 	}
 }
