@@ -11,8 +11,8 @@ const Arg = require("./arg.js");
 const EffectManager = require("./EffectManager.js");
 const AbilityManager = require("./AbilityManager.js");
 const RoleManager = require("./RoleManager.js");
-const PhaseManager = require("./PhaseManager.js");
-const GameStateManager = require("./PhaseManager.js");
+const GameStateManager = require("./GameStateManager.js");
+
 class Game {
 	/**
 	 * The current phase the game is in

@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">65.95% </span>
+                <span class="strong">65.21% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>31/47</span>
+                <span class='fraction'>30/46</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">65.95% </span>
+                <span class="strong">65.21% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>31/47</span>
+                <span class='fraction'>30/46</span>
             </div>
         
             
@@ -161,30 +161,28 @@
 <a name='L96'></a><a href='#L96'>96</a>
 <a name='L97'></a><a href='#L97'>97</a>
 <a name='L98'></a><a href='#L98'>98</a>
-<a name='L99'></a><a href='#L99'>99</a>
-<a name='L100'></a><a href='#L100'>100</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
+<a name='L99'></a><a href='#L99'>99</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">43x</span>
+<span class="cline-any cline-yes">41x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">43x</span>
-<span class="cline-any cline-yes">43x</span>
+<span class="cline-any cline-yes">41x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">43x</span>
+<span class="cline-any cline-yes">41x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">43x</span>
+<span class="cline-any cline-yes">41x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -261,13 +259,13 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span></td><td class="text"><pre class="prettyprint lang-js">const { getObjectFromGitHubJSON } = require("../functions.js");
+<span class="cline-any cline-yes">3x</span></td><td class="text"><pre class="prettyprint lang-js">const { getObjectFromGitHubJSON } = require("../functions.js");
 const Contestant = require("./Contestant");
 const Logger = require("./Logger.js");
 const RoleIdentifier = require("./RoleIdentifier.js");
 const Game = require("./game.js");
-const Players = require("./players.js");
-const roles = require("./roles");
+const PlayerManager = require("./PlayerManager.js");
+const RoleManager = require("./RoleManager.js");
 &nbsp;
 class RapidDiscordMafia {
 	constructor() {
@@ -275,9 +273,8 @@ class RapidDiscordMafia {
 	}
 &nbsp;
 	static async setUpRapidDiscordMafia(isMockObject = <span class="branch-0 cbranch-no" title="branch not covered" >false)</span> {
-		global.Roles = require("./roles");
 		global.Game = new Game(
-			new Players({}, isMockObject),
+			new PlayerManager({}, isMockObject),
 			new Logger(),
 			isMockObject
 		);
@@ -291,7 +288,7 @@ class RapidDiscordMafia {
 	}
 &nbsp;
 	static getEmptyGame(isMockGame=false) {
-		return new Game(new Players, new Logger, isMockGame)
+		return new Game(new PlayerManager, new Logger, isMockGame)
 	}
 &nbsp;
 	/**
@@ -304,7 +301,7 @@ class RapidDiscordMafia {
 			let num_players_with_role = 1;
 			let player_name = name;
 &nbsp;
-			while ( mock_game.Players.getPlayerNames().includes(player_name) ) {
+			while ( mock_game.player_manager.getPlayerNames().includes(player_name) ) {
 				num_players_with_role += 1;
 				player_name = name + num_players_with_role;
 			}
@@ -316,9 +313,9 @@ class RapidDiscordMafia {
 		await mock_game.start(role_identifiers);
 &nbsp;
 		[...new Set(roles_in_game)].forEach(async role_name =&gt; {
-			const role = roles[role_name];
+			const role = RoleManager.roles[role_name];
 &nbsp;
-			const players_with_role = mock_game.Players.getPlayerList().filter(player =&gt; {
+			const players_with_role = mock_game.player_manager.getPlayerList().filter(player =&gt; {
 				return player.name.startsWith(role_name)
 			});
 &nbsp;
@@ -367,7 +364,7 @@ module.exports = RapidDiscordMafia;</pre></td></tr></table></pre>
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2024-03-08T02:22:29.494Z
+                at 2024-03-09T22:20:33.786Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
