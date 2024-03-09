@@ -1,5 +1,4 @@
 const { ArgumentSubtypes, ArgumentTypes, AbilityUses, Duration, Phases, AbilityTypes, AbilityPriority: Priorities, AbilityName: AbilityName, AbilityArgName } = require("../enums.js");
-const { EffectName } = require("./EffectManager.js");
 const Arg = require("./arg.js");
 
 class Ability {

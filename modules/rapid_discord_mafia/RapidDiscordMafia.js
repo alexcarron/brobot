@@ -12,7 +12,6 @@ class RapidDiscordMafia {
 	}
 
 	static async setUpRapidDiscordMafia(isMockObject = false) {
-		global.RoleManager = require("./RoleManager.js");
 		global.Game = new Game(
 			new PlayerManager({}, isMockObject),
 			new Logger(),

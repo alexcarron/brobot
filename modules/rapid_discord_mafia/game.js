@@ -11,7 +11,33 @@ const Arg = require("./arg.js");
 const EffectManager = require("./EffectManager.js");
 const AbilityManager = require("./AbilityManager.js");
 const RoleManager = require("./RoleManager.js");
+const PhaseManager = require("./PhaseManager.js");
+const GameStateManager = require("./PhaseManager.js");
 class Game {
+	/**
+	 * The current phase the game is in
+	 * @type {Phases}
+	 */
+	phase;
+
+	/**
+	 * The current subphase the game is in
+	 * @type {Subphases}
+	 */
+	subphase;
+
+	/**
+	 * The current state the game is in
+	 * @type {GameStates}
+	 */
+	state;
+
+	/**
+	 * The number of FULL days that have passed (day and night phase). During night, half of a full day has passed
+	 * @type {number}
+	 */
+	days_passed;
+
 	/**
 	 * An object map of players to the ability they performed
 	 * @ type {{[player_name: string]: {by: PlayerName, name: AbilityName, args: {[ability_arg_name: string]: [ability_arg_value: string]}}}}
@@ -46,6 +72,12 @@ class Game {
 	role_manager;
 
 	/**
+	 * A manager service to handles the logic of the game state and phase
+	 * @type {GameStateManager}
+	 */
+	state_manager;
+
+	/**
 	 * A logger to log messages
 	 * @type {Logger}
 	 */
@@ -67,13 +99,11 @@ class Game {
 		this.effect_manager = new EffectManager(this, logger);
 		this.ability_manager = new AbilityManager();
 		this.role_manager = new RoleManager();
-		this.logger = logger;
+		this.state_manager = new GameStateManager(this, logger);
+		this.state_manager.initializeState();
 
-		this.state = GameStates.Ended;
+		this.logger = logger;
 		this.player_manager = player_manager;
-		this.phase = null;
-		this.subphase = null;
-		this.days_passed = 0;
 		this.timeout_counter = 0;
 		this.votes = {};
 		this.trial_votes = {};
@@ -219,12 +249,9 @@ class Game {
 			shuffled_role_identifiers = shuffleArray(role_identifiers),
 			days_passed_at_sign_ups = 0;
 
-		this.state = GameStates.InProgress;
+		this.state_manager.changeToStarted();
 		this.unshuffled_role_identifiers = unshuffled_role_identifiers;
 		this.role_identifiers = shuffled_role_identifiers;
-		this.phase = null;
-		this.subphase = null;
-		this.days_passed = 0;
 		this.timeout_counter = 0;
 		this.votes = {};
 		this.trial_votes = {};
@@ -481,46 +508,7 @@ class Game {
 	 * Switches the current phase to the next one
 	 */
 	async setPhaseToNextPhase() {
-		switch (this.phase) {
-			case Phases.Day:
-				switch (this.subphase) {
-					case Subphases.Announcements:
-						await this.setPhaseToVoting();
-						break;
-
-					case Subphases.Voting:
-						await this.setPhaseToTrial();
-						break;
-
-					case Subphases.Trial:
-						await this.setPhaseToTrialResults();
-						break;
-
-					case Subphases.TrialResults:
-					default:
-						await this.setPhaseToNight();
-						break;
-				}
-				break;
-
-			case Phases.Night:
-				await this.setPhaseToDay();
-				break;
-
-			default:
-				await this.setPhaseToDay1();
-				break;
-		}
-	}
-
-	async setPhaseToNight() {
-		await this.saveGameDataToDatabase();
-
-		await Game.log(`Night ${this.getDayNum()} Begins`, 2);
-
-		this.phase = Phases.Night;
-		this.subphase = Subphases.None;
-		this.days_passed += 0.5;
+		this.state_manager.changeToNextSubphase();
 	}
 
 	static async log(message, heading_level=0) {
@@ -601,7 +589,7 @@ class Game {
 
 	async updateTimeoutCounter() {
 		if (this.next_deaths.length <= 0) {
-			if (this.subphase === Subphases.Announcements) {
+			if (this.state_manager.isInAnnouncementsPhase()) {
 				this.timeout_counter += 1;
 
 				if (this.timeout_counter >= Game.MAX_TIMEOUT_COUNTER) {
@@ -620,76 +608,6 @@ class Game {
 		else {
 			this.resetTimeout();
 		}
-	}
-
-	async setPhaseToDay1() {
-		await this.saveGameDataToDatabase();
-
-		await Game.log(`Day ${this.getDayNum()} Begins`, 2);
-
-		this.phase = Phases.Day;
-		this.subphase = Subphases.None;
-		this.days_passed += 0.5;
-
-		await Game.log("Incrementing Inactvity")
-		this.player_manager.getAlivePlayers().forEach(player => {
-				if (!Game.IS_TESTING) player.incrementInactvity(this);
-		});
-	}
-
-	async setPhaseToDay() {
-		await this.saveGameDataToDatabase();
-
-		await Game.log(`Day ${this.getDayNum()} Begins`, 2);
-
-		this.phase = Phases.Day;
-		this.subphase = Subphases.Announcements;
-		this.days_passed += 0.5;
-
-		await Game.log("Incrementing Inactvity")
-		this.player_manager.getAlivePlayers().forEach(player => {
-			if (!Game.IS_TESTING) player.incrementInactvity(this);
-		});
-	}
-
-	async setPhaseToVoting() {
-		await Game.log(`Voting Begins`, 2);
-
-		this.subphase = Subphases.Voting;
-	}
-
-	async setPhaseToTrial() {
-		await this.saveGameDataToDatabase();
-
-		await Game.log(`Day ${this.getDayNum()} Trial Begins`, 2);
-
-		this.resetTrialVotes();
-		this.resetVerdict();
-		this.subphase = Subphases.Trial;
-		this.on_trial = this.getMajorityVote(this.votes);
-
-		await Game.log("Incrementing Inactvity")
-		this.player_manager.getAlivePlayers().forEach(player => {
-			if (!Game.IS_TESTING) player.incrementInactvity(this);
-		});
-	}
-
-	async setPhaseToTrialResults() {
-		await this.saveGameDataToDatabase();
-
-		await Game.log(`Day ${this.getDayNum()} Trial Results Begins`, 2);
-
-		this.subphase = Subphases.TrialResults;
-
-		if (this.player_manager.getAlivePlayerNames().includes(this.on_trial)) {
-			await Game.log("Incrementing Inactvity")
-			this.player_manager.getAlivePlayers().forEach(player => {
-				if (player.name !== this.on_trial) {
-					if (!Game.IS_TESTING) player.incrementInactvity(this);
-				}
-			});
-		}
-
 	}
 
 	async resetPlayerOnTrial() {
@@ -915,7 +833,7 @@ class Game {
 
 		await Game.log("Performing Every Ability", 1);
 
-		this.action_log[this.getDayNum()-1] = [];
+		this.action_log[this.state_manager.day_num-1] = [];
 
 		for (let i = 0; i < Object.keys(this.abilities_performed).length; i++) {
 			console.log(Object.keys(this.abilities_performed));
@@ -946,7 +864,7 @@ class Game {
 				)
 			);
 
-			this.action_log[this.getDayNum()-1].push(
+			this.action_log[this.state_manager.day_num-1].push(
 				ability.feedback(
 					...Object.values(ability_performed.args),
 					player.name,
@@ -1004,7 +922,7 @@ class Game {
 	}
 
 	async announceDay() {
-		const phase_num = Math.ceil(this.days_passed);
+		const phase_num = this.state_manager.day_num;
 
 		await this.announceMessages(
 			...Announcements.StartDay(ids.rapid_discord_mafia.roles.living, phase_num)
@@ -1015,7 +933,7 @@ class Game {
 
 
 	async announceNight() {
-		const night_num = this.getDayNum();
+		const night_num = this.state_manager.day_num;
 
 		await this.remindPlayersTo(Announcements.UseNightAbilityReminder);
 
@@ -1160,10 +1078,6 @@ class Game {
 		this.timeout_counter = 0;
 	}
 
-	getDayNum() {
-		return Math.ceil(this.days_passed)
-	}
-
 	resetDeaths() {
 		this.next_deaths = [];
 	}
@@ -1188,27 +1102,17 @@ class Game {
 	}
 
 	async announceMessages(...messages) {
-		const phase_before_announce = this.phase;
-		const subphase_before_announce = this.subphase;
-		const days_passed_before_announce = this.days_passed;
-
 		if (!this.isMockGame)
 			var game_announce_chnl = await getChannel(await getRDMGuild(), ids.rapid_discord_mafia.channels.game_announce);
 
 		for (let message of messages) {
-			if (
-				phase_before_announce === this.phase &&
-				subphase_before_announce === this.subphase &&
-				days_passed_before_announce === this.days_passed
-			) {
-				if (!this.isMockGame)
-					await game_announce_chnl.send(message);
+			if (!this.isMockGame)
+				await game_announce_chnl.send(message);
 
-				// console.log(`[ANNOUNCEMENT: ${message}]`);
+			// console.log(`[ANNOUNCEMENT: ${message}]`);
 
-				if (!this.isMockGame && !Game.IS_TESTING)
-					await wait(MessageDelays.Normal, "s");
-			}
+			if (!this.isMockGame && !Game.IS_TESTING)
+				await wait(MessageDelays.Normal, "s");
 		}
 	}
 
@@ -1230,29 +1134,20 @@ class Game {
 		this.state = GameStates.Ended;
 	}
 
-	async isDay(curr_day_num) {
-		return !(
-			curr_day_num !== undefined &&
-			(this.state !== GameStates.InProgress ||
-			this.phase !== Phases.Day ||
-			this.days_passed > curr_day_num)
-		)
-	}
-
 	async startDay1(days_passed_at_sign_ups) {
 		console.log({days_passed_at_sign_ups});
 
-		if (
-			days_passed_at_sign_ups !== undefined &&
-			(this.state !== GameStates.InProgress ||
-			this.phase !== null ||
-			this.days_passed > days_passed_at_sign_ups)
-		) {
-			return
-		}
+		if (this.state_manager.canStartFirstDay())
+			return false;
 
-		await this.setPhaseToNextPhase();
+		this.state_manager.setToFirstDay();
 		const curr_day_num = this.days_passed;
+		await this.saveGameDataToDatabase();
+
+		await Game.log("Incrementing Inactvity")
+		this.player_manager.getAlivePlayers().forEach(player => {
+				if (!Game.IS_TESTING) player.incrementInactvity(this);
+		});
 
 		if (!this.isMockGame)
 			await Game.closePreGameChannels();
@@ -1288,8 +1183,14 @@ class Game {
 			return
 		}
 
-		await this.setPhaseToNextPhase();
+		this.state_manager.setToDay();
 		const days_passed_last_day = this.days_passed;
+		await this.saveGameDataToDatabase();
+
+		await Game.log("Incrementing Inactvity")
+		this.player_manager.getAlivePlayers().forEach(player => {
+			if (!Game.IS_TESTING) player.incrementInactvity(this);
+		});
 
 		for (const player of this.player_manager.getPlayersInLimbo()) {
 			player.isInLimbo = false;
@@ -1327,7 +1228,7 @@ class Game {
 			return
 		}
 
-		await this.setPhaseToNextPhase();
+		this.state_manager.setToVoting();
 		const days_passed_last_voting = this.days_passed;
 
 		this.resetVotes();
@@ -1371,8 +1272,18 @@ class Game {
 			return
 		}
 
-		await this.setPhaseToNextPhase();
+		this.state_manager.setToTrial();
 		const days_passed_last_trial = this.days_passed;
+		await this.saveGameDataToDatabase();
+
+		this.resetTrialVotes();
+		this.resetVerdict();
+		this.on_trial = this.getMajorityVote(this.votes);
+
+		await Game.log("Incrementing Inactvity")
+		this.player_manager.getAlivePlayers().forEach(player => {
+			if (!Game.IS_TESTING) player.incrementInactvity(this);
+		});
 
 		if (await this.killDeadPlayers() === "all")
 			return;
@@ -1383,7 +1294,6 @@ class Game {
 
 		// If non-player voting outcome, skip to night
 		if (!alive_player_names.includes(this.on_trial)) {
-			await this.setPhaseToNextPhase();
 			await this.startNight(days_passed_last_trial);
 			return;
 		}
@@ -1432,7 +1342,7 @@ class Game {
 			return
 		}
 
-		await this.setPhaseToNextPhase();
+		this.state_manager.setToTrialResults();
 		const days_passed_last_trial_results = this.days_passed;
 
 		this.verdict = this.getMajorityVote(this.trial_votes);
@@ -1471,8 +1381,10 @@ class Game {
 			return
 		}
 
-		await this.setPhaseToNextPhase();
+		this.state_manager.setToNight();
 		const days_passed_last_night = this.days_passed;
+
+		await this.saveGameDataToDatabase();
 
 		if (!this.isMockGame) {
 			await Game.closeDayChat();

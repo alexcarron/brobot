@@ -783,6 +783,7 @@ class Player {
 				}
 
 				if (ability.name === AbilityName.Kidnap) {
+					console.log("RESTORING KIDNAP")
 					await this.unmute();
 					await this.regainVotingAbility();
 					this.isRoleblocked = false;

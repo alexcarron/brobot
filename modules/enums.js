@@ -141,6 +141,7 @@ const Enums = {
 		Voting: "voting",
 		Trial: "trial",
 		Limbo: "limbo",
+		None: null,
 	},
 
 	Subphases: {

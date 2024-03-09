@@ -7,7 +7,7 @@ const Logger = require("./Logger");
  */
 class EffectManager {
 	/**
-	 * @param {Game | null} game
+	 * @param {Game} game - Current game instnace
 	 * @param {Logger} logger
 	 */
 	constructor(game, logger) {
