@@ -4,7 +4,7 @@ const RapidDiscordMafia = require("./RapidDiscordMafia");
 const RoleIdentifier = require("./RoleIdentifier");
 const Game = require("./game");
 const Player = require("./player");
-const roles = require("./roles");
+const RoleManager = require("./RoleManager");
 const { abilities } = require("./AbilityManager");
 
 
@@ -104,7 +104,7 @@ describe('Game', () => {
 						RoleNames.Sheriff
 					]
 				);
-				const expected_output = roles[RoleNames.Sheriff];
+				const expected_output = RoleManager.roles[RoleNames.Sheriff];
 
 				const rdm_game = RapidDiscordMafia.getEmptyGame();
 				rdm_game.role_identifiers = existing_role_identifiers;
@@ -126,7 +126,7 @@ describe('Game', () => {
 						`${Factions.Town} ${Alignments.Crowd}`
 					]
 				);
-				const expected_output = roles[RoleNames.Townie];
+				const expected_output = RoleManager.roles[RoleNames.Townie];
 
 				const rdm_game = RapidDiscordMafia.getEmptyGame();
 				rdm_game.role_identifiers = existing_role_identifiers;
@@ -221,7 +221,7 @@ describe('Game', () => {
 						RoleNames.Sheriff
 					]
 				);
-				const expected_output = [roles[RoleNames.Sheriff]];
+				const expected_output = [RoleManager.roles[RoleNames.Sheriff]];
 
 				const rdm_game = RapidDiscordMafia.getEmptyGame();
 				rdm_game.role_identifiers = existing_role_identifiers;
@@ -244,7 +244,7 @@ describe('Game', () => {
 					]
 				);
 
-				const expected_output = [roles[RoleNames.Townie]];
+				const expected_output = [RoleManager.roles[RoleNames.Townie]];
 
 				const rdm_game = RapidDiscordMafia.getEmptyGame();
 				rdm_game.role_identifiers = existing_role_identifiers;
@@ -267,7 +267,7 @@ describe('Game', () => {
 					]
 				);
 
-				const expected_output = Object.values(roles).filter( role =>
+				const expected_output = RoleManager.getListOfRoles().filter( role =>
 					role.faction === Factions.Neutral &&
 					role.alignment === Alignments.Killing
 				);
@@ -302,7 +302,7 @@ describe('Game', () => {
 					]
 				);
 
-				const expected_output = Object.values(roles).filter( role =>
+				const expected_output = RoleManager.getListOfRoles().filter( role =>
 					role.faction === Factions.Neutral
 				);
 
@@ -711,9 +711,9 @@ describe('Game', () => {
 
 			await mock_game.start(role_identifiers);
 
-			const mafioso_role = roles[RoleNames.Mafioso];
-			const fool_role = roles[RoleNames.Fool];
-			const townie_role = roles[RoleNames.Townie];
+			const mafioso_role = RoleManager.roles[RoleNames.Mafioso];
+			const fool_role = RoleManager.roles[RoleNames.Fool];
+			const townie_role = RoleManager.roles[RoleNames.Townie];
 
 			// Fix role not being set right
 			fool_player.setRole(fool_role);

@@ -1,7 +1,6 @@
 const { RoleNames, AbilityName, AbilityArgName, Feedback } = require("../enums");
 const RapidDiscordMafia = require("./RapidDiscordMafia");
 const Game = require("./game");
-const roles = require("./roles");
 
 describe('EffectManager', () => {
 	/**

@@ -2,7 +2,6 @@ const Parameter = require("../../modules/commands/Paramater");
 const ids = require("../../data/ids.json");
 const SlashCommand = require("../../modules/commands/SlashCommand");
 const { deferInteraction, appendElementToNestedProperty: addElementToNestedProperty, appendElementToNestedProperty, toTitleCase } = require("../../modules/functions");
-const roles = require("../../modules/rapid_discord_mafia/roles");
 
 const command = new SlashCommand({
 	name: "roles",
@@ -15,7 +14,7 @@ command.execute = async function(interaction) {
 	const role_names_in_faction = {};
 	let message = "";
 
-	Object.values(roles).forEach(role => {
+	global.Game.role_manager.getListOfRoles().forEach(role => {
 		const faction = role.faction;
 		const alignment = role.alignment;
 		const name = role.name;

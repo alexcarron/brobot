@@ -562,6 +562,7 @@ class AbilityManager {
 	/**
 	 * Get an ability from an ability name
 	 * @param {string} ability_name
+	 * @returns {Ability | undefined} ability if ability name exists, otherwise undefined
 	 */
 	getAbility(ability_name) {
 		return AbilityManager.abilities[ability_name];

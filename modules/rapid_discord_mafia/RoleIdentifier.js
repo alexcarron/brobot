@@ -1,6 +1,6 @@
 const { RoleIdentifierTypes, RoleIdentifierKeywords, RoleIdentifierPriorities, Factions, Alignments } = require("../enums");
 const Game = require("./game");
-const roles = require("./roles");
+const RoleManager = require("./RoleManager");
 
 class RoleIdentifier {
 	name;
@@ -19,7 +19,7 @@ class RoleIdentifier {
 	}
 
 	static getTypeFromIdentifierStr(role_identifier_str) {
-		const role_names = Object.values(roles).map(role => role.name);
+		const role_names = RoleManager.getListOfRoles().map(role => role.name);
 
 		if (
 			role_names.some(role_name =>
@@ -125,10 +125,10 @@ class RoleIdentifier {
 		let possible_roles = [];
 
 		if (this.type === RoleIdentifierTypes.SpecificRole) {
-			possible_roles = [Object.values(roles).find(role => role.name.toLowerCase() === this.name.toLowerCase())];
+			possible_roles = [RoleManager.getListOfRoles().find(role => role.name.toLowerCase() === this.name.toLowerCase())];
 		}
 		else if (this.type === RoleIdentifierTypes.RandomRoleInFactionAlignment) {
-			possible_roles = Object.values(roles).filter( role_checking => {
+			possible_roles = RoleManager.getListOfRoles().filter( role_checking => {
 				return (
 					role_checking.faction === this.getFaction() &&
 					role_checking.alignment === this.getAlignment()
@@ -136,7 +136,7 @@ class RoleIdentifier {
 			});
 		}
 		else if (this.type === RoleIdentifierTypes.RandomRoleInFaction) {
-			possible_roles = Object.values(roles).filter( role_checking => {
+			possible_roles = RoleManager.getListOfRoles().filter( role_checking => {
 				return (
 					role_checking.faction === this.getFaction() &&
 					role_checking.alignment !== Alignments.Crowd
@@ -144,7 +144,7 @@ class RoleIdentifier {
 			});
 		}
 		else if (this.type === RoleIdentifierTypes.AnyRole) {
-			possible_roles = Object.values(roles).filter(role => !(role.faction === Factions.Town && role.alignment === Alignments.Crowd));
+			possible_roles = RoleManager.getListOfRoles().filter(role => !(role.faction === Factions.Town && role.alignment === Alignments.Crowd));
 		}
 
 		return possible_roles;

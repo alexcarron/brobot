@@ -2,7 +2,6 @@ const Parameter = require("../../modules/commands/Paramater");
 const ids = require("../../data/ids.json");
 const SlashCommand = require("../../modules/commands/SlashCommand");
 const { deferInteraction } = require("../../modules/functions");
-const roles = require("../../modules/rapid_discord_mafia/roles");
 
 const Parameters = {
 	RoleName: new Parameter({
@@ -25,7 +24,7 @@ command.execute = async function(interaction) {
 	await deferInteraction(interaction);
 
 	const role_name = interaction.options.getString(Parameters.RoleName.name)
-	const role = Object.values(roles).find(role => role.name === role_name);
+	const role = global.Game.role_manager.getRole(role_name);
 
 	interaction.editReply(role.toString(isInfoOnly=true));
 };
@@ -35,8 +34,10 @@ command.autocomplete = async function(interaction) {
 	if (!focused_param) return;
 	const entered_value = focused_param.value;
 
+	const all_roles = global.Game.role_manager.getListOfRoles() ?? [];
+
 	autocomplete_values =
-		Object.values(roles)
+		all_roles
 			.map(role => {return {name: role.name, value: role.name}})
 			.filter(autocomplete_entry =>
 				autocomplete_entry.value.toLowerCase().startsWith(entered_value.toLowerCase())

@@ -1,5 +1,5 @@
 const { RDMRoles, Announcements, MessageDelays, Feedback, Factions, RoleNames, AbilityTypes, TrialVotes, AbilityName: AbilityName, AbilityArgName, ArgumentSubtypes, Subphases, Votes, Phases } = require("../enums");
-const roles = require("./roles");
+const RoleManager = require("./RoleManager");
 const ids = require("../../data/ids.json");
 const Role = require("./role");
 
@@ -404,7 +404,7 @@ class Player {
 			this.addFeedback(Feedback.KilledByAttack);
 			attacker_player.addFeedback(Feedback.KilledPlayer(this.name));
 
-			const target_role = global.Roles[this.role];
+			const target_role = RoleManager.roles[this.role];
 			if (
 				attacker_player.role === RoleNames.Vigilante &&
 				target_role.faction === Factions.Town
@@ -472,7 +472,7 @@ class Player {
 				await addRole(player_guild_member, ghost_role);
 				await removeRole(player_guild_member, living_role);
 
-				const role = Object.values(roles).find(role => role.name === this.role);
+				const role = RoleManager.getListOfRoles().find(role => role.name === this.role);
 
 				if (role.faction == Factions.Mafia) {
 					this.removeAccessFromMafiaChat();
@@ -536,7 +536,7 @@ class Player {
 	 * @returns {true | String} true if you can use the ability. Otherwise, feedback for why you can't use the ability
 	 */
 	async canUseAbility(ability, arg_values, game) {
-		const player_role = roles[this.role]
+		const player_role = RoleManager.roles[this.role]
 
 		// Check if role has ability
 		if (player_role.abilities.every(ability => ability.name !== ability.name)) {
@@ -597,7 +597,7 @@ class Player {
 			return `You will attempt to do **Nothing**`;
 		}
 
-		const player_role = roles[this.role];
+		const player_role = RoleManager.roles[this.role];
 		const ability_using = game.ability_manager.getAbility(ability_name);
 
 		console.log({ability_name, ability_using, player_role});
@@ -659,13 +659,13 @@ class Player {
 	}
 
 	async sendRoleInfo() {
-		const role = roles[this.role];
+		const role = RoleManager.roles[this.role];
 		const role_info_msg  = role.toString();
 		await this.sendFeedback(role_info_msg, true);
 	}
 
 	restoreOldDefense() {
-		const old_defense = roles[this.role].defense;
+		const old_defense = RoleManager.roles[this.role].defense;
 		this.defense = old_defense;
 	}
 
@@ -687,7 +687,7 @@ class Player {
 
 	async convertToRole(role_name, game) {
 		const current_role_name = this.role;
-		const role = Object.values(roles).find(role => role.name ===  role_name);
+		const role = RoleManager.getListOfRoles().find(role => role.name ===  role_name);
 		this.setRole(role);
 
 		game.role_log[this.name] += " -> " + role_name;
@@ -829,7 +829,7 @@ class Player {
 	makeAWinner(game) {
 		this.hasWon = true;
 
-		const player_role = global.Roles[this.role];
+		const player_role = RoleManager.roles[this.role];
 		const player_faction = player_role.getFaction();
 
 		if (!game.winning_factions.includes(player_faction))
@@ -1023,7 +1023,7 @@ class Player {
 	 */
 	isTown() {
 		if (this.role) {
-			const role = global.Roles[this.role]
+			const role = RoleManager.roles[this.role]
 			if (role && role.faction === Factions.Town) {
 				return true;
 			}
@@ -1038,7 +1038,7 @@ class Player {
 	 */
 	getRole() {
 		if (this.role) {
-			const role = global.Roles[this.role]
+			const role = RoleManager.roles[this.role]
 			if (role) {
 				return role;
 			}

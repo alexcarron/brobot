@@ -5,12 +5,12 @@ const validator = require('../../utilities/validator.js');
 const { github_token } =  require("../token.js");
 const { PermissionFlagsBits, Role, Interaction } = require("discord.js");
 const Death = require("./death.js");
-const roles = require("./roles.js");
 const PlayerManager = require("./PlayerManager.js");
 const Player = require("./player.js");
 const Arg = require("./arg.js");
 const EffectManager = require("./EffectManager.js");
 const AbilityManager = require("./AbilityManager.js");
+const RoleManager = require("./RoleManager.js");
 class Game {
 	/**
 	 * An object map of players to the ability they performed
@@ -40,6 +40,12 @@ class Game {
 	player_manager;
 
 	/**
+	 * A role manager service to manage roles and get role information
+	 * @type {RoleManager}
+	 */
+	role_manager;
+
+	/**
 	 * A logger to log messages
 	 * @type {Logger}
 	 */
@@ -60,6 +66,7 @@ class Game {
 	constructor(player_manager, logger, isMockGame=false) {
 		this.effect_manager = new EffectManager(this, logger);
 		this.ability_manager = new AbilityManager();
+		this.role_manager = new RoleManager();
 		this.logger = logger;
 
 		this.state = GameStates.Ended;
@@ -101,7 +108,7 @@ class Game {
 	static POSSIBLE_FACTIONS = [
 		"Mafia",
 		"Town",
-		...Object.values(roles)
+		...RoleManager.getListOfRoles()
 			.filter((role) => `${role.faction} ${role.alignment}` === "Neutral Killing")
 			.map((role) => role.name)
 	];
@@ -288,7 +295,7 @@ class Game {
 
 		for (let [role_index, role_name] of this.role_list.entries()) {
 			const
-				role = roles[role_name],
+				role = this.role_manager.getRole(role_name),
 				players = this.player_manager.getPlayerList(),
 				player = players[role_index];
 
@@ -1589,7 +1596,7 @@ class Game {
 			alive_players = this.player_manager.getAlivePlayers()
 
 		for (let player_info of alive_players) {
-			const player_role = global.Roles[player_info.role];
+			const player_role = this.role_manager.getRole(player_info.role);
 
 			// Roles that need to survive while eliminating every other faction
 			if (player_role.goal == WinConditions.SurviveEliminateOtherFactions) {
@@ -1628,7 +1635,7 @@ class Game {
 			let hasFactionWon = true;
 
 			for (let player of alive_players) {
-				let player_role = global.Roles[player.role],
+				let player_role = this.role_manager.getRole(player.role),
 					player_faction = player_role.faction,
 					player_role_indentifier = `${player_faction} ${player_role.alignment}`;
 
@@ -1649,7 +1656,7 @@ class Game {
 					...winning_players,
 					...this.player_manager.getPlayerList()
 						.filter(p =>
-							roles[p.role].faction == faction_checking && !winning_players.includes(p.name)
+							this.role_manager.getRole(p.role).faction == faction_checking && !winning_players.includes(p.name)
 						)
 						.map(p => p.name)
 				];
@@ -1668,7 +1675,7 @@ class Game {
 			let hasFactionWon = true;
 
 			for (let player of alive_players) {
-				let player_role = global.Roles[player.role],
+				let player_role = this.role_manager.getRole(player.role),
 					player_faction = player_role.faction,
 					player_role_indentifier = `${player_faction} ${player_role.alignment}`;
 
@@ -1710,7 +1717,7 @@ class Game {
 			];
 
 			if (!winning_faction) {
-				let hasFactionWon = !alive_players.some(player => global.Roles[player.role].name != role_checking);
+				let hasFactionWon = !alive_players.some(player => this.role_manager.getRole(player.role).name != role_checking);
 
 				if (hasFactionWon) {
 					winning_faction = role_checking;
@@ -1732,7 +1739,7 @@ class Game {
 			];
 
 			if (!winning_faction) {
-				let hasFactionWon = !alive_players.some(player => global.Roles[player.role].name != role_checking);
+				let hasFactionWon = !alive_players.some(player => this.role_manager.getRole(player.role).name != role_checking);
 
 				if (hasFactionWon) {
 					winning_faction = role_checking;
@@ -2423,7 +2430,7 @@ class Game {
 
 		if (ability_arg.subtypes.includes(ArgumentSubtypes.NonMafia)) {
 			const player_targeting = this.player_manager.get(arg_value);
-			const player_targeting_role = roles[player_targeting.role];
+			const player_targeting_role = this.role_manager.getRole(player_targeting.role);
 			if (player_targeting_role.faction === Factions.Mafia) {
 				return `You cannot target **${player_targeting.name}** as you may only target non-mafia`;
 			}

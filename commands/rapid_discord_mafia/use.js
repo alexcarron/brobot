@@ -2,7 +2,6 @@ const Parameter = require("../../modules/commands/Paramater");
 const SlashCommand = require("../../modules/commands/SlashCommand");
 const { toTitleCase, deferInteraction, getRDMGuild, getChannel } = require("../../modules/functions");
 const { ArgumentTypes, ArgumentSubtypes, Factions, AbilityUses, Phases, AbilityName } = require("../../modules/enums");
-const roles = require("../../modules/rapid_discord_mafia/roles");
 const ids = require("../../data/ids.json");
 const AbilityManager = require("../../modules/rapid_discord_mafia/AbilityManager");
 
@@ -165,7 +164,9 @@ command.execute = async function(interaction, isTest) {
 
 	await interaction.editReply(ability_feedback);
 
-	if (roles[player.role].faction === Factions.Mafia) {
+	const player_role = global.Game.role_manager.getRole(player.role);
+
+	if (player_role.faction === Factions.Mafia) {
 		const rdm_guild = await getRDMGuild();
 		const mafia_channel = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.mafia_chat);
 
@@ -199,7 +200,7 @@ command.autocomplete = async function(interaction) {
 	const ability = Object.values(AbilityManager.abilities).find(ability => ability.name === ability_name);
 	const ability_arg = ability.args.find(arg => arg.name === arg_name);
 
-	const player_role = roles[player_using_command.role]
+	const player_role = global.Game.role_manager.getRole(player_using_command.role);
 
 	if (player_role.abilities.every(ability => ability.name !== ability_name)) {
 		return await interaction.respond(
@@ -214,7 +215,7 @@ command.autocomplete = async function(interaction) {
 
 					if (
 						ability_arg.subtypes.includes(ArgumentSubtypes.NonMafia) &&
-						roles[player.role].faction === Factions.Mafia
+						global.Game.role_manager.getRole(player.role).faction === Factions.Mafia
 					) {
 						console.log(player.name);
 						return false;

@@ -1,6 +1,6 @@
 const { RoleNames, RoleIdentifierKeywords, Factions, Alignments, RoleIdentifierTypes, RoleIdentifierPriorities } = require("../enums")
 const RoleIdentifier = require("./RoleIdentifier");
-const roles = require("./roles");
+const RoleManager = require("./RoleManager");
 
 // ^ RoleIdentifier Constructor
 {
@@ -331,7 +331,7 @@ test.concurrent(
 		".getPossibleRoles() on Mafioso SHOULD return just Mafioso",
 		() => {
 			const input_role_identifier = new RoleIdentifier(RoleNames.Mafioso);
-			const expected_output = [roles[RoleNames.Mafioso]];
+			const expected_output = [RoleManager.roles[RoleNames.Mafioso]];
 
 			const actual_output = input_role_identifier.getPossibleRoles()
 
@@ -343,7 +343,7 @@ test.concurrent(
 		".getPossibleRoles() on Town Protective SHOULD return just Doctor",
 		() => {
 			const input_role_identifier = new RoleIdentifier(`${Factions.Town} ${Alignments.Protective}`);
-			const expected_output = [roles[RoleNames.Doctor]];
+			const expected_output = [RoleManager.roles[RoleNames.Doctor]];
 
 			const actual_output = input_role_identifier.getPossibleRoles()
 
@@ -355,7 +355,7 @@ test.concurrent(
 		".getPossibleRoles() on Neutral Random SHOULD return just Neutral Roles",
 		() => {
 			const input_role_identifier = new RoleIdentifier(`${Factions.Neutral} ${RoleIdentifierKeywords.Random}`);
-			const expected_output = Object.values(roles).filter(role => role.faction === Factions.Neutral);
+			const expected_output = RoleManager.getListOfRoles().filter(role => role.faction === Factions.Neutral);
 
 			const actual_output = input_role_identifier.getPossibleRoles()
 
@@ -367,7 +367,7 @@ test.concurrent(
 		".getPossibleRoles() on Any SHOULD return all roles but Town Crowd",
 		() => {
 			const input_role_identifier = new RoleIdentifier(`${RoleIdentifierKeywords.Any}`);
-			const expected_output = Object.values(roles).filter(role => !(role.faction === Factions.Town && role.alignment === Alignments.Crowd));
+			const expected_output = RoleManager.getListOfRoles().filter(role => !(role.faction === Factions.Town && role.alignment === Alignments.Crowd));
 
 			const actual_output = input_role_identifier.getPossibleRoles()
 

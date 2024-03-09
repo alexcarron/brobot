@@ -1,6 +1,7 @@
 const { RoleNames, AbilityName: AbilityName, AbilityArgName } = require("../enums");
 const RapidDiscordMafia = require("./RapidDiscordMafia");
 const RoleIdentifier = require("./RoleIdentifier");
+const RoleManager = require("./RoleManager");
 const Game = require("./game");
 
 describe('Player', () => {
@@ -40,10 +41,10 @@ describe('Player', () => {
 
 			await mock_game.start(role_identifiers);
 
-			const mafioso_role = global.Roles[RoleNames.Mafioso];
-			const kidnapper_role = global.Roles[RoleNames.Kidnapper];
-			const doctor_role = global.Roles[RoleNames.Doctor];
-
+			const mafioso_role = RoleManager.roles[RoleNames.Mafioso];
+			const kidnapper_role = RoleManager.roles[RoleNames.Kidnapper];
+			const doctor_role = RoleManager.roles[RoleNames.Doctor];
+5
 			// Fix role not being set right
 			kidnapper_player.setRole(kidnapper_role);
 			doctor_player.setRole(doctor_role);

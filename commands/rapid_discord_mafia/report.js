@@ -2,9 +2,7 @@ const Parameter = require("../../modules/commands/Paramater");
 const ids = require("../../data/ids.json");
 const SlashCommand = require("../../modules/commands/SlashCommand");
 const { deferInteraction } = require("../../modules/functions");
-const roles = require("../../modules/rapid_discord_mafia/roles");
 const Game = require("../../modules/rapid_discord_mafia/game");
-const { Phases, GameStates } = require("../../modules/enums");
 
 const Parameters = {
 	BugReporting: new Parameter({
