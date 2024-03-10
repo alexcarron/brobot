@@ -29,7 +29,7 @@ command.execute = async function(interaction) {
 			return
 		}
 
-		player.leaveGameSignUps(global.game_manager);
+		global.game_manager.player_manager.havePlayerLeaveSignUps(player);
 	}
 	else if (global.game_manager.state === GameStates.InProgress) {
 		if (!player.isAlive) {
@@ -49,7 +49,7 @@ command.execute = async function(interaction) {
 			return
 		}
 
-		player.leaveGame();
+		global.game_manager.player_manager.havePlayerLeave(player);
 	}
 	else {
 		return await interaction.editReply("The game has to be in progress or in sign-ups for you to leave");

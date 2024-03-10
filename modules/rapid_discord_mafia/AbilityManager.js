@@ -4,7 +4,9 @@ const { EffectName } = require("./EffectManager.js")
 const Arg = require("./arg.js")
 
 class AbilityManager {
-	constructor() {}
+	constructor(game_manager) {
+		this.game_manager = game_manager;
+	}
 
 	static AbilityName = {
 		Knife: "Knife",
@@ -566,6 +568,61 @@ class AbilityManager {
 	 */
 	getAbility(ability_name) {
 		return AbilityManager.abilities[ability_name];
+	}
+
+	/**
+	 * Determines if a certain ability a player uses with specific arguments can be used by that player
+	 * @param {Object} parameters
+	 * @param {Player} parameters.player Player attempting to use ability
+	 * @param {Ability} parameters.ability Ability using
+	 * @param {{[arg_name: string]: [arg_value: string]}} parameters.arg_values
+	 * @returns {true | String} true if you can use the ability. Otherwise, feedback for why you can't use the ability
+	 */
+	async canPlayerUseAbility({player, ability, arg_values}) {
+		const player_role = this.game_manager.role_manager.getRole(player.role);
+
+		// Check if role has ability
+		if (player_role.abilities.every(ability => ability.name !== ability.name)) {
+			return `${ability.name} is not an ability you can use`;
+		}
+
+		// Check if player is dead and can't use ability while dead
+		if (!player_role.isAlive) {
+			if (!(
+				ability.phases_can_use.includes(Phases.Limbo) &&
+				player_role.isInLimbo
+			)) {
+				return `You can't use the ability, **${ability.name}**, while you're not alive`;
+			}
+		}
+
+		// Check if ability can be used during current phase
+		if (!ability.phases_can_use.includes(this.game_manager.phase)) {
+
+			// Check if ability can be used in limbo and player in limbo
+			if (
+				!(
+					ability.phases_can_use.includes(Phases.Limbo) &&
+					player_role.isInLimbo
+				)
+			) {
+				return `You can't use this ability during the **${this.game_manager.phase}** phase`;
+			}
+		}
+
+		// Check if valid arguments
+		for (const ability_arg of ability.args) {
+			const arg_name = ability_arg.name;
+			let arg_param_value = arg_values[arg_name];
+
+			const isValidArg = this.game_manager.isValidArgValue(player, ability_arg, arg_param_value);
+
+			if (isValidArg !== true) {
+				return isValidArg;
+			}
+		}
+
+		return true;
 	}
 }
 

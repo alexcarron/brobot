@@ -150,16 +150,22 @@ command.execute = async function(interaction, isTest) {
 	if (ability_name !== AbilityName.Nothing) {
 		const ability = AbilityManager.abilities[ability_name];
 
-		if (ability)
-			can_use_ability_feedback = await player.canUseAbility(ability, arg_values, global.game_manager);
-		else
+		if (ability) {
+			can_use_ability_feedback =
+				await global.game_manger.ability_manager.canPlayerUseAbility({
+					player: player,
+					ability: ability,
+					arg_values: arg_values
+				});
+		} else
 			can_use_ability_feedback = `**${ability_name}** is not a valid ability`;
 	}
 
 	if (can_use_ability_feedback !== true)
 		return await interaction.editReply(can_use_ability_feedback);
 
-	const ability_feedback = player.useAbility(ability_name, arg_values, global.game_manager, {}, mock_game);
+	const ability = global.game_manager.ability_manager.getAbility(ability_name);
+	const ability_feedback = player.useAbility(ability, arg_values);
 	await global.game_manager.data_manger.saveToGithub();
 
 	await interaction.editReply(ability_feedback);

@@ -53,9 +53,8 @@ describe('Player', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			const feedback = kidnapper_player.useAbility(
-				AbilityName.Kidnap,
+				mock_game.ability_manager.getAbility(AbilityName.Kidnap),
 				{ [AbilityArgName.PlayerKidnapping]: doctor_name },
-				mock_game,
 			);
 			console.log({feedback})
 

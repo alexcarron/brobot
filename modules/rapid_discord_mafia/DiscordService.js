@@ -1,5 +1,5 @@
-const { TextChannel, Message, Guild, PermissionFlagsBits } = require("discord.js");
-const { getGuild, getChannel, getGuildMember } = require("../functions");
+const { TextChannel, Message, Guild, PermissionFlagsBits, Role } = require("discord.js");
+const { getGuild, getChannel, getGuildMember, getRole, getRoleById } = require("../functions");
 const ids = require("../../data/ids.json")
 
 class DiscordService {
@@ -33,6 +33,25 @@ class DiscordService {
 	 */
 	isMockService;
 
+
+	/**
+	 * The Discord role living players have
+	 * @type {Role}
+	 */
+	living_role;
+
+	/**
+	 * The Discord role spectators have
+	 * @type {Role}
+	 */
+	spectator_role;
+
+	/**
+	 * The Discord role ghost players have
+	 * @type {Role}
+	 */
+	ghost_role;
+
 	constructor({isMockService=false}) {
 		this.isMockService = isMockService;
 
@@ -43,9 +62,12 @@ class DiscordService {
 
 	async setupChannels() {
 		await this.setupRDMGuild();
-		await this.setupAnnounceChannel();
-		await this.setupMafiaChannel();
-		await this.setupTownDiscussionChannel();
+		this.setupAnnounceChannel();
+		this.setupMafiaChannel();
+		this.setupTownDiscussionChannel();
+		this.setupSpectatorRole();
+		this.setupLivingRole();
+		this.setupGhostRole();
 	}
 
 	async setupRDMGuild() {
@@ -64,6 +86,27 @@ class DiscordService {
 			this.rdm_guild,
 			ids.rapid_discord_mafia.channels.mafia_chat
 		);
+	}
+
+	async setupSpectatorRole() {
+		this.spectator_role = await getRoleById(
+			this.rdm_guild,
+			ids.rapid_discord_mafia.roles.spectators
+		)
+	}
+
+	async setupLivingRole() {
+		this.living_role = await getRoleById(
+			this.rdm_guild,
+			ids.rapid_discord_mafia.roles.living
+		)
+	}
+
+	async setupGhostRole() {
+		this.ghost_role = await getRoleById(
+			this.rdm_guild,
+			ids.rapid_discord_mafia.roles.ghosts
+		)
 	}
 
 	async setupTownDiscussionChannel() {
@@ -327,6 +370,60 @@ class DiscordService {
 				guild_member_id: guild_member_id,
 			});
 		}
+	}
+
+	/**
+	 * Gives a guild member the spectator role
+	 * @param {string} guild_member_id - The id of the guild member being given the role
+	 */
+	async giveMemberSpectatorRole(guild_member_id) {
+		const guild_member = await getGuildMember(this.rdm_guild, guild_member_id);
+		guild_member.roles.add(this.spectator_role);
+	}
+
+	/**
+	 * Gives a guild member the living role
+	 * @param {string} guild_member_id - The id of the guild member being given the role
+	 */
+	async giveMemberLivingRole(guild_member_id) {
+		const guild_member = await getGuildMember(this.rdm_guild, guild_member_id);
+		guild_member.roles.add(this.living_role);
+	}
+
+	/**
+	 * Gives a guild member the ghost role
+	 * @param {string} guild_member_id - The id of the guild member being given the role
+	 */
+	async giveMemberGhostRole(guild_member_id) {
+		const guild_member = await getGuildMember(this.rdm_guild, guild_member_id);
+		guild_member.roles.add(this.ghost_role);
+	}
+
+	/**
+	 * Removes the spectator role from a guild member
+	 * @param {string} guild_member_id - The id of the guild member the role is being removed from
+	 */
+	async removeSpectatorRoleFromMember(guild_member_id) {
+		const guild_member = await getGuildMember(this.rdm_guild, guild_member_id);
+		guild_member.roles.remove(this.spectator_role);
+	}
+
+	/**
+	 * Removes the living role from a guild member
+	 * @param {string} guild_member_id - The id of the guild member the role is being removed from
+	 */
+	async removeLivingRoleFromMember(guild_member_id) {
+		const guild_member = await getGuildMember(this.rdm_guild, guild_member_id);
+		guild_member.roles.remove(this.living_role);
+	}
+
+	/**
+	 * Removes the ghost role from a guild member
+	 * @param {string} guild_member_id - The id of the guild member the role is being removed from
+	 */
+	async removeGhostRoleFromMember(guild_member_id) {
+		const guild_member = await getGuildMember(this.rdm_guild, guild_member_id);
+		guild_member.roles.remove(this.ghost_role);
 	}
 }
 

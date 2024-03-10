@@ -14,6 +14,7 @@ const RoleManager = require("./RoleManager.js");
 const GameStateManager = require("./GameStateManager.js");
 const GameDataManager = require("./GameDataManager.js");
 const DiscordService = require("./DiscordService.js");
+const VoteManager = require("./VoteManager.js");
 // const Logger = require("./Logger.js");
 
 class GameManager {
@@ -93,6 +94,12 @@ class GameManager {
 	discord_service;
 
 	/**
+	 * A manager service to handle voting
+	 * @type {VoteManager}
+	 */
+	vote_manager;
+
+	/**
 	 * A logger to log messages
 	 * @type {Logger}
 	 */
@@ -105,19 +112,19 @@ class GameManager {
 	next_deaths;
 
 	/**
-	 *
-	 * @param {PlayerManager} player_manager
+	 * @param {Object} players
 	 * @param {Logger} logger - An instance of a logger
 	 * @param {boolean} isMockGame
 	 */
-	constructor(player_manager, logger, isMockGame=false) {
-		this.player_manager = player_manager;
+	constructor(players, logger, isMockGame=false) {
+		this.player_manager = new PlayerManager(players, this, logger, isMockGame);
 		this.logger = logger;
 		this.effect_manager = new EffectManager(this);
-		this.ability_manager = new AbilityManager();
+		this.ability_manager = new AbilityManager(this);
 		this.role_manager = new RoleManager();
 		this.data_manager = new GameDataManager(this);
 		this.state_manager = new GameStateManager(this);
+		this.vote_manager = new VoteManager(this);
 		this.state_manager.initializeState();
 
 		this.discord_service = new DiscordService({
@@ -145,7 +152,6 @@ class GameManager {
 		this.role_identifiers = [];
 		this.role_list = [];
 		this.action_log = {};
-		this.role_log = {};
 		this.abilities_performed = {}
 		this.isMockGame = isMockGame;
 	}
@@ -235,7 +241,7 @@ class GameManager {
 
 		}
 
-		this.player_manager = new PlayerManager({}, this.logger, this.isMockGame);
+		this.player_manager = new PlayerManager({}, this, this.logger, this.isMockGame);
 
 		for (const player_obj of Object.values(game_json.player_manager.players)) {
 			await this.player_manager.addPlayerFromObj(player_obj);
@@ -282,7 +288,7 @@ class GameManager {
 		);
 
 		this.player_manager.getPlayerList().forEach(player => {
-			this.role_log[player.name] = player.role;
+			player.role_log = player.role;
 		})
 
 		await this.startDay1(days_passed_at_sign_ups);
@@ -348,8 +354,10 @@ class GameManager {
 
 				if (rand_town_player)
 					player.setExeTarget(rand_town_player);
-				else
-					player.convertToRole(RoleNames.Fool, this);
+				else {
+					const fool_role = this.role_manager.getRole(RoleNames.Fool);
+					this.player_manager.convertPlayerToRole(player, fool_role);
+				}
 			}
 		}
 	}
@@ -620,7 +628,7 @@ class GameManager {
 			if ( exe.exe_target === player_on_trial.name ) {
 				const exe_player = this.player_manager.get(exe.name);
 				await exe_player.sendFeedback(Feedback.WonAsExecutioner);
-				exe_player.makeAWinner(this);
+				this.makePlayerAWinner(exe_player);
 			}
 		}
 
@@ -951,7 +959,7 @@ class GameManager {
 			player.resetFeedback();
 
 			if (player.affected_by) {
-				await player.removeAffects(this);
+				await this.player_manager.removeAffectsFromPlayer(player);
 			}
 		}
 	}
@@ -975,9 +983,7 @@ class GameManager {
 		await this.data_manager.saveToGithub();
 
 		this.logger.log("Incrementing Inactvity")
-		this.player_manager.getAlivePlayers().forEach(player => {
-				if (!GameManager.IS_TESTING) player.incrementInactvity(this);
-		});
+		if (!GameManager.IS_TESTING) this.player_manager.incrementInactvity();
 
 		if (!this.isMockGame)
 			await GameManager.closePreGameChannels();
@@ -1013,9 +1019,7 @@ class GameManager {
 		await this.data_manager.saveToGithub();
 
 		this.logger.log("Incrementing Inactvity")
-		this.player_manager.getAlivePlayers().forEach(player => {
-			if (!GameManager.IS_TESTING) player.incrementInactvity(this);
-		});
+		if (!GameManager.IS_TESTING) this.player_manager.incrementInactvity();
 
 		for (const player of this.player_manager.getPlayersInLimbo()) {
 			player.isInLimbo = false;
@@ -1084,9 +1088,7 @@ class GameManager {
 		this.on_trial = this.getMajorityVote(this.votes);
 
 		this.logger.log("Incrementing Inactvity")
-		this.player_manager.getAlivePlayers().forEach(player => {
-			if (!GameManager.IS_TESTING) player.incrementInactvity(this);
-		});
+		if (!GameManager.IS_TESTING) this.player_manager.incrementInactvity();
 
 		if (await this.killDeadPlayers() === "all")
 			return;
@@ -1514,7 +1516,8 @@ class GameManager {
 				const mafia_players = this.player_manager.getAlivePlayersInFaction(Factions.Mafia)
 
 				const player_to_promote = getRandArrayItem(mafia_players);
-				player_to_promote.convertToRole(RoleNames.Mafioso, this);
+				const mafioso_role = this.role_manager.getRole(RoleNames.Mafioso);
+				this.player_manager.convertPlayerToRole(player_to_promote, mafioso_role);
 
 				this.discord_service.sendToMafia(`**${player_to_promote.name}** has been promoted to **Mafioso**!`);
 				this.logger.log(`**${player_to_promote.name}** has been promoted to **Mafioso**`);
@@ -1560,9 +1563,9 @@ class GameManager {
 		await this.data_manager.saveToGithub();
 
 		let revealed_roles_msg = "_ _\n# Everyone's Roles\n>>> "
-		for (const player in this.role_log) {
-			const role = this.role_log[player];
-			revealed_roles_msg += `**${player}**: ${role}\n`
+		for (const player of this.player_manager.getPlayerList()) {
+			const role_log = player.role_log;
+			revealed_roles_msg += `**${player.name}**: ${role_log}\n`
 		}
 
 		await this.announceMessages(
@@ -1985,7 +1988,7 @@ class GameManager {
 			// console.timeEnd("setDefenseChannelPerms");
 		}
 
-		global.game_manager = new GameManager( new PlayerManager({}, this.logger, this.isMockGame), this.logger, this.isMockGame );
+		global.game_manager = new GameManager({}, this.logger, this.isMockGame );
 	}
 
 	async startSignUps() {
@@ -2092,6 +2095,23 @@ class GameManager {
 		if (didEveryPlayerDoAnAbility) {
 			this.startDay();
 		}
+	}
+
+	/**
+	 * Adds player to winners
+	 * @param {Player} player
+	 */
+	makePlayerAWinner(player) {
+		player.hasWon = true;
+
+		const player_role = this.role_manager.getRole(player.role);
+		const player_faction = player_role.getFaction();
+
+		if (!this.winning_factions.includes(player_faction))
+			this.winning_factions.push(player_faction);
+
+		if (!this.winning_players.includes(player.name))
+			this.winning_players.push(player.name);
 	}
 }
 

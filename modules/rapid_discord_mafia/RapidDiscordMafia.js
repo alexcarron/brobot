@@ -23,7 +23,7 @@ class RapidDiscordMafia {
 		}
 
 		global.game_manager = new GameManager(
-			new PlayerManager({}, logger, this.isMockObject),
+			{},
 			logger,
 			isMockObject
 		);
@@ -45,8 +45,7 @@ class RapidDiscordMafia {
 			logger = new DiscordLogger(staff_chnl);
 		}
 
-		const player_manager = new PlayerManager({}, logger, isMockGame);
-		return new GameManager(player_manager, logger, isMockGame);
+		return new GameManager({}, logger, isMockGame);
 	}
 
 	/**

@@ -155,7 +155,10 @@ class EffectManager {
 					attacked_player_name = player_using_ability.visiting,
 					attacked_player = game.player_manager.get(attacked_player_name);
 
-				attacked_player.receiveAttackFrom(player_using_ability, game);
+				game.player_manager.attackPlayer({
+					attacker_player: player_using_ability,
+					target_player: attacked_player,
+				});
 
 				attacked_player.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5)
 			}
@@ -227,7 +230,7 @@ class EffectManager {
 					feedback = Feedback.GotInnocentEvaluation(player_evaluating_name);
 				}
 
-				player_evaluating.removeManipulationAffects(game);
+				game.player_manager.removeManipulationEffectsFromPlayer(player_evaluating);
 
 				player_using_ability.addFeedback(feedback);
 
@@ -455,8 +458,8 @@ class EffectManager {
 						feedback = Feedback.ObservedNotWorkingTogether(player_observing, last_player_observed);
 					}
 
-					player_observing.removeManipulationAffects(game);
-					last_player_observed.removeManipulationAffects(game);
+					game.player_manager.removeManipulationEffectsFromPlayer(player_observing);
+					game.player_manager.removeManipulationEffectsFromPlayer(last_player_observed);
 
 					player_observing.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5);
 					last_player_observed.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5);
@@ -477,7 +480,8 @@ class EffectManager {
 
 				// Attack Success
 				if (player_replacing.defense < player_using_ability.attack) {
-					player_using_ability.convertToRole(player_replacing.role, game);
+					const player_replacing_role = game.role_manager.getRole(player_replacing.role);
+					await game.player_manager.convertPlayerToRole(player_using_ability, player_replacing_role);
 
 					player_replacing.isUnidentifiable = true;
 
@@ -509,7 +513,10 @@ class EffectManager {
 					player_using_ability.addFeedback(Feedback.AttackedByKidnappedPlayer(kidnapped_player));
 					kidnapped_player.addFeedback(Feedback.AttackedKidnapper);
 
-					player_using_ability.receiveAttackFrom(kidnapped_player, game);
+					game.player_manager.attackPlayer({
+						attacker_player: kidnapped_player,
+						target_player: player_using_ability,
+					});
 				}
 				else {
 					player_using_ability.addFeedback(Feedback.KidnappedPlayer(kidnapped_player));

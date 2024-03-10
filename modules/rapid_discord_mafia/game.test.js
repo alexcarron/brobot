@@ -685,7 +685,7 @@ describe('GameManager', () => {
 	});
 
 	/**
-	 * @type Game
+	 * @type GameManager
 	 */
 	let mock_game;
 
@@ -725,31 +725,29 @@ describe('GameManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 			await mock_game.startDay(mock_game.days_passed);
 
-			townie_player.votePlayer(fool_player.name, mock_game);
-			mafioso_player.votePlayer(fool_player.name, mock_game);
+			mock_game.vote_manager.addVoteForPlayer(townie_player, fool_player);
+			mock_game.vote_manager.addVoteForPlayer(mafioso_player, fool_player);
 
 			await mock_game.startTrial(mock_game.days_passed);
 
-			townie_player.voteForTrialOutcome(TrialOutcomes.Guilty, mock_game);
-			mafioso_player.voteForTrialOutcome(TrialOutcomes.Guilty, mock_game);
+			mock_game.vote_manager.addVoteForTrialOutcome(townie_player, TrialOutcomes.Guilty);
+			mock_game.vote_manager.addVoteForTrialOutcome(mafioso_player, TrialOutcomes.Guilty);
 
 			await mock_game.startTrialResults(mock_game.days_passed);
 			// Fool Lynched
 			// Night Starts
 
 			mafioso_player.useAbility(
-				AbilityName.Murder,
+				mock_game.ability_manager.getAbility(AbilityName.Murder),
 				{
 					[AbilityArgName.PlayerKilling]: townie_player.name,
-				},
-				mock_game,
+				}
 			);
 			fool_player.useAbility(
-				AbilityName.DeathCurse,
+				mock_game.ability_manager.getAbility(AbilityName.DeathCurse),
 				{
 					[AbilityArgName.PlayerKilling]: townie_player.name,
-				},
-				mock_game,
+				}
 			);
 
 			// Set phase to day

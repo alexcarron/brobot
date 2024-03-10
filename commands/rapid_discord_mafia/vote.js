@@ -77,22 +77,26 @@ command.execute = async function execute(interaction, isTest=false) {
 	if (subcommand_name === Parameters.ForPlayer.name) {
 		vote = interaction.options.getString(Subparameters.PlayerVotingFor.name);
 
-		const can_vote_player_feedback = voter_player.canVotePlayer(vote, global.game_manager);
+		const can_vote_player_feedback = global.game_manager.vote_manager.canPlayerVotePlayer(voter_player, player_voting_for);
 		if (can_vote_player_feedback !== true)
 			return await interaction.editReply(can_vote_player_feedback);
 
-		const vote_player_feedback = voter_player.votePlayer(vote, global.game_manager);
+		const player_voting_for = global.game_manager.player_manager.get(vote);
+		const vote_player_feedback = global.game_manager.vote_manager.addVoteForPlayer(voter_player, player_voting_for);
 		await interaction.editReply(vote_player_feedback);
 	}
 	// Vote For Trial Outcome
 	else if (subcommand_name === Parameters.ForTrialOutcome.name) {
 		vote = interaction.options.getString(Subparameters.TrialOutcome.name);
 
-		const can_vote_feedback = voter_player.canVoteForTrialOutcome(vote, global.game_manager);
+
+		const can_vote_feedback = global.game_manager.vote_manager.canVoteForTrialOutcome(voter_player, vote);
+
 		if (can_vote_feedback !== true)
 			return await interaction.editReply(can_vote_feedback);
 
-		const vote_feedback = voter_player.voteForTrialOutcome(vote, global.game_manager);
+
+		const vote_feedback = global.game_manager.vote_manager.addVoteForTrialOutcome(voter_player, vote);
 		await interaction.editReply(vote_feedback);
 	}
 }
