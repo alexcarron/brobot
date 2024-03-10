@@ -15,7 +15,7 @@ const GameStateManager = require("./GameStateManager.js");
 const GameDataManager = require("./GameDataManager.js");
 // const Logger = require("./Logger.js");
 
-class Game {
+class GameManager {
 	/**
 	 * The current phase the game is in
 	 * @type {Phases}
@@ -217,7 +217,7 @@ class Game {
 
 	/**
 	 * Sets the game object from a json game object
-	 * @param {Game} game_json A Game object
+	 * @param {GameManager} game_json A Game object
 	 */
 	async setGame(game_json) {
 		for (const property in game_json) {
@@ -272,7 +272,7 @@ class Game {
 		await this.assignRolesToPlayers();
 
 		if (!this.isMockGame) {
-			await Game.openGhostChannel();
+			await GameManager.openGhostChannel();
 			await this.announceRoleList(unshuffled_role_identifiers);
 		}
 
@@ -372,10 +372,10 @@ class Game {
 			if (needOpposingFactions) {
 				possible_roles = possible_roles.filter(role =>
 					existing_factions.every(existing_faction =>
-						!Game.isRoleInFaction(role, existing_faction)
+						!GameManager.isRoleInFaction(role, existing_faction)
 					) &&
-					Game.POSSIBLE_FACTIONS.some(faction =>
-						Game.isRoleInFaction(role, faction)
+					GameManager.POSSIBLE_FACTIONS.some(faction =>
+						GameManager.isRoleInFaction(role, faction)
 					)
 				)
 			}
@@ -388,10 +388,10 @@ class Game {
 				const mafia_to_town_ratio = num_roles_in_faction[Factions.Mafia] / num_roles_in_faction[Factions.Town];
 				const town_to_mafia_ratio = num_roles_in_faction[Factions.Town] / num_roles_in_faction[Factions.Mafia];
 
-				if (mafia_to_town_ratio >= Game.MAX_MAFIA_TO_TOWN_RATIO) {
+				if (mafia_to_town_ratio >= GameManager.MAX_MAFIA_TO_TOWN_RATIO) {
 					possible_roles = possible_roles.filter(role => role.faction !== Factions.Mafia)
 				}
-				if (town_to_mafia_ratio >= Game.MAX_TOWN_TO_MAFIA_RATIO) {
+				if (town_to_mafia_ratio >= GameManager.MAX_TOWN_TO_MAFIA_RATIO) {
 					possible_roles = possible_roles.filter(role => role.faction !== Factions.Town)
 				}
 			}
@@ -419,10 +419,10 @@ class Game {
 			if (needOpposingFactions) {
 				possible_roles = possible_roles.filter(role =>
 					existing_factions.every(existing_faction =>
-						!Game.isRoleInFaction(role, existing_faction)
+						!GameManager.isRoleInFaction(role, existing_faction)
 					) &&
-					Game.POSSIBLE_FACTIONS.some(faction =>
-						Game.isRoleInFaction(role, faction)
+					GameManager.POSSIBLE_FACTIONS.some(faction =>
+						GameManager.isRoleInFaction(role, faction)
 					)
 				)
 			}
@@ -460,8 +460,8 @@ class Game {
 		const chosen_role = getRandArrayItem(possible_roles);
 
 		// Add faction to list of existing factions
-		const chosen_role_faction = Game.POSSIBLE_FACTIONS.find(faction =>
-			Game.isRoleInFaction(chosen_role, faction)
+		const chosen_role_faction = GameManager.POSSIBLE_FACTIONS.find(faction =>
+			GameManager.isRoleInFaction(chosen_role, faction)
 		)
 
 		if (chosen_role_faction) {
@@ -550,7 +550,7 @@ class Game {
 			if (this.state_manager.isInAnnouncementsPhase()) {
 				this.timeout_counter += 1;
 
-				if (this.timeout_counter >= Game.MAX_TIMEOUT_COUNTER) {
+				if (this.timeout_counter >= GameManager.MAX_TIMEOUT_COUNTER) {
 					await this.announceMessages(
 						Announcements.DrawGameFromTimeout(this.timeout_counter) + "\n_ _"
 					);
@@ -558,7 +558,7 @@ class Game {
 				}
 				else {
 					await this.announceMessages(
-						Announcements.TimeoutWarning(Game.MAX_TIMEOUT_COUNTER, this.timeout_counter) + `\n`
+						Announcements.TimeoutWarning(GameManager.MAX_TIMEOUT_COUNTER, this.timeout_counter) + `\n`
 					);
 				}
 			}
@@ -811,7 +811,7 @@ class Game {
 
 	isRoleInMissingFaction(role, missing_factions) {
 		return missing_factions.some((missing_faction) => {
-			return Game.isRoleInFaction(role, missing_faction);
+			return GameManager.isRoleInFaction(role, missing_faction);
 		});
 	}
 
@@ -892,8 +892,8 @@ class Game {
 	}
 
 	static isRoleInPossibleFaction(role) {
-		return Game.POSSIBLE_FACTIONS.some(faction =>
-			Game.isRoleInFaction(role, faction)
+		return GameManager.POSSIBLE_FACTIONS.some(faction =>
+			GameManager.isRoleInFaction(role, faction)
 		)
 	}
 
@@ -963,7 +963,7 @@ class Game {
 			if (!this.isMockGame)
 				await game_announce_chnl.send(message);
 
-			if (!this.isMockGame && !Game.IS_TESTING)
+			if (!this.isMockGame && !GameManager.IS_TESTING)
 				await wait(MessageDelays.Normal, "s");
 		}
 	}
@@ -992,11 +992,11 @@ class Game {
 
 		this.logger.log("Incrementing Inactvity")
 		this.player_manager.getAlivePlayers().forEach(player => {
-				if (!Game.IS_TESTING) player.incrementInactvity(this);
+				if (!GameManager.IS_TESTING) player.incrementInactvity(this);
 		});
 
 		if (!this.isMockGame)
-			await Game.closePreGameChannels();
+			await GameManager.closePreGameChannels();
 
 		await this.announceMessages(
 			...Announcements.GameStarted(ids.rapid_discord_mafia.roles.living, ids.rapid_discord_mafia.channels.role_list)
@@ -1007,7 +1007,7 @@ class Game {
 		)
 
 		if (!this.isMockGame)
-			await Game.openDayChat();
+			await GameManager.openDayChat();
 
 		this.logger.log("Waiting For Day 1 to End");
 
@@ -1028,7 +1028,7 @@ class Game {
 
 		this.logger.log("Incrementing Inactvity")
 		this.player_manager.getAlivePlayers().forEach(player => {
-			if (!Game.IS_TESTING) player.incrementInactvity(this);
+			if (!GameManager.IS_TESTING) player.incrementInactvity(this);
 		});
 
 		for (const player of this.player_manager.getPlayersInLimbo()) {
@@ -1036,7 +1036,7 @@ class Game {
 		}
 
 		if (!this.isMockGame)
-			await Game.closeNightChannels();
+			await GameManager.closeNightChannels();
 
 		await this.performCurrentNightAbilities();
 		await this.sendFeedbackToPlayers();
@@ -1046,7 +1046,7 @@ class Game {
 			return;
 
 		if (!this.isMockGame)
-			await Game.openDayChat();
+			await GameManager.openDayChat();
 
 		await this.startVoting(days_passed_last_day);
 	}
@@ -1097,7 +1097,7 @@ class Game {
 
 		this.logger.log("Incrementing Inactvity")
 		this.player_manager.getAlivePlayers().forEach(player => {
-			if (!Game.IS_TESTING) player.incrementInactvity(this);
+			if (!GameManager.IS_TESTING) player.incrementInactvity(this);
 		});
 
 		if (await this.killDeadPlayers() === "all")
@@ -1181,8 +1181,8 @@ class Game {
 		await this.data_manager.saveToGithub();
 
 		if (!this.isMockGame) {
-			await Game.closeDayChat();
-			await Game.openNightChannels();
+			await GameManager.closeDayChat();
+			await GameManager.openNightChannels();
 		}
 		await this.resetAllPlayersNightInfo();
 		await this.promoteMafia();
@@ -1212,7 +1212,7 @@ class Game {
 		if (!focused_param) return;
 		const entered_value = focused_param.value;
 
-		autocomplete_values = global.Game.player_manager.getAlivePlayers()
+		autocomplete_values = global.game_manager.player_manager.getAlivePlayers()
 			.map((player) => {return {name: player.name, value: player.name}})
 			.filter(autocomplete_entry => autocomplete_entry.value.toLowerCase().startsWith(entered_value.toLowerCase()));
 
@@ -1275,7 +1275,7 @@ class Game {
 
 		if (!this.isMockGame) {
 			await player.createChannel();
-			const staff_chnl = await Game.getStaffChnl();
+			const staff_chnl = await GameManager.getStaffChnl();
 			staff_chnl.send(`**${player_name}** added to the game.`, {ephemeral: true});
 		}
 
@@ -1562,7 +1562,7 @@ class Game {
 			contestant.giveCoins(CoinRewards.Participation);
 		});
 
-		await global.Game.announceMessages(
+		await global.game_manager.announceMessages(
 			Announcements.RewardCoinsToPlayers(
 				this.player_manager.getPlayerList().map(player => player.name),
 				CoinRewards.Participation
@@ -1576,7 +1576,7 @@ class Game {
 
 			contestant.giveCoins(coins_rewarded);
 
-			await global.Game.announceMessages(
+			await global.game_manager.announceMessages(
 				Announcements.RewardCoinsToPlayer(player.name, coins_rewarded)
 			);
 		});
@@ -1608,7 +1608,7 @@ class Game {
 		if (!this.isMockGame)
 			await wait("30", "s");
 
-		await Game.reset();
+		await GameManager.reset();
 	}
 
 	static async convertAllToSpectator() {
@@ -1679,7 +1679,7 @@ class Game {
 			{ SendMessages: false, AddReactions: false }
 		);
 
-		if (Game.IS_TESTING) {
+		if (GameManager.IS_TESTING) {
 			await day_chat_chnl.permissionOverwrites.create(
 				rdm_guild.roles.everyone,
 				{ ViewChannel: false }
@@ -1688,7 +1688,7 @@ class Game {
 
 		day_chat_chnl.send("> Opened.");
 
-		await Game.announceMessages(
+		await GameManager.announceMessages(
 			Announcements.OpenDayChat(day_chat_chnl.id)
 		);
 	}
@@ -1706,7 +1706,7 @@ class Game {
 			{ SendMessages: false, AddReactions: false }
 		);
 
-		if (Game.IS_TESTING) {
+		if (GameManager.IS_TESTING) {
 			await day_chat_chnl.permissionOverwrites.create(
 				rdm_guild.roles.everyone,
 				{ ViewChannel: false }
@@ -1904,7 +1904,7 @@ class Game {
 			game_announce_chnl = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.game_announce),
 			on_trial_role = await getRole(rdm_guild, RDMRoles.OnTrial);
 
-		if (Game.IS_TESTING) {
+		if (GameManager.IS_TESTING) {
 			await game_announce_chnl.permissionOverwrites.set([
 				{
 					id: rdm_guild.id,
@@ -1955,7 +1955,7 @@ class Game {
 			living_role = await getRole(rdm_guild, RDMRoles.Living),
 			join_chat_chnl = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.join_chat);
 
-		if (Game.IS_TESTING) {
+		if (GameManager.IS_TESTING) {
 			join_chat_chnl.permissionOverwrites.set([{
 				id: rdm_guild.id,
 				allow: [PermissionFlagsBits.SendMessages],
@@ -1981,42 +1981,42 @@ class Game {
 	static async reset() {
 		if (!this.isMockGame) {
 			console.time("convertAllToSpectator");
-			await Game.convertAllToSpectator();
+			await GameManager.convertAllToSpectator();
 			console.timeEnd("convertAllToSpectator");
 			console.time("moveChannelsToArchives");
-			await Game.deletePlayerChannels();
+			await GameManager.deletePlayerChannels();
 			console.timeEnd("moveChannelsToArchives");
 			console.time("privateNightChannels");
-			await Game.privateNightChannels();
+			await GameManager.privateNightChannels();
 			console.timeEnd("privateNightChannels");
 			console.time("publicizePreGameChannels");
-			await Game.publicizePreGameChannels();
+			await GameManager.publicizePreGameChannels();
 			console.timeEnd("publicizePreGameChannels");
 			console.time("closeGhostChannel");
-			await Game.closeGhostChannel();
+			await GameManager.closeGhostChannel();
 			console.timeEnd("closeGhostChannel");
 			console.time("closeTownDiscussionChannel");
-			await Game.closeTownDiscussionChannel();
+			await GameManager.closeTownDiscussionChannel();
 			console.timeEnd("closeTownDiscussionChannel");
 			// console.time("closeVotingChannel");
 			// await Game.closeVotingChannel();
 			// console.timeEnd("closeVotingChannel");
 			console.time("setAnnounceChannelPerms");
-			await Game.setAnnounceChannelPerms();
+			await GameManager.setAnnounceChannelPerms();
 			console.timeEnd("setAnnounceChannelPerms");
 			console.time("closeJoinChannel");
-			await Game.closeJoinChannel();
+			await GameManager.closeJoinChannel();
 			console.timeEnd("closeJoinChannel");
 			// console.time("setDefenseChannelPerms");
 			// await Game.setDefenseChannelPerms();
 			// console.timeEnd("setDefenseChannelPerms");
 		}
 
-		global.Game = new Game( new PlayerManager({}, this.logger, this.isMockGame), this.logger, this.isMockGame );
+		global.game_manager = new GameManager( new PlayerManager({}, this.logger, this.isMockGame), this.logger, this.isMockGame );
 	}
 
 	async startSignUps() {
-		await Game.openJoinChannel();
+		await GameManager.openJoinChannel();
 		this.state_manager.changeToSignUps();
 		const starting_unix_timestamp = getUnixTimestamp() + PhaseWaitTimes.SignUps*60;
 
@@ -2059,7 +2059,7 @@ class Game {
 
 		const player_count = this.player_manager.getPlayerCount();
 
-		if (player_count >= Game.MIN_PLAYER_COUNT) {
+		if (player_count >= GameManager.MIN_PLAYER_COUNT) {
 			await this.announceMessages(
 				Announcements.SignUpsClosed(ids.users.LL, ids.rapid_discord_mafia.roles.living, player_count)
 			);
@@ -2068,12 +2068,12 @@ class Game {
 		}
 		else {
 			await this.announceMessages(
-				Announcements.NotEnoughSignUps(player_count, Game.MIN_PLAYER_COUNT)
+				Announcements.NotEnoughSignUps(player_count, GameManager.MIN_PLAYER_COUNT)
 			)
-			await Game.reset();
+			await GameManager.reset();
 		}
 
-		await Game.closeJoinChannel();
+		await GameManager.closeJoinChannel();
 	}
 
 	/**
@@ -2122,4 +2122,4 @@ class Game {
 	}
 }
 
-module.exports = Game;
+module.exports = GameManager;

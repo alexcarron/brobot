@@ -1,6 +1,6 @@
 const { RoleNames, AbilityName, AbilityArgName, Feedback } = require("../enums");
 const RapidDiscordMafia = require("./RapidDiscordMafia");
-const Game = require("./game");
+const GameManager = require("./GameManager");
 
 describe('EffectManager', () => {
 	/**
@@ -10,7 +10,7 @@ describe('EffectManager', () => {
 
   const setupMockGame = async () => {
 		await RapidDiscordMafia.setUpRapidDiscordMafia(true);
-		mock_game = global.Game;
+		mock_game = global.game_manager;
   };
 
   beforeEach(async () => {

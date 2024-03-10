@@ -1,6 +1,6 @@
 const SlashCommand = require("../../modules/commands/SlashCommand");
 const { GameStates, Announcements, PhaseWaitTimes } = require("../../modules/enums");
-const Game = require("../../modules/rapid_discord_mafia/game");
+const GameManager = require("../../modules/rapid_discord_mafia/GameManager");
 const
 
 	{ PermissionFlagsBits } = require('discord.js'),
@@ -30,7 +30,7 @@ command.execute = async function execute(interaction) {
 	console.timeEnd("deferInteraction");
 
 	console.time("editReply");
-	if ( [GameStates.SignUp, GameStates.InProgress].includes(global.Game.state) ) {
+	if ( [GameStates.SignUp, GameStates.InProgress].includes(global.game_manager.state) ) {
 		return interaction.editReply("There's already a game in sign-ups or in progress.");
 	}
 	else {
@@ -38,9 +38,9 @@ command.execute = async function execute(interaction) {
 	}
 
 	console.time("Game.reset()");
-	await Game.reset();
+	await GameManager.reset();
 	console.timeEnd("Game.reset()");
 
-	await global.Game.startSignUps();
+	await global.game_manager.startSignUps();
 }
 module.exports = command;

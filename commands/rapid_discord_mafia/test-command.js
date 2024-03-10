@@ -140,7 +140,7 @@ command.execute = async function execute(interaction) {
 	// Fake Joins
 	if (subcommand === FakeJoinSubcommand.name) {
 
-		if ( [Enums.GameStates.SignUp, Enums.GameStates.InProgress].includes(global.Game.state) ) {
+		if ( [Enums.GameStates.SignUp, Enums.GameStates.InProgress].includes(global.game_manager.state) ) {
 			return interaction.editReply("There's already a game in sign-ups or in progress.");
 		}
 		else {
@@ -151,7 +151,7 @@ command.execute = async function execute(interaction) {
 		await Game.reset();
 		console.timeEnd("Game.reset()");
 
-		global.Game.startSignUps();
+		global.game_manager.startSignUps();
 
 		const player_names_str = await interaction.options.getString(
 			FakeJoinSubcommand.subparameters[0].name

@@ -377,13 +377,13 @@ global.client.on(Events.MessageCreate,
 
 	// Rapid Discord Mafia Kidnapper
 	if (
-		global.Game &&
-		global.Game.player_manager &&
-		global.Game.state === GameStates.InProgress &&
+		global.game_manager &&
+		global.game_manager.player_manager &&
+		global.game_manager.state === GameStates.InProgress &&
 		msg.channel.parentId === ids.rapid_discord_mafia.category.player_action &&
 		msg.type === Discord.MessageType.Default
 	) {
-		const kidnapped_players = global.Game.player_manager.getPlayerList()
+		const kidnapped_players = global.game_manager.player_manager.getPlayerList()
 			.filter(
 				/**
 				 * @param {Player} player
@@ -420,7 +420,7 @@ global.client.on(Events.MessageCreate,
 
 					const kidnapper_players = kidnapper_player_names
 						.map(player_name => {
-							return global.Game.player_manager.get(player_name)
+							return global.game_manager.player_manager.get(player_name)
 						});
 
 					kidnapper_players.forEach(player => {
@@ -720,11 +720,11 @@ global.client.on(Events.InteractionCreate, async (interaction) => {
 		// if (Object.values(Vote.Votes).some(vote => interaction.customId.startsWith(vote))) {
 		// 	(async () => {
 
-		// 		if (global.GameForge.phase === GameForgePhases.Proposing) {
+		// 		if (global.game_managerForge.phase === GameForgePhases.Proposing) {
 		// 			return await interaction.reply({ content: `Sorry, we're in the proposing phase. You can't vote.`, components: [], ephemeral: true });
 		// 		}
 
-		// 		const host = await global.GameForge.getHostByID(interaction.user.id);
+		// 		const host = await global.game_managerForge.getHostByID(interaction.user.id);
 
 		// 		console.log("Proposed Rule Clicked on by")
 		// 		console.log((host && host.name) ?? "undefined")
@@ -753,7 +753,7 @@ global.client.on(Events.InteractionCreate, async (interaction) => {
 		// 			const proposed_rule_num = parseInt(interaction.customId.replace(Vote.Votes.Approve, ""));
 		// 			console.log({proposed_rule_num});
 
-		// 			proposed_rule = await global.GameForge.getProposedRuleFromNum(proposed_rule_num);
+		// 			proposed_rule = await global.game_managerForge.getProposedRuleFromNum(proposed_rule_num);
 		// 			console.log({proposed_rule});
 
 		// 			if (!proposed_rule) {
@@ -764,7 +764,7 @@ global.client.on(Events.InteractionCreate, async (interaction) => {
 		// 			const proposed_rule_num = parseInt(interaction.customId.replace(Vote.Votes.Disapprove, ""));
 		// 			console.log({proposed_rule_num});
 
-		// 			proposed_rule = await global.GameForge.getProposedRuleFromNum(proposed_rule_num);
+		// 			proposed_rule = await global.game_managerForge.getProposedRuleFromNum(proposed_rule_num);
 		// 			console.log({proposed_rule});
 
 
@@ -776,7 +776,7 @@ global.client.on(Events.InteractionCreate, async (interaction) => {
 		// 			const proposed_rule_num = parseInt(interaction.customId.replace(Vote.Votes.NoOpinion, ""));
 		// 			console.log({proposed_rule_num});
 
-		// 			proposed_rule = await global.GameForge.getProposedRuleFromNum(proposed_rule_num);
+		// 			proposed_rule = await global.game_managerForge.getProposedRuleFromNum(proposed_rule_num);
 		// 			console.log({proposed_rule});
 
 

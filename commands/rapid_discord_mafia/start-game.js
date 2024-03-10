@@ -1,7 +1,6 @@
 const Parameter = require("../../modules/commands/Paramater");
 const SlashCommand = require("../../modules/commands/SlashCommand");
 const RoleIdentifier = require("../../modules/rapid_discord_mafia/RoleIdentifier");
-const Game = require("../../modules/rapid_discord_mafia/game");
 
 /* eslint-disable no-unused-vars */
 const
@@ -32,7 +31,7 @@ command.execute = async function execute(interaction, role_identifiers_str) {
 	role_identifiers_str = interaction.options.getString(command.parameters[0].name);
 	const role_identifier_strings = role_identifiers_str.split(', ');
 
-	const player_count = global.Game.player_manager.getPlayerCount();
+	const player_count = global.game_manager.player_manager.getPlayerCount();
 
 	// Check if players exist
 	if (player_count <= 0) {
@@ -44,10 +43,10 @@ command.execute = async function execute(interaction, role_identifiers_str) {
 	}
 
 	if (
-		global.Game.state !== GameStates.ReadyToBegin &&
+		global.game_manager.state !== GameStates.ReadyToBegin &&
 		interaction.user.id !== ids.users.LL
 	) {
-		return await interaction.editReply(`The game isn't ready to begin. It's in the phase ${global.Game.state}`);
+		return await interaction.editReply(`The game isn't ready to begin. It's in the phase ${global.game_manager.state}`);
 	}
 
 	await role_identifier_strings.forEach(async role_identifier_str => {
@@ -57,7 +56,7 @@ command.execute = async function execute(interaction, role_identifiers_str) {
 	});
 
 	console.log({role_identifier_strings});
-	await global.Game.start(RoleIdentifier.convertIdentifierStrings(role_identifier_strings));
+	await global.game_manager.start(RoleIdentifier.convertIdentifierStrings(role_identifier_strings));
 }
 
 module.exports = command;

@@ -2,7 +2,7 @@ const { RoleNames, Factions, Alignments, RoleIdentifierKeywords, TrialOutcomes, 
 const { doArraysHaveSameElements } = require("../functions");
 const RapidDiscordMafia = require("./RapidDiscordMafia");
 const RoleIdentifier = require("./RoleIdentifier");
-const Game = require("./game");
+const GameManager = require("./GameManager");
 const Player = require("./player");
 const RoleManager = require("./RoleManager");
 const { abilities } = require("./AbilityManager");
@@ -357,7 +357,7 @@ describe('Game', () => {
 			async () => {
 				const input_identifier = new RoleIdentifier(RoleIdentifierKeywords.Any);
 
-				const {num_mafia, num_town} = getNumMafiaTownFromRatio(Game.MAX_MAFIA_TO_TOWN_RATIO, true);
+				const {num_mafia, num_town} = getNumMafiaTownFromRatio(GameManager.MAX_MAFIA_TO_TOWN_RATIO, true);
 
 				const existing_role_list = [
 					...Array(num_mafia).fill(RoleNames.Mafioso),
@@ -391,7 +391,7 @@ describe('Game', () => {
 			async () => {
 				const input_identifier = new RoleIdentifier(RoleIdentifierKeywords.Any);
 
-				const {num_mafia, num_town} = getNumMafiaTownFromRatio(Game.MAX_TOWN_TO_MAFIA_RATIO, false);
+				const {num_mafia, num_town} = getNumMafiaTownFromRatio(GameManager.MAX_TOWN_TO_MAFIA_RATIO, false);
 
 				const existing_role_list = [
 					...Array(num_mafia).fill(RoleNames.Mafioso),
@@ -562,8 +562,8 @@ describe('Game', () => {
 				expect(
 					actual_output.every(role =>
 						role.faction !== Factions.Town &&
-						Game.POSSIBLE_FACTIONS.some(faction =>
-							Game.isRoleInFaction(role, faction)
+						GameManager.POSSIBLE_FACTIONS.some(faction =>
+							GameManager.isRoleInFaction(role, faction)
 						)
 					)
 				).toStrictEqual(true);
@@ -598,8 +598,8 @@ describe('Game', () => {
 				expect(
 					actual_output.every(role =>
 						role.faction !== Factions.Town &&
-						Game.POSSIBLE_FACTIONS.some(faction =>
-							Game.isRoleInFaction(role, faction)
+						GameManager.POSSIBLE_FACTIONS.some(faction =>
+							GameManager.isRoleInFaction(role, faction)
 						)
 					)
 				).toStrictEqual(true);
@@ -635,8 +635,8 @@ describe('Game', () => {
 
 				expect(
 					actual_output.every(role =>
-						Game.POSSIBLE_FACTIONS.some(faction =>
-							Game.isRoleInFaction(role, faction)
+						GameManager.POSSIBLE_FACTIONS.some(faction =>
+							GameManager.isRoleInFaction(role, faction)
 						) &&
 						role.faction !== Factions.Town
 					)
@@ -689,7 +689,7 @@ describe('Game', () => {
 
   const setupMockGame = () => {
 		RapidDiscordMafia.setUpRapidDiscordMafia(true);
-		mock_game = global.Game;
+		mock_game = global.game_manager;
   };
 
   beforeEach(() => {

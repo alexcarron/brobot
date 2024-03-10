@@ -2,7 +2,7 @@ const Parameter = require("../../modules/commands/Paramater");
 const ids = require("../../data/ids.json");
 const SlashCommand = require("../../modules/commands/SlashCommand");
 const { deferInteraction } = require("../../modules/functions");
-const Game = require("../../modules/rapid_discord_mafia/game");
+const GameManager = require("../../modules/rapid_discord_mafia/GameManager");
 
 const Parameters = {
 	BugReporting: new Parameter({
@@ -25,8 +25,8 @@ command.execute = async function(interaction) {
 
 	const bug_reporting = interaction.options.getString(Parameters.BugReporting.name);
 
-	if (global.Game && global.Game instanceof Game) {
-		global.Game.logger.log(`<@${ids.users.LL}> **${interaction.user.username}** has reported:\n>>> ${bug_reporting}`);
+	if (global.game_manager && global.game_manager instanceof GameManager) {
+		global.game_manager.logger.log(`<@${ids.users.LL}> **${interaction.user.username}** has reported:\n>>> ${bug_reporting}`);
 	}
 
 	return await interaction.editReply("You have sucessfully reported the following:\n" + `>>> ${bug_reporting}`);

@@ -2,7 +2,7 @@ const { PermissionFlagsBits } = require("discord.js");
 const SlashCommand = require("../../modules/commands/SlashCommand");
 const ids = require(`../../data/ids.json`);
 const { editReplyToInteraction } = require("../../modules/functions");
-const Game = require("../../modules/rapid_discord_mafia/game");
+const GameManager = require("../../modules/rapid_discord_mafia/GameManager");
 
 module.exports = {
 
@@ -17,9 +17,9 @@ command.required_permissions = [PermissionFlagsBits.Administrator];
 command.execute = async function execute(interaction) {
 	await interaction.deferReply({ephemeral: true});
 
-	if (global.Game && global.Game instanceof Game) {
-		await global.Game.data_manger.saveToGithub();
-		global.Game.logger.logDebug(global.Game);
+	if (global.game_manager && global.game_manager instanceof GameManager) {
+		await global.game_manager.data_manger.saveToGithub();
+		global.game_manager.logger.logDebug(global.game_manager);
 		editReplyToInteraction(interaction, "Game successfully saved.");
 	}
 	else {

@@ -14,7 +14,7 @@ command.execute = async function(interaction) {
 	const role_names_in_faction = {};
 	let message = "";
 
-	global.Game.role_manager.getListOfRoles().forEach(role => {
+	global.game_manager.role_manager.getListOfRoles().forEach(role => {
 		const faction = role.faction;
 		const alignment = role.alignment;
 		const name = role.name;

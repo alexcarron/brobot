@@ -83,10 +83,10 @@ command.execute = async function(interaction, isTest) {
 	// Get player from user or player name argument
 	if (isTest) {
 		const player_name = interaction.options.getString("player-name");
-		player = global.Game.player_manager.getPlayerFromName(player_name);
+		player = global.game_manager.player_manager.getPlayerFromName(player_name);
 	}
 	else {
-		player = global.Game.player_manager.getPlayerFromId(interaction.user.id);
+		player = global.game_manager.player_manager.getPlayerFromId(interaction.user.id);
 	}
 
 	if (!player) {
@@ -151,7 +151,7 @@ command.execute = async function(interaction, isTest) {
 		const ability = AbilityManager.abilities[ability_name];
 
 		if (ability)
-			can_use_ability_feedback = await player.canUseAbility(ability, arg_values, global.Game);
+			can_use_ability_feedback = await player.canUseAbility(ability, arg_values, global.game_manager);
 		else
 			can_use_ability_feedback = `**${ability_name}** is not a valid ability`;
 	}
@@ -159,12 +159,12 @@ command.execute = async function(interaction, isTest) {
 	if (can_use_ability_feedback !== true)
 		return await interaction.editReply(can_use_ability_feedback);
 
-	const ability_feedback = player.useAbility(ability_name, arg_values, global.Game, {}, mock_game);
-	await global.Game.data_manger.saveToGithub();
+	const ability_feedback = player.useAbility(ability_name, arg_values, global.game_manager, {}, mock_game);
+	await global.game_manager.data_manger.saveToGithub();
 
 	await interaction.editReply(ability_feedback);
 
-	const player_role = global.Game.role_manager.getRole(player.role);
+	const player_role = global.game_manager.role_manager.getRole(player.role);
 
 	if (player_role.faction === Factions.Mafia) {
 		const rdm_guild = await getRDMGuild();
@@ -175,7 +175,7 @@ command.execute = async function(interaction, isTest) {
 		);
 	}
 
-	global.Game.startDayIfAllPlayersActed();
+	global.game_manager.startDayIfAllPlayersActed();
 }
 
 command.autocomplete = async function(interaction) {
@@ -184,7 +184,7 @@ command.autocomplete = async function(interaction) {
 
 	if (!focused_param) return;
 
-	const player_using_command = global.Game.player_manager.getPlayerFromId(interaction.user.id);
+	const player_using_command = global.game_manager.player_manager.getPlayerFromId(interaction.user.id);
 
 	if (!player_using_command) {
 		return await interaction.respond(
@@ -200,7 +200,7 @@ command.autocomplete = async function(interaction) {
 	const ability = Object.values(AbilityManager.abilities).find(ability => ability.name === ability_name);
 	const ability_arg = ability.args.find(arg => arg.name === arg_name);
 
-	const player_role = global.Game.role_manager.getRole(player_using_command.role);
+	const player_role = global.game_manager.role_manager.getRole(player_using_command.role);
 
 	if (player_role.abilities.every(ability => ability.name !== ability_name)) {
 		return await interaction.respond(
@@ -210,12 +210,12 @@ command.autocomplete = async function(interaction) {
 
 	if (ability_arg.type === ArgumentTypes.Player) {
 		autocomplete_values =
-			global.Game.player_manager.getAlivePlayers().filter(
+			global.game_manager.player_manager.getAlivePlayers().filter(
 				(player) => {
 
 					if (
 						ability_arg.subtypes.includes(ArgumentSubtypes.NonMafia) &&
-						global.Game.role_manager.getRole(player.role).faction === Factions.Mafia
+						global.game_manager.role_manager.getRole(player.role).faction === Factions.Mafia
 					) {
 						console.log(player.name);
 						return false;

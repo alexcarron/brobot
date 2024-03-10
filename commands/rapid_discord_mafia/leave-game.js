@@ -3,7 +3,6 @@ const ids = require("../../data/ids.json");
 const SlashCommand = require("../../modules/commands/SlashCommand");
 const { deferInteraction, confirmAction, getRDMGuild, getGuildMember, getRole } = require("../../modules/functions");
 const { GameStates, RDMRoles } = require("../../modules/enums");
-const Game = require("../../modules/rapid_discord_mafia/game");
 
 const command = new SlashCommand({
 	name: "leave-game",
@@ -14,9 +13,9 @@ command.required_roles = [ids.rapid_discord_mafia.roles.living];
 command.execute = async function(interaction) {
 	await deferInteraction(interaction);
 
-	const player = global.Game.player_manager.getPlayerFromId(interaction.user.id);
+	const player = global.game_manager.player_manager.getPlayerFromId(interaction.user.id);
 
-	if (global.Game.state === GameStates.SignUp) {
+	if (global.game_manager.state === GameStates.SignUp) {
 		if (
 			!await confirmAction({
 				interaction,
@@ -30,9 +29,9 @@ command.execute = async function(interaction) {
 			return
 		}
 
-		player.leaveGameSignUps(global.Game);
+		player.leaveGameSignUps(global.game_manager);
 	}
-	else if (global.Game.state === GameStates.InProgress) {
+	else if (global.game_manager.state === GameStates.InProgress) {
 		if (!player.isAlive) {
 			return await interaction.editReply("Dead people can't leave the game");
 		}

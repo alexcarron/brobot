@@ -30,7 +30,7 @@ command.required_roles = [ids.rapid_discord_mafia.roles.living];
 command.execute = async function(interaction) {
 	await deferInteraction(interaction);
 
-	const player = global.Game.player_manager.getPlayerFromId(interaction.user.id);
+	const player = global.game_manager.player_manager.getPlayerFromId(interaction.user.id);
 
 	if (!player) {
 		return await interaction.editReply("Non-players can't write last wills");

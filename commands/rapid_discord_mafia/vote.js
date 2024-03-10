@@ -1,8 +1,6 @@
 const Parameter = require("../../modules/commands/Paramater");
 const SlashCommand = require("../../modules/commands/SlashCommand");
 const Enums = require("../../modules/enums");
-const { Subphases, RDMRoles } = require("../../modules/enums");
-const Game = require("../../modules/rapid_discord_mafia/game");
 
 const
 	{
@@ -66,10 +64,10 @@ command.execute = async function execute(interaction, isTest=false) {
 	let voter_player, max_voters_count
 
 	if (isTest) {
-		voter_player = global.Game.player_manager.getPlayerFromName(interaction.options.getString("player-voting"));
+		voter_player = global.game_manager.player_manager.getPlayerFromName(interaction.options.getString("player-voting"));
 	}
 	else {
-		voter_player = global.Game.player_manager.getPlayerFromId(interaction.user.id);
+		voter_player = global.game_manager.player_manager.getPlayerFromId(interaction.user.id);
 	}
 
 	const subcommand_name = interaction.options.getSubcommand();
@@ -79,22 +77,22 @@ command.execute = async function execute(interaction, isTest=false) {
 	if (subcommand_name === Parameters.ForPlayer.name) {
 		vote = interaction.options.getString(Subparameters.PlayerVotingFor.name);
 
-		const can_vote_player_feedback = voter_player.canVotePlayer(vote, global.Game);
+		const can_vote_player_feedback = voter_player.canVotePlayer(vote, global.game_manager);
 		if (can_vote_player_feedback !== true)
 			return await interaction.editReply(can_vote_player_feedback);
 
-		const vote_player_feedback = voter_player.votePlayer(vote, global.Game);
+		const vote_player_feedback = voter_player.votePlayer(vote, global.game_manager);
 		await interaction.editReply(vote_player_feedback);
 	}
 	// Vote For Trial Outcome
 	else if (subcommand_name === Parameters.ForTrialOutcome.name) {
 		vote = interaction.options.getString(Subparameters.TrialOutcome.name);
 
-		const can_vote_feedback = voter_player.canVoteForTrialOutcome(vote, global.Game);
+		const can_vote_feedback = voter_player.canVoteForTrialOutcome(vote, global.game_manager);
 		if (can_vote_feedback !== true)
 			return await interaction.editReply(can_vote_feedback);
 
-		const vote_feedback = voter_player.voteForTrialOutcome(vote, global.Game);
+		const vote_feedback = voter_player.voteForTrialOutcome(vote, global.game_manager);
 		await interaction.editReply(vote_feedback);
 	}
 }
@@ -104,7 +102,7 @@ command.autocomplete = async function(interaction) {
 	if (!focused_param) return;
 	const entered_value = focused_param.value;
 
-	autocomplete_values = global.Game.player_manager.getAlivePlayers()
+	autocomplete_values = global.game_manager.player_manager.getAlivePlayers()
 		.map((player) => {return {name: player.name, value: Enums.Votes.Player(player.name)}})
 
 	autocomplete_values.push({name: "Abstain", value: Enums.Votes.Abstain});

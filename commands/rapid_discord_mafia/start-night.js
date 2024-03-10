@@ -15,7 +15,7 @@ command.required_servers = [ids.servers.rapid_discord_mafia];
 
 command.execute = async function execute(interaction, args, isTest=false) {
 	await deferInteraction(interaction);
-	await global.Game.startNight();
+	await global.game_manager.startNight();
 }
 
 module.exports = command;

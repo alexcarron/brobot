@@ -6,7 +6,7 @@ const PlayerManager = require("./PlayerManager.js");
 const RoleManager = require("./RoleManager.js");
 const DiscordLogger = require("./DiscordLogger.js");
 const ids = require("../../data/ids.json");
-const Game = require("./game.js");
+const GameManager = require("./GameManager.js");
 
 class RapidDiscordMafia {
 	constructor() {
@@ -22,7 +22,7 @@ class RapidDiscordMafia {
 			logger = new DiscordLogger(staff_chnl);
 		}
 
-		global.Game = new Game(
+		global.game_manager = new GameManager(
 			new PlayerManager({}, logger, this.isMockObject),
 			logger,
 			isMockObject
@@ -46,7 +46,7 @@ class RapidDiscordMafia {
 		}
 
 		const player_manager = new PlayerManager({}, logger, isMockGame);
-		return new Game(player_manager, logger, isMockGame);
+		return new GameManager(player_manager, logger, isMockGame);
 	}
 
 	/**

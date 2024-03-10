@@ -43,14 +43,14 @@ command.execute = async function execute(interaction, args, isTest) {
 		else
 			isFakeUser = false;
 
-		// global.Game.state = GameStates.ReadyToBegin;
+		// global.game_manager.state = GameStates.ReadyToBegin;
 	}
 
-	if (global.Game.state !== GameStates.SignUp) {
+	if (global.game_manager.state !== GameStates.SignUp) {
 		return await interaction.editReply("We're not in sign-ups so you can't join just yet.");
 	}
 
-	global.Game.addPlayerToGame(player_name, player_id, interaction, isFakeUser);
+	global.game_manager.addPlayerToGame(player_name, player_id, interaction, isFakeUser);
 
 	await interaction.editReply(`**${player_name}** has been added to the game`);
 }

@@ -24,7 +24,7 @@ command.execute = async function(interaction) {
 	await deferInteraction(interaction);
 
 	const role_name = interaction.options.getString(Parameters.RoleName.name)
-	const role = global.Game.role_manager.getRole(role_name);
+	const role = global.game_manager.role_manager.getRole(role_name);
 
 	interaction.editReply(role.toString(isInfoOnly=true));
 };
@@ -34,7 +34,7 @@ command.autocomplete = async function(interaction) {
 	if (!focused_param) return;
 	const entered_value = focused_param.value;
 
-	const all_roles = global.Game.role_manager.getListOfRoles() ?? [];
+	const all_roles = global.game_manager.role_manager.getListOfRoles() ?? [];
 
 	autocomplete_values =
 		all_roles

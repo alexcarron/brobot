@@ -1,7 +1,7 @@
 const { Phases, Subphases, GameStates } = require("../enums");
 const GameStateManager = require("./GameStateManager");
 const RapidDiscordMafia = require("./RapidDiscordMafia");
-const Game = require("./game");
+const GameManager = require("./GameManager");
 
 describe('GameStateManager', () => {
 	/**
@@ -11,7 +11,7 @@ describe('GameStateManager', () => {
 
   const setupMockGame = async () => {
 		await RapidDiscordMafia.setUpRapidDiscordMafia(true);
-		mock_game = global.Game;
+		mock_game = global.game_manager;
   };
 
   beforeEach(async () => {

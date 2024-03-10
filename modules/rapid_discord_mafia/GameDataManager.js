@@ -1,4 +1,4 @@
-const Game = require("./game");
+const Game = require("./GameManager.js");
 const axios = require('axios');
 const { github_token } =  require("../token.js");
 

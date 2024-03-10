@@ -12,10 +12,10 @@ command.required_servers = [ids.servers.rapid_discord_mafia];
 command.execute = async function(interaction) {
 	await deferInteraction(interaction);
 
-	if (!global.Game || global.Game.state !== GameStates.InProgress) {
+	if (!global.game_manager || global.game_manager.state !== GameStates.InProgress) {
 		return await interaction.editReply("The game has to start before I can tell you the role list...");
 	}
 
-	interaction.editReply(Announcements.RoleList(global.Game.unshuffled_role_identifiers));
+	interaction.editReply(Announcements.RoleList(global.game_manager.unshuffled_role_identifiers));
 };
 module.exports = command;

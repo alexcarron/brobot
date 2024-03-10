@@ -2,7 +2,7 @@ const { RoleNames, AbilityName: AbilityName, AbilityArgName } = require("../enum
 const RapidDiscordMafia = require("./RapidDiscordMafia");
 const RoleIdentifier = require("./RoleIdentifier");
 const RoleManager = require("./RoleManager");
-const Game = require("./game");
+const GameManager = require("./GameManager");
 
 describe('Player', () => {
 	/**
@@ -12,7 +12,7 @@ describe('Player', () => {
 
   const setupMockGame = () => {
 		RapidDiscordMafia.setUpRapidDiscordMafia(true);
-		mock_game = global.Game;
+		mock_game = global.game_manager;
   };
 
   beforeEach(() => {

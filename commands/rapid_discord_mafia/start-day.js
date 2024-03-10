@@ -16,6 +16,6 @@ command.required_servers = [ids.servers.rapid_discord_mafia];
 command.required_permissions = [PermissionFlagsBits.Administrator];
 command.execute = async function execute(interaction, args, isTest=false) {
 	await deferInteraction(interaction);
-	await global.Game.startDay();
+	await global.game_manager.startDay();
 }
 module.exports = command;
