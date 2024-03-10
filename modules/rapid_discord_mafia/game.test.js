@@ -650,13 +650,14 @@ describe('GameManager', () => {
 	describe('isValidArgValue', () => {
 		it('SHOULD return NOT true for input framer using frame on mafioso', async () => {
 			const player_framing_arg = abilities[AbilityName.Frame].args[0];
-			const player_using_ability = new Player({name: "name"});
+			const player_using_ability = new Player({name: "name", isMockPlayer: true});
 			const arg_value = "mafia";
 
 			const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
 			const mafia_player = new Player({
 				name: "mafia",
 				role: RoleNames.Mafioso,
+				isMockPlayer: true,
 			})
 			rdm_game.player_manager.addPlayer(mafia_player);
 			expect(
@@ -669,7 +670,8 @@ describe('GameManager', () => {
 		it('SHOULD return NOT true for input doctor using heal on themselves', async () => {
 
 			const player_framing_arg = abilities[AbilityName.Heal].args[0];
-			const player_using_ability = new Player({name: "name", role: RoleNames.Doctor});
+			const player_using_ability = new Player({name: "name", role: RoleNames.Doctor,
+			isMockPlayer: true,});
 			const arg_value = "name";
 
 			const rdm_game = await RapidDiscordMafia.getEmptyGame(true);

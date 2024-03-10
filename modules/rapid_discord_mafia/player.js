@@ -3,6 +3,7 @@ const RoleManager = require("./RoleManager");
 const ids = require("../../data/ids.json");
 const Role = require("./Role");
 const Logger = require("./Logger");
+const DiscordService = require("./DiscordService");
 
 const
 	{ getGuildMember, getRole, addRole, removeRole, getChannel, wait, getRandArrayItem, getRDMGuild, toTitleCase } = require("../functions"),
@@ -129,6 +130,9 @@ class Player {
 		this.canVote = canVote;
 		this.isMockPlayer = isMockPlayer;
 		this.logger = logger;
+		this.discord_service = new DiscordService({
+			isMockService: isMockPlayer
+		});
 	}
 
 	static MAX_INACTIVE_PHASES = 6;
@@ -168,29 +172,8 @@ class Player {
 	async mute() {
 		this.isMuted = true;
 
-		if (!this.isMockPlayer) {
-			const
-				rdm_guild = await getRDMGuild(),
-				town_discussion_chnl = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.town_discussion),
-				game_announce_chnl = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.game_announce),
-				player_guild_member = await getGuildMember(rdm_guild, this.id);
-
-			await town_discussion_chnl.permissionOverwrites.edit(
-				player_guild_member.user,
-				{
-					SendMessages: false,
-					AddReactions: false
-				}
-			);
-
-			await game_announce_chnl.permissionOverwrites.edit(
-				player_guild_member.user,
-				{
-					SendMessages: false,
-					AddReactions: false
-				}
-			);
-		}
+		await this.discord_service.removeSenderFromTownDiscussionChannel(this.id);
+		await this.discord_service.removeSenderFromAnnouncementsChannel(this.id);
 
 		this.logger.log(`Muted **${this.name}**.`);
 	}
@@ -198,29 +181,8 @@ class Player {
 	async unmute() {
 		this.isMuted = false;
 
-		if (!this.isMockPlayer) {
-			const
-				rdm_guild = await getRDMGuild(),
-				town_discussion_chnl = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.town_discussion),
-				game_announce_chnl = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.game_announce),
-				player_guild_member = await getGuildMember(rdm_guild, this.id);
-
-			await town_discussion_chnl.permissionOverwrites.edit(
-				player_guild_member.user,
-				{
-					SendMessages: null,
-					AddReactions: null,
-				}
-			);
-
-			await game_announce_chnl.permissionOverwrites.edit(
-				player_guild_member.user,
-				{
-					SendMessages: null,
-					AddReactions: null,
-				}
-			);
-		}
+		await this.discord_service.addSenderToAnnouncementsChannel(this.id);
+		await this.discord_service.addSenderToTownDiscussionChannel(this.id);
 
 		this.logger.log(`Unmuted **${this.name}**.`);
 	}
@@ -263,47 +225,41 @@ class Player {
 	}
 
 	async createChannel() {
-		const rdm_guild = await getRDMGuild();
 		const channel_name =
 				"👤｜" +
 				this.name.toLowerCase()
 					.replace(' ', '-')
 					.replace(/[^a-zA-Z0-9 -]/g, "");
 
-		const player_guild_member = await this.getGuildMember();
-
 		// Create a private channel for the player
-		const player_channel = await rdm_guild.channels.create(
-			{
-				name: channel_name,
-				parent: rdm_ids.category.player_action,
-				permissionOverwrites: [
-					{
-						id: rdm_guild.roles.everyone,
-						deny: [PermissionFlagsBits.ViewChannel],
-					},
-					{
-						id: player_guild_member,
-						allow: [PermissionFlagsBits.ViewChannel],
-					}
-				],
-			}
-		);
+		const player_channel = await this.discord_service.createPrivateChannel({
+			name: channel_name,
+			parent: rdm_ids.category.player_action,
+			guild_member_id: this.id
+		});
 
-		// Send a message to the player confirming that they have joined the game
-		await player_channel.send(Feedback.CreatedPlayerActionChannel(this))
-			.then(msg => msg.pin());
+		if (player_channel) {
+			this.channel_id = player_channel.id;
 
-		this.channel_id = player_channel.id;
+			this.discord_service.sendAndPinMessage({
+				channel_id: this.channel_id,
+				contents: Feedback.CreatedPlayerActionChannel(this),
+			});
+		}
 	}
 
 	async sendFeedback(feedback, isPinned=false) {
-		if (!this.isMockPlayer) {
-			const channel = await this.getPlayerChannel();
-			const message_sent = await channel.send(feedback);
-
-			if (isPinned)
-				message_sent.pin();
+		if (isPinned) {
+			return await this.discord_service.sendAndPinMessage({
+				channel_id: this.channel_id,
+				contents: feedback,
+			});
+		}
+		else {
+			return await this.discord_service.sendMessage({
+				channel_id: this.channel_id,
+				contents: feedback,
+			});
 		}
 	}
 
@@ -630,8 +586,7 @@ class Player {
 			await player_member.roles.remove(living_role).catch(console.error());
 			await player_member.roles.add(spectator_role).catch(console.error());
 
-			const player_channel = await this.getPlayerChannel();
-			await player_channel.delete();
+			await this.discord_service.deleteChannel(this.channel_id);
 		}
 
 		game.player_manager.removePlayer(this.name);
@@ -640,11 +595,6 @@ class Player {
 	async smite(game) {
 		await this.sendFeedback(Feedback.Smitten(this));
 		game.addDeath(this, this, Announcements.PlayerSmitten);
-	}
-
-	async getPlayerChannel() {
-		const rdm_guild = await getRDMGuild();
-		return await getChannel(rdm_guild, this.channel_id);
 	}
 
 	async sendRoleInfo() {
@@ -698,24 +648,12 @@ class Player {
 	async giveAccessToMafiaChat() {
 		this.logger.log(`Let **${this.name}** see mafia chat.`);
 
-		if (!this.isMockPlayer) {
-			const
-				mafia_channel = await getChannel((await getRDMGuild()), ids.rapid_discord_mafia.channels.mafia_chat),
-				player_guild_member = await getGuildMember((await getRDMGuild()), this.id);
-
-			mafia_channel.permissionOverwrites.edit(player_guild_member.user, {ViewChannel: true});
-
-			mafia_channel.send(`**${this.name}** - ${this.role}`);
-		}
+		this.discord_service.addViewerToMafiaChannel(this.id);
+		this.discord_service.sendToMafia(`**${this.name}** - ${this.role}`);
 	}
 
 	async removeAccessFromMafiaChat() {
-		const
-			mafia_channel = await getChannel((await getRDMGuild()), ids.rapid_discord_mafia.channels.mafia_chat),
-			player_guild_member = await getGuildMember((await getRDMGuild()), this.id);
-
-		mafia_channel.permissionOverwrites.edit(player_guild_member.user, {SendMessages: false});
-
+		this.discord_service.removeSenderFromMafiaChannel(this.id);
 		this.logger.log(`Let **${this.name}** not see mafia chat.`);
 	}
 
@@ -789,17 +727,14 @@ class Player {
 	}
 
 	async whisper(player_whispering_to, whisper_contents) {
-		if (!this.isMockPlayer) {
-			const rdm_guild = await getRDMGuild();
-			const town_discussion_chnl = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.town_discussion);
+		await this.discord_service.sendToTownDiscussion(
+			Announcements.Whisper(this, player_whispering_to)
+		);
 
-			await town_discussion_chnl.send(Announcements.Whisper(
-				this, player_whispering_to
-			));
-
-			const player_whispering_to_chnl = await player_whispering_to.getPlayerChannel();
-			player_whispering_to_chnl.send(Feedback.WhisperedTo(this, whisper_contents));
-		}
+		await this.discord_service.sendMessage({
+			channel_id: player_whispering_to.channel_id,
+			contents: Feedback.WhisperedTo(this, whisper_contents)
+		});
 	}
 
 	makeAWinner(game) {

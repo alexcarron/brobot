@@ -13,7 +13,7 @@ const AbilityManager = require("./AbilityManager.js");
 const RoleManager = require("./RoleManager.js");
 const GameStateManager = require("./GameStateManager.js");
 const GameDataManager = require("./GameDataManager.js");
-const DiscordCommunicationService = require("./DiscordCommunicationService.js");
+const DiscordService = require("./DiscordService.js");
 // const Logger = require("./Logger.js");
 
 class GameManager {
@@ -88,7 +88,7 @@ class GameManager {
 
 	/**
 	 * A service to handle sending and modifying discord messages
-	 * @type {DiscordCommunicationService}
+	 * @type {DiscordService}
 	 */
 	discord_service;
 
@@ -120,7 +120,7 @@ class GameManager {
 		this.state_manager = new GameStateManager(this);
 		this.state_manager.initializeState();
 
-		this.discord_service = new DiscordCommunicationService({
+		this.discord_service = new DiscordService({
 			isMockService: isMockGame
 		});
 
@@ -1259,12 +1259,9 @@ class GameManager {
 			player_obj.isMockPlayer = true;
 
 		const player = await this.player_manager.addPlayerFromObj(player_obj);
-		const players = this.player_manager.getPlayerList();
 
-		if (!this.isMockGame) {
-			await player.createChannel();
-			this.logger.log(`**${player_name}** added to the game.`);
-		}
+		await player.createChannel();
+		this.logger.log(`**${player_name}** added to the game.`);
 
 		this.announceMessages(
 			`**${player_name}** joined the game`
