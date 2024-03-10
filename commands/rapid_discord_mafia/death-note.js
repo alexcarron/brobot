@@ -54,13 +54,12 @@ command.execute = async function(interaction) {
 			return await interaction.editReply(`Your death note includes a backtick (\`) which is illegal.`)
 		}
 
-		player.death_note = contents;
+		player.updateDeathNote(contents);
 	}
 	else if (interaction.options.getSubcommand() === Parameters.Remove.name) {
-		player.death_note = "";
+		player.updateDeathNote("");
 	}
 
-	await global.Game.log(`**${player.name}** updated their death note to be \n\`\`\`\n${player.death_note}\n\`\`\``);
 	return await interaction.editReply(`Your death note is now: \n\`\`\`\n${player.death_note}\n\`\`\``);
 };
 module.exports = command;

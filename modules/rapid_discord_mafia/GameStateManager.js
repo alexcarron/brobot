@@ -7,11 +7,9 @@ const Logger = require("./Logger");
 class GameStateManager {
 	/**
 	 * @param {Game} game - The game's current instance
-	 * @param {Logger} logger
 	 */
-	constructor(game, logger) {
+	constructor(game) {
 		this.game = game;
-		this.logger = logger;
 	}
 
 	static NIGHT_PHASE_LENGTH = 0.5;
@@ -74,7 +72,7 @@ class GameStateManager {
 	 * Sets the initial state and phase of a game when a game is constructed but no started
 	 */
 	initializeState() {
-		this.logger.log("Initializing game state");
+		this.game.logger.log("Initializing game state");
 
 		this.state = GameStates.Ended;
 		this.phase = Phases.None;
@@ -86,7 +84,7 @@ class GameStateManager {
 	 * Changes the state and phase of the game when game is officially in sign ups
 	 */
 	changeToSignUps() {
-		this.logger.log("Changing game state to sign ups");
+		this.game.logger.log("Changing game state to sign ups");
 
 		this.state = GameStates.SignUp;
 		this.phase = Phases.None;
@@ -98,7 +96,7 @@ class GameStateManager {
 	 * Changes the state and phase of the game when game is officially ready to start
 	 */
 	changeToReadyToStart() {
-		this.logger.log("Changing game state to ready to start");
+		this.game.logger.log("Changing game state to ready to start");
 
 		this.state = GameStates.ReadyToBegin;
 		this.phase = Phases.None;
@@ -110,7 +108,7 @@ class GameStateManager {
 	 * Changes the state and phase of the game when game is officially started
 	 */
 	changeToStarted() {
-		this.logger.log("Changing game state to started");
+		this.game.logger.log("Changing game state to started");
 
 		this.state = GameStates.InProgress;
 		this.phase = Phases.None;
@@ -122,7 +120,7 @@ class GameStateManager {
 	 * Changes the state and phase of the game when game is officially over
 	 */
 	changeToEnded() {
-		this.logger.log("Changing game state to be ended");
+		this.game.logger.log("Changing game state to be ended");
 
 		this.state = GameStates.Ended;
 		this.phase = Phases.None;
@@ -133,7 +131,7 @@ class GameStateManager {
 	 * Sets the game phase and subphase to the first day in the game
 	 */
 	setToFirstDay() {
-		this.logger.logSubheading("Setting game phase to first day");
+		this.game.logger.logSubheading("Setting game phase to first day");
 
 		this.phase = Phases.Day;
 		this.subphase = Subphases.None;
@@ -144,7 +142,7 @@ class GameStateManager {
 	 * Sets the game phase and subphase to day and updates number of days passed
 	 */
 	setToDay() {
-		this.logger.logSubheading("Setting game phase to day");
+		this.game.logger.logSubheading("Setting game phase to day");
 
 		this.phase = Phases.Day;
 		this.subphase = Subphases.Announcements;
@@ -155,7 +153,7 @@ class GameStateManager {
 	 * Sets the game phase and subphase to voting
 	 */
 	setToVoting() {
-		this.logger.logSubheading("Setting game phase to voting");
+		this.game.logger.logSubheading("Setting game phase to voting");
 
 		this.phase = Phases.Day;
 		this.subphase = Subphases.Voting;
@@ -165,7 +163,7 @@ class GameStateManager {
 	 * Sets the game phase and subphase to trial
 	 */
 	setToTrial() {
-		this.logger.logSubheading("Setting game phase to trial");
+		this.game.logger.logSubheading("Setting game phase to trial");
 
 		this.phase = Phases.Day;
 		this.subphase = Subphases.Trial;
@@ -175,7 +173,7 @@ class GameStateManager {
 	 * Sets the game phase and subphase to trial results
 	 */
 	setToTrialResults() {
-		this.logger.logSubheading("Setting game phase to trial results");
+		this.game.logger.logSubheading("Setting game phase to trial results");
 
 		this.phase = Phases.Day;
 		this.subphase = Subphases.TrialResults;
@@ -185,7 +183,7 @@ class GameStateManager {
 	 * Sets the game phase and subphase to night and updates number of days passed
 	 */
 	setToNight() {
-		this.logger.logSubheading("Setting game phase to night");
+		this.game.logger.logSubheading("Setting game phase to night");
 
 		this.phase = Phases.Night;
 		this.subphase = Subphases.None;
@@ -196,7 +194,7 @@ class GameStateManager {
 	 * Changes the phase and subphase of the game to the next subphase, also incrementing the day count
 	 */
 	changeToNextSubphase() {
-		this.logger.log("Changing game phase to next subphase");
+		this.game.logger.log("Changing game phase to next subphase");
 
 		switch (this.phase) {
 			case Phases.Day:
@@ -434,7 +432,7 @@ class GameStateManager {
 	}
 
 	logCurrentState() {
-		console.log({
+		this.game.logger.log({
 			state: this.state,
 			phase: this.phase,
 			subphase: this.subphase,

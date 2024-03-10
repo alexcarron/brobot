@@ -12,6 +12,7 @@ const EffectManager = require("./EffectManager.js");
 const AbilityManager = require("./AbilityManager.js");
 const RoleManager = require("./RoleManager.js");
 const GameStateManager = require("./GameStateManager.js");
+// const Logger = require("./Logger.js");
 
 class Game {
 	/**
@@ -96,14 +97,14 @@ class Game {
 	 * @param {boolean} isMockGame
 	 */
 	constructor(player_manager, logger, isMockGame=false) {
-		this.effect_manager = new EffectManager(this, logger);
+		this.player_manager = player_manager;
+		this.logger = logger;
+		this.effect_manager = new EffectManager(this);
 		this.ability_manager = new AbilityManager();
 		this.role_manager = new RoleManager();
-		this.state_manager = new GameStateManager(this, logger);
+		this.state_manager = new GameStateManager(this);
 		this.state_manager.initializeState();
 
-		this.logger = logger;
-		this.player_manager = player_manager;
 		this.timeout_counter = 0;
 		this.votes = {};
 		this.trial_votes = {};
@@ -143,10 +144,6 @@ class Game {
 			.map((role) => role.name)
 	];
 
-	logPlayers() {
-		console.log(JSON.stringify(this.player_manager, null, 2));
-	}
-
 	/**
 	 * Looks at all the player's abilities performed fields and adds them to the current abilities performed
 	 */
@@ -180,8 +177,6 @@ class Game {
 		this.abilities_performed = Object.values(this.abilities_performed)
 		.sort(
 			(ability_done1, ability_done2) => {
-				console.log({ability_done1, ability_done2});
-
 				const ability1 = this.ability_manager.getAbility(ability_done1.name);
 				const ability2 = this.ability_manager.getAbility(ability_done2.name);
 
@@ -231,7 +226,7 @@ class Game {
 
 		}
 
-		this.player_manager = new PlayerManager();
+		this.player_manager = new PlayerManager({}, this.logger, this.isMockGame);
 
 		for (const player_obj of Object.values(game_json.player_manager.players)) {
 			await this.player_manager.addPlayerFromObj(player_obj);
@@ -318,7 +313,7 @@ class Game {
 	 * Uses the role list field to set the role of every player randomly
 	 */
 	async assignRolesToPlayers() {
-		await Game.log("Assigning Roles To Players", 2);
+		this.logger.logHeading("Assigning Roles To Players");
 
 		for (let [role_index, role_name] of this.role_list.entries()) {
 			const
@@ -327,7 +322,7 @@ class Game {
 				player = players[role_index];
 
 			await player.setRole(role);
-			await Game.log(`Sent role info message, ${role.name}, to ${player.name}.`);
+			this.logger.log(`Sent role info message, ${role.name}, to ${player.name}.`);
 		}
 
 		await this.giveAllExesTargets();
@@ -362,9 +357,6 @@ class Game {
 			needOpposingFactions = existing_factions.length <= 1;
 
 		let possible_roles = role_identifier.getPossibleRoles();
-
-		// console.log({role_identifier, existing_factions, num_roles_in_faction,needOpposingFactions});
-		// console.log("POSSIBLE ROLES " + possible_roles.map(r => r.name));
 
 		if (role_identifier.type === RoleIdentifierTypes.AnyRole) {
 
@@ -446,8 +438,6 @@ class Game {
 			);
 		}
 
-		// console.log("POSSIBLE ROLES " + possible_roles.map(r => r.name));
-
 		return possible_roles;
 	}
 
@@ -461,8 +451,6 @@ class Game {
 		const possible_roles = this.getPossibleRolesFromIdentifier(role_identifier, num_roles_in_faction);
 		const chosen_role = getRandArrayItem(possible_roles);
 
-		console.log({chosen_role});
-
 		// Add faction to list of existing factions
 		const chosen_role_faction = Game.POSSIBLE_FACTIONS.find(faction =>
 			Game.isRoleInFaction(chosen_role, faction)
@@ -474,8 +462,6 @@ class Game {
 			else
 				num_roles_in_faction[chosen_role_faction] = 1;
 		}
-
-		// console.log({num_roles_in_faction});
 
 		return chosen_role
 	}
@@ -493,14 +479,11 @@ class Game {
 					return role_identifier1.priority - role_identifier2.priority;
 				}
 			);
-		console.log({sorted_role_identifiers});
 
 		for (const role_identifier of sorted_role_identifiers) {
 			const chosen_role = this.getRoleFromRoleIdentifier(role_identifier, num_roles_in_faction)
 
 			this.role_list.push(chosen_role.name);
-			console.log("ROLE LIST:")
-			console.log(this.role_list)
 		}
 	}
 
@@ -511,44 +494,11 @@ class Game {
 		this.state_manager.changeToNextSubphase();
 	}
 
-	static async log(message, heading_level=0) {
-		if (heading_level == 2) {
-			logColor("\n\n" + message, "red");
-		}
-		else if (heading_level == 1) {
-			logColor("\n" + message, "cyan");
-		}
-		else {
-			console.log(message);
-		}
-
-		if (!global.Game.isMockGame) {
-			let staff_message = "";
-
-			if (heading_level == 2) {
-				staff_message = "# ";
-			}
-			else if (heading_level == 1) {
-				staff_message = "## ";
-			}
-
-			staff_message += message;
-			const staff_chnl = await Game.getStaffChnl();
-			await staff_chnl.send(staff_message);
-		}
-	}
-
-	async log(message, heading_level=0) {
-		await Game.log(message, heading_level);
-	}
-
 	async killDeadPlayers() {
 		await this.announceAllDeaths();
 		await this.announceMessages(
 			Announcements.LivingPlayers(this.player_manager.getAlivePlayerNames())
 		);
-
-		console.log(this.next_deaths);
 
 		/**
 		 * {
@@ -656,13 +606,9 @@ class Game {
 
 		let executioners = this.player_manager.getExecutioners();
 
-		console.log("Checking for exe wins");
 		for (let exe of executioners) {
-			console.log({exe, victim_name: player_on_trial.name});
 
 			if ( exe.exe_target === player_on_trial.name ) {
-				console.log("Announcing win and giving player win.");
-
 				const exe_player = this.player_manager.get(exe.name);
 				await exe_player.sendFeedback(Feedback.WonAsExecutioner);
 				exe_player.makeAWinner(this);
@@ -722,7 +668,7 @@ class Game {
 	}
 
 	async announceVotingResults() {
-		await Game.log(`Announcing ${this.on_trial} On Trial.`);
+		this.logger.log(`Announcing ${this.on_trial} On Trial.`);
 
 		const voting_outcome = this.on_trial;
 
@@ -826,18 +772,15 @@ class Game {
 	}
 
 	async performCurrentNightAbilities() {
-		console.log("Performing Night Abilities");
-		await this.updateCurrentAbilitiesPerformed();
-		console.log("Abilities To Perform:")
-		console.log(this.abilities_performed);
+		this.logger.logSubheading("Performing Night Abilities");
 
-		await Game.log("Performing Every Ability", 1);
+		await this.updateCurrentAbilitiesPerformed();
+		this.logger.logDebug("Abilities To Perform:")
+		this.logger.logDebug(this.abilities_performed);
 
 		this.action_log[this.state_manager.day_num-1] = [];
 
 		for (let i = 0; i < Object.keys(this.abilities_performed).length; i++) {
-			console.log(Object.keys(this.abilities_performed));
-
 			let player_name = Object.keys(this.abilities_performed)[i],
 				player = this.player_manager.get(player_name),
 				ability_performed = this.abilities_performed[player_name],
@@ -856,7 +799,7 @@ class Game {
 					}).join(", ");
 			}
 
-			await Game.log(
+			this.logger.log(
 				ability.feedback(
 					...Object.values(ability_performed.args),
 					player.name,
@@ -873,16 +816,11 @@ class Game {
 			);
 
 			if (this.player_manager.get(player_name).isRoleblocked) {
-				await Game.log(`${player_name} is roleblocked, so they can't do ${ability_performed.name}`);
+				this.logger.log(`${player_name} is roleblocked, so they can't do ${ability_performed.name}`);
 				continue;
 			}
 
-			console.log(ability);
-			console.log(ability.effects);
-
 			if (ability.effects) {
-				console.log({ability_performed});
-
 				const player_using_ability_name = ability_performed.by;
 				const player_using_ability = this.player_manager.get(player_using_ability_name);
 
@@ -892,28 +830,22 @@ class Game {
 				const arg_values = ability_performed.args ?? {};
 
 				for (let effect_name of ability.effects) {
-					console.log("Using effect " + effect_name);
-
 					await this.effect_manager.useEffect({
 						effect_name: effect_name,
 						player_using_ability: player_using_ability,
 						ability: ability_using,
 						arg_values: arg_values,
 					});
-
-					console.log("Effected used")
 				}
 
 				console.table(this.abilities_performed);
 			}
-
-			console.log("Performed an ability");
 		}
 	}
 
 	async announceAllDeaths() {
 		for (let death of this.next_deaths) {
-			await Game.log(`Killing ${death.victim}`);
+			this.logger.log(`Killing ${death.victim}`);
 			this.player_manager.get(death.victim).isAlive = false;
 
 			const death_messages = this.getDeathMessages(death);
@@ -928,7 +860,7 @@ class Game {
 			...Announcements.StartDay(ids.rapid_discord_mafia.roles.living, phase_num)
 		);
 
-		await Game.log(`Announced Day ${phase_num}.`);
+		this.logger.log(`Announced Day ${phase_num}.`);
 	}
 
 
@@ -941,7 +873,7 @@ class Game {
 			...Announcements.StartNight(ids.rapid_discord_mafia.roles.living, night_num),
 		);
 
-		await Game.log(`Announced Night ${night_num}.`);
+		this.logger.log(`Announced Night ${night_num}.`);
 	}
 
 	isRoleInMissingFaction(role, missing_factions) {
@@ -962,7 +894,7 @@ class Game {
 	}
 
 	addDeath(player, killer, flavor_text) {
-		console.log(this.next_deaths)
+		this.logger.log(this.next_deaths)
 		const death_index = this.next_deaths.findIndex(
 			death => death.victim == player.name
 		);
@@ -991,8 +923,6 @@ class Game {
 	}
 
 	getMajorityVote(votes) {
-		console.log("Got Majority Vote");
-
 		let majority_vote = VotingOutcomes.NoVotes,
 			vote_counts = {},
 			max_vote_count = 0;
@@ -1035,8 +965,6 @@ class Game {
 	}
 
 	async sendFeedbackToPlayers() {
-		console.log("Sending Feedback");
-		console.log(this.player_manager.getPlayers());
 
 		for (let player_name of this.player_manager.getPlayerNames()) {
 			const
@@ -1056,10 +984,6 @@ class Game {
 
 	setRoleIdentfiers(role_identifiers) {
 		this.role_identifiers = role_identifiers;
-	}
-
-	resetPlayers() {
-		this.player_manager = new PlayerManager();
 	}
 
 	resetVotes() {
@@ -1083,7 +1007,7 @@ class Game {
 	}
 
 	async resetAllPlayersNightInfo() {
-		await Game.log("Reseting Every Player's Night Info");
+		this.logger.log("Reseting Every Player's Night Info");
 
 		for (const player_name of this.player_manager.getPlayerNames()) {
 			const player = this.player_manager.get(player_name);
@@ -1095,9 +1019,6 @@ class Game {
 			if (player.affected_by) {
 				await player.removeAffects(this);
 			}
-
-			// console.log("After:")
-			// console.log(player);
 		}
 	}
 
@@ -1108,8 +1029,6 @@ class Game {
 		for (let message of messages) {
 			if (!this.isMockGame)
 				await game_announce_chnl.send(message);
-
-			// console.log(`[ANNOUNCEMENT: ${message}]`);
 
 			if (!this.isMockGame && !Game.IS_TESTING)
 				await wait(MessageDelays.Normal, "s");
@@ -1123,7 +1042,6 @@ class Game {
 		for (let message of messages) {
 			if (!this.isMockGame)
 				await game_announce_chnl.send(message);
-			console.log(message);
 
 			if (!this.isMockGame)
 				await wait(MessageDelays.Normal, "s");
@@ -1131,8 +1049,6 @@ class Game {
 	}
 
 	async startDay1(days_passed_at_sign_ups) {
-		console.log({days_passed_at_sign_ups});
-
 		if (!this.state_manager.canStartFirstDay()) {
 			return false;
 		}
@@ -1141,7 +1057,7 @@ class Game {
 		const day_first_day_ended = this.days_passed;
 		await this.saveGameDataToDatabase();
 
-		await Game.log("Incrementing Inactvity")
+		this.logger.log("Incrementing Inactvity")
 		this.player_manager.getAlivePlayers().forEach(player => {
 				if (!Game.IS_TESTING) player.incrementInactvity(this);
 		});
@@ -1160,7 +1076,7 @@ class Game {
 		if (!this.isMockGame)
 			await Game.openDayChat();
 
-		await Game.log("Waiting For Day 1 to End");
+		this.logger.log("Waiting For Day 1 to End");
 
 		if (!this.isMockGame) {
 			await wait(PhaseWaitTimes.FirstDay, "min");
@@ -1169,8 +1085,6 @@ class Game {
 	}
 
 	async startDay(days_passed_last_night) {
-		console.log({days_passed_last_night});
-
 		if (!this.state_manager.canStartDay(days_passed_last_night)) {
 			return
 		}
@@ -1179,7 +1093,7 @@ class Game {
 		const days_passed_last_day = this.days_passed;
 		await this.saveGameDataToDatabase();
 
-		await Game.log("Incrementing Inactvity")
+		this.logger.log("Incrementing Inactvity")
 		this.player_manager.getAlivePlayers().forEach(player => {
 			if (!Game.IS_TESTING) player.incrementInactvity(this);
 		});
@@ -1191,10 +1105,7 @@ class Game {
 		if (!this.isMockGame)
 			await Game.closeNightChannels();
 
-		console.log("Performing Night Abilities");
 		await this.performCurrentNightAbilities();
-		this.logPlayers();
-		console.log("Sending Feedback");
 		await this.sendFeedbackToPlayers();
 		await this.announceDay();
 
@@ -1208,8 +1119,6 @@ class Game {
 	}
 
 	async startVoting(days_passed_last_day) {
-		console.log({days_passed_last_day});
-
 		if (!this.state_manager.canStartVoting(days_passed_last_day)) {
 			return
 		}
@@ -1223,7 +1132,7 @@ class Game {
 			...Announcements.StartVoting()
 		);
 
-		await Game.log("Waiting for Voting to End");
+		this.logger.log("Waiting for Voting to End");
 
 		if (!this.isMockGame) {
 			await wait(PhaseWaitTimes.Voting*4/5, "min");
@@ -1241,8 +1150,6 @@ class Game {
 	}
 
 	async startTrial(days_passed_last_voting) {
-		console.log({days_passed_last_voting});
-
 		if (!this.state_manager.canStartTrial(days_passed_last_voting)) {
 			return
 		}
@@ -1255,7 +1162,7 @@ class Game {
 		this.resetVerdict();
 		this.on_trial = this.getMajorityVote(this.votes);
 
-		await Game.log("Incrementing Inactvity")
+		this.logger.log("Incrementing Inactvity")
 		this.player_manager.getAlivePlayers().forEach(player => {
 			if (!Game.IS_TESTING) player.incrementInactvity(this);
 		});
@@ -1282,7 +1189,7 @@ class Game {
 		);
 		this.remindPlayersTo(Announcements.TrialVotingReminder(player_on_trial), true);
 
-		await Game.log("Waiting for Trial Voting to End");
+		this.logger.log("Waiting for Trial Voting to End");
 
 		if (!this.isMockGame) {
 			await wait(PhaseWaitTimes.Trial*4/5, "min");
@@ -1300,8 +1207,6 @@ class Game {
 	}
 
 	async startTrialResults(days_passed_last_trial) {
-		console.log({days_passed_last_trial});
-
 		if (!this.state_manager.canStartTrialResults(days_passed_last_trial)) {
 			return
 		}
@@ -1324,7 +1229,7 @@ class Game {
 			return;
 
 		const winning_factions = this.getWhichFactionWon();
-		console.log({winning_factions})
+
 		if (winning_factions) {
 			return await this.endGame();
 		}
@@ -1334,8 +1239,6 @@ class Game {
 	}
 
 	async startNight(days_passed_last_day) {
-		console.log({days_passed_last_day});
-
 		if (!this.state_manager.canStartNight(days_passed_last_day)) {
 			return
 		}
@@ -1354,7 +1257,7 @@ class Game {
 
 		await this.announceNight();
 
-		await Game.log("Waiting for Night to End");
+		this.logger.log("Waiting for Night to End");
 
 		if (!this.isMockGame) {
 			await wait(PhaseWaitTimes.Night * 4/5, "min");
@@ -1406,14 +1309,14 @@ class Game {
 		if ( this.player_manager && this.player_manager.get(player_name) ) {
 			if (!this.isMockGame)
 				await interaction.editReply(`The name, **${player_name}**, already exists.`);
-			return new Player({});
+			return new Player({}, this.logger);
 		}
 
 		const validator_result = validator.validateName(player_name);
 		if (validator_result !== true) {
 			if (!this.isMockGame)
 				await interaction.editReply(validator_result);
-			return new Player({});
+			return new Player({}, this.logger);
 		}
 
 		if (!isMockUser && !this.isMockGame) {
@@ -1452,8 +1355,6 @@ class Game {
 	}
 
 	getWhichFactionWon() {
-		console.log("Checking If Anybody Won");
-
 		let winning_faction = false,
 			winning_players = [],
 			living_factions = [], // Factions that just need the other factions eliminated to win
@@ -1488,16 +1389,10 @@ class Game {
 			}
 		}
 
-		console.log({living_factions, living_lone_survival_roles, living_survival_roles, living_survive_without_town_roles});
-
 		if (alive_players.length <= 0)
 			winning_faction = "Nobody";
 
-		console.log("Going through living factions");
 		for (let faction_checking of living_factions) {
-
-			console.log({faction_checking});
-
 			if (winning_faction) break;
 			let hasFactionWon = true;
 
@@ -1505,8 +1400,6 @@ class Game {
 				let player_role = this.role_manager.getRole(player.role),
 					player_faction = player_role.faction,
 					player_role_indentifier = `${player_faction} ${player_role.alignment}`;
-
-				console.log({player_role_indentifier});
 
 				if (
 					player_faction != faction_checking  &&
@@ -1532,10 +1425,7 @@ class Game {
 
 		}
 
-		// console.log("Going through roles that need to survive alone.");
 		for (let role_checking of living_lone_survival_roles) {
-
-			console.log({role_checking});
 
 			if (winning_faction) break;
 
@@ -1545,8 +1435,6 @@ class Game {
 				let player_role = this.role_manager.getRole(player.role),
 					player_faction = player_role.faction,
 					player_role_indentifier = `${player_faction} ${player_role.alignment}`;
-
-				console.log({player_role_indentifier});
 
 				if (
 					player_role.name != role_checking  &&
@@ -1572,10 +1460,7 @@ class Game {
 
 		}
 
-		// console.log("Going through roles that need to only survive.");
 		for (let role_checking of living_survival_roles) {
-
-			console.log({role_checking});
 			winning_players = [
 				...winning_players,
 				...alive_players
@@ -1592,11 +1477,7 @@ class Game {
 			}
 		}
 
-		// console.log("Going through roles that need to only survive while town loses.");
 		for (let role_checking of living_survival_roles) {
-
-			console.log({role_checking});
-
 			if (winning_faction === Factions.Town) break;
 			winning_players = [
 				...winning_players,
@@ -1726,16 +1607,13 @@ class Game {
 					mafia_channel.send(
 						`**${player_to_promote.name}** has been promoted to **Mafioso**!`
 					);
-					Game.log(`**${player_to_promote.name}** has been promoted to **Mafioso**`);
+					this.logger.log(`**${player_to_promote.name}** has been promoted to **Mafioso**`);
 				}
 			}
 		}
 	}
 
 	async endGame(isDraw=false) {
-		console.log(this.winning_factions);
-		console.log(this.winning_players);
-
 		if (!isDraw) {
 			await this.announceMessages(
 				...Announcements.CongratulateWinners(this.winning_factions, this.winning_players)
@@ -1810,7 +1688,6 @@ class Game {
 			const role_to_remove = await getRole(rdm_guild, role_name);
 
 			role_to_remove.members.each(async member => {
-				console.log({member})
 				await removeRole(member, role_to_remove);
 				await addRole(member, spectator_role);
 			});
@@ -2204,7 +2081,7 @@ class Game {
 			// console.timeEnd("setDefenseChannelPerms");
 		}
 
-		global.Game = new Game( new PlayerManager(), this.logger, this.isMockGame );
+		global.Game = new Game( new PlayerManager({}, this.logger, this.isMockGame), this.logger, this.isMockGame );
 	}
 
 	async startSignUps() {

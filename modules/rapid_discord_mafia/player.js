@@ -2,6 +2,7 @@ const { RDMRoles, Announcements, MessageDelays, Feedback, Factions, RoleNames, A
 const RoleManager = require("./RoleManager");
 const ids = require("../../data/ids.json");
 const Role = require("./Role");
+const Logger = require("./Logger");
 
 const
 	{ getGuildMember, getRole, addRole, removeRole, getChannel, wait, getRandArrayItem, getRDMGuild, toTitleCase } = require("../functions"),
@@ -64,6 +65,11 @@ class Player {
 	 */
 	feedback;
 
+	/**
+	 * @type {Logger}
+	 */
+	logger;
+
 	constructor({
 		id = ids.users.LL,
 		name,
@@ -92,7 +98,9 @@ class Player {
 		isMuted = false,
 		canVote = true,
 		isMockPlayer = false,
-	}) {
+	},
+		logger = new Logger()
+	) {
 		this.id = id;
 		this.name = name;
 		this.channel_id = channel_id;
@@ -120,6 +128,7 @@ class Player {
 		this.isMuted = isMuted;
 		this.canVote = canVote;
 		this.isMockPlayer = isMockPlayer;
+		this.logger = logger;
 	}
 
 	static MAX_INACTIVE_PHASES = 6;
@@ -183,7 +192,7 @@ class Player {
 			);
 		}
 
-		console.log(`Muted **${this.name}**.`);
+		this.logger.log(`Muted **${this.name}**.`);
 	}
 
 	async unmute() {
@@ -213,7 +222,7 @@ class Player {
 			);
 		}
 
-		console.log(`Unmuted **${this.name}**.`);
+		this.logger.log(`Unmuted **${this.name}**.`);
 	}
 
 	async removeVotingAbility() {
@@ -296,9 +305,6 @@ class Player {
 			if (isPinned)
 				message_sent.pin();
 		}
-		else {
-			// console.log(`{${this.name}: ${feedback}}`);
-		}
 	}
 
 	addFeedback(feedback) {
@@ -376,7 +382,6 @@ class Player {
 	 * @param {number} The day number the ability was used
 	 */
 	addAbilityAffectedBy(player_using_ability, ability_name, day_used) {
-		console.log({player_using_ability, ability_name});
 		player_using_ability.addAbilityUse(ability_name);
 
 		this.affected_by.push(
@@ -393,12 +398,10 @@ class Player {
 	 * @param {Game} game The passed game instance
 	 */
 	receiveAttackFrom(attacker_player, game) {
-		console.log(`${attacker_player.name} attacks ${this.name} with ${attacker_player.attack} attack level against ${this.defense} defense level.`);
+		this.logger.log(`${attacker_player.name} attacks ${this.name} with ${attacker_player.attack} attack level against ${this.defense} defense level.`);
 
 		// Attack Success
 		if (this.defense < attacker_player.attack) {
-			console.log("Attack Success");
-
 			game.addDeath(this, attacker_player);
 
 			this.addFeedback(Feedback.KilledByAttack);
@@ -409,15 +412,11 @@ class Player {
 				attacker_player.role === RoleNames.Vigilante &&
 				target_role.faction === Factions.Town
 			) {
-				console.log("Vigilante Suicide Confirmed");
-
 				attacker_player.addAbilityAffectedBy(attacker_player, AbilityName.Suicide, game.days_passed - 0.5);
 			}
 		}
 		// Attack Failed
 		else {
-			console.log("Attack Failed");
-
 			const protection_affects_on_target = this.affected_by.filter(
 				affect => {
 					const ability_name = affect.name;
@@ -428,16 +427,14 @@ class Player {
 			);
 
 			if ( protection_affects_on_target.length > 0 ) {
-				console.log("Victim has heal affects");
-
 				for (let protection_affect of protection_affects_on_target) {
 					const protecter_player = game.player_manager.get(protection_affect.by);
 					protecter_player.addFeedback(Feedback.ProtectedAnAttackedPlayer);
 
-					console.log(`${protecter_player.name} has protected the victim ${this.name}`);
+					this.logger.log(`${protecter_player.name} has protected the victim ${this.name}`);
 
 					if (protection_affect.name === AbilityName.Smith) {
-						console.log(`${protecter_player.name} successfully smithed a vest and achieved their win condition.`);
+						this.logger.log(`${protecter_player.name} successfully smithed a vest and achieved their win condition.`);
 
 						protecter_player.addFeedback(Feedback.DidSuccessfulSmith);
 						protecter_player.makeAWinner(this);
@@ -480,7 +477,7 @@ class Player {
 			}
 		}
 		catch {
-			console.log(`**${this.name}** user not found. Possibly left the game.`);
+			this.logger.log(`**${this.name}** user not found. Possibly left the game.`);
 		}
 	}
 
@@ -574,8 +571,6 @@ class Player {
 
 			const isValidArg = game.isValidArgValue(this, ability_arg, arg_param_value);
 
-			console.log({isValidArg});
-
 			if (isValidArg !== true) {
 				return isValidArg;
 			}
@@ -600,13 +595,9 @@ class Player {
 		const player_role = RoleManager.roles[this.role];
 		const ability_using = game.ability_manager.getAbility(ability_name);
 
-		console.log({ability_name, ability_using, player_role});
-
 		for (const arg of ability_using.args) {
 			const arg_name = arg.name;
 			const arg_value = arg_values[arg_name];
-
-			console.log({arg, arg_values, arg_value});
 
 			if (arg.subtypes.includes(ArgumentSubtypes.Visiting)) {
 				this.setVisiting(arg_value);
@@ -615,18 +606,16 @@ class Player {
 
 		this.setAbilityDoing(ability_name, arg_values);
 
-		console.log(this);
-
 		return ability_using.feedback(...Object.values(arg_values), this.name);
 	}
 
-	async leaveGame(game) {
-		await game.log(`**${this.name}** left the game.`);
+	async leaveGame() {
+		this.logger.log(`**${this.name}** left the game.`)
 		game.addDeath(this, this, Announcements.PlayerSuicide);
 	}
 
 	async leaveGameSignUps(game) {
-		await game.log(`**${this.name}** left the game`);
+		this.logger.log(`**${this.name}** left the game`);
 
 		await game.announceMessages(
 			`**${this.name}** left the game`
@@ -673,15 +662,15 @@ class Player {
 	 * @param {number} defense_level the level of defense giving to player
 	 */
 	giveDefenseLevel(defense_level) {
-		console.log(`Giving ${this.name} ${defense_level} defense`);
+		this.logger.log(`Giving ${this.name} ${defense_level} defense`);
 
 		if (this.defense < defense_level) {
-			console.log(`Increased ${this.name}'s defense from ${this.defense} to ${defense_level}`);
+			this.logger.log(`Increased ${this.name}'s defense from ${this.defense} to ${defense_level}`);
 
 			this.defense = defense_level
 		}
 		else {
-			console.log(`${this.name}'s was already at or above ${defense_level}`);
+			this.logger.log(`${this.name}'s was already at or above ${defense_level}`);
 		}
 	}
 
@@ -707,7 +696,7 @@ class Player {
 	}
 
 	async giveAccessToMafiaChat() {
-		console.log(`Let **${this.name}** see mafia chat.`);
+		this.logger.log(`Let **${this.name}** see mafia chat.`);
 
 		if (!this.isMockPlayer) {
 			const
@@ -727,18 +716,12 @@ class Player {
 
 		mafia_channel.permissionOverwrites.edit(player_guild_member.user, {SendMessages: false});
 
-		console.log(`Let **${this.name}** not see mafia chat.`);
+		this.logger.log(`Let **${this.name}** not see mafia chat.`);
 	}
 
 	async removeAffects(game) {
 		for (const [affect_num, affect] of this.affected_by.entries()) {
-			console.log("Removing Affects From Player " + this.name);
-			console.log("Affect Before:");
-			console.log({affect});
-
 			const ability = game.ability_manager.getAbility(affect.name);
-
-			console.log({ability});
 
 			// Don't remove if affect lasts forever
 			if (ability && ability.duration === -1)
@@ -746,12 +729,9 @@ class Player {
 
 			const phase_affect_ends = affect.during_phase + ability.duration;
 
-			console.log(`Days Passed: ${game.days_passed}`);
-			console.log({phase_affect_ends});
 
 			// Delete phase affect ends is current phase or has passed
 			if (phase_affect_ends <= game.days_passed) {
-				// console.log("Deleting Affect");
 
 				switch (ability.type) {
 					case AbilityTypes.Protection: {
@@ -783,7 +763,6 @@ class Player {
 				}
 
 				if (ability.name === AbilityName.Kidnap) {
-					console.log("RESTORING KIDNAP")
 					await this.unmute();
 					await this.regainVotingAbility();
 					this.isRoleblocked = false;
@@ -799,13 +778,9 @@ class Player {
 	removeManipulationAffects(game) {
 		if (this.affected_by) {
 			for (let [index, affect] of this.affected_by.entries()) {
-				console.log({affect});
-
 				const ability_affected_by = game.ability_manager.getAbility(affect.name);
 
 				if (ability_affected_by.type === AbilityTypes.Manipulation) {
-					console.log("Found manipulation affect. Removing affect and reseting percieved.");
-
 					this.affected_by.splice(index, 1);
 					this.resetPercieved();
 				}
@@ -874,14 +849,14 @@ class Player {
 		this.resetInactivity();
 
 		if (curr_votes[this.name]) {
-			game.log(`**${this.name}** changed their vote to **${player_voting_for}**`);
+			this.logger.log(`**${this.name}** changed their vote to **${player_voting_for}**`);
 
 			game.announceMessages(`**${this.name}** changed their vote to **${player_voting_for}**`);
 
 			feedback = `You are replacing your previous vote, **${curr_votes[this.name]}**, with **${player_voting_for}**`;
 		}
 		else {
-			game.log(`**${this.name}** voted **${player_voting_for}**.`);
+			this.logger.log(`**${this.name}** voted **${player_voting_for}**.`);
 
 			game.announceMessages(`**${this.name}** voted **${player_voting_for}**.`);
 
@@ -894,8 +869,6 @@ class Player {
 		if (!this.isMockPlayer) {
 			const isMajorityVote = Player.isMajorityVote(curr_votes, max_voters_count);
 			const num_votes = Object.values(curr_votes).length;
-
-			console.log({isMajorityVote, num_votes, max_voters_count})
 
 			if (isMajorityVote || num_votes >= max_voters_count) {
 				game.startTrial(game.days_passed);
@@ -941,14 +914,14 @@ class Player {
 		this.resetInactivity();
 
 		if (curr_votes[this.name]) {
-			game.log(`**${this.name}** changed their vote to **${toTitleCase(trial_outcome)}**`);
+			this.logger.log(`**${this.name}** changed their vote to **${toTitleCase(trial_outcome)}**`);
 
 			game.announceMessages(`**${this.name}** changed their vote.`);
 
 			feedback = `You are replacing your previous vote, **${toTitleCase(curr_votes[this.name])}**, with **${toTitleCase(trial_outcome)}**`;
 		}
 		else {
-			game.log(`**${this.name}** voted **${toTitleCase(trial_outcome)}**.`);
+			this.logger.log(`**${this.name}** voted **${toTitleCase(trial_outcome)}**.`);
 
 			game.announceMessages(`**${this.name}** voted.`);
 
@@ -1057,6 +1030,18 @@ class Player {
 			this.ability_doing &&
 			this.ability_doing.name
 		)
+	}
+
+	updateDeathNote(death_note) {
+		this.death_note = death_note;
+
+		this.logger.log(`**${this.name}** updated their death note to be \n\`\`\`\n${this.death_note}\n\`\`\``);
+	}
+
+	updateLastWill(last_will) {
+		this.last_will = last_will;
+
+		this.logger.log(`**${player.name}** updated their last will to be \n\`\`\`\n${player.last_will}\n\`\`\``);
 	}
 }
 

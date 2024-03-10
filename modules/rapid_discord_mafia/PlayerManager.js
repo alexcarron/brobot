@@ -1,4 +1,5 @@
 const { setNickname } = require("../functions");
+const Logger = require("./Logger");
 const Player = require("./player");
 
 class PlayerManager {
@@ -9,13 +10,19 @@ class PlayerManager {
 	players;
 
 	/**
+	 * @type {Logger}
+	 */
+	logger;
+
+	/**
 	 * Whether or not this is a mock player manager used for testing
 	 * @type {boolean}
 	 */
 	isMockPlayerManager;
 
-	constructor(players = {}, isMockPlayerManager=false) {
+	constructor(players = {}, logger=new Logger(), isMockPlayerManager=false) {
 		this.players = players;
+		this.logger = logger;
 		this.isMockPlayerManager = isMockPlayerManager;
 	}
 
@@ -45,7 +52,7 @@ class PlayerManager {
 	}
 
 	async addPlayerFromObj(player_obj) {
-		const player = new Player(player_obj);
+		const player = new Player(player_obj, this.logger);
 		await this.addPlayer(player);
 		return player;
 	}

@@ -1,5 +1,4 @@
 const { RoleIdentifierTypes, RoleIdentifierKeywords, RoleIdentifierPriorities, Factions, Alignments } = require("../enums");
-const Game = require("./game");
 const RoleManager = require("./RoleManager");
 
 class RoleIdentifier {
@@ -57,7 +56,7 @@ class RoleIdentifier {
 
 		const possible_roles = this.getPossibleRoles();
 		const canIncludeRoleInFaction = possible_roles.some(role =>{
-			return Game.isRoleInPossibleFaction(role)
+			return RoleManager.isRoleInPossibleFaction(role)
 		})
 
 		if (!canIncludeRoleInFaction && this.type !== RoleIdentifierTypes.SpecificRole)

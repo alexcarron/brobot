@@ -53,13 +53,12 @@ command.execute = async function(interaction) {
 			return await interaction.editReply(`Your last will includes a backtick (\`) which is illegal.`)
 		}
 
-		player.last_will = contents;
+		player.updateLastWill(contents);
 	}
 	else if (interaction.options.getSubcommand() === Parameters.Remove.name) {
-		player.last_will = "";
+		player.updateLastWill("");
 	}
 
-	await global.Game.log(`**${player.name}** updated their last will to be \n\`\`\`\n${player.last_will}\n\`\`\``);
 	return await interaction.editReply(`Your last will is now: \n\`\`\`\n${player.last_will}\n\`\`\``);
 };
 module.exports = command;

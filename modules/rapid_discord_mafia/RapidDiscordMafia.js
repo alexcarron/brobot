@@ -1,10 +1,12 @@
-const { getObjectFromGitHubJSON } = require("../functions.js");
+const { getObjectFromGitHubJSON, getChannel, getRDMGuild } = require("../functions.js");
 const Contestant = require("./Contestant");
 const Logger = require("./Logger.js");
 const RoleIdentifier = require("./RoleIdentifier.js");
-const Game = require("./game.js");
 const PlayerManager = require("./PlayerManager.js");
 const RoleManager = require("./RoleManager.js");
+const DiscordLogger = require("./DiscordLogger.js");
+const ids = require("../../data/ids.json");
+const Game = require("./game.js");
 
 class RapidDiscordMafia {
 	constructor() {
@@ -12,9 +14,17 @@ class RapidDiscordMafia {
 	}
 
 	static async setUpRapidDiscordMafia(isMockObject = false) {
+		let logger = new Logger();
+
+		if (!isMockObject) {
+			const rdm_guild = await getRDMGuild();
+			const staff_chnl = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.staff);
+			logger = new DiscordLogger(staff_chnl);
+		}
+
 		global.Game = new Game(
-			new PlayerManager({}, isMockObject),
-			new Logger(),
+			new PlayerManager({}, logger, this.isMockObject),
+			logger,
 			isMockObject
 		);
 		global.rapid_discord_mafia = new RapidDiscordMafia();
@@ -26,8 +36,17 @@ class RapidDiscordMafia {
 		}
 	}
 
-	static getEmptyGame(isMockGame=false) {
-		return new Game(new PlayerManager, new Logger, isMockGame)
+	static async getEmptyGame(isMockGame=false) {
+		let logger = new Logger();
+
+		if (!isMockGame) {
+			const rdm_guild = await getRDMGuild();
+			const staff_chnl = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.staff);
+			logger = new DiscordLogger(staff_chnl);
+		}
+
+		const player_manager = new PlayerManager({}, logger, isMockGame);
+		return new Game(player_manager, logger, isMockGame);
 	}
 
 	/**

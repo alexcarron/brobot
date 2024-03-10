@@ -13,8 +13,8 @@ describe('Game', () => {
 	describe('createRoleList', () => {
 		test.concurrent(
 			".createRoleList() SHOULD convert Mafioso identifier to Mafioso role",
-			() => {
-				const rdm_game = RapidDiscordMafia.getEmptyGame();
+			async () => {
+				const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
 				rdm_game.role_identifiers = RoleIdentifier.convertIdentifierStrings(["Mafioso"]);
 				rdm_game.createRoleList();
 
@@ -25,7 +25,7 @@ describe('Game', () => {
 		test.concurrent(
 			".createRoleList() SHOULD convert [Town Protective, Mafioso] identifiers to [Doctor, Mafioso]",
 			async () => {
-				const rdm_game = RapidDiscordMafia.getEmptyGame();
+				const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
 				rdm_game.role_identifiers = RoleIdentifier.convertIdentifierStrings(
 					[
 						"Town Protective",
@@ -46,7 +46,7 @@ describe('Game', () => {
 		test.concurrent(
 			".createRoleList() SHOULD assign NK and RT before NB on [Neutral Benign, Neutral Killing, Random Town]",
 			async () => {
-				const rdm_game = RapidDiscordMafia.getEmptyGame();
+				const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
 				rdm_game.role_identifiers = RoleIdentifier.convertIdentifierStrings(
 					[
 						Factions.Neutral + " " + Alignments.Benign,
@@ -70,7 +70,7 @@ describe('Game', () => {
 		test.concurrent(
 			".createRoleList() SHOULD assign RM and RT before NB on [Neutral Benign, Random Mafia, Random Town]",
 			async () => {
-				const rdm_game = RapidDiscordMafia.getEmptyGame();
+				const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
 				rdm_game.role_identifiers = RoleIdentifier.convertIdentifierStrings(
 					[
 						Factions.Neutral + " " + Alignments.Benign,
@@ -106,7 +106,7 @@ describe('Game', () => {
 				);
 				const expected_output = RoleManager.roles[RoleNames.Sheriff];
 
-				const rdm_game = RapidDiscordMafia.getEmptyGame();
+				const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -128,7 +128,7 @@ describe('Game', () => {
 				);
 				const expected_output = RoleManager.roles[RoleNames.Townie];
 
-				const rdm_game = RapidDiscordMafia.getEmptyGame();
+				const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -149,7 +149,7 @@ describe('Game', () => {
 					]
 				);
 
-				const rdm_game = RapidDiscordMafia.getEmptyGame();
+				const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -171,7 +171,7 @@ describe('Game', () => {
 					]
 				);
 
-				const rdm_game = RapidDiscordMafia.getEmptyGame();
+				const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -223,7 +223,7 @@ describe('Game', () => {
 				);
 				const expected_output = [RoleManager.roles[RoleNames.Sheriff]];
 
-				const rdm_game = RapidDiscordMafia.getEmptyGame();
+				const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -246,7 +246,7 @@ describe('Game', () => {
 
 				const expected_output = [RoleManager.roles[RoleNames.Townie]];
 
-				const rdm_game = RapidDiscordMafia.getEmptyGame();
+				const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -272,7 +272,7 @@ describe('Game', () => {
 					role.alignment === Alignments.Killing
 				);
 
-				const rdm_game = RapidDiscordMafia.getEmptyGame();
+				const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -306,7 +306,7 @@ describe('Game', () => {
 					role.faction === Factions.Neutral
 				);
 
-				const rdm_game = RapidDiscordMafia.getEmptyGame();
+				const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -328,7 +328,7 @@ describe('Game', () => {
 					]
 				);
 
-				const rdm_game = RapidDiscordMafia.getEmptyGame();
+				const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -376,7 +376,7 @@ describe('Game', () => {
 				);
 
 
-				const rdm_game = RapidDiscordMafia.getEmptyGame();
+				const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -409,7 +409,7 @@ describe('Game', () => {
 					]
 				);
 
-				const rdm_game = RapidDiscordMafia.getEmptyGame();
+				const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -439,7 +439,7 @@ describe('Game', () => {
 					]
 				);
 
-				const rdm_game = RapidDiscordMafia.getEmptyGame();
+				const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -480,7 +480,7 @@ describe('Game', () => {
 					]
 				);
 
-				const rdm_game = RapidDiscordMafia.getEmptyGame();
+				const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -518,7 +518,7 @@ describe('Game', () => {
 					]
 				);
 
-				const rdm_game = RapidDiscordMafia.getEmptyGame();
+				const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -551,7 +551,7 @@ describe('Game', () => {
 					]
 				);
 
-				const rdm_game = RapidDiscordMafia.getEmptyGame();
+				const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -587,7 +587,7 @@ describe('Game', () => {
 					]
 				);
 
-				const rdm_game = RapidDiscordMafia.getEmptyGame();
+				const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -625,7 +625,7 @@ describe('Game', () => {
 					]
 				);
 
-				const rdm_game = RapidDiscordMafia.getEmptyGame();
+				const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
 				rdm_game.role_identifiers = existing_role_identifiers;
 				rdm_game.role_list = existing_role_list;
 
@@ -648,12 +648,12 @@ describe('Game', () => {
 
 	// ^ isValidArgValue
 	describe('isValidArgValue', () => {
-		it('SHOULD return NOT true for input framer using frame on mafioso', () => {
+		it('SHOULD return NOT true for input framer using frame on mafioso', async () => {
 			const player_framing_arg = abilities[AbilityName.Frame].args[0];
 			const player_using_ability = new Player({name: "name"});
 			const arg_value = "mafia";
 
-			const rdm_game = RapidDiscordMafia.getEmptyGame();
+			const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
 			const mafia_player = new Player({
 				name: "mafia",
 				role: RoleNames.Mafioso,
@@ -666,13 +666,13 @@ describe('Game', () => {
 			);
 		});
 
-		it('SHOULD return NOT true for input doctor using heal on themselves', () => {
+		it('SHOULD return NOT true for input doctor using heal on themselves', async () => {
 
 			const player_framing_arg = abilities[AbilityName.Heal].args[0];
 			const player_using_ability = new Player({name: "name", role: RoleNames.Doctor});
 			const arg_value = "name";
 
-			const rdm_game = RapidDiscordMafia.getEmptyGame();
+			const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
 			rdm_game.player_manager.addPlayer(player_using_ability);
 			expect(
 				rdm_game.isValidArgValue(player_using_ability, player_framing_arg, arg_value)

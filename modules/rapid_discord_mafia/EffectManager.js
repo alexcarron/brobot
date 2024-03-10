@@ -10,10 +10,8 @@ class EffectManager {
 	 * @param {Game} game - Current game instnace
 	 * @param {Logger} logger
 	 */
-	constructor(game, logger) {
-		console.log({game});
+	constructor(game) {
 		this.game = game;
-		this.logger = logger;
 	}
 
 	static EffectName = {
@@ -45,13 +43,10 @@ class EffectManager {
 		[this.EffectName.Roleblock]: new Effect({
 			name: this.EffectName.Roleblock,
 			applyEffect: async function(game, player_using_ability, ability, arg_values) {
-				console.log({game, player_using_ability, ability, arg_values})
 				const
 					roleblocked_player_name = player_using_ability.visiting,
 					roleblocked_player = game.player_manager.get(roleblocked_player_name),
 					roleblocked_player_role = game.role_manager.getRole(roleblocked_player.role);
-
-				console.log({roleblocked_player_name, roleblocked_player, roleblocked_player_role});
 
 				if (
 					!(
@@ -72,7 +67,7 @@ class EffectManager {
 						affect => affect.name === AbilityName.Cautious
 					)
 				) {
-					console.log(`${RoleNames.SerialKiller} ${roleblocked_player_name} stabs ${player_using_ability.name} as revenge for roleblocking them`);
+					game.logger.log(`${RoleNames.SerialKiller} ${roleblocked_player_name} stabs ${player_using_ability.name} as revenge for roleblocking them`);
 
 					game.abilities_performed[roleblocked_player_name] =
 						{
@@ -220,22 +215,18 @@ class EffectManager {
 				let feedback = "";
 
 				if (player_evaluating.isDoused) {
-					console.log("Evaluatee doused.");
 					feedback = Feedback.GotUnclearEvaluation(player_evaluating_name);
 				}
 				else if (
 					evaluatedPlayerInMafia ||
 					evaluatedPlayerIsNeutralKilling
 				) {
-					console.log("Evaluatee suspicious.");
 					feedback = Feedback.GotSuspiciousEvaluation(player_evaluating_name);
 				}
 				else {
-					console.log("Evaluatee innocent.");
 					feedback = Feedback.GotInnocentEvaluation(player_evaluating_name);
 				}
 
-				console.log("Checking to get rid of manipulation affects");
 				player_evaluating.removeManipulationAffects(game);
 
 				player_using_ability.addFeedback(feedback);
@@ -251,8 +242,6 @@ class EffectManager {
 					tracked_player_name = player_using_ability.visiting,
 					tracked_player = game.player_manager.get(tracked_player_name),
 					player_seen_visiting = tracked_player.getPercievedVisit();
-
-				console.log({tracker_player_name: player_using_ability.name, tracked_player_name, player_seen_visiting});
 
 				let feedback = "";
 
@@ -280,7 +269,7 @@ class EffectManager {
 					target_player_name = player_using_ability.visiting,
 					target_player = game.player_manager.get(target_player_name);
 
-				console.log(`${player_using_ability.name} looks out at ${target_player_name}'s house`);
+				game.logger.log(`${player_using_ability.name} looks out at ${target_player_name}'s house`);
 
 				let players_seen_visiting = [];
 
@@ -329,8 +318,6 @@ class EffectManager {
 				const
 					smithed_player_name = player_using_ability.visiting,
 					smithed_player = game.player_manager.get(smithed_player_name);
-
-				console.log({smither_player_name: player_using_ability.name, smithed_player_name});
 
 				player_using_ability.addFeedback(Feedback.SmithedVestForPlayer(smithed_player))
 
@@ -385,17 +372,6 @@ class EffectManager {
 					);
 				}
 
-				console.log({
-					controller_player: player_using_ability,
-					player_controlling,
-					num_ability_player_args,
-					num_ability_non_player_args,
-					player_controlling_role, ability_to_control,
-					abilityToControlExists,
-					isAbilityUsedUp,
-					isTargetImmune,
-				})
-
 				if (
 					!abilityToControlExists ||
 					isAbilityUsedUp ||
@@ -403,8 +379,6 @@ class EffectManager {
 					num_ability_non_player_args !== 0 ||
 					isTargetImmune
 				) {
-					console.log("Control failed");
-
 					player_using_ability.addFeedback(
 						Feedback.ControlFailed(player_controlling_name)
 					);
@@ -423,8 +397,6 @@ class EffectManager {
 					willForceTargetToVisit = isAbilityArgVisitingSubtype;
 
 					if (willForceTargetToVisit) {
-						console.log(`Forcing ${player_controlling.name} to visit ${player_controlling_into_name}`)
-
 						player_controlling.visiting = player_controlling_into_name;
 					}
 				}
@@ -483,7 +455,6 @@ class EffectManager {
 						feedback = Feedback.ObservedNotWorkingTogether(player_observing, last_player_observed);
 					}
 
-					console.log("Checking to get rid of manipulation affects");
 					player_observing.removeManipulationAffects(game);
 					last_player_observed.removeManipulationAffects(game);
 
@@ -503,8 +474,6 @@ class EffectManager {
 				const
 					player_replacing_name = player_using_ability.visiting,
 					player_replacing = game.player_manager.get(player_replacing_name);
-
-				console.log(`${player_using_ability.name} attempts to replace ${player_replacing_name}.`);
 
 				// Attack Success
 				if (player_replacing.defense < player_using_ability.attack) {
@@ -532,9 +501,7 @@ class EffectManager {
 					kidnapped_player = game.player_manager.get(kidnapped_player_name),
 					kidnapped_player_role = game.role_manager.getRole(kidnapped_player.role);
 
-				console.log({kidnapped_player_name, kidnapped_player, kidnapped_player_role});
-
-				console.log(`${player_using_ability.name} attempts to kidnap ${kidnapped_player_name}.`);
+				game.logger.log(`${player_using_ability.name} attempts to kidnap ${kidnapped_player_name}.`);
 
 				kidnapped_player.addFeedback(Feedback.Kidnapped);
 
@@ -564,9 +531,7 @@ class EffectManager {
 				await kidnapped_player.mute();
 				await kidnapped_player.removeVotingAbility();
 
-				console.log("Adding ability affected by");
 				await kidnapped_player.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5);
-				console.log("Added ability affected by");
 			}
 		}),
 
@@ -591,7 +556,6 @@ class EffectManager {
 	 * @returns {Promise<void>}
 	 */
 	async useEffect({effect_name, player_using_ability, ability, arg_values={}}) {
-		console.log({effect_name, player_using_ability, ability, arg_values});
 		const effect = this.getEffect(effect_name);
 
 		if (effect !== undefined) {

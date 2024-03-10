@@ -25,7 +25,9 @@ command.execute = async function(interaction) {
 
 	const bug_reporting = interaction.options.getString(Parameters.BugReporting.name);
 
-	await Game.log(`<@${ids.users.LL}> **${interaction.user.username}** has reported:\n>>> ${bug_reporting}`);
+	if (global.Game && global.Game instanceof Game) {
+		global.Game.logger.log(`<@${ids.users.LL}> **${interaction.user.username}** has reported:\n>>> ${bug_reporting}`);
+	}
 
 	return await interaction.editReply("You have sucessfully reported the following:\n" + `>>> ${bug_reporting}`);
 };

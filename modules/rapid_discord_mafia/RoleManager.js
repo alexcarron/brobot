@@ -282,6 +282,48 @@ class RoleManager {
 	getListOfRoleNames() {
 		return Object.keys(RoleManager.roles)
 	}
+
+
+	static getPossibleFactions() {
+		return [
+			Factions.Mafia,
+			Factions.Town,
+			...RoleManager.getListOfRoles()
+				.filter((role) => `${role.faction} ${role.alignment}` === `${Factions.Neutral} ${Alignments.Killing}`)
+				.map((role) => role.name)
+		];
+	}
+
+	/**
+	 * Determines if a role is in one of the possible factions
+	 * @param {Role} role
+	 * @returns {boolean}
+	 */
+	static isRoleInPossibleFaction(role) {
+		return RoleManager.getPossibleFactions().some(faction =>
+			RoleManager.isRoleInFaction(role, faction)
+		)
+	}
+
+	/**
+	 * @returns {string[]} An array of the names of all factions.
+	 */
+	static getListOfFactions() {
+		return Object.values(Factions);
+	}
+
+	/**
+	 * Determines if a role is apart of a faction
+	 * @param {Role} role
+	 * @param {string} faction The name of the faction.
+	 * @returns {boolean}
+	 */
+	static isRoleInFaction(role, faction) {
+		if (RoleManager.getListOfFactions().includes(faction))
+			return role.faction === faction;
+		else
+			return role.name === faction;
+	}
 }
 
 // const roles = {
