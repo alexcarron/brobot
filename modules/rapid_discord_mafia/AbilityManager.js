@@ -1,7 +1,7 @@
 const { AbilityTypes, AbilityUses, Duration, Phases, AbilityArgName, ArgumentTypes, ArgumentSubtypes, AbilityPriority, Announcements, Feedback } = require("../enums")
 const Ability = require("./Ability.js")
 const { EffectName } = require("./EffectManager.js")
-const Arg = require("./arg.js")
+const Arg = require("./Arg.js")
 
 class AbilityManager {
 	constructor(game_manager) {

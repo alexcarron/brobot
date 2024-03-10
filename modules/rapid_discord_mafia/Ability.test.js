@@ -1,7 +1,7 @@
 const { AbilityName, AbilityTypes, AbilityPriority, AbilityUses, Duration, Phases, AbilityArgName, ArgumentTypes, ArgumentSubtypes } = require("../enums");
 const { EffectName } = require("./EffectManager");
 const Ability = require("./Ability");
-const Arg = require("./arg");
+const Arg = require("./Arg");
 
 describe('Ability', () => {
 	describe('constructor', () => {

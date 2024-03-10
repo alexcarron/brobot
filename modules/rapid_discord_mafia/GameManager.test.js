@@ -3,7 +3,7 @@ const { doArraysHaveSameElements } = require("../functions");
 const RapidDiscordMafia = require("./RapidDiscordMafia");
 const RoleIdentifier = require("./RoleIdentifier");
 const GameManager = require("./GameManager");
-const Player = require("./player");
+const Player = require("./Player");
 const RoleManager = require("./RoleManager");
 const { abilities } = require("./AbilityManager");
 

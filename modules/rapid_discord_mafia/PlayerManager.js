@@ -1,7 +1,7 @@
 const { Feedback, Announcements, RoleNames, Factions, AbilityTypes, AbilityName } = require("../enums");
 const { setNickname } = require("../functions");
 const Logger = require("./Logger");
-const Player = require("./player");
+const Player = require("./Player");
 
 class PlayerManager {
 	/**
