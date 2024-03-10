@@ -11,8 +11,14 @@ command.required_servers = [ids.servers.rapid_discord_mafia];
 command.execute = async function execute(interaction) {
 	await interaction.deferReply({ephemeral: true});
 
-	await global.Game.loadGameDataFromDatabase();
-	interaction.editReply("Game successfully loaded.");
+	if (global.Game && global.Game instanceof Game) {
+		await global.Game.data_manger.loadFromGithub();
+		global.Game.logger.logDebug(global.Game);
+		editReplyToInteraction(interaction, "Game successfully loaded.");
+	}
+	else {
+		editReplyToInteraction(interaction, "Couldn't load the game.");
+	}
 }
 
 module.exports = command;

@@ -160,7 +160,7 @@ command.execute = async function(interaction, isTest) {
 		return await interaction.editReply(can_use_ability_feedback);
 
 	const ability_feedback = player.useAbility(ability_name, arg_values, global.Game, {}, mock_game);
-	await global.Game.saveGameDataToDatabase();
+	await global.Game.data_manger.saveToGithub();
 
 	await interaction.editReply(ability_feedback);
 

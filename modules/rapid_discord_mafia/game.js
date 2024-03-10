@@ -1,5 +1,5 @@
 const { GameStates, Phases, Subphases, MessageDelays, Factions, RDMRoles, WinConditions, Feedback, Announcements, RoleNames, PhaseWaitTimes, VotingOutcomes, TrialOutcomes, TrialVotes, RoleIdentifierTypes, ArgumentSubtypes, CoinRewards, ArgumentTypes, Votes } = require("../enums.js");
-const { getChannel, getGuild, wait, getRandArrayItem, getGuildMember, getRole, removeRole, getCategoryChildren, logColor, getUnixTimestamp, shuffleArray, getRDMGuild, addRole, toTitleCase, saveObjectToGitHubJSON } = require("../functions.js");
+const { getChannel, getGuild, wait, getRandArrayItem, getGuildMember, getRole, removeRole, getCategoryChildren, logColor, getUnixTimestamp, shuffleArray, getRDMGuild, addRole, toTitleCase } = require("../functions.js");
 const ids = require("../../data/ids.json");
 const validator = require('../../utilities/validator.js');
 const { github_token } =  require("../token.js");
@@ -12,6 +12,7 @@ const EffectManager = require("./EffectManager.js");
 const AbilityManager = require("./AbilityManager.js");
 const RoleManager = require("./RoleManager.js");
 const GameStateManager = require("./GameStateManager.js");
+const GameDataManager = require("./GameDataManager.js");
 // const Logger = require("./Logger.js");
 
 class Game {
@@ -79,6 +80,12 @@ class Game {
 	state_manager;
 
 	/**
+	 * A service to handle saving and loading the game
+	 * @type {GameDataManager}
+	 */
+	data_manager;
+
+	/**
 	 * A logger to log messages
 	 * @type {Logger}
 	 */
@@ -102,6 +109,7 @@ class Game {
 		this.effect_manager = new EffectManager(this);
 		this.ability_manager = new AbilityManager();
 		this.role_manager = new RoleManager();
+		this.data_manager = new GameDataManager(this);
 		this.state_manager = new GameStateManager(this);
 		this.state_manager.initializeState();
 
@@ -696,81 +704,6 @@ class Game {
 		);
 	}
 
-	async loadGameDataFromDatabase() {
-		if (!this.isMockGame) {
-			const
-				axios = require('axios'),
-				owner = "alexcarron",
-				repo = "brobot-database",
-				path = "rdm-game.json";
-
-
-			// Get the current file data
-			const {data: file} =
-				await axios.get(
-					`https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
-					{
-						headers: {
-							'Authorization': `Token ${github_token}`
-						}
-					}
-				)
-				.catch(err => {
-					console.error(err);
-				});
-
-
-			let rdm_game_str = Buffer.from(file.content, 'base64').toString();
-			let rdm_game = JSON.parse(rdm_game_str);
-
-			this.setGame(rdm_game);
-		}
-	}
-
-	async saveGameDataToDatabase() {
-		if (!this.isMockGame) {
-
-			const
-				axios = require('axios'),
-				owner = "alexcarron",
-				repo = "brobot-database",
-				path = "rdm-game.json",
-				rdm_game = this,
-				rdm_game_str = JSON.stringify(rdm_game);
-
-
-			try {
-				// Get the current file data
-				const {data: file} =
-					await axios.get(
-						`https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
-						{
-							headers: {
-								'Authorization': `Token ${github_token}`
-							}
-						}
-					);
-
-				// Update the file content
-				await axios.put(
-					`https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
-					{
-						message: 'Update file',
-						content: new Buffer.from(rdm_game_str).toString(`base64`),
-						sha: file.sha
-					},
-					{
-						headers: {
-							'Authorization': `Token ${github_token}`
-						}
-					}
-				);
-			} catch (error) {
-				console.error(error);
-			}
-		}
-	}
-
 	async performCurrentNightAbilities() {
 		this.logger.logSubheading("Performing Night Abilities");
 
@@ -1055,7 +988,7 @@ class Game {
 
 		this.state_manager.setToFirstDay();
 		const day_first_day_ended = this.days_passed;
-		await this.saveGameDataToDatabase();
+		await this.data_manager.saveToGithub();
 
 		this.logger.log("Incrementing Inactvity")
 		this.player_manager.getAlivePlayers().forEach(player => {
@@ -1091,7 +1024,7 @@ class Game {
 
 		this.state_manager.setToDay();
 		const days_passed_last_day = this.days_passed;
-		await this.saveGameDataToDatabase();
+		await this.data_manager.saveToGithub();
 
 		this.logger.log("Incrementing Inactvity")
 		this.player_manager.getAlivePlayers().forEach(player => {
@@ -1156,7 +1089,7 @@ class Game {
 
 		this.state_manager.setToTrial();
 		const days_passed_last_trial = this.days_passed;
-		await this.saveGameDataToDatabase();
+		await this.data_manager.saveToGithub();
 
 		this.resetTrialVotes();
 		this.resetVerdict();
@@ -1245,8 +1178,7 @@ class Game {
 
 		this.state_manager.setToNight();
 		const days_passed_last_night = this.days_passed;
-
-		await this.saveGameDataToDatabase();
+		await this.data_manager.saveToGithub();
 
 		if (!this.isMockGame) {
 			await Game.closeDayChat();
@@ -1648,8 +1580,7 @@ class Game {
 				Announcements.RewardCoinsToPlayer(player.name, coins_rewarded)
 			);
 		});
-
-		await saveObjectToGitHubJSON(global.rapid_discord_mafia, "rapid_discord_mafia");
+		await this.data_manager.saveToGithub();
 
 		let revealed_roles_msg = "_ _\n# Everyone's Roles\n>>> "
 		for (const player in this.role_log) {
