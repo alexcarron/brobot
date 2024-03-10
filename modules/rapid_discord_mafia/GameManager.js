@@ -13,6 +13,7 @@ const AbilityManager = require("./AbilityManager.js");
 const RoleManager = require("./RoleManager.js");
 const GameStateManager = require("./GameStateManager.js");
 const GameDataManager = require("./GameDataManager.js");
+const DiscordCommunicationService = require("./DiscordCommunicationService.js");
 // const Logger = require("./Logger.js");
 
 class GameManager {
@@ -86,6 +87,12 @@ class GameManager {
 	data_manager;
 
 	/**
+	 * A service to handle sending and modifying discord messages
+	 * @type {DiscordCommunicationService}
+	 */
+	discord_service;
+
+	/**
 	 * A logger to log messages
 	 * @type {Logger}
 	 */
@@ -112,6 +119,10 @@ class GameManager {
 		this.data_manager = new GameDataManager(this);
 		this.state_manager = new GameStateManager(this);
 		this.state_manager.initializeState();
+
+		this.discord_service = new DiscordCommunicationService({
+			isMockService: isMockGame
+		});
 
 		this.timeout_counter = 0;
 		this.votes = {};
@@ -202,16 +213,6 @@ class GameManager {
 				}
 			},
 			{}
-		);
-	}
-
-	/**
-	 * @return {Discord.TextChannel} Rapid Discord Mafia Staff Channel
-	 */
-	static async getStaffChnl() {
-		return await getChannel(
-			await getRDMGuild(),
-			ids.rapid_discord_mafia.channels.staff
 		);
 	}
 
@@ -313,7 +314,7 @@ class GameManager {
 			})
 			.catch(console.error);
 
-		const role_list_msg = await announce_chnl.send(role_list_txt);
+		const role_list_msg = await this.discord_service.announce(role_list_txt);
 		role_list_msg.pin();
 	}
 
@@ -956,27 +957,10 @@ class GameManager {
 	}
 
 	async announceMessages(...messages) {
-		if (!this.isMockGame)
-			var game_announce_chnl = await getChannel(await getRDMGuild(), ids.rapid_discord_mafia.channels.game_announce);
-
 		for (let message of messages) {
-			if (!this.isMockGame)
-				await game_announce_chnl.send(message);
+			await this.discord_service.announce(message);
 
 			if (!this.isMockGame && !GameManager.IS_TESTING)
-				await wait(MessageDelays.Normal, "s");
-		}
-	}
-
-	static async announceMessages(...messages) {
-		if (!this.isMockGame)
-			var game_announce_chnl = await getChannel(await getRDMGuild(), ids.rapid_discord_mafia.channels.game_announce);
-
-		for (let message of messages) {
-			if (!this.isMockGame)
-				await game_announce_chnl.send(message);
-
-			if (!this.isMockGame)
 				await wait(MessageDelays.Normal, "s");
 		}
 	}
@@ -1006,8 +990,10 @@ class GameManager {
 			...Announcements.Day1Started()
 		)
 
-		if (!this.isMockGame)
+		if (!this.isMockGame) {
 			await GameManager.openDayChat();
+			await this.discord_service.announce(Announcements.OpenDayChat(day_chat_chnl.id));
+		}
 
 		this.logger.log("Waiting For Day 1 to End");
 
@@ -1045,8 +1031,10 @@ class GameManager {
 		if (await this.killDeadPlayers() === "all")
 			return;
 
-		if (!this.isMockGame)
+		if (!this.isMockGame) {
 			await GameManager.openDayChat();
+			await this.discord_service.announce(Announcements.OpenDayChat(day_chat_chnl.id));
+		}
 
 		await this.startVoting(days_passed_last_day);
 	}
@@ -1275,8 +1263,7 @@ class GameManager {
 
 		if (!this.isMockGame) {
 			await player.createChannel();
-			const staff_chnl = await GameManager.getStaffChnl();
-			staff_chnl.send(`**${player_name}** added to the game.`, {ephemeral: true});
+			this.logger.log(`**${player_name}** added to the game.`);
 		}
 
 		this.announceMessages(
@@ -1532,15 +1519,8 @@ class GameManager {
 				const player_to_promote = getRandArrayItem(mafia_players);
 				player_to_promote.convertToRole(RoleNames.Mafioso, this);
 
-				if (!this.isMockGame) {
-					const rdm_guild = await getRDMGuild();
-					const mafia_channel = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.mafia_chat);
-
-					mafia_channel.send(
-						`**${player_to_promote.name}** has been promoted to **Mafioso**!`
-					);
-					this.logger.log(`**${player_to_promote.name}** has been promoted to **Mafioso**`);
-				}
+				this.discord_service.sendToMafia(`**${player_to_promote.name}** has been promoted to **Mafioso**!`);
+				this.logger.log(`**${player_to_promote.name}** has been promoted to **Mafioso**`);
 			}
 		}
 	}
@@ -1687,10 +1667,6 @@ class GameManager {
 		}
 
 		day_chat_chnl.send("> Opened.");
-
-		await GameManager.announceMessages(
-			Announcements.OpenDayChat(day_chat_chnl.id)
-		);
 	}
 
 	static async closeDayChat() {

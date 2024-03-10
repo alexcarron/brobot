@@ -8,7 +8,7 @@ const RoleManager = require("./RoleManager");
 const { abilities } = require("./AbilityManager");
 
 
-describe('Game', () => {
+describe('GameManager', () => {
 	// ^ .createRoleList()
 	describe('createRoleList', () => {
 		test.concurrent(
