@@ -137,7 +137,7 @@ class GameStateManager {
 
 		this.phase = Phases.Day;
 		this.subphase = Subphases.None;
-		this.days_passed += GameStateManager.DAY_PHASE_LENGTH;
+		this.days_passed = GameStateManager.DAY_PHASE_LENGTH;
 	}
 
 	/**
@@ -347,7 +347,7 @@ class GameStateManager {
 		return (
 			this.state === GameStates.InProgress &&
 			this.phase === Phases.None &&
-			this.subphase === Phases.None &&
+			this.subphase === Subphases.None &&
 			this.days_passed === 0
 		)
 	}
