@@ -1,4 +1,4 @@
-const { AbilityTypes, AbilityUses, Duration, Phases, AbilityArgName, ArgumentTypes, ArgumentSubtypes, AbilityPriority } = require("../enums")
+const { AbilityTypes, AbilityUses, Duration, Phases, AbilityArgName, ArgumentTypes, ArgumentSubtypes, AbilityPriority, Announcements, Feedback } = require("../enums")
 const Ability = require("./Ability.js")
 const { EffectName } = require("./EffectManager.js")
 const Arg = require("./arg.js")
@@ -58,7 +58,10 @@ class AbilityManager {
 					type: ArgumentTypes.Player,
 					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf],
 				})
-			]
+			],
+			reverseEffects: async (player, game_manager) => {
+				player.restoreOldDefense();
+			},
 		}),
 
 		[this.AbilityName.HealSelf]: new Ability({
@@ -74,6 +77,9 @@ class AbilityManager {
 			],
 			feedback: function(player_name="You", isYou=true) {
 				return `**${isYou ? "You" : player_name}** will attempt to heal ${player_name==="You" ? "yourself" : "themself"} tonight`
+			},
+			reverseEffects: async (player, game_manager) => {
+				player.restoreOldDefense();
 			},
 		}),
 
@@ -167,7 +173,10 @@ class AbilityManager {
 					type: ArgumentTypes.Player,
 					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf]
 				})
-			]
+			],
+			reverseEffects: async (player, game_manager) => {
+				player.isRoleblocked = false;
+			},
 		}),
 
 		[this.AbilityName.Shoot]: new Ability({
@@ -263,7 +272,10 @@ class AbilityManager {
 					type: ArgumentTypes.Player,
 					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NonMafia]
 				})
-			]
+			],
+			reverseEffects: async (player, game_manager) => {
+				player.resetPercieved();
+			},
 		}),
 
 		[this.AbilityName.Consort]: new Ability({
@@ -287,7 +299,10 @@ class AbilityManager {
 					type: ArgumentTypes.Player,
 					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf]
 				})
-			]
+			],
+			reverseEffects: async (player, game_manager) => {
+				player.isRoleblocked = false;
+			},
 		}),
 
 		[this.AbilityName.Investigate]: new Ability({
@@ -323,6 +338,9 @@ class AbilityManager {
 				EffectName.SelfFrame
 			],
 			feedback: function(player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to frame ${isYou ? "yourself" : "themself"} as the mafioso tonight`},
+			reverseEffects: async (player, game_manager) => {
+				player.resetPercieved();
+			},
 		}),
 
 		[this.AbilityName.DeathCurse]: new Ability({
@@ -359,6 +377,9 @@ class AbilityManager {
 				EffectName.FrameTarget
 			],
 			feedback: function(player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to frame ${isYou ? "your" : "their"} target as the Mafioso tonight`},
+			reverseEffects: async (player, game_manager) => {
+				player.resetPercieved();
+			},
 		}),
 
 		[this.AbilityName.SelfVest]: new Ability({
@@ -373,6 +394,9 @@ class AbilityManager {
 				EffectName.SelfHeal
 			],
 			feedback: function(player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to put on a vest tonight`},
+			reverseEffects: async (player, game_manager) => {
+				player.restoreOldDefense();
+			},
 		}),
 
 		[this.AbilityName.Knife]: new Ability({
@@ -433,6 +457,9 @@ class AbilityManager {
 					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf]
 				})
 			],
+			reverseEffects: async (player, game_manager) => {
+				player.restoreOldDefense();
+			},
 		}),
 
 		[this.AbilityName.SelfSmith]: new Ability({
@@ -447,6 +474,9 @@ class AbilityManager {
 				EffectName.SelfSmith
 			],
 			feedback: function(player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to smith a bulletproof vest for ${isYou ? "yourself" : "themself"} tonight`},
+			reverseEffects: async (player, game_manager) => {
+				player.restoreOldDefense();
+			},
 		}),
 
 		[this.AbilityName.Suicide]: new Ability({
@@ -460,6 +490,12 @@ class AbilityManager {
 			effects: [
 				EffectName.Attack
 			],
+			reverseEffects: async (player, game_manager) => {
+				game_manager.addDeath(player, player, Announcements.VigilanteSuicide);
+
+				player.sendFeedback(Feedback.ComittingSuicide);
+				player.addFeedback(Feedback.ComittedSuicide);
+			},
 		}),
 
 		[this.AbilityName.Control]: new Ability({
@@ -558,6 +594,13 @@ class AbilityManager {
 					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NonMafia, ArgumentSubtypes.NotSelf]
 				}),
 			],
+			reverseEffects: async (player, game_manager) => {
+				player.unmute();
+				player.regainVotingAbility();
+				player.isRoleblocked = false;
+				player.restoreOldDefense();
+				player.sendFeedback(Feedback.Unkidnapped);
+			},
 		}),
 	}
 

@@ -50,7 +50,6 @@ class Ability {
 	 */
 	effects;
 
-
 	/**
 	 * A function that gets the feedback the player using this ability recieves
 	 * @type {() => string}
@@ -62,6 +61,12 @@ class Ability {
 	 * @type {Arg[]}
 	 */
 	args;
+
+	/**
+	 * A function that reverses the effects of the ability
+	 * @type {(player: Player, game_manager: GameManager) => Promise<void>}
+	 */
+	reverseEffects;
 
 	/**
 	 *
@@ -77,7 +82,8 @@ class Ability {
 		priority,
 		duration=0.5,
 		args=[],
-		effects=[]
+		effects=[],
+		reverseEffects,
 	}) {
 		this.name = name;
 		this.type = type;
@@ -89,6 +95,7 @@ class Ability {
 		this.feedback = feedback;
 		this.args = [];
 		this.effects = effects;
+		this.reverseEffects	= reverseEffects;
 
 		let allArgObjectsAreArgs = true;
 

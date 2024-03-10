@@ -357,13 +357,7 @@ class PlayerManager {
 					}
 				}
 
-				if (ability.name === AbilityName.Kidnap) {
-					await player.unmute();
-					await player.regainVotingAbility();
-					player.isRoleblocked = false;
-					player.restoreOldDefense();
-					player.sendFeedback(Feedback.Unkidnapped);
-				}
+				await ability.reverseEffects(player, this.game_manager);
 
 				player.affected_by.splice(affect_num, 1);
 			}
