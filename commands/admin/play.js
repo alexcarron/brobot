@@ -80,10 +80,20 @@ command.execute = async function(interaction) {
 	}
 
 	const player = global.client.player;
+	if (!(player instanceof Player)) {
+		global.client.player = new Player(global.client, {
+			ytdlOptions: {
+				quality: "highestaudio",
+				highWaterMark: 1 << 25
+			}
+		});
+	}
 	if (player instanceof Player) {
 		const queue = await global.client.player.nodes.create(interaction.guild);
 		if (!queue.connection) {
+			console.log("connecting");
 			await queue.connect(vc);
+			console.log("connecting");
 		}
 
 		await global.client.player.extractors.register(YouTubeExtractor);
@@ -171,7 +181,13 @@ command.execute = async function(interaction) {
 				}
 
 				const song = result.tracks[0];
+
+				console.log({song});
+
 				await queue.addTrack(song);
+
+				console.log({queue});
+
 				embed
 					.setDescription(`**${song.title}: ${song.url}** has been added to the queue`)
 					.setThumbnail(song.thumbnail)
@@ -191,6 +207,9 @@ command.execute = async function(interaction) {
 			content: "",
 			embeds: [embed]
 		});
+	}
+	else {
+		return await interaction.editReply("Sorry, something went wrong?");
 	}
 }
 module.exports = command;

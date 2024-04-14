@@ -223,32 +223,6 @@ class GameManager {
 	}
 
 	/**
-	 * Sets the game object from a json game object
-	 * @param {GameManager} game_json A Game object
-	 */
-	async setGame(game_json) {
-		for (const property in game_json) {
-			if (property === "next_deaths") {
-				this.next_deaths = [];
-				const deaths = game_json[property];
-				for (const death of deaths) {
-					this.next_deaths.push(new Death(death));
-				}
-			}
-			else if (property !== "Players") {
-				this[property] = game_json[property];
-			}
-
-		}
-
-		this.player_manager = new PlayerManager({}, this, this.logger, this.isMockGame);
-
-		for (const player_obj of Object.values(game_json.player_manager.players)) {
-			await this.player_manager.addPlayerFromObj(player_obj);
-		}
-	}
-
-	/**
 	 * Starts the game
 	 * @requires this.Players defined
 	 * @param {RoleIdentifier[]} role_identifiers The unshuffled role identifier strings for the game
@@ -998,7 +972,7 @@ class GameManager {
 
 		if (!this.isMockGame) {
 			await GameManager.openDayChat();
-			await this.discord_service.announce(Announcements.OpenDayChat(day_chat_chnl.id));
+			await this.discord_service.announce(Announcements.OpenDayChat(ids.rapid_discord_mafia.channels.town_discussion));
 		}
 
 		this.logger.log("Waiting For Day 1 to End");
@@ -1169,11 +1143,14 @@ class GameManager {
 		this.state_manager.setToNight();
 		const days_passed_last_night = this.days_passed;
 		await this.data_manager.saveToGithub();
+		this.logger.logDebug("saved");
 
 		if (!this.isMockGame) {
 			await GameManager.closeDayChat();
 			await GameManager.openNightChannels();
 		}
+		this.logger.logDebug("channels");
+
 		await this.resetAllPlayersNightInfo();
 		await this.promoteMafia();
 
@@ -1988,7 +1965,7 @@ class GameManager {
 			// console.timeEnd("setDefenseChannelPerms");
 		}
 
-		global.game_manager = new GameManager({}, this.logger, this.isMockGame );
+		global.game_manager = new GameManager({}, global.game_manager.logger, global.game_manager.isMockGame );
 	}
 
 	async startSignUps() {

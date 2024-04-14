@@ -18,8 +18,7 @@ command.execute = async function execute(interaction) {
 	await interaction.deferReply({ephemeral: true});
 
 	if (global.game_manager && global.game_manager instanceof GameManager) {
-		await global.game_manager.data_manger.saveToGithub();
-		global.game_manager.logger.logDebug(global.game_manager);
+		await global.game_manager.data_manager.saveToGithub();
 		editReplyToInteraction(interaction, "Game successfully saved.");
 	}
 	else {

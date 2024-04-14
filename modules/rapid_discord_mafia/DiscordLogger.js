@@ -15,6 +15,7 @@ class DiscordLogger extends Logger {
 	 * @param {TextChannel} text_channel The Discord text channel to send the messages in
 	 */
 	constructor(text_channel) {
+		super();
 		this.channel = text_channel;
 	}
 

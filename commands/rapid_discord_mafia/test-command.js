@@ -2,7 +2,7 @@ const { PermissionFlagsBits } = require("discord.js");
 const SlashCommand = require("../../modules/commands/SlashCommand.js");
 const Parameter = require("../../modules/commands/Paramater.js");
 const Enums = require("../../modules/enums.js");
-const Game = require("../../modules/rapid_discord_mafia/game.js");
+const GameManager = require("../../modules/rapid_discord_mafia/GameManager.js");
 
 const ids = require(`../../data/ids.json`);
 
@@ -148,7 +148,7 @@ command.execute = async function execute(interaction) {
 		}
 
 		console.time("Game.reset()");
-		await Game.reset();
+		await GameManager.reset();
 		console.timeEnd("Game.reset()");
 
 		global.game_manager.startSignUps();
@@ -196,7 +196,7 @@ command.autocomplete = async function(interaction) {
 	const focused_param = await interaction.options.getFocused(true);
 
 	if ([Subparameters.PlayerVotingFor.name, Subparameters.PlayerVoting.name].includes(focused_param.name)) {
-		return await Game.getAlivePlayersAutocomplete(interaction)
+		return await GameManager.getAlivePlayersAutocomplete(interaction)
 	}
 	else {
 		const autocomplete_values = [{name: "Sorry, there are no alive players to choose from", value: "N/A"}];

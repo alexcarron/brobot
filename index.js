@@ -2,6 +2,7 @@ const RapidDiscordMafia = require('./modules/rapid_discord_mafia/RapidDiscordMaf
 const Event = require('./modules/Event.js');
 const Timer = require('./modules/Timer.js');
 const { getVoiceConnections, joinVoiceChannel } = require('@discordjs/voice');
+const { Player } = require("discord-player");
 
 console.log(`discord.js version: ${require('discord.js').version}`);
 
@@ -41,7 +42,6 @@ const { addRole, getRole, getGuild, getChannel, getObjectFromGitHubJSON, saveObj
 const { Collection } = require('discord.js');
 const SlashCommand = require('./modules/commands/SlashCommand.js');
 const TextToSpeechHandler = require('./modules/TextToSpeechHandler.js');
-const Player = require('./modules/rapid_discord_mafia/player.js');
 global.paths = paths;
 
 // ! Store a list of command cooldowns
@@ -332,7 +332,7 @@ global.client.on(Events.MessageCreate,
 		)
 	}
 
-	if (global.tts.isUserToggledWithChannel(msg.author.id, msg.channel.id)) {
+	if (global.tts && global.tts.isUserToggledWithChannel(msg.author.id, msg.channel.id)) {
 		console.log("message detected: " + msg.content);
 		const guild_member = await getGuildMember(msg.guild, msg.author.id);
 		const user = await getUser(msg.author.id);
@@ -587,7 +587,7 @@ global.client.on(Events.InteractionCreate, async (interaction) => {
 		if (
 			!config.isSleep &&
 			interaction.commandName != 'togglestatus' &&
-			interaction.author.id != ids.users.LL
+			interaction.user.id != ids.users.LL
 		) {
 			return interaction.reply({
 				content: `\`I am currently turned off. Hold on a moment...\``,

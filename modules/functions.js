@@ -751,6 +751,13 @@ doesValueMatchType: function doesValueMatchType(value, type) {
 		message_sent.delete();
 
 		return text_response;
+	},
+
+	removeLinks(input_string) {
+    // Regular expression to match URLs
+    var url_regex = /(https?:\/\/[^\s]+)/g;
+    // Replace URLs with an empty string
+    return input_string.replace(url_regex, '');
 	}
 }
 

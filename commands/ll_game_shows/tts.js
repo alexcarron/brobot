@@ -157,6 +157,10 @@ command.execute = async function(interaction) {
 	else if (subcommand_name === Parameters.SetName.name) {
 		name = interaction.options.getString(Subparameters.Name.name);
 
+		if (!name) {
+			name = "";
+		}
+
 		global.tts.updateToggledUserName(interaction.user.id, name);
 
 		return await interaction.editReply("Your name has been set to **" + name + "**");

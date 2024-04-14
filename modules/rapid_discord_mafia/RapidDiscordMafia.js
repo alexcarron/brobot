@@ -27,6 +27,7 @@ class RapidDiscordMafia {
 			logger,
 			isMockObject
 		);
+
 		global.rapid_discord_mafia = new RapidDiscordMafia();
 
 		if (!isMockObject) {

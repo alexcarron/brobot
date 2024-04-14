@@ -1,6 +1,8 @@
 const { PermissionFlagsBits } = require("discord.js");
 const SlashCommand = require("../../modules/commands/SlashCommand");
-const ids = require(`../../data/ids.json`)
+const ids = require(`../../data/ids.json`);
+const GameManager = require("../../modules/rapid_discord_mafia/GameManager");
+const { editReplyToInteraction } = require("../../modules/functions");
 
 const command = new SlashCommand({
 	name: "load-game",
@@ -11,9 +13,8 @@ command.required_servers = [ids.servers.rapid_discord_mafia];
 command.execute = async function execute(interaction) {
 	await interaction.deferReply({ephemeral: true});
 
-	if (global.game_manager && global.game_manager instanceof Game) {
-		await global.game_manager.data_manger.loadFromGithub();
-		global.game_manager.logger.logDebug(global.game_manager);
+	if (global.game_manager && global.game_manager instanceof GameManager) {
+		await global.game_manager.data_manager.loadFromGithub();
 		editReplyToInteraction(interaction, "Game successfully loaded.");
 	}
 	else {

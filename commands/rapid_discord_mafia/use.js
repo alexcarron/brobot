@@ -83,7 +83,9 @@ command.execute = async function(interaction, isTest) {
 	// Get player from user or player name argument
 	if (isTest) {
 		const player_name = interaction.options.getString("player-name");
-		player = global.game_manager.player_manager.getPlayerFromName(player_name);
+		console.log({player_name});
+		player = global.game_manager.player_manager.get(player_name);
+		console.log(player);
 	}
 	else {
 		player = global.game_manager.player_manager.getPlayerFromId(interaction.user.id);
@@ -152,7 +154,7 @@ command.execute = async function(interaction, isTest) {
 
 		if (ability) {
 			can_use_ability_feedback =
-				await global.game_manger.ability_manager.canPlayerUseAbility({
+				await global.game_manager.ability_manager.canPlayerUseAbility({
 					player: player,
 					ability: ability,
 					arg_values: arg_values
@@ -166,7 +168,7 @@ command.execute = async function(interaction, isTest) {
 
 	const ability = global.game_manager.ability_manager.getAbility(ability_name);
 	const ability_feedback = player.useAbility(ability, arg_values);
-	await global.game_manager.data_manger.saveToGithub();
+	await global.game_manager.data_manager.saveToGithub();
 
 	await interaction.editReply(ability_feedback);
 

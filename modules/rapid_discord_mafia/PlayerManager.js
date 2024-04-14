@@ -222,7 +222,7 @@ class PlayerManager {
 				attacker_player.role === RoleNames.Vigilante &&
 				target_role.faction === Factions.Town
 			) {
-				attacker_player.addAbilityAffectedBy(attacker_player, AbilityName.Suicide, game.days_passed - 0.5);
+				attacker_player.addAbilityAffectedBy(attacker_player, AbilityName.Suicide, this.game_manager.days_passed - 0.5);
 			}
 		}
 		// Attack Failed

@@ -2,7 +2,7 @@ const SlashCommand = require('../../modules/commands/SlashCommand.js');
 const ids = require(`../../data/ids.json`);
 const
 	{ PermissionFlagsBits } = require('discord.js'),
-	Game = require("../../modules/rapid_discord_mafia/game.js"),
+	GameManager = require("../../modules/rapid_discord_mafia/GameManager.js"),
 	{ deferInteraction, editReplyToInteraction } = require("../../modules/functions.js");
 
 const command = new SlashCommand({
@@ -14,7 +14,7 @@ command.required_permissions = [PermissionFlagsBits.Administrator];
 command.execute = async function execute(interaction) {
 	await deferInteraction(interaction);
 
-	await Game.reset();
+	await GameManager.reset();
 
 	await editReplyToInteraction(interaction, "Reset everything.");
 }

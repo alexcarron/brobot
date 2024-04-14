@@ -77,7 +77,7 @@ class DiscordService {
 	async setupAnnounceChannel() {
 		this.announce_channel = await getChannel(
 			this.rdm_guild,
-			ids.rapid_discord_mafia.channels.announce
+			ids.rapid_discord_mafia.channels.game_announce
 		);
 	}
 
@@ -110,7 +110,7 @@ class DiscordService {
 	}
 
 	async setupTownDiscussionChannel() {
-		this.text_channel = await getChannel(
+		this.town_discussion_channel = await getChannel(
 			this.rdm_guild,
 			ids.rapid_discord_mafia.channels.town_discussion
 		);
@@ -169,7 +169,7 @@ class DiscordService {
 				parent: category_id,
 				permissionOverwrites: [
 					{
-						id: rdm_guild.roles.everyone,
+						id: this.rdm_guild.roles.everyone,
 						deny: [PermissionFlagsBits.ViewChannel],
 					},
 					{

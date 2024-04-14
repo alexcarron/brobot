@@ -279,7 +279,7 @@ const Enums = {
 		GameStarted: (living_role_id, role_list_chnl_id) => [
 			`<@&${living_role_id}> Good morning! The game will now begin!`,
 			`_ _\n## Helpful Reminders`,
-			`> - Type a \`/\` to get a list of all the commands you can use.`,
+			`- Type a \`/\` to get a list of all the commands you can use.`,
 			...(Enums.Announcements.Commands.map(string => `- ${string}`))
 		],
 		Day1Started: () => [

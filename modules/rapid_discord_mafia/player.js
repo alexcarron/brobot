@@ -220,7 +220,7 @@ class Player {
 		// Create a private channel for the player
 		const player_channel = await this.discord_service.createPrivateChannel({
 			name: channel_name,
-			parent: rdm_ids.category.player_action,
+			category_id: rdm_ids.category.player_action,
 			guild_member_id: this.id
 		});
 

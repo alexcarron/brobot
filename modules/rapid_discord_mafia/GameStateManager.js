@@ -72,8 +72,6 @@ class GameStateManager {
 	 * Sets the initial state and phase of a game when a game is constructed but no started
 	 */
 	initializeState() {
-		this.game.logger.log("Initializing game state");
-
 		this.state = GameStates.Ended;
 		this.phase = Phases.None;
 		this.subphase = Subphases.None;
@@ -416,7 +414,6 @@ class GameStateManager {
 	 * @returns {boolean} True if it's just before that specific night phase, otherwise false.
 	 */
 	canStartNight(day_the_day_before_ended) {
-		this.logCurrentState();
 		if (day_the_day_before_ended === undefined)
 			return true;
 

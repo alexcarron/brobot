@@ -411,7 +411,7 @@ class AbilityManager {
 				EffectName.Attack
 			],
 			feedback(player_knifing, player_name="You", isYou=true) {
-				return `**${isYou ? "You" : player_name}** will attempt to knife ${player_knifing} to death tonight`
+				return `**${isYou ? "You" : player_name}** will attempt to knife **${player_knifing}** to death tonight`
 			},
 			args: [
 				new Arg({
@@ -630,10 +630,10 @@ class AbilityManager {
 		}
 
 		// Check if player is dead and can't use ability while dead
-		if (!player_role.isAlive) {
+		if (!player.isAlive) {
 			if (!(
 				ability.phases_can_use.includes(Phases.Limbo) &&
-				player_role.isInLimbo
+				player.isInLimbo
 			)) {
 				return `You can't use the ability, **${ability.name}**, while you're not alive`;
 			}
@@ -646,7 +646,7 @@ class AbilityManager {
 			if (
 				!(
 					ability.phases_can_use.includes(Phases.Limbo) &&
-					player_role.isInLimbo
+					player.isInLimbo
 				)
 			) {
 				return `You can't use this ability during the **${this.game_manager.phase}** phase`;

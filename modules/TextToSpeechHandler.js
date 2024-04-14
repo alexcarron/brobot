@@ -1,6 +1,6 @@
 const tts = require('google-tts-api');
 const { joinVoiceChannel, createAudioResource, createAudioPlayer, VoiceConnection } = require('@discordjs/voice');
-const { getGuildMember, getGuild, wait, splitWithNoSplitWords } = require('./functions');
+const { getGuildMember, getGuild, wait, splitWithNoSplitWords, removeLinks } = require('./functions');
 const ids = require("../data/ids.json");
 
 class TextToSpeechHandler {
@@ -105,9 +105,14 @@ class TextToSpeechHandler {
 	}
 
 	async addMessage(voice_connection, message, user_id, speaker_name=undefined) {
+		message = removeLinks(message);
+		if (message === '') return;
+		message = message.toLowerCase();
 		const messages_to_speak = splitWithNoSplitWords(message, 200);
 
 		messages_to_speak.forEach(message => {
+			if (message === '') return;
+
 			this._messages.push({
 				user_id: user_id,
 				text: message,
@@ -140,22 +145,11 @@ class TextToSpeechHandler {
 		const connection_guild = await getGuild(voice_connection.joinConfig.guildId);
 		const brobot_member = await getGuildMember(connection_guild, ids.users.Brobot);
 
-		let nickname;
-
-		if (speaker_name !== undefined) {
-			nickname = `${speaker_name} says...`;
-			nickname = nickname.substring(0, 32);
-		}
-		else {
-			nickname = `Someone says...`;
-		}
-
-		if (brobot_member.nickname !== nickname)
-			brobot_member.setNickname(nickname);
-
 		this._isPlaying = true;
 
+
 		const message = this._messages[0];
+		console.log({message});
 		const text = message.text;
 		const voice = this.getVoiceFromMessage(message);
 		const audio_file_url = await this.getTextToSpeechAudioURL(text, voice);
@@ -178,11 +172,6 @@ class TextToSpeechHandler {
 			this.playAudio(voice_connection, speaker_name);
 		else {
 			this._isPlaying = false;
-
-			await wait(1, "second");
-
-			if (!this._isPlaying)
-				brobot_member.setNickname(null);
 		}
 	}
 
