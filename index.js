@@ -227,59 +227,59 @@ global.client.once(Events.ClientReady, async () => {
 
 	global.tts = new TextToSpeechHandler();
 
-	const ll_game_show_center_guild = await getGuild(ids.ll_game_shows.server_id);
-	const daily_controversial_msg = new cron.CronJob(
-		'00 30 14 2-31/2 * *',
-		async () => {
-			console.log("Controversial Message Sending...");
-			const
-				controversial_channel = ll_game_show_center_guild.channels.cache.get(ids.ll_game_shows.channels.controversial),
-				controversial_question_index = Math.floor( Math.random() * global.messages.controversial_talk.length ),
-				controversial_question = global.messages.controversial_talk[controversial_question_index];
+	// const ll_game_show_center_guild = await getGuild(ids.ll_game_shows.server_id);
+	// const daily_controversial_msg = new cron.CronJob(
+	// 	'00 30 14 2-31/2 * *',
+	// 	async () => {
+	// 		console.log("Controversial Message Sending...");
+	// 		const
+	// 			controversial_channel = ll_game_show_center_guild.channels.cache.get(ids.ll_game_shows.channels.controversial),
+	// 			controversial_question_index = Math.floor( Math.random() * global.messages.controversial_talk.length ),
+	// 			controversial_question = global.messages.controversial_talk[controversial_question_index];
 
-			if (controversial_question) {
-				controversial_channel.send( controversial_question );
+	// 		if (controversial_question) {
+	// 			controversial_channel.send( controversial_question );
 
-				global.messages.controversial_talk.splice(controversial_question_index, 1);
-				await saveObjectToGitHubJSON(global.messages, "messages");
-			}
-			else {
-				controversial_channel.send(`<@${ids.users.LL}> WARNING: We have run out of controversial questions! Blow up the server!`);
-			}
+	// 			global.messages.controversial_talk.splice(controversial_question_index, 1);
+	// 			await saveObjectToGitHubJSON(global.messages, "messages");
+	// 		}
+	// 		else {
+	// 			controversial_channel.send(`<@${ids.users.LL}> WARNING: We have run out of controversial questions! Blow up the server!`);
+	// 		}
 
-		},
-		null,
-		true,
-		"America/Mexico_City"
-	);
+	// 	},
+	// 	null,
+	// 	true,
+	// 	"America/Mexico_City"
+	// );
 
-	const daily_philosophy_msg = new cron.CronJob(
-		'00 00 11 */2 * *',
-		async () => {
-			console.log("Philosophy Message Sending...");
-			const
-				philosophy_channel = await getChannel(ll_game_show_center_guild, ids.ll_game_shows.channels.philosophy),
-				philosophy_question_index = Math.floor( Math.random() * global.messages.philosophy.length ),
-				philosophy_question = global.messages.philosophy[philosophy_question_index];
+	// const daily_philosophy_msg = new cron.CronJob(
+	// 	'00 00 11 */2 * *',
+	// 	async () => {
+	// 		console.log("Philosophy Message Sending...");
+	// 		const
+	// 			philosophy_channel = await getChannel(ll_game_show_center_guild, ids.ll_game_shows.channels.philosophy),
+	// 			philosophy_question_index = Math.floor( Math.random() * global.messages.philosophy.length ),
+	// 			philosophy_question = global.messages.philosophy[philosophy_question_index];
 
-			try {
-				philosophy_channel.send( philosophy_question );
-			}
-			catch {
-				return philosophy_channel.send(`<@${ids.users.LL}> WARNING: We have run out of philosophy questions! Blow up the server!`);
-			}
+	// 		try {
+	// 			philosophy_channel.send( philosophy_question );
+	// 		}
+	// 		catch {
+	// 			return philosophy_channel.send(`<@${ids.users.LL}> WARNING: We have run out of philosophy questions! Blow up the server!`);
+	// 		}
 
-			global.messages.philosophy.splice(philosophy_question_index, 1);
-			await saveObjectToGitHubJSON(global.messages, "messages");
-		},
-		null,
-		true,
-		"America/New_York"
-	);
+	// 		global.messages.philosophy.splice(philosophy_question_index, 1);
+	// 		await saveObjectToGitHubJSON(global.messages, "messages");
+	// 	},
+	// 	null,
+	// 	true,
+	// 	"America/New_York"
+	// );
 
-	daily_philosophy_msg.start();
-	daily_controversial_msg.start();
-	console.log("Setup reocurring LL Game Show Center questions");
+	// daily_philosophy_msg.start();
+	// daily_controversial_msg.start();
+	// console.log("Setup reocurring LL Game Show Center questions");
 
 	console.log('Ready!');
 });
@@ -316,7 +316,7 @@ global.client.on(Events.MessageCreate,
 
 		// From BroBot
 		if (msg.author.id === ids.users.Brobot) {
-			recipient_message = `<@${ids.users.Brobot}> ➜ <@${msg.channel.recipient.id}>\n\`Brobot ➜ ${msg.channel.recipient.username}\``;
+			recipient_message = `<@${ids.users.Brobot}> ➜ <@${msg.channel.recipient ? msg.channel.recipient.id : ""}>\n\`Brobot ➜ ${msg.channel.recipient.username}\``;
 		}
 		// To Brobot
 		else {

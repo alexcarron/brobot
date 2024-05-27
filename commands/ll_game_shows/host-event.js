@@ -157,7 +157,7 @@ command.execute = async function(interaction) {
 		interaction.channel,
 		"Enticing Summary",
 		"Enticing summary of event:",
-		"_ _\nNow, create a 1-2 sentence enticing summary of event to entice people to participate",
+		"_ _\nNow, create a 1-2 sentence enticing summary of the game to entice people to participate that also gives the reader a basic understanding of the game",
 		"1-2 sentence enticing summary of event to entice people to participate"
 	)
 
