@@ -37,5 +37,8 @@
   "license": "ISC",
   "engines": {
     "node": ">=18"
-  }
+  },
+	"jest": {
+    "testMatch": ["**/?(*.)+(spec|test).[tj]s?(x)"]
+	}
 }
