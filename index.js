@@ -232,22 +232,6 @@ global.client.once(Events.ClientReady, async () => {
 	console.log('Ready!');
 });
 
-// @ TODO Replace all user.send with this
-global.dm = async function(user, message_contents) {
-	await user.send(message_contents);
-
-	// const brobot_server = await getGuild(ids.servers.brobot_testing);
-	// const dm_log_chnl = await getChannel(brobot_server, ids.brobot_test_server.channels.dm_log);
-	// let message_log =
-	// 	`<@${ids.users.Brobot}> ➜ <@${user.id}>\n\`Brobot ➜ ${user.username}\`\n` +
-	// 	`DM Channel ID: \`${message_dmed.channel.id}\`\n` +
-	// 	`Message ID: \`${message_dmed.id}\`\n` +
-	// 	`\n` +
-	// 	`\`\`\`${message_contents}\`\`\``;
-
-	// await dm_log_chnl.send(message_log);
-}
-
 // ! Executed for every message sent
 global.client.on(Events.MessageCreate,
 	/**
