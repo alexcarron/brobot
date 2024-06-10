@@ -2,6 +2,7 @@ const { TextChannel } = require("discord.js");
 const { getRandArrayItem, getChannel, getGuild, saveObjectToGitHubJSON } = require("./functions");
 const ids = require("../data/ids.json");
 const cron = require("cron"); // Used to have scheduled functions execute
+const PropertyNotFoundError = require("./errors/PropertyNotFound");
 
 class DailyMessageHandler {
 	/**
@@ -64,9 +65,16 @@ class DailyMessageHandler {
 	 */
 	async convertChannelNameToChannel(channelName) {
 		const channelId = ids.ll_game_shows.channels[channelName];
-		const guild = await getGuild(DailyMessageHandler.GUILD_ID);
 
-		return await getChannel(guild, channelId);
+		if (channelId === undefined)
+			throw new PropertyNotFoundError(channelName, "ids.json/ll_game_shows/channels", "Channel identifier not found");
+
+		const guild = await getGuild(DailyMessageHandler.GUILD_ID);
+		const channel = await getChannel(guild, channelId);
+
+		console.log({channel});
+
+		return channel;
 	}
 
 	/**
@@ -113,7 +121,7 @@ class DailyMessageHandler {
 
 		this.removeMessage(channelName, messageContents);
 
-		return await channel.send(`<@${ids.ll_game_shows.roles.daily_questions}> ${messageContents}`);
+		return await channel.send(`<@&${ids.ll_game_shows.roles.daily_questions}>\n${messageContents}`);
 	}
 
 	startDailyMessages() {

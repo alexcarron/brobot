@@ -25,12 +25,12 @@
 			"general_talk": "1137452343785443470",
 			"controversial": "1137452343785443471",
 			"philosophy": "1137452343785443472",
-			"internet_nonsense": "1137452343785443473",
-			"gaming_sessions": "1208108913774297138",
 			"lore_discussion": "1137452343785443474",
 			"art_showcase": "1177340240164298862",
-			"song_sharing": "1137488930967666830",
+			"song_sharing": "1177340589562408980",
 			"ideas_and_suggestions": "1208109892078936145",
+			"internet_nonsense": "1137452343785443473",
+			"gaming_sessions": "1208108913774297138",
 			"help_and_questions": "1208110687096938546"
 		},
 		"roles": {
@@ -47,7 +47,7 @@
 			"live_tune_tournament_event": "1157720530980438136",
 			"watch_party": "1137452342850097258",
 			"self_hosted_game": "1141053180201939015",
-			"daily_questions": "1248851644570144799"
+			"daily_questions": "1248851063893659671"
 		}
 	},
 	"gameforge": {
