@@ -2,6 +2,9 @@ const tts = require('google-tts-api');
 const { joinVoiceChannel, createAudioResource, createAudioPlayer, VoiceConnection } = require('@discordjs/voice');
 const { getGuildMember, getGuild, wait, splitWithNoSplitWords, removeLinks } = require('./functions');
 const ids = require("../data/ids.json");
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+const ffmpeg = require('fluent-ffmpeg');
+ffmpeg.setFfmpegPath(ffmpegPath);
 
 class TextToSpeechHandler {
 	constructor() {
@@ -142,14 +145,9 @@ class TextToSpeechHandler {
 	 * @param {VoiceConnection} voice_connection
 	 */
 	async playAudio(voice_connection, speaker_name=undefined) {
-		const connection_guild = await getGuild(voice_connection.joinConfig.guildId);
-		const brobot_member = await getGuildMember(connection_guild, ids.users.Brobot);
-
 		this._isPlaying = true;
 
-
 		const message = this._messages[0];
-		console.log({message});
 		const text = message.text;
 		const voice = this.getVoiceFromMessage(message);
 		const audio_file_url = await this.getTextToSpeechAudioURL(text, voice);
@@ -165,7 +163,6 @@ class TextToSpeechHandler {
 				});
 		});
 		this._messages.shift();
-		console.log("resolved: " + this._messages.length);
 		console.log(this._messages);
 
 		if (this._messages.length > 0)
@@ -180,7 +177,8 @@ class TextToSpeechHandler {
 	 * @return {Promise<string>} text URL to text to speech audio file
 	 */
 	async getTextToSpeechAudioURL(text, voice=TextToSpeechHandler.POSSIBLE_VOICES[0]) {
-		return await this.getGoogleTranslateTTSAudioUrl(text, voice);
+		const audioUrl = await this.getGoogleTranslateTTSAudioUrl(text, voice);
+		return this.speedUpAudio(audioUrl);
 	}
 
 	async getGoogleTranslateTTSAudioUrl(text, language="en") {
@@ -191,6 +189,30 @@ class TextToSpeechHandler {
 		});
 
 		return audio_file_url;
+	}
+
+	/**
+	 * Converts audio in url to speed up audio and returns new url
+	 * @param {string} audioUrl - audio url
+	 * @return {Promise<string>} new audio url
+	 */
+	async speedUpAudio(audioUrl) {
+    return new Promise((resolve, reject) => {
+			// Generate a unique filename to avoid overwriting
+			const outputFilePath = 'audioUrl.mp3';
+
+			ffmpeg(audioUrl)
+				.on('error', function(err) {
+					console.log('An error occurred: ' + err.message);
+					reject(err);
+				})
+				.on('end', function() {
+					console.log('Finished');
+					resolve(outputFilePath);
+				})
+				.audioFilters('atempo=1.8') // Use audioFilters instead of inputOptions for filters
+				.save(`audio/${outputFilePath}`);
+    });
 	}
 }
 
