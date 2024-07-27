@@ -142,14 +142,12 @@ command.execute = async function(interaction) {
 			interaction.channel.id,
 			name
 		);
-		console.log(global.tts._toggled_users);
 
 		return await interaction.editReply("I will now read all of your messages");
 	}
 
 	else if (subcommand_name === Parameters.DontReadMyMessages.name) {
 		global.tts.removeToggledUser(interaction.user.id);
-		console.log(global.tts._toggled_users);
 
 		return await interaction.editReply("I will no longer read all your messages");
 	}

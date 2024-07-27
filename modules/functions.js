@@ -1,3 +1,4 @@
+const { forever } = require("request");
 const ids = require("../data/ids.json")
 const { github_token } =  require("../token.json");
 const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle  } = require('discord.js');
@@ -767,6 +768,15 @@ doesValueMatchType: function doesValueMatchType(value, type) {
     var url_regex = /(https?:\/\/[^\s]+)/g;
     // Replace URLs with an empty string
     return input_string.replace(url_regex, '');
+	},
+
+	/**
+	 * Removes emojis from a string
+	 * @param {string} input_string - The string to remove emojis from
+	 * @returns {string} The string with emojis removed
+	 */
+	removeEmojis(input_string) {
+		return input_string.replace(/(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/g, '');
 	}
 }
 

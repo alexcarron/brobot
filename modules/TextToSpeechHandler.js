@@ -1,9 +1,10 @@
 const tts = require('google-tts-api');
 const { joinVoiceChannel, createAudioResource, createAudioPlayer, VoiceConnection } = require('@discordjs/voice');
-const { getGuildMember, getGuild, wait, splitWithNoSplitWords, removeLinks } = require('./functions');
+const { getGuildMember, getGuild, wait, splitWithNoSplitWords, removeLinks, removeEmojis, simplifyLargeNumbers } = require('./functions');
 const ids = require("../data/ids.json");
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffmpeg = require('fluent-ffmpeg');
+const fs = require('node:fs');
 ffmpeg.setFfmpegPath(ffmpegPath);
 
 class TextToSpeechHandler {
@@ -12,6 +13,8 @@ class TextToSpeechHandler {
 		this._isPlaying = false;
 		this._isWaitingToDie = false;
 		this._toggled_users = [];
+		this._speedMultiplier = 1.5;
+		this._volumeMultiplier = 0.5;
 	}
 
 	static index = 0;
@@ -68,6 +71,14 @@ class TextToSpeechHandler {
 		"cy",
 	]
 
+	setSpeedMultiplier(speed) {
+		this._speedMultiplier = speed;
+	}
+
+	setVolumeMultiplier(volume) {
+		this._volumeMultiplier = volume;
+	}
+
 	addToggledUser(user_id, channel_id, name=null) {
 		this._toggled_users.push(
 			{
@@ -108,8 +119,17 @@ class TextToSpeechHandler {
 	}
 
 	async addMessage(voice_connection, message, user_id, speaker_name=undefined) {
+		// Filter out links
 		message = removeLinks(message);
-		if (message === '') return;
+		message = removeEmojis(message);
+		message = removeLinks(message);
+		message = simplifyLargeNumbers(message);
+
+		// Filter out empty messages
+		if (message.replace(`${speaker_name} said`, '').trim() === '') return;
+
+		console.log(message);
+
 		message = message.toLowerCase();
 		const messages_to_speak = splitWithNoSplitWords(message, 200);
 
@@ -178,7 +198,7 @@ class TextToSpeechHandler {
 	 */
 	async getTextToSpeechAudioURL(text, voice=TextToSpeechHandler.POSSIBLE_VOICES[0]) {
 		const audioUrl = await this.getGoogleTranslateTTSAudioUrl(text, voice);
-		return this.speedUpAudio(audioUrl);
+		return this.speedUpAndVolumeAudio(audioUrl);
 	}
 
 	async getGoogleTranslateTTSAudioUrl(text, language="en") {
@@ -196,7 +216,7 @@ class TextToSpeechHandler {
 	 * @param {string} audioUrl - audio url
 	 * @return {Promise<string>} new audio url
 	 */
-	async speedUpAudio(audioUrl) {
+	async speedUpAndVolumeAudio(audioUrl) {
     return new Promise((resolve, reject) => {
 			// Generate a unique filename to avoid overwriting
 			const outputFilePath = 'audioUrl.mp3';
@@ -210,10 +230,12 @@ class TextToSpeechHandler {
 					console.log('Finished');
 					resolve(outputFilePath);
 				})
-				.audioFilters('atempo=1.8') // Use audioFilters instead of inputOptions for filters
-				.save(`audio/${outputFilePath}`);
+				.audioFilters(`atempo=${this._speedMultiplier},volume=${this._volumeMultiplier}`) // Use audioFilters instead of inputOptions for filters
+				.save(`${outputFilePath}`);
     });
 	}
+
+
 }
 
 module.exports = TextToSpeechHandler;
