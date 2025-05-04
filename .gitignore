@@ -9,3 +9,6 @@ unused/
 token.json
 .vscode
 .npm
+
+# Personal
+DESIGN.md

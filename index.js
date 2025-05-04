@@ -220,7 +220,6 @@ global.client.once(Events.ClientReady, async () => {
 	}
 	console.log("Timers Database Downloaded");
 
-	global.participants = [];
 	global.questions = [];
 	global.channelsToMessages = await getObjectFromGitHubJSON("messages");
 	console.log("Messages Database Downloaded");
