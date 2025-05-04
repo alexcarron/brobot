@@ -100,5 +100,3 @@ Contains configuration files related to Brobot.
 ### `commands`: Contains all command files
 ### `data`: Contains all files used for referencing static data
 ### `modules`: Contains all module files and services (e.g., music, moderation, command management, events, LL Points)
-### `utilities`
-* `config.json`: The configuration file

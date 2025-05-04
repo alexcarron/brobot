@@ -35,13 +35,11 @@ global.client = new Discord.Client({
 });
 
 // ! Create global paths object to store directories
-const paths = require("./utilities/path.js");
 const { addRole, getRole, getGuild, getChannel, getObjectFromGitHubJSON, saveObjectToGitHubJSON, getRoleById, getJSONFromObj, getGuildMember, getUser } = require('./modules/functions.js');
 const { Collection } = require('discord.js');
 const SlashCommand = require('./modules/commands/SlashCommand.js');
 const TextToSpeechHandler = require('./modules/TextToSpeechHandler.js');
 const DailyMessageHandler = require('./modules/DailyMessageHandler.js');
-global.paths = paths;
 
 // ! Store a list of command cooldowns
 client.cooldowns = new Collection();
@@ -67,6 +65,7 @@ const command_folders = fs.readdirSync(command_folders_path);
 			let command = await require(`${commands_path}/${file}`);
 
 			if (command instanceof SlashCommand) {
+				console.log('Building slash command /' + command.name);
 				command = await command.getCommand();
 			}
 

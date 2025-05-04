@@ -20,7 +20,7 @@ command.execute = async function(interaction) {
 			config.isSleep = true
 	}
 
-	await fs.writeFile(`${global.paths.utilities_dir}/config.json`, JSON.stringify(config))
+	await fs.writeFile(`bot-config/config.json`, JSON.stringify(config))
 
 	interaction.editReply(`Done.`)
 },

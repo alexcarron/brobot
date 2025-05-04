@@ -1,4 +1,3 @@
-const validator = require('../../utilities/validator.js');
 const { rdm_server_id } = require("../../bot-config/discord-ids.js"),
 	ids = require("../../bot-config/discord-ids.js"),
 	{ RDMRoles, GameStates } = require("../../modules/enums.js");
@@ -35,7 +34,22 @@ command.execute = async function execute(interaction) {
 		return await interaction.editReply(`The name, **${new_player_name}**, already exists.`)
 	}
 
-	const validator_result = validator.validateName(new_player_name);
+	const validateName = (name) => {
+		const nameRegex = /^[a-zA-Z0-9 ]+$/;
+
+		if ( name.length > 32 ) {
+			return `Your name must be under 32 characters. It's currently ${name.length} characters.`
+		}
+
+		// Checks if username has letters or numbers
+		if ( !nameRegex.test(name) ) {
+			return `Your name must only have letters and numbers in it.`;
+		}
+
+		return true;
+	};
+
+	const validator_result = validateName(new_player_name);
 	if (validator_result !== true)
 		return await interaction.editReply(validator_result);
 

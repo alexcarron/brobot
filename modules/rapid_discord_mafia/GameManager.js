@@ -1,7 +1,6 @@
 const { GameStates, Phases, Subphases, MessageDelays, Factions, RDMRoles, WinConditions, Feedback, Announcements, RoleNames, PhaseWaitTimes, VotingOutcomes, TrialOutcomes, TrialVotes, RoleIdentifierTypes, ArgumentSubtypes, CoinRewards, ArgumentTypes, Votes } = require("../enums.js");
 const { getChannel, getGuild, wait, getRandArrayItem, getGuildMember, getRole, removeRole, getCategoryChildren, logColor, getUnixTimestamp, shuffleArray, getRDMGuild, addRole, toTitleCase } = require("../functions.js");
 const ids = require("../../bot-config/discord-ids.js");
-const validator = require('../../utilities/validator.js');
 const { github_token } =  require("../token.js");
 const { PermissionFlagsBits, Role, Interaction } = require("discord.js");
 const Death = require("./Death.js");
@@ -1211,7 +1210,22 @@ class GameManager {
 			return new Player({}, this.logger);
 		}
 
-		const validator_result = validator.validateName(player_name);
+		const validateName = (name) => {
+			const nameRegex = /^[a-zA-Z0-9 ]+$/;
+
+			if ( name.length > 32 ) {
+				return `Your name must be under 32 characters. It's currently ${name.length} characters.`
+			}
+
+			// Checks if username has letters or numbers
+			if ( !nameRegex.test(name) ) {
+				return `Your name must only have letters and numbers in it.`;
+			}
+
+			return true;
+		};
+
+		const validator_result = validateName(player_name);
 		if (validator_result !== true) {
 			if (!this.isMockGame)
 				await interaction.editReply(validator_result);
