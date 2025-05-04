@@ -71,11 +71,25 @@ You **are not permitted** to use the code to host or run your own Discord bot. Y
 
 If you have any questions or would like permission for a specific use, please contact me.
 
-## Folder Structure
--------------------
+## 📁 Project Directory Structure
+### `/` Root Directory
+Contains the main entry point and all project-level configuration files.
+* **`index.js`** The main entry point of Brobot
+  * Imports all dependencies
+  * Initializes the Discord client
+  * Defines global variables
+  * Loads all commands and event listeners
+  * Initializes all services
 
-* `commands`: Contains all command files
-* `data`: Contains all files used for referencing static data
-* `modules`: Contains all module files and services (e.g., music, moderation, command management, events, LL Points)
-* `index.js`: The main entry point of the bot
-* `utilities/config.json`: The configuration file
+* **`README.md`** Provides documentation and a description of the project
+* **`LICENSE`** Specifies the licensing terms
+* **`package.json`** Contains project metadata and dependencies
+* **`package-lock.json`** Ensures consistent dependency versions across installs
+* **`token.json`** *(hidden)* Stores sensitive data like bot tokens and API keys
+
+
+### `commands`: Contains all command files
+### `data`: Contains all files used for referencing static data
+### `modules`: Contains all module files and services (e.g., music, moderation, command management, events, LL Points)
+### `utilities`
+* `config.json`: The configuration file
