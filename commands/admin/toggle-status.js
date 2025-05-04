@@ -11,7 +11,7 @@ command.required_permissions = [PermissionFlagsBits.Administrator]
 command.execute = async function(interaction) {
 	await deferInteraction(interaction);
 
-	let config = JSON.parse(await fs.readFile("utilities/config.json"));
+	let config = JSON.parse(await fs.readFile("bot-config/config.json"));
 	console.log({config});
 
 	if (config.isSleep) {

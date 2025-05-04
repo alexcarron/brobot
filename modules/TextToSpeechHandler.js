@@ -1,7 +1,7 @@
 const tts = require('google-tts-api');
 const { joinVoiceChannel, createAudioResource, createAudioPlayer, VoiceConnection } = require('@discordjs/voice');
 const { getGuildMember, getGuild, wait, splitWithNoSplitWords, removeLinks, removeEmojis, simplifyLargeNumbers } = require('./functions');
-const ids = require("../data/ids.json");
+const ids = require("../bot-config/discord-ids.json");
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffmpeg = require('fluent-ffmpeg');
 const fs = require('node:fs');

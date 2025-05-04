@@ -1,6 +1,6 @@
 const { TextChannel } = require("discord.js");
 const { getRandArrayItem, getChannel, getGuild, saveObjectToGitHubJSON } = require("./functions");
-const ids = require("../data/ids.json");
+const ids = require("../bot-config/discord-ids.json");
 const cron = require("cron"); // Used to have scheduled functions execute
 const PropertyNotFoundError = require("./errors/PropertyNotFound");
 
@@ -60,14 +60,14 @@ class DailyMessageHandler {
 
 	/**
 	 * Get the TextChannel object from a channel name
-	 * @param {string} channelName Name of a channel
+	 *@param {string} channelName Name of a channel
 	 * @retuns {TextChannel}
 	 */
 	async convertChannelNameToChannel(channelName) {
 		const channelId = ids.ll_game_shows.channels[channelName];
 
 		if (channelId === undefined)
-			throw new PropertyNotFoundError(channelName, "ids.json/ll_game_shows/channels", "Channel identifier not found");
+			throw new PropertyNotFoundError(channelName, "./bot-config/discord-ids.json/ll_game_shows/channels", "Channel identifier not found");
 
 		const guild = await getGuild(DailyMessageHandler.GUILD_ID);
 		const channel = await getChannel(guild, channelId);

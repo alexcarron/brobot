@@ -9,13 +9,13 @@ console.log(`discord.js version: ${require('discord.js').version}`);
 
 const
 	{ DatabaseURLs, XPRewards, XPTaskKeys, RDMRoles, GameStates, AbilityName, Feedback } = require("./modules/enums.js"),
-	ids = require('./data/ids.json'),
+	ids = require('./bot-config/discord-ids.json'),
 	fs = require("fs"), // Used to interact with file system
 	cron = require("cron"), // Used to have scheduled functions execute
 	Discord = require('discord.js'),
 	{ REST, Routes, Events, GatewayIntentBits, Partials } = require('discord.js'),
 	{ discord_token } = require("./modules/token.js"),
-	{ prefix, blocked_users } = require('./utilities/config.json');
+	{ prefix, blocked_users } = require('./bot-config/config.json');
 
 
 global.client = new Discord.Client({
@@ -163,7 +163,7 @@ const command_folders = fs.readdirSync(command_folders_path);
 global.client.once(Events.ClientReady, async () => {
 	const
 		LLPointManager = require("./modules/llpointmanager.js"),
-		config = require('./utilities/config.json');
+		config = require('./bot-config/config.json');
 
 	client.user.setPresence({
 		activities: [{
@@ -176,7 +176,7 @@ global.client.once(Events.ClientReady, async () => {
 
 	config.isOn = true;
 	console.log("I'm turned on");
-	fs.writeFileSync("./utilities/config.json", JSON.stringify(config));
+	fs.writeFileSync("./bot-config/config.json", JSON.stringify(config));
 
 	global.music_queues = new Map();
 	global.client.player = new Player(global.client, {
@@ -385,7 +385,7 @@ global.client.on(Events.MessageCreate,
 	console.log(msg.content); // Log command
 
 	// Check if turned off
-	const config = require("./utilities/config.json");
+	const config = require("./bot-config/config.json");
 	if (
 		!config.isSleep &&
 		command_name != 'togglestatus' &&
@@ -514,7 +514,7 @@ global.client.on(Events.InteractionCreate, async (interaction) => {
 		}
 
 		// Check if turned off in config
-		const config = require("./utilities/config.json");
+		const config = require("./bot-config/config.json");
 		if (
 			!config.isSleep &&
 			interaction.commandName != 'togglestatus' &&

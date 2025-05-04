@@ -1,5 +1,5 @@
 const Parameter = require("../../modules/commands/Paramater");
-const ids = require("../../data/ids.json");
+const ids = require("../../bot-config/discord-ids.json");
 const SlashCommand = require("../../modules/commands/SlashCommand");
 const { deferInteraction } = require("../../modules/functions");
 const GameManager = require("../../modules/rapid_discord_mafia/GameManager");

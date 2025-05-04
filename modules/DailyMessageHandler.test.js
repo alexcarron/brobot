@@ -16,7 +16,7 @@ jest.mock('./functions', () => ({
   getGuild: jest.fn(() => ({ id: 'mockGuildId' })),
   saveObjectToGitHubJSON: jest.fn(() => Promise.resolve('Saved'))
 }));
-jest.mock('../data/ids.json', () => ({
+jest.mock('../bot-config/discord-ids.json', () => ({
   ll_game_shows: {
     server_id: 'mockServerId',
     channels: {

@@ -5,7 +5,7 @@ const
 	{
 		deferInteraction,
 	} = require("../../modules/functions"),
-	ids = require("../../data/ids.json");
+	ids = require("../../bot-config/discord-ids.json");
 
 const command = new SlashCommand({
 	name: "start-trial",

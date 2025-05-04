@@ -2,7 +2,7 @@ const Parameter = require('../../modules/commands/Paramater.js');
 const SlashCommand = require('../../modules/commands/SlashCommand.js');
 const { LLPointPerks } = require('../../modules/enums.js')
 const { deferInteraction, confirmAction, getUser } = require("../../modules/functions.js");
-const ids = require(`../../data/ids.json`)
+const ids = require(`../../bot-config/discord-ids.json`)
 
 const Parameters = {
 	Perk: new Parameter({

@@ -1,5 +1,5 @@
 const { forever } = require("request");
-const ids = require("../data/ids.json")
+const ids = require("../bot-config/discord-ids.json")
 const { github_token } =  require("../token.json");
 const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle  } = require('discord.js');
 
