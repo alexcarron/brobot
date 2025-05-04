@@ -1,8 +1,8 @@
-const Parameter = require("../../modules/commands/Paramater");
+const Parameter = require("../../modules/commands/Paramater.js");
 const ids = require("../../bot-config/discord-ids.js");
-const SlashCommand = require("../../modules/commands/SlashCommand");
-const { deferInteraction } = require("../../modules/functions");
-const { Phases, GameStates } = require("../../modules/enums");
+const SlashCommand = require("../../modules/commands/SlashCommand.js");
+const { deferInteraction } = require("../../modules/functions.js");
+const { Phases, GameStates } = require("../../modules/enums.js");
 
 const Parameters = {
 	PlayerWhisperingTo: new Parameter({

@@ -1,10 +1,10 @@
 const cron = require("cron");
-const Event = require('../../modules/Event.js');
-const SlashCommand = require('../../modules/commands/SlashCommand.js');
-const ids = require("../../bot-config/discord-ids.js")
-const { saveObjectToGitHubJSON, confirmAction, wait, toTitleCase, getUnixTimestamp } = require("../../modules/functions.js");
+const Event = require('../../../modules/Event.js');
+const SlashCommand = require('../../../modules/commands/SlashCommand.js');
+const ids = require("../../../bot-config/discord-ids.js")
+const { saveObjectToGitHubJSON, confirmAction, wait, toTitleCase, getUnixTimestamp } = require("../../../modules/functions.js");
 const { ChannelType, ButtonBuilder, ActionRowBuilder, ModalBuilder, ButtonStyle, TextInputBuilder, TextInputStyle, StringSelectMenuOptionBuilder, StringSelectMenuBuilder, } = require('discord.js');
-const { LLPointTiers } = require("../../modules/enums.js");
+const { LLPointTiers } = require("../../../modules/enums.js");
 
 const command = new SlashCommand({
 	name: "host-event",

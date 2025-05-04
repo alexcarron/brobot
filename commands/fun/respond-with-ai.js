@@ -1,7 +1,7 @@
-const Parameter = require("../../modules/commands/Paramater");
-const SlashCommand = require("../../modules/commands/SlashCommand");
-const { deferInteraction, getGuildMember } = require("../../modules/functions");
-const { ServerPort } = require("../../modules/enums");
+const Parameter = require("../../modules/commands/Paramater.js");
+const SlashCommand = require("../../modules/commands/SlashCommand.js");
+const { deferInteraction, getGuildMember } = require("../../modules/functions.js");
+const { ServerPort } = require("../../modules/enums.js");
 const { getVoiceConnections, joinVoiceChannel } = require('@discordjs/voice');
 const ids = require(`../../bot-config/discord-ids.js`);
 const { CommandInteraction, PermissionsBitField, PermissionFlagsBits } = require("discord.js");

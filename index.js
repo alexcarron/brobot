@@ -40,6 +40,7 @@ const { Collection } = require('discord.js');
 const SlashCommand = require('./modules/commands/SlashCommand.js');
 const TextToSpeechHandler = require('./modules/TextToSpeechHandler.js');
 const DailyMessageHandler = require('./modules/DailyMessageHandler.js');
+const path = require('path');
 
 // ! Store a list of command cooldowns
 client.cooldowns = new Collection();
@@ -50,45 +51,59 @@ global.client.slash_commands = new Discord.Collection();
 
 const public_slash_commands = [];
 const private_slash_commands = {};
-const command_folders_path = `./commands`;
-const command_folders = fs.readdirSync(command_folders_path);
+const commandDirectoryPath = path.join(__dirname, 'commands');
+
+function getAllJSFiles(directoryPath) {
+	const jsFiles = [];
+
+	function recurse(currentPath) {
+		const fileEntries = fs.readdirSync(currentPath, { withFileTypes: true });
+
+		for (const fileEntry of fileEntries) {
+			const fullPath = path.join(currentPath, fileEntry.name);
+			if (fileEntry.isDirectory()) {
+				recurse(fullPath);
+			}
+			else if (fileEntry.isFile() && fileEntry.name.endsWith('.js')) {
+				jsFiles.push(fullPath);
+			}
+		}
+	}
+
+	recurse(directoryPath);
+	return jsFiles;
+}
 
 (async () => {
-	for (const command_folder of command_folders) {
-		const commands_path = `${command_folders_path}/${command_folder}`;
-		const command_files =
-			fs.readdirSync(commands_path).filter(
-				file => file.endsWith('.js')
-			);
+	const commandFilePaths = getAllJSFiles(commandDirectoryPath);
 
-		for (const file of command_files) {
-			let command = await require(`${commands_path}/${file}`);
+	for (const commandFilePath of commandFilePaths) {
+		let command = await require(commandFilePath);
 
-			if (command instanceof SlashCommand) {
-				console.log('Building slash command /' + command.name);
-				command = await command.getCommand();
-			}
+		if (command instanceof SlashCommand) {
+			console.log('Building slash command /' + command.name);
+			command = await command.getCommand();
+		}
 
-			if ("execute" in command) {
-				if ("data" in command) {
-					if (command.required_servers) {
-						for (const required_server of command.required_servers) {
-							if (!private_slash_commands[required_server])
-								private_slash_commands[required_server] = [command.data.toJSON()];
-							else
-								private_slash_commands[required_server].push(command.data.toJSON());
-						}
+		if ("execute" in command) {
+			if ("data" in command) {
+				if (command.required_servers) {
+					for (const required_server of command.required_servers) {
+						if (!private_slash_commands[required_server])
+							private_slash_commands[required_server] = [command.data.toJSON()];
+						else
+							private_slash_commands[required_server].push(command.data.toJSON());
 					}
-					else {
-						public_slash_commands.push(command.data.toJSON());
-					}
-					global.client.commands.set(command.data.name, command);
-				} else
-					global.client.commands.set(command.name, command);
-			}
-			else {
-				console.log(`[WARNING] The command ${file} is missing a required "execute" property.`);
-			}
+				}
+				else {
+					public_slash_commands.push(command.data.toJSON());
+				}
+				global.client.commands.set(command.data.name, command);
+			} else
+				global.client.commands.set(command.name, command);
+		}
+		else {
+			console.log(`[WARNING] The command ${commandFilePath} is missing a required "execute" property.`);
 		}
 	}
 
@@ -148,8 +163,8 @@ const command_folders = fs.readdirSync(command_folders_path);
 		// .then(() => console.log('Successfully deleted all application commands.'))
 		// .catch(console.error);
 
-	} catch (error) {
-		// And of course, make sure you catch and log any errors!
+	}
+	catch (error) {
 		console.error(error);
 	}
 })();

@@ -1,36 +1,38 @@
 const { CommandInteraction } = require('discord.js');
-const Parameter = require('../../modules/commands/Paramater');
-const SlashCommand = require('../../modules/commands/SlashCommand');
-const { deferInteraction } = require('../../modules/functions');
+const Parameter = require('../../../modules/commands/Paramater');
+const SlashCommand = require('../../../modules/commands/SlashCommand');
+const { deferInteraction } = require('../../../modules/functions');
 
 const command = new SlashCommand({
-	name: 'mute-all-but',
+	name: 'mass-mute',
 	description: 'Mute all members in your voice call except yourself'
 });
 
 const Parameters = {
-	UnmutedMember: new Parameter({
-		type: 'user',
-		name: 'unmuted-member',
-		description:'The singular person not to mute',
-		isRequired: true,
+	Unmute: new Parameter({
+		type: 'boolean',
+		name: 'unmute',
+		description:'Whether to unmute all members',
+		isRequired: false,
 	})
 }
 
 command.parameters = [
-	Parameters.UnmutedMember
+	Parameters.Unmute
 ]
 
 command.execute = async function (interaction) {
 	await interaction.deferReply({
-		content: "Muting all but one user...",
+		content: "Muting everyone...",
 		ephemeral: true
 	});
 
-	const unmutedMember = interaction.options.getUser(Parameters.UnmutedMember.name);
+	const isUnmuting = interaction.options.getBoolean(Parameters.Unmute.name);
 
 	interaction.member.voice.channel.members.forEach(member => {
- 		if (member.id !== interaction.member.id && member.id !== unmutedMember.id) {
+		if (isUnmuting)
+			member.voice.setMute(false);
+		else if (member.id !== interaction.member.id) {
 				member.voice.setMute(true);
 		}
 	})

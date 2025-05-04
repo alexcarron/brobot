@@ -1,8 +1,8 @@
 const { PermissionFlagsBits } = require('discord.js');
-const Parameter = require('../../modules/commands/Paramater');
-const SlashCommand = require('../../modules/commands/SlashCommand');
-const { deferInteraction } = require('../../modules/functions');
-const DailyMessageHandler = require('../../modules/DailyMessageHandler');
+const Parameter = require('../../../modules/commands/Paramater');
+const SlashCommand = require('../../../modules/commands/SlashCommand');
+const { deferInteraction } = require('../../../modules/functions');
+const DailyMessageHandler = require('../../../modules/DailyMessageHandler');
 
 const command = new SlashCommand({
 	name: "send-question",

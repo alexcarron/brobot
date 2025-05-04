@@ -1,8 +1,8 @@
 const { PermissionFlagsBits, ChannelType } = require("discord.js");
-const Parameter = require("../../modules/commands/Paramater");
-const SlashCommand = require("../../modules/commands/SlashCommand");
+const Parameter = require("../../../modules/commands/Paramater");
+const SlashCommand = require("../../../modules/commands/SlashCommand");
 const
-	{ getCategoryChildren, deferInteraction } = require("../../modules/functions");
+	{ getCategoryChildren, deferInteraction } = require("../../../modules/functions");
 
 const Parameters = {
 	CategoryChannelId: new Parameter({
