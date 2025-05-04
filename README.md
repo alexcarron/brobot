@@ -1,2 +1,81 @@
-# brobot
-It's Brobot
+
+
+# Welcome to Brobot
+
+Brobot is a feature-rich Discord.js bot built to enhance the experience of the LL Game Shows! Discord server. It automates game show interactions, provides moderation tools, and offers a wide range of commands and utilities to help contestants participate smoothly in online game shows hosted on Discord.
+
+
+## Key Features
+### LL Game Shows Specific Features
+* Start and schedule events with announcements
+* Manage LL Points:
+  * Give, claim, or reward LL Points
+  * Add or remove viewers from the LL Points leaderboard
+  * View the leaderboard or personal point balance
+* Update a viewer's LL Tier based on their points
+* Increase community engagement
+  * Send a random discussion question on command
+  * Post daily discussion topics in different channels
+
+### Music Playback
+* Play a specific song
+* Pause, resume, skip, or stop music
+* View the current song or full queue
+* Loop or shuffle the queue
+
+### Text-to-Speech in Voice Chat
+* Send text-to-speech messages
+* Transcribe messages from the VC chat
+* Adjust TTS speed or volume
+
+### Rapid Discord Mafia (Game System)
+* Game Setup & Participation:
+  * Join or leave the game
+  * Rename yourself
+  * Choose your role color
+* Game Management:
+  * Save, load, or reset the game
+  * View roles or role information
+  * Manually control game phases (sign-ups, day/night, voting)
+* Gameplay Actions:
+  * Write a death note or last will
+  * Vote for another player
+  * Whisper to another player
+  * Smite an inactive player
+  * Report bugs or issues
+  * Run a command as another player (for testing/debugging)
+
+### Fun and Games
+* Ask Brobot a question (AI-powered responses)
+* Make someone your valentine and gift them LL Points
+
+### Utility
+* Start a countdown timer
+* Force Brobot to:
+  * DM a user a custom message
+  * React to a message with a chosen emoji
+  * Send a custom message to a specific channel
+
+### Admin Tools
+* Purge messages in a channel
+* Delete all channels in a category
+* Mute all members in a voice call
+
+
+
+## License
+
+This code is provided for **educational and reference purposes only**.
+
+You **are not permitted** to use the code to host or run your own Discord bot. You may **download** and **view** the code for learning purposes but **cannot** redistribute, modify, or use it to deploy your own bot without permission.
+
+If you have any questions or would like permission for a specific use, please contact me.
+
+## Folder Structure
+-------------------
+
+* `commands`: Contains all command files
+* `data`: Contains all files used for referencing static data
+* `modules`: Contains all module files and services (e.g., music, moderation, command management, events, LL Points)
+* `index.js`: The main entry point of the bot
+* `utilities/config.json`: The configuration file

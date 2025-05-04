@@ -123,7 +123,6 @@ class TextToSpeechHandler {
 		message = removeLinks(message);
 		message = removeEmojis(message);
 		message = removeLinks(message);
-		message = simplifyLargeNumbers(message);
 
 		// Filter out empty messages
 		if (message.replace(`${speaker_name} said`, '').trim() === '') return;
