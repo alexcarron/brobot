@@ -3,7 +3,7 @@ const SlashCommand = require("../../modules/commands/SlashCommand");
 const { GameStates } = require("../../modules/enums");
 const { deferInteraction } = require("../../modules/functions");
 const
-	ids = require(`../../bot-config/discord-ids.json`);
+	ids = require(`../../bot-config/discord-ids.js`);
 
 
 

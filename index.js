@@ -6,17 +6,15 @@ const { Player } = require("discord-player");
 
 console.log(`discord.js version: ${require('discord.js').version}`);
 
-
 const
 	{ DatabaseURLs, XPRewards, XPTaskKeys, RDMRoles, GameStates, AbilityName, Feedback } = require("./modules/enums.js"),
-	ids = require('./bot-config/discord-ids.json'),
+	ids = require('./bot-config/discord-ids.js'),
 	fs = require("fs"), // Used to interact with file system
 	cron = require("cron"), // Used to have scheduled functions execute
 	Discord = require('discord.js'),
 	{ REST, Routes, Events, GatewayIntentBits, Partials } = require('discord.js'),
 	{ discord_token } = require("./modules/token.js"),
 	{ prefix, blocked_users } = require('./bot-config/config.json');
-
 
 global.client = new Discord.Client({
 	intents: [

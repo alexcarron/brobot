@@ -3,7 +3,7 @@ const SlashCommand = require('../../modules/commands/SlashCommand.js');
 const { LLPointAccomplishments } = require('../../modules/enums.js')
 const { deferInteraction, confirmAction, getUser } = require("../../modules/functions.js");
 const LLPointManager = require('../../modules/llpointmanager.js');
-const ids = require(`../../bot-config/discord-ids.json`)
+const ids = require(`../../bot-config/discord-ids.js`)
 
 const Parameters = {
 	Accomplishment: new Parameter({

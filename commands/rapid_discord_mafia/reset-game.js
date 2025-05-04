@@ -1,5 +1,5 @@
 const SlashCommand = require('../../modules/commands/SlashCommand.js');
-const ids = require(`../../bot-config/discord-ids.json`);
+const ids = require(`../../bot-config/discord-ids.js`);
 const
 	{ PermissionFlagsBits } = require('discord.js'),
 	GameManager = require("../../modules/rapid_discord_mafia/GameManager.js"),

@@ -1,5 +1,5 @@
 const { LLPointTiers, LLPointThresholds, LLPointRewards, LLPointAccomplishments } = require("./enums.js");
-const ids = require("../bot-config/discord-ids.json");
+const ids = require("../bot-config/discord-ids.js");
 const { getGuild, getGuildMember, getRoleById, addRole, removeRole, getUser } = require("./functions.js");
 
 class Viewer {

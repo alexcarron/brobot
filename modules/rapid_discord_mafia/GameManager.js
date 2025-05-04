@@ -1,6 +1,6 @@
 const { GameStates, Phases, Subphases, MessageDelays, Factions, RDMRoles, WinConditions, Feedback, Announcements, RoleNames, PhaseWaitTimes, VotingOutcomes, TrialOutcomes, TrialVotes, RoleIdentifierTypes, ArgumentSubtypes, CoinRewards, ArgumentTypes, Votes } = require("../enums.js");
 const { getChannel, getGuild, wait, getRandArrayItem, getGuildMember, getRole, removeRole, getCategoryChildren, logColor, getUnixTimestamp, shuffleArray, getRDMGuild, addRole, toTitleCase } = require("../functions.js");
-const ids = require("../../bot-config/discord-ids.json");
+const ids = require("../../bot-config/discord-ids.js");
 const validator = require('../../utilities/validator.js');
 const { github_token } =  require("../token.js");
 const { PermissionFlagsBits, Role, Interaction } = require("discord.js");

@@ -1,7 +1,7 @@
 const Parameter = require('../../modules/commands/Paramater');
 const SlashCommand = require('../../modules/commands/SlashCommand');
 const { deferInteraction } = require('../../modules/functions');
-const ids = require(`../../bot-config/discord-ids.json`);
+const ids = require(`../../bot-config/discord-ids.js`);
 const { Announcements } = require('../../modules/enums');
 
 const command = new SlashCommand({

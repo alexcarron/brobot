@@ -1,6 +1,6 @@
 const { TextChannel, Message, Guild, PermissionFlagsBits, Role } = require("discord.js");
 const { getGuild, getChannel, getGuildMember, getRole, getRoleById } = require("../functions");
-const ids = require("../../bot-config/discord-ids.json")
+const ids = require("../../bot-config/discord-ids.js")
 
 class DiscordService {
 	/**

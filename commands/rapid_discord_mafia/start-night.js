@@ -4,7 +4,7 @@ const
 	{
 		deferInteraction,
 	} = require("../../modules/functions"),
-	ids = require("../../bot-config/discord-ids.json");
+	ids = require("../../bot-config/discord-ids.js");
 
 const command = new SlashCommand({
 	name: "start-night",

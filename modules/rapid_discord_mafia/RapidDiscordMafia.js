@@ -5,7 +5,7 @@ const RoleIdentifier = require("./RoleIdentifier.js");
 const PlayerManager = require("./PlayerManager.js");
 const RoleManager = require("./RoleManager.js");
 const DiscordLogger = require("./DiscordLogger.js");
-const ids = require("../../bot-config/discord-ids.json");
+const ids = require("../../bot-config/discord-ids.js");
 const GameManager = require("./GameManager.js");
 
 class RapidDiscordMafia {

@@ -1,5 +1,5 @@
 const { getUnixTimestamp, getSentenceFromArray } = require("./functions");
-const ids = require("../bot-config/discord-ids.json");
+const ids = require("../bot-config/discord-ids.js");
 
 const Enums = {
 	WinConditions: {

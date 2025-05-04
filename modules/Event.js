@@ -1,6 +1,6 @@
 const { getGuild, getChannel, getUser, saveObjectToGitHubJSON } = require("./functions");
 const Viewer = require("./viewer");
-const ids = require("../bot-config/discord-ids.json");
+const ids = require("../bot-config/discord-ids.js");
 const { GuildScheduledEventManager, Message, GuildScheduledEventPrivacyLevel, GuildScheduledEventEntityType } = require("discord.js");
 const cron = require("cron");
 

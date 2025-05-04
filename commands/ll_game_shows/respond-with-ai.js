@@ -3,7 +3,7 @@ const SlashCommand = require("../../modules/commands/SlashCommand");
 const { deferInteraction, getGuildMember } = require("../../modules/functions");
 const { ServerPort } = require("../../modules/enums");
 const { getVoiceConnections, joinVoiceChannel } = require('@discordjs/voice');
-const ids = require(`../../bot-config/discord-ids.json`);
+const ids = require(`../../bot-config/discord-ids.js`);
 const { CommandInteraction, PermissionsBitField, PermissionFlagsBits } = require("discord.js");
 
 const command = new SlashCommand({
