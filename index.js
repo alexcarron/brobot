@@ -41,6 +41,7 @@ const SlashCommand = require('./modules/commands/SlashCommand.js');
 const TextToSpeechHandler = require('./modules/TextToSpeechHandler.js');
 const DailyMessageHandler = require('./modules/DailyMessageHandler.js');
 const path = require('path');
+const { setupEventListeners } = require('./event-listeners/event-listener-setup.js');
 
 // ! Store a list of command cooldowns
 client.cooldowns = new Collection();
@@ -243,6 +244,8 @@ global.client.once(Events.ClientReady, async () => {
 	console.log('Ready!');
 });
 
+setupEventListeners(global.client);
+
 // ! Executed for every message sent
 global.client.on(Events.MessageCreate,
 	/**
@@ -274,107 +277,8 @@ global.client.on(Events.MessageCreate,
 			`\`\`\`${msg.content}\`\`\``
 		)
 	}
-
-	if (global.tts && global.tts.isUserToggledWithChannel(msg.author.id, msg.channel.id)) {
-		console.log("message detected: " + msg.content);
-		const guild_member = await getGuildMember(msg.guild, msg.author.id);
-		const user = await getUser(msg.author.id);
-		const voice_channel = guild_member.voice.channel;
-
-		if (voice_channel) {
-			console.log("voice channel detected");
-			const brobot_perms = voice_channel.permissionsFor(msg.client.user);
-
-			if (
-				brobot_perms.has(Discord.PermissionsBitField.Flags.Connect) &&
-				brobot_perms.has(Discord.PermissionsBitField.Flags.Speak)
-			) {
-				console.log("permissions detected");
-
-				const voice_connection = joinVoiceChannel({
-					channelId: voice_channel.id,
-					guildId: msg.guild.id,
-					adapterCreator: msg.guild.voiceAdapterCreator
-				});
-
-				const name = global.tts.getToggledUserName(msg.author.id);
-
-				let username = name;
-
-				if (!username)
-					username = guild_member.nickname;
-
-				if (!username)
-					username = user.globalName;
-
-				if (!username)
-					username = user.username;
-
-				if (name && name !== null)
-					global.tts.addMessage(voice_connection, `${name} said ${msg.content}`, user.id, username);
-				else
-					global.tts.addMessage(voice_connection, msg.cleanContent, user.id, username);
-			}
-		}
-	}
-
-	// Rapid Discord Mafia Kidnapper
-	if (
-		global.game_manager &&
-		global.game_manager.player_manager &&
-		global.game_manager.state === GameStates.InProgress &&
-		msg.channel.parentId === ids.rapid_discord_mafia.category.player_action &&
-		msg.type === Discord.MessageType.Default
-	) {
-		const kidnapped_players = global.game_manager.player_manager.getPlayerList()
-			.filter(
-				/**
-				 * @param {Player} player
-				 */
-				(player) => {
-					const affected_by = player.affected_by;
-
-					const isKidnapped = affected_by
-						.some(affect => {
-							return affect.name === AbilityName.Kidnap
-						});
-
-					return isKidnapped;
-				}
-			);
-
-		kidnapped_players.forEach(
-			/**
-			 * @param {Player} kidnapped_player
-			 */
-			(kidnapped_player) => {
-				console.log(kidnapped_player.channel_id + " VS " + msg.channel.id);
-				if (
-					kidnapped_player.channel_id === msg.channel.id &&
-					kidnapped_player.id === msg.author.id
-				) {
-					const affected_by = kidnapped_player.affected_by;
-
-					const kidnapper_player_names = affected_by
-					.filter(affect => {
-						return affect.name === AbilityName.Kidnap
-					})
-					.map(affect => affect.by);
-
-					const kidnapper_players = kidnapper_player_names
-						.map(player_name => {
-							return global.game_manager.player_manager.get(player_name)
-						});
-
-					kidnapper_players.forEach(player => {
-						player.sendFeedback(Feedback.KidnapperYells(player, kidnapped_player, msg.content));
-					})
-				}
-
-			}
-		)
-	}
 });
+
 
 // ! Executed for every slash command executed
 global.client.on(Events.InteractionCreate, async (interaction) => {

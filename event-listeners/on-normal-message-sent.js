@@ -1,13 +1,13 @@
-import { Message, MessageType } from "discord.js"
-import TextToSpeechHandler from "../modules/TextToSpeechHandler"
-import { getGuildMember } from "../modules/functions";
-import { joinVoiceChannel } from "@discordjs/voice";
-import { GameStates } from "../modules/enums";
-import ids from "../bot-config/discord-ids";
-
-ids
+const { Message, MessageType, PermissionsBitField } = require("discord.js");
+const TextToSpeechHandler = require("../modules/TextToSpeechHandler");
+const { getGuildMember } = require("../modules/functions");
+const { joinVoiceChannel } = require("@discordjs/voice");
+const { GameStates } = require("../modules/enums");
+const ids = require("../bot-config/discord-ids");
 
 const onTTSMessageSent = async (message) => {
+	console.log("onTTSMessageSent", message.content);
+
 	const guildMember = await getGuildMember(message.guild, message.author.id);
 	const voiceChannel = guildMember.voice.channel;
 
@@ -15,11 +15,10 @@ const onTTSMessageSent = async (message) => {
 		return;
 
 
-	const user = await getUser(message.author.id);
 	const botVCPermissions = voiceChannel.permissionsFor(message.client.user);
 
-	const botHasConnectPermission = botVCPermissions.has(Discord.PermissionsBitField.Flags.Connect);
-	const botHasSpeakPermission = botVCPermissions.has(Discord.PermissionsBitField.Flags.Speak);
+	const botHasConnectPermission = botVCPermissions.has(PermissionsBitField.Flags.Connect);
+	const botHasSpeakPermission = botVCPermissions.has(PermissionsBitField.Flags.Speak);
 
 	const botHasRequiredPermissions = botHasConnectPermission && botHasSpeakPermission;
 
@@ -90,7 +89,9 @@ const onRDMKidnapperMessageSent = async (message) => {
 /**
  * @param {Message} message
  */
-export const onNormalMessageSent = async (message) => {
+const onNormalMessageSent = async (message) => {
+	console.log("onNormalMessageSent", message.content);
+
 	if (TextToSpeechHandler.shouldMessageTriggerTTS(message)) {
 		await onTTSMessageSent(message);
 	}
@@ -106,3 +107,5 @@ export const onNormalMessageSent = async (message) => {
 		onRDMKidnapperMessageSent(message);
 	}
 }
+
+module.exports = {onNormalMessageSent};
