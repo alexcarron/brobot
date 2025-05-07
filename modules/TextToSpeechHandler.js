@@ -235,6 +235,61 @@ class TextToSpeechHandler {
 	}
 
 
+	static shouldMessageTriggerTTS(message) {
+		const textToSpeechInstance = global.tts;
+
+		if (textToSpeechInstance === undefined)
+			return false;
+
+		const messageAuthorID = message.author.id;
+		const messageChannelID = message.channel.id;
+
+		if (global.tts.isUserToggledWithChannel(
+			messageAuthorID,
+			messageChannelID
+		))
+			return true;
+		else
+			return false;
+	}
+
+	static addUsersMessageToQueue(message, voiceConnection) {
+		const textToSpeechInstance = global.tts;
+
+		if (textToSpeechInstance === undefined)
+			throw new Error("TextToSpeechHandler is not initialized.");
+
+		const user = message.author;
+		const guildMember = message.member;
+
+		const name = textToSpeechInstance.getToggledUserName(user.id);
+
+		let username = name;
+
+		if (!username)
+			username = guildMember.nickname;
+
+		if (!username)
+			username = user.globalName;
+
+		if (!username)
+			username = user.username;
+
+		if (name && name !== null)
+			global.tts.addMessage(
+				voiceConnection,
+				`${name} said ${msg.content}`,
+				user.id,
+				username
+			);
+		else
+			global.tts.addMessage(
+				voiceConnection,
+				message.cleanContent,
+				user.id,
+				username
+			);
+	}
 }
 
 module.exports = TextToSpeechHandler;

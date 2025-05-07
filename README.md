@@ -120,3 +120,19 @@ Contains all command definition files.
 
 ### `data`: Contains all files used for referencing static data
 ### `modules`: Contains all module files and services (e.g., music, moderation, command management, events, LL Points)
+
+
+## Terminology
+Here are some key terms used in this project:
+
+### Discord API
+The Discord API allows developers to interact programmatically with Discord's platform, enabling bots to perform actions such as sending messages, banning users, or modifying server settings.
+
+### Bot Token
+A unique, secret string of characters that authenticates your bot with the Discord API. The token is required to run the bot and authorize it to take actions on Discord.
+
+### Discord.js
+A powerful JavaScript library that simplifies interaction with the Discord API, providing a set of easy-to-use functions for bot development.
+
+### Client
+The `Client` is an object that represents the bot itself and manages the connection between the bot and Discord's servers, handling events and interactions.
