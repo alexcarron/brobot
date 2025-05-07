@@ -246,40 +246,6 @@ global.client.once(Events.ClientReady, async () => {
 
 setupEventListeners(global.client);
 
-// ! Executed for every message sent
-global.client.on(Events.MessageCreate,
-	/**
-	 *
-	 * @param {Discord.Message} msg
-	 * @returns
-	 */
-	async(msg) => {
-	// Log DMs
-	if (!msg.guild) {
-		let brobot_server = global.client.guilds.cache.get(ids.servers.brobot_testing),
-			dm_channel = brobot_server.channels.cache.get(ids.brobot_test_server.channels.dm_log),
-			recipient_message;
-
-		// From BroBot
-		if (msg.author.id === ids.users.Brobot) {
-			recipient_message = `<@${ids.users.Brobot}> ➜ <@${msg.channel.recipient ? msg.channel.recipient.id : ""}>\n\`Brobot ➜ ${msg.channel.recipient.username}\``;
-		}
-		// To Brobot
-		else {
-			recipient_message = `<@${msg.channel.recipient.id}> ➜ <@${ids.users.Brobot}>\n\`${msg.channel.recipient.username} ➜ Brobot\``;
-		}
-
-		dm_channel.send(
-			`${recipient_message}\n` +
-			`DM Channel ID: \`${msg.channel.id}\`\n` +
-			`Message ID: \`${msg.id}\`\n` +
-			`\n` +
-			`\`\`\`${msg.content}\`\`\``
-		)
-	}
-});
-
-
 // ! Executed for every slash command executed
 global.client.on(Events.InteractionCreate, async (interaction) => {
 	// Normal slash command

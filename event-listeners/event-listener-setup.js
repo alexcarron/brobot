@@ -2,6 +2,7 @@ const { ChannelType, Client, Events, Message } = require("discord.js");
 const { onNormalMessageSent } = require("./on-normal-message-sent");
 
 const { prefix } = require('../bot-config/config.json');
+const { onDmRecieved } = require("./on-dm-recieved");
 
 const isDM = (message) =>
 	message.channel.type === ChannelType.DM ||
@@ -13,14 +14,12 @@ const isTextCommand = (message) =>
 
 const setupMessageSentListener =
 	(client) => {
-		console.log("setupMessageSentListener");
 
 		client.on(Events.MessageCreate,
 			async (message) => {
-				console.log("onEventMessageSent", message.content);
 
 				if (isDM(message)) {
-					console.log("onDM")
+					await onDmRecieved(message);
 					return;
 				}
 
