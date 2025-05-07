@@ -1,4 +1,4 @@
-module.exports = {
+const ids = {
 	users: {
     LL: "276119804182659072",
     Brobot: "803333218614116392",
@@ -112,3 +112,5 @@ module.exports = {
     },
   }
 }
+
+module.exports = ids;
