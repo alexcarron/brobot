@@ -1,20 +1,16 @@
 const RapidDiscordMafia = require('./modules/rapid_discord_mafia/RapidDiscordMafia.js');
 const Event = require('./modules/Event.js');
 const Timer = require('./modules/Timer.js');
-const { getVoiceConnections, joinVoiceChannel } = require('@discordjs/voice');
 const { Player } = require("discord-player");
 
 console.log(`discord.js version: ${require('discord.js').version}`);
 
 const
-	{ DatabaseURLs, XPRewards, XPTaskKeys, RDMRoles, GameStates, AbilityName, Feedback } = require("./modules/enums.js"),
 	ids = require('./bot-config/discord-ids.js'),
 	fs = require("fs"), // Used to interact with file system
-	cron = require("cron"), // Used to have scheduled functions execute
 	Discord = require('discord.js'),
 	{ REST, Routes, Events, GatewayIntentBits, Partials } = require('discord.js'),
-	{ discord_token } = require("./modules/token.js"),
-	{ prefix, blocked_users } = require('./bot-config/config.json');
+	{ discord_token } = require("./modules/token.js");
 
 global.client = new Discord.Client({
 	intents: [
@@ -35,7 +31,7 @@ global.client = new Discord.Client({
 });
 
 // ! Create global paths object to store directories
-const { addRole, getRole, getGuild, getChannel, getObjectFromGitHubJSON, saveObjectToGitHubJSON, getRoleById, getJSONFromObj, getGuildMember, getUser } = require('./modules/functions.js');
+const {  getObjectFromGitHubJSON } = require('./modules/functions.js');
 const { Collection } = require('discord.js');
 const SlashCommand = require('./modules/commands/SlashCommand.js');
 const TextToSpeechHandler = require('./modules/TextToSpeechHandler.js');
@@ -170,9 +166,11 @@ function getAllJSFiles(directoryPath) {
 	}
 })();
 
+// Authenticate and connect Brobot to Discord API
+global.client.login(discord_token);
+
 // when the client is ready, run this code
-// this event will only trigger one time after logging in
-// ! Set up Brobot
+// this event will only trigger one time after Brobot has successfully fully connected to the Discord API
 global.client.once(Events.ClientReady, async () => {
 	const
 		LLPointManager = require("./modules/llpointmanager.js"),
@@ -245,24 +243,3 @@ global.client.once(Events.ClientReady, async () => {
 });
 
 setupEventListeners(global.client);
-
-// ! Executed when a user joins the server
-client.on(Events.GuildMemberAdd, async (guild_member) => {
-	if (guild_member.guild.id === ids.servers.rapid_discord_mafia) {
-		const rdm_guild = await getGuild(ids.servers.rapid_discord_mafia);
-		const spectator_role = await getRole(rdm_guild, RDMRoles.Spectator);
-		await addRole(guild_member, spectator_role);
-	}
-	else if (guild_member.guild.id === ids.servers.ll_game_show_center) {
-		const ll_game_show_guild = await getGuild(ids.servers.ll_game_show_center);
-		const viewer_role = await getRoleById(ll_game_show_guild, ids.ll_game_shows.roles.viewer);
-		await addRole(guild_member, viewer_role);
-	}
-});
-
-
-
-
-
-// login to Discord with your app's token
-global.client.login(discord_token);
