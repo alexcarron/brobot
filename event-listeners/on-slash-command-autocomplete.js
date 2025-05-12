@@ -1,4 +1,4 @@
-const onSlashCommandAutoComplete = async function(interaction) {
+const onSlashCommandAutocomplete = async function(interaction) {
 	const command = interaction.client.commands.get(interaction.commandName);
 
 	if (!command) {
@@ -13,4 +13,4 @@ const onSlashCommandAutoComplete = async function(interaction) {
 	}
 }
 
-module.exports = { onSlashCommandAutoComplete };
+module.exports = { onSlashCommandAutocomplete };

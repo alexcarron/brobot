@@ -1,10 +1,11 @@
-const { ChannelType, Client, Events, Message } = require("discord.js");
+const { ChannelType, Client, Events, Message, InteractionType } = require("discord.js");
 const { onNormalMessageSent } = require("./on-normal-message-sent");
 
 const { prefix } = require('../bot-config/config.json');
 const { onDmRecieved } = require("./on-dm-recieved");
 const { onSlashCommandExecuted } = require("./on-slash-command-executed");
-const { onSlashCommandAutoComplete } = require("./on-slash-command-autocomplete");
+const { onSlashCommandAutocomplete } = require("./on-slash-command-autocomplete");
+const { onButtonPressed } = require("./on-button-pressed");
 
 const isDM = (message) =>
 	message.channel.type === ChannelType.DM ||
@@ -19,6 +20,10 @@ const isSlashCommand = (interaction) =>
 
 const isSlashCommandAutoComplete = (interaction) =>
 	interaction.isAutocomplete();
+
+const isButtonPress = (interaction) =>
+	interaction.type === InteractionType.MessageComponent &&
+	interaction.isButton();
 
 const setupMessageSentListener =
 	(client) => {
@@ -49,7 +54,10 @@ const setupInteractionCreateListener =
 					await onSlashCommandExecuted(interaction);
 
 				if (isSlashCommandAutoComplete(interaction))
-					await onSlashCommandAutoComplete(interaction);
+					await onSlashCommandAutocomplete(interaction);
+
+				if (isButtonPress(interaction))
+					await onButtonPressed(interaction);
 			}
 		)
 	};
