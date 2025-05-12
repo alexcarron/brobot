@@ -248,23 +248,8 @@ setupEventListeners(global.client);
 
 // ! Executed for every slash command executed
 global.client.on(Events.InteractionCreate, async (interaction) => {
-	// Autocomplete Slash Command Reader
-	if (interaction.isAutocomplete()) {
-		const command = interaction.client.commands.get(interaction.commandName);
-
-		if (!command) {
-			console.error(`No command matching ${interaction.commandName} was found.`);
-			return;
-		}
-
-		try {
-			command.autocomplete(interaction);
-		} catch (error) {
-			console.error(error);
-		}
-	}
 	// Button presses
-	else if (interaction.type = Discord.InteractionType.MessageComponent) {
+	if (interaction.type = Discord.InteractionType.MessageComponent) {
 		// ! GameForge Vote Reader
 		// if (Object.values(Vote.Votes).some(vote => interaction.customId.startsWith(vote))) {
 		// 	(async () => {

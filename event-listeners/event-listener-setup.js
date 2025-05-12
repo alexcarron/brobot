@@ -4,6 +4,7 @@ const { onNormalMessageSent } = require("./on-normal-message-sent");
 const { prefix } = require('../bot-config/config.json');
 const { onDmRecieved } = require("./on-dm-recieved");
 const { onSlashCommandExecuted } = require("./on-slash-command-executed");
+const { onSlashCommandAutoComplete } = require("./on-slash-command-autocomplete");
 
 const isDM = (message) =>
 	message.channel.type === ChannelType.DM ||
@@ -15,6 +16,9 @@ const isTextCommand = (message) =>
 
 const isSlashCommand = (interaction) =>
 	interaction.isChatInputCommand();
+
+const isSlashCommandAutoComplete = (interaction) =>
+	interaction.isAutocomplete();
 
 const setupMessageSentListener =
 	(client) => {
@@ -43,6 +47,9 @@ const setupInteractionCreateListener =
 			async (interaction) => {
 				if (isSlashCommand(interaction))
 					await onSlashCommandExecuted(interaction);
+
+				if (isSlashCommandAutoComplete(interaction))
+					await onSlashCommandAutoComplete(interaction);
 			}
 		)
 	};
