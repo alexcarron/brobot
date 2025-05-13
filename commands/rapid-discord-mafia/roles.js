@@ -1,7 +1,8 @@
 const Parameter = require("../../modules/commands/Paramater");
 const ids = require("../../bot-config/discord-ids.js");
 const SlashCommand = require("../../modules/commands/SlashCommand");
-const { deferInteraction, appendElementToNestedProperty: addElementToNestedProperty, appendElementToNestedProperty, toTitleCase } = require("../../modules/functions");
+const { deferInteraction, appendElementToNestedProperty: addElementToNestedProperty, appendElementToNestedProperty } = require("../../modules/functions");
+const { toTitleCase } = require("../../utilities/text-formatting-utils.js");
 
 const command = new SlashCommand({
 	name: "roles",

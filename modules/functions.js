@@ -4,15 +4,6 @@ const { github_token } =  require("../token.json");
 const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle  } = require('discord.js');
 
 const functions = {
-	toTitleCase(string) {
-		return string.replace(
-			/\w\S*/g,
-			function(txt) {
-				return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-			}
-		);
-	},
-
 	changeAttrValue: function changeAttrValue(obj, ...properties) {
 		let property = properties[0],
 			value = properties.slice(-1)[0];

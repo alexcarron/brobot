@@ -1,4 +1,4 @@
-const { toTitleCase } = require("../functions");
+const { toTitleCase } = require("../../utilities/text-formatting-utils");
 
 class VoteManager {
 	constructor(game_manager) {

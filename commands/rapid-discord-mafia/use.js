@@ -1,9 +1,10 @@
 const Parameter = require("../../modules/commands/Paramater");
 const SlashCommand = require("../../modules/commands/SlashCommand");
-const { toTitleCase, deferInteraction, getRDMGuild, getChannel } = require("../../modules/functions");
+const { deferInteraction, getRDMGuild, getChannel } = require("../../modules/functions");
 const { ArgumentTypes, ArgumentSubtypes, Factions, AbilityUses, Phases, AbilityName } = require("../../modules/enums");
 const ids = require("../../bot-config/discord-ids.js");
 const AbilityManager = require("../../modules/rapid_discord_mafia/AbilityManager");
+const { toTitleCase } = require("../../utilities/text-formatting-utils.js");
 
 const command = new SlashCommand({
 	name: "use",

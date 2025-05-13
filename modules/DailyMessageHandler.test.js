@@ -2,6 +2,7 @@ const { TextChannel } = require("discord.js");
 const DailyMessageHandler = require("./DailyMessageHandler");
 const cron = require("cron");
 const { getChannel, getRandArrayItem } = require("./functions");
+const { roles } = require("./rapid_discord_mafia/RoleManager");
 
 jest.mock('discord.js', () => ({
   TextChannel: class {
@@ -24,6 +25,9 @@ jest.mock('../bot-config/discord-ids.js', () => ({
       random: 'mockRandomChannelId',
       empty: 'mockEmptyChannelId',
     },
+		roles: {
+			daily_questions: 'mockDailyQuestionsRoleId',
+		},
   },
 }));
 

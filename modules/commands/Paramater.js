@@ -1,6 +1,4 @@
-const { SlashCommandBuilder, SlashCommandSubcommandBuilder } = require("discord.js");
-const { toTitleCase } = require("../functions");
-
+const { toTitleCase } = require('../../utilities/text-formatting-utils.js');
 /**
  * Represents a Discord command parameter.
  * @class

@@ -6,7 +6,7 @@ const Logger = require("./Logger");
 const DiscordService = require("./DiscordService");
 
 const
-	{ getGuildMember, getRole, addRole, removeRole, getChannel, wait, getRandArrayItem, getRDMGuild, toTitleCase } = require("../functions"),
+	{ getGuildMember, getRole, addRole, removeRole, getChannel, wait, getRandArrayItem, getRDMGuild } = require("../functions"),
 	{ PermissionFlagsBits, PermissionOverwriteManager, PermissionOverwrites } = require('discord.js'),
 	rdm_ids = require("../../bot-config/discord-ids.js").rapid_discord_mafia;
 

@@ -72,8 +72,6 @@ class DailyMessageHandler {
 		const guild = await getGuild(DailyMessageHandler.GUILD_ID);
 		const channel = await getChannel(guild, channelId);
 
-		console.log({channel});
-
 		return channel;
 	}
 
@@ -106,8 +104,6 @@ class DailyMessageHandler {
 	 */
 	async sendDailyMessage() {
 		const channelName = this.getRandomChannel();
-
-		console.log({channelName});
 
 		if (channelName === null || channelName === undefined) {
 			console.log("No channels with messages left to send");
