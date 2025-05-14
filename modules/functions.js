@@ -556,27 +556,6 @@ doesValueMatchType: function doesValueMatchType(value, type) {
 		return object;
 	},
 
-	splitWithNoSplitWords(long_message, max_num_characters) {
-		let messages = [];
-		while (long_message.length > max_num_characters) {
-			let split_message = long_message.substring(0, max_num_characters);
-
-			let char_index = split_message.length;
-			let char = long_message.charAt(char_index);
-			while (char_index >= 0 && char !== ' ') {
-				char_index -= 1;
-				char = long_message.charAt(char_index);
-			}
-
-			split_message = split_message.substring(0, char_index);
-			long_message = long_message.substring(char_index + 1);
-			messages.push(split_message);
-		}
-		messages.push(long_message);
-
-		return messages;
-	},
-
 	/**
 	 *
 	 * @param {{channel_send}} param0
@@ -663,22 +642,6 @@ doesValueMatchType: function doesValueMatchType(value, type) {
 
 		return text_response;
 	},
-
-	removeLinks(input_string) {
-    // Regular expression to match URLs
-    var url_regex = /(https?:\/\/[^\s]+)/g;
-    // Replace URLs with an empty string
-    return input_string.replace(url_regex, '');
-	},
-
-	/**
-	 * Removes emojis from a string
-	 * @param {string} input_string - The string to remove emojis from
-	 * @returns {string} The string with emojis removed
-	 */
-	removeEmojis(input_string) {
-		return input_string.replace(/(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/g, '');
-	}
 }
 
 module.exports = functions;

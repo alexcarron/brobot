@@ -1,10 +1,8 @@
 const tts = require('google-tts-api');
-const { joinVoiceChannel, createAudioResource, createAudioPlayer, VoiceConnection } = require('@discordjs/voice');
-const { getGuildMember, getGuild, wait, splitWithNoSplitWords, removeLinks, removeEmojis, simplifyLargeNumbers } = require('./functions');
-const ids = require("../bot-config/discord-ids.js");
+const { createAudioResource, createAudioPlayer, VoiceConnection } = require('@discordjs/voice');
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffmpeg = require('fluent-ffmpeg');
-const fs = require('node:fs');
+const { wrapTextByLineWidth, removeLinks, removeEmojis } = require('../utilities/text-formatting-utils');
 ffmpeg.setFfmpegPath(ffmpegPath);
 
 class TextToSpeechHandler {
@@ -130,7 +128,7 @@ class TextToSpeechHandler {
 		console.log(message);
 
 		message = message.toLowerCase();
-		const messages_to_speak = splitWithNoSplitWords(message, 200);
+		const messages_to_speak = wrapTextByLineWidth(message, 200);
 
 		messages_to_speak.forEach(message => {
 			if (message === '') return;

@@ -1,4 +1,4 @@
-const { doArraysHaveSameElements, gcd, lcm, addOrAssignElementToArray, appendElementToNestedProperty: addElementToNestedProperty, splitWithNoSplitWords } = require("./functions");
+const { doArraysHaveSameElements, gcd, lcm, appendElementToNestedProperty: addElementToNestedProperty } = require("./functions");
 
 // ^ doArraysHaveSameElements
 {
@@ -230,19 +230,5 @@ describe('addElementToNestedProperty', () => {
 				"decoy_property3": [],
 			}
 		);
-	});
-});
-
-
-// ^ splitWithNoSplitWords
-describe('splitWithNoSplitWords', () => {
-	it('SHOULD return expected_return_value for input input_value', () => {
-		expect(splitWithNoSplitWords("a sentence filled with words and words and words", 10)).toStrictEqual([
-			"a sentence",
-			"filled",
-			"with words",
-			"and words",
-			"and words",
-		]);
 	});
 });

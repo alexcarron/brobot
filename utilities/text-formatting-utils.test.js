@@ -1,4 +1,4 @@
-const { toTitleCase, createTextProgressBar, toNumericOrdinal, toWordOrdinal, createListFromWords, wrapTextByLineWidth } = require("./text-formatting-utils");
+const { toTitleCase, createTextProgressBar, toNumericOrdinal, toWordOrdinal, createListFromWords, wrapTextByLineWidth, removeLinks, removeEmojis } = require("./text-formatting-utils");
 
 describe('toTitleCase function', () => {
   it('should return an empty string for an empty input', () => {
@@ -245,5 +245,80 @@ describe('wrapTextByLineWidth function', () => {
 		expect(() => wrapTextByLineWidth(text, -10)).toThrowError('lineWidth must be a positive number.');
 		expect(() => wrapTextByLineWidth(text, 0)).toThrowError('lineWidth must be a positive number.');
 		expect(() => wrapTextByLineWidth(text, 'invalid')).toThrowError('lineWidth must be a positive number.');
+	});
+});
+
+describe('removeLinks function', () => {
+	it('should remove a single URL from a string', () => {
+		const input = 'Hello, visit https://www.example.com for more info.';
+		const expectedOutput = 'Hello, visit  for more info.';
+		expect(removeLinks(input)).toBe(expectedOutput);
+	});
+
+	it('should remove multiple URLs from a string', () => {
+		const input = 'Hello, visit https://www.example.com and http://www.google.com for more info.';
+		const expectedOutput = 'Hello, visit  and  for more info.';
+		expect(removeLinks(input)).toBe(expectedOutput);
+	});
+
+	it('should not modify a string with no URLs', () => {
+		const input = 'Hello, world!';
+		const expectedOutput = 'Hello, world!';
+		expect(removeLinks(input)).toBe(expectedOutput);
+	});
+
+	it('should remove a URL with special characters', () => {
+		const input = 'Hello, visit https://www.example.com/path?query=param#anchor for more info.';
+		const expectedOutput = 'Hello, visit  for more info.';
+		expect(removeLinks(input)).toBe(expectedOutput);
+	});
+
+	it('should return an empty string for an empty input', () => {
+		const input = '';
+		const expectedOutput = '';
+		expect(removeLinks(input)).toBe(expectedOutput);
+	});
+
+	it('should throw an error for a null input', () => {
+		expect(() => removeLinks(null)).toThrowError();
+	});
+
+	it('should throw an error for an undefined input', () => {
+		expect(() => removeLinks(undefined)).toThrowError();
+	});
+});
+
+describe('removeEmojis function', () => {
+	it('should remove emojis from a string', () => {
+		const input = 'Hello 🌎 world!';
+		const expectedOutput = 'Hello  world!';
+		expect(removeEmojis(input)).toBe(expectedOutput);
+	});
+
+	it('should return the original string if it does not contain emojis', () => {
+		const input = 'Hello world!';
+		const expectedOutput = 'Hello world!';
+		expect(removeEmojis(input)).toBe(expectedOutput);
+	});
+
+	it('should return an empty string if the input is an empty string', () => {
+		const input = '';
+		const expectedOutput = '';
+		expect(removeEmojis(input)).toBe(expectedOutput);
+	});
+
+	it('should throw an error if the input is null', () => {
+		const input = null;
+		expect(() => removeEmojis(input)).toThrowError();
+	});
+
+	it('should throw an error if the input is undefined', () => {
+		const input = undefined;
+		expect(() => removeEmojis(input)).toThrowError();
+	});
+
+	it('should throw an error if the input is not a string', () => {
+		const input = 123;
+		expect(() => removeEmojis(input)).toThrowError();
 	});
 });

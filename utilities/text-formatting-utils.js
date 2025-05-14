@@ -204,14 +204,6 @@ const wrapTextByLineWidth = (text, lineWidth) => {
 	currentText = currentText.trim();
 	if (currentText.length === 0) return [];
 
-	console.log({
-		text,
-		lineWidth,
-		currentText,
-		lines,
-		length: currentText.length
-	})
-
 	// While there is more text to wrap
 	while (currentText.length > lineWidth) {
 		let newLine = currentText.substring(0, lineWidth);
@@ -246,4 +238,23 @@ const wrapTextByLineWidth = (text, lineWidth) => {
 	return lines;
 }
 
-module.exports = { toTitleCase, createTextProgressBar, toNumericOrdinal, toWordOrdinal, createListFromWords, wrapTextByLineWidth };
+/**
+ * Removes any URLs from a given string.
+ * @param {string} string - The string to remove URLs from
+ * @returns {string} The string with all URLs removed
+ */
+const removeLinks = (string) => {
+	const urlRegex = /(https?:\/\/[^\s]+)/g;
+	return string.replace(urlRegex, '');
+}
+
+/**
+ * Removes all emojis from a given string.
+ * @param {string} string - The string to remove emojis from
+ * @returns {string} The string with all emojis removed
+ */
+const removeEmojis = (string) => {
+	return string.replace(/(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/g, '');
+}
+
+module.exports = { toTitleCase, createTextProgressBar, toNumericOrdinal, toWordOrdinal, createListFromWords, wrapTextByLineWidth, removeLinks, removeEmojis };
