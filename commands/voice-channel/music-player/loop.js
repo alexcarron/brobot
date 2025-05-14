@@ -1,6 +1,6 @@
 const { PermissionFlagsBits, PermissionsBitField } = require("discord.js");
 const SlashCommand = require("../../../modules/commands/SlashCommand");
-const { deferInteraction } = require("../../../modules/functions");
+const { deferInteraction } = require("../../../utilities/discord-action-utils");
 const { QueueRepeatMode } = require("discord-player");
 
 const command = new SlashCommand({

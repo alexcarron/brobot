@@ -1,6 +1,6 @@
 const ids = require("../../bot-config/discord-ids.js");
 const SlashCommand = require("../../modules/commands/SlashCommand");
-const { deferInteraction } = require("../../modules/functions");
+const { deferInteraction } = require("../../utilities/discord-action-utils");
 const { GameStates, RDMRoles } = require("../../modules/enums");
 const { confirmInteractionWithButtons } = require("../../utilities/discord-action-utils.js");
 

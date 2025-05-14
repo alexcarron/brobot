@@ -1,5 +1,5 @@
 const Discord = require('discord.js');
-const { deferInteraction } = require('../../modules/functions');
+const { deferInteraction } = require('../../utilities/discord-action-utils');
 const SlashCommand = require('../../modules/commands/SlashCommand');
 const { ButtonBuilder, ButtonStyle, ActionRowBuilder  } = require('discord.js');
 

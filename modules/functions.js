@@ -2,29 +2,6 @@ const { github_token } =  require("../token.json");
 const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle  } = require('discord.js');
 
 const functions = {
-	async deferInteraction(interaction, message_content="Running command...") {
-		if (interaction) {
-			if (interaction.replied) {
-				await interaction.followUp({
-					content: message_content,
-					ephemeral: true
-				});
-			}
-			else if (interaction.deferred) {
-				await interaction.editReply({
-					content: message_content,
-					ephemeral: true
-				});
-			}
-			else {
-				await interaction.deferReply({
-					content: message_content,
-					ephemeral: true
-				});
-			}
-		}
-	},
-
 	async editReplyToInteraction(interaction, new_message) {
 		if (interaction && (interaction.replied || interaction.deferred)) {
 			return await interaction.editReply(new_message);

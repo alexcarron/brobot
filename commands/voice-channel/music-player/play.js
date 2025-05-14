@@ -1,6 +1,6 @@
 const { PermissionFlagsBits, PermissionsBitField } = require("discord.js");
 const SlashCommand = require("../../../modules/commands/SlashCommand");
-const { deferInteraction } = require("../../../modules/functions");
+const { deferInteraction } = require("../../../utilities/discord-action-utils");
 const Parameter = require("../../../modules/commands/Paramater");
 const { QueryType, Player, QueueRepeatMode } = require("discord-player");
 const { EmbedBuilder } = require("@discordjs/builders");

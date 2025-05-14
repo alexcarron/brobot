@@ -1,7 +1,7 @@
 const Parameter = require("../../modules/commands/Paramater");
 const SlashCommand = require("../../modules/commands/SlashCommand");
 const ids = require("../../bot-config/discord-ids.js");
-const { deferInteraction } = require("../../modules/functions");
+const { deferInteraction } = require("../../utilities/discord-action-utils");
 
 const Parameters = {
 	PlayerSmiting: new Parameter({

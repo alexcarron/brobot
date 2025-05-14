@@ -2,8 +2,8 @@ const { PermissionFlagsBits } = require('discord.js');
 const Parameter = require('../../modules/commands/Paramater.js');
 const SlashCommand = require('../../modules/commands/SlashCommand.js');
 const { LLPointRewards, LLPointAccomplishments } = require('../../modules/enums.js')
-const { autocomplete, deferInteraction } = require("../../modules/functions.js");
 const LLPointManager = require('../../modules/llpointmanager.js');
+const { deferInteraction } = require('../../utilities/discord-action-utils.js');
 
 const Parameters = {
 	ViewerName: new Parameter({

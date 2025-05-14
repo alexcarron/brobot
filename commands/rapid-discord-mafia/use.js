@@ -1,6 +1,6 @@
 const Parameter = require("../../modules/commands/Paramater");
 const SlashCommand = require("../../modules/commands/SlashCommand");
-const { deferInteraction } = require("../../modules/functions");
+const { deferInteraction } = require("../../utilities/discord-action-utils");
 const { ArgumentTypes, ArgumentSubtypes, Factions, AbilityUses, Phases, AbilityName } = require("../../modules/enums");
 const ids = require("../../bot-config/discord-ids.js");
 const AbilityManager = require("../../modules/rapid_discord_mafia/AbilityManager");

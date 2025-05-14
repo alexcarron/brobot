@@ -1,11 +1,10 @@
 const Parameter = require('../../modules/commands/Paramater.js');
 const SlashCommand = require('../../modules/commands/SlashCommand.js');
 const { LLPointAccomplishments } = require('../../modules/enums.js')
-const { deferInteraction } = require("../../modules/functions.js");
 const LLPointManager = require('../../modules/llpointmanager.js');
 const ids = require(`../../bot-config/discord-ids.js`);
 const { fetchUser } = require('../../utilities/discord-fetch-utils.js');
-const { confirmInteractionWithButtons } = require('../../utilities/discord-action-utils.js');
+const { confirmInteractionWithButtons, deferInteraction } = require('../../utilities/discord-action-utils.js');
 
 const Parameters = {
 	Accomplishment: new Parameter({

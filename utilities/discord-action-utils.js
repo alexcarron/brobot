@@ -88,10 +88,35 @@ const addRoleToMember = async (guildMember, role) => {
 const removeRoleFromMember = async (guildMember, role) => {
 	await guildMember.roles.remove(role);
 }
-}
+
+/**
+ * Defers an interaction, editing or replying to the interaction with the provided message content.
+ * @param {Interaction} interaction The interaction to defer.
+ * @param {string} [messageContent="Running command..."] The content of the message to edit or reply with.
+ * @returns {Promise<void>}
+ */
+const deferInteraction = async (
+	interaction,
+	messageContent = "Running command..."
+) => {
+	if (!interaction) return;
+
+	const content = { content: messageContent, ephemeral: true };
+
+	if (interaction.replied) {
+		await interaction.followUp(content);
+	}
+	else if (interaction.deferred) {
+		await interaction.editReply(content);
+	}
+	else {
+		await interaction.deferReply(content);
+	}
+};
 
 module.exports = {
 	confirmInteractionWithButtons,
 	addRoleToMember,
 	removeRoleFromMember,
+	deferInteraction,
 };

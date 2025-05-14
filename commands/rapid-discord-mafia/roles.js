@@ -1,7 +1,7 @@
 const Parameter = require("../../modules/commands/Paramater");
 const ids = require("../../bot-config/discord-ids.js");
 const SlashCommand = require("../../modules/commands/SlashCommand");
-const { deferInteraction } = require("../../modules/functions");
+const { deferInteraction } = require("../../utilities/discord-action-utils");
 const { toTitleCase } = require("../../utilities/text-formatting-utils.js");
 const { appendToNestedProperty } = require("../../utilities/data-structure-utils.js");
 

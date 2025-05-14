@@ -2,19 +2,9 @@ const SlashCommand = require("../../modules/commands/SlashCommand");
 const { GameStates, Announcements, PhaseWaitTimes } = require("../../modules/enums");
 const GameManager = require("../../modules/rapid_discord_mafia/GameManager");
 const
-
 	{ PermissionFlagsBits } = require('discord.js'),
-	{ deferInteraction } = require("../../modules/functions"),
-	ids = require(`../../bot-config/discord-ids.js`),
-	{
-		rdm_server_id,
-		channels: channel_ids,
-		roles:  role_ids,
-		living_role_id,
-	}
-		= require("../../bot-config/discord-ids.js").rapid_discord_mafia,
-
-	{ min_player_count } = require("../../data/rapid_discord_mafia/constants.json");
+	ids = require(`../../bot-config/discord-ids.js`);
+const { deferInteraction } = require("../../utilities/discord-action-utils.js");
 
 
 

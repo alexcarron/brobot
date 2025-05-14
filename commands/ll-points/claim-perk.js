@@ -1,7 +1,7 @@
 const Parameter = require('../../modules/commands/Paramater.js');
 const SlashCommand = require('../../modules/commands/SlashCommand.js');
 const { LLPointPerks } = require('../../modules/enums.js')
-const { deferInteraction } = require("../../modules/functions.js");
+const { deferInteraction } = require('../../utilities/discord-action-utils.js');
 const ids = require(`../../bot-config/discord-ids.js`);
 const { fetchUser } = require('../../utilities/discord-fetch-utils.js');
 const { confirmInteractionWithButtons } = require('../../utilities/discord-action-utils.js');

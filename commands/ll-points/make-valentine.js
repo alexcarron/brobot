@@ -1,6 +1,6 @@
 
 const fs = require('fs');
-const { deferInteraction } = require("../../modules/functions.js");
+const { deferInteraction } = require('../../utilities/discord-action-utils.js');
 const Parameter = require("../../modules/commands/Paramater.js");
 const SlashCommand = require("../../modules/commands/SlashCommand.js");
 const { PermissionFlagsBits } = require('discord.js');

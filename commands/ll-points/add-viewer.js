@@ -1,10 +1,9 @@
 
-const fs = require('fs');
 const Viewer = require('../../modules/viewer.js');
-const { autocomplete, deferInteraction } = require("../../modules/functions.js");
 const Parameter = require('../../modules/commands/Paramater.js');
 const SlashCommand = require('../../modules/commands/SlashCommand.js');
 const { PermissionFlagsBits } = require('discord.js');
+const { deferInteraction } = require('../../utilities/discord-action-utils.js');
 
 const Parameters = {
 	ViewerAdding: new Parameter({

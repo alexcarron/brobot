@@ -1,6 +1,6 @@
 const Parameter = require('../../../modules/commands/Paramater');
 const SlashCommand = require('../../../modules/commands/SlashCommand');
-const { deferInteraction } = require('../../../modules/functions');
+const { deferInteraction } = require('../../../utilities/discord-action-utils');
 
 const command = new SlashCommand({
 	name: 'set-volume',
