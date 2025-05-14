@@ -440,12 +440,6 @@ doesValueMatchType: function doesValueMatchType(value, type) {
 		);
 	},
 
-	getRandomHexColorNumber: function() {
-		const colorNumber = Math.floor(Math.random() * 16777216); // 16777216 = 0xFFFFFF + 1
-
-		return colorNumber;
-	},
-
 	async saveObjectToGitHubJSON(object, json_name) {
 		const
 			axios = require('axios'),
