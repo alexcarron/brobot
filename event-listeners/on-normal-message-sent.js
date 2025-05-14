@@ -1,14 +1,14 @@
 const { Message, MessageType, PermissionsBitField } = require("discord.js");
 const TextToSpeechHandler = require("../modules/TextToSpeechHandler");
-const { getGuildMember } = require("../modules/functions");
 const { joinVoiceChannel } = require("@discordjs/voice");
 const { GameStates } = require("../modules/enums");
 const ids = require("../bot-config/discord-ids");
+const { fetchGuildMember } = require("../utilities/discord-fetch-utils");
 
 const onTTSMessageSent = async (message) => {
 	console.log("onTTSMessageSent", message.content);
 
-	const guildMember = await getGuildMember(message.guild, message.author.id);
+	const guildMember = await fetchGuildMember(message.guild, message.author.id);
 	const voiceChannel = guildMember.voice.channel;
 
 	if (voiceChannel === undefined || voiceChannel === null)

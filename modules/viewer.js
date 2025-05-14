@@ -1,7 +1,7 @@
 const { LLPointTiers, LLPointThresholds, LLPointRewards, LLPointAccomplishments } = require("./enums.js");
 const ids = require("../bot-config/discord-ids.js");
-const { getGuildMember, getRoleById, addRole, removeRole, getUser } = require("./functions.js");
-const { fetchGuild } = require("../utilities/discord-fetch-utils.js");
+const { getRoleById, addRole, removeRole, getUser } = require("./functions.js");
+const { fetchGuild, fetchGuildMember } = require("../utilities/discord-fetch-utils.js");
 
 class Viewer {
 	constructor({name, aliases=[], user_id, ll_points=0, isSubscribed=false, didUndertaleQuiz=false, didDeltaruneQuiz=false, games_participated_in=[], valentine}) {
@@ -57,7 +57,7 @@ class Viewer {
 			return
 
 		try {
-			viewer_guild_member = await getGuildMember(ll_game_shows_guild, this.user_id);
+			viewer_guild_member = await fetchGuildMember(ll_game_shows_guild, this.user_id);
 		}
 		catch (exception) {
 			console.log(`${this.name} not found on Discord Server`);

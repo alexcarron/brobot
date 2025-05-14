@@ -147,7 +147,7 @@ class PlayerManager {
 		this.players[new_name].name = new_name;
 
 		if (!this.isMockPlayerManager) {
-			const player_guild_member = await this.players[new_name].getGuildMember();
+			const player_guild_member = await this.players[new_name].fetchGuildMember();
 			await setNickname(player_guild_member, new_name);
 
 			const new_channel_name =

@@ -48,16 +48,6 @@ const functions = {
 		}
 	},
 
-	/**
-	 *
-	 * @param {Guild} guild
-	 * @param {string} user_id
-	 * @returns {Promise<GuildMember>}
-	 */
-	async getGuildMember(guild, user_id) {
-		return await guild.members.fetch(user_id);
-	},
-
 	async getUser(user_id) {
 		return await global.client.users.fetch(user_id);
 	},

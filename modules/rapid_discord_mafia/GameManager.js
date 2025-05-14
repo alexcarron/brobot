@@ -1,7 +1,6 @@
 const { GameStates, Phases, Subphases, MessageDelays, Factions, RDMRoles, WinConditions, Feedback, Announcements, RoleNames, PhaseWaitTimes, VotingOutcomes, TrialOutcomes, TrialVotes, RoleIdentifierTypes, ArgumentSubtypes, CoinRewards, ArgumentTypes } = require("../enums.js");
-const { wait, getGuildMember, getRole, removeRole, addRole } = require("../functions.js");
+const { wait, getRole, removeRole, addRole } = require("../functions.js");
 const ids = require("../../bot-config/discord-ids.js");
-const { github_token } =  require("../token.js");
 const { PermissionFlagsBits, Role, Interaction } = require("discord.js");
 const Death = require("./Death.js");
 const PlayerManager = require("./PlayerManager.js");
@@ -16,7 +15,7 @@ const DiscordService = require("./DiscordService.js");
 const VoteManager = require("./VoteManager.js");
 const { toTitleCase } = require("../../utilities/text-formatting-utils.js");
 const { getShuffledArray, getRandomElement } = require("../../utilities/data-structure-utils.js");
-const { fetchChannel, fetchChannelsInCategory, fetchRDMGuild } = require("../../utilities/discord-fetch-utils.js");
+const { fetchChannel, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember } = require("../../utilities/discord-fetch-utils.js");
 // const Logger = require("./Logger.js");
 
 class GameManager {
@@ -559,7 +558,7 @@ class GameManager {
 		if (!this.isMockGame) {
 			const rdm_guild = await fetchRDMGuild();
 			const on_trial_role = await getRole(rdm_guild, RDMRoles.OnTrial);
-			const player_guild_member = await getGuildMember(rdm_guild, player_on_trial.id);
+			const player_guild_member = await fetchGuildMember(rdm_guild, player_on_trial.id);
 
 			await removeRole(player_guild_member, on_trial_role);
 		}
@@ -654,7 +653,7 @@ class GameManager {
 		if (!this.isMockGame) {
 			const rdm_guild = await fetchRDMGuild();
 			const on_trial_role = await getRole(rdm_guild, RDMRoles.OnTrial);
-			const player_guild_member = await getGuildMember(rdm_guild, player_on_trial.id);
+			const player_guild_member = await fetchGuildMember(rdm_guild, player_on_trial.id);
 
 			await addRole(player_guild_member, on_trial_role);
 		}
@@ -1238,7 +1237,7 @@ class GameManager {
 		if (!isMockUser && !this.isMockGame) {
 			const rdm_guild = await fetchRDMGuild();
 
-			player_member = await getGuildMember(rdm_guild, player_id);
+			player_member = await fetchGuildMember(rdm_guild, player_id);
 			const
 				spectator_role = await getRole(rdm_guild, RDMRoles.Spectator),
 				living_role = await getRole(rdm_guild, RDMRoles.Living);

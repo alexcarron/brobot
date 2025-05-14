@@ -1,8 +1,6 @@
 const { DatabaseURLs, LLPointTiers, } = require("./enums");
 const Viewer = require("./viewer");
 const { github_token } =  require("../modules/token.js");
-const ids = require("../bot-config/discord-ids.js");
-const { addRole, getGuildMember, getGuild, getRoleById, saveObjectToGitHubJSON } = require("./functions");
 
 class LLPointManager {
 	constructor() {
@@ -190,7 +188,7 @@ class LLPointManager {
 
 			// try {
 			// 	const
-			// 		viewer_guild_member = await getGuildMember(ll_game_shows_guild, viewer.user_id),
+			// 		viewer_guild_member = await fetchGuildMember(ll_game_shows_guild, viewer.user_id),
 			// 		tier_role = await getRoleById(ll_game_shows_guild, tier_role_id);
 			// 	await addRole(viewer_guild_member, tier_role);
 			// }

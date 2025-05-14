@@ -1,10 +1,10 @@
 const Parameter = require("../../modules/commands/Paramater.js");
 const SlashCommand = require("../../modules/commands/SlashCommand.js");
-const { deferInteraction, getGuildMember } = require("../../modules/functions.js");
 const { ServerPort } = require("../../modules/enums.js");
 const { getVoiceConnections, joinVoiceChannel } = require('@discordjs/voice');
 const ids = require(`../../bot-config/discord-ids.js`);
 const { CommandInteraction, PermissionsBitField, PermissionFlagsBits } = require("discord.js");
+const { fetchGuildMember } = require("../../utilities/discord-fetch-utils.js");
 
 const command = new SlashCommand({
 	name: "respond-with-ai",
@@ -44,7 +44,7 @@ command.execute = async function(interaction) {
   };
 
 	let canSpeak = false;
-	const guild_member = await getGuildMember(interaction.guild, interaction.user.id);
+	const guild_member = await fetchGuildMember(interaction.guild, interaction.user.id);
 	const voice_channel = guild_member.voice.channel;
 	let voice_connection = undefined;
 

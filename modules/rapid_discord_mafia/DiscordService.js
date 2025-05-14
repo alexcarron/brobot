@@ -1,7 +1,7 @@
 const { TextChannel, Message, Guild, PermissionFlagsBits, Role } = require("discord.js");
-const { getGuildMember, getRoleById } = require("../functions");
+const { getRoleById } = require("../functions");
 const ids = require("../../bot-config/discord-ids.js");
-const { fetchGuild, fetchChannel } = require("../../utilities/discord-fetch-utils.js");
+const { fetchGuild, fetchChannel, fetchGuildMember } = require("../../utilities/discord-fetch-utils.js");
 
 class DiscordService {
 	/**
@@ -163,7 +163,7 @@ class DiscordService {
 	 */
 	async createPrivateChannel({name, category_id, guild_member_id}) {
 		if (!this.isMockService) {
-			const guild_member = await getGuildMember(this.rdm_guild, guild_member_id);
+			const guild_member = await fetchGuildMember(this.rdm_guild, guild_member_id);
 
 			return await this.rdm_guild.channels.create({
 				name: name,
@@ -244,7 +244,7 @@ class DiscordService {
 	async addViewerToChannel({channel_id, guild_member_id}) {
 		if (!this.isMockService) {
 			const text_channel = await fetchChannel(this.rdm_guild, channel_id);
-			const guild_member = await getGuildMember(this.rdm_guild, guild_member_id);
+			const guild_member = await fetchGuildMember(this.rdm_guild, guild_member_id);
 
 			await text_channel.permissionOverwrites.edit(
 				guild_member.user,
@@ -275,7 +275,7 @@ class DiscordService {
 	async removeSenderFromChannel({channel_id, guild_member_id}) {
 		if (!this.isMockService) {
 			const text_channel = await fetchChannel(this.rdm_guild, channel_id);
-			const guild_member = await getGuildMember(this.rdm_guild, guild_member_id);
+			const guild_member = await fetchGuildMember(this.rdm_guild, guild_member_id);
 
 			await text_channel.permissionOverwrites.edit(
 				guild_member.user,
@@ -335,7 +335,7 @@ class DiscordService {
 	async addSenderToChannel({channel_id, guild_member_id}) {
 		if (!this.isMockService) {
 			const text_channel = await fetchChannel(this.rdm_guild, channel_id);
-			const guild_member = await getGuildMember(this.rdm_guild, guild_member_id);
+			const guild_member = await fetchGuildMember(this.rdm_guild, guild_member_id);
 
 			await text_channel.permissionOverwrites.edit(
 				guild_member.user,
@@ -378,7 +378,7 @@ class DiscordService {
 	 * @param {string} guild_member_id - The id of the guild member being given the role
 	 */
 	async giveMemberSpectatorRole(guild_member_id) {
-		const guild_member = await getGuildMember(this.rdm_guild, guild_member_id);
+		const guild_member = await fetchGuildMember(this.rdm_guild, guild_member_id);
 		guild_member.roles.add(this.spectator_role);
 	}
 
@@ -387,7 +387,7 @@ class DiscordService {
 	 * @param {string} guild_member_id - The id of the guild member being given the role
 	 */
 	async giveMemberLivingRole(guild_member_id) {
-		const guild_member = await getGuildMember(this.rdm_guild, guild_member_id);
+		const guild_member = await fetchGuildMember(this.rdm_guild, guild_member_id);
 		guild_member.roles.add(this.living_role);
 	}
 
@@ -396,7 +396,7 @@ class DiscordService {
 	 * @param {string} guild_member_id - The id of the guild member being given the role
 	 */
 	async giveMemberGhostRole(guild_member_id) {
-		const guild_member = await getGuildMember(this.rdm_guild, guild_member_id);
+		const guild_member = await fetchGuildMember(this.rdm_guild, guild_member_id);
 		guild_member.roles.add(this.ghost_role);
 	}
 
@@ -405,7 +405,7 @@ class DiscordService {
 	 * @param {string} guild_member_id - The id of the guild member the role is being removed from
 	 */
 	async removeSpectatorRoleFromMember(guild_member_id) {
-		const guild_member = await getGuildMember(this.rdm_guild, guild_member_id);
+		const guild_member = await fetchGuildMember(this.rdm_guild, guild_member_id);
 		guild_member.roles.remove(this.spectator_role);
 	}
 
@@ -414,7 +414,7 @@ class DiscordService {
 	 * @param {string} guild_member_id - The id of the guild member the role is being removed from
 	 */
 	async removeLivingRoleFromMember(guild_member_id) {
-		const guild_member = await getGuildMember(this.rdm_guild, guild_member_id);
+		const guild_member = await fetchGuildMember(this.rdm_guild, guild_member_id);
 		guild_member.roles.remove(this.living_role);
 	}
 
@@ -423,7 +423,7 @@ class DiscordService {
 	 * @param {string} guild_member_id - The id of the guild member the role is being removed from
 	 */
 	async removeGhostRoleFromMember(guild_member_id) {
-		const guild_member = await getGuildMember(this.rdm_guild, guild_member_id);
+		const guild_member = await fetchGuildMember(this.rdm_guild, guild_member_id);
 		guild_member.roles.remove(this.ghost_role);
 	}
 }
