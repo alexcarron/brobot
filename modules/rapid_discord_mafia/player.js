@@ -1,4 +1,4 @@
-const { RDMRoles, Announcements, MessageDelays, Feedback, Factions, RoleNames, AbilityTypes, TrialVotes, AbilityName: AbilityName, AbilityArgName, ArgumentSubtypes, Subphases, Votes, Phases } = require("../enums");
+const { RDMRoles, Announcements, Feedback, Factions, RoleNames, AbilityName: AbilityName, AbilityArgName, ArgumentSubtypes, Subphases, Votes, Phases } = require("../enums");
 const RoleManager = require("./RoleManager");
 const ids = require("../../bot-config/discord-ids.js");
 const Role = require("./Role");
@@ -6,8 +6,7 @@ const Logger = require("./Logger");
 const DiscordService = require("./DiscordService");
 
 const
-	{ getGuildMember, getRole, addRole, removeRole, getChannel, wait, getRandArrayItem, getRDMGuild } = require("../functions"),
-	{ PermissionFlagsBits, PermissionOverwriteManager, PermissionOverwrites } = require('discord.js'),
+	{ getGuildMember, getRole, addRole, removeRole, getRDMGuild } = require("../functions"),
 	rdm_ids = require("../../bot-config/discord-ids.js").rapid_discord_mafia;
 
 class Player {

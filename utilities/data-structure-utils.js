@@ -163,4 +163,25 @@ const arraysHaveSameElements = (...arrays) => {
 	return true;
 }
 
-module.exports = { setNestedProperty, appendToNestedProperty, getShuffledArray, arraysHaveSameElements };
+
+/**
+ * Gets a random element from an array.
+ * @param {Array} array - The array to get a random element from.
+ * @returns {*} A random element from the passed array.
+ * @throws {Error} If the given value is not an array.
+ * @throws {Error} If the array is empty.
+ */
+const getRandomElement = (array) => {
+	if (!Array.isArray(array)) {
+		throw new Error(`Given value must be an array. Received: ${typeof array}`);
+	}
+
+	if (array.length === 0) {
+		throw new Error('Array must have at least one element.');
+	}
+
+	const randomIndex = Math.floor(Math.random() * array.length);
+	return array[randomIndex];
+}
+
+module.exports = { setNestedProperty, appendToNestedProperty, getShuffledArray, arraysHaveSameElements, getRandomElement };

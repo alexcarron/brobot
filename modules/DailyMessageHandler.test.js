@@ -1,8 +1,6 @@
 const { TextChannel } = require("discord.js");
 const DailyMessageHandler = require("./DailyMessageHandler");
-const cron = require("cron");
-const { getChannel, getRandArrayItem } = require("./functions");
-const { roles } = require("./rapid_discord_mafia/RoleManager");
+const { getChannel } = require("./functions");
 
 jest.mock('discord.js', () => ({
   TextChannel: class {
@@ -12,7 +10,6 @@ jest.mock('discord.js', () => ({
   }
 }));
 jest.mock('./functions', () => ({
-  getRandArrayItem: jest.fn((array) => array.length === 0 ? null : array[0]), // For simplicity, always return the first item
   getChannel: jest.fn(() => new (require('discord.js').TextChannel)()),
   getGuild: jest.fn(() => ({ id: 'mockGuildId' })),
   saveObjectToGitHubJSON: jest.fn(() => Promise.resolve('Saved'))

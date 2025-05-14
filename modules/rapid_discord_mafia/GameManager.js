@@ -1,5 +1,5 @@
 const { GameStates, Phases, Subphases, MessageDelays, Factions, RDMRoles, WinConditions, Feedback, Announcements, RoleNames, PhaseWaitTimes, VotingOutcomes, TrialOutcomes, TrialVotes, RoleIdentifierTypes, ArgumentSubtypes, CoinRewards, ArgumentTypes } = require("../enums.js");
-const { getChannel, wait, getRandArrayItem, getGuildMember, getRole, removeRole, getCategoryChildren, getRDMGuild, addRole } = require("../functions.js");
+const { getChannel, wait, getGuildMember, getRole, removeRole, getCategoryChildren, getRDMGuild, addRole } = require("../functions.js");
 const ids = require("../../bot-config/discord-ids.js");
 const { github_token } =  require("../token.js");
 const { PermissionFlagsBits, Role, Interaction } = require("discord.js");
@@ -15,7 +15,7 @@ const GameDataManager = require("./GameDataManager.js");
 const DiscordService = require("./DiscordService.js");
 const VoteManager = require("./VoteManager.js");
 const { toTitleCase } = require("../../utilities/text-formatting-utils.js");
-const { getShuffledArray } = require("../../utilities/data-structure-utils.js");
+const { getShuffledArray, getRandomElement } = require("../../utilities/data-structure-utils.js");
 // const Logger = require("./Logger.js");
 
 class GameManager {
@@ -325,7 +325,7 @@ class GameManager {
 		for (const player of this.player_manager.getPlayerList()) {
 
 			if (player.role === RoleNames.Executioner) {
-				const rand_town_player = getRandArrayItem(this.player_manager.getTownPlayers());
+				const rand_town_player = getRandomElement(this.player_manager.getTownPlayers());
 
 				if (rand_town_player)
 					player.setExeTarget(rand_town_player);
@@ -441,7 +441,7 @@ class GameManager {
 	 */
 	getRoleFromRoleIdentifier(role_identifier, num_roles_in_faction) {
 		const possible_roles = this.getPossibleRolesFromIdentifier(role_identifier, num_roles_in_faction);
-		const chosen_role = getRandArrayItem(possible_roles);
+		const chosen_role = getRandomElement(possible_roles);
 
 		// Add faction to list of existing factions
 		const chosen_role_faction = GameManager.POSSIBLE_FACTIONS.find(faction =>
@@ -1508,7 +1508,7 @@ class GameManager {
 			) {
 				const mafia_players = this.player_manager.getAlivePlayersInFaction(Factions.Mafia)
 
-				const player_to_promote = getRandArrayItem(mafia_players);
+				const player_to_promote = getRandomElement(mafia_players);
 				const mafioso_role = this.role_manager.getRole(RoleNames.Mafioso);
 				this.player_manager.convertPlayerToRole(player_to_promote, mafioso_role);
 

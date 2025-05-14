@@ -18,21 +18,6 @@ const functions = {
 		return (num1 * num2) / functions.gcd(num1, num2);
 	},
 
-	/**
-	 * Gets a random item from an array
-	 * @template ElementType
-	 * @param {ElementType[]} array An array you want a random element from
-	 * @returns {ElementType | null | undefined} A random element in the passed array, null if empty, undefined if array not passed
-	 */
-	getRandArrayItem(array) {
-		if (!Array.isArray(array)) return undefined;
-		if (array.length === 0) return null;
-
-		const rand_index = Math.floor( Math.random() * array.length )
-		const rand_element = array[rand_index];
-		return rand_element
-	},
-
 	getChannelCategorys(guild) {
 		return guild.channels.filter(
 			(channel) => {

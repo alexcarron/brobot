@@ -1,4 +1,4 @@
-const { setNestedProperty, appendToNestedProperty, getShuffledArray, arraysHaveSameElements } = require("./data-structure-utils");
+const { setNestedProperty, appendToNestedProperty, getShuffledArray, arraysHaveSameElements, getRandomElement } = require("./data-structure-utils");
 
 describe('setNestedProperty', () => {
 	it('sets a property directly', () => {
@@ -191,5 +191,27 @@ describe('arraysHaveSameElements function', () => {
 		const array1 = [ 1, '2', {property: 3} ];
 		const array2 = [ 3, '2', {property: 1} ];
 		expect(arraysHaveSameElements(array1, array2)).toBe(false);
+	});
+});
+
+describe('getRandomElement function', () => {
+	it('should return a random element from a non-empty array', () => {
+		const array = [1, 2, 3, 4, 5];
+		const randomElement = getRandomElement(array);
+		expect(array.includes(randomElement)).toBe(true);
+	});
+
+	it('should throw an error when the input is not an array', () => {
+		expect(() => getRandomElement('hello')).toThrowError('Given value must be an array. Received: string');
+	});
+
+	it('should throw an error when the array is empty', () => {
+		expect(() => getRandomElement([])).toThrowError('Array must have at least one element.');
+	});
+
+	it('should not modify the original array', () => {
+		const array = [1, 2, 3, 4, 5];
+		getRandomElement(array);
+		expect(array).toEqual([1, 2, 3, 4, 5]);
 	});
 });

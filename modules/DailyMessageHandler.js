@@ -1,8 +1,9 @@
 const { TextChannel } = require("discord.js");
-const { getRandArrayItem, getChannel, getGuild, saveObjectToGitHubJSON } = require("./functions");
+const { getChannel, getGuild, saveObjectToGitHubJSON } = require("./functions");
 const ids = require("../bot-config/discord-ids.js");
 const cron = require("cron"); // Used to have scheduled functions execute
 const PropertyNotFoundError = require("./errors/PropertyNotFound");
+const { getRandomElement } = require("../utilities/data-structure-utils.js");
 
 class DailyMessageHandler {
 	/**
@@ -81,7 +82,7 @@ class DailyMessageHandler {
 	 */
 	getRandomChannel() {
 		const channelNames = Object.keys(this.channelsToMessages);
-		const randomChannelName = getRandArrayItem(channelNames);
+		const randomChannelName = getRandomElement(channelNames);
 
 		return randomChannelName;
 	}
@@ -93,7 +94,7 @@ class DailyMessageHandler {
 	 */
 	getRandomMessage(channelName) {
 		const possibleMessages = this.channelsToMessages[channelName];
-		const randomMessage = getRandArrayItem(possibleMessages);
+		const randomMessage = getRandomElement(possibleMessages);
 
 		return randomMessage;
 	}

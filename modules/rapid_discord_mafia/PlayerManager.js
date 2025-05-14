@@ -1,3 +1,4 @@
+const { getRandomElement } = require("../../utilities/data-structure-utils");
 const { Feedback, Announcements, RoleNames, Factions, AbilityTypes, AbilityName } = require("../enums");
 const { setNickname } = require("../functions");
 const Logger = require("./Logger");
@@ -299,7 +300,7 @@ class PlayerManager {
 
 		if (role.name === RoleNames.Executioner) {
 			const alive_town_players = this.getTownPlayers().filter(player => player.isAlive);
-			const rand_town_player = getRandArrayItem(alive_town_players);
+			const rand_town_player = getRandomElement(alive_town_players);
 
 			if (rand_town_player)
 				player.setExeTarget(rand_town_player);
