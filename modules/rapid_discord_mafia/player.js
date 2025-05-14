@@ -5,9 +5,10 @@ const Role = require("./Role");
 const Logger = require("./Logger");
 const DiscordService = require("./DiscordService");
 const { fetchRDMGuild, fetchRoleByName } = require("../../utilities/discord-fetch-utils.js");
+const { addRoleToMember } = require("../../utilities/discord-action-utils.js");
 
 const
-	{ addRole, removeRole } = require("../functions"),
+	{ removeRole } = require("../functions"),
 	rdm_ids = require("../../bot-config/discord-ids.js").rapid_discord_mafia;
 
 class Player {
@@ -354,7 +355,7 @@ class Player {
 					player_guild_member = await fetchGuildMember((await fetchRDMGuild()), this.id);
 
 
-				await addRole(player_guild_member, ghost_role);
+				await addRoleToMember(player_guild_member, ghost_role);
 				await removeRole(player_guild_member, living_role);
 
 				const role = RoleManager.getListOfRoles().find(role => role.name === this.role);

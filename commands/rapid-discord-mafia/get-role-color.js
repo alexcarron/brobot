@@ -1,8 +1,9 @@
 const Parameter = require("../../modules/commands/Paramater");
 const SlashCommand = require("../../modules/commands/SlashCommand");
 const ids = require("../../bot-config/discord-ids.js");
-const { deferInteraction, addRole } = require("../../modules/functions");
+const { deferInteraction } = require("../../modules/functions");
 const { fetchGuildMember, fetchRoleByName } = require("../../utilities/discord-fetch-utils.js");
+const { addRoleToMember } = require("../../utilities/discord-action-utils.js");
 
 const Parameters = {
 	Color: new Parameter({
@@ -58,7 +59,7 @@ command.execute = async function execute(interaction) {
 		)
 		role = await fetchRoleByName(interaction.guild, role_name);
 
-		addRole(user_guild_member, role);
+		addRoleToMember(user_guild_member, role);
 	};
 
 	await interaction.editReply(`Your role color has been changed to \`${role_color}\``)

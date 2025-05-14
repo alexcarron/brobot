@@ -1,7 +1,8 @@
 const { LLPointTiers, LLPointThresholds, LLPointRewards, LLPointAccomplishments } = require("./enums.js");
 const ids = require("../bot-config/discord-ids.js");
-const { addRole, removeRole } = require("./functions.js");
+const { removeRole } = require("./functions.js");
 const { fetchGuild, fetchGuildMember, fetchUser, fetchRole } = require("../utilities/discord-fetch-utils.js");
+const { addRoleToMember } = require("../utilities/discord-action-utils.js");
 
 class Viewer {
 	constructor({name, aliases=[], user_id, ll_points=0, isSubscribed=false, didUndertaleQuiz=false, didDeltaruneQuiz=false, games_participated_in=[], valentine}) {
@@ -75,7 +76,7 @@ class Viewer {
 			)
 
 			const tier_role = await fetchRole(ll_game_shows_guild, tier_role_id);
-			await addRole(viewer_guild_member, tier_role);
+			await addRoleToMember(viewer_guild_member, tier_role);
 			console.log(`Adding ${tier_role.name} to ${this.name}`);
 		}
 		catch (exception) {

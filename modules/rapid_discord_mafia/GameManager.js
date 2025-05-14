@@ -1,5 +1,5 @@
 const { GameStates, Phases, Subphases, MessageDelays, Factions, RDMRoles, WinConditions, Feedback, Announcements, RoleNames, PhaseWaitTimes, VotingOutcomes, TrialOutcomes, TrialVotes, RoleIdentifierTypes, ArgumentSubtypes, CoinRewards, ArgumentTypes } = require("../enums.js");
-const { wait, removeRole, addRole } = require("../functions.js");
+const { wait, removeRole } = require("../functions.js");
 const ids = require("../../bot-config/discord-ids.js");
 const { PermissionFlagsBits, Role, Interaction } = require("discord.js");
 const Death = require("./Death.js");
@@ -16,6 +16,7 @@ const VoteManager = require("./VoteManager.js");
 const { toTitleCase } = require("../../utilities/text-formatting-utils.js");
 const { getShuffledArray, getRandomElement } = require("../../utilities/data-structure-utils.js");
 const { fetchChannel, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchRoleByName } = require("../../utilities/discord-fetch-utils.js");
+const { addRoleToMember } = require("../../utilities/discord-action-utils.js");
 // const Logger = require("./Logger.js");
 
 class GameManager {
@@ -655,7 +656,7 @@ class GameManager {
 			const on_trial_role = await fetchRoleByName(rdm_guild, RDMRoles.OnTrial);
 			const player_guild_member = await fetchGuildMember(rdm_guild, player_on_trial.id);
 
-			await addRole(player_guild_member, on_trial_role);
+			await addRoleToMember(player_guild_member, on_trial_role);
 		}
 	}
 
@@ -1593,7 +1594,7 @@ class GameManager {
 
 			role_to_remove.members.each(async member => {
 				await removeRole(member, role_to_remove);
-				await addRole(member, spectator_role);
+				await addRoleToMember(member, spectator_role);
 			});
 		}
 	}
