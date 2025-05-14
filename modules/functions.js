@@ -20,47 +20,6 @@ const functions = {
 		console.log(color_start + message + reset);
 	},
 
-	/**
-	 *
-	 * @param {number} time_amount amount of time units waiting
-	 * @param {string} unit Unit of time waiting (h, hour(s), m, min(s), minute(s), s, sec(s), second(s))
-	 */
-	wait(time_amount, unit = "ms") {
-		let milliseconds = 0;
-
-		switch (unit.toLowerCase()) {
-			case "h":
-			case "hour":
-			case "hours":
-				milliseconds = time_amount * 60 * 60 * 1000;
-				break;
-
-			case "m":
-			case "min":
-			case "mins":
-			case "minute":
-			case "minutes":
-				milliseconds = time_amount * 60 * 1000;
-				break;
-
-			case "s":
-			case "sec":
-			case "secs":
-			case "second":
-			case "seconds":
-				milliseconds = time_amount * 1000;
-				break;
-
-			default:
-				milliseconds = time_amount;
-				break;
-		}
-
-		return new Promise(
-			resolve => setTimeout(resolve, Math.round(milliseconds))
-		);
-	},
-
 	async saveObjectToGitHubJSON(object, json_name) {
 		const
 			axios = require('axios'),

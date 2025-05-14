@@ -2,12 +2,13 @@ const cron = require("cron");
 const Event = require('../../../modules/Event.js');
 const SlashCommand = require('../../../modules/commands/SlashCommand.js');
 const ids = require("../../../bot-config/discord-ids.js")
-const { saveObjectToGitHubJSON, wait } = require("../../../modules/functions.js");
+const { saveObjectToGitHubJSON } = require("../../../modules/functions.js");
 const { ChannelType, ButtonBuilder, ActionRowBuilder, ModalBuilder, ButtonStyle, TextInputBuilder, TextInputStyle, StringSelectMenuOptionBuilder, StringSelectMenuBuilder, } = require('discord.js');
 const { LLPointTiers } = require("../../../modules/enums.js");
 const { toTitleCase } = require("../../../utilities/text-formatting-utils.js");
 const { toUnixTimestamp } = require("../../../utilities/date-time-utils.js");
 const { confirmInteractionWithButtons } = require("../../../utilities/discord-action-utils.js");
+const { wait } = require("../../../utilities/realtime-utils.js");
 
 const command = new SlashCommand({
 	name: "host-event",
@@ -128,7 +129,7 @@ command.execute = async function(interaction) {
 		return text_response;
 	}
 
-	await wait(1, "second");
+	await wait({seconds: 1});
 
 	const event_plan_text = await getModalTextFieldInput(
 		interaction.channel,
@@ -141,7 +142,7 @@ command.execute = async function(interaction) {
 	if (event_plan_text === undefined)
 		return;
 
-	await wait(3, "second");
+	await wait({seconds: 3});
 
 	const event_instructions_text = await getModalTextFieldInput(
 		interaction.channel,
@@ -154,7 +155,7 @@ command.execute = async function(interaction) {
 	if (event_instructions_text === undefined)
 		return;
 
-	await wait(3, "second");
+	await wait({seconds: 3});
 
 	const enticing_summary_text = await getModalTextFieldInput(
 		interaction.channel,
@@ -167,7 +168,7 @@ command.execute = async function(interaction) {
 	if (enticing_summary_text === undefined)
 		return;
 
-	await wait(2, "second");
+	await wait({seconds: 2});
 
 	const event_title_text = await getModalTextFieldInput(
 		interaction.channel,
@@ -180,7 +181,7 @@ command.execute = async function(interaction) {
 	if (event_title_text === undefined)
 		return;
 
-	await wait(1, "second");
+	await wait({seconds: 1});
 
 	const week_days = {
 		"Monday": 1,
@@ -313,7 +314,7 @@ command.execute = async function(interaction) {
 
 	await interaction.channel.send(`# ✅ Date & Time Confirmed\n>>> <t:${event_unix_timestamp}:F> <t:${event_unix_timestamp}:R>`);
 
-	await wait(3, "second");
+	await wait({seconds: 3});
 
 	const ping_role_ids = {
 		"...playing a game I invented": ids.ll_game_shows.roles.self_hosted_game,

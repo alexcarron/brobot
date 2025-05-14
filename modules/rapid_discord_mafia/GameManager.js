@@ -1,5 +1,4 @@
 const { GameStates, Phases, Subphases, MessageDelays, Factions, RDMRoles, WinConditions, Feedback, Announcements, RoleNames, PhaseWaitTimes, VotingOutcomes, TrialOutcomes, TrialVotes, RoleIdentifierTypes, ArgumentSubtypes, CoinRewards, ArgumentTypes } = require("../enums.js");
-const { wait } = require("../functions.js");
 const ids = require("../../bot-config/discord-ids.js");
 const { PermissionFlagsBits, Role, Interaction } = require("discord.js");
 const Death = require("./Death.js");
@@ -17,6 +16,7 @@ const { toTitleCase } = require("../../utilities/text-formatting-utils.js");
 const { getShuffledArray, getRandomElement } = require("../../utilities/data-structure-utils.js");
 const { fetchChannel, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchRoleByName } = require("../../utilities/discord-fetch-utils.js");
 const { addRoleToMember, removeRoleFromMember } = require("../../utilities/discord-action-utils.js");
+const { wait } = require("../../utilities/realtime-utils.js");
 // const Logger = require("./Logger.js");
 
 class GameManager {
@@ -945,7 +945,7 @@ class GameManager {
 			await this.discord_service.announce(message);
 
 			if (!this.isMockGame && !GameManager.IS_TESTING)
-				await wait(MessageDelays.Normal, "s");
+				await wait({seconds: MessageDelays.Normal});
 		}
 	}
 
@@ -980,7 +980,7 @@ class GameManager {
 		this.logger.log("Waiting For Day 1 to End");
 
 		if (!this.isMockGame) {
-			await wait(PhaseWaitTimes.FirstDay, "min");
+			await wait({minutes: PhaseWaitTimes.FirstDay});
 			await this.startNight(day_first_day_ended);
 		}
 	}
@@ -1036,7 +1036,7 @@ class GameManager {
 		this.logger.log("Waiting for Voting to End");
 
 		if (!this.isMockGame) {
-			await wait(PhaseWaitTimes.Voting*4/5, "min");
+			await wait({minutes: PhaseWaitTimes.Voting*4/5});
 
 			if (!this.state_manager.canStartTrial(days_passed_last_voting)) {
 				this.announceMessages(
@@ -1044,7 +1044,7 @@ class GameManager {
 				)
 			}
 
-			await wait(PhaseWaitTimes.Voting*1/5, "min");
+			await wait({minutes: PhaseWaitTimes.Voting*1/5});
 
 			this.startTrial(days_passed_last_voting);
 		}
@@ -1091,7 +1091,7 @@ class GameManager {
 		this.logger.log("Waiting for Trial Voting to End");
 
 		if (!this.isMockGame) {
-			await wait(PhaseWaitTimes.Trial*4/5, "min");
+			await wait({minutes: PhaseWaitTimes.Trial*4/5});
 
 			if (!this.state_manager.canStartTrialResults(days_passed_last_trial)) {
 				this.announceMessages(
@@ -1099,7 +1099,7 @@ class GameManager {
 				)
 			}
 
-			await wait(PhaseWaitTimes.Trial*1/5, "min");
+			await wait({minutes: PhaseWaitTimes.Trial*1/5});
 
 			await this.startTrialResults(days_passed_last_trial);
 		}
@@ -1161,7 +1161,7 @@ class GameManager {
 		this.logger.log("Waiting for Night to End");
 
 		if (!this.isMockGame) {
-			await wait(PhaseWaitTimes.Night * 4/5, "min");
+			await wait({minutes: PhaseWaitTimes.Night * 4/5});
 
 			if (!this.state_manager.canStartDay(days_passed_last_night)) {
 				this.announceMessages(
@@ -1169,7 +1169,7 @@ class GameManager {
 				)
 			}
 
-			await wait(PhaseWaitTimes.Night * 1/5, "min");
+			await wait({minutes: PhaseWaitTimes.Night * 1/5});
 
 			await this.startDay(days_passed_last_night);
 		}
@@ -1580,7 +1580,7 @@ class GameManager {
 		}
 
 		if (!this.isMockGame)
-			await wait("30", "s");
+			await wait({seconds: "30"});
 
 		await GameManager.reset();
 	}
@@ -2000,7 +2000,7 @@ class GameManager {
 
 		if (!this.isMockGame) {
 
-			await wait(PhaseWaitTimes.SignUps*(2/3), "min");
+			await wait({minutes: PhaseWaitTimes.SignUps*(2/3)});
 
 			if (!this.state_manager.isInSignUps()) return;
 
@@ -2011,7 +2011,7 @@ class GameManager {
 				)
 			);
 
-			await wait(PhaseWaitTimes.SignUps*(4/15), "min");
+			await wait({minutes: PhaseWaitTimes.SignUps*(4/15)});
 
 			if (!this.state_manager.isInSignUps()) return;
 
@@ -2022,7 +2022,7 @@ class GameManager {
 				)
 			);
 
-			await wait(PhaseWaitTimes.SignUps*(1/15), "min");
+			await wait({minutes: PhaseWaitTimes.SignUps*(1/15)});
 
 			if (!this.state_manager.isInSignUps()) return;
 		}
