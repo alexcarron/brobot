@@ -114,9 +114,23 @@ const deferInteraction = async (
 	}
 };
 
+/**
+ * Edits the reply to an interaction with new message contents.
+ *
+ * @param {Interaction} interaction - The interaction whose reply is being updated.
+ * @param {string | object} newMessageContents - The new contents for the message.
+ * @returns {Promise<void>} A promise that resolves when the message is edited.
+ */
+const editReplyToInteraction = async (interaction, newMessageContents) => {
+	if (interaction && (interaction.replied || interaction.deferred)) {
+		return await interaction.editReply(new_message);
+	}
+}
+
 module.exports = {
 	confirmInteractionWithButtons,
 	addRoleToMember,
 	removeRoleFromMember,
 	deferInteraction,
+	editReplyToInteraction
 };

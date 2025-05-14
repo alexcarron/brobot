@@ -2,12 +2,6 @@ const { github_token } =  require("../token.json");
 const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle  } = require('discord.js');
 
 const functions = {
-	async editReplyToInteraction(interaction, new_message) {
-		if (interaction && (interaction.replied || interaction.deferred)) {
-			return await interaction.editReply(new_message);
-		}
-	},
-
 	async replyToInteraction(interaction, content) {
 		try {
 			await interaction.reply({
