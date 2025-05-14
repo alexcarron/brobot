@@ -1,4 +1,4 @@
-const { toTitleCase, createTextProgressBar, toNumericOrdinal, toWordOrdinal } = require("./text-formatting-utils");
+const { toTitleCase, createTextProgressBar, toNumericOrdinal, toWordOrdinal, createListFromWords } = require("./text-formatting-utils");
 
 describe('toTitleCase function', () => {
   it('should return an empty string for an empty input', () => {
@@ -162,5 +162,31 @@ describe('toWordOrdinal function', () => {
 	it('should throw an error for negative numbers', () => {
 		expect(() => toWordOrdinal(-1)).toThrowError('Number should be non-negative');
 		expect(() => toWordOrdinal(-10)).toThrowError('Number should be non-negative');
+	});
+});
+
+describe('createListFromWords function', () => {
+	it('should return empty string for empty array', () => {
+		expect(createListFromWords([])).toBe('');
+	});
+
+	it('should return single word for single word array', () => {
+		expect(createListFromWords(['hello'])).toBe('hello');
+	});
+
+	it('should return two words with "and" for two word array', () => {
+		expect(createListFromWords(['hello', 'world'])).toBe('hello and world');
+	});
+
+	it('should return multiple words with commas and "and" for multiple word array', () => {
+		expect(createListFromWords(['hello', 'world', 'foo', 'bar'])).toBe('hello, world, foo, and bar');
+	});
+
+	it('should return empty string for null input', () => {
+		expect(createListFromWords(null)).toBe('');
+	});
+
+	it('should return empty string for undefined input', () => {
+		expect(createListFromWords(undefined)).toBe('');
 	});
 });

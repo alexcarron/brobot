@@ -1,5 +1,6 @@
-const { getUnixTimestamp, getSentenceFromArray } = require("./functions");
+const { getUnixTimestamp } = require("./functions");
 const ids = require("../bot-config/discord-ids.js");
+const { createListFromWords } = require("../utilities/text-formatting-utils.js");
 
 const Enums = {
 	WinConditions: {
@@ -353,11 +354,11 @@ const Enums = {
 			const bolded_winning_player_names = winning_player_names.map(
 				name => `**${name}**`
 			);
-			const winning_players_sentence = getSentenceFromArray(bolded_winning_player_names);
+			const winning_players_sentence = createListFromWords(bolded_winning_player_names);
 			const bolded_winning_factions = winning_factions.map(
 				name => `**${name}**`
 			);
-			const winning_factions_sentence = getSentenceFromArray(bolded_winning_factions);
+			const winning_factions_sentence = createListFromWords(bolded_winning_factions);
 
 			return [
 				`_ _\n${winning_factions_sentence} won!`,
@@ -428,7 +429,7 @@ const Enums = {
 		LookoutSeesVisits: (target_player, player_seen_visiting) => {
 			const player_names_visiting =
 			player_seen_visiting.map(player => `**${player.name}**`);
-			return `It seems like **${target_player.name}** was visited by ${getSentenceFromArray(player_names_visiting)} last night.`;
+			return `It seems like **${target_player.name}** was visited by ${createListFromWords(player_names_visiting)} last night.`;
 		},
 		TrackerSawPlayerVisit: (player_tracked_name, visited_player_name) => {return `It looked like **${player_tracked_name}** visited **${visited_player_name}** last night.`},
 		TrackerSawPlayerNotVisit: (player_tracked_name) => {return `It looked like **${player_tracked_name}** didn't visit anyone last night.`},

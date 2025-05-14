@@ -556,21 +556,6 @@ doesValueMatchType: function doesValueMatchType(value, type) {
 		return object;
 	},
 
-	getSentenceFromArray(array) {
-		if (!array || array.length <= 0)
-			return ""
-
-		if (array.length === 1)
-			return `${array[0]}`;
-
-		if (array.length === 2)
-			return `${array[0]} and ${array[1]}`
-
-		const non_last_elements = array.slice(0, -1);
-		const last_element = array[array.length-1];
-		return `${non_last_elements.join(", ")}, and ${last_element}`;
-	},
-
 	splitWithNoSplitWords(long_message, max_num_characters) {
 		let messages = [];
 		while (long_message.length > max_num_characters) {

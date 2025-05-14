@@ -157,4 +157,33 @@ const toWordOrdinal = (number) => {
   throw new Error('Number too large');
 }
 
-module.exports = { toTitleCase, createTextProgressBar, toNumericOrdinal, toWordOrdinal };
+/**
+ * Creates a formatted list sentence from an array of words.
+ * @param {string[]} words - An array of words to form into a sentence.
+ * @returns {string} A sentence formed by the words, separated by commas and an 'and' before the last word.
+ */
+const createListFromWords = (words) => {
+	console.log('createListSentenceFromWords called with words:', words);
+	if (!words || words.length <= 0) {
+		console.log('Returning empty string');
+		return "";
+	}
+
+	if (words.length === 1) {
+		console.log('Returning single word');
+		return `${words[0]}`;
+	}
+
+	if (words.length === 2) {
+		console.log('Returning two words with "and"');
+		return `${words[0]} and ${words[1]}`;
+	}
+
+	const lastWord = words[words.length-1];
+	const nonLastWords = words.slice(0, -1);
+
+	console.log('Returning non-last words and last word with "and"');
+	return `${nonLastWords.join(", ")}, and ${lastWord}`;
+}
+
+module.exports = { toTitleCase, createTextProgressBar, toNumericOrdinal, toWordOrdinal, createListFromWords };
