@@ -26,7 +26,7 @@ const functions = {
 		);
 	},
 
-	
+
 
 	async getCategoryChildren(guild, category_id) {
 		let all_channels = await guild.channels.fetch();
@@ -244,46 +244,6 @@ const functions = {
 		return new Promise(
 			resolve => setTimeout(resolve, Math.round(milliseconds))
 		);
-	},
-
-doesValueMatchType: function doesValueMatchType(value, type) {
-		const isValueInRange = (value, range) => { return (value < range[0] || value > range[1]) };
-		const isValueInList = (value, list) => { return list.includes(value) };
-		const isValueFromClass = (value, class_name) => { return value.class == class_name };
-		const doAllItemsMatchType = (array, type) => { return array.every(item => doesValueMatchType(item, type)) };
-
-		if (typeof value !== type.base)
-			return false;
-
-		if (type.values && !isValueInList(value, type.values))
-			return false;
-
-		if (type.range && isValueInRange(value, type.range))
-			return false;
-
-		if (type.class && !isValueFromClass(value, type.class))
-			return false;
-
-		switch (type.subtype) {
-			case "integer": {
-				if (!Number.isInteger(value))
-					return false;
-
-				break;
-			}
-
-			case "array": {
-				if (!Array.isArray(value)) {
-					return false;
-				}
-
-				if (!doAllItemsMatchType(value, type.item_type)) {
-					return false;
-				}
-			}
-		}
-
-		return true
 	},
 
 	async saveObjectToGitHubJSON(object, json_name) {
