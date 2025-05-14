@@ -4,27 +4,6 @@ const { github_token } =  require("../token.json");
 const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle  } = require('discord.js');
 
 const functions = {
-	changeAttrValue: function changeAttrValue(obj, ...properties) {
-		let property = properties[0],
-			value = properties.slice(-1)[0];
-
-		properties = properties.slice(0, -1);
-
-		if (properties.length <= 1) {
-			obj[property] = value
-			return obj;
-		}
-
-		if (!obj[property])
-			obj[property] = {}
-
-		changeAttrValue(
-			obj[properties[0]],
-			...properties.slice(1),
-			value
-		)
-	},
-
 	appendElementToNestedProperty: function pushItemToObj(element, object, ...nested_properties) {
 		let top_level_property = nested_properties[0];
 
