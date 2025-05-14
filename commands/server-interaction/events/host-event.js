@@ -2,11 +2,12 @@ const cron = require("cron");
 const Event = require('../../../modules/Event.js');
 const SlashCommand = require('../../../modules/commands/SlashCommand.js');
 const ids = require("../../../bot-config/discord-ids.js")
-const { saveObjectToGitHubJSON, confirmAction, wait } = require("../../../modules/functions.js");
+const { saveObjectToGitHubJSON, wait } = require("../../../modules/functions.js");
 const { ChannelType, ButtonBuilder, ActionRowBuilder, ModalBuilder, ButtonStyle, TextInputBuilder, TextInputStyle, StringSelectMenuOptionBuilder, StringSelectMenuBuilder, } = require('discord.js');
 const { LLPointTiers } = require("../../../modules/enums.js");
 const { toTitleCase } = require("../../../utilities/text-formatting-utils.js");
 const { toUnixTimestamp } = require("../../../utilities/date-time-utils.js");
+const { confirmInteractionWithButtons } = require("../../../utilities/discord-action-utils.js");
 
 const command = new SlashCommand({
 	name: "host-event",
@@ -28,7 +29,7 @@ command.execute = async function(interaction) {
 	}
 
 	if (
-		!await confirmAction({
+		!await confirmInteractionWithButtons({
 			interaction,
 			message:
 				`Are you absolutely sure you want to host an event?\n` +
@@ -36,10 +37,10 @@ command.execute = async function(interaction) {
 				`- Determining the rules of the event and how it will exactly play out\n` +
 				`- Writing instructions for how to participate in the event\n` +
 				`- Being present during the time you choose and hosting the event yourself`,
-			confirm_txt: `I'm Sure`,
-			cancel_txt: `I Don't Want To Host An Event`,
-			confirm_update_txt: `Confirmed. You will now start the process of creating the event`,
-			cancel_update_txt: `Canceled.`
+			confirmText: `I'm Sure`,
+			cancelText: `I Don't Want To Host An Event`,
+			confirmUpdateText: `Confirmed. You will now start the process of creating the event`,
+			cancelUpdateText: `Canceled.`
 		})
 	) {
 		return

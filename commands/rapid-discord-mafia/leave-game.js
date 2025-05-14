@@ -1,8 +1,8 @@
-const Parameter = require("../../modules/commands/Paramater");
 const ids = require("../../bot-config/discord-ids.js");
 const SlashCommand = require("../../modules/commands/SlashCommand");
-const { deferInteraction, confirmAction } = require("../../modules/functions");
+const { deferInteraction } = require("../../modules/functions");
 const { GameStates, RDMRoles } = require("../../modules/enums");
+const { confirmInteractionWithButtons } = require("../../utilities/discord-action-utils.js");
 
 const command = new SlashCommand({
 	name: "leave-game",
@@ -17,13 +17,13 @@ command.execute = async function(interaction) {
 
 	if (global.game_manager.state === GameStates.SignUp) {
 		if (
-			!await confirmAction({
+			!await confirmInteractionWithButtons({
 				interaction,
 				message: `Are you sure you want to leave the game?`,
-				confirm_txt: "Yes, Leave the Game",
-				cancel_txt: "No, Stay in the Game",
-				confirm_update_txt: "Left the game.",
-				cancel_update_txt: "Canceled.",
+				confirmText: "Yes, Leave the Game",
+				cancelText: "No, Stay in the Game",
+				confirmUpdateText: "Left the game.",
+				cancelUpdateText: "Canceled.",
 			})
 		) {
 			return
@@ -37,7 +37,7 @@ command.execute = async function(interaction) {
 		}
 
 		if (
-			!await confirmAction({
+			!await confirmInteractionWithButtons({
 				interaction,
 				message: `Are you sure you want to leave the game and never return? You should only do so if absolutely necessary!`,
 				confirm_txt: "Yes, Leave the Game",

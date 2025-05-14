@@ -1,61 +1,7 @@
-const { forever } = require("request");
-const ids = require("../bot-config/discord-ids.js")
 const { github_token } =  require("../token.json");
 const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle  } = require('discord.js');
-const { fetchGuild } = require("../utilities/discord-fetch-utils.js");
 
 const functions = {
-
-	async confirmAction({interaction, message, confirm_txt, cancel_txt, confirm_update_txt, cancel_update_txt}) {
-
-		const confirm_button = new ButtonBuilder()
-			.setCustomId('confirm')
-			.setLabel(confirm_txt)
-			.setStyle(ButtonStyle.Success);
-
-		const cancel_button = new ButtonBuilder()
-			.setCustomId('cancel')
-			.setLabel(cancel_txt)
-			.setStyle(ButtonStyle.Secondary);
-
-		const action_row = new ActionRowBuilder()
-			.addComponents(cancel_button, confirm_button);
-
-		confirmation_message = await interaction.editReply({
-			content: message,
-			components: [action_row],
-		});
-
-		const collectorFilter = other_interaction => other_interaction.user.id === interaction.user.id;
-
-		try {
-			const confirmation = await confirmation_message.awaitMessageComponent({ filter: collectorFilter, time: 120_000 });
-
-			// * CONFIRM
-			if (confirmation.customId === 'confirm') {
-				console.log("confirmed")
-				await confirmation.update({ content: `\`${confirm_update_txt}\``, components: [] });
-				return true;
-			// ! CANCEL
-			} else if (confirmation.customId === 'cancel') {
-				console.log("cancelled")
-				await confirmation.update({ content: `\`${cancel_update_txt}\``, components: [] });
-				return false;
-			}
-		}
-		catch {
-			interaction.editReply({ content: `\`Response not recieved in time\``, components: [] });
-		}
-	},
-
-	async addRole(guild_member, role) {
-		await guild_member.roles.add(role).catch(console.error());
-	},
-
-	async removeRole(guild_member, role) {
-		await guild_member.roles.remove(role).catch(console.error());
-	},
-
 	async setNickname(guild_member, nickname) {
 		await guild_member.setNickname(nickname).catch(console.error());
 	},

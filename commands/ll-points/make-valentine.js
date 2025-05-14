@@ -1,11 +1,12 @@
 
 const fs = require('fs');
-const { deferInteraction, confirmAction } = require("../../modules/functions.js");
+const { deferInteraction } = require("../../modules/functions.js");
 const Parameter = require("../../modules/commands/Paramater.js");
 const SlashCommand = require("../../modules/commands/SlashCommand.js");
 const { PermissionFlagsBits } = require('discord.js');
 const LLPointManager = require('../../modules/llpointmanager.js');
 const { findStringStartingWith } = require('../../utilities/text-formatting-utils.js');
+const { confirmInteractionWithButtons } = require('../../utilities/discord-action-utils.js');
 
 
 const Parameters = {
@@ -68,13 +69,13 @@ command.execute = async function(interaction) {
 
 	if (!gifter_viewer) {
 		if (
-			!await confirmAction({
+			!await confirmInteractionWithButtons({
 				interaction,
 				message: `You have not been added to the LL Point database yet, would you like to add yourself as **${interaction.user.username}**?`,
-				confirm_txt: `Add Me to the Database`,
-				cancel_txt: `Don't Add Me to the Database`,
-				confirm_update_txt: `**${interaction.user.username}** has been added to the LL Point database!`,
-				cancel_update_txt: `Canceled LL Point Valentine`
+				confirmText: `Add Me to the Database`,
+				cancelText: `Don't Add Me to the Database`,
+				confirmUpdateText: `**${interaction.user.username}** has been added to the LL Point database!`,
+				cancelUpdateText: `Canceled LL Point Valentine`
 			})
 		) {
 			return

@@ -79,11 +79,18 @@ const addRoleToMember = async (guildMember, role) => {
 	await guildMember.roles.add(role);
 }
 
+/**
+ * Removes a role from a guild member.
+ * @param {GuildMember} guildMember The guild member we want to remove the role from.
+ * @param {Role} role The role we want to remove from the guild member.
+ * @returns {Promise<void>}
+ */
 const removeRoleFromMember = async (guildMember, role) => {
 	await guildMember.roles.remove(role);
 }
 
 module.exports = {
 	confirmInteractionWithButtons,
-	addRoleToMember: addRoleToMember
+	addRoleToMember,
+	removeRoleFromMember
 };
