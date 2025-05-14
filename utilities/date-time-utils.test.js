@@ -1,4 +1,4 @@
-const { toUnixTimestamp, toCronExpression } = require("./time-utils");
+const { toUnixTimestamp, toCronExpression } = require("./date-time-utils");
 
 describe('toUnixTimestamp function', () => {
 	it('should return the correct Unix timestamp for a valid Date object', () => {

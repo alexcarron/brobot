@@ -1,6 +1,5 @@
-const { wait } = require("../modules/functions");
 const { toTitleCase, createTextProgressBar, toNumericOrdinal, toWordOrdinal, createListFromWords, wrapTextByLineWidth, removeLinks, removeEmojis } = require("./text-formatting-utils");
-const { createNowUnixTimestamp } = require("./time-utils");
+const { createNowUnixTimestamp } = require("./date-time-utils");
 
 describe('toTitleCase function', () => {
   it('should return an empty string for an empty input', () => {

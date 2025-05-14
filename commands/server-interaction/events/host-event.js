@@ -6,7 +6,7 @@ const { saveObjectToGitHubJSON, confirmAction, wait } = require("../../../module
 const { ChannelType, ButtonBuilder, ActionRowBuilder, ModalBuilder, ButtonStyle, TextInputBuilder, TextInputStyle, StringSelectMenuOptionBuilder, StringSelectMenuBuilder, } = require('discord.js');
 const { LLPointTiers } = require("../../../modules/enums.js");
 const { toTitleCase } = require("../../../utilities/text-formatting-utils.js");
-const { toUnixTimestamp } = require("../../../utilities/time-utils.js");
+const { toUnixTimestamp } = require("../../../utilities/date-time-utils.js");
 
 const command = new SlashCommand({
 	name: "host-event",

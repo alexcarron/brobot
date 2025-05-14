@@ -1,7 +1,7 @@
 const SlashCommand = require('../../modules/commands/SlashCommand.js');
 const Parameter = require('../../modules/commands/Paramater.js');
 const Timer = require('../../modules/Timer.js');
-const { createNowUnixTimestamp } = require('../../utilities/time-utils.js');
+const { createNowUnixTimestamp } = require('../../utilities/date-time-utils.js');
 
 const Parameters = {
 	ReasonForTimer: new Parameter({

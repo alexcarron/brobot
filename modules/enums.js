@@ -1,6 +1,6 @@
 const ids = require("../bot-config/discord-ids.js");
 const { createListFromWords } = require("../utilities/text-formatting-utils.js");
-const { createNowUnixTimestamp } = require("../utilities/time-utils.js");
+const { createNowUnixTimestamp } = require("../utilities/date-time-utils.js");
 
 const Enums = {
 	WinConditions: {
