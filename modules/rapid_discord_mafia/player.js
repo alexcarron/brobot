@@ -4,10 +4,10 @@ const ids = require("../../bot-config/discord-ids.js");
 const Role = require("./Role");
 const Logger = require("./Logger");
 const DiscordService = require("./DiscordService");
-const { fetchRDMGuild } = require("../../utilities/discord-fetch-utils.js");
+const { fetchRDMGuild, fetchRoleByName } = require("../../utilities/discord-fetch-utils.js");
 
 const
-	{ getRole, addRole, removeRole } = require("../functions"),
+	{ addRole, removeRole } = require("../functions"),
 	rdm_ids = require("../../bot-config/discord-ids.js").rapid_discord_mafia;
 
 class Player {
@@ -349,8 +349,8 @@ class Player {
 
 		try {
 			if (!this.isMockPlayer) {
-				let ghost_role = await getRole((await fetchRDMGuild()), RDMRoles.Ghosts),
-					living_role = await getRole((await fetchRDMGuild()), RDMRoles.Living),
+				let ghost_role = await fetchRoleByName((await fetchRDMGuild()), RDMRoles.Ghosts),
+					living_role = await fetchRoleByName((await fetchRDMGuild()), RDMRoles.Living),
 					player_guild_member = await fetchGuildMember((await fetchRDMGuild()), this.id);
 
 

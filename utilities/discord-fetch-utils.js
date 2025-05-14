@@ -1,4 +1,4 @@
-const { Client, Guild, TextChannel, VoiceChannel, Message, ChannelType, CategoryChannel, GuildMember, User, Role } = require("discord.js");
+const { Client, Guild, TextChannel, VoiceChannel, Message, ChannelType, Snowflake, GuildMember, User, Role, Collection } = require("discord.js");
 const ids = require("../bot-config/discord-ids");
 
 /**
@@ -77,7 +77,27 @@ const fetchRole = async (guild, roleID) => {
 }
 
 /**
- * Fetches all the categories of a guild.
+ * Fetches all roles in a given guild.
+ * @param {Guild} guild The guild whose roles we want to fetch.
+ * @returns {Promise<Collection<Snowflake, Role>>} A Promise that resolves with a Collection of all roles in the guild.
+ */
+const fetchRolesInGuild = async (guild) => {
+	return await guild.roles.fetch();
+}
+
+/**
+ * Fetches a role from a given guild using a given role name.
+ * @param {Guild} guild The guild that the role belongs to.
+ * @param {string} roleName The name of the role to fetch.
+ * @returns {Promise<Role>} A Promise that resolves with the Role object if successful, or rejects with an Error if not.
+ */
+const fetchRoleByName = async (guild, roleName) => {
+	const rolesInGuild = await fetchRolesInGuild(guild);
+	return rolesInGuild.find((role) => role.name === roleName);
+}
+
+/**
+ * Fetches all the categories of a given guild.
  * @param {Guild} guild The guild whose categories you want to fetch.
  * @returns {Promise<Collection<string, GuildChannel>>} A Promise that resolves with a Collection of the categories of the guild.
  */
@@ -109,4 +129,4 @@ const fetchRDMGuild = async () => {
 	return await fetchGuild(ids.rapid_discord_mafia.guild_id);
 }
 
-module.exports = { assertClientSetup, fetchGuild, fetchChannel, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchUser, fetchRole };
+module.exports = { assertClientSetup, fetchGuild, fetchChannel, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchUser, fetchRole, fetchRoleByName };

@@ -1,8 +1,8 @@
 const Parameter = require("../../modules/commands/Paramater");
 const SlashCommand = require("../../modules/commands/SlashCommand");
 const ids = require("../../bot-config/discord-ids.js");
-const { deferInteraction, getRole, addRole } = require("../../modules/functions");
-const { fetchGuildMember } = require("../../utilities/discord-fetch-utils.js");
+const { deferInteraction, addRole } = require("../../modules/functions");
+const { fetchGuildMember, fetchRoleByName } = require("../../utilities/discord-fetch-utils.js");
 
 const Parameters = {
 	Color: new Parameter({
@@ -44,7 +44,7 @@ command.execute = async function execute(interaction) {
 	const user_guild_member = await fetchGuildMember(interaction.guild, user.id);
 	const user_name = user.username;
 	const role_name = user_name + "'s Role Color";
-	let role = await getRole(interaction.guild, role_name);
+	let role = await fetchRoleByName(interaction.guild, role_name);
 
 	if (role) {
 		role.setColor(color_num);
@@ -56,7 +56,7 @@ command.execute = async function execute(interaction) {
 				color: color_num,
 			}
 		)
-		role = await getRole(interaction.guild, role_name);
+		role = await fetchRoleByName(interaction.guild, role_name);
 
 		addRole(user_guild_member, role);
 	};

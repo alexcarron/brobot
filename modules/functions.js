@@ -48,12 +48,6 @@ const functions = {
 		}
 	},
 
-	async getRole(guild, role_name) {
-		let all_roles = await guild.roles.fetch();
-
-		return await all_roles.find(role => role.name === role_name);
-	},
-
 	async addRole(guild_member, role) {
 		await guild_member.roles.add(role).catch(console.error());
 	},

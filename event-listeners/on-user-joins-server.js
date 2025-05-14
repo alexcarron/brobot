@@ -1,12 +1,12 @@
 const ids = require("../bot-config/discord-ids");
 const { RDMRoles } = require("../modules/enums");
-const { getRole, addRole } = require("../modules/functions");
-const { fetchGuild, fetchRole } = require("../utilities/discord-fetch-utils");
+const { addRole } = require("../modules/functions");
+const { fetchGuild, fetchRole, fetchRoleByName } = require("../utilities/discord-fetch-utils");
 
 const onUserJoinsServer = async function(guildMember) {
 	if (guildMember.guild.id === ids.servers.rapid_discord_mafia) {
 		const rdmGuild = await fetchGuild(ids.servers.rapid_discord_mafia);
-		const spectatorRole = await getRole(rdmGuild, RDMRoles.Spectator);
+		const spectatorRole = await fetchRoleByName(rdmGuild, RDMRoles.Spectator);
 
 		await addRole(guildMember, spectatorRole);
 	}
