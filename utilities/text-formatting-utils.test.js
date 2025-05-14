@@ -1,7 +1,7 @@
 const { toTitleCase, createTextProgressBar, toNumericOrdinal, toWordOrdinal, createListFromWords, wrapTextByLineWidth, removeLinks, removeEmojis, findStringStartingWith } = require("./text-formatting-utils");
 const { createNowUnixTimestamp } = require("./date-time-utils");
 
-describe('toTitleCase function', () => {
+describe('toTitleCase()', () => {
   it('should return an empty string for an empty input', () => {
     expect(toTitleCase('')).toBe('');
   });
@@ -74,7 +74,7 @@ describe('createTextProgressBar', () => {
 	});
 });
 
-describe('toNumericOrdinal function', () => {
+describe('toNumericOrdinal()', () => {
 	it('should return the correct ordinal suffix for numbers ending in 1', () => {
 		expect(toNumericOrdinal(1)).toBe('1st');
 		expect(toNumericOrdinal(21)).toBe('21st');
@@ -122,7 +122,7 @@ describe('toNumericOrdinal function', () => {
 	});
 });
 
-describe('toWordOrdinal function', () => {
+describe('toWordOrdinal()', () => {
 	it('should return correct ordinal for numbers less than 20', () => {
 		expect(toWordOrdinal(1)).toBe('first');
 		expect(toWordOrdinal(2)).toBe('second');
@@ -166,7 +166,7 @@ describe('toWordOrdinal function', () => {
 	});
 });
 
-describe('createListFromWords function', () => {
+describe('createListFromWords()', () => {
 	it('should return empty string for empty array', () => {
 		expect(createListFromWords([])).toBe('');
 	});
@@ -192,7 +192,7 @@ describe('createListFromWords function', () => {
 	});
 });
 
-describe('wrapTextByLineWidth function', () => {
+describe('wrapTextByLineWidth()', () => {
 	it('should return an empty array for empty text', () => {
 		const text = '';
 		const lineWidth = 10;
@@ -249,7 +249,7 @@ describe('wrapTextByLineWidth function', () => {
 	});
 });
 
-describe('removeLinks function', () => {
+describe('removeLinks()', () => {
 	it('should remove a single URL from a string', () => {
 		const input = 'Hello, visit https://www.example.com for more info.';
 		const expectedOutput = 'Hello, visit  for more info.';
@@ -289,7 +289,7 @@ describe('removeLinks function', () => {
 	});
 });
 
-describe('removeEmojis function', () => {
+describe('removeEmojis()', () => {
 	it('should remove emojis from a string', () => {
 		const input = 'Hello 🌎 world!';
 		const expectedOutput = 'Hello  world!';
@@ -338,7 +338,7 @@ describe('createNowUnixTimestamp', () => {
 	});
 });
 
-describe('findStringStartingWith function', () => {
+describe('findStringStartingWith()', () => {
 	it('should return exact match', () => {
 		const startingString = 'hello';
 		const possibleStrings = ['hello', 'world', 'foo'];

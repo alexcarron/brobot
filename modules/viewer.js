@@ -1,6 +1,7 @@
 const { LLPointTiers, LLPointThresholds, LLPointRewards, LLPointAccomplishments } = require("./enums.js");
 const ids = require("../bot-config/discord-ids.js");
-const { getGuild, getGuildMember, getRoleById, addRole, removeRole, getUser } = require("./functions.js");
+const { getGuildMember, getRoleById, addRole, removeRole, getUser } = require("./functions.js");
+const { fetchGuild } = require("../utilities/discord-fetch-utils.js");
 
 class Viewer {
 	constructor({name, aliases=[], user_id, ll_points=0, isSubscribed=false, didUndertaleQuiz=false, didDeltaruneQuiz=false, games_participated_in=[], valentine}) {
@@ -45,7 +46,7 @@ class Viewer {
 		const
 			tier = this.getTier(),
 			tier_role_id = ids.ll_game_shows.roles[tier],
-			ll_game_shows_guild = await getGuild(ids.ll_game_shows.server_id);
+			ll_game_shows_guild = await fetchGuild(ids.ll_game_shows.server_id);
 
 		console.log(`Setting ${this.name}'s Tier to ${tier}`);
 

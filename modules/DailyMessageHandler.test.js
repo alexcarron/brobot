@@ -11,9 +11,11 @@ jest.mock('discord.js', () => ({
 }));
 jest.mock('./functions', () => ({
   getChannel: jest.fn(() => new (require('discord.js').TextChannel)()),
-  getGuild: jest.fn(() => ({ id: 'mockGuildId' })),
   saveObjectToGitHubJSON: jest.fn(() => Promise.resolve('Saved'))
 }));
+jest.mock('../utilities/discord-fetch-utils', () => ({
+	fetchGuild: jest.fn(() => Promise.resolve({ id: 'mockGuildId' }))
+}))
 jest.mock('../bot-config/discord-ids.js', () => ({
   ll_game_shows: {
     server_id: 'mockServerId',

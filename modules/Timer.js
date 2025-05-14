@@ -1,8 +1,7 @@
-const { getGuild, getChannel, getUser, saveObjectToGitHubJSON } = require("./functions");
-const Viewer = require("./viewer");
-const ids = require("../bot-config/discord-ids.js");
-const { GuildScheduledEventManager, Message, GuildScheduledEventPrivacyLevel, GuildScheduledEventEntityType, TextChannel } = require("discord.js");
+const { getChannel, saveObjectToGitHubJSON } = require("./functions");
+const { TextChannel } = require("discord.js");
 const cron = require("cron");
+const { fetchGuild } = require("../utilities/discord-fetch-utils");
 
 /**
  * Represents a timer set by Brobot.
@@ -138,7 +137,7 @@ class Timer {
 	 * @returns {Promise<TextChannel>}
 	 */
 	async getChannel() {
-		const guild = await getGuild(this._guild_id);
+		const guild = await fetchGuild(this._guild_id);
 		const channel = await getChannel(guild, this._channel_id);
 		return channel;
 	}

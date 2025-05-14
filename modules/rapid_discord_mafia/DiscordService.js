@@ -1,6 +1,7 @@
 const { TextChannel, Message, Guild, PermissionFlagsBits, Role } = require("discord.js");
-const { getGuild, getChannel, getGuildMember, getRole, getRoleById } = require("../functions");
-const ids = require("../../bot-config/discord-ids.js")
+const { getChannel, getGuildMember, getRole, getRoleById } = require("../functions");
+const ids = require("../../bot-config/discord-ids.js");
+const { fetchGuild } = require("../../utilities/discord-fetch-utils.js");
 
 class DiscordService {
 	/**
@@ -71,7 +72,7 @@ class DiscordService {
 	}
 
 	async setupRDMGuild() {
-		this.rdm_guild = await getGuild(ids.servers.rapid_discord_mafia);
+		this.rdm_guild = await fetchGuild(ids.servers.rapid_discord_mafia);
 	}
 
 	async setupAnnounceChannel() {

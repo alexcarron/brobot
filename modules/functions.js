@@ -2,6 +2,7 @@ const { forever } = require("request");
 const ids = require("../bot-config/discord-ids.js")
 const { github_token } =  require("../token.json");
 const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle  } = require('discord.js');
+const { fetchGuild } = require("../utilities/discord-fetch-utils.js");
 
 const functions = {
 	getChannelCategorys(guild) {
@@ -76,11 +77,7 @@ const functions = {
 
 
 	async getRDMGuild() {
-		return await functions.getGuild(ids.rapid_discord_mafia.rdm_server_id);
-	},
-
-	async getGuild(guild_id) {
-		return await global.client.guilds.fetch(guild_id);
+		return await fetchGuild(ids.rapid_discord_mafia.rdm_server_id);
 	},
 
 	/**

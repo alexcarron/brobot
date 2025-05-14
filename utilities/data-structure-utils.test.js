@@ -126,7 +126,7 @@ describe('appendToNestedProperty', () => {
 	});
 });
 
-describe('getShuffledArray function', () => {
+describe('getShuffledArray()', () => {
 	it('should not modify the original array', () => {
 		const originalArray = [1, 2, 3, 4, 5];
 		getShuffledArray(originalArray);
@@ -155,7 +155,7 @@ describe('getShuffledArray function', () => {
 	});
 });
 
-describe('arraysHaveSameElements function', () => {
+describe('arraysHaveSameElements()', () => {
 	it('should throw an error if less than two arrays are passed', () => {
 		expect(() => arraysHaveSameElements([1, 2, 3])).toThrowError('At least two arrays must be passed.');
 	});
@@ -194,7 +194,7 @@ describe('arraysHaveSameElements function', () => {
 	});
 });
 
-describe('getRandomElement function', () => {
+describe('getRandomElement()', () => {
 	it('should return a random element from a non-empty array', () => {
 		const array = [1, 2, 3, 4, 5];
 		const randomElement = getRandomElement(array);

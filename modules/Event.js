@@ -1,8 +1,9 @@
-const { getGuild, getChannel, getUser, saveObjectToGitHubJSON } = require("./functions");
+const { getChannel, getUser, saveObjectToGitHubJSON } = require("./functions");
 const Viewer = require("./viewer");
 const ids = require("../bot-config/discord-ids.js");
 const { GuildScheduledEventManager, Message, GuildScheduledEventPrivacyLevel, GuildScheduledEventEntityType } = require("discord.js");
 const cron = require("cron");
+const { fetchGuild } = require("../utilities/discord-fetch-utils.js");
 
 /**
  * Represents a LL Game Show Discord event.
@@ -126,7 +127,7 @@ class Event {
 	 * @return {Promise<Message>} Message sent
 	 */
 	async announceEvent() {
-		const ll_game_shows_guild = await getGuild(ids.ll_game_shows.server_id);
+		const ll_game_shows_guild = await fetchGuild(ids.ll_game_shows.server_id);
 		const announce_channel = await getChannel(ll_game_shows_guild, ids.ll_game_shows.channels.game_show_announcements);
 		const upcoming_games_channel = await getChannel(ll_game_shows_guild, ids.ll_game_shows.channels.upcoming_games);
 
@@ -170,7 +171,7 @@ class Event {
 	 * @return {Promise<Message>} Message sent
 	 */
 	async announceEventWarning() {
-		const ll_game_shows_guild = await getGuild(ids.ll_game_shows.server_id);
+		const ll_game_shows_guild = await fetchGuild(ids.ll_game_shows.server_id);
 		const event_channel = await getChannel(ll_game_shows_guild, ids.ll_game_shows.channels.events_text_chat);
 
 		const message =
@@ -195,7 +196,7 @@ class Event {
 	 * @return {Promise<Message>} Message sent
 	 */
 	async announceEventStarting() {
-		const ll_game_shows_guild = await getGuild(ids.ll_game_shows.server_id);
+		const ll_game_shows_guild = await fetchGuild(ids.ll_game_shows.server_id);
 		const event_channel = await getChannel(ll_game_shows_guild, ids.ll_game_shows.channels.events_text_chat);
 
 		const message =

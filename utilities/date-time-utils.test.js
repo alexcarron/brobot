@@ -1,6 +1,6 @@
 const { toUnixTimestamp, toCronExpression } = require("./date-time-utils");
 
-describe('toUnixTimestamp function', () => {
+describe('toUnixTimestamp()', () => {
 	it('should return the correct Unix timestamp for a valid Date object', () => {
 		const date = new Date('2022-01-01T00:00:00.000Z');
 		const expected = 1640995200;
@@ -38,7 +38,7 @@ describe('toUnixTimestamp function', () => {
 	});
 });
 
-describe('toCronExpression function', () => {
+describe('toCronExpression()', () => {
 	it('should return a valid CRON expression for a valid Date object', () => {
 		const date = new Date('2022-01-01T12:30:45.000Z');
 		const expected = '45 30 6 1 0 6';
