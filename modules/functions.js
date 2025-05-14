@@ -26,24 +26,7 @@ const functions = {
 		);
 	},
 
-	getJSONFromObj: function getJSONFromObj(obj) {
-		let json_obj = {};
-
-		for (let property in obj) {
-			if (property.startsWith("_") || property === "class")
-				continue;
-
-			if (typeof obj[property] === "object") {
-				if (Array.isArray(obj[property]))
-					json_obj[property] = Object.values( getJSONFromObj(obj[property]) );
-				else
-					json_obj[property] = getJSONFromObj(obj[property]);
-			} else
-				json_obj[property] = obj[property];
-		}
-
-		return json_obj;
-	},
+	
 
 	async getCategoryChildren(guild, category_id) {
 		let all_channels = await guild.channels.fetch();
