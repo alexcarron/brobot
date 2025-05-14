@@ -77,4 +77,40 @@ const appendToNestedProperty = (object, propertyPath, value) => {
 	);
 }
 
-module.exports = { setNestedProperty, appendToNestedProperty };
+const swapArrayElements = (array, index1, index2) => {
+	let valueOfIndex1 = array[index1];
+	let valueOfIndex2 = array[index2];
+	array[index1] = valueOfIndex2;
+	array[index2] = valueOfIndex1;
+}
+
+
+/**
+ * Returns a copy of the given array, shuffled randomly.
+ * @param {Array} array - The array to be shuffled.
+ * @returns {Array} A shuffled copy of the given array.
+ */
+const getShuffledArray = (array) => {
+	if (!Array.isArray(array))
+		throw new Error('Given value must be an array.');
+
+	const arrayCopy = [...array];
+	let currentIndex = arrayCopy.length;
+	let randomIndex;
+
+	// While there are remaining elements to shuffle.
+	while (currentIndex !== 0) {
+		// Pick a remaining element.
+		randomIndex = Math.floor(Math.random() * currentIndex);
+		// Decrease current index by one.
+		currentIndex--;
+
+		// Swap the current element with the randomly picked element.
+		swapArrayElements(arrayCopy, currentIndex, randomIndex);
+	}
+
+	// Return the shuffled array.
+	return arrayCopy;
+}
+
+module.exports = { setNestedProperty, appendToNestedProperty, getShuffledArray };

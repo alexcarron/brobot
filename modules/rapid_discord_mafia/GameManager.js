@@ -1,5 +1,5 @@
-const { GameStates, Phases, Subphases, MessageDelays, Factions, RDMRoles, WinConditions, Feedback, Announcements, RoleNames, PhaseWaitTimes, VotingOutcomes, TrialOutcomes, TrialVotes, RoleIdentifierTypes, ArgumentSubtypes, CoinRewards, ArgumentTypes, Votes } = require("../enums.js");
-const { getChannel, wait, getRandArrayItem, getGuildMember, getRole, removeRole, getCategoryChildren, shuffleArray, getRDMGuild, addRole } = require("../functions.js");
+const { GameStates, Phases, Subphases, MessageDelays, Factions, RDMRoles, WinConditions, Feedback, Announcements, RoleNames, PhaseWaitTimes, VotingOutcomes, TrialOutcomes, TrialVotes, RoleIdentifierTypes, ArgumentSubtypes, CoinRewards, ArgumentTypes } = require("../enums.js");
+const { getChannel, wait, getRandArrayItem, getGuildMember, getRole, removeRole, getCategoryChildren, getRDMGuild, addRole } = require("../functions.js");
 const ids = require("../../bot-config/discord-ids.js");
 const { github_token } =  require("../token.js");
 const { PermissionFlagsBits, Role, Interaction } = require("discord.js");
@@ -15,6 +15,7 @@ const GameDataManager = require("./GameDataManager.js");
 const DiscordService = require("./DiscordService.js");
 const VoteManager = require("./VoteManager.js");
 const { toTitleCase } = require("../../utilities/text-formatting-utils.js");
+const { getShuffledArray } = require("../../utilities/data-structure-utils.js");
 // const Logger = require("./Logger.js");
 
 class GameManager {
@@ -230,7 +231,7 @@ class GameManager {
 	async start(role_identifiers) {
 		const
 			unshuffled_role_identifiers = [...role_identifiers],
-			shuffled_role_identifiers = shuffleArray(role_identifiers),
+			shuffled_role_identifiers = getShuffledArray(role_identifiers),
 			days_passed_at_sign_ups = 0;
 
 		this.state_manager.changeToStarted();
@@ -249,7 +250,7 @@ class GameManager {
 		this.player_manager.reset();
 
 		await this.createRoleList();
-		this.role_list = shuffleArray(this.role_list);
+		this.role_list = getShuffledArray(this.role_list);
 		await this.assignRolesToPlayers();
 
 		if (!this.isMockGame) {

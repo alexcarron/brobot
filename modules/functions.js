@@ -4,25 +4,6 @@ const { github_token } =  require("../token.json");
 const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle  } = require('discord.js');
 
 const functions = {
-	shuffleArray(array) {
-		let current_index = array.length,
-			rand_index;
-
-		// While there remain elementelements to shuffle.
-		while (current_index != 0) {
-
-			// Pick a remaining element.
-			rand_index = Math.floor( Math.random() * current_index );
-			current_index--;
-
-			// And swap it with the current element.
-			[ array[current_index], array[rand_index] ] =
-				[ array[rand_index], array[current_index] ];
-		}
-
-		return array;
-	},
-
 	doArraysHaveSameElements(array1, array2) {
 		const array2_elems_not_in_array1 = array2;
 

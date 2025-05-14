@@ -1,4 +1,4 @@
-const { setNestedProperty, appendToNestedProperty } = require("./data-structure-utils");
+const { setNestedProperty, appendToNestedProperty, getShuffledArray } = require("./data-structure-utils");
 
 describe('setNestedProperty', () => {
 	it('sets a property directly', () => {
@@ -123,5 +123,34 @@ describe('appendToNestedProperty', () => {
 		const value = 'value';
 		appendToNestedProperty(object, propertyPath, value);
 		expect(object).toEqual({ property1: { property2: { property3: ['value'] } } });
+	});
+});
+
+describe('getShuffledArray function', () => {
+	it('should not modify the original array', () => {
+		const originalArray = [1, 2, 3, 4, 5];
+		getShuffledArray(originalArray);
+		expect(originalArray).toEqual([1, 2, 3, 4, 5]);
+	});
+
+	it('should return an array with the same elements as the original array', () => {
+		const originalArray = [1, 2, 3, 4, 5];
+		const shuffledArray = getShuffledArray(originalArray);
+		expect(shuffledArray.sort()).toEqual(originalArray.sort());
+	});
+
+	test('should return the same array when shuffling a single-element array', () => {
+			expect(getShuffledArray([1])).toEqual([1]);
+	});
+
+
+	it('should throw an error when given a non-array input', () => {
+		expect(() => getShuffledArray('not an array')).toThrowError();
+	});
+
+	it('should return an empty array when given an empty array input', () => {
+		const originalArray = [];
+		const shuffledArray = getShuffledArray(originalArray);
+		expect(shuffledArray).toEqual([]);
 	});
 });
