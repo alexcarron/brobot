@@ -4,20 +4,6 @@ const { github_token } =  require("../token.json");
 const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle  } = require('discord.js');
 
 const functions = {
-
-	// Function to calculate the GCD (Greatest Common Divisor) using the Euclidean algorithm
-	gcd(num1, num2) {
-		if (num2 === 0) {
-				return num1;
-		}
-		return functions.gcd(num2, num1 % num2);
-	},
-
-	// Function to calculate the LCM (Least Common Multiple)
-	lcm(num1, num2) {
-		return (num1 * num2) / functions.gcd(num1, num2);
-	},
-
 	getChannelCategorys(guild) {
 		return guild.channels.filter(
 			(channel) => {

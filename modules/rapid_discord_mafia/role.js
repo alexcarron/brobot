@@ -1,5 +1,5 @@
+const { toTitleCase } = require("../../utilities/text-formatting-utils.js");
 const { Factions } = require("../enums.js");
-const { toTitleCase } = require("../functions.js");
 
 class Role {
 	constructor({name, faction, alignment, attack, defense, goal, isUnique = false, immunities = [], abilities = [], notes = ""}) {
