@@ -1,4 +1,4 @@
-const { Client, Guild, TextChannel, VoiceChannel, Message, ChannelType } = require("discord.js");
+const { Client, Guild, TextChannel, VoiceChannel, Message, ChannelType, CategoryChannel } = require("discord.js");
 
 /**
  * Asserts that the Discord client is setup and ready.
@@ -55,4 +55,18 @@ const fetchCategoriesOfGuild = async (guild) => {
 	);
 }
 
-module.exports = { assertClientSetup, fetchGuild, fetchChannel, fetchMessage };
+/**
+ * Fetches all the channels in a category.
+ * @param {Guild} guild The guild whose category you want to fetch the channels of.
+ * @param {string} categoryID The ID of the category whose channels you want to fetch.
+ * @returns {Promise<Collection<string, GuildChannel>>} A Promise that resolves with a Collection of the channels in the category.
+ */
+const fetchChannelsInCategory = async (guild, categoryID) => {
+	const allChannelsInGuild = await guild.channels.fetch();
+
+	return allChannelsInGuild.filter((channel) =>
+		channel.parentId === categoryID
+	);
+}
+
+module.exports = { assertClientSetup, fetchGuild, fetchChannel, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory };

@@ -2,7 +2,8 @@ const { PermissionFlagsBits, ChannelType } = require("discord.js");
 const Parameter = require("../../../modules/commands/Paramater");
 const SlashCommand = require("../../../modules/commands/SlashCommand");
 const
-	{ getCategoryChildren, deferInteraction } = require("../../../modules/functions");
+	{ deferInteraction } = require("../../../modules/functions");
+const { fetchChannelsInCategory } = require("../../../utilities/discord-fetch-utils");
 
 const Parameters = {
 	CategoryChannelId: new Parameter({
@@ -27,7 +28,7 @@ command.execute = async function(interaction) {
 	// Delete Channels
 	const
 		category_id = interaction.options.getString(Parameters.CategoryChannelId.name),
-		category_chnls = await getCategoryChildren(interaction.guild, category_id);
+		category_chnls = await fetchChannelsInCategory(interaction.guild, category_id);
 
 	await category_chnls.forEach(
 		async (channel) => {

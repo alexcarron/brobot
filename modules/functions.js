@@ -6,18 +6,6 @@ const { fetchGuild } = require("../utilities/discord-fetch-utils.js");
 
 const functions = {
 
-
-
-	async getCategoryChildren(guild, category_id) {
-		let all_channels = await guild.channels.fetch();
-
-		return await all_channels.filter(
-			(channel) => {
-				return channel.parentId == category_id && channel.type == 0
-			}
-		);
-	},
-
 	async confirmAction({interaction, message, confirm_txt, cancel_txt, confirm_update_txt, cancel_update_txt}) {
 
 		const confirm_button = new ButtonBuilder()
