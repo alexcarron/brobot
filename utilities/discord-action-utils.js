@@ -1,4 +1,4 @@
-const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
+const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel } = require('discord.js');
 
 /**
  * Prompt the user to confirm or cancel an action by adding buttons to the deffered reply to an existing command interaction.
@@ -127,10 +127,110 @@ const editReplyToInteraction = async (interaction, newMessageContents) => {
 	}
 }
 
+/**
+ * Shows a modal to a user, prompting them for text input. Returns the text entered by the user.
+ *
+ * @param {Object} options
+ * @param {TextChannel} options.channelToSendIn The channel to send the message to.
+ * @param {string} [options.modalTitle=""] The title of the modal.
+ * @param {string} [options.showModalButtonText=""] The text of the button which shows the modal.
+ * @param {string} [options.initialMessageText=""] The text to send to the user when prompting them to press the button.
+ * @param {string} [options.placeholder=""] The placeholder text for the text input field in the modal.
+ * @returns {Promise<string>} The text entered by the user.
+ */
+const getInputFromCreatedTextModal = async ({
+		channelToSendIn,
+		modalTitle="",
+		initialMessageText="",
+		showModalButtonText="",
+		placeholder="",
+}) => {
+	if (!channelToSendIn) return;
+
+	const showModalButtonID = showModalButtonText.replace(" ", "");
+	const modalID = `${modalTitle.replace(" ", "")}Modal`;
+	const textInputID = `${modalTitle.replace(" ", "")}TextInput`;
+
+	// Create the button to show the modal
+	const showModalButton = new ButtonBuilder()
+		.setCustomId(showModalButtonID)
+		.setLabel(showModalButtonText)
+		.setStyle(ButtonStyle.Primary);
+
+	// Create the action row with the button
+	const showModalButtonActionRow = new ActionRowBuilder()
+		.addComponents(showModalButton);
+
+	// Send the message with the button
+	const messageWithShowModalButton = await channelToSendIn.send({
+		content: initialMessageText,
+		components: [showModalButtonActionRow],
+	});
+
+	// Create the modal
+	const modal = new ModalBuilder()
+		.setCustomId(modalID)
+		.setTitle(modalTitle);
+
+	// Create the text input field
+	const textInput = new TextInputBuilder()
+		.setCustomId(textInputID)
+		.setLabel(modalTitle)
+		.setMaxLength(1_900)
+		.setPlaceholder(placeholder)
+		.setValue(placeholder)
+		.setRequired(true)
+		.setStyle(TextInputStyle.Paragraph);
+
+	// Create the action row with the text input field
+	const textInputActionRow = new ActionRowBuilder().addComponents(textInput);
+
+	// Add the action row to the modal
+	modal.addComponents(textInputActionRow);
+
+	let interaction;
+
+	try {
+		// Wait for user to press the button
+		interaction = await messageWithShowModalButton.awaitMessageComponent({
+			filter: (interaction) => interaction.customId === showModalButtonID,
+			time: 1_000_000,
+		});
+
+		// Show the modal
+		await interaction.showModal(modal);
+
+		// Wait for user to submit the modal
+		interaction = await messageWithShowModalButton.awaitMessageComponent({
+			filter: (interaction) => interaction.customId === modalID,
+			time: 1_000_000,
+		});
+	}
+	catch {
+		// If the user doesn't respond in time, delete the message and return undefined
+		await messageWithShowModalButton.edit({
+			content: `\`Response not recieved in time\``,
+			components: [],
+		});
+		return undefined;
+	}
+
+	// Get the data entered by the user
+	const textEntered = interaction.fields.getTextInputValue(textInputID);
+
+	// Confirm the user's input
+	const reply = await interaction.reply("Confirmed");
+	reply.delete();
+	messageWithShowModalButton.delete();
+
+	return textEntered;
+}
+
 module.exports = {
 	confirmInteractionWithButtons,
 	addRoleToMember,
 	removeRoleFromMember,
 	deferInteraction,
 	editReplyToInteraction,
+	getInputFromCreatedTextModal,
 };

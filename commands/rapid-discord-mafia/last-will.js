@@ -1,8 +1,7 @@
 const Parameter = require("../../modules/commands/Paramater");
 const ids = require("../../bot-config/discord-ids.js");
 const SlashCommand = require("../../modules/commands/SlashCommand");
-const { getModalTextFieldInput } = require("../../modules/functions");
-const { deferInteraction } = require("../../utilities/discord-action-utils.js");
+const { deferInteraction, getInputFromCreatedTextModal } = require("../../utilities/discord-action-utils.js");
 
 const Parameters = {
 	Edit: new Parameter({
@@ -42,11 +41,11 @@ command.execute = async function(interaction) {
 	}
 
 	if (interaction.options.getSubcommand() === Parameters.Edit.name) {
-		const contents = await getModalTextFieldInput({
-			channel_sending_in: interaction.channel,
-			title: "Last Will",
-			button_text: "Edit Last Will",
-			prompt: "Click the button to edit your last will",
+		const contents = await getInputFromCreatedTextModal({
+			channelToSendIn: interaction.channel,
+			modalTitle: "Last Will",
+			initialMessageText: "Click the button to edit your last will",
+			showModalButtonText: "Edit Last Will",
 			placeholder: player.last_will,
 		});
 

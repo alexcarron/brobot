@@ -1,8 +1,7 @@
 const Parameter = require("../../modules/commands/Paramater");
 const ids = require("../../bot-config/discord-ids.js");
 const SlashCommand = require("../../modules/commands/SlashCommand");
-const { getModalTextFieldInput } = require("../../modules/functions");
-const { deferInteraction } = require("../../utilities/discord-action-utils.js");
+const { deferInteraction, getInputFromCreatedTextModal } = require("../../utilities/discord-action-utils.js");
 
 const Parameters = {
 	Edit: new Parameter({
@@ -42,11 +41,11 @@ command.execute = async function(interaction) {
 	}
 
 	if (interaction.options.getSubcommand() === Parameters.Edit.name) {
-		const contents = await getModalTextFieldInput({
-			channel_sending_in: interaction.channel,
-			title: "Death Note",
-			button_text: "Edit Death Note",
-			prompt: "Click the button to edit your death note",
+		const contents = await getInputFromCreatedTextModal({
+			channelToSendIn: interaction.channel,
+			modalTitle: "Death Note",
+			initialMessageText: "Click the button to edit your death note",
+			showModalButtonText: "Edit Death Note",
 			placeholder: player.death_note,
 		});
 
