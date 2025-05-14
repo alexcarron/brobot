@@ -186,4 +186,64 @@ const createListFromWords = (words) => {
 	return `${nonLastWords.join(", ")}, and ${lastWord}`;
 }
 
-module.exports = { toTitleCase, createTextProgressBar, toNumericOrdinal, toWordOrdinal, createListFromWords };
+/**
+ * Wrap a given text into an array of strings, where each string is as long as the given line width without breaking words.
+ * @param {string} text - The text to wrap
+ * @param {number} lineWidth - The width of each line
+ * @returns {string[]} An array of strings, where each string is a line of the wrapped text
+ */
+const wrapTextByLineWidth = (text, lineWidth) => {
+	if (typeof text !== 'string')
+		throw new Error('text must be a string.');
+
+	if (typeof lineWidth !== 'number' || lineWidth <= 0)
+		throw new Error('lineWidth must be a positive number.');
+
+	let lines = [];
+	let currentText = text.replace(/\s+/g, ' ');
+	currentText = currentText.trim();
+	if (currentText.length === 0) return [];
+
+	console.log({
+		text,
+		lineWidth,
+		currentText,
+		lines,
+		length: currentText.length
+	})
+
+	// While there is more text to wrap
+	while (currentText.length > lineWidth) {
+		let newLine = currentText.substring(0, lineWidth);
+		let lineEndIndex = newLine.length;
+		let lineEndCharacter = currentText.charAt(lineEndIndex);
+
+		// If there is no space at the end of the line, go back until we find one
+		while (lineEndIndex >= 0 && lineEndCharacter !== ' ') {
+			lineEndIndex -= 1;
+			lineEndCharacter = currentText.charAt(lineEndIndex);
+		}
+
+		let nextLineStartIndex = lineEndIndex + 1;
+
+		// If no space was found, go to the end of the line and dont attempt to trim off a space
+		if (lineEndIndex < 0) {
+			lineEndIndex = newLine.length;
+			nextLineStartIndex = lineEndIndex;
+		}
+
+		// Trim the line to the last space
+		newLine = newLine.substring(0, lineEndIndex);
+
+		// Trim the current text to remove the line we just processed
+		currentText = currentText.substring(nextLineStartIndex);
+		lines.push(newLine);
+	}
+
+	// Adds the last line
+	lines.push(currentText);
+
+	return lines;
+}
+
+module.exports = { toTitleCase, createTextProgressBar, toNumericOrdinal, toWordOrdinal, createListFromWords, wrapTextByLineWidth };

@@ -1,4 +1,4 @@
-const { toTitleCase, createTextProgressBar, toNumericOrdinal, toWordOrdinal, createListFromWords } = require("./text-formatting-utils");
+const { toTitleCase, createTextProgressBar, toNumericOrdinal, toWordOrdinal, createListFromWords, wrapTextByLineWidth } = require("./text-formatting-utils");
 
 describe('toTitleCase function', () => {
   it('should return an empty string for an empty input', () => {
@@ -188,5 +188,62 @@ describe('createListFromWords function', () => {
 
 	it('should return empty string for undefined input', () => {
 		expect(createListFromWords(undefined)).toBe('');
+	});
+});
+
+describe('wrapTextByLineWidth function', () => {
+	it('should return an empty array for empty text', () => {
+		const text = '';
+		const lineWidth = 10;
+		expect(wrapTextByLineWidth(text, lineWidth)).toEqual([]);
+	});
+
+	it('should return the original text for text shorter than line width', () => {
+		const text = 'hello';
+		const lineWidth = 10;
+		expect(wrapTextByLineWidth(text, lineWidth)).toEqual([text]);
+	});
+
+	it('should return the original text for text exactly equal to line width', () => {
+		const text = 'hello world';
+		const lineWidth = 11;
+		expect(wrapTextByLineWidth(text, lineWidth)).toEqual([text]);
+	});
+
+	it('should wrap text longer than line width with spaces', () => {
+		const text = 'hello world this is a test';
+		const lineWidth = 10;
+		expect(wrapTextByLineWidth(text, lineWidth)).toEqual(['hello', 'world this', 'is a test']);
+	});
+
+	it('should wrap text longer than line width without spaces', () => {
+		const text = 'helloworldthisisatest';
+		const lineWidth = 10;
+		expect(wrapTextByLineWidth(text, lineWidth)).toEqual(['helloworld', 'thisisates', 't']);
+	});
+
+	it('should ignore leading/trailing spaces', () => {
+		const text = '   hello world   ';
+		const lineWidth = 11;
+		expect(wrapTextByLineWidth(text, lineWidth)).toEqual(['hello world']);
+	});
+
+	it('should ignore consecutive spaces', () => {
+		const text = 'hello  world  this  is  a  test';
+		const lineWidth = 10;
+		expect(wrapTextByLineWidth(text, lineWidth)).toEqual(['hello', 'world this', 'is a test']);
+	});
+
+	it('should throw an error for invalid text input', () => {
+		expect(() => wrapTextByLineWidth(123, 10)).toThrowError('text must be a string.');
+		expect(() => wrapTextByLineWidth(null, 10)).toThrowError('text must be a string.');
+		expect(() => wrapTextByLineWidth(undefined, 10)).toThrowError('text must be a string.');
+	});
+
+	it('should throw an error for invalid line width', () => {
+		const text = 'hello world';
+		expect(() => wrapTextByLineWidth(text, -10)).toThrowError('lineWidth must be a positive number.');
+		expect(() => wrapTextByLineWidth(text, 0)).toThrowError('lineWidth must be a positive number.');
+		expect(() => wrapTextByLineWidth(text, 'invalid')).toThrowError('lineWidth must be a positive number.');
 	});
 });
