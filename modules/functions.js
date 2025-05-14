@@ -2,10 +2,6 @@ const { github_token } =  require("../token.json");
 const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle  } = require('discord.js');
 
 const functions = {
-	async setNickname(guild_member, nickname) {
-		await guild_member.setNickname(nickname).catch(console.error());
-	},
-
 	async deferInteraction(interaction, message_content="Running command...") {
 		if (interaction) {
 			if (interaction.replied) {

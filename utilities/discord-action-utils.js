@@ -88,9 +88,10 @@ const addRoleToMember = async (guildMember, role) => {
 const removeRoleFromMember = async (guildMember, role) => {
 	await guildMember.roles.remove(role);
 }
+}
 
 module.exports = {
 	confirmInteractionWithButtons,
 	addRoleToMember,
-	removeRoleFromMember
+	removeRoleFromMember,
 };

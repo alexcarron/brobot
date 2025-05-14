@@ -1,6 +1,5 @@
 const { getRandomElement } = require("../../utilities/data-structure-utils");
 const { Feedback, Announcements, RoleNames, Factions, AbilityTypes, AbilityName } = require("../enums");
-const { setNickname } = require("../functions");
 const Logger = require("./Logger");
 const Player = require("./Player");
 
@@ -147,8 +146,8 @@ class PlayerManager {
 		this.players[new_name].name = new_name;
 
 		if (!this.isMockPlayerManager) {
-			const player_guild_member = await this.players[new_name].fetchGuildMember();
-			await setNickname(player_guild_member, new_name);
+			const player_guild_member = await this.players[new_name].fetchGuildMember()
+			player_guild_member.setNickname(new_name);
 
 			const new_channel_name =
 				"👤｜" +
