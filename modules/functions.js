@@ -486,38 +486,6 @@ doesValueMatchType: function doesValueMatchType(value, type) {
 		return colorNumber;
 	},
 
-	toWordOrdinal(number) {
-    if (typeof number !== 'number' || isNaN(number)) {
-        throw new Error('Input is not a valid number');
-    }
-
-    const ordinals = [
-        'zeroth', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth',
-        'tenth', 'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth', 'sixteenth', 'seventeenth', 'eighteenth', 'nineteenth'
-    ];
-
-    const tensOrdinals = [
-        '', 'tenth', 'twentieth', 'thirtieth', 'fortieth', 'fiftieth', 'sixtieth', 'seventieth', 'eightieth', 'ninetieth'
-    ];
-
-    const tensNormal = [
-        '', 'ten', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety', "hundred",
-    ];
-
-    if (number < 20) {
-        return ordinals[number];
-    }
-
-    const lastDigit = number % 10;
-    const tens = Math.floor(number / 10);
-
-    if (lastDigit === 0) {
-        return tensOrdinals[tens];
-    }
-
-    return tensNormal[tens] + '-' + ordinals[lastDigit];
-	},
-
 	async saveObjectToGitHubJSON(object, json_name) {
 		const
 			axios = require('axios'),

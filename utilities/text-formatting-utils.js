@@ -100,4 +100,61 @@ const toNumericOrdinal = (number) => {
 	}
 };
 
-module.exports = { toTitleCase, createTextProgressBar, toNumericOrdinal };
+/**
+ * Converts a number to its word ordinal representation as a string.
+ * @param {number} number - The number to convert.
+ * @returns {string} The word ordinal representation of the number.
+ * @throws {Error} Throws an error if the input is not a valid number or too large.
+ */
+const toWordOrdinal = (number) => {
+  // Check if the input is a valid number
+  if (typeof number !== 'number' || isNaN(number))
+    throw new Error('Input is not a valid number');
+
+	if (number < 0)
+		throw new Error('Number should be non-negative');
+
+  // Ordinal words for numbers 0-19
+  const ordinalsUpTo19 = [
+    'zeroth', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth',
+    'tenth', 'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth', 'sixteenth', 'seventeenth', 'eighteenth', 'nineteenth'
+  ];
+
+  // Ordinal words for multiples of ten
+  const ordinalsForTens = [
+    '', 'tenth', 'twentieth', 'thirtieth', 'fortieth', 'fiftieth', 'sixtieth', 'seventieth', 'eightieth', 'ninetieth'
+  ];
+
+  // Normal words for multiples of ten
+  const wordsForTens = [
+    '', 'ten', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety', "hundred",
+  ];
+
+  // Return the ordinal for numbers less than 20
+  if (number < ordinalsUpTo19.length) {
+    return ordinalsUpTo19[number];
+  }
+
+  // Calculate the last digit and tens place
+  const lastDigit = number % 10;
+  const numTens = Math.floor(number / 10);
+
+  // Return ordinal for exact multiples of ten
+  if (lastDigit === 0) {
+    if (numTens < ordinalsForTens.length) {
+      return ordinalsForTens[numTens];
+    }
+		else {
+      throw new Error('Number too large');
+    }
+  }
+
+  // Return composed ordinal word for other numbers
+  if (numTens < wordsForTens.length) {
+    return wordsForTens[numTens] + '-' + ordinalsUpTo19[lastDigit];
+  }
+
+  throw new Error('Number too large');
+}
+
+module.exports = { toTitleCase, createTextProgressBar, toNumericOrdinal, toWordOrdinal };

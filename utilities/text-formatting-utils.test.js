@@ -1,4 +1,4 @@
-const { toTitleCase, createTextProgressBar, toNumericOrdinal } = require("./text-formatting-utils");
+const { toTitleCase, createTextProgressBar, toNumericOrdinal, toWordOrdinal } = require("./text-formatting-utils");
 
 describe('toTitleCase function', () => {
   it('should return an empty string for an empty input', () => {
@@ -118,5 +118,49 @@ describe('toNumericOrdinal function', () => {
 		expect(toNumericOrdinal(0)).toBe('0th');
 		expect(toNumericOrdinal(-1)).toBe('-1st');
 		expect(toNumericOrdinal(-11)).toBe('-11th');
+	});
+});
+
+describe('toWordOrdinal function', () => {
+	it('should return correct ordinal for numbers less than 20', () => {
+		expect(toWordOrdinal(1)).toBe('first');
+		expect(toWordOrdinal(2)).toBe('second');
+		expect(toWordOrdinal(3)).toBe('third');
+		expect(toWordOrdinal(19)).toBe('nineteenth');
+	});
+
+	it('should return correct ordinal for exact multiples of ten', () => {
+		expect(toWordOrdinal(10)).toBe('tenth');
+		expect(toWordOrdinal(20)).toBe('twentieth');
+		expect(toWordOrdinal(30)).toBe('thirtieth');
+	});
+
+	it('should return correct ordinal for numbers with non-zero last digit', () => {
+		expect(toWordOrdinal(21)).toBe('twenty-first');
+		expect(toWordOrdinal(32)).toBe('thirty-second');
+		expect(toWordOrdinal(43)).toBe('forty-third');
+	});
+
+	it('should throw an error for non-numeric input', () => {
+		expect(() => toWordOrdinal('a')).toThrowError('Input is not a valid number');
+		expect(() => toWordOrdinal(null)).toThrowError('Input is not a valid number');
+		expect(() => toWordOrdinal(undefined)).toThrowError('Input is not a valid number');
+	});
+
+	it('should throw an error for NaN input', () => {
+		expect(() => toWordOrdinal(NaN)).toThrowError('Input is not a valid number');
+	});
+
+	it('should throw an error for too large input', () => {
+		expect(() => toWordOrdinal(1000)).toThrowError('Number too large');
+	});
+
+	it('should handle 0', () => {
+		expect(toWordOrdinal(0)).toBe('zeroth');
+	});
+
+	it('should throw an error for negative numbers', () => {
+		expect(() => toWordOrdinal(-1)).toThrowError('Number should be non-negative');
+		expect(() => toWordOrdinal(-10)).toThrowError('Number should be non-negative');
 	});
 });

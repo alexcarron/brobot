@@ -1,4 +1,4 @@
-const { doArraysHaveSameElements, gcd, lcm, toOrdinal, toWordOrdinal, addOrAssignElementToArray, appendElementToNestedProperty: addElementToNestedProperty, getSentenceFromArray, splitWithNoSplitWords } = require("./functions");
+const { doArraysHaveSameElements, gcd, lcm, addOrAssignElementToArray, appendElementToNestedProperty: addElementToNestedProperty, getSentenceFromArray, splitWithNoSplitWords } = require("./functions");
 
 // ^ doArraysHaveSameElements
 {
@@ -98,84 +98,6 @@ const { doArraysHaveSameElements, gcd, lcm, toOrdinal, toWordOrdinal, addOrAssig
 		}
 	)
 }
-
-// ^ toOrdinal(number)
-describe('toOrdinal function tests', () => {
-	it('Should return "1st" for input 1', () => {
-			expect(toOrdinal(1)).toBe('1st');
-	});
-
-	it('Should return "2nd" for input 2', () => {
-			expect(toOrdinal(2)).toBe('2nd');
-	});
-
-	it('Should return "3rd" for input 3', () => {
-			expect(toOrdinal(3)).toBe('3rd');
-	});
-
-	it('Should return "4th" for input 4', () => {
-			expect(toOrdinal(4)).toBe('4th');
-	});
-
-	it('Should return "11th" for input 11', () => {
-			expect(toOrdinal(11)).toBe('11th');
-	});
-
-	it('Should return "42nd" for input 42', () => {
-			expect(toOrdinal(42)).toBe('42nd');
-	});
-
-	it('Should return "31st" for input 31', () => {
-			expect(toOrdinal(31)).toBe('31st');
-	});
-
-	it('Should return "53rd" for input 53', () => {
-			expect(toOrdinal(53)).toBe('53rd');
-	});
-});
-
-// ^ toWordOrdinal(number)
-describe('toWordOrdinal', () => {
-	it('SHOULD return "first" for input 1', () => {
-			expect(toWordOrdinal(1)).toBe('first');
-	});
-
-	it('SHOULD return "second" for input 2', () => {
-			expect(toWordOrdinal(2)).toBe('second');
-	});
-
-	it('SHOULD return "third" for input 3', () => {
-			expect(toWordOrdinal(3)).toBe('third');
-	});
-
-	it('SHOULD return "fourth" for input 4', () => {
-			expect(toWordOrdinal(4)).toBe('fourth');
-	});
-
-	it('SHOULD return "eleventh" for input 11', () => {
-			expect(toWordOrdinal(11)).toBe('eleventh');
-	});
-
-	it('SHOULD return "fifteenth" for input 15', () => {
-			expect(toWordOrdinal(15)).toBe('fifteenth');
-	});
-
-	it('SHOULD return "twentieth" for input 20', () => {
-			expect(toWordOrdinal(20)).toBe('twentieth');
-	});
-
-	it('SHOULD return "thirty-first" for input 31', () => {
-			expect(toWordOrdinal(31)).toBe('thirty-first');
-	});
-
-	it('SHOULD return "fifty-second" for input 52', () => {
-			expect(toWordOrdinal(52)).toBe('fifty-second');
-	});
-
-	it('SHOULD return "ninety-ninth" for input 99', () => {
-			expect(toWordOrdinal(99)).toBe('ninety-ninth');
-	});
-});
 
 // ^ addElementToNestedProperty
 describe('addElementToNestedProperty', () => {
