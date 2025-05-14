@@ -2,31 +2,6 @@ const { github_token } =  require("../token.json");
 const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle  } = require('discord.js');
 
 const functions = {
-	async replyToInteraction(interaction, content) {
-		try {
-			await interaction.reply({
-				content: content,
-				components: [],
-				ephemeral: true,
-			});
-		}
-		catch {
-			try {
-				await interaction.followUp({
-					content: content,
-					components: [],
-					ephemeral: true,
-				});
-			}
-			catch {
-				await interaction.channel.send({
-					content: content,
-					components: [],
-					ephemeral: true,
-				});
-			}
-		}
-	},
 
 	logColor(message, color) {
 		let reset = "\x1b[0m",

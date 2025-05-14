@@ -132,5 +132,5 @@ module.exports = {
 	addRoleToMember,
 	removeRoleFromMember,
 	deferInteraction,
-	editReplyToInteraction
+	editReplyToInteraction,
 };
