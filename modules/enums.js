@@ -1,6 +1,6 @@
-const { getUnixTimestamp } = require("./functions");
 const ids = require("../bot-config/discord-ids.js");
 const { createListFromWords } = require("../utilities/text-formatting-utils.js");
+const { createNowUnixTimestamp } = require("../utilities/time-utils.js");
 
 const Enums = {
 	WinConditions: {
@@ -286,7 +286,7 @@ const Enums = {
 		Day1Started: () => [
 			`_ _\n# Day 1`,
 			`Look over your role information, come up with a plan, and discuss with your fellow town members your game plan.\n` +
-			`**The day phase will end <t:${getUnixTimestamp() + Enums.PhaseWaitTimes.FirstDay*60}:R>**`,
+			`**The day phase will end <t:${createNowUnixTimestamp() + Enums.PhaseWaitTimes.FirstDay*60}:R>**`,
 		],
 		StartDay: (living_role_id, day_num) => [
 			`_ _\n# Day ${day_num}`,
@@ -295,7 +295,7 @@ const Enums = {
 		],
 		StartVoting: () => [
 			`_ _\n## Voting Subphase`,
-			`The voting part of the day phase will now begin. **It ends in <t:${getUnixTimestamp() + Enums.PhaseWaitTimes.Voting*60}:R>** `,
+			`The voting part of the day phase will now begin. **It ends in <t:${createNowUnixTimestamp() + Enums.PhaseWaitTimes.Voting*60}:R>** `,
 			"Use `/vote for-player` in your player action channel to vote for a player to put on trial. Your votes are not anonymous.",
 		],
 		VotingReminder: `Use the command \`/vote for-player\` in this channel to vote for a player you want to put on trial, abstain, or vote nobody.`,
@@ -311,7 +311,7 @@ const Enums = {
 			`<@&${on_trial_role_id}> You can now give your defense here:`,
 		StartTrial: (player_on_trial) => [
 			`_ _\n## Trial Phase`,
-			`The trial part of the day will now begin and **end <t:${getUnixTimestamp() + Enums.PhaseWaitTimes.Trial*60}:R>**.`,
+			`The trial part of the day will now begin and **end <t:${createNowUnixTimestamp() + Enums.PhaseWaitTimes.Trial*60}:R>**.`,
 			`Use \`/vote for-trial-outcome\` in your player action channel to vote whether or not **${player_on_trial.name}** should be hung. (Or abstain)\nYour votes will be anonymous until day starts.`
 		],
 		TrialVotingReminder: (player_on_trial) =>
@@ -329,12 +329,12 @@ const Enums = {
 		StartNight: (living_role_id, night_num) => [
 			`_ _\n# Night ${night_num}`,
 			`<@&${living_role_id}> Goodnight! It is now nightime.`,
-			`**The night phase will end <t:${getUnixTimestamp() + Enums.PhaseWaitTimes.Night*60}:R>**`,
+			`**The night phase will end <t:${createNowUnixTimestamp() + Enums.PhaseWaitTimes.Night*60}:R>**`,
 			`Time to do your night abilities in your player action channels with the command \`/use ABILITY-NAME-HERE\``,
 			`If you're not using an ability, do \`/use nothing\` to speed up the night`,
 		],
 		PhaseAlmostOverWarning: (min_left) =>
-			`**WARNING: Phase ends <t:${getUnixTimestamp() + min_left*60}:R>**`,
+			`**WARNING: Phase ends <t:${createNowUnixTimestamp() + min_left*60}:R>**`,
 		PlayerSuicide: `They left the game, committing suicide.`,
 		PlayerSmitten: `They were smitten by the host for inactivity.`,
 		VigilanteSuicide: "They comitted suicide over the guilt of killing a town member.",

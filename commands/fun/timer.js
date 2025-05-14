@@ -1,8 +1,7 @@
 const SlashCommand = require('../../modules/commands/SlashCommand.js');
-const ids = require("../../bot-config/discord-ids.js");
 const Parameter = require('../../modules/commands/Paramater.js');
-const { getUnixTimestamp } = require('../../modules/functions.js');
 const Timer = require('../../modules/Timer.js');
+const { createNowUnixTimestamp } = require('../../utilities/time-utils.js');
 
 const Parameters = {
 	ReasonForTimer: new Parameter({
@@ -65,7 +64,7 @@ command.execute = async function(interaction) {
 	const minutes = interaction.options.getInteger(Parameters.Minutes.name);
 	const seconds = interaction.options.getInteger(Parameters.Seconds.name);
 
-	let now_unix_timestamp = getUnixTimestamp();
+	let now_unix_timestamp = createNowUnixTimestamp();
 
 	if (days !== undefined && days !== null) {
 		now_unix_timestamp += days*60*60*24;

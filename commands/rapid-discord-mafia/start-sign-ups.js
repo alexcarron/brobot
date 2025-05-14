@@ -4,7 +4,7 @@ const GameManager = require("../../modules/rapid_discord_mafia/GameManager");
 const
 
 	{ PermissionFlagsBits } = require('discord.js'),
-	{ getChannel, getRole, getUnixTimestamp, wait, deferInteraction } = require("../../modules/functions"),
+	{ deferInteraction } = require("../../modules/functions"),
 	ids = require(`../../bot-config/discord-ids.js`),
 	{
 		rdm_server_id,

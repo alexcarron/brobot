@@ -2,10 +2,11 @@ const cron = require("cron");
 const Event = require('../../../modules/Event.js');
 const SlashCommand = require('../../../modules/commands/SlashCommand.js');
 const ids = require("../../../bot-config/discord-ids.js")
-const { saveObjectToGitHubJSON, confirmAction, wait, getUnixTimestamp } = require("../../../modules/functions.js");
+const { saveObjectToGitHubJSON, confirmAction, wait } = require("../../../modules/functions.js");
 const { ChannelType, ButtonBuilder, ActionRowBuilder, ModalBuilder, ButtonStyle, TextInputBuilder, TextInputStyle, StringSelectMenuOptionBuilder, StringSelectMenuBuilder, } = require('discord.js');
 const { LLPointTiers } = require("../../../modules/enums.js");
 const { toTitleCase } = require("../../../utilities/text-formatting-utils.js");
+const { toUnixTimestamp } = require("../../../utilities/time-utils.js");
 
 const command = new SlashCommand({
 	name: "host-event",
@@ -307,7 +308,7 @@ command.execute = async function(interaction) {
 		event_days_after_today = chosen_week_day_num + 7 - day_after_today_week_day_num;
 
 	event_date.setDate(event_date.getDate() + event_days_after_today);
-	const event_unix_timestamp = getUnixTimestamp(event_date);
+	const event_unix_timestamp = toUnixTimestamp(event_date);
 
 	await interaction.channel.send(`# ✅ Date & Time Confirmed\n>>> <t:${event_unix_timestamp}:F> <t:${event_unix_timestamp}:R>`);
 

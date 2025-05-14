@@ -1,4 +1,6 @@
+const { wait } = require("../modules/functions");
 const { toTitleCase, createTextProgressBar, toNumericOrdinal, toWordOrdinal, createListFromWords, wrapTextByLineWidth, removeLinks, removeEmojis } = require("./text-formatting-utils");
+const { createNowUnixTimestamp } = require("./time-utils");
 
 describe('toTitleCase function', () => {
   it('should return an empty string for an empty input', () => {
@@ -320,5 +322,19 @@ describe('removeEmojis function', () => {
 	it('should throw an error if the input is not a string', () => {
 		const input = 123;
 		expect(() => removeEmojis(input)).toThrowError();
+	});
+});
+
+describe('createNowUnixTimestamp', () => {
+	it('returns a valid Unix timestamp', () => {
+		const timestamp = createNowUnixTimestamp();
+		expect(timestamp).toBeGreaterThan(0);
+		expect(timestamp).toBeLessThan(Date.now() / 1000 + 1);
+	});
+
+	it('returns a timestamp close to the current time', () => {
+		const now = Date.now() / 1000;
+		const timestamp = createNowUnixTimestamp();
+		expect(timestamp).toBeCloseTo(now, -1);
 	});
 });

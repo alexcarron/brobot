@@ -1,5 +1,5 @@
 const { GameStates, Phases, Subphases, MessageDelays, Factions, RDMRoles, WinConditions, Feedback, Announcements, RoleNames, PhaseWaitTimes, VotingOutcomes, TrialOutcomes, TrialVotes, RoleIdentifierTypes, ArgumentSubtypes, CoinRewards, ArgumentTypes, Votes } = require("../enums.js");
-const { getChannel, getGuild, wait, getRandArrayItem, getGuildMember, getRole, removeRole, getCategoryChildren, logColor, getUnixTimestamp, shuffleArray, getRDMGuild, addRole } = require("../functions.js");
+const { getChannel, wait, getRandArrayItem, getGuildMember, getRole, removeRole, getCategoryChildren, shuffleArray, getRDMGuild, addRole } = require("../functions.js");
 const ids = require("../../bot-config/discord-ids.js");
 const { github_token } =  require("../token.js");
 const { PermissionFlagsBits, Role, Interaction } = require("discord.js");
@@ -1986,7 +1986,7 @@ class GameManager {
 	async startSignUps() {
 		await GameManager.openJoinChannel();
 		this.state_manager.changeToSignUps();
-		const starting_unix_timestamp = getUnixTimestamp() + PhaseWaitTimes.SignUps*60;
+		const starting_unix_timestamp = createNowUnixTimestamp() + PhaseWaitTimes.SignUps*60;
 
 		this.announceMessages(
 			Announcements.StartSignUps(

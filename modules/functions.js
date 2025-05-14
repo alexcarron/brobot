@@ -375,15 +375,6 @@ const functions = {
 		);
 	},
 
-	/**
-	 *
-	 * @param {Date} date Date you want converted. Default is current date
-	 * @returns Unix timestamp as integer
-	 */
-	getUnixTimestamp(date = new Date()) {
-		return Math.round((date).getTime() / 1000);
-	},
-
 	getNextDayCronExpression() {
 		const currentDate = new Date();
 		console.log({currentDate});
