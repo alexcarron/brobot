@@ -25,10 +25,6 @@ const functions = {
 		);
 	},
 
-	async getChannel(guild, channel_id) {
-		return await guild.channels.fetch(channel_id);
-	},
-
 	async confirmAction({interaction, message, confirm_txt, cancel_txt, confirm_update_txt, cancel_update_txt}) {
 
 		const confirm_button = new ButtonBuilder()

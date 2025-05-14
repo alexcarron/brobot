@@ -4,15 +4,9 @@ const Enums = require("../../modules/enums");
 
 const
 	{
-		getChannel,
-		toTitleCase,
+
 		deferInteraction
 	} = require("../../modules/functions"),
-	{
-		rdm_server_id,
-		player_actions_category_id,
-	}
-		= require("../../bot-config/discord-ids.js").rapid_discord_mafia,
 	ids = require("../../bot-config/discord-ids.js");
 
 const Subparameters = {

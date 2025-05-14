@@ -1,6 +1,6 @@
 const { TextChannel } = require("discord.js");
 const DailyMessageHandler = require("./DailyMessageHandler");
-const { getChannel } = require("./functions");
+const { fetchChannel } = require("../utilities/discord-fetch-utils");
 
 jest.mock('discord.js', () => ({
   TextChannel: class {
@@ -10,10 +10,10 @@ jest.mock('discord.js', () => ({
   }
 }));
 jest.mock('./functions', () => ({
-  getChannel: jest.fn(() => new (require('discord.js').TextChannel)()),
-  saveObjectToGitHubJSON: jest.fn(() => Promise.resolve('Saved'))
+	saveObjectToGitHubJSON: jest.fn(() => Promise.resolve('Saved'))
 }));
 jest.mock('../utilities/discord-fetch-utils', () => ({
+	fetchChannel: jest.fn(() => Promise.resolve({ id: 'mockChannelId' })),
 	fetchGuild: jest.fn(() => Promise.resolve({ id: 'mockGuildId' }))
 }))
 jest.mock('../bot-config/discord-ids.js', () => ({
@@ -84,7 +84,7 @@ describe('DailyMessageHandler', () => {
 		const mockChannel = new TextChannel();
     jest.spyOn(mockChannel, 'send').mockResolvedValue('Message sent');
 
-    getChannel.mockReturnValue(mockChannel);
+    fetchChannel.mockResolvedValue(mockChannel);
     const message = await dailyMessageHandler.sendDailyMessage();
 
     expect(message).toBe('Message sent');

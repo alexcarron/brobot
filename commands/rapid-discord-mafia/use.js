@@ -1,10 +1,11 @@
 const Parameter = require("../../modules/commands/Paramater");
 const SlashCommand = require("../../modules/commands/SlashCommand");
-const { deferInteraction, getRDMGuild, getChannel } = require("../../modules/functions");
+const { deferInteraction, getRDMGuild } = require("../../modules/functions");
 const { ArgumentTypes, ArgumentSubtypes, Factions, AbilityUses, Phases, AbilityName } = require("../../modules/enums");
 const ids = require("../../bot-config/discord-ids.js");
 const AbilityManager = require("../../modules/rapid_discord_mafia/AbilityManager");
 const { toTitleCase } = require("../../utilities/text-formatting-utils.js");
+const { fetchChannel } = require("../../utilities/discord-fetch-utils.js");
 
 const command = new SlashCommand({
 	name: "use",
@@ -177,7 +178,7 @@ command.execute = async function(interaction, isTest) {
 
 	if (player_role.faction === Factions.Mafia) {
 		const rdm_guild = await getRDMGuild();
-		const mafia_channel = await getChannel(rdm_guild, ids.rapid_discord_mafia.channels.mafia_chat);
+		const mafia_channel = await fetchChannel(rdm_guild, ids.rapid_discord_mafia.channels.mafia_chat);
 
 		mafia_channel.send(
 			ability_using.feedback(...Object.values(arg_values), player.name, false)

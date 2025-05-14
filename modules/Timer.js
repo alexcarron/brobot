@@ -1,7 +1,7 @@
-const { getChannel, saveObjectToGitHubJSON } = require("./functions");
+const { saveObjectToGitHubJSON } = require("./functions");
 const { TextChannel } = require("discord.js");
 const cron = require("cron");
-const { fetchGuild } = require("../utilities/discord-fetch-utils");
+const { fetchGuild, fetchChannel } = require("../utilities/discord-fetch-utils");
 
 /**
  * Represents a timer set by Brobot.
@@ -136,9 +136,9 @@ class Timer {
 	 * Gets the channel that Brobot will announce the timer.
 	 * @returns {Promise<TextChannel>}
 	 */
-	async getChannel() {
+	async fetchChannel() {
 		const guild = await fetchGuild(this._guild_id);
-		const channel = await getChannel(guild, this._channel_id);
+		const channel = await fetchChannel(guild, this._channel_id);
 		return channel;
 	}
 
@@ -151,7 +151,7 @@ class Timer {
 	}
 
 	async endTimer() {
-		const channel = await this.getChannel();
+		const channel = await this.fetchChannel();
 		await channel.send(
 			`# ❗ <@${this._user_id}> Time's Up!` + "\n" +
 			`>>> ${this._reason}`
@@ -161,7 +161,7 @@ class Timer {
 
 	async startTimer() {
 		await this.startCronJob();
-		const channel = await this.getChannel();
+		const channel = await this.fetchChannel();
 		await channel.send(
 			`# <@${this._user_id}> started a timer` + "\n" +
 			`Timer ends <t:${this._end_time/1000}:R>` + "\n" +

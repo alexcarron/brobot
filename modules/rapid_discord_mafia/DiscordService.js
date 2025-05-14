@@ -1,7 +1,7 @@
 const { TextChannel, Message, Guild, PermissionFlagsBits, Role } = require("discord.js");
-const { getChannel, getGuildMember, getRole, getRoleById } = require("../functions");
+const { getGuildMember, getRoleById } = require("../functions");
 const ids = require("../../bot-config/discord-ids.js");
-const { fetchGuild } = require("../../utilities/discord-fetch-utils.js");
+const { fetchGuild, fetchChannel } = require("../../utilities/discord-fetch-utils.js");
 
 class DiscordService {
 	/**
@@ -76,14 +76,14 @@ class DiscordService {
 	}
 
 	async setupAnnounceChannel() {
-		this.announce_channel = await getChannel(
+		this.announce_channel = await fetchChannel(
 			this.rdm_guild,
 			ids.rapid_discord_mafia.channels.game_announce
 		);
 	}
 
 	async setupMafiaChannel() {
-		this.mafia_channel = await getChannel(
+		this.mafia_channel = await fetchChannel(
 			this.rdm_guild,
 			ids.rapid_discord_mafia.channels.mafia_chat
 		);
@@ -111,7 +111,7 @@ class DiscordService {
 	}
 
 	async setupTownDiscussionChannel() {
-		this.town_discussion_channel = await getChannel(
+		this.town_discussion_channel = await fetchChannel(
 			this.rdm_guild,
 			ids.rapid_discord_mafia.channels.town_discussion
 		);
@@ -194,7 +194,7 @@ class DiscordService {
 	 */
 	async sendAndPinMessage({channel_id, contents}) {
 		if (!this.isMockService) {
-			const text_channel = await getChannel(this.rdm_guild, channel_id);
+			const text_channel = await fetchChannel(this.rdm_guild, channel_id);
 			const message = await text_channel.send(contents);
 			await message.pin();
 
@@ -214,7 +214,7 @@ class DiscordService {
 	 */
 	async sendMessage({channel_id, contents}) {
 		if (!this.isMockService) {
-			const text_channel = await getChannel(this.rdm_guild, channel_id);
+			const text_channel = await fetchChannel(this.rdm_guild, channel_id);
 			const message = await text_channel.send(contents);
 
 			return message
@@ -230,7 +230,7 @@ class DiscordService {
 	 */
 	async deleteChannel(channel_id) {
 		if (!this.isMockService) {
-			const text_channel = await getChannel(this.rdm_guild, channel_id);
+			const text_channel = await fetchChannel(this.rdm_guild, channel_id);
 			text_channel.delete();
 		}
 	}
@@ -243,7 +243,7 @@ class DiscordService {
 	 */
 	async addViewerToChannel({channel_id, guild_member_id}) {
 		if (!this.isMockService) {
-			const text_channel = await getChannel(this.rdm_guild, channel_id);
+			const text_channel = await fetchChannel(this.rdm_guild, channel_id);
 			const guild_member = await getGuildMember(this.rdm_guild, guild_member_id);
 
 			await text_channel.permissionOverwrites.edit(
@@ -274,7 +274,7 @@ class DiscordService {
 	 */
 	async removeSenderFromChannel({channel_id, guild_member_id}) {
 		if (!this.isMockService) {
-			const text_channel = await getChannel(this.rdm_guild, channel_id);
+			const text_channel = await fetchChannel(this.rdm_guild, channel_id);
 			const guild_member = await getGuildMember(this.rdm_guild, guild_member_id);
 
 			await text_channel.permissionOverwrites.edit(
@@ -334,7 +334,7 @@ class DiscordService {
 	 */
 	async addSenderToChannel({channel_id, guild_member_id}) {
 		if (!this.isMockService) {
-			const text_channel = await getChannel(this.rdm_guild, channel_id);
+			const text_channel = await fetchChannel(this.rdm_guild, channel_id);
 			const guild_member = await getGuildMember(this.rdm_guild, guild_member_id);
 
 			await text_channel.permissionOverwrites.edit(

@@ -1,9 +1,9 @@
-const { getChannel, getUser, saveObjectToGitHubJSON } = require("./functions");
+const { getUser, saveObjectToGitHubJSON } = require("./functions");
 const Viewer = require("./viewer");
 const ids = require("../bot-config/discord-ids.js");
 const { GuildScheduledEventManager, Message, GuildScheduledEventPrivacyLevel, GuildScheduledEventEntityType } = require("discord.js");
 const cron = require("cron");
-const { fetchGuild } = require("../utilities/discord-fetch-utils.js");
+const { fetchGuild, fetchChannel } = require("../utilities/discord-fetch-utils.js");
 
 /**
  * Represents a LL Game Show Discord event.
@@ -128,8 +128,8 @@ class Event {
 	 */
 	async announceEvent() {
 		const ll_game_shows_guild = await fetchGuild(ids.ll_game_shows.server_id);
-		const announce_channel = await getChannel(ll_game_shows_guild, ids.ll_game_shows.channels.game_show_announcements);
-		const upcoming_games_channel = await getChannel(ll_game_shows_guild, ids.ll_game_shows.channels.upcoming_games);
+		const announce_channel = await fetchChannel(ll_game_shows_guild, ids.ll_game_shows.channels.game_show_announcements);
+		const upcoming_games_channel = await fetchChannel(ll_game_shows_guild, ids.ll_game_shows.channels.upcoming_games);
 
 		const event_manager = new GuildScheduledEventManager(ll_game_shows_guild)
 
@@ -172,7 +172,7 @@ class Event {
 	 */
 	async announceEventWarning() {
 		const ll_game_shows_guild = await fetchGuild(ids.ll_game_shows.server_id);
-		const event_channel = await getChannel(ll_game_shows_guild, ids.ll_game_shows.channels.events_text_chat);
+		const event_channel = await fetchChannel(ll_game_shows_guild, ids.ll_game_shows.channels.events_text_chat);
 
 		const message =
 			`# ${this._name} (Starting <t:${this._time + 60*5}:R>)` + "\n" +
@@ -197,7 +197,7 @@ class Event {
 	 */
 	async announceEventStarting() {
 		const ll_game_shows_guild = await fetchGuild(ids.ll_game_shows.server_id);
-		const event_channel = await getChannel(ll_game_shows_guild, ids.ll_game_shows.channels.events_text_chat);
+		const event_channel = await fetchChannel(ll_game_shows_guild, ids.ll_game_shows.channels.events_text_chat);
 
 		const message =
 			`# ❗ STARTING NOW: ${this._name}` + "\n" +

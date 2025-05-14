@@ -24,4 +24,14 @@ const fetchGuild = async (guildID) => {
 	return await global.client.guilds.fetch(guildID);
 }
 
-module.exports = { assertClientSetup, fetchGuild };
+/**
+ * Fetches a channel from Discord using the given guild.
+ * @param {Guild} guild The guild that the channel belongs to.
+ * @param {string} channelID The ID of the channel to fetch.
+ * @returns {Promise<TextChannel|VoiceChannel>} A Promise that resolves with the Channel object if successful, or rejects with an Error if not.
+ */
+const fetchChannel = async (guild, channelID) => {
+	return await guild.channels.fetch(channelID);
+}
+
+module.exports = { assertClientSetup, fetchGuild, fetchChannel };
