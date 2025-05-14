@@ -41,7 +41,7 @@ const createTextProgressBar = (currentValue, totalValue, characterSize) => {
 		if (totalValue <= 0)
 			totalValue = 1;
 
-		// 0.33 * 
+		// 0.33 *
 
     const percentage = currentValue / totalValue;
 
@@ -65,4 +65,39 @@ const createTextProgressBar = (currentValue, totalValue, characterSize) => {
     return progressBarString;
 };
 
-module.exports = { toTitleCase, createTextProgressBar };
+/**
+ * Converts a number to its ordinal representation as a string.
+ * @param {number} number - The number to convert.
+ * @returns {string} The ordinal representation of the number.
+ * @throws {Error} Throws an error if the input is not a valid number.
+ */
+const toNumericOrdinal = (number) => {
+	// Check if the input is a valid number
+	if (typeof number !== 'number' || isNaN(number)) {
+		throw new Error('Input is not a valid number');
+	}
+
+	const absoluteNumber = Math.abs(number);
+
+	// Handle special cases for numbers ending in 11, 12, or 13
+	if (
+		absoluteNumber % 100 >= 11 &&
+		absoluteNumber % 100 <= 13)
+	{
+		return number + 'th';
+	}
+
+	// Determine the ordinal suffix based on the last digit
+	switch (absoluteNumber % 10) {
+		case 1:
+			return number + 'st';
+		case 2:
+			return number + 'nd';
+		case 3:
+			return number + 'rd';
+		default:
+			return number + 'th';
+	}
+};
+
+module.exports = { toTitleCase, createTextProgressBar, toNumericOrdinal };

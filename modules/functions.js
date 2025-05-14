@@ -486,27 +486,6 @@ doesValueMatchType: function doesValueMatchType(value, type) {
 		return colorNumber;
 	},
 
-	toOrdinal(number) {
-    if (typeof number !== 'number' || isNaN(number)) {
-        throw new Error('Input is not a valid number');
-    }
-
-    if (number % 100 >= 11 && number % 100 <= 13) {
-        return number + 'th';
-    }
-
-    switch (number % 10) {
-        case 1:
-            return number + 'st';
-        case 2:
-            return number + 'nd';
-        case 3:
-            return number + 'rd';
-        default:
-            return number + 'th';
-    }
-	},
-
 	toWordOrdinal(number) {
     if (typeof number !== 'number' || isNaN(number)) {
         throw new Error('Input is not a valid number');
