@@ -48,11 +48,6 @@ const functions = {
 		}
 	},
 
-
-	async getRDMGuild() {
-		return await fetchGuild(ids.rapid_discord_mafia.rdm_server_id);
-	},
-
 	/**
 	 *
 	 * @param {Guild} guild

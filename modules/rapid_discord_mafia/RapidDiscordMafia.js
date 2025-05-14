@@ -1,4 +1,4 @@
-const { getObjectFromGitHubJSON, getChgetRDMGuild } = require("../functions.js");
+const { getObjectFromGitHubJSON } = require("../functions.js");
 const Contestant = require("./Contestant");
 const Logger = require("./Logger.js");
 const RoleIdentifier = require("./RoleIdentifier.js");
@@ -7,7 +7,7 @@ const RoleManager = require("./RoleManager.js");
 const DiscordLogger = require("./DiscordLogger.js");
 const ids = require("../../bot-config/discord-ids.js");
 const GameManager = require("./GameManager.js");
-const { fetchChannel } = require("../../utilities/discord-fetch-utils.js");
+const { fetchChannel, fetchRDMGuild } = require("../../utilities/discord-fetch-utils.js");
 
 class RapidDiscordMafia {
 	constructor() {
@@ -18,7 +18,7 @@ class RapidDiscordMafia {
 		let logger = new Logger();
 
 		if (!isMockObject) {
-			const rdm_guild = await getRDMGuild();
+			const rdm_guild = await fetchRDMGuild();
 			const staff_chnl = await fetchChannel(rdm_guild, ids.rapid_discord_mafia.channels.staff);
 			logger = new DiscordLogger(staff_chnl);
 		}
@@ -42,7 +42,7 @@ class RapidDiscordMafia {
 		let logger = new Logger();
 
 		if (!isMockGame) {
-			const rdm_guild = await getRDMGuild();
+			const rdm_guild = await fetchRDMGuild();
 			const staff_chnl = await fetchChannel(rdm_guild, ids.rapid_discord_mafia.channels.staff);
 			logger = new DiscordLogger(staff_chnl);
 		}

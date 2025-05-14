@@ -1,4 +1,5 @@
 const { Client, Guild, TextChannel, VoiceChannel, Message, ChannelType, CategoryChannel } = require("discord.js");
+const ids = require("../bot-config/discord-ids");
 
 /**
  * Asserts that the Discord client is setup and ready.
@@ -69,4 +70,12 @@ const fetchChannelsInCategory = async (guild, categoryID) => {
 	);
 }
 
-module.exports = { assertClientSetup, fetchGuild, fetchChannel, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory };
+/**
+ * Fetches the Rapid Discord Mafia guild.
+ * @returns {Promise<Guild>} A Promise that resolves with the Rapid Discord Mafia guild.
+ */
+const fetchRDMGuild = async () => {
+	return await fetchGuild(ids.rapid_discord_mafia.guild_id);
+}
+
+module.exports = { assertClientSetup, fetchGuild, fetchChannel, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory, fetchRDMGuild };

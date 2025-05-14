@@ -1,7 +1,7 @@
 const Parameter = require("../../modules/commands/Paramater");
 const ids = require("../../bot-config/discord-ids.js");
 const SlashCommand = require("../../modules/commands/SlashCommand");
-const { deferInteraction, confirmAction, getRDMGuild, getGuildMember, getRole } = require("../../modules/functions");
+const { deferInteraction, confirmAction } = require("../../modules/functions");
 const { GameStates, RDMRoles } = require("../../modules/enums");
 
 const command = new SlashCommand({

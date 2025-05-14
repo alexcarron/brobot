@@ -1,5 +1,5 @@
 const { GameStates, Phases, Subphases, MessageDelays, Factions, RDMRoles, WinConditions, Feedback, Announcements, RoleNames, PhaseWaitTimes, VotingOutcomes, TrialOutcomes, TrialVotes, RoleIdentifierTypes, ArgumentSubtypes, CoinRewards, ArgumentTypes } = require("../enums.js");
-const { wait, getGuildMember, getRole, removeRole, getRDMGuild, addRole } = require("../functions.js");
+const { wait, getGuildMember, getRole, removeRole, addRole } = require("../functions.js");
 const ids = require("../../bot-config/discord-ids.js");
 const { github_token } =  require("../token.js");
 const { PermissionFlagsBits, Role, Interaction } = require("discord.js");
@@ -16,7 +16,7 @@ const DiscordService = require("./DiscordService.js");
 const VoteManager = require("./VoteManager.js");
 const { toTitleCase } = require("../../utilities/text-formatting-utils.js");
 const { getShuffledArray, getRandomElement } = require("../../utilities/data-structure-utils.js");
-const { fetchChannel, fetchChannelsInCategory } = require("../../utilities/discord-fetch-utils.js");
+const { fetchChannel, fetchChannelsInCategory, fetchRDMGuild } = require("../../utilities/discord-fetch-utils.js");
 // const Logger = require("./Logger.js");
 
 class GameManager {
@@ -275,7 +275,7 @@ class GameManager {
 	 * @param {RoleIdentifier[]} role_identifiers The unshuffled role identifiers for the game
 	 */
 	async announceRoleList(role_identifiers) {
-		const rdm_guild = await getRDMGuild();
+		const rdm_guild = await fetchRDMGuild();
 		const role_list_chnl = await fetchChannel(rdm_guild, ids.rapid_discord_mafia.channels.role_list);
 		const announce_chnl = await fetchChannel(rdm_guild, ids.rapid_discord_mafia.channels.game_announce);
 		const role_list_txt =
@@ -557,7 +557,7 @@ class GameManager {
 		const player_on_trial = this.player_manager.get(this.on_trial);
 
 		if (!this.isMockGame) {
-			const rdm_guild = await getRDMGuild();
+			const rdm_guild = await fetchRDMGuild();
 			const on_trial_role = await getRole(rdm_guild, RDMRoles.OnTrial);
 			const player_guild_member = await getGuildMember(rdm_guild, player_on_trial.id);
 
@@ -652,7 +652,7 @@ class GameManager {
 
 	async givePlayerOnTrialRole(player_on_trial) {
 		if (!this.isMockGame) {
-			const rdm_guild = await getRDMGuild();
+			const rdm_guild = await fetchRDMGuild();
 			const on_trial_role = await getRole(rdm_guild, RDMRoles.OnTrial);
 			const player_guild_member = await getGuildMember(rdm_guild, player_on_trial.id);
 
@@ -1236,7 +1236,7 @@ class GameManager {
 		}
 
 		if (!isMockUser && !this.isMockGame) {
-			const rdm_guild = await getRDMGuild();
+			const rdm_guild = await fetchRDMGuild();
 
 			player_member = await getGuildMember(rdm_guild, player_id);
 			const
@@ -1586,7 +1586,7 @@ class GameManager {
 	}
 
 	static async convertAllToSpectator() {
-		const rdm_guild = await getRDMGuild();
+		const rdm_guild = await fetchRDMGuild();
 		const spectator_role = await getRole(rdm_guild, RDMRoles.Spectator);
 
 		for (let role_name of [RDMRoles.Ghosts, RDMRoles.Living]) {
@@ -1601,7 +1601,7 @@ class GameManager {
 
 	static async deletePlayerChannels() {
 		const
-			rdm_guild = await getRDMGuild(),
+			rdm_guild = await fetchRDMGuild(),
 			player_action_chnls = await fetchChannelsInCategory(rdm_guild, ids.rapid_discord_mafia.category.player_action),
 			archive_category = await fetchChannel(rdm_guild, ids.rapid_discord_mafia.category.archive);
 
@@ -1614,7 +1614,7 @@ class GameManager {
 	}
 
 	static async privateNightChannels() {
-		const rdm_guild = await getRDMGuild();
+		const rdm_guild = await fetchRDMGuild();
 		const night_channels = await fetchChannelsInCategory(rdm_guild, ids.rapid_discord_mafia.category.night);
 		const living_role = await getRole(rdm_guild, RDMRoles.Living);
 
@@ -1639,7 +1639,7 @@ class GameManager {
 
 	static async openDayChat() {
 		const
-			rdm_guild = await getRDMGuild(),
+			rdm_guild = await fetchRDMGuild(),
 			living_role = await getRole(rdm_guild, RDMRoles.Living),
 			day_chat_chnl = await fetchChannel(rdm_guild, ids.rapid_discord_mafia.channels.town_discussion);
 
@@ -1665,7 +1665,7 @@ class GameManager {
 
 	static async closeDayChat() {
 		const
-			rdm_guild = await getRDMGuild(),
+			rdm_guild = await fetchRDMGuild(),
 			living_role = await getRole(rdm_guild, RDMRoles.Living),
 			day_chat_chnl = await fetchChannel(rdm_guild, ids.rapid_discord_mafia.channels.town_discussion);
 
@@ -1687,7 +1687,7 @@ class GameManager {
 	}
 
 	static async closeNightChannels() {
-		const rdm_guild = await getRDMGuild();
+		const rdm_guild = await fetchRDMGuild();
 		const night_channels = await fetchChannelsInCategory(rdm_guild, ids.rapid_discord_mafia.category.night);
 		const living_role = await getRole(rdm_guild, RDMRoles.Living);
 
@@ -1706,7 +1706,7 @@ class GameManager {
 	}
 
 	static async openNightChannels() {
-		const rdm_guild = await getRDMGuild();
+		const rdm_guild = await fetchRDMGuild();
 		const night_channels = await fetchChannelsInCategory(rdm_guild, ids.rapid_discord_mafia.category.night);
 		const living_role = await getRole(rdm_guild, RDMRoles.Living);
 
@@ -1726,7 +1726,7 @@ class GameManager {
 	}
 
 	static async closePreGameChannels() {
-		const rdm_guild = await getRDMGuild();
+		const rdm_guild = await fetchRDMGuild();
 		const pre_game_channels = await fetchChannelsInCategory(rdm_guild, ids.rapid_discord_mafia.category.pre_game);
 		const living_role = await getRole(rdm_guild, RDMRoles.Living);
 		const ghost_role = await getRole(rdm_guild, RDMRoles.Ghosts);
@@ -1749,7 +1749,7 @@ class GameManager {
 
 	static async publicizePreGameChannels() {
 		const
-			rdm_guild = await getRDMGuild(),
+			rdm_guild = await fetchRDMGuild(),
 			living_role = await getRole(rdm_guild, RDMRoles.Living),
 			ghosts_role = await getRole(rdm_guild, RDMRoles.Ghosts),
 			pre_game_channels = await fetchChannelsInCategory(rdm_guild, ids.rapid_discord_mafia.category.pre_game);
@@ -1772,7 +1772,7 @@ class GameManager {
 
 	static async closeGhostChannel() {
 		const
-			rdm_guild = await getRDMGuild(),
+			rdm_guild = await fetchRDMGuild(),
 			living_role = await getRole(rdm_guild, RDMRoles.Living),
 			ghosts_role = await getRole(rdm_guild, RDMRoles.Ghosts),
 			ghost_chat_chnl = await fetchChannel(rdm_guild, ids.rapid_discord_mafia.channels.ghost_chat);
@@ -1795,7 +1795,7 @@ class GameManager {
 
 	static async openGhostChannel() {
 		const
-			rdm_guild = await getRDMGuild(),
+			rdm_guild = await fetchRDMGuild(),
 			living_role = await getRole(rdm_guild, RDMRoles.Living),
 			ghosts_role = await getRole(rdm_guild, RDMRoles.Ghosts),
 			ghost_chat_chnl = await fetchChannel(rdm_guild, ids.rapid_discord_mafia.channels.ghost_chat);
@@ -1818,7 +1818,7 @@ class GameManager {
 
 	static async closeTownDiscussionChannel() {
 		const
-			rdm_guild = await getRDMGuild(),
+			rdm_guild = await fetchRDMGuild(),
 			living_role = await getRole(rdm_guild, RDMRoles.Living),
 			town_discussion_chnl = await fetchChannel(rdm_guild, ids.rapid_discord_mafia.channels.town_discussion);
 
@@ -1837,7 +1837,7 @@ class GameManager {
 
 	// static async setDefenseChannelPerms() {
 	// 	const
-	// 		rdm_guild = await getRDMGuild(),
+	// 		rdm_guild = await fetchRDMGuild(),
 	// 		on_trial_role = await getRole(rdm_guild, RDMRoles.OnTrial),
 	// 		defense_chnl = await fetchChannel(rdm_guild, ids.rapid_discord_mafia.channels.defense_stand);
 
@@ -1851,7 +1851,7 @@ class GameManager {
 
 	// static async closeVotingChannel() {
 	// 	const
-	// 		rdm_guild = await getRDMGuild(),
+	// 		rdm_guild = await fetchRDMGuild(),
 	// 		voting_booth_chnl = await fetchChannel(rdm_guild, ids.rapid_discord_mafia.channels.voting_booth);
 
 	// 	if (Game.IS_TESTING) {
@@ -1870,7 +1870,7 @@ class GameManager {
 
 	static async setAnnounceChannelPerms() {
 		const
-			rdm_guild = await getRDMGuild(),
+			rdm_guild = await fetchRDMGuild(),
 			game_announce_chnl = await fetchChannel(rdm_guild, ids.rapid_discord_mafia.channels.game_announce),
 			on_trial_role = await getRole(rdm_guild, RDMRoles.OnTrial);
 
@@ -1903,7 +1903,7 @@ class GameManager {
 
 	static async closeJoinChannel() {
 		const
-			rdm_guild = await getRDMGuild(),
+			rdm_guild = await fetchRDMGuild(),
 			living_role = await getRole(rdm_guild, RDMRoles.Living),
 			join_chat_chnl = await fetchChannel(rdm_guild, ids.rapid_discord_mafia.channels.join_chat);
 
@@ -1921,7 +1921,7 @@ class GameManager {
 
 	static async openJoinChannel() {
 		const
-			rdm_guild = await getRDMGuild(),
+			rdm_guild = await fetchRDMGuild(),
 			living_role = await getRole(rdm_guild, RDMRoles.Living),
 			join_chat_chnl = await fetchChannel(rdm_guild, ids.rapid_discord_mafia.channels.join_chat);
 

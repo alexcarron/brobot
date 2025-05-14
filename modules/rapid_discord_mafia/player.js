@@ -1,12 +1,13 @@
-const { RDMRoles, Announcements, Feedback, Factions, RoleNames, AbilityName: AbilityName, AbilityArgName, ArgumentSubtypes, Subphases, Votes, Phases } = require("../enums");
+const { RDMRoles, Announcements, Feedback, Factions, RoleNames, AbilityName: AbilityName, AbilityArgName, ArgumentSubtypes } = require("../enums");
 const RoleManager = require("./RoleManager");
 const ids = require("../../bot-config/discord-ids.js");
 const Role = require("./Role");
 const Logger = require("./Logger");
 const DiscordService = require("./DiscordService");
+const { fetchRDMGuild } = require("../../utilities/discord-fetch-utils.js");
 
 const
-	{ getGuildMember, getRole, addRole, removeRole, getRDMGuild } = require("../functions"),
+	{ getGuildMember, getRole, addRole, removeRole } = require("../functions"),
 	rdm_ids = require("../../bot-config/discord-ids.js").rapid_discord_mafia;
 
 class Player {
@@ -204,7 +205,7 @@ class Player {
 	}
 
 	async getGuildMember() {
-		const rdm_guild = await getRDMGuild();
+		const rdm_guild = await fetchRDMGuild();
 		const player_guild_member = await getGuildMember(rdm_guild, this.id);
 		return player_guild_member;
 	}
@@ -348,9 +349,9 @@ class Player {
 
 		try {
 			if (!this.isMockPlayer) {
-				let ghost_role = await getRole((await getRDMGuild()), RDMRoles.Ghosts),
-					living_role = await getRole((await getRDMGuild()), RDMRoles.Living),
-					player_guild_member = await getGuildMember((await getRDMGuild()), this.id);
+				let ghost_role = await getRole((await fetchRDMGuild()), RDMRoles.Ghosts),
+					living_role = await getRole((await fetchRDMGuild()), RDMRoles.Living),
+					player_guild_member = await getGuildMember((await fetchRDMGuild()), this.id);
 
 
 				await addRole(player_guild_member, ghost_role);
