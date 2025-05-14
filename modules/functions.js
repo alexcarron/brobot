@@ -26,10 +26,6 @@ const functions = {
 		);
 	},
 
-	autocomplete(entry, valid_entries) {
-		return valid_entries.find(valid_entry => valid_entry.toLowerCase().startsWith(entry.toLowerCase()));
-	},
-
 	getJSONFromObj: function getJSONFromObj(obj) {
 		let json_obj = {};
 

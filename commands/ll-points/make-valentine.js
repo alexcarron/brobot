@@ -1,10 +1,11 @@
 
 const fs = require('fs');
-const { autocomplete, deferInteraction, confirmAction } = require("../../modules/functions.js");
+const { deferInteraction, confirmAction } = require("../../modules/functions.js");
 const Parameter = require("../../modules/commands/Paramater.js");
 const SlashCommand = require("../../modules/commands/SlashCommand.js");
 const { PermissionFlagsBits } = require('discord.js');
 const LLPointManager = require('../../modules/llpointmanager.js');
+const { findStringStartingWith } = require('../../utilities/text-formatting-utils.js');
 
 
 const Parameters = {
@@ -98,7 +99,7 @@ command.execute = async function(interaction) {
 	let viewer_name = viewer_name_arg;
 
 	if (!gifted_viewer) {
-		const autocomplete_viewer_name = await autocomplete(viewer_name, global.LLPointManager.getViewerNames());
+		const autocomplete_viewer_name = findStringStartingWith(viewer_name, global.LLPointManager.getViewerNames());
 
 		if (autocomplete_viewer_name) {
 			viewer_name = autocomplete_viewer_name;

@@ -1,4 +1,4 @@
-const { toTitleCase, createTextProgressBar, toNumericOrdinal, toWordOrdinal, createListFromWords, wrapTextByLineWidth, removeLinks, removeEmojis } = require("./text-formatting-utils");
+const { toTitleCase, createTextProgressBar, toNumericOrdinal, toWordOrdinal, createListFromWords, wrapTextByLineWidth, removeLinks, removeEmojis, findStringStartingWith } = require("./text-formatting-utils");
 const { createNowUnixTimestamp } = require("./date-time-utils");
 
 describe('toTitleCase function', () => {
@@ -335,5 +335,55 @@ describe('createNowUnixTimestamp', () => {
 		const now = Date.now() / 1000;
 		const timestamp = createNowUnixTimestamp();
 		expect(timestamp).toBeCloseTo(now, -1);
+	});
+});
+
+describe('findStringStartingWith function', () => {
+	it('should return exact match', () => {
+		const startingString = 'hello';
+		const possibleStrings = ['hello', 'world', 'foo'];
+		expect(findStringStartingWith(startingString, possibleStrings)).toBe('hello');
+	});
+
+	it('should return partial match', () => {
+		const startingString = 'he';
+		const possibleStrings = ['hello', 'world', 'foo'];
+		expect(findStringStartingWith(startingString, possibleStrings)).toBe('hello');
+	});
+
+	it('should return undefined with no match', () => {
+		const startingString = 'bar';
+		const possibleStrings = ['hello', 'world', 'foo'];
+		expect(findStringStartingWith(startingString, possibleStrings)).toBeUndefined();
+	});
+
+	it('should return undefined with empty possible strings array', () => {
+		const startingString = 'hello';
+		const possibleStrings = [];
+		expect(findStringStartingWith(startingString, possibleStrings)).toBeUndefined();
+	});
+
+	it('should throw error with null possible strings array', () => {
+		const startingString = 'hello';
+		const possibleStrings = null;
+		expect(() => findStringStartingWith(startingString, possibleStrings)).toThrowError();
+	});
+
+	it('should throw error with undefined possible strings array', () => {
+		const startingString = 'hello';
+		const possibleStrings = undefined;
+		expect(() => findStringStartingWith(startingString, possibleStrings)).toThrowError();
+	});
+
+	it('should throw error with non-string starting string', () => {
+		const startingString = 123;
+		const possibleStrings = ['hello', 'world', 'foo'];
+		expect(() => findStringStartingWith(startingString, possibleStrings)).toThrowError();
+	});
+
+	it('should throw error with non-array possible strings', () => {
+		const startingString = 'hello';
+		const possibleStrings = 'not an array';
+		expect(() => findStringStartingWith(startingString, possibleStrings)).toThrowError();
 	});
 });

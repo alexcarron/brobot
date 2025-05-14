@@ -257,4 +257,28 @@ const removeEmojis = (string) => {
 	return string.replace(/(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/g, '');
 }
 
-module.exports = { toTitleCase, createTextProgressBar, toNumericOrdinal, toWordOrdinal, createListFromWords, wrapTextByLineWidth, removeLinks, removeEmojis };
+/**
+ * Finds the first string in a list of possible strings that starts with a given string (case-insensitive).
+ * @param {string} startingString - The string to search for
+ * @param {string[]} possibleStrings - The list of strings to search in
+ * @returns {string|undefined} The first string that starts with the given string, or undefined if no string is found
+ */
+const findStringStartingWith = (startingString, possibleStrings) => {
+	if (typeof startingString !== 'string')
+		throw new Error('startingString must be a string.');
+
+	if (!Array.isArray(possibleStrings))
+		throw new Error('possibleStrings must be an array.');
+
+	if (possibleStrings.some(possibleString => typeof possibleString !== 'string'))
+		throw new Error('possibleStrings must be an array of strings.');
+
+	if (possibleStrings.length === 0)
+		return undefined;
+
+	return possibleStrings.find(possibleString =>
+		possibleString.toLowerCase().startsWith(startingString.toLowerCase())
+	)
+}
+
+module.exports = { toTitleCase, createTextProgressBar, toNumericOrdinal, toWordOrdinal, createListFromWords, wrapTextByLineWidth, removeLinks, removeEmojis, findStringStartingWith };
