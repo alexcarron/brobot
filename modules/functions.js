@@ -375,26 +375,6 @@ const functions = {
 		);
 	},
 
-	getNextDayCronExpression() {
-		const currentDate = new Date();
-		console.log({currentDate});
-
-		const nextDay = new Date(currentDate);
-		// nextDay.setDate(currentDate.getDate() + 1);
-		nextDay.setSeconds(currentDate.getSeconds() + 15);
-
-		const seconds = nextDay.getSeconds();
-		const minutes = nextDay.getMinutes();
-		const hours = nextDay.getHours();
-		const dayOfMonth = nextDay.getDate();
-		const month = nextDay.getMonth(); // Starts at 0
-		const dayOfWeek = nextDay.getDay();
-		// const year = nextDay.getFullYear();
-
-		const cronExpression = `${seconds} ${minutes} ${hours} ${dayOfMonth} ${month} ${dayOfWeek}`;
-		return cronExpression;
-	},
-
 doesValueMatchType: function doesValueMatchType(value, type) {
 		const isValueInRange = (value, range) => { return (value < range[0] || value > range[1]) };
 		const isValueInList = (value, list) => { return list.includes(value) };

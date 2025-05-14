@@ -1,4 +1,4 @@
-const { toUnixTimestamp } = require("./time-utils");
+const { toUnixTimestamp, toCronExpression } = require("./time-utils");
 
 describe('toUnixTimestamp function', () => {
 	it('should return the correct Unix timestamp for a valid Date object', () => {
@@ -35,5 +35,32 @@ describe('toUnixTimestamp function', () => {
 		const date = new Date('2050-01-01T00:00:00.000Z');
 		const expected = 2524608000;
 		expect(toUnixTimestamp(date)).toBe(expected);
+	});
+});
+
+describe('toCronExpression function', () => {
+	it('should return a valid CRON expression for a valid Date object', () => {
+		const date = new Date('2022-01-01T12:30:45.000Z');
+		const expected = '45 30 6 1 0 6';
+		expect(toCronExpression(date)).toBe(expected);
+	});
+
+	it('should throw an error for an invalid Date object (null)', () => {
+		expect(() => toCronExpression(null)).toThrowError();
+	});
+
+	it('should throw an error for an invalid Date object (undefined)', () => {
+		expect(() => toCronExpression(undefined)).toThrowError();
+	});
+
+	it('should return a CRON expression with specific values', () => {
+		const date = new Date('2022-01-01T12:30:45.000Z');
+		date.setSeconds(10);
+		date.setMinutes(20);
+		date.setHours(14);
+		date.setDate(15);
+		date.setMonth(3);
+		const expected = '10 20 14 15 3 5';
+		expect(toCronExpression(date)).toBe(expected);
 	});
 });

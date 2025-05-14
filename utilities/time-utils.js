@@ -15,4 +15,22 @@ const toUnixTimestamp = (date) =>
 const createNowUnixTimestamp = () =>
 	toUnixTimestamp(new Date());
 
-module.exports = { toUnixTimestamp, createNowUnixTimestamp };
+/**
+ * Converts a given Date object to a CRON expression.
+ *
+ * @param {Date} date - The Date object to convert.
+ * @returns {string} The CRON expression corresponding to the given date.
+ */
+const toCronExpression = (date) => {
+	const seconds = date.getSeconds();
+	const minutes = date.getMinutes();
+	const hours = date.getHours();
+	const dayOfMonth = date.getDate();
+	const month = date.getMonth();
+	const dayOfWeek = date.getDay();
+
+	const cronExpression = `${seconds} ${minutes} ${hours} ${dayOfMonth} ${month} ${dayOfWeek}`;
+	return cronExpression;
+}
+
+module.exports = { toUnixTimestamp, createNowUnixTimestamp, toCronExpression };
