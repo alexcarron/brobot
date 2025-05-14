@@ -1,7 +1,6 @@
 const { TextChannel, Message, Guild, PermissionFlagsBits, Role } = require("discord.js");
-const { getRoleById } = require("../functions");
 const ids = require("../../bot-config/discord-ids.js");
-const { fetchGuild, fetchChannel, fetchGuildMember } = require("../../utilities/discord-fetch-utils.js");
+const { fetchGuild, fetchChannel, fetchGuildMember, fetchRole } = require("../../utilities/discord-fetch-utils.js");
 
 class DiscordService {
 	/**
@@ -90,21 +89,21 @@ class DiscordService {
 	}
 
 	async setupSpectatorRole() {
-		this.spectator_role = await getRoleById(
+		this.spectator_role = await fetchRole(
 			this.rdm_guild,
 			ids.rapid_discord_mafia.roles.spectators
 		)
 	}
 
 	async setupLivingRole() {
-		this.living_role = await getRoleById(
+		this.living_role = await fetchRole(
 			this.rdm_guild,
 			ids.rapid_discord_mafia.roles.living
 		)
 	}
 
 	async setupGhostRole() {
-		this.ghost_role = await getRoleById(
+		this.ghost_role = await fetchRole(
 			this.rdm_guild,
 			ids.rapid_discord_mafia.roles.ghosts
 		)

@@ -189,7 +189,7 @@ class LLPointManager {
 			// try {
 			// 	const
 			// 		viewer_guild_member = await fetchGuildMember(ll_game_shows_guild, viewer.user_id),
-			// 		tier_role = await getRoleById(ll_game_shows_guild, tier_role_id);
+			// 		tier_role = await fetchRole(ll_game_shows_guild, tier_role_id);
 			// 	await addRole(viewer_guild_member, tier_role);
 			// }
 			// catch (exception) {

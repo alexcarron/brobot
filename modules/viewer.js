@@ -1,7 +1,7 @@
 const { LLPointTiers, LLPointThresholds, LLPointRewards, LLPointAccomplishments } = require("./enums.js");
 const ids = require("../bot-config/discord-ids.js");
-const { getRoleById, addRole, removeRole } = require("./functions.js");
-const { fetchGuild, fetchGuildMember, fetchUser } = require("../utilities/discord-fetch-utils.js");
+const { addRole, removeRole } = require("./functions.js");
+const { fetchGuild, fetchGuildMember, fetchUser, fetchRole } = require("../utilities/discord-fetch-utils.js");
 
 class Viewer {
 	constructor({name, aliases=[], user_id, ll_points=0, isSubscribed=false, didUndertaleQuiz=false, didDeltaruneQuiz=false, games_participated_in=[], valentine}) {
@@ -68,13 +68,13 @@ class Viewer {
 
 			Object.values(ids.ll_game_shows.roles).map(
 				async (role_id) => {
-					const role = await getRoleById(ll_game_shows_guild, role_id);
+					const role = await fetchRole(ll_game_shows_guild, role_id);
 					console.log(`Removing ${role.name} from ${this.name}`);
 					removeRole(viewer_guild_member, role);
 				}
 			)
 
-			const tier_role = await getRoleById(ll_game_shows_guild, tier_role_id);
+			const tier_role = await fetchRole(ll_game_shows_guild, tier_role_id);
 			await addRole(viewer_guild_member, tier_role);
 			console.log(`Adding ${tier_role.name} to ${this.name}`);
 		}

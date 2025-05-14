@@ -54,10 +54,6 @@ const functions = {
 		return await all_roles.find(role => role.name === role_name);
 	},
 
-	async getRoleById(guild, role_id) {
-		return await guild.roles.fetch(role_id);
-	},
-
 	async addRole(guild_member, role) {
 		await guild_member.roles.add(role).catch(console.error());
 	},

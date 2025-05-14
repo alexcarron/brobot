@@ -1,4 +1,4 @@
-const { Client, Guild, TextChannel, VoiceChannel, Message, ChannelType, CategoryChannel, GuildMember, User } = require("discord.js");
+const { Client, Guild, TextChannel, VoiceChannel, Message, ChannelType, CategoryChannel, GuildMember, User, Role } = require("discord.js");
 const ids = require("../bot-config/discord-ids");
 
 /**
@@ -67,6 +67,16 @@ const fetchGuildMember = async (guild, guildMemberID) => {
 }
 
 /**
+ * Fetches a role from a given guild using a given role ID.
+ * @param {Guild} guild The guild that the role belongs to.
+ * @param {string} roleID The ID of the role to fetch.
+ * @returns {Promise<Role>} A Promise that resolves with the Role object if successful, or rejects with an Error if not.
+ */
+const fetchRole = async (guild, roleID) => {
+	return await guild.roles.fetch(roleID);
+}
+
+/**
  * Fetches all the categories of a guild.
  * @param {Guild} guild The guild whose categories you want to fetch.
  * @returns {Promise<Collection<string, GuildChannel>>} A Promise that resolves with a Collection of the categories of the guild.
@@ -99,4 +109,4 @@ const fetchRDMGuild = async () => {
 	return await fetchGuild(ids.rapid_discord_mafia.guild_id);
 }
 
-module.exports = { assertClientSetup, fetchGuild, fetchChannel, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchUser };
+module.exports = { assertClientSetup, fetchGuild, fetchChannel, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchUser, fetchRole };
