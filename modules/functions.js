@@ -5,13 +5,6 @@ const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalB
 const { fetchGuild } = require("../utilities/discord-fetch-utils.js");
 
 const functions = {
-	getChannelCategorys(guild) {
-		return guild.channels.filter(
-			(channel) => {
-				return channel.type === "category";
-			}
-		);
-	},
 
 
 
@@ -65,10 +58,6 @@ const functions = {
 		catch {
 			interaction.editReply({ content: `\`Response not recieved in time\``, components: [] });
 		}
-	},
-
-	async getMessage(channel, messsage_id) {
-		return await channel.messages.fetch(messsage_id);
 	},
 
 

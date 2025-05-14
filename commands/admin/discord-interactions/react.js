@@ -1,8 +1,8 @@
 const { PermissionFlagsBits } = require("discord.js");
 const Parameter = require("../../../modules/commands/Paramater");
 const SlashCommand = require("../../../modules/commands/SlashCommand");
-const { deferInteraction, getMessage } = require("../../../modules/functions");
-const { fetchGuild, fetchChannel } = require("../../../utilities/discord-fetch-utils");
+const { deferInteraction } = require("../../../modules/functions");
+const { fetchGuild, fetchChannel, fetchMessage } = require("../../../utilities/discord-fetch-utils");
 
 const Parameters = {
 	MessageLink: new Parameter({
@@ -39,7 +39,7 @@ command.execute = async function(interaction) {
 
 	const guild = await fetchGuild(guild_id);
 	const channel = await fetchChannel(guild, channel_id);
-	const message = await getMessage(channel, message_id);
+	const message = await fetchMessage(channel, message_id);
 
 	try {
 		message.react(reaction_str).catch(console.error);
