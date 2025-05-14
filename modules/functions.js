@@ -48,10 +48,6 @@ const functions = {
 		}
 	},
 
-	async getUser(user_id) {
-		return await global.client.users.fetch(user_id);
-	},
-
 	async getRole(guild, role_name) {
 		let all_roles = await guild.roles.fetch();
 

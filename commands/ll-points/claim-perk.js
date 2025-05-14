@@ -1,8 +1,9 @@
 const Parameter = require('../../modules/commands/Paramater.js');
 const SlashCommand = require('../../modules/commands/SlashCommand.js');
 const { LLPointPerks } = require('../../modules/enums.js')
-const { deferInteraction, confirmAction, getUser } = require("../../modules/functions.js");
-const ids = require(`../../bot-config/discord-ids.js`)
+const { deferInteraction, confirmAction } = require("../../modules/functions.js");
+const ids = require(`../../bot-config/discord-ids.js`);
+const { fetchUser } = require('../../utilities/discord-fetch-utils.js');
 
 const Parameters = {
 	Perk: new Parameter({
@@ -60,7 +61,7 @@ command.execute = async function(interaction) {
 
 	console.log({viewer, perk});
 
-	const LL_user = await getUser(ids.users.LL);
+	const LL_user = await fetchUser(ids.users.LL);
 	await LL_user.send(`${interaction.user.username}: <@${interaction.user.id}> wants to redeem their perk, ${perk}!`);
 
 	await interaction.editReply(

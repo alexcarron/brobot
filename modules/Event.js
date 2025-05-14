@@ -1,9 +1,9 @@
-const { getUser, saveObjectToGitHubJSON } = require("./functions");
+const { saveObjectToGitHubJSON } = require("./functions");
 const Viewer = require("./viewer");
 const ids = require("../bot-config/discord-ids.js");
 const { GuildScheduledEventManager, Message, GuildScheduledEventPrivacyLevel, GuildScheduledEventEntityType } = require("discord.js");
 const cron = require("cron");
-const { fetchGuild, fetchChannel } = require("../utilities/discord-fetch-utils.js");
+const { fetchGuild, fetchChannel, fetchUser } = require("../utilities/discord-fetch-utils.js");
 
 /**
  * Represents a LL Game Show Discord event.
@@ -181,7 +181,7 @@ class Event {
 			`>>> ${this._instructions}`;
 
 		if (this._host) {
-			const host_user = await getUser(this._host.user_id);
+			const host_user = await fetchUser(this._host.user_id);
 			host_user.send(
 				`Your event is starting very soon! Make sure you're set up and ready. Here's the plan you left for yourself` + "\n" +
 				`>>> ${this._plan}`
@@ -211,7 +211,7 @@ class Event {
 		}
 
 		if (this._host) {
-			const host_user = await getUser(this._host.user_id);
+			const host_user = await fetchUser(this._host.user_id);
 			host_user.send(
 				`Your event is starting RIGHT NOW!`
 			);

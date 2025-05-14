@@ -1,9 +1,10 @@
 const Parameter = require('../../modules/commands/Paramater.js');
 const SlashCommand = require('../../modules/commands/SlashCommand.js');
 const { LLPointAccomplishments } = require('../../modules/enums.js')
-const { deferInteraction, confirmAction, getUser } = require("../../modules/functions.js");
+const { deferInteraction, confirmAction } = require("../../modules/functions.js");
 const LLPointManager = require('../../modules/llpointmanager.js');
-const ids = require(`../../bot-config/discord-ids.js`)
+const ids = require(`../../bot-config/discord-ids.js`);
+const { fetchUser } = require('../../utilities/discord-fetch-utils.js');
 
 const Parameters = {
 	Accomplishment: new Parameter({
@@ -87,7 +88,7 @@ command.execute = async function(interaction) {
 		);
 	}
 
-	const LL_user = await getUser(ids.users.LL);
+	const LL_user = await fetchUser(ids.users.LL);
 	await LL_user.send(`${interaction.user.username}: <@${interaction.user.id}> believes they accomplished ${accomplishment}!`);
 
 	await interaction.editReply(

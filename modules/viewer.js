@@ -1,7 +1,7 @@
 const { LLPointTiers, LLPointThresholds, LLPointRewards, LLPointAccomplishments } = require("./enums.js");
 const ids = require("../bot-config/discord-ids.js");
-const { getRoleById, addRole, removeRole, getUser } = require("./functions.js");
-const { fetchGuild, fetchGuildMember } = require("../utilities/discord-fetch-utils.js");
+const { getRoleById, addRole, removeRole } = require("./functions.js");
+const { fetchGuild, fetchGuildMember, fetchUser } = require("../utilities/discord-fetch-utils.js");
 
 class Viewer {
 	constructor({name, aliases=[], user_id, ll_points=0, isSubscribed=false, didUndertaleQuiz=false, didDeltaruneQuiz=false, games_participated_in=[], valentine}) {
@@ -173,7 +173,7 @@ class Viewer {
 	async dmTierChange(old_tier, new_tier) {
 		console.log({old_tier, new_tier});
 		console.log(this.user_id);
-		const user = await getUser(this.user_id);
+		const user = await fetchUser(this.user_id);
 		console.log({user})
 		await user.send(`You have been promoted from **${old_tier}** to **${new_tier}**. Congratulations!`);
 	}
@@ -186,7 +186,7 @@ class Viewer {
 		else {
 			user_id = ids.users.LL;
 		}
-		const user = await getUser(user_id);
+		const user = await fetchUser(user_id);
 		await user.send(message);
 	}
 }
