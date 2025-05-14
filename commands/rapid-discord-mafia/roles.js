@@ -1,8 +1,9 @@
 const Parameter = require("../../modules/commands/Paramater");
 const ids = require("../../bot-config/discord-ids.js");
 const SlashCommand = require("../../modules/commands/SlashCommand");
-const { deferInteraction, appendElementToNestedProperty: addElementToNestedProperty, appendElementToNestedProperty } = require("../../modules/functions");
+const { deferInteraction } = require("../../modules/functions");
 const { toTitleCase } = require("../../utilities/text-formatting-utils.js");
+const { appendToNestedProperty } = require("../../utilities/object-utils.js");
 
 const command = new SlashCommand({
 	name: "roles",
@@ -20,7 +21,7 @@ command.execute = async function(interaction) {
 		const alignment = role.alignment;
 		const name = role.name;
 
-		appendElementToNestedProperty(name, role_names_in_faction, faction, alignment);
+		appendToNestedProperty(role_names_in_faction, [faction, alignment], name);
 	});
 
 	for (const [faction, role_names_in_alignment] of Object.entries(role_names_in_faction)) {

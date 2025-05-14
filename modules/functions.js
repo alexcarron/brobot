@@ -4,35 +4,6 @@ const { github_token } =  require("../token.json");
 const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle  } = require('discord.js');
 
 const functions = {
-	appendElementToNestedProperty: function pushItemToObj(element, object, ...nested_properties) {
-		let top_level_property = nested_properties[0];
-
-		console.log({element, object, nested_properties, top_level_property})
-
-		// If element not being added to nested property
-		if (nested_properties.length == 1) {
-			if ( object[top_level_property] )
-				object[top_level_property].push(element)
-			else
-				object[top_level_property] = [element]
-
-			return object;
-		}
-		// If element being added to nested property
-		else {
-			if (object[top_level_property] === undefined)
-				object[top_level_property] = {};
-		}
-
-
-		// Go one level deeper in the object
-		pushItemToObj(
-			element,
-			object[top_level_property],
-			...nested_properties.slice(1),
-		)
-	},
-
 	shuffleArray(array) {
 		let current_index = array.length,
 			rand_index;
