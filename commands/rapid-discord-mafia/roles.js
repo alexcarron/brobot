@@ -3,7 +3,7 @@ const ids = require("../../bot-config/discord-ids.js");
 const SlashCommand = require("../../modules/commands/SlashCommand");
 const { deferInteraction } = require("../../modules/functions");
 const { toTitleCase } = require("../../utilities/text-formatting-utils.js");
-const { appendToNestedProperty } = require("../../utilities/object-utils.js");
+const { appendToNestedProperty } = require("../../utilities/data-structure-utils.js");
 
 const command = new SlashCommand({
 	name: "roles",

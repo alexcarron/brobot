@@ -1,4 +1,4 @@
-const { setNestedProperty, appendToNestedProperty } = require("./object-utils");
+const { setNestedProperty, appendToNestedProperty } = require("./data-structure-utils");
 
 describe('setNestedProperty', () => {
 	it('sets a property directly', () => {

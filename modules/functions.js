@@ -365,31 +365,6 @@ doesValueMatchType: function doesValueMatchType(value, type) {
 		return true
 	},
 
-	addPropertyToObj: function(obj, property) {
-		let doesValueMatchType = require("./functions.js");
-
-		Object.defineProperty(
-			obj,
-			property.name,
-			{
-				get: function() { return this['_' + property.name] },
-				set: function(new_value) {
-						if (doesValueMatchType(new_value, property.type)) {
-							this['_' + property.name] = new_value;
-						}
-						else {
-							console.log({obj, property});
-							console.log("Must match the following type:");
-							console.log(property.type);
-							throw new Error(`Invalid value for property ${property.name}: ${new_value}.`);
-						}
-					},
-				enumerable: true,
-				configurable: true,
-			}
-		);
-	},
-
 	async saveObjectToGitHubJSON(object, json_name) {
 		const
 			axios = require('axios'),
