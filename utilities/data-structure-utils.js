@@ -113,4 +113,54 @@ const getShuffledArray = (array) => {
 	return arrayCopy;
 }
 
-module.exports = { setNestedProperty, appendToNestedProperty, getShuffledArray };
+/**
+ * Checks if all given arrays have the same elements.
+ * @param {...Array} arrays - The arrays to be compared.
+ * @returns {boolean} True if all arrays have the same elements, false otherwise.
+ */
+const arraysHaveSameElements = (...arrays) => {
+	if (arrays.length < 2)
+		throw new Error('At least two arrays must be passed.');
+
+	if (arrays.some(array => !Array.isArray(array)))
+		throw new Error('All arguments must be arrays.');
+
+	// Check if all arrays have the same length.
+	const firstArray = arrays[0];
+	if (arrays.some(array => array.length !== firstArray.length))
+		return false;
+
+	// Count the number of occurances of each element in the first array.
+	const elementToNumOccurances = new Map();
+	for (const element of firstArray) {
+		const numOccurances = elementToNumOccurances.get(element) || 0;
+
+		elementToNumOccurances.set(element,
+			numOccurances + 1
+		);
+	}
+
+	console.log(elementToNumOccurances);
+
+	// Check if the same elements occur in all other arrays, with the same number of occurances.
+	for (const otherArray of arrays.slice(1)) {
+		const elementToNumOccurancesCopy = new Map(elementToNumOccurances);
+
+    for (const element of otherArray) {
+        if (!elementToNumOccurancesCopy.has(element))
+					return false;
+
+				const numOccurances = elementToNumOccurancesCopy.get(element);
+        elementToNumOccurancesCopy.set(element,
+					numOccurances - 1
+				);
+        if (elementToNumOccurancesCopy.get(element) === 0) elementToNumOccurancesCopy.delete(element);
+    }
+
+		return elementToNumOccurancesCopy.size === 0;
+	}
+
+	return true;
+}
+
+module.exports = { setNestedProperty, appendToNestedProperty, getShuffledArray, arraysHaveSameElements };

@@ -1,11 +1,11 @@
 const { RoleNames, Factions, Alignments, RoleIdentifierKeywords, TrialOutcomes, AbilityName, AbilityArgName, Feedback } = require("../enums");
-const { doArraysHaveSameElements } = require("../functions");
 const RapidDiscordMafia = require("./RapidDiscordMafia");
 const RoleIdentifier = require("./RoleIdentifier");
 const GameManager = require("./GameManager");
 const Player = require("./Player");
 const RoleManager = require("./RoleManager");
 const { abilities } = require("./AbilityManager");
+const { arraysHaveSameElements } = require("../../utilities/data-structure-utils");
 
 
 describe('GameManager', () => {
@@ -39,7 +39,9 @@ describe('GameManager', () => {
 
 				console.log({expected_role_list, actual_role_list})
 
-				expect(doArraysHaveSameElements(expected_role_list, actual_role_list)).toStrictEqual(true);
+				expect(
+					arraysHaveSameElements(expected_role_list, actual_role_list)
+				).toStrictEqual(true);
 			}
 		);
 

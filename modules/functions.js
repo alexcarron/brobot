@@ -4,30 +4,6 @@ const { github_token } =  require("../token.json");
 const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle  } = require('discord.js');
 
 const functions = {
-	doArraysHaveSameElements(array1, array2) {
-		const array2_elems_not_in_array1 = array2;
-
-		if (array1.length !== array2.length)
-			return false
-
-		for (const element of array1) {
-			const elem_index = array2_elems_not_in_array1.indexOf(element);
-
-			if (elem_index !== -1) {
-				array2_elems_not_in_array1.splice(elem_index, 1)
-			}
-			else {
-				return false
-			}
-		}
-
-		console.log({array2_elems_not_in_array1})
-
-		if (array2_elems_not_in_array1.length > 0)
-			return false
-		else
-			return true
-	},
 
 	// Function to calculate the GCD (Greatest Common Divisor) using the Euclidean algorithm
 	gcd(num1, num2) {

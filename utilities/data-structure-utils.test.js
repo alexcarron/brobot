@@ -1,4 +1,4 @@
-const { setNestedProperty, appendToNestedProperty, getShuffledArray } = require("./data-structure-utils");
+const { setNestedProperty, appendToNestedProperty, getShuffledArray, arraysHaveSameElements } = require("./data-structure-utils");
 
 describe('setNestedProperty', () => {
 	it('sets a property directly', () => {
@@ -152,5 +152,44 @@ describe('getShuffledArray function', () => {
 		const originalArray = [];
 		const shuffledArray = getShuffledArray(originalArray);
 		expect(shuffledArray).toEqual([]);
+	});
+});
+
+describe('arraysHaveSameElements function', () => {
+	it('should throw an error if less than two arrays are passed', () => {
+		expect(() => arraysHaveSameElements([1, 2, 3])).toThrowError('At least two arrays must be passed.');
+	});
+
+	it('should throw an error if not all arguments are arrays', () => {
+		expect(() => arraysHaveSameElements([1, 2, 3], 'hello')).toThrowError('All arguments must be arrays.');
+	});
+
+	it('should return false if arrays have different lengths', () => {
+		expect(arraysHaveSameElements([1, 2, 3], [1, 2])).toBe(false);
+	});
+
+	it('should return true if arrays have the same elements but different order', () => {
+		expect(arraysHaveSameElements([1, 2, 3], [3, 2, 1])).toBe(true);
+	});
+
+	it('should return false if arrays have different elements', () => {
+		expect(arraysHaveSameElements([1, 2, 3], [1, 2, 4])).toBe(false);
+	});
+
+	it('should return true if arrays have duplicate elements and all arrays have the same number of duplicates', () => {
+		expect(arraysHaveSameElements([1, 2, 2, 3], [3, 2, 2, 1])).toBe(true);
+	});
+
+	it('should return true if arrays have different types of elements but all arrays have the same elements', () => {
+		const object = { property: 3 };
+		const array1 = [ 1, '2', object, object ];
+		const array2 = [ object, 1, object, '2' ];
+		expect(arraysHaveSameElements(array1, array2)).toBe(true);
+	});
+
+	it('should return false if arrays have different types of elements representing similar values', () => {
+		const array1 = [ 1, '2', {property: 3} ];
+		const array2 = [ 3, '2', {property: 1} ];
+		expect(arraysHaveSameElements(array1, array2)).toBe(false);
 	});
 });
