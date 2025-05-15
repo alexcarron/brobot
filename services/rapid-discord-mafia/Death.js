@@ -1,4 +1,4 @@
-const { Factions } = require("../enums");
+const { Factions } = require("../../modules/enums");
 
 class Death {
 	/**

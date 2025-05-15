@@ -3,7 +3,7 @@ const SlashCommand = require("../../modules/commands/SlashCommand");
 const { deferInteraction } = require("../../utilities/discord-action-utils");
 const { ArgumentTypes, ArgumentSubtypes, Factions, AbilityUses, Phases, AbilityName } = require("../../modules/enums");
 const ids = require("../../bot-config/discord-ids.js");
-const AbilityManager = require("../../modules/rapid_discord_mafia/AbilityManager");
+const AbilityManager = require("../../services/rapid-discord-mafia/AbilityManager");
 const { toTitleCase } = require("../../utilities/text-formatting-utils.js");
 const { fetchChannel, fetchRDMGuild } = require("../../utilities/discord-fetch-utils.js");
 

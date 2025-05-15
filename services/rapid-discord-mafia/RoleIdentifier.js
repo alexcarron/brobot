@@ -1,4 +1,4 @@
-const { RoleIdentifierTypes, RoleIdentifierKeywords, RoleIdentifierPriorities, Factions, Alignments } = require("../enums");
+const { RoleIdentifierTypes, RoleIdentifierKeywords, RoleIdentifierPriorities, Factions, Alignments } = require("../../modules/enums");
 const RoleManager = require("./RoleManager");
 
 class RoleIdentifier {

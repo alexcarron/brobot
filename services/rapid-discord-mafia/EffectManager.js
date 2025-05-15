@@ -1,5 +1,5 @@
 const Effect = require("./Effect");
-const { RoleNames, AbilityName, AbilityArgName, Factions, Alignments, Feedback, Immunities, AbilityUses, ArgumentTypes, ArgumentSubtypes } = require("../enums");
+const { RoleNames, AbilityName, AbilityArgName, Factions, Alignments, Feedback, Immunities, AbilityUses, ArgumentTypes, ArgumentSubtypes } = require("../../modules/enums");
 const Logger = require("./Logger");
 
 /**

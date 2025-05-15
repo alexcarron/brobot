@@ -2,7 +2,7 @@ const { PermissionFlagsBits } = require("discord.js");
 const SlashCommand = require("../../modules/commands/SlashCommand.js");
 const Parameter = require("../../modules/commands/Paramater.js");
 const Enums = require("../../modules/enums.js");
-const GameManager = require("../../modules/rapid_discord_mafia/GameManager.js");
+const GameManager = require("../../services/rapid-discord-mafia/GameManager.js");
 
 const ids = require(`../../bot-config/discord-ids.js`);
 

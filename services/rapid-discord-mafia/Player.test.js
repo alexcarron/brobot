@@ -1,4 +1,4 @@
-const { RoleNames, AbilityName: AbilityName, AbilityArgName } = require("../enums");
+const { RoleNames, AbilityName: AbilityName, AbilityArgName } = require("../../modules/enums");
 const RapidDiscordMafia = require("./RapidDiscordMafia");
 const RoleIdentifier = require("./RoleIdentifier");
 const RoleManager = require("./RoleManager");

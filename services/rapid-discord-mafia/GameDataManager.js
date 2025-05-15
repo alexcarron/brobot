@@ -1,5 +1,5 @@
 const axios = require('axios');
-const { github_token } =  require("../token.js");
+const { github_token } =  require("../../modules/token.js");
 const PlayerManager = require('./PlayerManager.js');
 
 /**

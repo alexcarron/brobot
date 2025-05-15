@@ -1,6 +1,9 @@
-const { ArgumentSubtypes, ArgumentTypes, AbilityUses, Duration, Phases, AbilityTypes, AbilityPriority: Priorities, AbilityName: AbilityName, AbilityArgName } = require("../enums.js");
+const { ArgumentSubtypes, ArgumentTypes, AbilityUses, Duration, Phases, AbilityTypes, AbilityPriority: Priorities, AbilityName: AbilityName, AbilityArgName } = require("../../modules/enums.js");
 const Arg = require("./Arg.js");
 
+/**
+ * Represents an ability
+ */
 class Ability {
 	/**
 	 * The name of the ability

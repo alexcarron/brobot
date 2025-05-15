@@ -1,4 +1,4 @@
-const { Phases, Subphases, GameStates } = require("../enums");
+const { Phases, Subphases, GameStates } = require("../../modules/enums");
 const Logger = require("./Logger");
 
 /**

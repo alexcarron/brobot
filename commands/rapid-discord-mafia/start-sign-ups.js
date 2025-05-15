@@ -1,6 +1,6 @@
 const SlashCommand = require("../../modules/commands/SlashCommand");
 const { GameStates, Announcements, PhaseWaitTimes } = require("../../modules/enums");
-const GameManager = require("../../modules/rapid_discord_mafia/GameManager");
+const GameManager = require("../../services/rapid-discord-mafia/GameManager");
 const
 	{ PermissionFlagsBits } = require('discord.js'),
 	ids = require(`../../bot-config/discord-ids.js`);

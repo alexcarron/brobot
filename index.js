@@ -1,4 +1,4 @@
-const RapidDiscordMafia = require('./modules/rapid_discord_mafia/RapidDiscordMafia.js');
+const RapidDiscordMafia = require('./services/rapid-discord-mafia/RapidDiscordMafia.js');
 const Event = require('./modules/Event.js');
 const Timer = require('./modules/Timer.js');
 const { Player } = require("discord-player");

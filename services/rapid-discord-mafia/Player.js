@@ -1,9 +1,9 @@
-const { RDMRoles, Announcements, Feedback, Factions, RoleNames, AbilityName: AbilityName, AbilityArgName, ArgumentSubtypes } = require("../enums");
-const RoleManager = require("./RoleManager");
+const { RDMRoles, Announcements, Feedback, Factions, RoleNames, AbilityName: AbilityName, AbilityArgName, ArgumentSubtypes } = require("../../modules/enums.js");
+const RoleManager = require("./RoleManager.js");
 const ids = require("../../bot-config/discord-ids.js");
-const Role = require("./Role");
-const Logger = require("./Logger");
-const DiscordService = require("./DiscordService");
+const Role = require("./Role.js");
+const Logger = require("./Logger.js");
+const DiscordService = require("./DiscordService.js");
 const { fetchRDMGuild, fetchRoleByName } = require("../../utilities/discord-fetch-utils.js");
 const { addRoleToMember, removeRoleFromMember } = require("../../utilities/discord-action-utils.js");
 

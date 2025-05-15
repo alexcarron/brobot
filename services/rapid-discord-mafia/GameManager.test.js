@@ -1,4 +1,4 @@
-const { RoleNames, Factions, Alignments, RoleIdentifierKeywords, TrialOutcomes, AbilityName, AbilityArgName, Feedback } = require("../enums");
+const { RoleNames, Factions, Alignments, RoleIdentifierKeywords, TrialOutcomes, AbilityName, AbilityArgName, Feedback } = require("../../modules/enums");
 const RapidDiscordMafia = require("./RapidDiscordMafia");
 const RoleIdentifier = require("./RoleIdentifier");
 const GameManager = require("./GameManager");

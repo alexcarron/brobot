@@ -1,5 +1,5 @@
 const { getRandomElement } = require("../../utilities/data-structure-utils");
-const { Feedback, Announcements, RoleNames, Factions, AbilityTypes, AbilityName } = require("../enums");
+const { Feedback, Announcements, RoleNames, Factions, AbilityTypes, AbilityName } = require("../../modules/enums");
 const Logger = require("./Logger");
 const Player = require("./Player");
 
