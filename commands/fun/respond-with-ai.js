@@ -1,5 +1,5 @@
-const Parameter = require("../../modules/commands/Paramater.js");
-const SlashCommand = require("../../modules/commands/SlashCommand.js");
+const Parameter = require("../../services/command-creation/Paramater.js");
+const SlashCommand = require("../../services/command-creation/SlashCommand.js");
 const { ServerPort } = require("../../modules/enums.js");
 const { getVoiceConnections, joinVoiceChannel } = require('@discordjs/voice');
 const ids = require(`../../bot-config/discord-ids.js`);

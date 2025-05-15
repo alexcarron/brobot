@@ -1,7 +1,7 @@
 
 const fs = require('fs');
-const Parameter = require("../../modules/commands/Paramater.js");
-const SlashCommand = require("../../modules/commands/SlashCommand.js");
+const Parameter = require("../../services/command-creation/Paramater.js");
+const SlashCommand = require("../../services/command-creation/SlashCommand.js");
 const { PermissionFlagsBits } = require('discord.js');
 const LLPointManager = require('../../modules/llpointmanager.js');
 const { findStringStartingWith } = require('../../utilities/text-formatting-utils.js');

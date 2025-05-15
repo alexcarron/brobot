@@ -1,5 +1,5 @@
-const Parameter = require("../../modules/commands/Paramater");
-const SlashCommand = require("../../modules/commands/SlashCommand");
+const Parameter = require("../../services/command-creation/Paramater");
+const SlashCommand = require("../../services/command-creation/SlashCommand");
 const RoleIdentifier = require("../../services/rapid-discord-mafia/RoleIdentifier");
 
 /* eslint-disable no-unused-vars */

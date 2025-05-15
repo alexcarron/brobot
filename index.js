@@ -32,7 +32,7 @@ global.client = new Discord.Client({
 
 // ! Create global paths object to store directories
 const { Collection } = require('discord.js');
-const SlashCommand = require('./modules/commands/SlashCommand.js');
+const SlashCommand = require('./services/command-creation/SlashCommand.js');
 const TextToSpeechHandler = require('./modules/TextToSpeechHandler.js');
 const DailyMessageHandler = require('./modules/DailyMessageHandler.js');
 const path = require('path');

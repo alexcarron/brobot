@@ -1,6 +1,6 @@
 const cron = require("cron");
 const Event = require('../../../modules/Event.js');
-const SlashCommand = require('../../../modules/commands/SlashCommand.js');
+const SlashCommand = require('../../../services/command-creation/SlashCommand.js');
 const ids = require("../../../bot-config/discord-ids.js")
 const { ChannelType, ButtonBuilder, ActionRowBuilder, ModalBuilder, ButtonStyle, TextInputBuilder, TextInputStyle, StringSelectMenuOptionBuilder, StringSelectMenuBuilder, } = require('discord.js');
 const { LLPointTiers } = require("../../../modules/enums.js");

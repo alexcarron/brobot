@@ -1,5 +1,5 @@
 const fs = require('node:fs/promises');
-const SlashCommand = require('../../../modules/commands/SlashCommand');
+const SlashCommand = require('../../../services/command-creation/SlashCommand');
 const { PermissionFlagsBits } = require('discord.js');
 const { deferInteraction } = require('../../../utilities/discord-action-utils');
 

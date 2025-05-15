@@ -1,5 +1,5 @@
 const { PermissionFlagsBits } = require("discord.js");
-const SlashCommand = require("../../modules/commands/SlashCommand");
+const SlashCommand = require("../../services/command-creation/SlashCommand");
 
 const command = new SlashCommand({
 	name: "update-tiers",
