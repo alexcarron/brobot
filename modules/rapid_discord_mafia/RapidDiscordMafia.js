@@ -1,13 +1,12 @@
-const { getObjectFromGitHubJSON } = require("../functions.js");
 const Contestant = require("./Contestant");
 const Logger = require("./Logger.js");
 const RoleIdentifier = require("./RoleIdentifier.js");
-const PlayerManager = require("./PlayerManager.js");
 const RoleManager = require("./RoleManager.js");
 const DiscordLogger = require("./DiscordLogger.js");
 const ids = require("../../bot-config/discord-ids.js");
 const GameManager = require("./GameManager.js");
 const { fetchChannel, fetchRDMGuild } = require("../../utilities/discord-fetch-utils.js");
+const { loadObjectFromJsonInGitHub } = require("../../utilities/github-json-storage-utils.js");
 
 class RapidDiscordMafia {
 	constructor() {
@@ -32,7 +31,7 @@ class RapidDiscordMafia {
 		global.rapid_discord_mafia = new RapidDiscordMafia();
 
 		if (!isMockObject) {
-			const rapid_discord_mafia_obj = await getObjectFromGitHubJSON("rapid_discord_mafia");
+			const rapid_discord_mafia_obj = await loadObjectFromJsonInGitHub("rapid_discord_mafia");
 			global.rapid_discord_mafia.setTo(rapid_discord_mafia_obj);
 			console.log("Rapid Discord Mafia Database Downloaded");
 		}

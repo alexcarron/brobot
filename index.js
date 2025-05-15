@@ -31,13 +31,13 @@ global.client = new Discord.Client({
 });
 
 // ! Create global paths object to store directories
-const {  getObjectFromGitHubJSON } = require('./modules/functions.js');
 const { Collection } = require('discord.js');
 const SlashCommand = require('./modules/commands/SlashCommand.js');
 const TextToSpeechHandler = require('./modules/TextToSpeechHandler.js');
 const DailyMessageHandler = require('./modules/DailyMessageHandler.js');
 const path = require('path');
 const { setupEventListeners } = require('./event-listeners/event-listener-setup.js');
+const { loadObjectFromJsonInGitHub } = require('./utilities/github-json-storage-utils.js');
 
 // ! Store a list of command cooldowns
 client.cooldowns = new Collection();
@@ -203,11 +203,11 @@ global.client.once(Events.ClientReady, async () => {
 	console.log("Global module instantiated");
 
 	global.LLPointManager.setViewers(
-		await getObjectFromGitHubJSON("viewers")
+		await loadObjectFromJsonInGitHub("viewers")
 	);
 	console.log("Viewers Database Downloaded");
 
-	const events_json = await getObjectFromGitHubJSON("events");
+	const events_json = await loadObjectFromJsonInGitHub("events");
 	let events = events_json.events;
 	for (const event_index in events) {
 		let event = events[event_index];
@@ -218,7 +218,7 @@ global.client.once(Events.ClientReady, async () => {
 	global.events = events;
 	console.log("Events Database Downloaded");
 
-	const timers_json = await getObjectFromGitHubJSON("timers");
+	const timers_json = await loadObjectFromJsonInGitHub("timers");
 	let timers = timers_json.timers;
 	for (const timer_index in timers) {
 		let timer = timers[timer_index];
@@ -232,7 +232,7 @@ global.client.once(Events.ClientReady, async () => {
 	console.log("Timers Database Downloaded");
 
 	global.questions = [];
-	global.channelsToMessages = await getObjectFromGitHubJSON("messages");
+	global.channelsToMessages = await loadObjectFromJsonInGitHub("messages");
 	console.log("Messages Database Downloaded");
 	const dailyMessageHandler = new DailyMessageHandler(global.channelsToMessages);
 	dailyMessageHandler.startDailyMessages();
