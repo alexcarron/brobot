@@ -2,6 +2,16 @@ const { TextChannel, Message, Guild, PermissionFlagsBits, Role } = require("disc
 const ids = require("../../bot-config/discord-ids.js");
 const { fetchGuild, fetchChannel, fetchGuildMember, fetchRole } = require("../../utilities/discord-fetch-utils.js");
 
+/**
+ * Enum of names of all Discord roles for Rapid Discord Mafia
+ */
+const RDMDiscordRole = Object.freeze({
+	LIVING: "Living",
+	SPECTATOR: "Spectators",
+	GHOSTS: "Ghosts",
+	ON_TRIAL: "On Trial"
+});
+
 class DiscordService {
 	/**
 	 * The guild that Rapid Discord Mafia is hosted on
@@ -427,4 +437,4 @@ class DiscordService {
 	}
 }
 
-module.exports = DiscordService;
+module.exports = {DiscordService, RDMDiscordRole};

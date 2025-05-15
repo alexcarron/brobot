@@ -1,9 +1,8 @@
-const { RDMRoles, } = require("../../modules/enums.js");
 const RoleManager = require("./RoleManager.js");
 const ids = require("../../bot-config/discord-ids.js");
 const { Role, Faction, RoleName } = require("./Role.js");
 const Logger = require("./Logger.js");
-const DiscordService = require("./DiscordService.js");
+const { DiscordService, RDMDiscordRole } = require("./DiscordService.js");
 const { fetchRDMGuild, fetchRoleByName } = require("../../utilities/discord-fetch-utils.js");
 const { addRoleToMember, removeRoleFromMember } = require("../../utilities/discord-action-utils.js");
 const { ArgumentSubtype, AbilityArgName } = require("./Arg.js");
@@ -351,8 +350,8 @@ class Player {
 
 		try {
 			if (!this.isMockPlayer) {
-				let ghost_role = await fetchRoleByName((await fetchRDMGuild()), RDMRoles.Ghosts),
-					living_role = await fetchRoleByName((await fetchRDMGuild()), RDMRoles.Living),
+				let ghost_role = await fetchRoleByName((await fetchRDMGuild()), RDMDiscordRole.GHOSTS),
+					living_role = await fetchRoleByName((await fetchRDMGuild()), RDMDiscordRole.LIVING),
 					player_guild_member = await fetchGuildMember((await fetchRDMGuild()), this.id);
 
 
