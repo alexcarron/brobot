@@ -1,8 +1,8 @@
 const Effect = require("./Effect");
-const { RoleNames, AbilityName, AbilityArgName, Feedback, Immunities, ArgumentTypes, ArgumentSubtypes } = require("../../modules/enums");
+const { RoleNames, AbilityName, AbilityArgName, Feedback, ArgumentTypes, ArgumentSubtypes } = require("../../modules/enums");
 const Logger = require("./Logger");
 const { AbilityUseCount } = require("./Ability");
-const { Faction, Alignment } = require("./Role");
+const { Faction, Alignment, Immunity } = require("./Role");
 
 /**
  * Used to handle ability effects and apply them
@@ -53,7 +53,7 @@ class EffectManager {
 				if (
 					!(
 						roleblocked_player_role.immunities &&
-						roleblocked_player_role.immunities.includes(Immunities.Roleblock)
+						roleblocked_player_role.immunities.includes(Immunity.ROLEBLOCK)
 					)
 				) {
 					roleblocked_player.isRoleblocked = true;
@@ -352,7 +352,7 @@ class EffectManager {
 
 				const abilityToControlExists = ability_to_control !== null && ability_to_control !== undefined;
 
-				const isTargetImmune = player_controlling_role.immunities.includes(Immunities.Control);
+				const isTargetImmune = player_controlling_role.immunities.includes(Immunity.CONTROL);
 
 				let num_ability_player_args = 0;
 				let num_ability_non_player_args = 0;
@@ -526,7 +526,7 @@ class EffectManager {
 
 				if (
 					!(kidnapped_player_role.immunities &&
-						kidnapped_player_role.immunities.includes(Immunities.Roleblock))
+						kidnapped_player_role.immunities.includes(Immunity.ROLEBLOCK))
 				) {
 					kidnapped_player.isRoleblocked = true;
 					kidnapped_player.addFeedback(Feedback.RoleblockedByKidnapper);

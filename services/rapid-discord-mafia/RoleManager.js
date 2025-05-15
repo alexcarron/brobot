@@ -1,6 +1,6 @@
-const { Immunities, RoleNames } = require("../../modules/enums.js");
+const { RoleNames } = require("../../modules/enums.js");
 const { abilities, AbilityName } = require("./AbilityManager.js");
-const {Role, Goal, Faction, Alignment} = require("./Role.js");
+const {Role, Goal, Faction, Alignment, Immunity} = require("./Role.js");
 
 class RoleManager {
 	constructor() {}
@@ -63,7 +63,7 @@ class RoleManager {
 			name: RoleNames.Escort,
 			faction: Faction.TOWN,
 			alignment: Alignment.SUPPORT,
-			immunities: [Immunities.Roleblock],
+			immunities: [Immunity.ROLEBLOCK],
 			attack: 0,
 			defense: 0,
 			goal: Goal.ELIMINATE_OTHER_FACTIONS,
@@ -126,7 +126,7 @@ class RoleManager {
 			name: RoleNames.Consort,
 			faction: Faction.MAFIA,
 			alignment: Alignment.SUPPORT,
-			immunities: [Immunities.Roleblock],
+			immunities: [Immunity.ROLEBLOCK],
 			attack: 0,
 			defense: 0,
 			goal: Goal.ELIMINATE_OTHER_FACTIONS,
@@ -195,7 +195,7 @@ class RoleManager {
 			name: RoleNames.SerialKiller,
 			faction: Faction.NEUTRAL,
 			alignment: Alignment.KILLING,
-			immunities: [Immunities.Roleblock],
+			immunities: [Immunity.ROLEBLOCK],
 		attack: 1,
 			defense: 1,
 			goal: Goal.SURVIVE_ELIMINATED_OTHER_FACTIONS,
@@ -224,7 +224,7 @@ class RoleManager {
 			attack: 0,
 			defense: 0,
 			goal: Goal.SURVIVE_UNTIL_TOWN_LOSES,
-			immunities: [Immunities.Roleblock, Immunities.Control],
+			immunities: [Immunity.ROLEBLOCK, Immunity.CONTROL],
 			abilities: [
 				abilities[AbilityName.Control],
 			],

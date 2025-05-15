@@ -40,6 +40,14 @@ const Goal = Object.freeze({
 	DO_GOAL_OF_REPLACED_PLAYER: "Replace someone and accomplish their win condition.",
 });
 
+/**
+ * Enums of possible immunities a role can have
+ */
+const Immunity = Object.freeze({
+	ROLEBLOCK: "roleblock",
+	CONTROL: "control",
+});
+
 class Role {
 	constructor({name, faction, alignment, attack, defense, goal, isUnique = false, immunities = [], abilities = [], notes = ""}) {
 		this.name = name;
@@ -99,4 +107,4 @@ class Role {
 	}
 }
 
-module.exports = { Role, Faction, Goal, Alignment };
+module.exports = { Role, Faction, Goal, Alignment, Immunity };

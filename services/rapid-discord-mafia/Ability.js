@@ -33,6 +33,9 @@ const AbilityPriority = Object.freeze({
 	INVESTIGATIVE: 6,
 });
 
+/**
+ * Enums of possible durations of an ability
+ */
 const AbilityDuration = Object.freeze({
 	DAY_AND_NIGHT: 1,
 	ONE_DAY: 0.5,
