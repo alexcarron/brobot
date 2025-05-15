@@ -1,8 +1,9 @@
 const Effect = require("./Effect");
-const { RoleNames, AbilityName, AbilityArgName, Feedback, ArgumentTypes, ArgumentSubtypes } = require("../../modules/enums");
+const { RoleNames, AbilityName, AbilityArgName, Feedback,ArgumentSubtypes } = require("../../modules/enums");
 const Logger = require("./Logger");
 const { AbilityUseCount } = require("./Ability");
 const { Faction, Alignment, Immunity } = require("./Role");
+const { AbilityArgType } = require("./Arg");
 
 /**
  * Used to handle ability effects and apply them
@@ -361,7 +362,7 @@ class EffectManager {
 				if (abilityToControlExists) {
 					const ability_player_args =
 						ability_to_control.args
-						.filter(arg => arg.type === ArgumentTypes.Player);
+						.filter(arg => arg.type === AbilityArgType.PLAYER);
 
 					num_ability_player_args = ability_player_args.length;
 					num_ability_non_player_args = ability_to_control.args.length - ability_player_args.length;

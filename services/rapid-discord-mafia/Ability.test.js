@@ -1,7 +1,7 @@
-const { AbilityName, Phases, AbilityArgName, ArgumentTypes, ArgumentSubtypes } = require("../../modules/enums");
+const { AbilityName, Phases, AbilityArgName, ArgumentSubtypes } = require("../../modules/enums");
 const { EffectName } = require("./EffectManager");
 const { Ability, AbilityUseCount, AbilityType, AbilityPriority, AbilityDuration } = require("./Ability");
-const Arg = require("./Arg");
+const {Arg, AbilityArgType} = require("./Arg");
 
 describe('Ability', () => {
 	describe('constructor', () => {
@@ -19,7 +19,7 @@ describe('Ability', () => {
 				new Arg({
 					name: AbilityArgName.PlayerConsorting,
 					description: "description",
-					type: ArgumentTypes.Player,
+					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtypes.CertainPlayers],
 				})
 			]
@@ -67,7 +67,7 @@ describe('Ability', () => {
 				{
 					name: AbilityArgName.PlayerConsorting,
 					description: "description",
-					type: ArgumentTypes.Player,
+					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtypes.CertainPlayers],
 				}
 			]

@@ -1,7 +1,7 @@
-const { Phases, AbilityArgName, ArgumentTypes, ArgumentSubtypes, Announcements, Feedback } = require("../../modules/enums.js")
+const { Phases, AbilityArgName, ArgumentSubtypes, Announcements, Feedback } = require("../../modules/enums.js")
 const {Ability, AbilityUseCount, AbilityType, AbilityPriority, AbilityDuration} = require("./Ability.js")
 const { EffectName } = require("./EffectManager.js")
-const Arg = require("./Arg.js")
+const {Arg, AbilityArgType} = require("./Arg.js")
 
 class AbilityManager {
 	constructor(game_manager) {
@@ -55,7 +55,7 @@ class AbilityManager {
 				new Arg({
 					name: AbilityArgName.PlayerHealing,
 					description: "The player you're healing",
-					type: ArgumentTypes.Player,
+					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf],
 				})
 			],
@@ -100,7 +100,7 @@ class AbilityManager {
 				new Arg({
 					name: AbilityArgName.PlayerEvaluating,
 					description: "The player you are evaluating",
-					type: ArgumentTypes.Player,
+					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf]
 				})
 			]
@@ -123,7 +123,7 @@ class AbilityManager {
 				new Arg({
 					name: AbilityArgName.PlayerTracking,
 					description: "The player whose visit your tracking",
-					type: ArgumentTypes.Player,
+					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf]
 				})
 			]
@@ -146,7 +146,7 @@ class AbilityManager {
 				new Arg({
 					name: AbilityArgName.PlayerWatching,
 					description: "The player whose house your watching for visits",
-					type: ArgumentTypes.Player,
+					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf]
 				})
 			]
@@ -170,7 +170,7 @@ class AbilityManager {
 				new Arg({
 					name: AbilityArgName.PlayerRoleblocking,
 					description: "The player your roleblocking",
-					type: ArgumentTypes.Player,
+					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf]
 				})
 			],
@@ -197,7 +197,7 @@ class AbilityManager {
 				new Arg({
 					name: AbilityArgName.PlayerShooting,
 					description: "The player your shooting",
-					type: ArgumentTypes.Player,
+					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf]
 				})
 			]
@@ -245,7 +245,7 @@ class AbilityManager {
 				new Arg({
 					name: AbilityArgName.PlayerKilling,
 					description: "The player your killing",
-					type: ArgumentTypes.Player,
+					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NonMafia]
 				})
 			]
@@ -269,7 +269,7 @@ class AbilityManager {
 				new Arg({
 					name: AbilityArgName.PlayerFraming,
 					description: "The player your framing to be the Mafioso",
-					type: ArgumentTypes.Player,
+					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NonMafia]
 				})
 			],
@@ -296,7 +296,7 @@ class AbilityManager {
 				new Arg({
 					name: AbilityArgName.PlayerConsorting,
 					description: "The player your roleblocking",
-					type: ArgumentTypes.Player,
+					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf]
 				})
 			],
@@ -320,7 +320,7 @@ class AbilityManager {
 				new Arg({
 					name: AbilityArgName.PlayerInvestigating,
 					description: "The player whose role your investigating",
-					type: ArgumentTypes.Player,
+					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NonMafia]
 				})
 			]
@@ -359,7 +359,7 @@ class AbilityManager {
 				new Arg({
 					name: AbilityArgName.PlayerKilling,
 					description: "The player your cursing with death",
-					type: ArgumentTypes.Player,
+					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.CertainPlayers]
 				})
 			],
@@ -417,7 +417,7 @@ class AbilityManager {
 				new Arg({
 					name: AbilityArgName.PlayerKnifing,
 					description: "The player your stabbing",
-					type: ArgumentTypes.Player,
+					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf]
 				})
 			],
@@ -453,7 +453,7 @@ class AbilityManager {
 				new Arg({
 					name: AbilityArgName.PlayerSmithingFor,
 					description: "The player your smithing a bulletproof vest for",
-					type: ArgumentTypes.Player,
+					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf]
 				})
 			],
@@ -514,13 +514,13 @@ class AbilityManager {
 				new Arg({
 					name: AbilityArgName.PlayerControlling,
 					description: "The player your controlling",
-					type: ArgumentTypes.Player,
+					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf]
 				}),
 				new Arg({
 					name: AbilityArgName.PlayerControlledInto,
 					description: "The player your forcing whoever your controlling to visit",
-					type: ArgumentTypes.Player,
+					type: AbilityArgType.PLAYER,
 					subtypes: []
 				}),
 			],
@@ -543,7 +543,7 @@ class AbilityManager {
 				new Arg({
 					name: AbilityArgName.PlayerObserving,
 					description: "The player you're observing",
-					type: ArgumentTypes.Player,
+					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf]
 				}),
 			],
@@ -567,7 +567,7 @@ class AbilityManager {
 				new Arg({
 					name: AbilityArgName.PlayerReplacing,
 					description: "The player you're attacking and replacing",
-					type: ArgumentTypes.Player,
+					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf]
 				}),
 			],
@@ -590,7 +590,7 @@ class AbilityManager {
 				new Arg({
 					name: AbilityArgName.PlayerKidnapping,
 					description: "The player you're kidnapping",
-					type: ArgumentTypes.Player,
+					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NonMafia, ArgumentSubtypes.NotSelf]
 				}),
 			],

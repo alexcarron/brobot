@@ -1,10 +1,10 @@
-const { GameStates, Phases, Subphases, MessageDelays, RDMRoles, Feedback, Announcements, RoleNames, PhaseWaitTimes, VotingOutcomes, TrialOutcomes, TrialVotes, RoleIdentifierTypes, ArgumentSubtypes, CoinRewards, ArgumentTypes } = require("../../modules/enums.js");
+const { GameStates, Phases, Subphases, MessageDelays, RDMRoles, Feedback, Announcements, RoleNames, PhaseWaitTimes, VotingOutcomes, TrialOutcomes, TrialVotes, RoleIdentifierTypes, ArgumentSubtypes, CoinRewards, } = require("../../modules/enums.js");
 const ids = require("../../bot-config/discord-ids.js");
 const { PermissionFlagsBits, Role, Interaction } = require("discord.js");
 const Death = require("./Death.js");
 const PlayerManager = require("./PlayerManager.js");
 const Player = require("./Player.js");
-const Arg = require("./Arg.js");
+const {Arg, AbilityArgType} = require("./Arg.js");
 const EffectManager = require("./EffectManager.js");
 const AbilityManager = require("./AbilityManager.js");
 const RoleManager = require("./RoleManager.js");
@@ -2055,7 +2055,7 @@ class GameManager {
 	 * @returns {true | String} true if valid. Otherwise, string containing reason if invalid
 	 */
 	isValidArgValue(player_using_ability, ability_arg, arg_value) {
-		if (ability_arg.type === ArgumentTypes.Player) {
+		if (ability_arg.type === AbilityArgType.PLAYER) {
 			if (!this.player_manager.getPlayerNames().includes(arg_value)) {
 				return `**${arg_value}** is not a valid player for the argument **${ability_arg.name}**`
 			}

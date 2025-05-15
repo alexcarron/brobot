@@ -1,5 +1,5 @@
 const { Phases } = require("../../modules/enums.js");
-const Arg = require("./Arg.js");
+const { Arg } = require("./Arg.js");
 
 /**
  * Enum of possible types of an Ability

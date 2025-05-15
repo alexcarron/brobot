@@ -1,3 +1,10 @@
+/**
+ * Enum of possible types of an Arg for an Ability
+ */
+const AbilityArgType = Object.freeze({
+	PLAYER: "player",
+});
+
 class Arg {
 	constructor( { name, description, type, subtypes, value="" } ) {
 		this.name = name;
@@ -8,4 +15,4 @@ class Arg {
 	}
 }
 
-module.exports = Arg;
+module.exports = { Arg, AbilityArgType };
