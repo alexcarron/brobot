@@ -1,9 +1,8 @@
 
-const { LLPointTiers } = require("../../modules/enums.js");
 const { EmbedBuilder } = require('discord.js');
 const Parameter = require("../../services/command-creation/Paramater.js");
 const SlashCommand = require("../../services/command-creation/SlashCommand.js");
-const LLPointManager = require("../../services/ll-points/LLPointManager.js");
+const { LLPointManager, LLPointTier } = require("../../services/ll-points/LLPointManager.js");
 const { deferInteraction } = require("../../utilities/discord-action-utils.js");
 
 
@@ -78,7 +77,7 @@ command.execute = async function(interaction) {
 		viewer_display_name = viewer_name + " (Unknown Viewer)";
 		ll_points = 0;
 		rank = num_total_viewers + 1;
-		tier = LLPointTiers.LLViewer;
+		tier = LLPointTier.VIEWER;
 	}
 
 	const embed_msg = new EmbedBuilder()

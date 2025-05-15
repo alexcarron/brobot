@@ -1,6 +1,20 @@
 const { GITHUB_TOKEN } = require("../../bot-config/token.js");
-const { DatabaseURLs, LLPointTiers, } = require("../../modules/enums.js");
+const { DatabaseURLs, } = require("../../modules/enums.js");
 const Viewer = require("./Viewer.js");
+
+/**
+ * Enum of possible LL Point tiers and their names
+ */
+const LLPointTier = Object.freeze({
+	WORSHIPER: "LL Worshiper!",
+	DEVOTEE: "LL Devotee!",
+	ADDICT: "LL Addict!",
+	FANATIC: "LL Fanatic!",
+	ENTHUSIAST: "LL Enthusiast!",
+	FOLLOWER: "LL Follower!",
+	FAN: "LL Fan!",
+	VIEWER: "LL Viewer!",
+})
 
 class LLPointManager {
 	constructor() {
@@ -217,4 +231,4 @@ class LLPointManager {
 	}
 }
 
-module.exports = LLPointManager;
+module.exports = {LLPointManager, LLPointTier};

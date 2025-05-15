@@ -1,25 +1,14 @@
 
 const Enums = {
-	LLPointTiers: {
-		LLWorshiper: "LL Worshiper!",
-		LLDevotee: "LL Devotee!",
-		LLAddict: "LL Addict!",
-		LLFanatic: "LL Fanatic!",
-		LLEnthusiast: "LL Enthusiast!",
-		LLFollower: "LL Follower!",
-		LLFan: "LL Fan!",
-		LLViewer: "LL Viewer!",
-	},
-
 	LLPointThresholds: {
-		LLWorshiper: 50000,
-		LLDevotee: 10000,
-		LLAddict: 5000,
-		LLFanatic: 1000,
-		LLEnthusiast: 100,
-		LLFollower: 50,
-		LLFan: 10,
-		LLViewer: 0,
+		WORSHIPER: 50000,
+		DEVOTEE: 10000,
+		ADDICT: 5000,
+		FANATIC: 1000,
+		ENTHUSIAST: 100,
+		FOLLOWER: 50,
+		FAN: 10,
+		VIEWER: 0,
 	},
 
 	LLPointRewards: {

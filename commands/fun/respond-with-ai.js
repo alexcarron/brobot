@@ -1,8 +1,8 @@
 const Parameter = require("../../services/command-creation/Paramater.js");
 const SlashCommand = require("../../services/command-creation/SlashCommand.js");
-const { getVoiceConnections, joinVoiceChannel } = require('@discordjs/voice');
+const { joinVoiceChannel } = require('@discordjs/voice');
 const ids = require(`../../bot-config/discord-ids.js`);
-const { CommandInteraction, PermissionsBitField, PermissionFlagsBits } = require("discord.js");
+const { PermissionsBitField, PermissionFlagsBits } = require("discord.js");
 const { fetchGuildMember } = require("../../utilities/discord-fetch-utils.js");
 
 const LM_STUDIO_SERVER_PORT = '1234';

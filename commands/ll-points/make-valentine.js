@@ -4,7 +4,7 @@ const { deferInteraction } = require('../../utilities/discord-action-utils.js');
 const Parameter = require("../../services/command-creation/Paramater.js");
 const SlashCommand = require("../../services/command-creation/SlashCommand.js");
 const { PermissionFlagsBits } = require('discord.js');
-const LLPointManager = require('../../services/ll-points/LLPointManager.js');
+const { LLPointManager } = require('../../services/ll-points/LLPointManager.js');
 const { findStringStartingWith } = require('../../utilities/text-formatting-utils.js');
 const { confirmInteractionWithButtons } = require('../../utilities/discord-action-utils.js');
 
