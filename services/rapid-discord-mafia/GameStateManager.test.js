@@ -1,5 +1,4 @@
-const { GameStates } = require("../../modules/enums");
-const {GameStateManager, Phase, Subphase} = require("./GameStateManager");
+const {GameStateManager, Phase, Subphase, GameState} = require("./GameStateManager");
 const RapidDiscordMafia = require("./RapidDiscordMafia");
 
 describe('GameStateManager', () => {
@@ -21,7 +20,7 @@ describe('GameStateManager', () => {
 		it('SHOULD return game\'s state, phase, subphase, and days_passed', () => {
 			mock_game.phase = Phase.LIMBO;
 			mock_game.subphase = Subphase.TRAIL_RESULTS;
-			mock_game.state = GameStates.ReadyToBegin;
+			mock_game.state = GameState.READY_TO_START;
 			mock_game.days_passed = 12.5;
 
 			expect(mock_game.state_manager.phase).toBe(mock_game.phase);
@@ -35,12 +34,12 @@ describe('GameStateManager', () => {
 		it('SHOULD set game\'s state, phase, subphase, and days_passed', () => {
 			mock_game.state_manager.phase = Phase.LIMBO;
 			mock_game.state_manager.subphase = Subphase.TRAIL_RESULTS;
-			mock_game.state_manager.state = GameStates.ReadyToBegin;
+			mock_game.state_manager.state = GameState.READY_TO_START;
 			mock_game.state_manager.days_passed = 12.5;
 
 			expect(mock_game.phase).toBe(Phase.LIMBO);
 			expect(mock_game.subphase).toBe(Subphase.TRAIL_RESULTS);
-			expect(mock_game.state).toBe(GameStates.ReadyToBegin);
+			expect(mock_game.state).toBe(GameState.READY_TO_START);
 			expect(mock_game.days_passed).toBe(12.5);
 		});
 	});

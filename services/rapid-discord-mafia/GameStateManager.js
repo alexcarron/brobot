@@ -1,5 +1,3 @@
-const { GameStates } = require("../../modules/enums");
-
 /**
  * Enum of possible phases of the game
  */
@@ -21,6 +19,16 @@ const Subphase = Object.freeze({
 	TRIAL: "trial",
 	TRAIL_RESULTS: "results",
 	NONE: null,
+});
+
+/**
+ * Enums of possible states of the game
+ */
+const GameState = Object.freeze({
+	SIGN_UP: "sign-up",
+	READY_TO_START: "ready",
+	IN_PROGRESS: "in progress",
+	ENDED: "ended",
 });
 
 /**
@@ -94,7 +102,7 @@ class GameStateManager {
 	 * Sets the initial state and phase of a game when a game is constructed but no started
 	 */
 	initializeState() {
-		this.state = GameStates.Ended;
+		this.state = GameState.ENDED;
 		this.phase = Phase.NONE;
 		this.subphase = Subphase.NONE;
 		this.days_passed = 0;
@@ -106,7 +114,7 @@ class GameStateManager {
 	changeToSignUps() {
 		this.game.logger.log("Changing game state to sign ups");
 
-		this.state = GameStates.SignUp;
+		this.state = GameState.SIGN_UP;
 		this.phase = Phase.NONE;
 		this.subphase = Phase.NONE;
 		this.days_passed = 0;
@@ -118,7 +126,7 @@ class GameStateManager {
 	changeToReadyToStart() {
 		this.game.logger.log("Changing game state to ready to start");
 
-		this.state = GameStates.ReadyToBegin;
+		this.state = GameState.READY_TO_START;
 		this.phase = Phase.NONE;
 		this.subphase = Phase.NONE;
 		this.days_passed = 0;
@@ -130,7 +138,7 @@ class GameStateManager {
 	changeToStarted() {
 		this.game.logger.log("Changing game state to started");
 
-		this.state = GameStates.InProgress;
+		this.state = GameState.IN_PROGRESS;
 		this.phase = Phase.NONE;
 		this.subphase = Phase.NONE;
 		this.days_passed = 0;
@@ -142,7 +150,7 @@ class GameStateManager {
 	changeToEnded() {
 		this.game.logger.log("Changing game state to be ended");
 
-		this.state = GameStates.Ended;
+		this.state = GameState.ENDED;
 		this.phase = Phase.NONE;
 		this.subphase = Phase.NONE;
 	}
@@ -254,7 +262,7 @@ class GameStateManager {
 	 */
 	isInAnnouncementsPhase() {
 		return (
-			this.state === GameStates.InProgress &&
+			this.state === GameState.IN_PROGRESS &&
 			this.phase === Phase.DAY &&
 			this.subphase === Subphase.ANNOUNCEMENTS
 		)
@@ -266,7 +274,7 @@ class GameStateManager {
 	 */
 	isInVotingPhase() {
 		return (
-			this.state === GameStates.InProgress &&
+			this.state === GameState.IN_PROGRESS &&
 			this.phase === Phase.DAY &&
 			this.subphase === Subphase.VOTING
 		)
@@ -278,7 +286,7 @@ class GameStateManager {
 	 */
 	isInTrialPhase() {
 		return (
-			this.state === GameStates.InProgress &&
+			this.state === GameState.IN_PROGRESS &&
 			this.phase === Phase.DAY &&
 			this.subphase === Subphase.TRIAL
 		)
@@ -290,7 +298,7 @@ class GameStateManager {
 	 */
 	isInTrialResultsPhase() {
 		return (
-			this.state === GameStates.InProgress &&
+			this.state === GameState.IN_PROGRESS &&
 			this.phase === Phase.DAY &&
 			this.subphase === Subphase.TRAIL_RESULTS
 		)
@@ -302,7 +310,7 @@ class GameStateManager {
 	 */
 	isInNightPhase() {
 		return (
-			this.state === GameStates.InProgress &&
+			this.state === GameState.IN_PROGRESS &&
 			this.phase === Phase.NIGHT &&
 			this.subphase === Subphase.NONE
 		)
@@ -314,7 +322,7 @@ class GameStateManager {
 	 */
 	isFirstDay() {
 		return (
-			this.state === GameStates.InProgress &&
+			this.state === GameState.IN_PROGRESS &&
 			this.phase === Phase.DAY &&
 			this.subphase === Subphase.NONE &&
 			this.days_passed === GameStateManager.DAY_PHASE_LENGTH
@@ -327,7 +335,7 @@ class GameStateManager {
 	 */
 	isInSignUps() {
 		return (
-			this.state === GameStates.SignUp &&
+			this.state === GameState.SIGN_UP &&
 			this.phase === Phase.NONE &&
 			this.subphase === Subphase.NONE
 		)
@@ -339,7 +347,7 @@ class GameStateManager {
 	 */
 	isReadyToStart() {
 		return (
-			this.state === GameStates.ReadyToBegin &&
+			this.state === GameState.READY_TO_START &&
 			this.phase === Phase.NONE &&
 			this.subphase === Subphase.NONE
 		)
@@ -351,7 +359,7 @@ class GameStateManager {
 	 */
 	isEnded() {
 		return (
-			this.state === GameStates.Ended &&
+			this.state === GameState.ENDED &&
 			this.phase === Phase.NONE &&
 			this.subphase === Subphase.NONE
 		)
@@ -363,7 +371,7 @@ class GameStateManager {
 	 */
 	canStartFirstDay() {
 		return (
-			this.state === GameStates.InProgress &&
+			this.state === GameState.IN_PROGRESS &&
 			this.phase === Phase.NONE &&
 			this.subphase === Subphase.NONE &&
 			this.days_passed === 0
@@ -460,4 +468,4 @@ class GameStateManager {
 	}
 }
 
-module.exports = { GameStateManager, Phase, Subphase };
+module.exports = { GameStateManager, Phase, Subphase, GameState };
