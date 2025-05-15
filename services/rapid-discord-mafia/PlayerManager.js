@@ -1,9 +1,9 @@
 const { getRandomElement } = require("../../utilities/data-structure-utils");
-const { RoleNames, AbilityName } = require("../../modules/enums");
+const { RoleNames } = require("../../modules/enums");
 const Logger = require("./Logger");
 const Player = require("./Player");
 const { Faction } = require("./Role");
-const { AbilityType } = require("./Ability");
+const { AbilityType, AbilityName } = require("./Ability");
 const { Feedback, Announcement } = require("./constants/possible-messages");
 
 class PlayerManager {
@@ -225,7 +225,7 @@ class PlayerManager {
 				attacker_player.role === RoleNames.Vigilante &&
 				target_role.faction === Faction.TOWN
 			) {
-				attacker_player.addAbilityAffectedBy(attacker_player, AbilityName.Suicide, this.game_manager.days_passed - 0.5);
+				attacker_player.addAbilityAffectedBy(attacker_player, AbilityName.SUICIDE, this.game_manager.days_passed - 0.5);
 			}
 		}
 		// Attack Failed
@@ -246,7 +246,7 @@ class PlayerManager {
 
 					this.logger.log(`${protecter_player.name} has protected the victim ${target_player.name}`);
 
-					if (protection_affect.name === AbilityName.Smith) {
+					if (protection_affect.name === AbilityName.SMITH) {
 						this.logger.log(`${protecter_player.name} successfully smithed a vest and achieved their win condition.`);
 
 						protecter_player.addFeedback(Feedback.DID_SUCCESSFUL_SMITH);

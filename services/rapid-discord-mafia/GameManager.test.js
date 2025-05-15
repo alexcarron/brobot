@@ -1,4 +1,4 @@
-const { RoleNames, AbilityName, AbilityArgName } = require("../../modules/enums");
+const { RoleNames, AbilityArgName } = require("../../modules/enums");
 const RapidDiscordMafia = require("./RapidDiscordMafia");
 const {RoleIdentifier, RoleIdentifierKeyword} = require("./RoleIdentifier");
 const GameManager = require("./GameManager");
@@ -9,6 +9,7 @@ const { arraysHaveSameElements } = require("../../utilities/data-structure-utils
 const { Faction, Alignment } = require("./Role");
 const { TrialOutcome } = require("./VoteManager");
 const { Feedback } = require("./constants/possible-messages");
+const { AbilityName } = require("./Ability");
 
 
 describe('GameManager', () => {
@@ -654,7 +655,7 @@ describe('GameManager', () => {
 	// ^ isValidArgValue
 	describe('isValidArgValue', () => {
 		it('SHOULD return NOT true for input framer using frame on mafioso', async () => {
-			const player_framing_arg = abilities[AbilityName.Frame].args[0];
+			const player_framing_arg = abilities[AbilityName.FRAME].args[0];
 			const player_using_ability = new Player({name: "name", isMockPlayer: true});
 			const arg_value = "mafia";
 
@@ -674,7 +675,7 @@ describe('GameManager', () => {
 
 		it('SHOULD return NOT true for input doctor using heal on themselves', async () => {
 
-			const player_framing_arg = abilities[AbilityName.Heal].args[0];
+			const player_framing_arg = abilities[AbilityName.HEAL].args[0];
 			const player_using_ability = new Player({name: "name", role: RoleNames.Doctor,
 			isMockPlayer: true,});
 			const arg_value = "name";
@@ -743,13 +744,13 @@ describe('GameManager', () => {
 			// Night Starts
 
 			mafioso_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Murder),
+				mock_game.ability_manager.getAbility(AbilityName.MURDER),
 				{
 					[AbilityArgName.PlayerKilling]: townie_player.name,
 				}
 			);
 			fool_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.DeathCurse),
+				mock_game.ability_manager.getAbility(AbilityName.DEATH_CURSE),
 				{
 					[AbilityArgName.PlayerKilling]: townie_player.name,
 				}

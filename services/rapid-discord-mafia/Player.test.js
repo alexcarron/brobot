@@ -1,8 +1,9 @@
-const { RoleNames, AbilityName: AbilityName, AbilityArgName } = require("../../modules/enums");
+const { RoleNames, AbilityArgName } = require("../../modules/enums");
 const RapidDiscordMafia = require("./RapidDiscordMafia");
 const { RoleIdentifier } = require("./RoleIdentifier");
 const RoleManager = require("./RoleManager");
 const GameManager = require("./GameManager");
+const { AbilityName } = require("./Ability");
 
 describe('Player', () => {
 	/**
@@ -53,7 +54,7 @@ describe('Player', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			const feedback = kidnapper_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Kidnap),
+				mock_game.ability_manager.getAbility(AbilityName.KIDNAP),
 				{ [AbilityArgName.PlayerKidnapping]: doctor_name },
 			);
 			console.log({feedback})
@@ -77,7 +78,7 @@ describe('Player', () => {
 
 			const isAffectedByKidnap =
 				doctor_player.affected_by.some((affect) => {
-					affect.name === AbilityName.Kidnap;
+					affect.name === AbilityName.KIDNAP;
 				});
 
 			expect(isAffectedByKidnap).toBe(false);

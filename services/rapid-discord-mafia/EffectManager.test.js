@@ -1,7 +1,8 @@
-const { RoleNames, AbilityName, AbilityArgName } = require("../../modules/enums");
+const { RoleNames, AbilityArgName } = require("../../modules/enums");
 const RapidDiscordMafia = require("./RapidDiscordMafia");
 const GameManager = require("./GameManager");
 const { Feedback } = require("./constants/possible-messages");
+const { AbilityName } = require("./Ability");
 
 describe('EffectManager', () => {
 	/**
@@ -36,7 +37,7 @@ describe('EffectManager', () => {
 
 
 			escort_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Roleblock),
+				mock_game.ability_manager.getAbility(AbilityName.ROLEBLOCK),
 				{ [AbilityArgName.PlayerRoleblocking]: RoleNames.Mafioso },
 			);
 
@@ -63,7 +64,7 @@ describe('EffectManager', () => {
 				mafioso_player.affected_by.some(affect => {
 					return (
 						affect.by === escort_player.name &&
-						affect.name === AbilityName.Roleblock
+						affect.name === AbilityName.ROLEBLOCK
 					)
 				})
 			)
@@ -87,7 +88,7 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			escort_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Roleblock),
+				mock_game.ability_manager.getAbility(AbilityName.ROLEBLOCK),
 				{ [AbilityArgName.PlayerRoleblocking]: RoleNames.Escort + "2" },
 			);
 
@@ -128,7 +129,7 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			escort_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Roleblock),
+				mock_game.ability_manager.getAbility(AbilityName.ROLEBLOCK),
 				{ [AbilityArgName.PlayerRoleblocking]: RoleNames.SerialKiller },
 			);
 
@@ -140,7 +141,7 @@ describe('EffectManager', () => {
 			)
 			.toEqual(
 				{
-					name: AbilityName.Knife,
+					name: AbilityName.KNIFE,
 					by: serial_killer_player.name,
 					args: [escort_player.name]
 				}
@@ -178,10 +179,10 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			escort_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Roleblock),
+				mock_game.ability_manager.getAbility(AbilityName.ROLEBLOCK),
 				{ [AbilityArgName.PlayerRoleblocking]: RoleNames.SerialKiller },
 			);
-			serial_killer_player.useAbility(mock_game.ability_manager.getAbility(AbilityName.Cautious));
+			serial_killer_player.useAbility(mock_game.ability_manager.getAbility(AbilityName.CAUTIOUS));
 
 			await mock_game.setPhaseToNextPhase();
 			await mock_game.performCurrentNightAbilities();
@@ -191,7 +192,7 @@ describe('EffectManager', () => {
 			)
 			.not.toEqual(
 				{
-					name: AbilityName.Knife,
+					name: AbilityName.KNIFE,
 					by: serial_killer_player.name,
 					args: [escort_player.name]
 				}
@@ -230,7 +231,7 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			serial_killer_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Cautious)
+				mock_game.ability_manager.getAbility(AbilityName.CAUTIOUS)
 			);
 
 			await mock_game.setPhaseToNextPhase();
@@ -246,7 +247,7 @@ describe('EffectManager', () => {
 				serial_killer_player.affected_by.some(affect => {
 					return (
 						affect.by === serial_killer_player.name &&
-						affect.name === AbilityName.Cautious
+						affect.name === AbilityName.CAUTIOUS
 					)
 				})
 			)
@@ -270,7 +271,7 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			doctor_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Heal),
+				mock_game.ability_manager.getAbility(AbilityName.HEAL),
 				{ [AbilityArgName.PlayerHealing]: mafioso_player.name },
 			);
 
@@ -283,7 +284,7 @@ describe('EffectManager', () => {
 				mafioso_player.affected_by.some(affect => {
 					return (
 						affect.by === doctor_player.name &&
-						affect.name === AbilityName.Heal
+						affect.name === AbilityName.HEAL
 					)
 				})
 			)
@@ -307,7 +308,7 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			doctor_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.HealSelf),
+				mock_game.ability_manager.getAbility(AbilityName.HEAL_SELF),
 			);
 
 			await mock_game.setPhaseToNextPhase();
@@ -319,7 +320,7 @@ describe('EffectManager', () => {
 				doctor_player.affected_by.some(affect => {
 					return (
 						affect.by === doctor_player.name &&
-						affect.name === AbilityName.HealSelf
+						affect.name === AbilityName.HEAL_SELF
 					)
 				})
 			)
@@ -345,7 +346,7 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			blacksmith_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Smith),
+				mock_game.ability_manager.getAbility(AbilityName.SMITH),
 				{ [AbilityArgName.PlayerSmithingFor]: mafioso_player.name },
 			);
 
@@ -358,7 +359,7 @@ describe('EffectManager', () => {
 				mafioso_player.affected_by.some(affect => {
 					return (
 						affect.by === blacksmith_player.name &&
-						affect.name === AbilityName.Smith
+						affect.name === AbilityName.SMITH
 					)
 				})
 			)
@@ -389,7 +390,7 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			blacksmith_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.SelfSmith),
+				mock_game.ability_manager.getAbility(AbilityName.SELF_SMITH),
 			);
 
 			await mock_game.setPhaseToNextPhase();
@@ -401,7 +402,7 @@ describe('EffectManager', () => {
 				blacksmith_player.affected_by.some(affect => {
 					return (
 						affect.by === blacksmith_player.name &&
-						affect.name === AbilityName.SelfSmith
+						affect.name === AbilityName.SELF_SMITH
 					)
 				})
 			)
@@ -425,7 +426,7 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			vigilante_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Shoot),
+				mock_game.ability_manager.getAbility(AbilityName.SHOOT),
 				{ [AbilityArgName.PlayerShooting]: mafioso_player.name },
 			);
 
@@ -441,7 +442,7 @@ describe('EffectManager', () => {
 				mafioso_player.affected_by.some(affect => {
 					return (
 						affect.by === vigilante_player.name &&
-						affect.name === AbilityName.Shoot
+						affect.name === AbilityName.SHOOT
 					)
 				})
 			)
@@ -466,7 +467,7 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			framer_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Frame),
+				mock_game.ability_manager.getAbility(AbilityName.FRAME),
 				{ [AbilityArgName.PlayerFraming]: vigilante_player.name },
 			);
 
@@ -480,7 +481,7 @@ describe('EffectManager', () => {
 				vigilante_player.affected_by.some(affect => {
 					return (
 						affect.by === framer_player.name &&
-						affect.name === AbilityName.Frame
+						affect.name === AbilityName.FRAME
 					)
 				})
 			)
@@ -504,7 +505,7 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			framer_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.SelfFrame)
+				mock_game.ability_manager.getAbility(AbilityName.SELF_FRAME)
 			);
 
 			await mock_game.setPhaseToNextPhase();
@@ -517,7 +518,7 @@ describe('EffectManager', () => {
 				framer_player.affected_by.some(affect => {
 					return (
 						affect.by === framer_player.name &&
-						affect.name === AbilityName.SelfFrame
+						affect.name === AbilityName.SELF_FRAME
 					)
 				})
 			)
@@ -543,7 +544,7 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			executioner_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.FrameTarget)
+				mock_game.ability_manager.getAbility(AbilityName.FRAME_TARGET)
 			);
 
 			await mock_game.setPhaseToNextPhase();
@@ -556,7 +557,7 @@ describe('EffectManager', () => {
 				exe_target_player.affected_by.some(affect => {
 					return (
 						affect.by === executioner_player.name &&
-						affect.name === AbilityName.FrameTarget
+						affect.name === AbilityName.FRAME_TARGET
 					)
 				})
 			)
@@ -583,12 +584,12 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			framer_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Frame),
+				mock_game.ability_manager.getAbility(AbilityName.FRAME),
 				{ [AbilityArgName.PlayerFraming]: doctor_player.name },
 			);
 
 			sheriff_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Evaluate),
+				mock_game.ability_manager.getAbility(AbilityName.EVALUATE),
 				{ [AbilityArgName.PlayerEvaluating]: doctor_player.name },
 			);
 
@@ -601,7 +602,7 @@ describe('EffectManager', () => {
 			expect(
 				doctor_player.affected_by.some(affect => {
 					return (
-						affect.name === AbilityName.Frame
+						affect.name === AbilityName.FRAME
 					)
 				})
 			)
@@ -618,7 +619,7 @@ describe('EffectManager', () => {
 				doctor_player.affected_by.some(affect => {
 					return (
 						affect.by === sheriff_player.name &&
-						affect.name === AbilityName.Evaluate
+						affect.name === AbilityName.EVALUATE
 					)
 				})
 			)
@@ -640,7 +641,7 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			sheriff_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Evaluate),
+				mock_game.ability_manager.getAbility(AbilityName.EVALUATE),
 				{ [AbilityArgName.PlayerEvaluating]: mafioso_player.name },
 			);
 
@@ -672,7 +673,7 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			sheriff_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Evaluate),
+				mock_game.ability_manager.getAbility(AbilityName.EVALUATE),
 				{ [AbilityArgName.PlayerEvaluating]: serial_killer_player.name },
 			);
 
@@ -702,7 +703,7 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			sheriff_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Evaluate),
+				mock_game.ability_manager.getAbility(AbilityName.EVALUATE),
 				{ [AbilityArgName.PlayerEvaluating]: impersonator_player.name },
 			);
 
@@ -736,12 +737,12 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			doctor_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Heal),
+				mock_game.ability_manager.getAbility(AbilityName.HEAL),
 				{ [AbilityArgName.PlayerHealing]: mafioso_player.name }
 			);
 
 			tracker_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Track),
+				mock_game.ability_manager.getAbility(AbilityName.TRACK),
 				{ [AbilityArgName.PlayerTracking]: doctor_player.name },
 			);
 
@@ -759,7 +760,7 @@ describe('EffectManager', () => {
 				doctor_player.affected_by.some(affect => {
 					return (
 						affect.by === tracker_player.name &&
-						affect.name === AbilityName.Track
+						affect.name === AbilityName.TRACK
 					)
 				})
 			)
@@ -783,7 +784,7 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			tracker_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Track),
+				mock_game.ability_manager.getAbility(AbilityName.TRACK),
 				{ [AbilityArgName.PlayerTracking]: doctor_player.name },
 			);
 
@@ -801,7 +802,7 @@ describe('EffectManager', () => {
 				doctor_player.affected_by.some(affect => {
 					return (
 						affect.by === tracker_player.name &&
-						affect.name === AbilityName.Track
+						affect.name === AbilityName.TRACK
 					)
 				})
 			)
@@ -825,12 +826,12 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			tracker_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Track),
+				mock_game.ability_manager.getAbility(AbilityName.TRACK),
 				{ [AbilityArgName.PlayerTracking]: doctor_player.name },
 			);
 
 			doctor_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.HealSelf)
+				mock_game.ability_manager.getAbility(AbilityName.HEAL_SELF)
 			);
 
 			await mock_game.setPhaseToNextPhase();
@@ -847,7 +848,7 @@ describe('EffectManager', () => {
 				doctor_player.affected_by.some(affect => {
 					return (
 						affect.by === tracker_player.name &&
-						affect.name === AbilityName.Track
+						affect.name === AbilityName.TRACK
 					)
 				})
 			)
@@ -873,11 +874,11 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			doctor_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.HealSelf)
+				mock_game.ability_manager.getAbility(AbilityName.HEAL_SELF)
 			);
 
 			lookout_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Lookout),
+				mock_game.ability_manager.getAbility(AbilityName.LOOKOUT),
 				{ [AbilityArgName.PlayerWatching]: doctor_player.name },
 			);
 
@@ -895,7 +896,7 @@ describe('EffectManager', () => {
 				doctor_player.affected_by.some(affect => {
 					return (
 						affect.by === lookout_player.name &&
-						affect.name === AbilityName.Lookout
+						affect.name === AbilityName.LOOKOUT
 					)
 				})
 			)
@@ -919,7 +920,7 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			lookout_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Lookout),
+				mock_game.ability_manager.getAbility(AbilityName.LOOKOUT),
 				{ [AbilityArgName.PlayerWatching]: doctor_player.name },
 			);
 
@@ -937,7 +938,7 @@ describe('EffectManager', () => {
 				doctor_player.affected_by.some(affect => {
 					return (
 						affect.by === lookout_player.name &&
-						affect.name === AbilityName.Lookout
+						affect.name === AbilityName.LOOKOUT
 					)
 				})
 			)
@@ -961,12 +962,12 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			lookout_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Lookout),
+				mock_game.ability_manager.getAbility(AbilityName.LOOKOUT),
 				{ [AbilityArgName.PlayerWatching]: mafioso_player.name },
 			);
 
 			doctor_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Heal),
+				mock_game.ability_manager.getAbility(AbilityName.HEAL),
 				{ [AbilityArgName.PlayerHealing]: mafioso_player.name },
 			);
 
@@ -1000,7 +1001,7 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			consig_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Investigate),
+				mock_game.ability_manager.getAbility(AbilityName.INVESTIGATE),
 				{ [AbilityArgName.PlayerInvestigating]: doctor_player.name },
 			);
 
@@ -1018,7 +1019,7 @@ describe('EffectManager', () => {
 				doctor_player.affected_by.some(affect => {
 					return (
 						affect.by === consig_player.name &&
-						affect.name === AbilityName.Investigate
+						affect.name === AbilityName.INVESTIGATE
 					)
 				})
 			)
@@ -1044,14 +1045,14 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			executioner_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.FrameTarget),
+				mock_game.ability_manager.getAbility(AbilityName.FRAME_TARGET),
 			);
 
 			await mock_game.startDay();
 			await mock_game.startTrial();
 
 			witch_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Control),
+				mock_game.ability_manager.getAbility(AbilityName.CONTROL),
 				{
 					[AbilityArgName.PlayerControlling]: executioner_player.name,
 					[AbilityArgName.PlayerControlledInto]: RoleNames.Mafioso,
@@ -1087,7 +1088,7 @@ describe('EffectManager', () => {
 
 
 			witch_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Control),
+				mock_game.ability_manager.getAbility(AbilityName.CONTROL),
 				{
 					[AbilityArgName.PlayerControlling]: witch2_player.name,
 					[AbilityArgName.PlayerControlledInto]: RoleNames.Mafioso,
@@ -1122,7 +1123,7 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			witch_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Control),
+				mock_game.ability_manager.getAbility(AbilityName.CONTROL),
 				{
 					[AbilityArgName.PlayerControlling]: executioner_player.name,
 					[AbilityArgName.PlayerControlledInto]: RoleNames.Mafioso,
@@ -1136,7 +1137,7 @@ describe('EffectManager', () => {
 				mock_game.abilities_performed[executioner_player.name]
 			)
 			.toEqual({
-				name: AbilityName.FrameTarget,
+				name: AbilityName.FRAME_TARGET,
 				by: executioner_player.name,
 				args: [],
 			});
@@ -1179,7 +1180,7 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			witch_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Control),
+				mock_game.ability_manager.getAbility(AbilityName.CONTROL),
 				{
 					[AbilityArgName.PlayerControlling]: doctor_player.name,
 					[AbilityArgName.PlayerControlledInto]: RoleNames.Mafioso,
@@ -1193,7 +1194,7 @@ describe('EffectManager', () => {
 				mock_game.abilities_performed[doctor_player.name]
 			)
 			.toEqual({
-				name: AbilityName.Heal,
+				name: AbilityName.HEAL,
 				by: doctor_player.name,
 				args: [RoleNames.Mafioso],
 			});
@@ -1241,7 +1242,7 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			oracle_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Observe),
+				mock_game.ability_manager.getAbility(AbilityName.OBSERVE),
 				{
 				[AbilityArgName.PlayerObserving]: doctor_player.name
 			},
@@ -1279,12 +1280,12 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			oracle_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Observe), {
+				mock_game.ability_manager.getAbility(AbilityName.OBSERVE), {
 				[AbilityArgName.PlayerObserving]: doctor_player.name
 			});
 
 			framer_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Frame), {
+				mock_game.ability_manager.getAbility(AbilityName.FRAME), {
 				[AbilityArgName.PlayerFraming]: doctor_player.name
 			});
 
@@ -1295,7 +1296,7 @@ describe('EffectManager', () => {
 			await mock_game.startTrial();
 
 			oracle_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Observe), {
+				mock_game.ability_manager.getAbility(AbilityName.OBSERVE), {
 				[AbilityArgName.PlayerObserving]: doctor_player.name
 			});
 
@@ -1318,7 +1319,7 @@ describe('EffectManager', () => {
 				doctor_player.affected_by.some(affect => {
 					return (
 						affect.by === oracle_player.name &&
-						affect.name === AbilityName.Observe
+						affect.name === AbilityName.OBSERVE
 					)
 				})
 			)
@@ -1343,7 +1344,7 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			oracle_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Observe), {
+				mock_game.ability_manager.getAbility(AbilityName.OBSERVE), {
 				[AbilityArgName.PlayerObserving]: framer_player.name
 			});
 
@@ -1351,7 +1352,7 @@ describe('EffectManager', () => {
 			await mock_game.startTrial();
 
 			oracle_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Observe), {
+				mock_game.ability_manager.getAbility(AbilityName.OBSERVE), {
 				[AbilityArgName.PlayerObserving]: mafioso_player.name
 			});
 
@@ -1372,7 +1373,7 @@ describe('EffectManager', () => {
 				framer_player.affected_by.some(affect => {
 					return (
 						affect.by === oracle_player.name &&
-						affect.name === AbilityName.Observe
+						affect.name === AbilityName.OBSERVE
 					)
 				})
 			)
@@ -1382,7 +1383,7 @@ describe('EffectManager', () => {
 				mafioso_player.affected_by.some(affect => {
 					return (
 						affect.by === oracle_player.name &&
-						affect.name === AbilityName.Observe
+						affect.name === AbilityName.OBSERVE
 					)
 				})
 			)
@@ -1407,7 +1408,7 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			oracle_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Observe), {
+				mock_game.ability_manager.getAbility(AbilityName.OBSERVE), {
 				[AbilityArgName.PlayerObserving]: framer_player.name
 			});
 
@@ -1415,7 +1416,7 @@ describe('EffectManager', () => {
 			await mock_game.startTrial();
 
 			oracle_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Observe), {
+				mock_game.ability_manager.getAbility(AbilityName.OBSERVE), {
 				[AbilityArgName.PlayerObserving]: doctor_player.name
 			});
 
@@ -1436,7 +1437,7 @@ describe('EffectManager', () => {
 				framer_player.affected_by.some(affect => {
 					return (
 						affect.by === oracle_player.name &&
-						affect.name === AbilityName.Observe
+						affect.name === AbilityName.OBSERVE
 					)
 				})
 			)
@@ -1446,7 +1447,7 @@ describe('EffectManager', () => {
 				doctor_player.affected_by.some(affect => {
 					return (
 						affect.by === oracle_player.name &&
-						affect.name === AbilityName.Observe
+						affect.name === AbilityName.OBSERVE
 					)
 				})
 			)
@@ -1471,7 +1472,7 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			impersonator_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Replace), {
+				mock_game.ability_manager.getAbility(AbilityName.REPLACE), {
 				[AbilityArgName.PlayerReplacing]: doctor_player.name
 			});
 
@@ -1499,7 +1500,7 @@ describe('EffectManager', () => {
 				doctor_player.affected_by.some(affect => {
 					return (
 						affect.by === impersonator_player.name &&
-						affect.name === AbilityName.Replace
+						affect.name === AbilityName.REPLACE
 					)
 				})
 			)
@@ -1523,12 +1524,12 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			doctor_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Heal), {
+				mock_game.ability_manager.getAbility(AbilityName.HEAL), {
 				[AbilityArgName.PlayerHealing]: mafioso_player.name
 			});
 
 			impersonator_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Replace), {
+				mock_game.ability_manager.getAbility(AbilityName.REPLACE), {
 				[AbilityArgName.PlayerReplacing]: mafioso_player.name
 			});
 
@@ -1572,7 +1573,7 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			kidnapper_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Kidnap), {
+				mock_game.ability_manager.getAbility(AbilityName.KIDNAP), {
 				[AbilityArgName.PlayerKidnapping]: doctor_player.name
 			});
 
@@ -1602,7 +1603,7 @@ describe('EffectManager', () => {
 				doctor_player.affected_by.some(affect => {
 					return (
 						affect.by === kidnapper_player.name &&
-						affect.name === AbilityName.Kidnap
+						affect.name === AbilityName.KIDNAP
 					)
 				})
 			)
@@ -1625,7 +1626,7 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			kidnapper_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Kidnap), {
+				mock_game.ability_manager.getAbility(AbilityName.KIDNAP), {
 				[AbilityArgName.PlayerKidnapping]: vigilante_player.name
 			});
 
@@ -1670,7 +1671,7 @@ describe('EffectManager', () => {
 			await mock_game.startNight(mock_game.days_passed);
 
 			kidnapper_player.useAbility(
-				mock_game.ability_manager.getAbility(AbilityName.Kidnap), {
+				mock_game.ability_manager.getAbility(AbilityName.KIDNAP), {
 				[AbilityArgName.PlayerKidnapping]: escort_player.name
 			});
 

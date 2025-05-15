@@ -1,34 +1,5 @@
 
 const Enums = {
-
-	AbilityName: {
-		Knife: "Knife",
-		Murder: "Murder",
-		Suicide: "Suicide",
-		Smith: "Smith",
-		SelfSmith: "Self Smith",
-		Kidnap: "Kidnap",
-		Track: "Track",
-		Lookout: "Lookout",
-		Nothing: "Nothing",
-		DeathCurse: "Death Curse",
-		Heal: "Heal",
-		HealSelf: "Heal Self",
-		Roleblock: "Roleblock",
-		Cautious: "Cautious",
-		Shoot: "Shoot",
-		Frame: "Frame",
-		SelfFrame: "Self Frame",
-		FrameTarget: "Frame Target",
-		Evaluate: "Evaluate",
-		Investigate: "Investigate",
-		Consort: "Consort",
-		SelfVest: "Self Vest",
-		Control: "Control",
-		Observe: "Observe",
-		Replace: "Replace",
-	},
-
 	AbilityArgName: {
 		PlayerKidnapping: "Player Kidnapping",
 		PlayerKilling: "Player Killing",

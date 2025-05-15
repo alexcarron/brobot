@@ -1,6 +1,6 @@
-const { AbilityName, AbilityArgName, } = require("../../modules/enums");
+const { AbilityArgName, } = require("../../modules/enums");
 const { EffectName } = require("./EffectManager");
-const { Ability, AbilityUseCount, AbilityType, AbilityPriority, AbilityDuration } = require("./Ability");
+const { Ability, AbilityUseCount, AbilityType, AbilityPriority, AbilityDuration, AbilityName } = require("./Ability");
 const {Arg, AbilityArgType, ArgumentSubtype} = require("./Arg");
 const { Phase } = require("./GameStateManager");
 

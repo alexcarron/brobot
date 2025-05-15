@@ -1,6 +1,37 @@
 const { Arg } = require("./Arg.js");
 
 /**
+ * Enum of possible names of an Ability
+ */
+const AbilityName = Object.freeze({
+	KNIFE: "Knife",
+	MURDER: "Murder",
+	SUICIDE: "Suicide",
+	SMITH: "Smith",
+	SELF_SMITH: "Self Smith",
+	KIDNAP: "Kidnap",
+	TRACK: "Track",
+	LOOKOUT: "Lookout",
+	NOTHING: "Nothing",
+	DEATH_CURSE: "Death Curse",
+	HEAL: "Heal",
+	HEAL_SELF: "Heal Self",
+	ROLEBLOCK: "Roleblock",
+	CAUTIOUS: "Cautious",
+	SHOOT: "Shoot",
+	FRAME: "Frame",
+	SELF_FRAME: "Self Frame",
+	FRAME_TARGET: "Frame Target",
+	EVALUATE: "Evaluate",
+	INVESTIGATE: "Investigate",
+	CONSORT: "Consort",
+	SELF_VEST: "Self Vest",
+	CONTROL: "Control",
+	OBSERVE: "Observe",
+	REPLACE: "Replace",
+});
+
+/**
  * Enum of possible types of an Ability
  */
 const AbilityType = Object.freeze({
@@ -205,4 +236,4 @@ class Ability {
 	}
 }
 
-module.exports = {Ability, AbilityUseCount, AbilityType, AbilityPriority, AbilityDuration};
+module.exports = {Ability, AbilityName, AbilityUseCount, AbilityType, AbilityPriority, AbilityDuration};

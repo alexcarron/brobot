@@ -1,5 +1,6 @@
 const { RoleNames } = require("../../modules/enums.js");
-const { abilities, AbilityName } = require("./AbilityManager.js");
+const { AbilityName } = require("./Ability.js");
+const { abilities } = require("./AbilityManager.js");
 const {Role, Goal, Faction, Alignment, Immunity} = require("./Role.js");
 
 class RoleManager {
@@ -22,8 +23,8 @@ class RoleManager {
 			defense: 0,
 			goal: Goal.ELIMINATE_OTHER_FACTIONS,
 			abilities: [
-				abilities[AbilityName.Heal],
-				abilities[AbilityName.HealSelf],
+				abilities[AbilityName.HEAL],
+				abilities[AbilityName.HEAL_SELF],
 			]
 		}),
 		[RoleNames.Sheriff]: new Role({
@@ -34,7 +35,7 @@ class RoleManager {
 			defense: 0,
 			goal: Goal.ELIMINATE_OTHER_FACTIONS,
 			abilities: [
-				abilities[AbilityName.Evaluate],
+				abilities[AbilityName.EVALUATE],
 			]
 		}),
 		[RoleNames.Tracker]: new Role({
@@ -45,7 +46,7 @@ class RoleManager {
 			defense: 0,
 			goal: Goal.ELIMINATE_OTHER_FACTIONS,
 			abilities: [
-				abilities[AbilityName.Track],
+				abilities[AbilityName.TRACK],
 			]
 		}),
 		[RoleNames.Lookout]: new Role({
@@ -56,7 +57,7 @@ class RoleManager {
 			defense: 0,
 			goal: Goal.ELIMINATE_OTHER_FACTIONS,
 			abilities: [
-				abilities[AbilityName.Lookout],
+				abilities[AbilityName.LOOKOUT],
 			]
 		}),
 		[RoleNames.Escort]: new Role({
@@ -68,7 +69,7 @@ class RoleManager {
 			defense: 0,
 			goal: Goal.ELIMINATE_OTHER_FACTIONS,
 			abilities: [
-				abilities[AbilityName.Roleblock],
+				abilities[AbilityName.ROLEBLOCK],
 			]
 		}),
 		[RoleNames.Vigilante]: new Role({
@@ -79,7 +80,7 @@ class RoleManager {
 			defense: 0,
 			goal: Goal.ELIMINATE_OTHER_FACTIONS,
 			abilities: [
-				abilities[AbilityName.Shoot],
+				abilities[AbilityName.SHOOT],
 			],
 			notes: "If you shoot a town player, you will shoot yourself the next night with an attack level of four."
 		}),
@@ -107,7 +108,7 @@ class RoleManager {
 			defense: 0,
 			goal: Goal.ELIMINATE_OTHER_FACTIONS,
 			abilities: [
-				abilities[AbilityName.Murder],
+				abilities[AbilityName.MURDER],
 			],
 			notes: "If you are not alive, a random mafia member will be converted to the Mafioso and take your place."
 		}),
@@ -119,7 +120,7 @@ class RoleManager {
 			defense: 0,
 			goal: Goal.ELIMINATE_OTHER_FACTIONS,
 			abilities: [
-				abilities[AbilityName.Frame],
+				abilities[AbilityName.FRAME],
 			]
 		}),
 		[RoleNames.Consort]: new Role({
@@ -131,7 +132,7 @@ class RoleManager {
 			defense: 0,
 			goal: Goal.ELIMINATE_OTHER_FACTIONS,
 			abilities: [
-				abilities[AbilityName.Consort],
+				abilities[AbilityName.CONSORT],
 			]
 		}),
 		[RoleNames.Consigliere]: new Role({
@@ -142,7 +143,7 @@ class RoleManager {
 			defense: 0,
 			goal: Goal.ELIMINATE_OTHER_FACTIONS,
 			abilities: [
-				abilities[AbilityName.Investigate],
+				abilities[AbilityName.INVESTIGATE],
 			]
 		}),
 		[RoleNames.Kidnapper]: new Role({
@@ -153,7 +154,7 @@ class RoleManager {
 			defense: 0,
 			goal: Goal.ELIMINATE_OTHER_FACTIONS,
 			abilities: [
-				abilities[AbilityName.Kidnap],
+				abilities[AbilityName.KIDNAP],
 			]
 		}),
 		[RoleNames.Fool]: new Role({
@@ -164,8 +165,8 @@ class RoleManager {
 			defense: 0,
 			goal: Goal.BE_LYNCHED,
 			abilities: [
-				abilities[AbilityName.SelfFrame],
-				abilities[AbilityName.DeathCurse],
+				abilities[AbilityName.SELF_FRAME],
+				abilities[AbilityName.DEATH_CURSE],
 			],
 		}),
 		[RoleNames.Executioner]: new Role({
@@ -176,7 +177,7 @@ class RoleManager {
 			defense: 1,
 			goal: Goal.GET_TARGET_LYNCHED,
 			abilities: [
-				abilities[AbilityName.FrameTarget],
+				abilities[AbilityName.FRAME_TARGET],
 			],
 			"notes": "At the beginning of the game, you will be given a town player target that you must try to get lynched before the end of the game. If your target dies before then, you'll become a Fool."
 		}),
@@ -188,7 +189,7 @@ class RoleManager {
 			defense: 0,
 			goal: Goal.SURVIVE,
 			abilities: [
-				abilities[AbilityName.SelfVest],
+				abilities[AbilityName.SELF_VEST],
 			]
 		}),
 		[RoleNames.SerialKiller]: new Role({
@@ -200,8 +201,8 @@ class RoleManager {
 			defense: 1,
 			goal: Goal.SURVIVE_ELIMINATED_OTHER_FACTIONS,
 			abilities: [
-				abilities[AbilityName.Knife],
-				abilities[AbilityName.Cautious],
+				abilities[AbilityName.KNIFE],
+				abilities[AbilityName.CAUTIOUS],
 			],
 			"notes": "You'll automatically attack anybody who roleblocks you instead of your original target."
 		}),
@@ -213,8 +214,8 @@ class RoleManager {
 			defense: 0,
 			goal: Goal.SAVE_PLAYER_WITH_VEST,
 			abilities: [
-				abilities[AbilityName.Smith],
-				abilities[AbilityName.SelfSmith],
+				abilities[AbilityName.SMITH],
+				abilities[AbilityName.SELF_SMITH],
 			],
 		}),
 		[RoleNames.Witch]: new Role({
@@ -226,7 +227,7 @@ class RoleManager {
 			goal: Goal.SURVIVE_UNTIL_TOWN_LOSES,
 			immunities: [Immunity.ROLEBLOCK, Immunity.CONTROL],
 			abilities: [
-				abilities[AbilityName.Control],
+				abilities[AbilityName.CONTROL],
 			],
 		}),
 		[RoleNames.Oracle]: new Role({
@@ -237,7 +238,7 @@ class RoleManager {
 			defense: 0,
 			goal: Goal.ELIMINATE_OTHER_FACTIONS,
 			abilities: [
-				abilities[AbilityName.Observe],
+				abilities[AbilityName.OBSERVE],
 			],
 		}),
 		[RoleNames.Impersonator]: new Role({
@@ -248,7 +249,7 @@ class RoleManager {
 			defense: 0,
 			goal: Goal.DO_GOAL_OF_REPLACED_PLAYER,
 			abilities: [
-				abilities[AbilityName.Replace],
+				abilities[AbilityName.REPLACE],
 			],
 		}),
 	}
