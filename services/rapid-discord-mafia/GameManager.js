@@ -1,4 +1,4 @@
-const { MessageDelays, RDMRoles, RoleNames, PhaseWaitTimes, RoleIdentifierTypes, CoinRewards, } = require("../../modules/enums.js");
+const { MessageDelays, RDMRoles, RoleNames, PhaseWaitTimes, CoinRewards, } = require("../../modules/enums.js");
 const ids = require("../../bot-config/discord-ids.js");
 const { PermissionFlagsBits, Role, Interaction } = require("discord.js");
 const Death = require("./Death.js");
@@ -21,6 +21,7 @@ const { Goal, Faction } = require("./Role.js");
 // const Logger = require("./Logger.js");
 const { Phase } = require("./GameStateManager.js");
 const { Announcement, Feedback } = require("./constants/possible-messages.js");
+const { RoleIdentifierType } = require("./RoleIdentifier.js");
 
 class GameManager {
 	/**
@@ -354,7 +355,7 @@ class GameManager {
 
 		let possible_roles = role_identifier.getPossibleRoles();
 
-		if (role_identifier.type === RoleIdentifierTypes.AnyRole) {
+		if (role_identifier.type === RoleIdentifierType.ANY_ROLE) {
 
 			// ! Filter out existing factions if we need an opposing faction
 			if (needOpposingFactions) {
@@ -401,7 +402,7 @@ class GameManager {
 				)
 			);
 		}
-		else if ([RoleIdentifierTypes.RandomRoleInFaction, RoleIdentifierTypes.RandomRoleInFactionAlignment].includes(role_identifier.type)) {
+		else if ([RoleIdentifierType.RANDOM_ROLE_IN_FACTION, RoleIdentifierType.RANDOM_ROLE_IN_FACTION_ALIGNMENT].includes(role_identifier.type)) {
 			// ! Filter out existing factions if we need an opposing faction
 			const old_possible_roles = possible_roles;
 			if (needOpposingFactions) {

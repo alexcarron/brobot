@@ -1,6 +1,6 @@
 const Contestant = require("./Contestant");
 const Logger = require("./Logger.js");
-const RoleIdentifier = require("./RoleIdentifier.js");
+const { RoleIdentifier } = require("./RoleIdentifier.js");
 const RoleManager = require("./RoleManager.js");
 const DiscordLogger = require("./DiscordLogger.js");
 const ids = require("../../bot-config/discord-ids.js");

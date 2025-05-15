@@ -1,6 +1,6 @@
-const { RoleNames, RoleIdentifierKeywords, RoleIdentifierTypes, RoleIdentifierPriorities } = require("../../modules/enums");
+const { RoleNames } = require("../../modules/enums");
 const { Faction, Alignment } = require("./Role");
-const RoleIdentifier = require("./RoleIdentifier");
+const { RoleIdentifier, RoleIdentifierPriority, RoleIdentifierType, RoleIdentifierKeyword } = require("./RoleIdentifier");
 const RoleManager = require("./RoleManager");
 
 // ^ RoleIdentifier Constructor
@@ -11,8 +11,8 @@ const RoleManager = require("./RoleManager");
 		const input_role_identifier_str = RoleNames.Mafioso;
 		const expected_obj = {
 			name: RoleNames.Mafioso,
-			type: RoleIdentifierTypes.SpecificRole,
-			priority: RoleIdentifierPriorities.SpecificRole,
+			type: RoleIdentifierType.SPECIFIC_ROLE,
+			priority: RoleIdentifierPriority.SPECIFIC_ROLE,
 		};
 
 		const actual_obj = new RoleIdentifier(input_role_identifier_str)
@@ -30,8 +30,8 @@ test.concurrent(
 
 		const expected_obj = {
 			name: input_role_identifier_str,
-			type: RoleIdentifierTypes.RandomRoleInFactionAlignment,
-			priority: RoleIdentifierPriorities.RandomRoleInFactionAlignment,
+			type: RoleIdentifierType.RANDOM_ROLE_IN_FACTION_ALIGNMENT,
+			priority: RoleIdentifierPriority.RANDOM_ROLE_IN_FACTION_ALIGNMENT,
 		};
 
 		const actual_obj = new RoleIdentifier(input_role_identifier_str)
@@ -45,12 +45,12 @@ test.concurrent(
 test.concurrent(
 	"RoleIdentifier Constructor for Random Town failed",
 	() => {
-		const input_role_identifier_str = `${RoleIdentifierKeywords.Random} ${Faction.TOWN}`;
+		const input_role_identifier_str = `${RoleIdentifierKeyword.RANDOM} ${Faction.TOWN}`;
 
 		const expected_obj = {
 			name: input_role_identifier_str,
-			type: RoleIdentifierTypes.RandomRoleInFaction,
-			priority: RoleIdentifierPriorities.RandomRoleInFaction,
+			type: RoleIdentifierType.RANDOM_ROLE_IN_FACTION,
+			priority: RoleIdentifierPriority.RANDOM_ROLE_IN_FACTION,
 		};
 
 		const actual_obj = new RoleIdentifier(input_role_identifier_str)
@@ -64,12 +64,12 @@ test.concurrent(
 test.concurrent(
 	"RoleIdentifier Constructor for Mafia Random failed",
 	() => {
-		const input_role_identifier_str = `${Faction.MAFIA} ${RoleIdentifierKeywords.Random}`;
+		const input_role_identifier_str = `${Faction.MAFIA} ${RoleIdentifierKeyword.RANDOM}`;
 
 		const expected_obj = {
 			name: input_role_identifier_str,
-			type: RoleIdentifierTypes.RandomRoleInFaction,
-			priority: RoleIdentifierPriorities.RandomRoleInFaction,
+			type: RoleIdentifierType.RANDOM_ROLE_IN_FACTION,
+			priority: RoleIdentifierPriority.RANDOM_ROLE_IN_FACTION,
 		};
 
 		const actual_obj = new RoleIdentifier(input_role_identifier_str)
@@ -83,12 +83,12 @@ test.concurrent(
 test.concurrent(
 	"RoleIdentifier Constructor for Any failed",
 	() => {
-		const input_role_identifier_str = RoleIdentifierKeywords.Any;
+		const input_role_identifier_str = RoleIdentifierKeyword.ANY;
 
 		const expected_obj = {
 			name: input_role_identifier_str,
-			type: RoleIdentifierTypes.AnyRole,
-			priority: RoleIdentifierPriorities.AnyRole,
+			type: RoleIdentifierType.ANY_ROLE,
+			priority: RoleIdentifierPriority.ANY_ROLE,
 		};
 
 		const actual_obj = new RoleIdentifier(input_role_identifier_str)
@@ -105,7 +105,7 @@ test.concurrent(
 	test.concurrent(
 		"isValidIdentfierStr SHOULD return false for \"Random\"",
 		() => {
-			const input_identfier_str = RoleIdentifierKeywords.Random;
+			const input_identfier_str = RoleIdentifierKeyword.RANDOM;
 			const expected_output = false;
 
 			const actual_output = RoleIdentifier.isValidIdentifierStr(input_identfier_str)
@@ -117,7 +117,7 @@ test.concurrent(
 	test.concurrent(
 		"isValidIdentfierStr SHOULD return true for \"any\"",
 		() => {
-			const input_identfier_str = RoleIdentifierKeywords.Any.toLowerCase();
+			const input_identfier_str = RoleIdentifierKeyword.ANY.toLowerCase();
 			const expected_output = true;
 
 			const actual_output = RoleIdentifier.isValidIdentifierStr(input_identfier_str)
@@ -153,7 +153,7 @@ test.concurrent(
 	test.concurrent(
 		"isValidIdentfierStr SHOULD return false for \"Any Town\"",
 		() => {
-			const input_identfier_str = `${RoleIdentifierKeywords.Any} Town`;
+			const input_identfier_str = `${RoleIdentifierKeyword.ANY} Town`;
 			const expected_output = false;
 
 			const actual_output = RoleIdentifier.isValidIdentifierStr(input_identfier_str)
@@ -177,7 +177,7 @@ test.concurrent(
 	test.concurrent(
 		"isValidIdentfierStr SHOULD return false for \"Random Killing\"",
 		() => {
-			const input_identfier_str = `${RoleIdentifierKeywords.Random} ${Alignment.KILLING}`;
+			const input_identfier_str = `${RoleIdentifierKeyword.RANDOM} ${Alignment.KILLING}`;
 			const expected_output = false;
 
 			const actual_output = RoleIdentifier.isValidIdentifierStr(input_identfier_str)
@@ -355,7 +355,7 @@ test.concurrent(
 	test.concurrent(
 		".getPossibleRoles() on Neutral Random SHOULD return just Neutral Roles",
 		() => {
-			const input_role_identifier = new RoleIdentifier(`${Faction.NEUTRAL} ${RoleIdentifierKeywords.Random}`);
+			const input_role_identifier = new RoleIdentifier(`${Faction.NEUTRAL} ${RoleIdentifierKeyword.RANDOM}`);
 			const expected_output = RoleManager.getListOfRoles().filter(role => role.faction === Faction.NEUTRAL);
 
 			const actual_output = input_role_identifier.getPossibleRoles()
@@ -367,7 +367,7 @@ test.concurrent(
 	test.concurrent(
 		".getPossibleRoles() on Any SHOULD return all roles but Town Crowd",
 		() => {
-			const input_role_identifier = new RoleIdentifier(`${RoleIdentifierKeywords.Any}`);
+			const input_role_identifier = new RoleIdentifier(`${RoleIdentifierKeyword.ANY}`);
 			const expected_output = RoleManager.getListOfRoles().filter(role => !(role.faction === Faction.TOWN && role.alignment === Alignment.CROWD));
 
 			const actual_output = input_role_identifier.getPossibleRoles()
@@ -382,16 +382,16 @@ test.concurrent(
 	"RoleIdentifiers.compare() SHOULD sort by priority",
 	() => {
 		const input_role_identifiers = [
-			new RoleIdentifier(`${RoleIdentifierKeywords.Random} ${Faction.TOWN}`),
-			new RoleIdentifier(`${RoleIdentifierKeywords.Any}`),
+			new RoleIdentifier(`${RoleIdentifierKeyword.RANDOM} ${Faction.TOWN}`),
+			new RoleIdentifier(`${RoleIdentifierKeyword.ANY}`),
 			new RoleIdentifier(`${Faction.TOWN} ${Alignment.KILLING} `),
 			new RoleIdentifier(RoleNames.Mafioso),
 		]
 		const expected_role_identifiers = [
 			new RoleIdentifier(RoleNames.Mafioso),
 			new RoleIdentifier(`${Faction.TOWN} ${Alignment.KILLING} `),
-			new RoleIdentifier(`${RoleIdentifierKeywords.Random} ${Faction.TOWN}`),
-			new RoleIdentifier(`${RoleIdentifierKeywords.Any}`),
+			new RoleIdentifier(`${RoleIdentifierKeyword.RANDOM} ${Faction.TOWN}`),
+			new RoleIdentifier(`${RoleIdentifierKeyword.ANY}`),
 		]
 
 		const actual_role_identifiers = input_role_identifiers.sort(RoleIdentifier.compare)
@@ -432,7 +432,7 @@ describe('.getPriority()', () => {
 
 	it('SHOULD return 3 for input random_neutral_role_identifier', () => {
 		const random_neutral_role_identifier = new RoleIdentifier(
-			`${RoleIdentifierKeywords.Random} ${Faction.NEUTRAL}`
+			`${RoleIdentifierKeyword.RANDOM} ${Faction.NEUTRAL}`
 		);
 
 		expect(random_neutral_role_identifier.priority)
@@ -440,7 +440,7 @@ describe('.getPriority()', () => {
 	});
 
 	it('SHOULD return 4 for input any_role_identifier', () => {
-		const any_role_identifier = new RoleIdentifier(RoleIdentifierKeywords.Any);
+		const any_role_identifier = new RoleIdentifier(RoleIdentifierKeyword.ANY);
 
 		expect(any_role_identifier.priority)
 		.toStrictEqual(4);

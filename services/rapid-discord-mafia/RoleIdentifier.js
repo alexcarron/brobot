@@ -1,6 +1,33 @@
-const { RoleIdentifierTypes, RoleIdentifierKeywords, RoleIdentifierPriorities, } = require("../../modules/enums");
 const { Faction, Alignment } = require("./Role");
 const RoleManager = require("./RoleManager");
+
+/**
+ * Enum of possible unique role identfier keywords
+ */
+const RoleIdentifierKeyword = Object.freeze({
+	RANDOM: "Random",
+	ANY: "Any",
+});
+
+/**
+ * Enum of possible role identifier types
+ */
+const RoleIdentifierType = Object.freeze({
+	SPECIFIC_ROLE: "role",
+	RANDOM_ROLE_IN_FACTION_ALIGNMENT: "faction alignment",
+	RANDOM_ROLE_IN_FACTION: "faction",
+	ANY_ROLE: "any"
+});
+
+/**
+ * Enum of possible priority values for role identifiers by their type
+ */
+const RoleIdentifierPriority = Object.freeze({
+	SPECIFIC_ROLE: 1,
+	RANDOM_ROLE_IN_FACTION_ALIGNMENT: 2,
+	RANDOM_ROLE_IN_FACTION: 3,
+	ANY_ROLE: 4
+});
 
 class RoleIdentifier {
 	name;
@@ -26,26 +53,26 @@ class RoleIdentifier {
 				role_identifier_str.toLowerCase().includes(role_name.toLowerCase())
 			)
 		) {
-			return RoleIdentifierTypes.SpecificRole;
+			return RoleIdentifierType.SPECIFIC_ROLE;
 		}
 		else if (
 			Object.values(Faction).some(faction =>
 				role_identifier_str.toLowerCase().includes(faction.toLowerCase())
 			)
 		) {
-			if (role_identifier_str.toLowerCase().includes(RoleIdentifierKeywords.Random.toLowerCase()))
-				return RoleIdentifierTypes.RandomRoleInFaction
+			if (role_identifier_str.toLowerCase().includes(RoleIdentifierKeyword.RANDOM.toLowerCase()))
+				return RoleIdentifierType.RANDOM_ROLE_IN_FACTION
 			else if (
 				Object.values(Alignment).some(alignment =>
 					role_identifier_str.toLowerCase().includes(alignment.toLowerCase())
 				)
 			)
-				return RoleIdentifierTypes.RandomRoleInFactionAlignment
+				return RoleIdentifierType.RANDOM_ROLE_IN_FACTION_ALIGNMENT
 			else
 				return undefined
 		}
-		else if ( role_identifier_str.toLowerCase() === RoleIdentifierKeywords.Any.toLowerCase() ) {
-			return RoleIdentifierTypes.AnyRole
+		else if ( role_identifier_str.toLowerCase() === RoleIdentifierKeyword.ANY.toLowerCase() ) {
+			return RoleIdentifierType.ANY_ROLE
 		}
 		else {
 			return undefined;
@@ -60,7 +87,7 @@ class RoleIdentifier {
 			return RoleManager.isRoleInPossibleFaction(role)
 		})
 
-		if (!canIncludeRoleInFaction && this.type !== RoleIdentifierTypes.SpecificRole)
+		if (!canIncludeRoleInFaction && this.type !== RoleIdentifierType.SPECIFIC_ROLE)
 			priority += 4;
 
 		return priority;
@@ -69,7 +96,7 @@ class RoleIdentifier {
 	static getPriorityFromType(type) {
 		let role_identifier_priority_key;
 
-		Object.entries(RoleIdentifierTypes).forEach(entry => {
+		Object.entries(RoleIdentifierType).forEach(entry => {
 			const [role_identifier_type_key, role_identifier_type] = entry;
 
 			if (role_identifier_type === type) {
@@ -77,7 +104,7 @@ class RoleIdentifier {
 			}
 		});
 
-		return RoleIdentifierPriorities[role_identifier_priority_key];
+		return RoleIdentifierPriority[role_identifier_priority_key];
 	}
 
 	/**
@@ -96,7 +123,7 @@ class RoleIdentifier {
 	}
 
 	getFaction() {
-		if ([RoleIdentifierTypes.AnyRole, RoleIdentifierTypes.SpecificRole].includes(this.type)) {
+		if ([RoleIdentifierType.ANY_ROLE, RoleIdentifierType.SPECIFIC_ROLE].includes(this.type)) {
 			return undefined
 		}
 		else {
@@ -109,7 +136,7 @@ class RoleIdentifier {
 	}
 
 	getAlignment() {
-		if ([RoleIdentifierTypes.AnyRole, RoleIdentifierTypes.SpecificRole, RoleIdentifierTypes.RandomRoleInFaction].includes(this.type)) {
+		if ([RoleIdentifierType.ANY_ROLE, RoleIdentifierType.SPECIFIC_ROLE, RoleIdentifierType.RANDOM_ROLE_IN_FACTION].includes(this.type)) {
 			return undefined
 		}
 		else {
@@ -124,10 +151,10 @@ class RoleIdentifier {
 	getPossibleRoles() {
 		let possible_roles = [];
 
-		if (this.type === RoleIdentifierTypes.SpecificRole) {
+		if (this.type === RoleIdentifierType.SPECIFIC_ROLE) {
 			possible_roles = [RoleManager.getListOfRoles().find(role => role.name.toLowerCase() === this.name.toLowerCase())];
 		}
-		else if (this.type === RoleIdentifierTypes.RandomRoleInFactionAlignment) {
+		else if (this.type === RoleIdentifierType.RANDOM_ROLE_IN_FACTION_ALIGNMENT) {
 			possible_roles = RoleManager.getListOfRoles().filter( role_checking => {
 				return (
 					role_checking.faction === this.getFaction() &&
@@ -135,7 +162,7 @@ class RoleIdentifier {
 				)
 			});
 		}
-		else if (this.type === RoleIdentifierTypes.RandomRoleInFaction) {
+		else if (this.type === RoleIdentifierType.RANDOM_ROLE_IN_FACTION) {
 			possible_roles = RoleManager.getListOfRoles().filter( role_checking => {
 				return (
 					role_checking.faction === this.getFaction() &&
@@ -143,7 +170,7 @@ class RoleIdentifier {
 				)
 			});
 		}
-		else if (this.type === RoleIdentifierTypes.AnyRole) {
+		else if (this.type === RoleIdentifierType.ANY_ROLE) {
 			possible_roles = RoleManager.getListOfRoles().filter(role => !(role.faction === Faction.TOWN && role.alignment === Alignment.CROWD));
 		}
 
@@ -151,4 +178,4 @@ class RoleIdentifier {
 	}
 }
 
-module.exports = RoleIdentifier;
+module.exports = {RoleIdentifier, RoleIdentifierKeyword, RoleIdentifierType, RoleIdentifierPriority};

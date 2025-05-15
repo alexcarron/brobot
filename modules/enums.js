@@ -1,26 +1,5 @@
-const ids = require("../bot-config/discord-ids.js");
-const { createListFromWords } = require("../utilities/text-formatting-utils.js");
-const { createNowUnixTimestamp } = require("../utilities/date-time-utils.js");
 
 const Enums = {
-	RoleIdentifierKeywords: {
-		Random: "Random",
-		Any: "Any",
-	},
-
-	RoleIdentifierTypes: {
-		SpecificRole: "role",
-		RandomRoleInFaction: "faction",
-		RandomRoleInFactionAlignment: "faction alignment",
-		AnyRole: "any"
-	},
-
-	RoleIdentifierPriorities: {
-		SpecificRole: 1,
-		RandomRoleInFactionAlignment: 2,
-		RandomRoleInFaction: 3,
-		AnyRole: 4
-	},
 
 	AbilityName: {
 		Knife: "Knife",

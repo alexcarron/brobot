@@ -1,6 +1,6 @@
-const { RoleNames, RoleIdentifierKeywords, AbilityName, AbilityArgName } = require("../../modules/enums");
+const { RoleNames, AbilityName, AbilityArgName } = require("../../modules/enums");
 const RapidDiscordMafia = require("./RapidDiscordMafia");
-const RoleIdentifier = require("./RoleIdentifier");
+const {RoleIdentifier, RoleIdentifierKeyword} = require("./RoleIdentifier");
 const GameManager = require("./GameManager");
 const Player = require("./Player");
 const RoleManager = require("./RoleManager");
@@ -56,7 +56,7 @@ describe('GameManager', () => {
 					[
 						Faction.NEUTRAL + " " + Alignment.BENIGN,
 						Faction.NEUTRAL + " " + Alignment.KILLING,
-						Faction.TOWN + " " + RoleIdentifierKeywords.Random,
+						Faction.TOWN + " " + RoleIdentifierKeyword.RANDOM,
 					]
 				);
 				await rdm_game.createRoleList();
@@ -79,8 +79,8 @@ describe('GameManager', () => {
 				rdm_game.role_identifiers = RoleIdentifier.convertIdentifierStrings(
 					[
 						Faction.NEUTRAL + " " + Alignment.BENIGN,
-						Faction.MAFIA + " " + RoleIdentifierKeywords.Random,
-						Faction.TOWN + " " + RoleIdentifierKeywords.Random,
+						Faction.MAFIA + " " + RoleIdentifierKeyword.RANDOM,
+						Faction.TOWN + " " + RoleIdentifierKeyword.RANDOM,
 					]
 				);
 				await rdm_game.createRoleList();
@@ -168,11 +168,11 @@ describe('GameManager', () => {
 		test.concurrent(
 			`.getRoleFromRoleIdentifier(RoleIdentifier("Town Random")) SHOULD return role in Town faction`,
 			async () => {
-				const input_identifier = new RoleIdentifier(`${Faction.TOWN} ${RoleIdentifierKeywords.Random}`);
+				const input_identifier = new RoleIdentifier(`${Faction.TOWN} ${RoleIdentifierKeyword.RANDOM}`);
 				const existing_role_list = [];
 				const existing_role_identifiers = RoleIdentifier.convertIdentifierStrings(
 					[
-						`${Faction.TOWN} ${RoleIdentifierKeywords.Random}`
+						`${Faction.TOWN} ${RoleIdentifierKeyword.RANDOM}`
 					]
 				);
 
@@ -290,7 +290,7 @@ describe('GameManager', () => {
 		test.concurrent(
 			`.getPossibleRolesFromIdentifier(RoleIdentifier("Neutral Random")) SHOULD return list of roles in Neutral faction when we already have opposing factions`,
 			async () => {
-				const input_identifier = new RoleIdentifier(`${Faction.NEUTRAL} ${RoleIdentifierKeywords.Random}`);
+				const input_identifier = new RoleIdentifier(`${Faction.NEUTRAL} ${RoleIdentifierKeyword.RANDOM}`);
 				const existing_role_list = [
 					RoleNames.Mafioso,
 					RoleNames.Doctor,
@@ -303,7 +303,7 @@ describe('GameManager', () => {
 					[
 						RoleNames.Mafioso,
 						RoleNames.Doctor,
-						`${Faction.NEUTRAL} ${RoleIdentifierKeywords.Random}`
+						`${Faction.NEUTRAL} ${RoleIdentifierKeyword.RANDOM}`
 					]
 				);
 
@@ -324,12 +324,12 @@ describe('GameManager', () => {
 		test.concurrent(
 			`.getPossibleRolesFromIdentifier(Any, {}) SHOULD not return any Town Crowd roles or Mafia that isn't Mafioso when we have no roles`,
 			async () => {
-				const input_identifier = new RoleIdentifier(RoleIdentifierKeywords.Any);
+				const input_identifier = new RoleIdentifier(RoleIdentifierKeyword.ANY);
 				const existing_role_list = [
 				];
 				const existing_role_identifiers = RoleIdentifier.convertIdentifierStrings(
 					[
-						RoleIdentifierKeywords.Any,
+						RoleIdentifierKeyword.ANY,
 					]
 				);
 
@@ -360,7 +360,7 @@ describe('GameManager', () => {
 		test.concurrent(
 			`.getPossibleRolesFromIdentifier(Any) SHOULD not return any mafia roles if adding mafia would exceed mafia town max ratio`,
 			async () => {
-				const input_identifier = new RoleIdentifier(RoleIdentifierKeywords.Any);
+				const input_identifier = new RoleIdentifier(RoleIdentifierKeyword.ANY);
 
 				const {num_mafia, num_town} = getNumMafiaTownFromRatio(GameManager.MAX_MAFIA_TO_TOWN_RATIO, true);
 
@@ -376,7 +376,7 @@ describe('GameManager', () => {
 					[
 						...Array(num_mafia).fill(RoleNames.Mafioso),
 						...Array(num_town).fill(RoleNames.Townie),
-						RoleIdentifierKeywords.Any
+						RoleIdentifierKeyword.ANY
 					]
 				);
 
@@ -394,7 +394,7 @@ describe('GameManager', () => {
 		test.concurrent(
 			`.getPossibleRolesFromIdentifier(Any) SHOULD not return any town roles if adding town would exceed town mafia max ratio`,
 			async () => {
-				const input_identifier = new RoleIdentifier(RoleIdentifierKeywords.Any);
+				const input_identifier = new RoleIdentifier(RoleIdentifierKeyword.ANY);
 
 				const {num_mafia, num_town} = getNumMafiaTownFromRatio(GameManager.MAX_TOWN_TO_MAFIA_RATIO, false);
 
@@ -410,7 +410,7 @@ describe('GameManager', () => {
 					[
 						...Array(num_mafia).fill(RoleNames.Mafioso),
 						...Array(num_town).fill(RoleNames.Townie),
-						RoleIdentifierKeywords.Any
+						RoleIdentifierKeyword.ANY
 					]
 				);
 
@@ -429,7 +429,7 @@ describe('GameManager', () => {
 		test.concurrent(
 			`.getPossibleRolesFromIdentifier(Any) SHOULD not return non-Mafioso Mafia if Mafioso doesn't exist`,
 			async () => {
-				const input_identifier = new RoleIdentifier(RoleIdentifierKeywords.Any);
+				const input_identifier = new RoleIdentifier(RoleIdentifierKeyword.ANY);
 
 				const existing_role_list = [
 					RoleNames.Townie,
@@ -440,7 +440,7 @@ describe('GameManager', () => {
 				const existing_role_identifiers = RoleIdentifier.convertIdentifierStrings(
 					[
 						RoleNames.Townie,
-						RoleIdentifierKeywords.Any
+						RoleIdentifierKeyword.ANY
 					]
 				);
 
@@ -464,7 +464,7 @@ describe('GameManager', () => {
 		test.concurrent(
 			`.getPossibleRolesFromIdentifier(Any) SHOULD not return Mafioso when they are already in the role list because they are unique`,
 			async () => {
-				const input_identifier = new RoleIdentifier(RoleIdentifierKeywords.Any);
+				const input_identifier = new RoleIdentifier(RoleIdentifierKeyword.ANY);
 				const existing_role_list = [
 					RoleNames.Mafioso,
 					RoleNames.Townie,
@@ -481,7 +481,7 @@ describe('GameManager', () => {
 						RoleNames.Townie,
 						RoleNames.Townie,
 						RoleNames.Townie,
-						RoleIdentifierKeywords.Any,
+						RoleIdentifierKeyword.ANY,
 					]
 				);
 
@@ -504,7 +504,7 @@ describe('GameManager', () => {
 		test.concurrent(
 			`.getPossibleRolesFromIdentifier(Any) SHOULD not return Mafioso when they are coming up in the role identifiers because they are unique`,
 			async () => {
-				const input_identifier = new RoleIdentifier(RoleIdentifierKeywords.Any);
+				const input_identifier = new RoleIdentifier(RoleIdentifierKeyword.ANY);
 				const existing_role_list = [
 					RoleNames.Townie,
 					RoleNames.Townie,
@@ -518,7 +518,7 @@ describe('GameManager', () => {
 						RoleNames.Townie,
 						RoleNames.Townie,
 						RoleNames.Townie,
-						RoleIdentifierKeywords.Any,
+						RoleIdentifierKeyword.ANY,
 						RoleNames.Mafioso,
 					]
 				);
@@ -542,7 +542,7 @@ describe('GameManager', () => {
 		test.concurrent(
 			`.getPossibleRolesFromIdentifier(Any) SHOULD return only roles in a faction that's not Town when Town is the only faction in the role list`,
 			async () => {
-				const input_identifier = new RoleIdentifier(RoleIdentifierKeywords.Any);
+				const input_identifier = new RoleIdentifier(RoleIdentifierKeyword.ANY);
 				const existing_role_list = [
 					RoleNames.Townie,
 				];
@@ -552,7 +552,7 @@ describe('GameManager', () => {
 				const existing_role_identifiers = RoleIdentifier.convertIdentifierStrings(
 					[
 						RoleNames.Townie,
-						RoleIdentifierKeywords.Any,
+						RoleIdentifierKeyword.ANY,
 					]
 				);
 
@@ -578,7 +578,7 @@ describe('GameManager', () => {
 		test.concurrent(
 			`.getPossibleRolesFromIdentifier(Random Neutral) SHOULD return only roles in a faction when Town is the only faction in the role list`,
 			async () => {
-				const input_identifier = new RoleIdentifier(`${Faction.NEUTRAL} ${RoleIdentifierKeywords.Random}`);
+				const input_identifier = new RoleIdentifier(`${Faction.NEUTRAL} ${RoleIdentifierKeyword.RANDOM}`);
 				const existing_role_list = [
 					RoleNames.Townie,
 				];
@@ -588,7 +588,7 @@ describe('GameManager', () => {
 				const existing_role_identifiers = RoleIdentifier.convertIdentifierStrings(
 					[
 						RoleNames.Townie,
-						`${Faction.NEUTRAL} ${RoleIdentifierKeywords.Random}`,
+						`${Faction.NEUTRAL} ${RoleIdentifierKeyword.RANDOM}`,
 					]
 				);
 
@@ -614,7 +614,7 @@ describe('GameManager', () => {
 		test.concurrent(
 			`.getPossibleRolesFromIdentifier(Any) SHOULD return only roles in a non-Town faction when Doctor is the only role in the role list`,
 			async () => {
-				const input_identifier = new RoleIdentifier(RoleIdentifierKeywords.Any);
+				const input_identifier = new RoleIdentifier(RoleIdentifierKeyword.ANY);
 				const existing_role_list = [
 					RoleNames.Doctor,
 				];
@@ -623,10 +623,10 @@ describe('GameManager', () => {
 				}
 				const existing_role_identifiers = RoleIdentifier.convertIdentifierStrings(
 					[
-						RoleIdentifierKeywords.Any,
-						RoleIdentifierKeywords.Any,
-						RoleIdentifierKeywords.Any,
-						RoleIdentifierKeywords.Any,
+						RoleIdentifierKeyword.ANY,
+						RoleIdentifierKeyword.ANY,
+						RoleIdentifierKeyword.ANY,
+						RoleIdentifierKeyword.ANY,
 					]
 				);
 

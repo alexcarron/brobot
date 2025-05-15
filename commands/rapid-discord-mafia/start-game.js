@@ -1,6 +1,6 @@
 const Parameter = require("../../services/command-creation/Paramater");
 const SlashCommand = require("../../services/command-creation/SlashCommand");
-const RoleIdentifier = require("../../services/rapid-discord-mafia/RoleIdentifier");
+const { RoleIdentifier } = require("../../services/rapid-discord-mafia/RoleIdentifier");
 
 /* eslint-disable no-unused-vars */
 const
