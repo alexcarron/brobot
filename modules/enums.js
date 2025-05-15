@@ -3,16 +3,6 @@ const { createListFromWords } = require("../utilities/text-formatting-utils.js")
 const { createNowUnixTimestamp } = require("../utilities/date-time-utils.js");
 
 const Enums = {
-	AbilityUses: {
-		Unlimited: -1,
-		None: 0,
-		Amount: (amount) => {
-			if ( !Number.isInteger(amount) || amount <= 0 )
-				throw new Error(`Error: Invalid AbilityUses.Amount ${amount}. Must be positive non-zero integer.`);
-			return amount
-		},
-	},
-
 	Effects: {
 		Attack: {name: "attack"},
 		Defend: (defense_level) => {

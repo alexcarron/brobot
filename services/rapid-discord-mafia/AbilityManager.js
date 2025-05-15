@@ -1,5 +1,5 @@
-const { AbilityTypes, AbilityUses, Duration, Phases, AbilityArgName, ArgumentTypes, ArgumentSubtypes, AbilityPriority, Announcements, Feedback } = require("../../modules/enums.js")
-const Ability = require("./Ability.js")
+const { AbilityTypes, Duration, Phases, AbilityArgName, ArgumentTypes, ArgumentSubtypes, AbilityPriority, Announcements, Feedback } = require("../../modules/enums.js")
+const {Ability, AbilityUseCount} = require("./Ability.js")
 const { EffectName } = require("./EffectManager.js")
 const Arg = require("./Arg.js")
 
@@ -42,7 +42,7 @@ class AbilityManager {
 			description: "At night, you can heal a player that's not yourself at night to give them a level two defense for the night and following day. You and your target will be notified if your target was attacked while healed.",
 			type: AbilityTypes.Protection,
 			priority: AbilityPriority.Protection,
-			uses: AbilityUses.Unlimited,
+			uses: AbilityUseCount.UNLIMITED,
 			duration: Duration.DayAndNight,
 			phases_can_use: [Phases.Night],
 			effects: [
@@ -69,7 +69,7 @@ class AbilityManager {
 			description: "At night, you can heal yourself at night to give yourself a level two defense for the night and following day.",
 			type: AbilityTypes.Protection,
 			priority: AbilityPriority.Protection,
-			uses: AbilityUses.Amount(1),
+			uses: AbilityUseCount.AMOUNT(1),
 			duration: Duration.DayAndNight,
 			phases_can_use: [Phases.Night],
 			effects: [
@@ -88,7 +88,7 @@ class AbilityManager {
 			description: "At night, you can evaluate a player that's not yourself at night to see if their suspicious or innocent. Mafia, Coven, and Neutral Killing seem suspicious. Town and non-Killing Neutrals seem innocent. Those douesd by an Arsonist will be unclear. These results are affected by the players' perceived role.",
 			type: AbilityTypes.Investigative,
 			priority: AbilityPriority.Investigative,
-			uses: AbilityUses.Unlimited,
+			uses: AbilityUseCount.UNLIMITED,
 			phases_can_use: [Phases.Night],
 			effects: [
 				EffectName.Evaluate
@@ -111,7 +111,7 @@ class AbilityManager {
 			description: "At night, you can track a player that's not yourself at night to see who they are percieved to be visiting. You will never see players visit themself.",
 			type: AbilityTypes.Investigative,
 			priority: AbilityPriority.Investigative,
-			uses: AbilityUses.Unlimited,
+			uses: AbilityUseCount.UNLIMITED,
 			phases_can_use: [Phases.Night],
 			effects: [
 				EffectName.Track
@@ -134,7 +134,7 @@ class AbilityManager {
 			description: "At night, watch a player's house that isn't yourself. If any players are percieved to have visited them, you'll be told every player that did that night. You will never see players visit themself.",
 			type: AbilityTypes.Investigative,
 			priority: AbilityPriority.Investigative,
-			uses: AbilityUses.Unlimited,
+			uses: AbilityUseCount.UNLIMITED,
 			phases_can_use: [Phases.Night],
 			effects: [
 				EffectName.Lookout
@@ -157,7 +157,7 @@ class AbilityManager {
 			description: "At night, you can roleblock a player that is not yourself at night so that they can't perform their ability that night and following day. They will be notified of this.",
 			type: AbilityTypes.Roleblock,
 			priority: AbilityPriority.Roleblock,
-			uses: AbilityUses.Unlimited,
+			uses: AbilityUseCount.UNLIMITED,
 			duration: Duration.DayAndNight,
 			phases_can_use: [Phases.Night],
 			effects: [
@@ -184,7 +184,7 @@ class AbilityManager {
 			description: "At night, you can shoot a player that isn't yourself at night, attacking them.",
 			type: AbilityTypes.Attacking,
 			priority: AbilityPriority.Attacking,
-			uses: AbilityUses.Amount(3),
+			uses: AbilityUseCount.AMOUNT(3),
 			duration: Duration.OneNight,
 			phases_can_use: [Phases.Night],
 			effects: [
@@ -208,7 +208,7 @@ class AbilityManager {
 		// 	description: "At night, you can order the Mafia to kill a non-mafia player at night so that they become the Mafioso's target. If the Mafioso doesn't exist, is dead, or is roleblocked, you will attack them yourself instead.",
 		// 	type: AbilityTypes.Control,
 		// 	priority: AbilityPriority.Control,
-		// 	uses: AbilityUses.Unlimited,
+		// 	uses: AbilityUseCount.Unlimited,
 		// 	duration: Duration.OneNight,
 		// 	phases_can_use: [Phases.Night],
 		// 	effects: [
@@ -232,7 +232,7 @@ class AbilityManager {
 			description: "At night, you can murder a non-mafia player at night, attacking them.",
 			type: AbilityTypes.Attacking,
 			priority: AbilityPriority.Attacking,
-			uses: AbilityUses.Unlimited,
+			uses: AbilityUseCount.UNLIMITED,
 			duration: Duration.OneNight,
 			phases_can_use: [Phases.Night],
 			effects: [
@@ -256,7 +256,7 @@ class AbilityManager {
 			description: "At night, you can frame a non-mafia player at night, making them perceived to be a Mafioso until after they're investigated by a player that gets any information based off of percieved roles.",
 			type: AbilityTypes.Manipulation,
 			priority: AbilityPriority.Manipulation,
-			uses: AbilityUses.Unlimited,
+			uses: AbilityUseCount.UNLIMITED,
 			duration: Duration.DayAndNight,
 			phases_can_use: [Phases.Night],
 			effects: [
@@ -283,7 +283,7 @@ class AbilityManager {
 			description: "At night, you can consort a player who's not yourself at night, roleblocking them that night and following day. They will be notified.",
 			type: AbilityTypes.Roleblock,
 			priority: AbilityPriority.Roleblock,
-			uses: AbilityUses.Unlimited,
+			uses: AbilityUseCount.UNLIMITED,
 			duration: Duration.DayAndNight,
 			phases_can_use: [Phases.Night],
 			effects: [
@@ -310,7 +310,7 @@ class AbilityManager {
 			description: "At night, you can investigate a non-mafia player at night, learning their percieved role.",
 			type: AbilityTypes.Investigative,
 			priority: AbilityPriority.Investigative,
-			uses: AbilityUses.Unlimited,
+			uses: AbilityUseCount.UNLIMITED,
 			phases_can_use: [Phases.Night],
 			effects: [
 				EffectName.Investigate
@@ -331,7 +331,7 @@ class AbilityManager {
 			description: "At night, you can frame yourself at night, making yourself perceived as a Mafioso until after you're investigated by a player that gets any information based off of percieved roles.",
 			type: AbilityTypes.Manipulation,
 			priority: AbilityPriority.Manipulation,
-			uses: AbilityUses.Amount(1),
+			uses: AbilityUseCount.AMOUNT(1),
 			duration: Duration.Indefinite,
 			phases_can_use: [Phases.Night],
 			effects: [
@@ -348,7 +348,7 @@ class AbilityManager {
 			description: "After you've satisfied your win condition and been lynched, you can curse a chosen player who voted guilty during your trial with death at night, attacking them.",
 			type: AbilityTypes.Attacking,
 			priority: AbilityPriority.Attacking,
-			uses: AbilityUses.Amount(1),
+			uses: AbilityUseCount.AMOUNT(1),
 			duration: Duration.OneNight,
 			phases_can_use: [Phases.Limbo],
 			effects: [
@@ -370,7 +370,7 @@ class AbilityManager {
 			description: "At night, you can frame your target at night, making them perceived as a Mafioso until after you're investigated by a player that gets any information based off of percieved roles.",
 			type: AbilityTypes.Manipulation,
 			priority: AbilityPriority.Manipulation,
-			uses: AbilityUses.Amount(1),
+			uses: AbilityUseCount.AMOUNT(1),
 			duration: Duration.Indefinite,
 			phases_can_use: [Phases.Night],
 			effects: [
@@ -387,7 +387,7 @@ class AbilityManager {
 			description: "At night, you can put on a vest at night, gaining a level two defense for the night and following day.",
 			type: AbilityTypes.Protection,
 			priority: AbilityPriority.Protection,
-			uses: AbilityUses.Amount(4),
+			uses: AbilityUseCount.AMOUNT(4),
 			duration: Duration.DayAndNight,
 			phases_can_use: [Phases.Night],
 			effects: [
@@ -404,7 +404,7 @@ class AbilityManager {
 			description: "At night, you can knife a player that's not yourself at night, attacking them.",
 			type: AbilityTypes.Attacking,
 			priority: AbilityPriority.Attacking,
-			uses: AbilityUses.Unlimited,
+			uses: AbilityUseCount.UNLIMITED,
 			duration: Duration.OneNight,
 			phases_can_use: [Phases.Night],
 			effects: [
@@ -428,7 +428,7 @@ class AbilityManager {
 			description: "At night, you can choose to be cautious at night, not attacking anyone who roleblocks you.",
 			type: AbilityTypes.Modifier,
 			priority: AbilityPriority.Modifier,
-			uses: AbilityUses.Unlimited,
+			uses: AbilityUseCount.UNLIMITED,
 			duration: Duration.OneNight,
 			phases_can_use: [Phases.Night],
 			effects: [
@@ -442,7 +442,7 @@ class AbilityManager {
 			description: "At night, you can smith a bulletproof vest for a player that's not yourself at night, giving them a level one defense that night and following day. You and your target will be notified if your target was attacked while wearing the vest.",
 			type: AbilityTypes.Protection,
 			priority: AbilityPriority.Protection,
-			uses: AbilityUses.Amount(3),
+			uses: AbilityUseCount.AMOUNT(3),
 			duration: Duration.DayAndNight,
 			phases_can_use: [Phases.Night],
 			effects: [
@@ -467,7 +467,7 @@ class AbilityManager {
 			description: "At night, you can smith a bulletproof vest for yourself at night, gaining a level one defense that night and following day.",
 			type: AbilityTypes.Protection,
 			priority: AbilityPriority.Protection,
-			uses: AbilityUses.Amount(1),
+			uses: AbilityUseCount.AMOUNT(1),
 			duration: Duration.DayAndNight,
 			phases_can_use: [Phases.Night],
 			effects: [
@@ -484,7 +484,7 @@ class AbilityManager {
 			description: "You will shoot yourself, attacking yourself with a level four attack.",
 			type: AbilityTypes.Suicide,
 			priority: AbilityPriority.Attacking,
-			uses: AbilityUses.None,
+			uses: AbilityUseCount.NONE,
 			duration: Duration.OneNight,
 			phases_can_use: [],
 			effects: [
@@ -503,7 +503,7 @@ class AbilityManager {
 			description: "At night, you can control a player that's not yourself, forcing them to use their main ability on another player or themself. You will learn the perceived role of who you controlled and they will be notified that they were controlled. Your control will fail if the player has no ability that can be used on another player or themself.",
 			type: AbilityTypes.Control,
 			priority: AbilityPriority.Control,
-			uses: AbilityUses.Unlimited,
+			uses: AbilityUseCount.UNLIMITED,
 			duration: Duration.OneNight,
 			phases_can_use: [Phases.Night],
 			effects: [
@@ -531,7 +531,7 @@ class AbilityManager {
 			description: "At night, you can observe a player that isn't yourself and be told if this player and the last one you observed are percieved to be in the same faction. If this is the first player you observe, you are told nothing.",
 			type: AbilityTypes.Investigative,
 			priority: AbilityPriority.Investigative,
-			uses: AbilityUses.Unlimited,
+			uses: AbilityUseCount.UNLIMITED,
 			phases_can_use: [Phases.Night],
 			effects: [
 				EffectName.Observe
@@ -554,7 +554,7 @@ class AbilityManager {
 			description: "At night, you can replace a player that isn't yourself. You will attack them, and if you successfully kill them you will be converted to their actual role. Their role and last will won't be revealed upon death.",
 			type: AbilityTypes.Attacking,
 			priority: AbilityPriority.Attacking,
-			uses: AbilityUses.Unlimited,
+			uses: AbilityUseCount.UNLIMITED,
 			phases_can_use: [Phases.Night],
 			effects: [
 				EffectName.Attack,
@@ -578,7 +578,7 @@ class AbilityManager {
 			description: "At night, kidnap a non-mafia player. They will gain a level four defense for the night but they will be roleblocked and won't be able to speak or vote the next day. If you kidnap a role with an attack level above zero, they will attack you while kidnapped without using up an ability no matter what.",
 			type: AbilityTypes.Roleblock,
 			priority: AbilityPriority.Roleblock,
-			uses: AbilityUses.Unlimited,
+			uses: AbilityUseCount.UNLIMITED,
 			phases_can_use: [Phases.Night],
 			effects: [
 				EffectName.Kidnap,

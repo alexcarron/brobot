@@ -1,11 +1,12 @@
 const Parameter = require("../../services/command-creation/Paramater");
 const SlashCommand = require("../../services/command-creation/SlashCommand");
 const { deferInteraction } = require("../../utilities/discord-action-utils");
-const { ArgumentTypes, ArgumentSubtypes, Factions, AbilityUses, Phases, AbilityName } = require("../../modules/enums");
+const { ArgumentTypes, ArgumentSubtypes, Factions, AbilityName } = require("../../modules/enums");
 const ids = require("../../bot-config/discord-ids.js");
 const AbilityManager = require("../../services/rapid-discord-mafia/AbilityManager");
 const { toTitleCase } = require("../../utilities/text-formatting-utils.js");
 const { fetchChannel, fetchRDMGuild } = require("../../utilities/discord-fetch-utils.js");
+const { AbilityUseCount } = require("../../services/rapid-discord-mafia/Ability.js");
 
 const command = new SlashCommand({
 	name: "use",
@@ -24,7 +25,7 @@ for (const ability_name in AbilityManager.abilities) {
 
 
 	if (
-		(!ability.uses || ability.uses === AbilityUses.None) ||
+		(!ability.uses || ability.uses === AbilityUseCount.None) ||
 		(!ability.phases_can_use || ability.phases_can_use.length <= 0)
 	) {
 		continue;

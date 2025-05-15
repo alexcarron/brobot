@@ -1,5 +1,18 @@
-const { ArgumentSubtypes, ArgumentTypes, AbilityUses, Duration, Phases, AbilityTypes, AbilityPriority: Priorities, AbilityName: AbilityName, AbilityArgName } = require("../../modules/enums.js");
+const { Duration, Phases } = require("../../modules/enums.js");
 const Arg = require("./Arg.js");
+
+/**
+ * Enum of possible values for the uses field of an Ability.
+ */
+const AbilityUseCount = Object.freeze({
+	UNLIMITED: -1,
+	NONE: 0,
+	AMOUNT: (amount) => {
+		if ( !Number.isInteger(amount) || amount <= 0 )
+			throw new Error(`Error: Invalid AbilityUseCount.Amount ${amount}. Must be positive non-zero integer.`);
+		return amount
+	},
+});
 
 /**
  * Represents an ability
@@ -31,7 +44,7 @@ class Ability {
 
 	/**
 	 * The number of times you can use this ability
-	 * @type {number} AbilityUses
+	 * @type {number} AbilityUseCount
 	 */
 	uses;
 
@@ -123,16 +136,16 @@ class Ability {
 
 		// Set ability use count text
 		switch (true) {
-			case this.uses == AbilityUses.Unlimited:
+			case this.uses == AbilityUseCount.UNLIMITED:
 				use_count_msg = `Unlimited Uses`;
 				break;
 
-			case this.uses == AbilityUses.None:
+			case this.uses == AbilityUseCount.NONE:
 				command_example_msg = ""
 				use_count_msg = "Can't be used voluntarily";
 				break;
 
-			case this.uses == AbilityUses.Amount(1):
+			case this.uses == AbilityUseCount.AMOUNT(1):
 				use_count_msg = "1 Use";
 				break;
 
@@ -151,4 +164,4 @@ class Ability {
 	}
 }
 
-module.exports = Ability;
+module.exports = {Ability, AbilityUseCount};

@@ -1,6 +1,7 @@
 const Effect = require("./Effect");
-const { RoleNames, AbilityName, AbilityArgName, Factions, Alignments, Feedback, Immunities, AbilityUses, ArgumentTypes, ArgumentSubtypes } = require("../../modules/enums");
+const { RoleNames, AbilityName, AbilityArgName, Factions, Alignments, Feedback, Immunities, ArgumentTypes, ArgumentSubtypes } = require("../../modules/enums");
 const Logger = require("./Logger");
+const { AbilityUseCount } = require("./Ability");
 
 /**
  * Used to handle ability effects and apply them
@@ -367,9 +368,9 @@ class EffectManager {
 					const num_times_used = player_controlling.used[ability_to_control.name] ?? 0;
 
 					isAbilityUsedUp = (
-						ability_to_control.uses === AbilityUses.None ||
+						ability_to_control.uses === AbilityUseCount.NONE ||
 						(
-							ability_to_control.uses !== AbilityUses.Unlimited &&
+							ability_to_control.uses !== AbilityUseCount.UNLIMITED &&
 							num_times_used >= ability_to_control.uses
 						)
 					);
