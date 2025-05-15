@@ -8,6 +8,7 @@ const
 		deferInteraction
 	} = require("../../modules/functions"),
 	ids = require("../../bot-config/discord-ids.js");
+const { Vote } = require("../../services/rapid-discord-mafia/VoteManager.js");
 
 const Subparameters = {
 	PlayerVotingFor: new Parameter({
@@ -101,10 +102,10 @@ command.autocomplete = async function(interaction) {
 	const entered_value = focused_param.value;
 
 	autocomplete_values = global.game_manager.player_manager.getAlivePlayers()
-		.map((player) => {return {name: player.name, value: Enums.Votes.Player(player.name)}})
+		.map((player) => {return {name: player.name, value: Vote.Player(player.name)}})
 
-	autocomplete_values.push({name: "Abstain", value: Enums.Votes.Abstain});
-	autocomplete_values.push({name: "Nobody", value: Enums.Votes.Nobody});
+	autocomplete_values.push({name: "Abstain", value: Vote.Abstain});
+	autocomplete_values.push({name: "Nobody", value: Vote.Nobody});
 
 	autocomplete_values = autocomplete_values
 		.filter(autocomplete_entry => autocomplete_entry.value.toLowerCase().startsWith(entered_value.toLowerCase()));

@@ -1,5 +1,14 @@
 const { toTitleCase } = require("../../utilities/text-formatting-utils");
 
+/**
+ * Enum of possible votes before the trial vote
+ */
+const Vote = Object.freeze({
+	NOBODY: "Nobody",
+	ABSTAIN: "Abstain",
+	PLAYER: (playerName) => `${playerName}`,
+});
+
 class VoteManager {
 	constructor(game_manager) {
 		this.game_manager = game_manager;
@@ -174,7 +183,7 @@ class VoteManager {
 
 				if (
 					vote.toLowerCase() == TrialVotes.Abstain.toLowerCase() ||
-					vote.toLowerCase() == Votes.Abstain.toLowerCase()
+					vote.toLowerCase() == Vote.ABSTAIN.toLowerCase()
 				)
 					continue;
 
@@ -194,4 +203,4 @@ class VoteManager {
 	}
 }
 
-module.exports = VoteManager;
+module.exports = {VoteManager, Vote};
