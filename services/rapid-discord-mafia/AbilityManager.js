@@ -1,7 +1,7 @@
-const { Phases, AbilityArgName, ArgumentSubtypes, Announcements, Feedback } = require("../../modules/enums.js")
+const { Phases, AbilityArgName, Announcements, Feedback } = require("../../modules/enums.js")
 const {Ability, AbilityUseCount, AbilityType, AbilityPriority, AbilityDuration} = require("./Ability.js")
 const { EffectName } = require("./EffectManager.js")
-const {Arg, AbilityArgType} = require("./Arg.js")
+const {Arg, AbilityArgType, ArgumentSubtype} = require("./Arg.js")
 
 class AbilityManager {
 	constructor(game_manager) {
@@ -56,7 +56,7 @@ class AbilityManager {
 					name: AbilityArgName.PlayerHealing,
 					description: "The player you're healing",
 					type: AbilityArgType.PLAYER,
-					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf],
+					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NOT_SELF],
 				})
 			],
 			reverseEffects: async (player, game_manager) => {
@@ -101,7 +101,7 @@ class AbilityManager {
 					name: AbilityArgName.PlayerEvaluating,
 					description: "The player you are evaluating",
 					type: AbilityArgType.PLAYER,
-					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf]
+					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NOT_SELF]
 				})
 			]
 		}),
@@ -124,7 +124,7 @@ class AbilityManager {
 					name: AbilityArgName.PlayerTracking,
 					description: "The player whose visit your tracking",
 					type: AbilityArgType.PLAYER,
-					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf]
+					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NOT_SELF]
 				})
 			]
 		}),
@@ -147,7 +147,7 @@ class AbilityManager {
 					name: AbilityArgName.PlayerWatching,
 					description: "The player whose house your watching for visits",
 					type: AbilityArgType.PLAYER,
-					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf]
+					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NOT_SELF]
 				})
 			]
 		}),
@@ -171,7 +171,7 @@ class AbilityManager {
 					name: AbilityArgName.PlayerRoleblocking,
 					description: "The player your roleblocking",
 					type: AbilityArgType.PLAYER,
-					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf]
+					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NOT_SELF]
 				})
 			],
 			reverseEffects: async (player, game_manager) => {
@@ -198,7 +198,7 @@ class AbilityManager {
 					name: AbilityArgName.PlayerShooting,
 					description: "The player your shooting",
 					type: AbilityArgType.PLAYER,
-					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf]
+					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NOT_SELF]
 				})
 			]
 		}),
@@ -246,7 +246,7 @@ class AbilityManager {
 					name: AbilityArgName.PlayerKilling,
 					description: "The player your killing",
 					type: AbilityArgType.PLAYER,
-					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NonMafia]
+					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NON_MAFIA]
 				})
 			]
 		}),
@@ -270,7 +270,7 @@ class AbilityManager {
 					name: AbilityArgName.PlayerFraming,
 					description: "The player your framing to be the Mafioso",
 					type: AbilityArgType.PLAYER,
-					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NonMafia]
+					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NON_MAFIA]
 				})
 			],
 			reverseEffects: async (player, game_manager) => {
@@ -297,7 +297,7 @@ class AbilityManager {
 					name: AbilityArgName.PlayerConsorting,
 					description: "The player your roleblocking",
 					type: AbilityArgType.PLAYER,
-					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf]
+					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NOT_SELF]
 				})
 			],
 			reverseEffects: async (player, game_manager) => {
@@ -321,7 +321,7 @@ class AbilityManager {
 					name: AbilityArgName.PlayerInvestigating,
 					description: "The player whose role your investigating",
 					type: AbilityArgType.PLAYER,
-					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NonMafia]
+					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NON_MAFIA]
 				})
 			]
 		}),
@@ -360,7 +360,7 @@ class AbilityManager {
 					name: AbilityArgName.PlayerKilling,
 					description: "The player your cursing with death",
 					type: AbilityArgType.PLAYER,
-					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.CertainPlayers]
+					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.CERTAIN_PLAYERS]
 				})
 			],
 		}),
@@ -418,7 +418,7 @@ class AbilityManager {
 					name: AbilityArgName.PlayerKnifing,
 					description: "The player your stabbing",
 					type: AbilityArgType.PLAYER,
-					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf]
+					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NOT_SELF]
 				})
 			],
 		}),
@@ -454,7 +454,7 @@ class AbilityManager {
 					name: AbilityArgName.PlayerSmithingFor,
 					description: "The player your smithing a bulletproof vest for",
 					type: AbilityArgType.PLAYER,
-					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf]
+					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NOT_SELF]
 				})
 			],
 			reverseEffects: async (player, game_manager) => {
@@ -515,7 +515,7 @@ class AbilityManager {
 					name: AbilityArgName.PlayerControlling,
 					description: "The player your controlling",
 					type: AbilityArgType.PLAYER,
-					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf]
+					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NOT_SELF]
 				}),
 				new Arg({
 					name: AbilityArgName.PlayerControlledInto,
@@ -544,7 +544,7 @@ class AbilityManager {
 					name: AbilityArgName.PlayerObserving,
 					description: "The player you're observing",
 					type: AbilityArgType.PLAYER,
-					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf]
+					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NOT_SELF]
 				}),
 			],
 		}),
@@ -568,7 +568,7 @@ class AbilityManager {
 					name: AbilityArgName.PlayerReplacing,
 					description: "The player you're attacking and replacing",
 					type: AbilityArgType.PLAYER,
-					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NotSelf]
+					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NOT_SELF]
 				}),
 			],
 		}),
@@ -591,7 +591,7 @@ class AbilityManager {
 					name: AbilityArgName.PlayerKidnapping,
 					description: "The player you're kidnapping",
 					type: AbilityArgType.PLAYER,
-					subtypes: [ArgumentSubtypes.Visiting, ArgumentSubtypes.NonMafia, ArgumentSubtypes.NotSelf]
+					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NON_MAFIA, ArgumentSubtype.NOT_SELF]
 				}),
 			],
 			reverseEffects: async (player, game_manager) => {

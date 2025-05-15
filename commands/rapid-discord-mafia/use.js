@@ -1,14 +1,14 @@
 const Parameter = require("../../services/command-creation/Paramater");
 const SlashCommand = require("../../services/command-creation/SlashCommand");
 const { deferInteraction } = require("../../utilities/discord-action-utils");
-const { ArgumentSubtypes, AbilityName } = require("../../modules/enums");
+const { AbilityName } = require("../../modules/enums");
 const ids = require("../../bot-config/discord-ids.js");
 const AbilityManager = require("../../services/rapid-discord-mafia/AbilityManager");
 const { toTitleCase } = require("../../utilities/text-formatting-utils.js");
 const { fetchChannel, fetchRDMGuild } = require("../../utilities/discord-fetch-utils.js");
 const { AbilityUseCount } = require("../../services/rapid-discord-mafia/Ability.js");
 const { Faction } = require("../../services/rapid-discord-mafia/Role.js");
-const { AbilityArgType } = require("../../services/rapid-discord-mafia/Arg.js");
+const { AbilityArgType, ArgumentSubtype } = require("../../services/rapid-discord-mafia/Arg.js");
 
 const command = new SlashCommand({
 	name: "use",
@@ -227,7 +227,7 @@ command.autocomplete = async function(interaction) {
 				(player) => {
 
 					if (
-						ability_arg.subtypes.includes(ArgumentSubtypes.NonMafia) &&
+						ability_arg.subtypes.includes(ArgumentSubtype.NON_MAFIA) &&
 						global.game_manager.role_manager.getRole(player.role).faction === Faction.MAFIA
 					) {
 						console.log(player.name);
@@ -235,7 +235,7 @@ command.autocomplete = async function(interaction) {
 					}
 
 					if (
-						ability_arg.subtypes.includes(ArgumentSubtypes.NotSelf) &&
+						ability_arg.subtypes.includes(ArgumentSubtype.NOT_SELF) &&
 						player.name === player_using_command.name
 					) {
 						console.log(player.name);
@@ -243,7 +243,7 @@ command.autocomplete = async function(interaction) {
 					}
 
 					if (
-						ability_arg.subtypes.includes(ArgumentSubtypes.CertainPlayers) &&
+						ability_arg.subtypes.includes(ArgumentSubtype.CERTAIN_PLAYERS) &&
 						!player_using_command.players_can_use_on.includes(player.name)
 					) {
 						console.log(player.name);

@@ -3,14 +3,6 @@ const { createListFromWords } = require("../utilities/text-formatting-utils.js")
 const { createNowUnixTimestamp } = require("../utilities/date-time-utils.js");
 
 const Enums = {
-	ArgumentSubtypes: {
-		Visiting: "visiting",
-		NotSelf: "not yourself",
-		NonMafia: "non-mafia",
-		CertainPlayers: "certain players",
-		None: "",
-	},
-
 	Phases: {
 		Day: "day",
 		Night: "night",

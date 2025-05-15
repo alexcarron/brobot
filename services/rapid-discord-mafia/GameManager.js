@@ -1,10 +1,10 @@
-const { GameStates, Phases, Subphases, MessageDelays, RDMRoles, Feedback, Announcements, RoleNames, PhaseWaitTimes, RoleIdentifierTypes, ArgumentSubtypes, CoinRewards, } = require("../../modules/enums.js");
+const { GameStates, Phases, Subphases, MessageDelays, RDMRoles, Feedback, Announcements, RoleNames, PhaseWaitTimes, RoleIdentifierTypes, CoinRewards, } = require("../../modules/enums.js");
 const ids = require("../../bot-config/discord-ids.js");
 const { PermissionFlagsBits, Role, Interaction } = require("discord.js");
 const Death = require("./Death.js");
 const PlayerManager = require("./PlayerManager.js");
 const Player = require("./Player.js");
-const {Arg, AbilityArgType} = require("./Arg.js");
+const {Arg, AbilityArgType, ArgumentSubtype} = require("./Arg.js");
 const EffectManager = require("./EffectManager.js");
 const AbilityManager = require("./AbilityManager.js");
 const RoleManager = require("./RoleManager.js");
@@ -2061,13 +2061,13 @@ class GameManager {
 			}
 		}
 
-		if (ability_arg.subtypes.includes(ArgumentSubtypes.NotSelf)) {
+		if (ability_arg.subtypes.includes(ArgumentSubtype.NOT_SELF)) {
 			if (arg_value === player_using_ability.name) {
 				return `You cannot target yourself`;
 			}
 		}
 
-		if (ability_arg.subtypes.includes(ArgumentSubtypes.NonMafia)) {
+		if (ability_arg.subtypes.includes(ArgumentSubtype.NON_MAFIA)) {
 			const player_targeting = this.player_manager.get(arg_value);
 			const player_targeting_role = this.role_manager.getRole(player_targeting.role);
 			if (player_targeting_role.faction === Faction.MAFIA) {

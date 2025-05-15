@@ -1,4 +1,4 @@
-const { RDMRoles, Announcements, Feedback, RoleNames, AbilityName: AbilityName, AbilityArgName, ArgumentSubtypes } = require("../../modules/enums.js");
+const { RDMRoles, Announcements, Feedback, RoleNames, AbilityName: AbilityName, AbilityArgName, } = require("../../modules/enums.js");
 const RoleManager = require("./RoleManager.js");
 const ids = require("../../bot-config/discord-ids.js");
 const { Role, Faction } = require("./Role.js");
@@ -6,6 +6,7 @@ const Logger = require("./Logger.js");
 const DiscordService = require("./DiscordService.js");
 const { fetchRDMGuild, fetchRoleByName } = require("../../utilities/discord-fetch-utils.js");
 const { addRoleToMember, removeRoleFromMember } = require("../../utilities/discord-action-utils.js");
+const { ArgumentSubtype } = require("./Arg.js");
 
 const rdm_ids = require("../../bot-config/discord-ids.js").rapid_discord_mafia;
 
@@ -430,7 +431,7 @@ class Player {
 			const arg_name = arg.name;
 			const arg_value = arg_values[arg_name];
 
-			if (arg.subtypes.includes(ArgumentSubtypes.Visiting)) {
+			if (arg.subtypes.includes(ArgumentSubtype.VISITING)) {
 				this.setVisiting(arg_value);
 			}
 		}

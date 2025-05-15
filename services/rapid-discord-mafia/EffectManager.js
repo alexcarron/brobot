@@ -1,9 +1,9 @@
 const Effect = require("./Effect");
-const { RoleNames, AbilityName, AbilityArgName, Feedback,ArgumentSubtypes } = require("../../modules/enums");
+const { RoleNames, AbilityName, AbilityArgName, Feedback, } = require("../../modules/enums");
 const Logger = require("./Logger");
 const { AbilityUseCount } = require("./Ability");
 const { Faction, Alignment, Immunity } = require("./Role");
-const { AbilityArgType } = require("./Arg");
+const { AbilityArgType, ArgumentSubtype } = require("./Arg");
 
 /**
  * Used to handle ability effects and apply them
@@ -398,7 +398,7 @@ class EffectManager {
 				if (doesAbilityArgExist) {
 					const ability_arg = ability_to_control.args[0];
 
-					const isAbilityArgVisitingSubtype = ability_arg.subtypes.includes(ArgumentSubtypes.Visiting);
+					const isAbilityArgVisitingSubtype = ability_arg.subtypes.includes(ArgumentSubtype.VISITING);
 
 					willForceTargetToVisit = isAbilityArgVisitingSubtype;
 
