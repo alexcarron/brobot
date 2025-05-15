@@ -1,9 +1,9 @@
-const { saveObjectToGitHubJSON } = require("./functions");
 const Viewer = require("./viewer");
 const ids = require("../bot-config/discord-ids.js");
 const { GuildScheduledEventManager, Message, GuildScheduledEventPrivacyLevel, GuildScheduledEventEntityType } = require("discord.js");
 const cron = require("cron");
 const { fetchGuild, fetchChannel, fetchUser } = require("../utilities/discord-fetch-utils.js");
+const { saveObjectToJsonInGitHub } = require("../utilities/github-json-storage-utils.js");
 
 /**
  * Represents a LL Game Show Discord event.
@@ -218,7 +218,7 @@ class Event {
 		}
 
 		global.events = global.events.filter((event) => event !== this);
-		await saveObjectToGitHubJSON({events: global.events}, "events");
+		await saveObjectToJsonInGitHub({events: global.events}, "events");
 
 		return await event_channel.send(message);
 	}

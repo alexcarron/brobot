@@ -1,7 +1,7 @@
-const { saveObjectToGitHubJSON } = require("./functions");
 const { TextChannel } = require("discord.js");
 const cron = require("cron");
 const { fetchGuild, fetchChannel } = require("../utilities/discord-fetch-utils");
+const { saveObjectToJsonInGitHub } = require("../utilities/github-json-storage-utils");
 
 /**
  * Represents a timer set by Brobot.
@@ -145,7 +145,7 @@ class Timer {
 	async deleteTimer() {
 		console.log(global.timers);
 		global.timers = global.timers.filter((timer) => timer !== this);
-		await saveObjectToGitHubJSON({timers: global.timers}, "timers");
+		await saveObjectToJsonInGitHub({timers: global.timers}, "timers");
 		console.log(global.timers);
 
 	}
@@ -168,7 +168,7 @@ class Timer {
 			`>>> ${this._reason}`
 		);
 		global.timers.push(this);
-		await saveObjectToGitHubJSON({timers: global.timers}, "timers");
+		await saveObjectToJsonInGitHub({timers: global.timers}, "timers");
 
 		const now = new Date();
 		const end_date = new Date(this._end_time);

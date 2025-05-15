@@ -2,13 +2,13 @@ const cron = require("cron");
 const Event = require('../../../modules/Event.js');
 const SlashCommand = require('../../../modules/commands/SlashCommand.js');
 const ids = require("../../../bot-config/discord-ids.js")
-const { saveObjectToGitHubJSON } = require("../../../modules/functions.js");
 const { ChannelType, ButtonBuilder, ActionRowBuilder, ModalBuilder, ButtonStyle, TextInputBuilder, TextInputStyle, StringSelectMenuOptionBuilder, StringSelectMenuBuilder, } = require('discord.js');
 const { LLPointTiers } = require("../../../modules/enums.js");
 const { toTitleCase } = require("../../../utilities/text-formatting-utils.js");
 const { toUnixTimestamp } = require("../../../utilities/date-time-utils.js");
 const { confirmInteractionWithButtons } = require("../../../utilities/discord-action-utils.js");
 const { wait } = require("../../../utilities/realtime-utils.js");
+const { saveObjectToJsonInGitHub } = require("../../../utilities/github-json-storage-utils.js");
 
 const command = new SlashCommand({
 	name: "host-event",
@@ -434,7 +434,7 @@ command.execute = async function(interaction) {
 	);
 	event_start_cron_job.start();
 
-	await saveObjectToGitHubJSON({events: global.events}, "events");
+	await saveObjectToJsonInGitHub({events: global.events}, "events");
 	interaction.channel.send(`Event Confirmed!`);
 }
 module.exports = command;

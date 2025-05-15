@@ -20,47 +20,6 @@ const functions = {
 		console.log(color_start + message + reset);
 	},
 
-	async saveObjectToGitHubJSON(object, json_name) {
-		const
-			axios = require('axios'),
-			owner = "alexcarron",
-			repo = "brobot-database",
-			path = `${json_name}.json`,
-			json_object_string = JSON.stringify(object);
-
-
-		try {
-			// Get the current file data to obtain sha
-			const {data: current_file} =
-				await axios.get(
-					`https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
-					{
-						headers: {
-							'Authorization': `Token ${github_token}`
-						}
-					}
-				);
-
-			// Update the file content
-			await axios.put(
-				`https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
-				{
-					message: `Update ${json_name}`,
-					content: new Buffer.from(json_object_string).toString(`base64`),
-					sha: current_file.sha
-				},
-				{
-					headers: {
-						'Authorization': `Token ${github_token}`
-					}
-				}
-			);
-		}
-		catch (error) {
-			console.error(error);
-		}
-	},
-
 	async getObjectFromGitHubJSON(json_name) {
 		const
 			axios = require('axios'),
