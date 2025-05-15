@@ -58,6 +58,17 @@ const LLPointAccomplishment = Object.freeze({
 	VOICE_ACT: "Voice Acting",
 });
 
+/**
+ * Enum of possible perks to earn from reaching an LL Point tier
+ */
+const LLPointPerk = Object.freeze({
+	DRAW_ASSET: "Draw an asset for a YouTube video",
+	VOICE_ACT: "Voice act for a YouTube video",
+	CUSTOM_ROLE_COLOR: "Get custom Discord role color",
+	CUSTOM_PERSONIFICATION: "Get a custom personification drawing",
+	ADD_EMOTE: "Add a custom emote to the server",
+})
+
 class LLPointManager {
 	constructor() {
 		this.viewers = new Map();
@@ -273,4 +284,4 @@ class LLPointManager {
 	}
 }
 
-module.exports = {LLPointManager, LLPointTier, LLPointThreshold, LLPointReward, LLPointAccomplishment};
+module.exports = {LLPointManager, LLPointTier, LLPointThreshold, LLPointReward, LLPointAccomplishment, LLPointPerk};

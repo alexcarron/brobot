@@ -1,10 +1,10 @@
 const Parameter = require('../../services/command-creation/Paramater.js');
 const SlashCommand = require('../../services/command-creation/SlashCommand.js');
-const { LLPointPerks } = require('../../modules/enums.js')
 const { deferInteraction } = require('../../utilities/discord-action-utils.js');
 const ids = require(`../../bot-config/discord-ids.js`);
 const { fetchUser } = require('../../utilities/discord-fetch-utils.js');
 const { confirmInteractionWithButtons } = require('../../utilities/discord-action-utils.js');
+const { LLPointPerk } = require('../../services/ll-points/LLPointManager.js');
 
 const Parameters = {
 	Perk: new Parameter({
@@ -54,9 +54,9 @@ command.execute = async function(interaction) {
 		}
 	}
 
-	if (!Object.values(LLPointPerks).includes(perk)) {
+	if (!Object.values(LLPointPerk).includes(perk)) {
 		return await interaction.editReply(
-			`The perk, **${perk}**, doesn't exist.\n` + Object.values(LLPointPerks).join(", ")
+			`The perk, **${perk}**, doesn't exist.\n` + Object.values(LLPointPerk).join(", ")
 		);
 	}
 
@@ -75,7 +75,7 @@ command.autocomplete = async function(interaction) {
 	if (!focused_param) return;
 	const entered_value = focused_param.value;
 
-	autocomplete_values = Object.values(LLPointPerks)
+	autocomplete_values = Object.values(LLPointPerk)
 		.map((perk_str) => {
 			return {name: perk_str, value: perk_str}
 		})

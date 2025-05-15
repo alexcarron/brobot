@@ -1,13 +1,5 @@
 
 const Enums = {
-	LLPointPerks: {
-		DrawAsset: "Draw an asset for a YouTube video",
-		VoiceAct: "Voice act for a YouTube video",
-		CustomRoleColor: "Get custom Discord role color",
-		CustomPersonification: "Get a custom personification drawing",
-		AddEmote: "Add a custom emote to the server",
-	},
-
 	DatabaseURLs: {
 		Viewers: "https://raw.githubusercontent.com/alexcarron/brobot-database/main/viewers.json",
 		Messages: "https://raw.githubusercontent.com/alexcarron/brobot-database/main/messages.json",
