@@ -1,4 +1,4 @@
-const { RoleNames, RoleIdentifierKeywords, TrialOutcomes, AbilityName, AbilityArgName, Feedback } = require("../../modules/enums");
+const { RoleNames, RoleIdentifierKeywords, AbilityName, AbilityArgName, Feedback } = require("../../modules/enums");
 const RapidDiscordMafia = require("./RapidDiscordMafia");
 const RoleIdentifier = require("./RoleIdentifier");
 const GameManager = require("./GameManager");
@@ -7,6 +7,7 @@ const RoleManager = require("./RoleManager");
 const { abilities } = require("./AbilityManager");
 const { arraysHaveSameElements } = require("../../utilities/data-structure-utils");
 const { Faction, Alignment } = require("./Role");
+const { TrialOutcome } = require("./VoteManager");
 
 
 describe('GameManager', () => {
@@ -733,8 +734,8 @@ describe('GameManager', () => {
 
 			await mock_game.startTrial(mock_game.days_passed);
 
-			mock_game.vote_manager.addVoteForTrialOutcome(townie_player, TrialOutcomes.Guilty);
-			mock_game.vote_manager.addVoteForTrialOutcome(mafioso_player, TrialOutcomes.Guilty);
+			mock_game.vote_manager.addVoteForTrialOutcome(townie_player, TrialOutcome.GUILTY);
+			mock_game.vote_manager.addVoteForTrialOutcome(mafioso_player, TrialOutcome.GUILTY);
 
 			await mock_game.startTrialResults(mock_game.days_passed);
 			// Fool Lynched

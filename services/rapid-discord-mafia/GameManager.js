@@ -1,4 +1,4 @@
-const { GameStates, Phases, Subphases, MessageDelays, RDMRoles, Feedback, Announcements, RoleNames, PhaseWaitTimes, TrialOutcomes, RoleIdentifierTypes, ArgumentSubtypes, CoinRewards, } = require("../../modules/enums.js");
+const { GameStates, Phases, Subphases, MessageDelays, RDMRoles, Feedback, Announcements, RoleNames, PhaseWaitTimes, RoleIdentifierTypes, ArgumentSubtypes, CoinRewards, } = require("../../modules/enums.js");
 const ids = require("../../bot-config/discord-ids.js");
 const { PermissionFlagsBits, Role, Interaction } = require("discord.js");
 const Death = require("./Death.js");
@@ -11,7 +11,7 @@ const RoleManager = require("./RoleManager.js");
 const GameStateManager = require("./GameStateManager.js");
 const GameDataManager = require("./GameDataManager.js");
 const DiscordService = require("./DiscordService.js");
-const { VoteManager, TrialVote, VotingOutcome } = require("./VoteManager.js");
+const { VoteManager, TrialVote, VotingOutcome, TrialOutcome } = require("./VoteManager.js");
 const { toTitleCase } = require("../../utilities/text-formatting-utils.js");
 const { getShuffledArray, getRandomElement } = require("../../utilities/data-structure-utils.js");
 const { fetchChannel, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchRoleByName } = require("../../utilities/discord-fetch-utils.js");
@@ -632,16 +632,16 @@ class GameManager {
 		let trial_outcome_message = ""
 		const player_on_trial = this.player_manager.get(this.on_trial);
 
-		if (this.verdict === TrialOutcomes.Tie) {
+		if (this.verdict === TrialOutcome.TIE) {
 			trial_outcome_message = Announcements.TrialOutcomeTie(player_on_trial);
 		}
-		else if (this.verdict === TrialOutcomes.NoVotes) {
+		else if (this.verdict === TrialOutcome.NO_VOTES) {
 			trial_outcome_message = Announcements.TrialOutcomeNoVotes(player_on_trial);
 		}
-		else if (this.verdict === TrialOutcomes.Innocent) {
+		else if (this.verdict === TrialOutcome.INNOCENT) {
 			trial_outcome_message = Announcements.TrialOutcomeInnocent(player_on_trial);
 		}
-		else if (this.verdict === TrialOutcomes.Guilty) {
+		else if (this.verdict === TrialOutcome.GUILTY) {
 			trial_outcome_message = Announcements.TrialOutcomeGuilty(player_on_trial);
 		}
 
@@ -1119,7 +1119,7 @@ class GameManager {
 		await this.announceTrialVerdict();
 		await this.announceRevealedVotes();
 
-		if (this.verdict === TrialOutcomes.Guilty) {
+		if (this.verdict === TrialOutcome.GUILTY) {
 			await this.lynchPlayerOnTrial();
 		}
 

@@ -3,19 +3,6 @@ const { createListFromWords } = require("../utilities/text-formatting-utils.js")
 const { createNowUnixTimestamp } = require("../utilities/date-time-utils.js");
 
 const Enums = {
-	TrialOutcomes: {
-		Guilty: "guilty",
-		Innocent: "innocent",
-		Tie: "tie",
-		NoVotes: "none",
-	},
-
-	GameForgePhases: {
-		Brainstorming: "Brainstorming",
-		Proposing: "Proposing",
-		Voting: "Voting",
-	},
-
 	ArgumentSubtypes: {
 		Visiting: "visiting",
 		NotSelf: "not yourself",
