@@ -1,7 +1,6 @@
-const { Phases, Subphases, GameStates } = require("../../modules/enums");
-const GameStateManager = require("./GameStateManager");
+const { Subphases, GameStates } = require("../../modules/enums");
+const {GameStateManager, Phase} = require("./GameStateManager");
 const RapidDiscordMafia = require("./RapidDiscordMafia");
-const GameManager = require("./GameManager");
 
 describe('GameStateManager', () => {
 	/**
@@ -20,7 +19,7 @@ describe('GameStateManager', () => {
 
 	describe('getters', () => {
 		it('SHOULD return game\'s state, phase, subphase, and days_passed', () => {
-			mock_game.phase = Phases.Limbo;
+			mock_game.phase = Phase.LIMBO;
 			mock_game.subphase = Subphases.TrialResults;
 			mock_game.state = GameStates.ReadyToBegin;
 			mock_game.days_passed = 12.5;
@@ -34,12 +33,12 @@ describe('GameStateManager', () => {
 
 	describe('setters', () => {
 		it('SHOULD set game\'s state, phase, subphase, and days_passed', () => {
-			mock_game.state_manager.phase = Phases.Limbo;
+			mock_game.state_manager.phase = Phase.LIMBO;
 			mock_game.state_manager.subphase = Subphases.TrialResults;
 			mock_game.state_manager.state = GameStates.ReadyToBegin;
 			mock_game.state_manager.days_passed = 12.5;
 
-			expect(mock_game.phase).toBe(Phases.Limbo);
+			expect(mock_game.phase).toBe(Phase.LIMBO);
 			expect(mock_game.subphase).toBe(Subphases.TrialResults);
 			expect(mock_game.state).toBe(GameStates.ReadyToBegin);
 			expect(mock_game.days_passed).toBe(12.5);
@@ -121,16 +120,16 @@ describe('GameStateManager', () => {
 	describe('canStartFirstDay', () => {
 		it('SHOULD return yes only WHEN just before first day and on day 0', () => {
 			mock_game.state_manager.changeToStarted();
-			mock_game.state_manager.phase = Phases.None;
+			mock_game.state_manager.phase = Phase.NONE;
 			mock_game.state_manager.subphase = Subphases.None;
 			mock_game.state_manager.days_passed = 0;
 			expect(mock_game.state_manager.canStartFirstDay()).toBe(true);
 
-			mock_game.state_manager.phase = Phases.Night;
+			mock_game.state_manager.phase = Phase.NIGHT;
 			expect(mock_game.state_manager.canStartFirstDay()).toBe(false);
 
 
-			mock_game.state_manager.phase = Phases.None;
+			mock_game.state_manager.phase = Phase.NONE;
 			mock_game.state_manager.subphase = Subphases.TrialResults;
 			expect(mock_game.state_manager.canStartFirstDay()).toBe(false);
 
@@ -149,16 +148,16 @@ describe('GameStateManager', () => {
 			day_last_subphase_ended = 1;
 
 			mock_game.state_manager.changeToStarted();
-			mock_game.state_manager.phase = Phases.Night;
+			mock_game.state_manager.phase = Phase.NIGHT;
 			mock_game.state_manager.subphase = Subphases.None;
 			mock_game.state_manager.days_passed = day_last_subphase_ended;
 			expect(mock_game.state_manager.canStartDay(day_last_subphase_ended)).toBe(true);
 
-			mock_game.state_manager.phase = Phases.Day;
+			mock_game.state_manager.phase = Phase.DAY;
 			expect(mock_game.state_manager.canStartDay(day_last_subphase_ended)).toBe(false);
 
 
-			mock_game.state_manager.phase = Phases.Night;
+			mock_game.state_manager.phase = Phase.NIGHT;
 			mock_game.state_manager.subphase = Subphases.Announcements;
 			expect(mock_game.state_manager.canStartDay(day_last_subphase_ended)).toBe(false);
 
@@ -174,16 +173,16 @@ describe('GameStateManager', () => {
 			day_last_subphase_ended = 1.5;
 
 			mock_game.state_manager.changeToStarted();
-			mock_game.state_manager.phase = Phases.Day;
+			mock_game.state_manager.phase = Phase.DAY;
 			mock_game.state_manager.subphase = Subphases.Announcements;
 			mock_game.state_manager.days_passed = day_last_subphase_ended;
 			expect(mock_game.state_manager.canStartVoting(day_last_subphase_ended)).toBe(true);
 
-			mock_game.state_manager.phase = Phases.Night;
+			mock_game.state_manager.phase = Phase.NIGHT;
 			expect(mock_game.state_manager.canStartVoting(day_last_subphase_ended)).toBe(false);
 
 
-			mock_game.state_manager.phase = Phases.Day;
+			mock_game.state_manager.phase = Phase.DAY;
 			mock_game.state_manager.subphase = Subphases.Voting;
 			expect(mock_game.state_manager.canStartVoting(day_last_subphase_ended)).toBe(false);
 
@@ -199,16 +198,16 @@ describe('GameStateManager', () => {
 			day_last_subphase_ended = 1.5;
 
 			mock_game.state_manager.changeToStarted();
-			mock_game.state_manager.phase = Phases.Day;
+			mock_game.state_manager.phase = Phase.DAY;
 			mock_game.state_manager.subphase = Subphases.Voting;
 			mock_game.state_manager.days_passed = day_last_subphase_ended;
 			expect(mock_game.state_manager.canStartTrial(day_last_subphase_ended)).toBe(true);
 
-			mock_game.state_manager.phase = Phases.Night;
+			mock_game.state_manager.phase = Phase.NIGHT;
 			expect(mock_game.state_manager.canStartTrial(day_last_subphase_ended)).toBe(false);
 
 
-			mock_game.state_manager.phase = Phases.Day;
+			mock_game.state_manager.phase = Phase.DAY;
 			mock_game.state_manager.subphase = Subphases.Announcements;
 			expect(mock_game.state_manager.canStartTrial(day_last_subphase_ended)).toBe(false);
 
@@ -224,16 +223,16 @@ describe('GameStateManager', () => {
 			day_last_subphase_ended = 1.5;
 
 			mock_game.state_manager.changeToStarted();
-			mock_game.state_manager.phase = Phases.Day;
+			mock_game.state_manager.phase = Phase.DAY;
 			mock_game.state_manager.subphase = Subphases.Trial;
 			mock_game.state_manager.days_passed = day_last_subphase_ended;
 			expect(mock_game.state_manager.canStartTrialResults(day_last_subphase_ended)).toBe(true);
 
-			mock_game.state_manager.phase = Phases.Night;
+			mock_game.state_manager.phase = Phase.NIGHT;
 			expect(mock_game.state_manager.canStartTrialResults(day_last_subphase_ended)).toBe(false);
 
 
-			mock_game.state_manager.phase = Phases.Day;
+			mock_game.state_manager.phase = Phase.DAY;
 			mock_game.state_manager.subphase = Subphases.Voting;
 			expect(mock_game.state_manager.canStartTrialResults(day_last_subphase_ended)).toBe(false);
 
@@ -249,7 +248,7 @@ describe('GameStateManager', () => {
 			day_last_subphase_ended = 1.5;
 
 			mock_game.state_manager.changeToStarted();
-			mock_game.state_manager.phase = Phases.Day;
+			mock_game.state_manager.phase = Phase.DAY;
 			mock_game.state_manager.subphase = Subphases.TrialResults;
 			mock_game.state_manager.days_passed = day_last_subphase_ended;
 			expect(mock_game.state_manager.canStartNight(day_last_subphase_ended)).toBe(true);
@@ -266,11 +265,11 @@ describe('GameStateManager', () => {
 			day_last_subphase_ended = mock_game.state_manager.days_passed;
 			expect(mock_game.state_manager.canStartNight(day_last_subphase_ended)).toBe(true);
 
-			mock_game.state_manager.phase = Phases.Night;
+			mock_game.state_manager.phase = Phase.NIGHT;
 			expect(mock_game.state_manager.canStartNight(day_last_subphase_ended)).toBe(false);
 
 
-			mock_game.state_manager.phase = Phases.Day;
+			mock_game.state_manager.phase = Phase.DAY;
 			mock_game.state_manager.subphase = Subphases.Voting;
 			expect(mock_game.state_manager.canStartNight(day_last_subphase_ended)).toBe(false);
 

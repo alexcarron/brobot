@@ -1,7 +1,8 @@
-const { Phases, AbilityArgName, Announcements, Feedback } = require("../../modules/enums.js")
+const { AbilityArgName, Announcements, Feedback } = require("../../modules/enums.js")
 const {Ability, AbilityUseCount, AbilityType, AbilityPriority, AbilityDuration} = require("./Ability.js")
 const { EffectName } = require("./EffectManager.js")
-const {Arg, AbilityArgType, ArgumentSubtype} = require("./Arg.js")
+const {Arg, AbilityArgType, ArgumentSubtype} = require("./Arg.js");
+const { Phase } = require("./GameStateManager.js");
 
 class AbilityManager {
 	constructor(game_manager) {
@@ -44,7 +45,7 @@ class AbilityManager {
 			priority: AbilityPriority.PROTECTION,
 			uses: AbilityUseCount.UNLIMITED,
 			duration: AbilityDuration.DAY_AND_NIGHT,
-			phases_can_use: [Phases.Night],
+			phases_can_use: [Phase.NIGHT],
 			effects: [
 				EffectName.Heal
 			],
@@ -71,7 +72,7 @@ class AbilityManager {
 			priority: AbilityPriority.PROTECTION,
 			uses: AbilityUseCount.AMOUNT(1),
 			duration: AbilityDuration.DAY_AND_NIGHT,
-			phases_can_use: [Phases.Night],
+			phases_can_use: [Phase.NIGHT],
 			effects: [
 				EffectName.SelfHeal
 			],
@@ -89,7 +90,7 @@ class AbilityManager {
 			type: AbilityType.INVESTIGATIVE,
 			priority: AbilityPriority.INVESTIGATIVE,
 			uses: AbilityUseCount.UNLIMITED,
-			phases_can_use: [Phases.Night],
+			phases_can_use: [Phase.NIGHT],
 			effects: [
 				EffectName.Evaluate
 			],
@@ -112,7 +113,7 @@ class AbilityManager {
 			type: AbilityType.INVESTIGATIVE,
 			priority: AbilityPriority.INVESTIGATIVE,
 			uses: AbilityUseCount.UNLIMITED,
-			phases_can_use: [Phases.Night],
+			phases_can_use: [Phase.NIGHT],
 			effects: [
 				EffectName.Track
 			],
@@ -135,7 +136,7 @@ class AbilityManager {
 			type: AbilityType.INVESTIGATIVE,
 			priority: AbilityPriority.INVESTIGATIVE,
 			uses: AbilityUseCount.UNLIMITED,
-			phases_can_use: [Phases.Night],
+			phases_can_use: [Phase.NIGHT],
 			effects: [
 				EffectName.Lookout
 			],
@@ -159,7 +160,7 @@ class AbilityManager {
 			priority: AbilityPriority.ROLEBLOCK,
 			uses: AbilityUseCount.UNLIMITED,
 			duration: AbilityDuration.DAY_AND_NIGHT,
-			phases_can_use: [Phases.Night],
+			phases_can_use: [Phase.NIGHT],
 			effects: [
 				EffectName.Roleblock
 			],
@@ -186,7 +187,7 @@ class AbilityManager {
 			priority: AbilityPriority.ATTACKING,
 			uses: AbilityUseCount.AMOUNT(3),
 			duration: AbilityDuration.ONE_NIGHT,
-			phases_can_use: [Phases.Night],
+			phases_can_use: [Phase.NIGHT],
 			effects: [
 				EffectName.Attack
 			],
@@ -234,7 +235,7 @@ class AbilityManager {
 			priority: AbilityPriority.ATTACKING,
 			uses: AbilityUseCount.UNLIMITED,
 			duration: AbilityDuration.ONE_NIGHT,
-			phases_can_use: [Phases.Night],
+			phases_can_use: [Phase.NIGHT],
 			effects: [
 				EffectName.Attack
 			],
@@ -258,7 +259,7 @@ class AbilityManager {
 			priority: AbilityPriority.MANIPULATION,
 			uses: AbilityUseCount.UNLIMITED,
 			duration: AbilityDuration.DAY_AND_NIGHT,
-			phases_can_use: [Phases.Night],
+			phases_can_use: [Phase.NIGHT],
 			effects: [
 				EffectName.Frame
 			],
@@ -285,7 +286,7 @@ class AbilityManager {
 			priority: AbilityPriority.ROLEBLOCK,
 			uses: AbilityUseCount.UNLIMITED,
 			duration: AbilityDuration.DAY_AND_NIGHT,
-			phases_can_use: [Phases.Night],
+			phases_can_use: [Phase.NIGHT],
 			effects: [
 				EffectName.Roleblock
 			],
@@ -311,7 +312,7 @@ class AbilityManager {
 			type: AbilityType.INVESTIGATIVE,
 			priority: AbilityPriority.INVESTIGATIVE,
 			uses: AbilityUseCount.UNLIMITED,
-			phases_can_use: [Phases.Night],
+			phases_can_use: [Phase.NIGHT],
 			effects: [
 				EffectName.Investigate
 			],
@@ -333,7 +334,7 @@ class AbilityManager {
 			priority: AbilityPriority.MANIPULATION,
 			uses: AbilityUseCount.AMOUNT(1),
 			duration: AbilityDuration.INDEFINITE,
-			phases_can_use: [Phases.Night],
+			phases_can_use: [Phase.NIGHT],
 			effects: [
 				EffectName.SelfFrame
 			],
@@ -350,7 +351,7 @@ class AbilityManager {
 			priority: AbilityPriority.ATTACKING,
 			uses: AbilityUseCount.AMOUNT(1),
 			duration: AbilityDuration.ONE_NIGHT,
-			phases_can_use: [Phases.Limbo],
+			phases_can_use: [Phase.LIMBO],
 			effects: [
 				EffectName.Attack
 			],
@@ -372,7 +373,7 @@ class AbilityManager {
 			priority: AbilityPriority.MANIPULATION,
 			uses: AbilityUseCount.AMOUNT(1),
 			duration: AbilityDuration.INDEFINITE,
-			phases_can_use: [Phases.Night],
+			phases_can_use: [Phase.NIGHT],
 			effects: [
 				EffectName.FrameTarget
 			],
@@ -389,7 +390,7 @@ class AbilityManager {
 			priority: AbilityPriority.PROTECTION,
 			uses: AbilityUseCount.AMOUNT(4),
 			duration: AbilityDuration.DAY_AND_NIGHT,
-			phases_can_use: [Phases.Night],
+			phases_can_use: [Phase.NIGHT],
 			effects: [
 				EffectName.SelfHeal
 			],
@@ -406,7 +407,7 @@ class AbilityManager {
 			priority: AbilityPriority.ATTACKING,
 			uses: AbilityUseCount.UNLIMITED,
 			duration: AbilityDuration.ONE_NIGHT,
-			phases_can_use: [Phases.Night],
+			phases_can_use: [Phase.NIGHT],
 			effects: [
 				EffectName.Attack
 			],
@@ -430,7 +431,7 @@ class AbilityManager {
 			priority: AbilityPriority.MODIFIER,
 			uses: AbilityUseCount.UNLIMITED,
 			duration: AbilityDuration.ONE_NIGHT,
-			phases_can_use: [Phases.Night],
+			phases_can_use: [Phase.NIGHT],
 			effects: [
 				EffectName.Cautious
 			],
@@ -444,7 +445,7 @@ class AbilityManager {
 			priority: AbilityPriority.PROTECTION,
 			uses: AbilityUseCount.AMOUNT(3),
 			duration: AbilityDuration.DAY_AND_NIGHT,
-			phases_can_use: [Phases.Night],
+			phases_can_use: [Phase.NIGHT],
 			effects: [
 				EffectName.Smith
 			],
@@ -469,7 +470,7 @@ class AbilityManager {
 			priority: AbilityPriority.PROTECTION,
 			uses: AbilityUseCount.AMOUNT(1),
 			duration: AbilityDuration.DAY_AND_NIGHT,
-			phases_can_use: [Phases.Night],
+			phases_can_use: [Phase.NIGHT],
 			effects: [
 				EffectName.SelfSmith
 			],
@@ -505,7 +506,7 @@ class AbilityManager {
 			priority: AbilityPriority.CONTROL,
 			uses: AbilityUseCount.UNLIMITED,
 			duration: AbilityDuration.ONE_NIGHT,
-			phases_can_use: [Phases.Night],
+			phases_can_use: [Phase.NIGHT],
 			effects: [
 				EffectName.Control
 			],
@@ -532,7 +533,7 @@ class AbilityManager {
 			type: AbilityType.INVESTIGATIVE,
 			priority: AbilityPriority.INVESTIGATIVE,
 			uses: AbilityUseCount.UNLIMITED,
-			phases_can_use: [Phases.Night],
+			phases_can_use: [Phase.NIGHT],
 			effects: [
 				EffectName.Observe
 			],
@@ -555,7 +556,7 @@ class AbilityManager {
 			type: AbilityType.ATTACKING,
 			priority: AbilityPriority.ATTACKING,
 			uses: AbilityUseCount.UNLIMITED,
-			phases_can_use: [Phases.Night],
+			phases_can_use: [Phase.NIGHT],
 			effects: [
 				EffectName.Attack,
 				EffectName.Replace,
@@ -579,7 +580,7 @@ class AbilityManager {
 			type: AbilityType.ROLEBLOCK,
 			priority: AbilityPriority.ROLEBLOCK,
 			uses: AbilityUseCount.UNLIMITED,
-			phases_can_use: [Phases.Night],
+			phases_can_use: [Phase.NIGHT],
 			effects: [
 				EffectName.Kidnap,
 			],
@@ -632,7 +633,7 @@ class AbilityManager {
 		// Check if player is dead and can't use ability while dead
 		if (!player.isAlive) {
 			if (!(
-				ability.phases_can_use.includes(Phases.Limbo) &&
+				ability.phases_can_use.includes(Phase.LIMBO) &&
 				player.isInLimbo
 			)) {
 				return `You can't use the ability, **${ability.name}**, while you're not alive`;
@@ -645,7 +646,7 @@ class AbilityManager {
 			// Check if ability can be used in limbo and player in limbo
 			if (
 				!(
-					ability.phases_can_use.includes(Phases.Limbo) &&
+					ability.phases_can_use.includes(Phase.LIMBO) &&
 					player.isInLimbo
 				)
 			) {

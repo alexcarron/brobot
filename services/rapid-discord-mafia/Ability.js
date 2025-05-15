@@ -1,4 +1,3 @@
-const { Phases } = require("../../modules/enums.js");
 const { Arg } = require("./Arg.js");
 
 /**
@@ -135,7 +134,7 @@ class Ability {
 		type,
 		uses,
 		feedback,
-		phases_can_use=[Phases.Night],
+		phases_can_use=[Phase.NIGHT],
 		description,
 		priority,
 		duration=0.5,

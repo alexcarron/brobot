@@ -3,15 +3,6 @@ const { createListFromWords } = require("../utilities/text-formatting-utils.js")
 const { createNowUnixTimestamp } = require("../utilities/date-time-utils.js");
 
 const Enums = {
-	Phases: {
-		Day: "day",
-		Night: "night",
-		Voting: "voting",
-		Trial: "trial",
-		Limbo: "limbo",
-		None: null,
-	},
-
 	Subphases: {
 		Voting: "voting",
 		Trial: "trial",

@@ -1,7 +1,8 @@
-const { AbilityName, Phases, AbilityArgName, } = require("../../modules/enums");
+const { AbilityName, AbilityArgName, } = require("../../modules/enums");
 const { EffectName } = require("./EffectManager");
 const { Ability, AbilityUseCount, AbilityType, AbilityPriority, AbilityDuration } = require("./Ability");
 const {Arg, AbilityArgType, ArgumentSubtype} = require("./Arg");
+const { Phase } = require("./GameStateManager");
 
 describe('Ability', () => {
 	describe('constructor', () => {
@@ -12,7 +13,7 @@ describe('Ability', () => {
 			const priority = AbilityPriority.ATTACKING;
 			const uses = AbilityUseCount.None;
 			const duration = AbilityDuration.DAY_AND_NIGHT;
-			const phases_can_use = [Phases.Day, Phases.Trial];
+			const phases_can_use = [Phase.DAY, Phase.TRIAL];
 			const effects = [EffectName.Control];
 			const feedback = (player_healing, player_name="You", isYou=true) => {return "feedback"}
 			const args = [
@@ -60,7 +61,7 @@ describe('Ability', () => {
 			const priority = AbilityPriority.ATTACKING;
 			const uses = AbilityUseCount.None;
 			const duration = AbilityDuration.DAY_AND_NIGHT;
-			const phases_can_use = [Phases.Day, Phases.Trial];
+			const phases_can_use = [Phase.DAY, Phase.TRIAL];
 			const effects = [EffectName.Control];
 			const feedback = (player_healing, player_name="You", isYou=true) => {return "feedback"}
 			const args = [
