@@ -1,7 +1,6 @@
 const { TextChannel } = require("discord.js");
 const ids = require("../../bot-config/discord-ids.js");
 const cron = require("cron"); // Used to have scheduled functions execute
-const PropertyNotFoundError = require("../../modules/errors/PropertyNotFound.js");
 const { getRandomElement } = require("../../utilities/data-structure-utils.js");
 const { fetchGuild, fetchChannel } = require("../../utilities/discord-fetch-utils.js");
 const { saveObjectToJsonInGitHub } = require("../../utilities/github-json-storage-utils.js");
@@ -69,7 +68,7 @@ class DailyMessageHandler {
 		const channelId = ids.ll_game_shows.channels[channelName];
 
 		if (channelId === undefined)
-			throw new PropertyNotFoundError(channelName, "./bot-config/discord-ids.js/ll_game_shows/channels", "Channel identifier not found");
+			throw new Error("Channel identifier not found: Property, channelName, nount found on object './bot-config/discord-ids.js/ll_game_shows/channels");
 
 		const guild = await fetchGuild(DailyMessageHandler.GUILD_ID);
 		const channel = await fetchChannel(guild, channelId);
