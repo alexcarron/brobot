@@ -1,25 +1,14 @@
 
 const Enums = {
-	LLPointRewards: {
-		Subscribe: 1,
-		DoUndertaleQuiz: 1,
-		DoDeltaruneQuiz: 1,
-		DoHollowKnightQuiz: 1,
-		ParticipateInGame: 1,
-		ParticipateInEvent: 1,
-		DrawAsset: 2,
-		VoiceAct: 3,
-	},
-
 	LLPointAccomplishments: {
-		Subscribe: "Subscribing",
-		DoUndertaleQuiz: "Getting 15+ on the Undertale Quiz",
-		DoDeltaruneQuiz: "Getting 15+ on the Deltarune Quiz",
-		DoHollowKnightQuiz: "Getting 15+ on the Hollow Knight Quiz",
-		ParticipateInGame: "Participating in a Game Show",
-		ParticipateInEvent: "Participating in an Event",
-		DrawAsset: "Drawing An Asset",
-		VoiceAct: "Voice Acting",
+		SUBSCRIBE: "Subscribing",
+		DO_UNDERTALE_QUIZ: "Getting 15+ on the Undertale Quiz",
+		DO_DELTARUNE_QUIZ: "Getting 15+ on the Deltarune Quiz",
+		DO_HOLLOW_KNIGHT_QUIZ: "Getting 15+ on the Hollow Knight Quiz",
+		PARTICIPATE_IN_GAME: "Participating in a Game Show",
+		PARTICIPATE_IN_EVENT: "Participating in an Event",
+		DRAW_ASSET: "Drawing An Asset",
+		VOICE_ACT: "Voice Acting",
 	},
 
 	LLPointPerks: {

@@ -30,6 +30,20 @@ const LLPointThreshold = Object.freeze({
 	VIEWER: 0,
 });
 
+/**
+ * Enum of number of LL Points rewarded for accomplishments
+ */
+const LLPointReward = Object.freeze({
+	SUBSCRIBE: 1,
+	DO_UNDERTALE_QUIZ: 1,
+	DO_DELTARUNE_QUIZ: 1,
+	DO_HOLLOW_KNIGHT_QUIZ: 1,
+	PARTICIPATE_IN_GAME: 1,
+	PARTICIPATE_IN_EVENT: 1,
+	DRAW_ASSET: 2,
+	VOICE_ACT: 3,
+});
+
 class LLPointManager {
 	constructor() {
 		this.viewers = new Map();
@@ -245,4 +259,4 @@ class LLPointManager {
 	}
 }
 
-module.exports = {LLPointManager, LLPointTier, LLPointThreshold};
+module.exports = {LLPointManager, LLPointTier, LLPointThreshold, LLPointReward};

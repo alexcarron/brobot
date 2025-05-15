@@ -1,8 +1,8 @@
-const { LLPointRewards, LLPointAccomplishments } = require("../../modules/enums.js");
+const { LLPointAccomplishments } = require("../../modules/enums.js");
 const ids = require("../../bot-config/discord-ids.js");
 const { fetchGuild, fetchGuildMember, fetchUser, fetchRole } = require("../../utilities/discord-fetch-utils.js");
 const { addRoleToMember, removeRoleFromMember } = require("../../utilities/discord-action-utils.js");
-const { LLPointTier, LLPointThreshold } = require("./LLPointManager.js");
+const { LLPointTier, LLPointThreshold, LLPointReward } = require("./LLPointManager.js");
 
 class Viewer {
 	constructor({name, aliases=[], user_id, ll_points=0, isSubscribed=false, didUndertaleQuiz=false, didDeltaruneQuiz=false, games_participated_in=[], valentine}) {
@@ -155,7 +155,7 @@ class Viewer {
 				break;
 		}
 
-		await this.addLLPoints(LLPointRewards[accomplishment_key]);
+		await this.addLLPoints(LLPointReward[accomplishment_key]);
 		return "Success";
 	}
 
