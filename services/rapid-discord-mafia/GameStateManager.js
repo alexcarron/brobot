@@ -1,4 +1,4 @@
-const { Subphases, GameStates } = require("../../modules/enums");
+const { GameStates } = require("../../modules/enums");
 
 /**
  * Enum of possible phases of the game
@@ -9,6 +9,17 @@ const Phase = Object.freeze({
 	VOTING: "voting",
 	TRIAL: "trial",
 	LIMBO: "limbo",
+	NONE: null,
+});
+
+/**
+ * Enum of possible subphases of the game
+ */
+const Subphase = Object.freeze({
+	ANNOUNCEMENTS: "announcements",
+	VOTING: "voting",
+	TRIAL: "trial",
+	TRAIL_RESULTS: "results",
 	NONE: null,
 });
 
@@ -85,7 +96,7 @@ class GameStateManager {
 	initializeState() {
 		this.state = GameStates.Ended;
 		this.phase = Phase.NONE;
-		this.subphase = Subphases.None;
+		this.subphase = Subphase.NONE;
 		this.days_passed = 0;
 	}
 
@@ -143,7 +154,7 @@ class GameStateManager {
 		this.game.logger.logSubheading("Setting game phase to first day");
 
 		this.phase = Phase.DAY;
-		this.subphase = Subphases.None;
+		this.subphase = Subphase.NONE;
 		this.days_passed = GameStateManager.DAY_PHASE_LENGTH;
 	}
 
@@ -154,7 +165,7 @@ class GameStateManager {
 		this.game.logger.logSubheading("Setting game phase to day");
 
 		this.phase = Phase.DAY;
-		this.subphase = Subphases.Announcements;
+		this.subphase = Subphase.ANNOUNCEMENTS;
 		this.days_passed += GameStateManager.DAY_PHASE_LENGTH;
 	}
 
@@ -165,7 +176,7 @@ class GameStateManager {
 		this.game.logger.logSubheading("Setting game phase to voting");
 
 		this.phase = Phase.DAY;
-		this.subphase = Subphases.Voting;
+		this.subphase = Subphase.VOTING;
 	}
 
 	/**
@@ -175,7 +186,7 @@ class GameStateManager {
 		this.game.logger.logSubheading("Setting game phase to trial");
 
 		this.phase = Phase.DAY;
-		this.subphase = Subphases.Trial;
+		this.subphase = Subphase.TRIAL;
 	}
 
 	/**
@@ -185,7 +196,7 @@ class GameStateManager {
 		this.game.logger.logSubheading("Setting game phase to trial results");
 
 		this.phase = Phase.DAY;
-		this.subphase = Subphases.TrialResults;
+		this.subphase = Subphase.TRAIL_RESULTS;
 	}
 
 	/**
@@ -195,7 +206,7 @@ class GameStateManager {
 		this.game.logger.logSubheading("Setting game phase to night");
 
 		this.phase = Phase.NIGHT;
-		this.subphase = Subphases.None;
+		this.subphase = Subphase.NONE;
 		this.days_passed += GameStateManager.NIGHT_PHASE_LENGTH;
 	}
 
@@ -208,19 +219,19 @@ class GameStateManager {
 		switch (this.phase) {
 			case Phase.DAY:
 				switch (this.subphase) {
-					case Subphases.Announcements:
+					case Subphase.ANNOUNCEMENTS:
 						this.setToVoting();
 						break;
 
-					case Subphases.Voting:
+					case Subphase.VOTING:
 						this.setToTrial();
 						break;
 
-					case Subphases.Trial:
+					case Subphase.TRIAL:
 						this.setToTrialResults();
 						break;
 
-					case Subphases.TrialResults:
+					case Subphase.TRAIL_RESULTS:
 					default:
 						this.setToNight();
 						break;
@@ -245,7 +256,7 @@ class GameStateManager {
 		return (
 			this.state === GameStates.InProgress &&
 			this.phase === Phase.DAY &&
-			this.subphase === Subphases.Announcements
+			this.subphase === Subphase.ANNOUNCEMENTS
 		)
 	}
 
@@ -257,7 +268,7 @@ class GameStateManager {
 		return (
 			this.state === GameStates.InProgress &&
 			this.phase === Phase.DAY &&
-			this.subphase === Subphases.Voting
+			this.subphase === Subphase.VOTING
 		)
 	}
 
@@ -269,7 +280,7 @@ class GameStateManager {
 		return (
 			this.state === GameStates.InProgress &&
 			this.phase === Phase.DAY &&
-			this.subphase === Subphases.Trial
+			this.subphase === Subphase.TRIAL
 		)
 	}
 
@@ -281,7 +292,7 @@ class GameStateManager {
 		return (
 			this.state === GameStates.InProgress &&
 			this.phase === Phase.DAY &&
-			this.subphase === Subphases.TrialResults
+			this.subphase === Subphase.TRAIL_RESULTS
 		)
 	}
 
@@ -293,7 +304,7 @@ class GameStateManager {
 		return (
 			this.state === GameStates.InProgress &&
 			this.phase === Phase.NIGHT &&
-			this.subphase === Subphases.None
+			this.subphase === Subphase.NONE
 		)
 	}
 
@@ -305,7 +316,7 @@ class GameStateManager {
 		return (
 			this.state === GameStates.InProgress &&
 			this.phase === Phase.DAY &&
-			this.subphase === Subphases.None &&
+			this.subphase === Subphase.NONE &&
 			this.days_passed === GameStateManager.DAY_PHASE_LENGTH
 		)
 	}
@@ -318,7 +329,7 @@ class GameStateManager {
 		return (
 			this.state === GameStates.SignUp &&
 			this.phase === Phase.NONE &&
-			this.subphase === Subphases.None
+			this.subphase === Subphase.NONE
 		)
 	}
 
@@ -330,7 +341,7 @@ class GameStateManager {
 		return (
 			this.state === GameStates.ReadyToBegin &&
 			this.phase === Phase.NONE &&
-			this.subphase === Subphases.None
+			this.subphase === Subphase.NONE
 		)
 	}
 
@@ -342,7 +353,7 @@ class GameStateManager {
 		return (
 			this.state === GameStates.Ended &&
 			this.phase === Phase.NONE &&
-			this.subphase === Subphases.None
+			this.subphase === Subphase.NONE
 		)
 	}
 
@@ -354,7 +365,7 @@ class GameStateManager {
 		return (
 			this.state === GameStates.InProgress &&
 			this.phase === Phase.NONE &&
-			this.subphase === Subphases.None &&
+			this.subphase === Subphase.NONE &&
 			this.days_passed === 0
 		)
 	}
@@ -449,4 +460,4 @@ class GameStateManager {
 	}
 }
 
-module.exports = { GameStateManager, Phase };
+module.exports = { GameStateManager, Phase, Subphase };

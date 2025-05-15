@@ -1,4 +1,4 @@
-const { GameStates, Subphases, MessageDelays, RDMRoles, Feedback, Announcements, RoleNames, PhaseWaitTimes, RoleIdentifierTypes, CoinRewards, } = require("../../modules/enums.js");
+const { GameStates, MessageDelays, RDMRoles, Feedback, Announcements, RoleNames, PhaseWaitTimes, RoleIdentifierTypes, CoinRewards, } = require("../../modules/enums.js");
 const ids = require("../../bot-config/discord-ids.js");
 const { PermissionFlagsBits, Role, Interaction } = require("discord.js");
 const Death = require("./Death.js");
@@ -8,7 +8,7 @@ const {Arg, AbilityArgType, ArgumentSubtype} = require("./Arg.js");
 const EffectManager = require("./EffectManager.js");
 const AbilityManager = require("./AbilityManager.js");
 const RoleManager = require("./RoleManager.js");
-const {GameStateManager} = require("./GameStateManager.js");
+const {GameStateManager, Subphase} = require("./GameStateManager.js");
 const GameDataManager = require("./GameDataManager.js");
 const DiscordService = require("./DiscordService.js");
 const { VoteManager, TrialVote, VotingOutcome, TrialOutcome } = require("./VoteManager.js");
@@ -30,7 +30,7 @@ class GameManager {
 
 	/**
 	 * The current subphase the game is in
-	 * @type {Subphases}
+	 * @type {Subphase}
 	 */
 	subphase;
 
