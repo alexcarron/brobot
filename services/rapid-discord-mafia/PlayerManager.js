@@ -1,7 +1,8 @@
 const { getRandomElement } = require("../../utilities/data-structure-utils");
-const { Feedback, Announcements, RoleNames, Factions, AbilityTypes, AbilityName } = require("../../modules/enums");
+const { Feedback, Announcements, RoleNames, AbilityTypes, AbilityName } = require("../../modules/enums");
 const Logger = require("./Logger");
 const Player = require("./Player");
+const { Faction } = require("./Role");
 
 class PlayerManager {
 	/**
@@ -220,7 +221,7 @@ class PlayerManager {
 			const target_role = this.game_manager.role_manager.getRole(target_player.role);
 			if (
 				attacker_player.role === RoleNames.Vigilante &&
-				target_role.faction === Factions.Town
+				target_role.faction === Faction.TOWN
 			) {
 				attacker_player.addAbilityAffectedBy(attacker_player, AbilityName.Suicide, this.game_manager.days_passed - 0.5);
 			}

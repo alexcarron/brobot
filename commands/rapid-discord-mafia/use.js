@@ -1,12 +1,13 @@
 const Parameter = require("../../services/command-creation/Paramater");
 const SlashCommand = require("../../services/command-creation/SlashCommand");
 const { deferInteraction } = require("../../utilities/discord-action-utils");
-const { ArgumentTypes, ArgumentSubtypes, Factions, AbilityName } = require("../../modules/enums");
+const { ArgumentTypes, ArgumentSubtypes, AbilityName } = require("../../modules/enums");
 const ids = require("../../bot-config/discord-ids.js");
 const AbilityManager = require("../../services/rapid-discord-mafia/AbilityManager");
 const { toTitleCase } = require("../../utilities/text-formatting-utils.js");
 const { fetchChannel, fetchRDMGuild } = require("../../utilities/discord-fetch-utils.js");
 const { AbilityUseCount } = require("../../services/rapid-discord-mafia/Ability.js");
+const { Faction } = require("../../services/rapid-discord-mafia/Role.js");
 
 const command = new SlashCommand({
 	name: "use",
@@ -177,7 +178,7 @@ command.execute = async function(interaction, isTest) {
 
 	const player_role = global.game_manager.role_manager.getRole(player.role);
 
-	if (player_role.faction === Factions.Mafia) {
+	if (player_role.faction === Faction.MAFIA) {
 		const rdm_guild = await fetchRDMGuild();
 		const mafia_channel = await fetchChannel(rdm_guild, ids.rapid_discord_mafia.channels.mafia_chat);
 
@@ -226,7 +227,7 @@ command.autocomplete = async function(interaction) {
 
 					if (
 						ability_arg.subtypes.includes(ArgumentSubtypes.NonMafia) &&
-						global.game_manager.role_manager.getRole(player.role).faction === Factions.Mafia
+						global.game_manager.role_manager.getRole(player.role).faction === Faction.MAFIA
 					) {
 						console.log(player.name);
 						return false;

@@ -1,4 +1,4 @@
-const { GameStates, Phases, Subphases, MessageDelays, Factions, RDMRoles, Feedback, Announcements, RoleNames, PhaseWaitTimes, VotingOutcomes, TrialOutcomes, TrialVotes, RoleIdentifierTypes, ArgumentSubtypes, CoinRewards, ArgumentTypes } = require("../../modules/enums.js");
+const { GameStates, Phases, Subphases, MessageDelays, RDMRoles, Feedback, Announcements, RoleNames, PhaseWaitTimes, VotingOutcomes, TrialOutcomes, TrialVotes, RoleIdentifierTypes, ArgumentSubtypes, CoinRewards, ArgumentTypes } = require("../../modules/enums.js");
 const ids = require("../../bot-config/discord-ids.js");
 const { PermissionFlagsBits, Role, Interaction } = require("discord.js");
 const Death = require("./Death.js");
@@ -17,7 +17,7 @@ const { getShuffledArray, getRandomElement } = require("../../utilities/data-str
 const { fetchChannel, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchRoleByName } = require("../../utilities/discord-fetch-utils.js");
 const { addRoleToMember, removeRoleFromMember } = require("../../utilities/discord-action-utils.js");
 const { wait } = require("../../utilities/realtime-utils.js");
-const { Goal } = require("./Role.js");
+const { Goal, Faction } = require("./Role.js");
 // const Logger = require("./Logger.js");
 
 class GameManager {
@@ -368,24 +368,24 @@ class GameManager {
 
 			// ! Filter out Mafia/Town if adding them exceed max Mafia/Town ratio
 			if (
-				existing_factions.includes(Factions.Mafia) &&
-				existing_factions.includes(Factions.Town)
+				existing_factions.includes(Faction.MAFIA) &&
+				existing_factions.includes(Faction.TOWN)
 			) {
-				const mafia_to_town_ratio = num_roles_in_faction[Factions.Mafia] / num_roles_in_faction[Factions.Town];
-				const town_to_mafia_ratio = num_roles_in_faction[Factions.Town] / num_roles_in_faction[Factions.Mafia];
+				const mafia_to_town_ratio = num_roles_in_faction[Faction.MAFIA] / num_roles_in_faction[Faction.TOWN];
+				const town_to_mafia_ratio = num_roles_in_faction[Faction.TOWN] / num_roles_in_faction[Faction.MAFIA];
 
 				if (mafia_to_town_ratio >= GameManager.MAX_MAFIA_TO_TOWN_RATIO) {
-					possible_roles = possible_roles.filter(role => role.faction !== Factions.Mafia)
+					possible_roles = possible_roles.filter(role => role.faction !== Faction.MAFIA)
 				}
 				if (town_to_mafia_ratio >= GameManager.MAX_TOWN_TO_MAFIA_RATIO) {
-					possible_roles = possible_roles.filter(role => role.faction !== Factions.Town)
+					possible_roles = possible_roles.filter(role => role.faction !== Faction.TOWN)
 				}
 			}
 
 			// ! Filter out Non-Mafioso Mafia if Mafioso doesn't exist yet
 			if (!this.role_list.includes(RoleNames.Mafioso)) {
 				possible_roles = possible_roles.filter(role =>
-					role.faction !== Factions.Mafia ||
+					role.faction !== Faction.MAFIA ||
 					role.name === RoleNames.Mafioso
 				)
 			}
@@ -417,7 +417,7 @@ class GameManager {
 			// ! Filter out Non-Mafioso Mafia if Mafioso doesn't exist yet
 			if (!this.role_list.includes(RoleNames.Mafioso)) {
 				possible_roles = possible_roles.filter(role =>
-					role.faction !== Factions.Mafia ||
+					role.faction !== Faction.MAFIA ||
 					role.name === RoleNames.Mafioso
 				)
 			}
@@ -805,7 +805,7 @@ class GameManager {
 		return missing_factions.some((missing_faction) => {
 			if (identifier.faction == "Any")
 				return true;
-			else if (Object.values(Factions).includes(missing_faction))
+			else if (Object.values(Faction).includes(missing_faction))
 				return identifier.faction === missing_faction;
 			else
 				return identifier.faction === "Neutral" && ["Killing", "Random"].includes(identifier.alignment);
@@ -870,7 +870,7 @@ class GameManager {
 	}
 
 	static isRoleInFaction(role, faction) {
-		if (Object.values(Factions).includes(faction)) {
+		if (Object.values(Faction).includes(faction)) {
 			return role.faction === faction;
 		} else {
 			return role.name === faction;
@@ -1391,7 +1391,7 @@ class GameManager {
 		}
 
 		for (let role_checking of living_survival_roles) {
-			if (winning_faction === Factions.Town) break;
+			if (winning_faction === Faction.TOWN) break;
 			winning_players = [
 				...winning_players,
 				...alive_players
@@ -1452,11 +1452,11 @@ class GameManager {
 				) {
 					if (index == 0)
 						death_announcement_msgs.push(
-							`\n` + Feedback.AnnounceMurderByFaction(Factions.Mafia)
+							`\n` + Feedback.AnnounceMurderByFaction(Faction.MAFIA)
 						);
 					else
 						death_announcement_msgs.push(
-							`\n` + Feedback.AnnounceAnotherMurderByFaction(Factions.Mafia)
+							`\n` + Feedback.AnnounceAnotherMurderByFaction(Faction.MAFIA)
 						);
 				}
 				else {
@@ -1503,12 +1503,12 @@ class GameManager {
 	}
 
 	async promoteMafia() {
-		if (this.player_manager.isFactionAlive(Factions.Mafia)) {
+		if (this.player_manager.isFactionAlive(Faction.MAFIA)) {
 			if (
 				!this.player_manager.isRoleAlive(RoleNames.Mafioso) &&
 				!this.player_manager.isRoleAlive(RoleNames.Godfather)
 			) {
-				const mafia_players = this.player_manager.getAlivePlayersInFaction(Factions.Mafia)
+				const mafia_players = this.player_manager.getAlivePlayersInFaction(Faction.MAFIA)
 
 				const player_to_promote = getRandomElement(mafia_players);
 				const mafioso_role = this.role_manager.getRole(RoleNames.Mafioso);
@@ -2070,7 +2070,7 @@ class GameManager {
 		if (ability_arg.subtypes.includes(ArgumentSubtypes.NonMafia)) {
 			const player_targeting = this.player_manager.get(arg_value);
 			const player_targeting_role = this.role_manager.getRole(player_targeting.role);
-			if (player_targeting_role.faction === Factions.Mafia) {
+			if (player_targeting_role.faction === Faction.MAFIA) {
 				return `You cannot target **${player_targeting.name}** as you may only target non-mafia`;
 			}
 		}

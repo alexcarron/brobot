@@ -3,21 +3,6 @@ const { createListFromWords } = require("../utilities/text-formatting-utils.js")
 const { createNowUnixTimestamp } = require("../utilities/date-time-utils.js");
 
 const Enums = {
-	Effects: {
-		Attack: {name: "attack"},
-		Defend: (defense_level) => {
-			if ( !Number.isInteger(defense_level) || defense_level <= 0 )
-				throw new Error(`Error: Invalid Defense Level ${defense_level}. Must be positive non-zero integer.`);
-			return {name: "defend", parameters: [defense_level]}
-		},
-	},
-
-	Factions: {
-		Mafia: "Mafia",
-		Town: "Town",
-		Neutral: "Neutral",
-	},
-
 	Alignments: {
 		Crowd: "Crowd",
 		Investigative: "Investigative",

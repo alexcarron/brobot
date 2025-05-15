@@ -1,6 +1,6 @@
-const { Factions, Alignments, Immunities, RoleNames } = require("../../modules/enums.js");
+const { Alignments, Immunities, RoleNames } = require("../../modules/enums.js");
 const { abilities, AbilityName } = require("./AbilityManager.js");
-const {Role, Goal} = require("./Role.js");
+const {Role, Goal, Faction} = require("./Role.js");
 
 class RoleManager {
 	constructor() {}
@@ -8,7 +8,7 @@ class RoleManager {
 	static roles = {
 		[RoleNames.Townie]: new Role({
 			name: RoleNames.Townie,
-			faction: Factions.Town,
+			faction: Faction.TOWN,
 			alignment: Alignments.Crowd,
 			attack: 0,
 			defense: 0,
@@ -16,7 +16,7 @@ class RoleManager {
 		}),
 		[RoleNames.Doctor]: new Role({
 			name: RoleNames.Doctor,
-			faction: Factions.Town,
+			faction: Faction.TOWN,
 			alignment: Alignments.Protective,
 			attack: 0,
 			defense: 0,
@@ -28,7 +28,7 @@ class RoleManager {
 		}),
 		[RoleNames.Sheriff]: new Role({
 			name: RoleNames.Sheriff,
-			faction: Factions.Town,
+			faction: Faction.TOWN,
 			alignment: Alignments.Investigative,
 			attack: 0,
 			defense: 0,
@@ -39,7 +39,7 @@ class RoleManager {
 		}),
 		[RoleNames.Tracker]: new Role({
 			name: RoleNames.Tracker,
-			faction: Factions.Town,
+			faction: Faction.TOWN,
 			alignment: Alignments.Investigative,
 			attack: 0,
 			defense: 0,
@@ -50,7 +50,7 @@ class RoleManager {
 		}),
 		[RoleNames.Lookout]: new Role({
 			name: RoleNames.Lookout,
-			faction: Factions.Town,
+			faction: Faction.TOWN,
 			alignment: Alignments.Investigative,
 			attack: 0,
 			defense: 0,
@@ -61,7 +61,7 @@ class RoleManager {
 		}),
 		[RoleNames.Escort]: new Role({
 			name: RoleNames.Escort,
-			faction: Factions.Town,
+			faction: Faction.TOWN,
 			alignment: Alignments.Support,
 			immunities: [Immunities.Roleblock],
 			attack: 0,
@@ -73,7 +73,7 @@ class RoleManager {
 		}),
 		[RoleNames.Vigilante]: new Role({
 			name: RoleNames.Vigilante,
-			faction: Factions.Town,
+			faction: Faction.TOWN,
 			alignment: Alignments.Killing,
 			attack: 1,
 			defense: 0,
@@ -100,7 +100,7 @@ class RoleManager {
 
 		[RoleNames.Mafioso]: new Role({
 			name: RoleNames.Mafioso,
-			faction: Factions.Mafia,
+			faction: Faction.MAFIA,
 			alignment: Alignments.Killing,
 			isUnique: true,
 			attack: 1,
@@ -113,7 +113,7 @@ class RoleManager {
 		}),
 		[RoleNames.Framer]: new Role({
 			name: RoleNames.Framer,
-			faction: Factions.Mafia,
+			faction: Faction.MAFIA,
 			alignment: Alignments.Deception,
 			attack: 0,
 			defense: 0,
@@ -124,7 +124,7 @@ class RoleManager {
 		}),
 		[RoleNames.Consort]: new Role({
 			name: RoleNames.Consort,
-			faction: Factions.Mafia,
+			faction: Faction.MAFIA,
 			alignment: Alignments.Support,
 			immunities: [Immunities.Roleblock],
 			attack: 0,
@@ -136,7 +136,7 @@ class RoleManager {
 		}),
 		[RoleNames.Consigliere]: new Role({
 			name: RoleNames.Consigliere,
-			faction: Factions.Mafia,
+			faction: Faction.MAFIA,
 			alignment: Alignments.Support,
 			attack: 0,
 			defense: 0,
@@ -147,7 +147,7 @@ class RoleManager {
 		}),
 		[RoleNames.Kidnapper]: new Role({
 			name: RoleNames.Kidnapper,
-			faction: Factions.Mafia,
+			faction: Faction.MAFIA,
 			alignment: Alignments.Support,
 			attack: 0,
 			defense: 0,
@@ -158,7 +158,7 @@ class RoleManager {
 		}),
 		[RoleNames.Fool]: new Role({
 			name: RoleNames.Fool,
-			faction: Factions.Neutral,
+			faction: Faction.NEUTRAL,
 			alignment: Alignments.Evil,
 			attack: 4,
 			defense: 0,
@@ -170,7 +170,7 @@ class RoleManager {
 		}),
 		[RoleNames.Executioner]: new Role({
 			name: RoleNames.Executioner,
-			faction: Factions.Neutral,
+			faction: Faction.NEUTRAL,
 			alignment: Alignments.Evil,
 			attack: 0,
 			defense: 1,
@@ -182,7 +182,7 @@ class RoleManager {
 		}),
 		[RoleNames.Survivor]: new Role({
 			name: RoleNames.Survivor,
-			faction: Factions.Neutral,
+			faction: Faction.NEUTRAL,
 			alignment: Alignments.Benign,
 			attack: 0,
 			defense: 0,
@@ -193,7 +193,7 @@ class RoleManager {
 		}),
 		[RoleNames.SerialKiller]: new Role({
 			name: RoleNames.SerialKiller,
-			faction: Factions.Neutral,
+			faction: Faction.NEUTRAL,
 			alignment: Alignments.Killing,
 			immunities: [Immunities.Roleblock],
 		attack: 1,
@@ -207,7 +207,7 @@ class RoleManager {
 		}),
 		[RoleNames.Blacksmith]: new Role({
 			name: RoleNames.Blacksmith,
-			faction: Factions.Neutral,
+			faction: Faction.NEUTRAL,
 			alignment: Alignments.Benign,
 			attack: 0,
 			defense: 0,
@@ -219,7 +219,7 @@ class RoleManager {
 		}),
 		[RoleNames.Witch]: new Role({
 			name: RoleNames.Witch,
-			faction: Factions.Neutral,
+			faction: Faction.NEUTRAL,
 			alignment: Alignments.Evil,
 			attack: 0,
 			defense: 0,
@@ -231,7 +231,7 @@ class RoleManager {
 		}),
 		[RoleNames.Oracle]: new Role({
 			name: RoleNames.Oracle,
-			faction: Factions.Town,
+			faction: Faction.TOWN,
 			alignment: Alignments.Investigative,
 			attack: 0,
 			defense: 0,
@@ -242,7 +242,7 @@ class RoleManager {
 		}),
 		[RoleNames.Impersonator]: new Role({
 			name: RoleNames.Impersonator,
-			faction: Factions.Neutral,
+			faction: Faction.NEUTRAL,
 			alignment: Alignments.Chaos,
 			attack: 2,
 			defense: 0,
@@ -286,10 +286,10 @@ class RoleManager {
 
 	static getPossibleFactions() {
 		return [
-			Factions.Mafia,
-			Factions.Town,
+			Faction.MAFIA,
+			Faction.TOWN,
 			...RoleManager.getListOfRoles()
-				.filter((role) => `${role.faction} ${role.alignment}` === `${Factions.Neutral} ${Alignments.Killing}`)
+				.filter((role) => `${role.faction} ${role.alignment}` === `${Faction.NEUTRAL} ${Alignments.Killing}`)
 				.map((role) => role.name)
 		];
 	}
@@ -309,7 +309,7 @@ class RoleManager {
 	 * @returns {string[]} An array of the names of all factions.
 	 */
 	static getListOfFactions() {
-		return Object.values(Factions);
+		return Object.values(Faction);
 	}
 
 	/**

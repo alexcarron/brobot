@@ -1,7 +1,7 @@
-const { RDMRoles, Announcements, Feedback, Factions, RoleNames, AbilityName: AbilityName, AbilityArgName, ArgumentSubtypes } = require("../../modules/enums.js");
+const { RDMRoles, Announcements, Feedback, RoleNames, AbilityName: AbilityName, AbilityArgName, ArgumentSubtypes } = require("../../modules/enums.js");
 const RoleManager = require("./RoleManager.js");
 const ids = require("../../bot-config/discord-ids.js");
-const { Role } = require("./Role.js");
+const { Role, Faction } = require("./Role.js");
 const Logger = require("./Logger.js");
 const DiscordService = require("./DiscordService.js");
 const { fetchRDMGuild, fetchRoleByName } = require("../../utilities/discord-fetch-utils.js");
@@ -287,7 +287,7 @@ class Player {
 
 		await this.sendRoleInfo();
 
-		if (role.faction == Factions.Mafia && !this.isMockPlayer) {
+		if (role.faction == Faction.MAFIA && !this.isMockPlayer) {
 			this.giveAccessToMafiaChat();
 		}
 	}
@@ -358,7 +358,7 @@ class Player {
 
 				const role = RoleManager.getListOfRoles().find(role => role.name === this.role);
 
-				if (role.faction == Factions.Mafia) {
+				if (role.faction == Faction.MAFIA) {
 					this.removeAccessFromMafiaChat();
 				}
 			}
@@ -503,7 +503,7 @@ class Player {
 	isTown() {
 		if (this.role) {
 			const role = RoleManager.roles[this.role]
-			if (role && role.faction === Factions.Town) {
+			if (role && role.faction === Faction.TOWN) {
 				return true;
 			}
 		}

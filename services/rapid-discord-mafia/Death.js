@@ -1,4 +1,4 @@
-const { Factions } = require("../../modules/enums");
+const { Faction } = require("./Role");
 
 class Death {
 	/**
@@ -29,7 +29,7 @@ class Death {
 
 	setToLynch() {
 		const kill = {
-			killer_name: Factions.Town
+			killer_name: Faction.TOWN
 		}
 
 		this.kills.push(kill);
@@ -37,7 +37,7 @@ class Death {
 
 	isLynch() {
 		return this.kills.some(kill =>
-			kill.killer_name === Factions.Town
+			kill.killer_name === Faction.TOWN
 		)
 	}
 }

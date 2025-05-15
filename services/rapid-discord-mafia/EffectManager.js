@@ -1,7 +1,8 @@
 const Effect = require("./Effect");
-const { RoleNames, AbilityName, AbilityArgName, Factions, Alignments, Feedback, Immunities, ArgumentTypes, ArgumentSubtypes } = require("../../modules/enums");
+const { RoleNames, AbilityName, AbilityArgName, Alignments, Feedback, Immunities, ArgumentTypes, ArgumentSubtypes } = require("../../modules/enums");
 const Logger = require("./Logger");
 const { AbilityUseCount } = require("./Ability");
+const { Faction } = require("./Role");
 
 /**
  * Used to handle ability effects and apply them
@@ -209,10 +210,10 @@ class EffectManager {
 					evaluated_role = game.role_manager.getRole(player_evaluating.getPercievedRole());
 
 				const evaluatedPlayerInMafia =
-					[Factions.Mafia].includes(evaluated_role.faction);
+					[Faction.MAFIA].includes(evaluated_role.faction);
 
 				const evaluatedPlayerIsNeutralKilling = (
-					evaluated_role.faction === Factions.Neutral &&
+					evaluated_role.faction === Faction.NEUTRAL &&
 					evaluated_role.alignment === Alignments.Killing
 				);
 

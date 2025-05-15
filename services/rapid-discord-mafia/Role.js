@@ -1,5 +1,10 @@
 const { toTitleCase } = require("../../utilities/text-formatting-utils.js");
-const { Factions } = require("../../modules/enums.js");
+
+const Faction = Object.freeze({
+	MAFIA: "Mafia",
+	TOWN: "Town",
+	NEUTRAL: "Neutral",
+});
 
 const Goal = Object.freeze({
 	ELIMINATE_OTHER_FACTIONS: "Eliminate all non-neutral factions outside of your own as well as any Neutral Killing/Tyrant roles.",
@@ -62,7 +67,7 @@ class Role {
 	}
 
 	getFaction() {
-		if ([Factions.Mafia, Factions.Town].includes(this.faction)) {
+		if ([Faction.MAFIA, Faction.TOWN].includes(this.faction)) {
 			return this.faction;
 		}
 		else {
@@ -71,4 +76,4 @@ class Role {
 	}
 }
 
-module.exports = { Role, Goal };
+module.exports = { Role, Faction, Goal };
