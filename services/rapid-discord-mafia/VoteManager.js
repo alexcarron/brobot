@@ -9,6 +9,15 @@ const Vote = Object.freeze({
 	PLAYER: (playerName) => `${playerName}`,
 });
 
+/**
+ * Enum of possible trial votes
+ */
+const TrialVote = Object.freeze({
+	GUILTY: "guilty",
+	INNOCENT: "innocent",
+	ABSTAIN: "abstain",
+});
+
 class VoteManager {
 	constructor(game_manager) {
 		this.game_manager = game_manager;
@@ -182,7 +191,7 @@ class VoteManager {
 				let vote = player_votes[voter];
 
 				if (
-					vote.toLowerCase() == TrialVotes.Abstain.toLowerCase() ||
+					vote.toLowerCase() == TrialVote.Abstain.toLowerCase() ||
 					vote.toLowerCase() == Vote.ABSTAIN.toLowerCase()
 				)
 					continue;
@@ -203,4 +212,4 @@ class VoteManager {
 	}
 }
 
-module.exports = {VoteManager, Vote};
+module.exports = {VoteManager, Vote, TrialVote};

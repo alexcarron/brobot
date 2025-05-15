@@ -9,13 +9,7 @@ const Enums = {
 		Tie: "tie",
 		Player: (player_name) => `${player_name}`,
 	},
-
-	TrialVotes: {
-		Guilty: "guilty",
-		Innocent: "innocent",
-		Abstain: "abstain",
-	},
-
+	
 	TrialOutcomes: {
 		Guilty: "guilty",
 		Innocent: "innocent",

@@ -21,7 +21,7 @@ const Subparameters = {
 		type: "string",
 		name: "trial-outcome",
 		description: "The vote you want to cast for the current trial",
-		autocomplete: Enums.TrialVotes
+		autocomplete: Enums.TrialVote
 	}),
 }
 const Parameters = {

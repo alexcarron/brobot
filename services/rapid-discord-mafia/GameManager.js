@@ -1,4 +1,4 @@
-const { GameStates, Phases, Subphases, MessageDelays, RDMRoles, Feedback, Announcements, RoleNames, PhaseWaitTimes, VotingOutcomes, TrialOutcomes, TrialVotes, RoleIdentifierTypes, ArgumentSubtypes, CoinRewards, } = require("../../modules/enums.js");
+const { GameStates, Phases, Subphases, MessageDelays, RDMRoles, Feedback, Announcements, RoleNames, PhaseWaitTimes, VotingOutcomes, TrialOutcomes, RoleIdentifierTypes, ArgumentSubtypes, CoinRewards, } = require("../../modules/enums.js");
 const ids = require("../../bot-config/discord-ids.js");
 const { PermissionFlagsBits, Role, Interaction } = require("discord.js");
 const Death = require("./Death.js");
@@ -11,7 +11,7 @@ const RoleManager = require("./RoleManager.js");
 const GameStateManager = require("./GameStateManager.js");
 const GameDataManager = require("./GameDataManager.js");
 const DiscordService = require("./DiscordService.js");
-const { VoteManager } = require("./VoteManager.js");
+const { VoteManager, TrialVote } = require("./VoteManager.js");
 const { toTitleCase } = require("../../utilities/text-formatting-utils.js");
 const { getShuffledArray, getRandomElement } = require("../../utilities/data-structure-utils.js");
 const { fetchChannel, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchRoleByName } = require("../../utilities/discord-fetch-utils.js");
@@ -585,7 +585,7 @@ class GameManager {
 
 			const players_voting_guilty =
 				Object.entries(this.trial_votes)
-					.filter(entry => entry[1] === TrialVotes.Guilty)
+					.filter(entry => entry[1] === TrialVote.GUILTY)
 					.map(entry => entry[0]);
 
 			player_on_trial.players_can_use_on = players_voting_guilty;
@@ -849,7 +849,7 @@ class GameManager {
 		for (let voter in votes) {
 			let vote = votes[voter];
 
-			if (vote.toLowerCase() == TrialVotes.Abstain)
+			if (vote.toLowerCase() == TrialVote.ABSTAIN)
 				continue;
 
 			if (!vote_counts[vote])
