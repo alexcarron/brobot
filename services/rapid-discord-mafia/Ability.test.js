@@ -1,6 +1,6 @@
-const { AbilityName, AbilityPriority, Duration, Phases, AbilityArgName, ArgumentTypes, ArgumentSubtypes } = require("../../modules/enums");
+const { AbilityName, Duration, Phases, AbilityArgName, ArgumentTypes, ArgumentSubtypes } = require("../../modules/enums");
 const { EffectName } = require("./EffectManager");
-const { Ability, AbilityUseCount, AbilityType } = require("./Ability");
+const { Ability, AbilityUseCount, AbilityType, AbilityPriority } = require("./Ability");
 const Arg = require("./Arg");
 
 describe('Ability', () => {
@@ -9,7 +9,7 @@ describe('Ability', () => {
 			const name = AbilityName.Cautious;
 			const description = "description";
 			const type = AbilityType.ATTACKING;
-			const priority = AbilityPriority.Attacking;
+			const priority = AbilityPriority.ATTACKING;
 			const uses = AbilityUseCount.None;
 			const duration = Duration.DayAndNight;
 			const phases_can_use = [Phases.Day, Phases.Trial];
@@ -57,7 +57,7 @@ describe('Ability', () => {
 			const name = AbilityName.Cautious;
 			const description = "description";
 			const type = AbilityType.ATTACKING;
-			const priority = AbilityPriority.Attacking;
+			const priority = AbilityPriority.ATTACKING;
 			const uses = AbilityUseCount.None;
 			const duration = Duration.DayAndNight;
 			const phases_can_use = [Phases.Day, Phases.Trial];

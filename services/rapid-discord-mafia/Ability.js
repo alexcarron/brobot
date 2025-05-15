@@ -2,7 +2,7 @@ const { Duration, Phases } = require("../../modules/enums.js");
 const Arg = require("./Arg.js");
 
 /**
- * Enum of possible values for the type field of an Ability
+ * Enum of possible types of an Ability
  */
 const AbilityType = Object.freeze({
 	PROTECTION: "protection",
@@ -18,7 +18,23 @@ const AbilityType = Object.freeze({
 });
 
 /**
- * Enum of possible values for the uses field of an Ability.
+ * Enum of possible priorities of an ability determined by its type
+ */
+const AbilityPriority = Object.freeze({
+	MUTING: 1,
+	ROLE_CHANGE: 1,
+	MODIFIER: 1,
+	ROLEBLOCK: 2,
+	CONTROL: 2,
+	PROTECTION: 3,
+	ATTACKING: 4,
+	SUICIDE: 4,
+	MANIPULATION: 5,
+	INVESTIGATIVE: 6,
+});
+
+/**
+ * Enum of possible amount of uses an Ability has.
  */
 const AbilityUseCount = Object.freeze({
 	UNLIMITED: -1,
@@ -180,4 +196,4 @@ class Ability {
 	}
 }
 
-module.exports = {Ability, AbilityUseCount, AbilityType};
+module.exports = {Ability, AbilityUseCount, AbilityType, AbilityPriority};

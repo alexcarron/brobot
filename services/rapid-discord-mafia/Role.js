@@ -1,11 +1,17 @@
 const { toTitleCase } = require("../../utilities/text-formatting-utils.js");
 
+/**
+ * Enum of possible factions
+ */
 const Faction = Object.freeze({
 	MAFIA: "Mafia",
 	TOWN: "Town",
 	NEUTRAL: "Neutral",
 });
 
+/**
+ * Enums of possible role alignments
+ */
 const Alignment = Object.freeze({
 	CROWD: "Crowd",
 	INVESTIGATIVE: "Investigative",
@@ -20,6 +26,9 @@ const Alignment = Object.freeze({
 	RANDOM: "Random",
 });
 
+/**
+ * Enum of possible win conditions for a role
+ */
 const Goal = Object.freeze({
 	ELIMINATE_OTHER_FACTIONS: "Eliminate all non-neutral factions outside of your own as well as any Neutral Killing/Tyrant roles.",
 	SURVIVE_ELIMINATED_OTHER_FACTIONS: "Survive until the end of the game and eliminate all non-neutral factions outside of your own as well as any different Neutral Killing/Tyrant roles.",
