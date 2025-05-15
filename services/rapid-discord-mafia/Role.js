@@ -1,6 +1,33 @@
 const { toTitleCase } = require("../../utilities/text-formatting-utils.js");
 
 /**
+ * Enums of possible names of a Role
+ */
+const RoleName = Object.freeze({
+	MAFIOSO: "Mafioso",
+	GODFATHER: "Godfather",
+	FRAMER: "Framer",
+	CONSORT: "Consort",
+	EXECUTIONER: "Executioner",
+	DOCTOR: "Doctor",
+	WITCH: "Witch",
+	ESCORT: "Escort",
+	TOWNIE: "Townie",
+	SHERIFF: "Sheriff",
+	SURVIVOR: "Survivor",
+	FOOL: "Fool",
+	ORACLE: "Oracle",
+	IMPERSONATOR: "Impersonator",
+	KINDAPPER: "Kidnapper",
+	VIGILANTE: "Vigilante",
+	TRACKER: "Tracker",
+	LOOKOUT: "Lookout",
+	SERIAL_KILLER: "Serial Killer",
+	CONSIGLIERE: "Consigliere",
+	BLACKSMITH: "Blacksmith",
+})
+
+/**
  * Enum of possible factions
  */
 const Faction = Object.freeze({
@@ -107,4 +134,4 @@ class Role {
 	}
 }
 
-module.exports = { Role, Faction, Goal, Alignment, Immunity };
+module.exports = { Role, Faction, Goal, Alignment, Immunity, RoleName };

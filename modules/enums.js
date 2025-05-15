@@ -1,29 +1,5 @@
 
 const Enums = {
-	RoleNames: {
-		Mafioso: "Mafioso",
-		Godfather: "Godfather",
-		Framer: "Framer",
-		Consort: "Consort",
-		Executioner: "Executioner",
-		Doctor: "Doctor",
-		Witch: "Witch",
-		Escort: "Escort",
-		Townie: "Townie",
-		Sheriff: "Sheriff",
-		Survivor: "Survivor",
-		Fool: "Fool",
-		Oracle: "Oracle",
-		Impersonator: "Impersonator",
-		Kidnapper: "Kidnapper",
-		Vigilante: "Vigilante",
-		Tracker: "Tracker",
-		Lookout: "Lookout",
-		SerialKiller: "Serial Killer",
-		Consigliere: "Consigliere",
-		Blacksmith: "Blacksmith",
-	},
-
 	ServerPort: {
 		LMStudioMistral: "1234",
 	},

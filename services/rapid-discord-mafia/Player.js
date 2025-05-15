@@ -1,7 +1,7 @@
-const { RDMRoles, RoleNames, } = require("../../modules/enums.js");
+const { RDMRoles, } = require("../../modules/enums.js");
 const RoleManager = require("./RoleManager.js");
 const ids = require("../../bot-config/discord-ids.js");
-const { Role, Faction } = require("./Role.js");
+const { Role, Faction, RoleName } = require("./Role.js");
 const Logger = require("./Logger.js");
 const DiscordService = require("./DiscordService.js");
 const { fetchRDMGuild, fetchRoleByName } = require("../../utilities/discord-fetch-utils.js");
@@ -497,7 +497,7 @@ class Player {
 	 * Frames player as mafioso
 	 */
 	frame() {
-		this.percieved.role = RoleNames.Mafioso;
+		this.percieved.role = RoleName.MAFIOSO;
 	}
 
 	/**

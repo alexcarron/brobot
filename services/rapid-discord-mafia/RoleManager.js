@@ -1,22 +1,21 @@
-const { RoleNames } = require("../../modules/enums.js");
 const { AbilityName } = require("./Ability.js");
 const { abilities } = require("./AbilityManager.js");
-const {Role, Goal, Faction, Alignment, Immunity} = require("./Role.js");
+const {Role, Goal, Faction, Alignment, Immunity, RoleName} = require("./Role.js");
 
 class RoleManager {
 	constructor() {}
 
 	static roles = {
-		[RoleNames.Townie]: new Role({
-			name: RoleNames.Townie,
+		[RoleName.TOWNIE]: new Role({
+			name: RoleName.TOWNIE,
 			faction: Faction.TOWN,
 			alignment: Alignment.CROWD,
 			attack: 0,
 			defense: 0,
 			goal: Goal.ELIMINATE_OTHER_FACTIONS,
 		}),
-		[RoleNames.Doctor]: new Role({
-			name: RoleNames.Doctor,
+		[RoleName.DOCTOR]: new Role({
+			name: RoleName.DOCTOR,
 			faction: Faction.TOWN,
 			alignment: Alignment.PROTECTIVE,
 			attack: 0,
@@ -27,8 +26,8 @@ class RoleManager {
 				abilities[AbilityName.HEAL_SELF],
 			]
 		}),
-		[RoleNames.Sheriff]: new Role({
-			name: RoleNames.Sheriff,
+		[RoleName.SHERIFF]: new Role({
+			name: RoleName.SHERIFF,
 			faction: Faction.TOWN,
 			alignment: Alignment.INVESTIGATIVE,
 			attack: 0,
@@ -38,8 +37,8 @@ class RoleManager {
 				abilities[AbilityName.EVALUATE],
 			]
 		}),
-		[RoleNames.Tracker]: new Role({
-			name: RoleNames.Tracker,
+		[RoleName.TRACKER]: new Role({
+			name: RoleName.TRACKER,
 			faction: Faction.TOWN,
 			alignment: Alignment.INVESTIGATIVE,
 			attack: 0,
@@ -49,8 +48,8 @@ class RoleManager {
 				abilities[AbilityName.TRACK],
 			]
 		}),
-		[RoleNames.Lookout]: new Role({
-			name: RoleNames.Lookout,
+		[RoleName.LOOKOUT]: new Role({
+			name: RoleName.LOOKOUT,
 			faction: Faction.TOWN,
 			alignment: Alignment.INVESTIGATIVE,
 			attack: 0,
@@ -60,8 +59,8 @@ class RoleManager {
 				abilities[AbilityName.LOOKOUT],
 			]
 		}),
-		[RoleNames.Escort]: new Role({
-			name: RoleNames.Escort,
+		[RoleName.ESCORT]: new Role({
+			name: RoleName.ESCORT,
 			faction: Faction.TOWN,
 			alignment: Alignment.SUPPORT,
 			immunities: [Immunity.ROLEBLOCK],
@@ -72,8 +71,8 @@ class RoleManager {
 				abilities[AbilityName.ROLEBLOCK],
 			]
 		}),
-		[RoleNames.Vigilante]: new Role({
-			name: RoleNames.Vigilante,
+		[RoleName.VIGILANTE]: new Role({
+			name: RoleName.VIGILANTE,
 			faction: Faction.TOWN,
 			alignment: Alignment.KILLING,
 			attack: 1,
@@ -99,8 +98,8 @@ class RoleManager {
 		// 	],
 		// }),
 
-		[RoleNames.Mafioso]: new Role({
-			name: RoleNames.Mafioso,
+		[RoleName.MAFIOSO]: new Role({
+			name: RoleName.MAFIOSO,
 			faction: Faction.MAFIA,
 			alignment: Alignment.KILLING,
 			isUnique: true,
@@ -112,8 +111,8 @@ class RoleManager {
 			],
 			notes: "If you are not alive, a random mafia member will be converted to the Mafioso and take your place."
 		}),
-		[RoleNames.Framer]: new Role({
-			name: RoleNames.Framer,
+		[RoleName.FRAMER]: new Role({
+			name: RoleName.FRAMER,
 			faction: Faction.MAFIA,
 			alignment: Alignment.DECEPTION,
 			attack: 0,
@@ -123,8 +122,8 @@ class RoleManager {
 				abilities[AbilityName.FRAME],
 			]
 		}),
-		[RoleNames.Consort]: new Role({
-			name: RoleNames.Consort,
+		[RoleName.CONSORT]: new Role({
+			name: RoleName.CONSORT,
 			faction: Faction.MAFIA,
 			alignment: Alignment.SUPPORT,
 			immunities: [Immunity.ROLEBLOCK],
@@ -135,8 +134,8 @@ class RoleManager {
 				abilities[AbilityName.CONSORT],
 			]
 		}),
-		[RoleNames.Consigliere]: new Role({
-			name: RoleNames.Consigliere,
+		[RoleName.CONSIGLIERE]: new Role({
+			name: RoleName.CONSIGLIERE,
 			faction: Faction.MAFIA,
 			alignment: Alignment.SUPPORT,
 			attack: 0,
@@ -146,8 +145,8 @@ class RoleManager {
 				abilities[AbilityName.INVESTIGATE],
 			]
 		}),
-		[RoleNames.Kidnapper]: new Role({
-			name: RoleNames.Kidnapper,
+		[RoleName.KINDAPPER]: new Role({
+			name: RoleName.KINDAPPER,
 			faction: Faction.MAFIA,
 			alignment: Alignment.SUPPORT,
 			attack: 0,
@@ -157,8 +156,8 @@ class RoleManager {
 				abilities[AbilityName.KIDNAP],
 			]
 		}),
-		[RoleNames.Fool]: new Role({
-			name: RoleNames.Fool,
+		[RoleName.FOOL]: new Role({
+			name: RoleName.FOOL,
 			faction: Faction.NEUTRAL,
 			alignment: Alignment.EVIL,
 			attack: 4,
@@ -169,8 +168,8 @@ class RoleManager {
 				abilities[AbilityName.DEATH_CURSE],
 			],
 		}),
-		[RoleNames.Executioner]: new Role({
-			name: RoleNames.Executioner,
+		[RoleName.EXECUTIONER]: new Role({
+			name: RoleName.EXECUTIONER,
 			faction: Faction.NEUTRAL,
 			alignment: Alignment.EVIL,
 			attack: 0,
@@ -181,8 +180,8 @@ class RoleManager {
 			],
 			"notes": "At the beginning of the game, you will be given a town player target that you must try to get lynched before the end of the game. If your target dies before then, you'll become a Fool."
 		}),
-		[RoleNames.Survivor]: new Role({
-			name: RoleNames.Survivor,
+		[RoleName.SURVIVOR]: new Role({
+			name: RoleName.SURVIVOR,
 			faction: Faction.NEUTRAL,
 			alignment: Alignment.BENIGN,
 			attack: 0,
@@ -192,8 +191,8 @@ class RoleManager {
 				abilities[AbilityName.SELF_VEST],
 			]
 		}),
-		[RoleNames.SerialKiller]: new Role({
-			name: RoleNames.SerialKiller,
+		[RoleName.SERIAL_KILLER]: new Role({
+			name: RoleName.SERIAL_KILLER,
 			faction: Faction.NEUTRAL,
 			alignment: Alignment.KILLING,
 			immunities: [Immunity.ROLEBLOCK],
@@ -206,8 +205,8 @@ class RoleManager {
 			],
 			"notes": "You'll automatically attack anybody who roleblocks you instead of your original target."
 		}),
-		[RoleNames.Blacksmith]: new Role({
-			name: RoleNames.Blacksmith,
+		[RoleName.BLACKSMITH]: new Role({
+			name: RoleName.BLACKSMITH,
 			faction: Faction.NEUTRAL,
 			alignment: Alignment.BENIGN,
 			attack: 0,
@@ -218,8 +217,8 @@ class RoleManager {
 				abilities[AbilityName.SELF_SMITH],
 			],
 		}),
-		[RoleNames.Witch]: new Role({
-			name: RoleNames.Witch,
+		[RoleName.WITCH]: new Role({
+			name: RoleName.WITCH,
 			faction: Faction.NEUTRAL,
 			alignment: Alignment.EVIL,
 			attack: 0,
@@ -230,8 +229,8 @@ class RoleManager {
 				abilities[AbilityName.CONTROL],
 			],
 		}),
-		[RoleNames.Oracle]: new Role({
-			name: RoleNames.Oracle,
+		[RoleName.ORACLE]: new Role({
+			name: RoleName.ORACLE,
 			faction: Faction.TOWN,
 			alignment: Alignment.INVESTIGATIVE,
 			attack: 0,
@@ -241,8 +240,8 @@ class RoleManager {
 				abilities[AbilityName.OBSERVE],
 			],
 		}),
-		[RoleNames.Impersonator]: new Role({
-			name: RoleNames.Impersonator,
+		[RoleName.IMPERSONATOR]: new Role({
+			name: RoleName.IMPERSONATOR,
 			faction: Faction.NEUTRAL,
 			alignment: Alignment.CHAOS,
 			attack: 2,

@@ -1,8 +1,7 @@
 const { getRandomElement } = require("../../utilities/data-structure-utils");
-const { RoleNames } = require("../../modules/enums");
 const Logger = require("./Logger");
 const Player = require("./Player");
-const { Faction } = require("./Role");
+const { Faction, RoleName } = require("./Role");
 const { AbilityType, AbilityName } = require("./Ability");
 const { Feedback, Announcement } = require("./constants/possible-messages");
 
@@ -222,7 +221,7 @@ class PlayerManager {
 
 			const target_role = this.game_manager.role_manager.getRole(target_player.role);
 			if (
-				attacker_player.role === RoleNames.Vigilante &&
+				attacker_player.role === RoleName.VIGILANTE &&
 				target_role.faction === Faction.TOWN
 			) {
 				attacker_player.addAbilityAffectedBy(attacker_player, AbilityName.SUICIDE, this.game_manager.days_passed - 0.5);
@@ -300,14 +299,14 @@ class PlayerManager {
 		);
 		await player.sendFeedback(role.toString(), true);
 
-		if (role.name === RoleNames.Executioner) {
+		if (role.name === RoleName.EXECUTIONER) {
 			const alive_town_players = this.getTownPlayers().filter(player => player.isAlive);
 			const rand_town_player = getRandomElement(alive_town_players);
 
 			if (rand_town_player)
 				player.setExeTarget(rand_town_player);
 			else {
-				const fool_role = this.game_manager.role_manager.getRole(RoleNames.Fool);
+				const fool_role = this.game_manager.role_manager.getRole(RoleName.FOOL);
 				this.convertToRole(player, fool_role);
 			}
 		}

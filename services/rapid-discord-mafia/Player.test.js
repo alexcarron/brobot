@@ -1,10 +1,9 @@
-const { RoleNames, } = require("../../modules/enums");
 const RapidDiscordMafia = require("./RapidDiscordMafia");
 const { RoleIdentifier } = require("./RoleIdentifier");
 const RoleManager = require("./RoleManager");
-const GameManager = require("./GameManager");
 const { AbilityName } = require("./Ability");
 const { AbilityArgName } = require("./Arg");
+const { RoleName } = require("./Role");
 
 describe('Player', () => {
 	/**
@@ -26,26 +25,26 @@ describe('Player', () => {
 		it('SHOULD remove kidnapped affect entry from affected_by property of player given a night and day has passed', async () => {
 			expect(mock_game.isMockGame).toBe(true);
 
-			let mafioso_name = RoleNames.Mafioso
+			let mafioso_name = RoleName.MAFIOSO
 			let mafioso_player = await mock_game.addPlayerToGame(mafioso_name);
 
-			let kidnapper_name = RoleNames.Kidnapper
+			let kidnapper_name = RoleName.KINDAPPER
 			let kidnapper_player = await mock_game.addPlayerToGame(kidnapper_name);
 
-			let doctor_name = RoleNames.Doctor;
+			let doctor_name = RoleName.DOCTOR;
 			let doctor_player = await mock_game.addPlayerToGame(doctor_name);
 
 			const role_identifiers = RoleIdentifier.convertIdentifierStrings([
-				RoleNames.Doctor,
-				RoleNames.Kidnapper,
-				RoleNames.Mafioso,
+				RoleName.DOCTOR,
+				RoleName.KINDAPPER,
+				RoleName.MAFIOSO,
 			]);
 
 			await mock_game.start(role_identifiers);
 
-			const mafioso_role = RoleManager.roles[RoleNames.Mafioso];
-			const kidnapper_role = RoleManager.roles[RoleNames.Kidnapper];
-			const doctor_role = RoleManager.roles[RoleNames.Doctor];
+			const mafioso_role = RoleManager.roles[RoleName.MAFIOSO];
+			const kidnapper_role = RoleManager.roles[RoleName.KINDAPPER];
+			const doctor_role = RoleManager.roles[RoleName.DOCTOR];
 5
 			// Fix role not being set right
 			kidnapper_player.setRole(kidnapper_role);

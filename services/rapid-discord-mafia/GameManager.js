@@ -1,4 +1,4 @@
-const { MessageDelays, RDMRoles, RoleNames, PhaseWaitTimes, CoinRewards, } = require("../../modules/enums.js");
+const { MessageDelays, RDMRoles, PhaseWaitTimes, CoinRewards, } = require("../../modules/enums.js");
 const ids = require("../../bot-config/discord-ids.js");
 const { PermissionFlagsBits, Role, Interaction } = require("discord.js");
 const Death = require("./Death.js");
@@ -17,7 +17,7 @@ const { getShuffledArray, getRandomElement } = require("../../utilities/data-str
 const { fetchChannel, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchRoleByName } = require("../../utilities/discord-fetch-utils.js");
 const { addRoleToMember, removeRoleFromMember } = require("../../utilities/discord-action-utils.js");
 const { wait } = require("../../utilities/realtime-utils.js");
-const { Goal, Faction } = require("./Role.js");
+const { Goal, Faction, RoleName } = require("./Role.js");
 // const Logger = require("./Logger.js");
 const { Phase } = require("./GameStateManager.js");
 const { Announcement, Feedback } = require("./constants/possible-messages.js");
@@ -329,13 +329,13 @@ class GameManager {
 	async giveAllExesTargets() {
 		for (const player of this.player_manager.getPlayerList()) {
 
-			if (player.role === RoleNames.Executioner) {
+			if (player.role === RoleName.EXECUTIONER) {
 				const rand_town_player = getRandomElement(this.player_manager.getTownPlayers());
 
 				if (rand_town_player)
 					player.setExeTarget(rand_town_player);
 				else {
-					const fool_role = this.role_manager.getRole(RoleNames.Fool);
+					const fool_role = this.role_manager.getRole(RoleName.FOOL);
 					this.player_manager.convertPlayerToRole(player, fool_role);
 				}
 			}
@@ -386,10 +386,10 @@ class GameManager {
 			}
 
 			// ! Filter out Non-Mafioso Mafia if Mafioso doesn't exist yet
-			if (!this.role_list.includes(RoleNames.Mafioso)) {
+			if (!this.role_list.includes(RoleName.MAFIOSO)) {
 				possible_roles = possible_roles.filter(role =>
 					role.faction !== Faction.MAFIA ||
-					role.name === RoleNames.Mafioso
+					role.name === RoleName.MAFIOSO
 				)
 			}
 
@@ -418,10 +418,10 @@ class GameManager {
 			if (possible_roles.length <= 0) possible_roles = old_possible_roles;
 
 			// ! Filter out Non-Mafioso Mafia if Mafioso doesn't exist yet
-			if (!this.role_list.includes(RoleNames.Mafioso)) {
+			if (!this.role_list.includes(RoleName.MAFIOSO)) {
 				possible_roles = possible_roles.filter(role =>
 					role.faction !== Faction.MAFIA ||
-					role.name === RoleNames.Mafioso
+					role.name === RoleName.MAFIOSO
 				)
 			}
 
@@ -581,7 +581,7 @@ class GameManager {
 
 		await player_on_trial.kill(death);
 
-		if (player_on_trial.role === RoleNames.Fool) {
+		if (player_on_trial.role === RoleName.FOOL) {
 			await player_on_trial.sendFeedback(Feedback.WON_AS_FOOL);
 
 			await this.announceMessages("_ _\n" + Announcement.LYNCHED_FOOL);
@@ -1451,7 +1451,7 @@ class GameManager {
 					death_announcement_msgs.push(kill.flavor_text);
 				}
 				else if (
-					[RoleNames.Mafioso, RoleNames.Godfather].includes(kill.killer_role)
+					[RoleName.MAFIOSO, RoleName.GODFATHER].includes(kill.killer_role)
 				) {
 					if (index == 0)
 						death_announcement_msgs.push(
@@ -1508,13 +1508,13 @@ class GameManager {
 	async promoteMafia() {
 		if (this.player_manager.isFactionAlive(Faction.MAFIA)) {
 			if (
-				!this.player_manager.isRoleAlive(RoleNames.Mafioso) &&
-				!this.player_manager.isRoleAlive(RoleNames.Godfather)
+				!this.player_manager.isRoleAlive(RoleName.MAFIOSO) &&
+				!this.player_manager.isRoleAlive(RoleName.GODFATHER)
 			) {
 				const mafia_players = this.player_manager.getAlivePlayersInFaction(Faction.MAFIA)
 
 				const player_to_promote = getRandomElement(mafia_players);
-				const mafioso_role = this.role_manager.getRole(RoleNames.Mafioso);
+				const mafioso_role = this.role_manager.getRole(RoleName.MAFIOSO);
 				this.player_manager.convertPlayerToRole(player_to_promote, mafioso_role);
 
 				this.discord_service.sendToMafia(`**${player_to_promote.name}** has been promoted to **Mafioso**!`);

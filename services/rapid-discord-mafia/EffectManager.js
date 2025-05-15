@@ -1,8 +1,7 @@
 const Effect = require("./Effect");
-const { RoleNames, } = require("../../modules/enums");
 const Logger = require("./Logger");
 const { AbilityUseCount, AbilityName } = require("./Ability");
-const { Faction, Alignment, Immunity } = require("./Role");
+const { Faction, Alignment, Immunity, RoleName } = require("./Role");
 const { AbilityArgType, ArgumentSubtype, AbilityArgName } = require("./Arg");
 const { Feedback } = require("./constants/possible-messages");
 
@@ -66,12 +65,12 @@ class EffectManager {
 				}
 
 				if (
-					roleblocked_player_role.name === RoleNames.SerialKiller &&
+					roleblocked_player_role.name === RoleName.SERIAL_KILLER &&
 					!roleblocked_player.affected_by.some(
 						affect => affect.name === AbilityName.CAUTIOUS
 					)
 				) {
-					game.logger.log(`${RoleNames.SerialKiller} ${roleblocked_player_name} stabs ${player_using_ability.name} as revenge for roleblocking them`);
+					game.logger.log(`${RoleName.SERIAL_KILLER} ${roleblocked_player_name} stabs ${player_using_ability.name} as revenge for roleblocking them`);
 
 					game.abilities_performed[roleblocked_player_name] =
 						{

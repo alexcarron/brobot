@@ -1,7 +1,8 @@
 const ids = require("../../../bot-config/discord-ids.js");
 const { createListFromWords } = require("../../../utilities/text-formatting-utils.js");
 const { createNowUnixTimestamp } = require("../../../utilities/date-time-utils.js");
-const { PhaseWaitTimes, RoleNames } = require("../../../modules/enums.js");
+const { PhaseWaitTimes, } = require("../../../modules/enums.js");
+const { RoleName } = require("../Role.js");
 
 const COMMAND_EXPLANATIONS = [
 	`\`/commands\` See a list of all commands and what they do`,
@@ -248,8 +249,8 @@ const Feedback = Object.freeze({
 
 	ANNOUNCE_MURDER_BY_ROLE: (role) => {
 		switch (role) {
-			case RoleNames.Impersonator:
-				return `They were replaced by a **${RoleNames.Impersonator}**.`;
+			case RoleName.IMPERSONATOR:
+				return `They were replaced by a **${RoleName.IMPERSONATOR}**.`;
 
 			default:
 				return `They were killed by a(n) **${role}**.`;

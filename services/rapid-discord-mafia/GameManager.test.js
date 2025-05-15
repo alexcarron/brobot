@@ -1,4 +1,3 @@
-const { RoleNames, } = require("../../modules/enums");
 const RapidDiscordMafia = require("./RapidDiscordMafia");
 const {RoleIdentifier, RoleIdentifierKeyword} = require("./RoleIdentifier");
 const GameManager = require("./GameManager");
@@ -6,7 +5,7 @@ const Player = require("./Player");
 const RoleManager = require("./RoleManager");
 const { abilities } = require("./AbilityManager");
 const { arraysHaveSameElements } = require("../../utilities/data-structure-utils");
-const { Faction, Alignment } = require("./Role");
+const { Faction, Alignment, RoleName } = require("./Role");
 const { TrialOutcome } = require("./VoteManager");
 const { Feedback } = require("./constants/possible-messages");
 const { AbilityName } = require("./Ability");
@@ -104,14 +103,14 @@ describe('GameManager', () => {
 		test.concurrent(
 			`.getRoleFromRoleIdentifier(RoleIdentifier.Sheriff) SHOULD return Sheriff role`,
 			async () => {
-				const input_identifier = new RoleIdentifier(RoleNames.Sheriff);
+				const input_identifier = new RoleIdentifier(RoleName.SHERIFF);
 				const existing_role_list = [];
 				const existing_role_identifiers = RoleIdentifier.convertIdentifierStrings(
 					[
-						RoleNames.Sheriff
+						RoleName.SHERIFF
 					]
 				);
-				const expected_output = RoleManager.roles[RoleNames.Sheriff];
+				const expected_output = RoleManager.roles[RoleName.SHERIFF];
 
 				const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
 				rdm_game.role_identifiers = existing_role_identifiers;
@@ -133,7 +132,7 @@ describe('GameManager', () => {
 						`${Faction.TOWN} ${Alignment.CROWD}`
 					]
 				);
-				const expected_output = RoleManager.roles[RoleNames.Townie];
+				const expected_output = RoleManager.roles[RoleName.TOWNIE];
 
 				const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
 				rdm_game.role_identifiers = existing_role_identifiers;
@@ -221,14 +220,14 @@ describe('GameManager', () => {
 		test.concurrent(
 			`.getPossibleRolesFromIdentifier(RoleIdentifier.Sheriff) SHOULD return [Sheriff Role]`,
 			async () => {
-				const input_identifier = new RoleIdentifier(RoleNames.Sheriff);
+				const input_identifier = new RoleIdentifier(RoleName.SHERIFF);
 				const existing_role_list = [];
 				const existing_role_identifiers = RoleIdentifier.convertIdentifierStrings(
 					[
-						RoleNames.Sheriff
+						RoleName.SHERIFF
 					]
 				);
-				const expected_output = [RoleManager.roles[RoleNames.Sheriff]];
+				const expected_output = [RoleManager.roles[RoleName.SHERIFF]];
 
 				const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
 				rdm_game.role_identifiers = existing_role_identifiers;
@@ -251,7 +250,7 @@ describe('GameManager', () => {
 					]
 				);
 
-				const expected_output = [RoleManager.roles[RoleNames.Townie]];
+				const expected_output = [RoleManager.roles[RoleName.TOWNIE]];
 
 				const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
 				rdm_game.role_identifiers = existing_role_identifiers;
@@ -294,8 +293,8 @@ describe('GameManager', () => {
 			async () => {
 				const input_identifier = new RoleIdentifier(`${Faction.NEUTRAL} ${RoleIdentifierKeyword.RANDOM}`);
 				const existing_role_list = [
-					RoleNames.Mafioso,
-					RoleNames.Doctor,
+					RoleName.MAFIOSO,
+					RoleName.DOCTOR,
 				];
 				const input_num_roles_in_faction = {
 					Town: 1,
@@ -303,8 +302,8 @@ describe('GameManager', () => {
 				}
 				const existing_role_identifiers = RoleIdentifier.convertIdentifierStrings(
 					[
-						RoleNames.Mafioso,
-						RoleNames.Doctor,
+						RoleName.MAFIOSO,
+						RoleName.DOCTOR,
 						`${Faction.NEUTRAL} ${RoleIdentifierKeyword.RANDOM}`
 					]
 				);
@@ -353,7 +352,7 @@ describe('GameManager', () => {
 				expect(
 					actual_output.every(role =>
 						!(role.faction === Faction.MAFIA &&
-						role.name !== RoleNames.Mafioso)
+						role.name !== RoleName.MAFIOSO)
 					)
 				).toStrictEqual(true);
 			}
@@ -367,8 +366,8 @@ describe('GameManager', () => {
 				const {num_mafia, num_town} = getNumMafiaTownFromRatio(GameManager.MAX_MAFIA_TO_TOWN_RATIO, true);
 
 				const existing_role_list = [
-					...Array(num_mafia).fill(RoleNames.Mafioso),
-					...Array(num_town).fill(RoleNames.Townie),
+					...Array(num_mafia).fill(RoleName.MAFIOSO),
+					...Array(num_town).fill(RoleName.TOWNIE),
 				];
 				const input_num_roles_in_faction = {
 					Mafia: num_mafia,
@@ -376,8 +375,8 @@ describe('GameManager', () => {
 				}
 				const existing_role_identifiers = RoleIdentifier.convertIdentifierStrings(
 					[
-						...Array(num_mafia).fill(RoleNames.Mafioso),
-						...Array(num_town).fill(RoleNames.Townie),
+						...Array(num_mafia).fill(RoleName.MAFIOSO),
+						...Array(num_town).fill(RoleName.TOWNIE),
 						RoleIdentifierKeyword.ANY
 					]
 				);
@@ -401,8 +400,8 @@ describe('GameManager', () => {
 				const {num_mafia, num_town} = getNumMafiaTownFromRatio(GameManager.MAX_TOWN_TO_MAFIA_RATIO, false);
 
 				const existing_role_list = [
-					...Array(num_mafia).fill(RoleNames.Mafioso),
-					...Array(num_town).fill(RoleNames.Townie),
+					...Array(num_mafia).fill(RoleName.MAFIOSO),
+					...Array(num_town).fill(RoleName.TOWNIE),
 				];
 				const input_num_roles_in_faction = {
 					Mafia: num_mafia,
@@ -410,8 +409,8 @@ describe('GameManager', () => {
 				}
 				const existing_role_identifiers = RoleIdentifier.convertIdentifierStrings(
 					[
-						...Array(num_mafia).fill(RoleNames.Mafioso),
-						...Array(num_town).fill(RoleNames.Townie),
+						...Array(num_mafia).fill(RoleName.MAFIOSO),
+						...Array(num_town).fill(RoleName.TOWNIE),
 						RoleIdentifierKeyword.ANY
 					]
 				);
@@ -434,14 +433,14 @@ describe('GameManager', () => {
 				const input_identifier = new RoleIdentifier(RoleIdentifierKeyword.ANY);
 
 				const existing_role_list = [
-					RoleNames.Townie,
+					RoleName.TOWNIE,
 				];
 				const input_num_roles_in_faction = {
 					Town: 1,
 				}
 				const existing_role_identifiers = RoleIdentifier.convertIdentifierStrings(
 					[
-						RoleNames.Townie,
+						RoleName.TOWNIE,
 						RoleIdentifierKeyword.ANY
 					]
 				);
@@ -457,7 +456,7 @@ describe('GameManager', () => {
 				expect(
 					actual_output.every(role =>
 						!(role.faction === Faction.MAFIA &&
-						role.name !== RoleNames.Mafioso)
+						role.name !== RoleName.MAFIOSO)
 					)
 				).toStrictEqual(true);
 			}
@@ -468,10 +467,10 @@ describe('GameManager', () => {
 			async () => {
 				const input_identifier = new RoleIdentifier(RoleIdentifierKeyword.ANY);
 				const existing_role_list = [
-					RoleNames.Mafioso,
-					RoleNames.Townie,
-					RoleNames.Townie,
-					RoleNames.Townie,
+					RoleName.MAFIOSO,
+					RoleName.TOWNIE,
+					RoleName.TOWNIE,
+					RoleName.TOWNIE,
 				];
 				const input_num_roles_in_faction = {
 					Town: 3,
@@ -479,10 +478,10 @@ describe('GameManager', () => {
 				}
 				const existing_role_identifiers = RoleIdentifier.convertIdentifierStrings(
 					[
-						RoleNames.Mafioso,
-						RoleNames.Townie,
-						RoleNames.Townie,
-						RoleNames.Townie,
+						RoleName.MAFIOSO,
+						RoleName.TOWNIE,
+						RoleName.TOWNIE,
+						RoleName.TOWNIE,
 						RoleIdentifierKeyword.ANY,
 					]
 				);
@@ -497,7 +496,7 @@ describe('GameManager', () => {
 
 				expect(
 					actual_output.every(role =>
-						role.name !== RoleNames.Mafioso
+						role.name !== RoleName.MAFIOSO
 					)
 				).toStrictEqual(true);
 			}
@@ -508,20 +507,20 @@ describe('GameManager', () => {
 			async () => {
 				const input_identifier = new RoleIdentifier(RoleIdentifierKeyword.ANY);
 				const existing_role_list = [
-					RoleNames.Townie,
-					RoleNames.Townie,
-					RoleNames.Townie,
+					RoleName.TOWNIE,
+					RoleName.TOWNIE,
+					RoleName.TOWNIE,
 				];
 				const input_num_roles_in_faction = {
 					Town: 3,
 				}
 				const existing_role_identifiers = RoleIdentifier.convertIdentifierStrings(
 					[
-						RoleNames.Townie,
-						RoleNames.Townie,
-						RoleNames.Townie,
+						RoleName.TOWNIE,
+						RoleName.TOWNIE,
+						RoleName.TOWNIE,
 						RoleIdentifierKeyword.ANY,
-						RoleNames.Mafioso,
+						RoleName.MAFIOSO,
 					]
 				);
 
@@ -535,7 +534,7 @@ describe('GameManager', () => {
 
 				expect(
 					actual_output.every(role =>
-						role.name !== RoleNames.Mafioso
+						role.name !== RoleName.MAFIOSO
 					)
 				).toStrictEqual(true);
 			}
@@ -546,14 +545,14 @@ describe('GameManager', () => {
 			async () => {
 				const input_identifier = new RoleIdentifier(RoleIdentifierKeyword.ANY);
 				const existing_role_list = [
-					RoleNames.Townie,
+					RoleName.TOWNIE,
 				];
 				const input_num_roles_in_faction = {
 					Town: 1,
 				}
 				const existing_role_identifiers = RoleIdentifier.convertIdentifierStrings(
 					[
-						RoleNames.Townie,
+						RoleName.TOWNIE,
 						RoleIdentifierKeyword.ANY,
 					]
 				);
@@ -582,14 +581,14 @@ describe('GameManager', () => {
 			async () => {
 				const input_identifier = new RoleIdentifier(`${Faction.NEUTRAL} ${RoleIdentifierKeyword.RANDOM}`);
 				const existing_role_list = [
-					RoleNames.Townie,
+					RoleName.TOWNIE,
 				];
 				const input_num_roles_in_faction = {
 					Town: 1,
 				}
 				const existing_role_identifiers = RoleIdentifier.convertIdentifierStrings(
 					[
-						RoleNames.Townie,
+						RoleName.TOWNIE,
 						`${Faction.NEUTRAL} ${RoleIdentifierKeyword.RANDOM}`,
 					]
 				);
@@ -618,7 +617,7 @@ describe('GameManager', () => {
 			async () => {
 				const input_identifier = new RoleIdentifier(RoleIdentifierKeyword.ANY);
 				const existing_role_list = [
-					RoleNames.Doctor,
+					RoleName.DOCTOR,
 				];
 				const input_num_roles_in_faction = {
 					Town: 1,
@@ -663,7 +662,7 @@ describe('GameManager', () => {
 			const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
 			const mafia_player = new Player({
 				name: "mafia",
-				role: RoleNames.Mafioso,
+				role: RoleName.MAFIOSO,
 				isMockPlayer: true,
 			})
 			rdm_game.player_manager.addPlayer(mafia_player);
@@ -677,7 +676,7 @@ describe('GameManager', () => {
 		it('SHOULD return NOT true for input doctor using heal on themselves', async () => {
 
 			const player_framing_arg = abilities[AbilityName.HEAL].args[0];
-			const player_using_ability = new Player({name: "name", role: RoleNames.Doctor,
+			const player_using_ability = new Player({name: "name", role: RoleName.DOCTOR,
 			isMockPlayer: true,});
 			const arg_value = "name";
 
@@ -708,21 +707,21 @@ describe('GameManager', () => {
 	// ^ getDeathMessages
 	describe('getDeathMessages', () => {
 		it('SHOULD announce cause of death from Mafia and Fool when killed by both in the same night', async () => {
-			let mafioso_player = await mock_game.addPlayerToGame(RoleNames.Mafioso);
-			let fool_player = await mock_game.addPlayerToGame(RoleNames.Fool);
-			let townie_player = await mock_game.addPlayerToGame(RoleNames.Townie);
+			let mafioso_player = await mock_game.addPlayerToGame(RoleName.MAFIOSO);
+			let fool_player = await mock_game.addPlayerToGame(RoleName.FOOL);
+			let townie_player = await mock_game.addPlayerToGame(RoleName.TOWNIE);
 
 			const role_identifiers = RoleIdentifier.convertIdentifierStrings([
-				RoleNames.Townie,
-				RoleNames.Mafioso,
-				RoleNames.Fool,
+				RoleName.TOWNIE,
+				RoleName.MAFIOSO,
+				RoleName.FOOL,
 			]);
 
 			await mock_game.start(role_identifiers);
 
-			const mafioso_role = RoleManager.roles[RoleNames.Mafioso];
-			const fool_role = RoleManager.roles[RoleNames.Fool];
-			const townie_role = RoleManager.roles[RoleNames.Townie];
+			const mafioso_role = RoleManager.roles[RoleName.MAFIOSO];
+			const fool_role = RoleManager.roles[RoleName.FOOL];
+			const townie_role = RoleManager.roles[RoleName.TOWNIE];
 
 			// Fix role not being set right
 			fool_player.setRole(fool_role);
@@ -778,13 +777,13 @@ describe('GameManager', () => {
 			const doesMafiosoKillExist = townie_death.kills.some(
 				kill =>
 					kill.killer_name === mafioso_player.name &&
-					kill.killer_role === RoleNames.Mafioso
+					kill.killer_role === RoleName.MAFIOSO
 			);
 
 			const doesFoolKillExist = townie_death.kills.some(
 				kill =>
 					kill.killer_name === fool_player.name &&
-					kill.killer_role === RoleNames.Fool
+					kill.killer_role === RoleName.FOOL
 			);
 
 			expect(doesMafiosoKillExist).toBe(true);
@@ -800,8 +799,8 @@ describe('GameManager', () => {
 			);
 			const doesMessagesIncludeFoolKill = death_messages.some(
 				message =>
-					message.includes(Feedback.ANNOUNCE_MURDER_BY_ROLE(RoleNames.Fool)) ||
-					message.includes(Feedback.ANNOUNCE_ANOTHER_MURDER_BY_ROLE(RoleNames.Fool))
+					message.includes(Feedback.ANNOUNCE_MURDER_BY_ROLE(RoleName.FOOL)) ||
+					message.includes(Feedback.ANNOUNCE_ANOTHER_MURDER_BY_ROLE(RoleName.FOOL))
 			);
 
 			expect(doesMessagesIncludeMafiaKill).toBe(true);
