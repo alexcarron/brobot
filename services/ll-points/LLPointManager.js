@@ -1,5 +1,5 @@
 const { GITHUB_TOKEN } = require("../../bot-config/token.js");
-const { DatabaseURLs, } = require("../../modules/enums.js");
+const { GitHubJsonURL } = require("../../utilities/github-json-storage-utils.js");
 const Viewer = require("./Viewer.js");
 
 /**
@@ -80,7 +80,7 @@ class LLPointManager {
 		const request = promisify(require("request"));
 
 		const options = {
-			url: DatabaseURLs.Viewers,
+			url: GitHubJsonURL.VIEWERS,
 			headers: {
 				'Authorization': `Token ${GITHUB_TOKEN}`
 			},

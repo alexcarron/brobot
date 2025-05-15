@@ -1,10 +1,5 @@
 
 const Enums = {
-	DatabaseURLs: {
-		Viewers: "https://raw.githubusercontent.com/alexcarron/brobot-database/main/viewers.json",
-		Messages: "https://raw.githubusercontent.com/alexcarron/brobot-database/main/messages.json",
-	},
-
 	MessageDelays: {
 		Short: 1,
 		Normal: 4,

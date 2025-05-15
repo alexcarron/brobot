@@ -5,6 +5,14 @@ const REPO_OWNER = "alexcarron";
 const REPO_NAME = "brobot-database";
 
 /**
+ * Enum of URLs to the json files in the GitHub repository
+ */
+const GitHubJsonURL = Object.freeze({
+	VIEWERS: `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/viewers.json`,
+	MESSAGES: `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/messages.json`,
+});
+
+/**
  * Saves an object to a specified file in the GitHub repository
  * @param {Object} object - The object to save
  * @param {string} jsonFileName - The name of the json file to save to
@@ -87,4 +95,4 @@ const loadObjectFromJsonInGitHub = async (jsonFileName) => {
 	return object;
 };
 
-module.exports = {saveObjectToJsonInGitHub, loadObjectFromJsonInGitHub};
+module.exports = {saveObjectToJsonInGitHub, loadObjectFromJsonInGitHub, GitHubJsonURL};
