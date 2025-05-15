@@ -1,4 +1,4 @@
-const { GameStates, Phases, Subphases, MessageDelays, RDMRoles, Feedback, Announcements, RoleNames, PhaseWaitTimes, VotingOutcomes, TrialOutcomes, RoleIdentifierTypes, ArgumentSubtypes, CoinRewards, } = require("../../modules/enums.js");
+const { GameStates, Phases, Subphases, MessageDelays, RDMRoles, Feedback, Announcements, RoleNames, PhaseWaitTimes, TrialOutcomes, RoleIdentifierTypes, ArgumentSubtypes, CoinRewards, } = require("../../modules/enums.js");
 const ids = require("../../bot-config/discord-ids.js");
 const { PermissionFlagsBits, Role, Interaction } = require("discord.js");
 const Death = require("./Death.js");
@@ -11,7 +11,7 @@ const RoleManager = require("./RoleManager.js");
 const GameStateManager = require("./GameStateManager.js");
 const GameDataManager = require("./GameDataManager.js");
 const DiscordService = require("./DiscordService.js");
-const { VoteManager, TrialVote } = require("./VoteManager.js");
+const { VoteManager, TrialVote, VotingOutcome } = require("./VoteManager.js");
 const { toTitleCase } = require("../../utilities/text-formatting-utils.js");
 const { getShuffledArray, getRandomElement } = require("../../utilities/data-structure-utils.js");
 const { fetchChannel, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchRoleByName } = require("../../utilities/discord-fetch-utils.js");
@@ -672,13 +672,13 @@ class GameManager {
 
 		let voting_outcome_message = ""
 
-		if (voting_outcome === VotingOutcomes.Nobody) {
+		if (voting_outcome === VotingOutcome.NOBODY) {
 			voting_outcome_message = Announcements.VotingOutcomeNobody;
 		}
-		else if (voting_outcome == VotingOutcomes.Tie) {
+		else if (voting_outcome == VotingOutcome.TIE) {
 			voting_outcome_message = Announcements.VotingOutcomeTie;
 		}
-		else if (voting_outcome == VotingOutcomes.NoVotes) {
+		else if (voting_outcome == VotingOutcome.NO_VOTES) {
 			voting_outcome_message = Announcements.VotingOutcomeNoVotes;
 		}
 		else {
@@ -842,7 +842,7 @@ class GameManager {
 	}
 
 	getMajorityVote(votes) {
-		let majority_vote = VotingOutcomes.NoVotes,
+		let majority_vote = VotingOutcome.NO_VOTES,
 			vote_counts = {},
 			max_vote_count = 0;
 
@@ -862,7 +862,7 @@ class GameManager {
 				majority_vote = vote;
 			}
 			else if (vote_counts[vote] == max_vote_count) {
-				majority_vote = VotingOutcomes.Tie;
+				majority_vote = VotingOutcome.TIE;
 			}
 		}
 

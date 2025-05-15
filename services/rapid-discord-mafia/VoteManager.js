@@ -18,6 +18,16 @@ const TrialVote = Object.freeze({
 	ABSTAIN: "abstain",
 });
 
+/**
+ * Enum of possible voting outcomes before the trial vote
+ */
+const VotingOutcome = Object.freeze({
+	NOBODY: "Nobody",
+	NO_VOTES: "none",
+	TIE: "tie",
+	PLAYER: (player_name) => `${player_name}`,
+});
+
 class VoteManager {
 	constructor(game_manager) {
 		this.game_manager = game_manager;
@@ -212,4 +222,4 @@ class VoteManager {
 	}
 }
 
-module.exports = {VoteManager, Vote, TrialVote};
+module.exports = {VoteManager, Vote, TrialVote, VotingOutcome};
