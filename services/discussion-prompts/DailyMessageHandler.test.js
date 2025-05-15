@@ -1,6 +1,6 @@
 const { TextChannel } = require("discord.js");
 const DailyMessageHandler = require("./DailyMessageHandler");
-const { fetchChannel } = require("../utilities/discord-fetch-utils");
+const { fetchChannel } = require("../../utilities/discord-fetch-utils");
 
 jest.mock('discord.js', () => ({
   TextChannel: class {
@@ -9,12 +9,12 @@ jest.mock('discord.js', () => ({
     }
   }
 }));
-jest.mock('../utilities/discord-fetch-utils', () => ({
+jest.mock('../../utilities/discord-fetch-utils', () => ({
 	fetchChannel: jest.fn(() => Promise.resolve({ id: 'mockChannelId' })),
 	fetchGuild: jest.fn(() => Promise.resolve({ id: 'mockGuildId' })),
 	saveObjectToJsonInGitHub: jest.fn(() => Promise.resolve('Saved')),
 }))
-jest.mock('../bot-config/discord-ids.js', () => ({
+jest.mock('../../bot-config/discord-ids.js', () => ({
   ll_game_shows: {
     server_id: 'mockServerId',
     channels: {

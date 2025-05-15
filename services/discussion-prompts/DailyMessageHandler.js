@@ -1,10 +1,10 @@
 const { TextChannel } = require("discord.js");
-const ids = require("../bot-config/discord-ids.js");
+const ids = require("../../bot-config/discord-ids.js");
 const cron = require("cron"); // Used to have scheduled functions execute
-const PropertyNotFoundError = require("./errors/PropertyNotFound");
-const { getRandomElement } = require("../utilities/data-structure-utils.js");
-const { fetchGuild, fetchChannel } = require("../utilities/discord-fetch-utils.js");
-const { saveObjectToJsonInGitHub } = require("../utilities/github-json-storage-utils.js");
+const PropertyNotFoundError = require("../../modules/errors/PropertyNotFound.js");
+const { getRandomElement } = require("../../utilities/data-structure-utils.js");
+const { fetchGuild, fetchChannel } = require("../../utilities/discord-fetch-utils.js");
+const { saveObjectToJsonInGitHub } = require("../../utilities/github-json-storage-utils.js");
 
 class DailyMessageHandler {
 	/**
