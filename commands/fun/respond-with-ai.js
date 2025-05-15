@@ -1,10 +1,11 @@
 const Parameter = require("../../services/command-creation/Paramater.js");
 const SlashCommand = require("../../services/command-creation/SlashCommand.js");
-const { ServerPort } = require("../../modules/enums.js");
 const { getVoiceConnections, joinVoiceChannel } = require('@discordjs/voice');
 const ids = require(`../../bot-config/discord-ids.js`);
 const { CommandInteraction, PermissionsBitField, PermissionFlagsBits } = require("discord.js");
 const { fetchGuildMember } = require("../../utilities/discord-fetch-utils.js");
+
+const LM_STUDIO_SERVER_PORT = '1234';
 
 const command = new SlashCommand({
 	name: "respond-with-ai",
@@ -77,7 +78,7 @@ command.execute = async function(interaction) {
 
 		// Send user question to local LM Studio server for AI-generated response
 		const response = await axios.post(
-			`http://localhost:${ServerPort.LMStudioMistral}/v1/chat/completions`,
+			`http://localhost:${LM_STUDIO_SERVER_PORT}/v1/chat/completions`,
 			payload,
 			{
 				responseType: 'stream' // Set responseType to 'stream' to receive streaming response

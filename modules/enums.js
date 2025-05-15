@@ -1,9 +1,5 @@
 
 const Enums = {
-	ServerPort: {
-		LMStudioMistral: "1234",
-	},
-
 	LLPointTiers: {
 		LLWorshiper: "LL Worshiper!",
 		LLDevotee: "LL Devotee!",
