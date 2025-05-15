@@ -1,8 +1,7 @@
-const { LLPointAccomplishments } = require("../../modules/enums.js");
 const ids = require("../../bot-config/discord-ids.js");
 const { fetchGuild, fetchGuildMember, fetchUser, fetchRole } = require("../../utilities/discord-fetch-utils.js");
 const { addRoleToMember, removeRoleFromMember } = require("../../utilities/discord-action-utils.js");
-const { LLPointTier, LLPointThreshold, LLPointReward } = require("./LLPointManager.js");
+const { LLPointTier, LLPointThreshold, LLPointReward, LLPointAccomplishment } = require("./LLPointManager.js");
 
 class Viewer {
 	constructor({name, aliases=[], user_id, ll_points=0, isSubscribed=false, didUndertaleQuiz=false, didDeltaruneQuiz=false, games_participated_in=[], valentine}) {
@@ -95,19 +94,19 @@ class Viewer {
 
 	async giveReward(accomplishment, game_name=undefined) {
 
-		let accomplishments = Object.values(LLPointAccomplishments);
+		let accomplishments = Object.values(LLPointAccomplishment);
 		if (!accomplishments.includes(accomplishment)) {
 			console.log(`Error: No accomplishment called ${accomplishment}`);
 			console.log(`Choose between: ${accomplishments.join(", ")}`);
 			return `Error: No accomplishment called ${accomplishment}`;
 		}
-		let accomplishment_key = Object.keys(LLPointAccomplishments).find(key => LLPointAccomplishments[key] === accomplishment);
+		let accomplishment_key = Object.keys(LLPointAccomplishment).find(key => LLPointAccomplishment[key] === accomplishment);
 
 		console.log({accomplishment});
-		console.log(LLPointAccomplishments.DoUndertaleQuiz);
+		console.log(LLPointAccomplishment.DO_UNDERTALE_QUIZ);
 
 		switch (accomplishment) {
-			case LLPointAccomplishments.Subscribe:
+			case LLPointAccomplishment.SUBSCRIBE:
 				if (this.isSubscribed) {
 					console.log("Error: Already subscribed");
 					return "Error: Already subscribed";
@@ -116,7 +115,7 @@ class Viewer {
 				this.isSubscribed = true;
 				break;
 
-			case LLPointAccomplishments.DoUndertaleQuiz:
+			case LLPointAccomplishment.DO_UNDERTALE_QUIZ:
 				console.log("HELLO!")
 				if (this.didUndertaleQuiz) {
 					console.log("Error: Already did Undertale Music Quiz");
@@ -127,7 +126,7 @@ class Viewer {
 				console.log(this)
 				break;
 
-			case LLPointAccomplishments.DoDeltaruneQuiz:
+			case LLPointAccomplishment.DO_DELTARUNE_QUIZ:
 				if (this.didDeltaruneQuiz) {
 					console.log("Error: Already did Deltarune Music Quiz");
 					return "Error: Already did Deltarune Music Quiz";
@@ -136,7 +135,7 @@ class Viewer {
 				this.didDeltaruneQuiz = true;
 				break;
 
-			case LLPointAccomplishments.ParticipateInGame:
+			case LLPointAccomplishment.PARTICIPATE_IN_GAME:
 				if (this.games_participated_in.includes(game_name)) {
 					console.log(`Error: Already participated in ${game_name}`);
 					return;
@@ -145,7 +144,7 @@ class Viewer {
 				this.games_participated_in.push(game_name);
 				break;
 
-			case LLPointAccomplishments.ParticipateInEvent:
+			case LLPointAccomplishment.PARTICIPATE_IN_EVENT:
 				if (this.games_participated_in.includes(game_name)) {
 					console.log(`Error: Already participated in ${game_name}`);
 					return;

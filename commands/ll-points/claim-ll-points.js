@@ -1,10 +1,9 @@
 const Parameter = require('../../services/command-creation/Paramater.js');
 const SlashCommand = require('../../services/command-creation/SlashCommand.js');
-const { LLPointAccomplishments } = require('../../modules/enums.js')
-const { LLPointManager } = require('../../services/ll-points/LLPointManager.js');
 const ids = require(`../../bot-config/discord-ids.js`);
 const { fetchUser } = require('../../utilities/discord-fetch-utils.js');
 const { confirmInteractionWithButtons, deferInteraction } = require('../../utilities/discord-action-utils.js');
+const { LLPointAccomplishment } = require('../../services/ll-points/LLPointManager.js');
 
 const Parameters = {
 	Accomplishment: new Parameter({
@@ -53,38 +52,38 @@ command.execute = async function(interaction) {
 		}
 	}
 
-	if (!Object.values(LLPointAccomplishments).includes(accomplishment)) {
+	if (!Object.values(LLPointAccomplishment).includes(accomplishment)) {
 		return await interaction.editReply(
-			`The accomplishment, **${accomplishment}**, doesn't exist.\n` + Object.values(LLPointAccomplishments).join(", ")
+			`The accomplishment, **${accomplishment}**, doesn't exist.\n` + Object.values(LLPointAccomplishment).join(", ")
 		);
 	}
 
 	console.log({viewer, accomplishment});
 
 	if (
-		accomplishment === LLPointAccomplishments.DoDeltaruneQuiz &&
+		accomplishment === LLPointAccomplishment.DO_DELTARUNE_QUIZ &&
 		viewer.didDeltaruneQuiz
 	) {
 		return await interaction.editReply(
-			`You already were rewarded for ${LLPointAccomplishments.DoDeltaruneQuiz}`
+			`You already were rewarded for ${LLPointAccomplishment.DO_DELTARUNE_QUIZ}`
 		);
 	}
 
 	if (
-		accomplishment === LLPointAccomplishments.DoUndertaleQuiz &&
+		accomplishment === LLPointAccomplishment.DO_UNDERTALE_QUIZ &&
 		viewer.didUndertaleQuiz
 	) {
 		return await interaction.editReply(
-			`You already were rewarded for ${LLPointAccomplishments.DoUndertaleQuiz}`
+			`You already were rewarded for ${LLPointAccomplishment.DO_UNDERTALE_QUIZ}`
 		);
 	}
 
 	if (
-		accomplishment === LLPointAccomplishments.Subscribe &&
+		accomplishment === LLPointAccomplishment.SUBSCRIBE &&
 		viewer.isSubscribed
 	) {
 		return await interaction.editReply(
-			`You already were rewarded for ${LLPointAccomplishments.Subscribe}`
+			`You already were rewarded for ${LLPointAccomplishment.SUBSCRIBE}`
 		);
 	}
 
@@ -101,7 +100,7 @@ command.autocomplete = async function(interaction) {
 	if (!focused_param) return;
 	const entered_value = focused_param.value;
 
-	autocomplete_values = Object.values(LLPointAccomplishments)
+	autocomplete_values = Object.values(LLPointAccomplishment)
 		.map((accomplishment_str) => {return {name: accomplishment_str, value: accomplishment_str}})
 		.filter(autocomplete_entry => autocomplete_entry.value.toLowerCase().startsWith(entered_value.toLowerCase()));
 
