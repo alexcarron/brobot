@@ -1,4 +1,3 @@
-const { CoinRewards, } = require("../../modules/enums.js");
 const ids = require("../../bot-config/discord-ids.js");
 const { PermissionFlagsBits, Role, Interaction } = require("discord.js");
 const Death = require("./Death.js");
@@ -30,6 +29,14 @@ const MessageReadTime = Object.freeze({
 	SHORT: 1,
 	NORMAL: 4,
 	LONG: 8
+});
+
+/**
+ * Enum of possible numbers of coins rewarded to players for a condition
+ */
+const CoinReward = Object.freeze({
+	WINNING: 10,
+	PARTICIPATION: 1,
 });
 
 class GameManager {
@@ -1546,20 +1553,20 @@ class GameManager {
 
 		this.player_manager.getPlayerList().forEach(async player => {
 			const contestant = global.rapid_discord_mafia.getContestantFromPlayer(player);
-			contestant.giveCoins(CoinRewards.Participation);
+			contestant.giveCoins(CoinReward.PARTICIPATION);
 		});
 
 		await global.game_manager.announceMessages(
 			Announcement.REWARD_COINS_TO_PLAYERS(
 				this.player_manager.getPlayerList().map(player => player.name),
-				CoinRewards.Participation
+				CoinReward.PARTICIPATION
 			)
 		);
 
 		this.winning_players.forEach(async player_name => {
 			const player = this.player_manager.get(player_name);
 			const contestant = global.rapid_discord_mafia.getContestantFromPlayer(player);
-			const coins_rewarded = CoinRewards.Winning;
+			const coins_rewarded = CoinReward.WINNING;
 
 			contestant.giveCoins(coins_rewarded);
 

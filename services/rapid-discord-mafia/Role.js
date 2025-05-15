@@ -1,7 +1,7 @@
 const { toTitleCase } = require("../../utilities/text-formatting-utils.js");
 
 /**
- * Enums of possible names of a Role
+ * Enum of possible names of a Role
  */
 const RoleName = Object.freeze({
 	MAFIOSO: "Mafioso",
@@ -37,7 +37,7 @@ const Faction = Object.freeze({
 });
 
 /**
- * Enums of possible role alignments
+ * Enum of possible role alignments
  */
 const Alignment = Object.freeze({
 	CROWD: "Crowd",
@@ -68,7 +68,7 @@ const Goal = Object.freeze({
 });
 
 /**
- * Enums of possible immunities a role can have
+ * Enum of possible immunities a role can have
  */
 const Immunity = Object.freeze({
 	ROLEBLOCK: "roleblock",

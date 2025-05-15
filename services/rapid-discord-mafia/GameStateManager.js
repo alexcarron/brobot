@@ -33,7 +33,7 @@ const Subphase = Object.freeze({
 });
 
 /**
- * Enums of possible states of the game
+ * Enum of possible states of the game
  */
 const GameState = Object.freeze({
 	SIGN_UP: "sign-up",

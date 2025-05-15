@@ -1,10 +1,11 @@
 const { PermissionFlagsBits } = require("discord.js");
 const SlashCommand = require("../../services/command-creation/SlashCommand.js");
 const Parameter = require("../../services/command-creation/Paramater.js");
-const Enums = require("../../modules/enums.js");
 const { GameManager } = require("../../services/rapid-discord-mafia/GameManager.js");
 
 const ids = require(`../../bot-config/discord-ids.js`);
+const { TrialVote } = require("../../services/rapid-discord-mafia/VoteManager.js");
+const { GameState } = require("../../services/rapid-discord-mafia/GameStateManager.js");
 
 const Subparameters = {
 	PlayerVotingFor: new Parameter({
@@ -17,7 +18,7 @@ const Subparameters = {
 		type: "string",
 		name: "trial-outcome",
 		description: "The vote you want to cast for the current trial",
-		autocomplete: Enums.TrialVotes
+		autocomplete: TrialVote
 	}),
 	PlayerVoting: new Parameter({
 		type: "string",
@@ -140,7 +141,7 @@ command.execute = async function execute(interaction) {
 	// Fake Joins
 	if (subcommand === FakeJoinSubcommand.name) {
 
-		if ( [Enums.GameStates.SignUp, Enums.GameStates.InProgress].includes(global.game_manager.state) ) {
+		if ( [GameState.SIGN_UP, GameState.IN_PROGRESS].includes(global.game_manager.state) ) {
 			return interaction.editReply("There's already a game in sign-ups or in progress.");
 		}
 		else {

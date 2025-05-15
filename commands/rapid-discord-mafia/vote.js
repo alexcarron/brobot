@@ -1,6 +1,5 @@
 const Parameter = require("../../services/command-creation/Paramater");
 const SlashCommand = require("../../services/command-creation/SlashCommand");
-const Enums = require("../../modules/enums");
 
 const
 	{
@@ -8,7 +7,7 @@ const
 		deferInteraction
 	} = require("../../modules/functions"),
 	ids = require("../../bot-config/discord-ids.js");
-const { Vote } = require("../../services/rapid-discord-mafia/VoteManager.js");
+const { Vote, TrialVote } = require("../../services/rapid-discord-mafia/VoteManager.js");
 
 const Subparameters = {
 	PlayerVotingFor: new Parameter({
@@ -21,7 +20,7 @@ const Subparameters = {
 		type: "string",
 		name: "trial-outcome",
 		description: "The vote you want to cast for the current trial",
-		autocomplete: Enums.TrialVote
+		autocomplete: TrialVote
 	}),
 }
 const Parameters = {
