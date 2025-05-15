@@ -14,7 +14,21 @@ const LLPointTier = Object.freeze({
 	FOLLOWER: "LL Follower!",
 	FAN: "LL Fan!",
 	VIEWER: "LL Viewer!",
-})
+});
+
+/**
+ * Enum of thresholds for the amount of LL Points needed to reach an LL Point Tier
+ */
+const LLPointThreshold = Object.freeze({
+	WORSHIPER: 50000,
+	DEVOTEE: 10000,
+	ADDICT: 5000,
+	FANATIC: 1000,
+	ENTHUSIAST: 100,
+	FOLLOWER: 50,
+	FAN: 10,
+	VIEWER: 0,
+});
 
 class LLPointManager {
 	constructor() {
@@ -231,4 +245,4 @@ class LLPointManager {
 	}
 }
 
-module.exports = {LLPointManager, LLPointTier};
+module.exports = {LLPointManager, LLPointTier, LLPointThreshold};

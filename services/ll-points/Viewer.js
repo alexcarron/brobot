@@ -1,8 +1,8 @@
-const { LLPointThresholds, LLPointRewards, LLPointAccomplishments } = require("../../modules/enums.js");
+const { LLPointRewards, LLPointAccomplishments } = require("../../modules/enums.js");
 const ids = require("../../bot-config/discord-ids.js");
 const { fetchGuild, fetchGuildMember, fetchUser, fetchRole } = require("../../utilities/discord-fetch-utils.js");
 const { addRoleToMember, removeRoleFromMember } = require("../../utilities/discord-action-utils.js");
-const { LLPointTier } = require("./LLPointManager.js");
+const { LLPointTier, LLPointThreshold } = require("./LLPointManager.js");
 
 class Viewer {
 	constructor({name, aliases=[], user_id, ll_points=0, isSubscribed=false, didUndertaleQuiz=false, didDeltaruneQuiz=false, games_participated_in=[], valentine}) {
@@ -30,7 +30,7 @@ class Viewer {
 		let tier = LLPointTier.VIEWER;
 
 		for (let tier_key in LLPointTier) {
-			let tier_threshold = LLPointThresholds[tier_key];
+			let tier_threshold = LLPointThreshold[tier_key];
 
 			if (this.ll_points >= tier_threshold) {
 				tier = LLPointTier[tier_key];

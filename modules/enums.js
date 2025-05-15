@@ -1,16 +1,5 @@
 
 const Enums = {
-	LLPointThresholds: {
-		WORSHIPER: 50000,
-		DEVOTEE: 10000,
-		ADDICT: 5000,
-		FANATIC: 1000,
-		ENTHUSIAST: 100,
-		FOLLOWER: 50,
-		FAN: 10,
-		VIEWER: 0,
-	},
-
 	LLPointRewards: {
 		Subscribe: 1,
 		DoUndertaleQuiz: 1,
