@@ -1,8 +1,8 @@
 const ids = require("../../../bot-config/discord-ids.js");
 const { createListFromWords } = require("../../../utilities/text-formatting-utils.js");
 const { createNowUnixTimestamp } = require("../../../utilities/date-time-utils.js");
-const { PhaseWaitTimes, } = require("../../../modules/enums.js");
 const { RoleName } = require("../Role.js");
+const { PhaseLength } = require("../GameStateManager.js");
 
 const COMMAND_EXPLANATIONS = [
 	`\`/commands\` See a list of all commands and what they do`,
@@ -70,7 +70,7 @@ const Announcement = Object.freeze({
 	DAY_ONE_STARTED: [
 		`_ _\n# Day 1`,
 		`Look over your role information, come up with a plan, and discuss with your fellow town members your game plan.\n` +
-		`**The day phase will end <t:${createNowUnixTimestamp() + PhaseWaitTimes.FirstDay*60}:R>**`,
+		`**The day phase will end <t:${createNowUnixTimestamp() + PhaseLength.FIRST_DAY*60}:R>**`,
 	],
 
 	START_DAY: (living_role_id, day_num) => [
@@ -81,7 +81,7 @@ const Announcement = Object.freeze({
 
 	START_VOTING: [
 		`_ _\n## Voting Subphase`,
-		`The voting part of the day phase will now begin. **It ends in <t:${createNowUnixTimestamp() + PhaseWaitTimes.Voting*60}:R>** `,
+		`The voting part of the day phase will now begin. **It ends in <t:${createNowUnixTimestamp() + PhaseLength.VOTING*60}:R>** `,
 		"Use `/vote for-player` in your player action channel to vote for a player to put on trial. Your votes are not anonymous.",
 	],
 
@@ -107,7 +107,7 @@ const Announcement = Object.freeze({
 
 	START_TRIAL: (player_on_trial) => [
 		`_ _\n## Trial Phase`,
-		`The trial part of the day will now begin and **end <t:${createNowUnixTimestamp() + PhaseWaitTimes.Trial*60}:R>**.`,
+		`The trial part of the day will now begin and **end <t:${createNowUnixTimestamp() + PhaseLength.TRIAL*60}:R>**.`,
 		`Use \`/vote for-trial-outcome\` in your player action channel to vote whether or not **${player_on_trial.name}** should be hung. (Or abstain)\nYour votes will be anonymous until day starts.`
 	],
 
@@ -132,7 +132,7 @@ const Announcement = Object.freeze({
 	START_NIGHT: (living_role_id, night_num) => [
 		`_ _\n# Night ${night_num}`,
 		`<@&${living_role_id}> Goodnight! It is now nightime.`,
-		`**The night phase will end <t:${createNowUnixTimestamp() + PhaseWaitTimes.Night*60}:R>**`,
+		`**The night phase will end <t:${createNowUnixTimestamp() + PhaseLength.NIGHT*60}:R>**`,
 		`Time to do your night abilities in your player action channels with the command \`/use ABILITY-NAME-HERE\``,
 		`If you're not using an ability, do \`/use nothing\` to speed up the night`,
 	],

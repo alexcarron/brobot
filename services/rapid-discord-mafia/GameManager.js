@@ -1,4 +1,4 @@
-const { RDMRoles, PhaseWaitTimes, CoinRewards, } = require("../../modules/enums.js");
+const { RDMRoles, CoinRewards, } = require("../../modules/enums.js");
 const ids = require("../../bot-config/discord-ids.js");
 const { PermissionFlagsBits, Role, Interaction } = require("discord.js");
 const Death = require("./Death.js");
@@ -8,7 +8,7 @@ const {Arg, AbilityArgType, ArgumentSubtype} = require("./Arg.js");
 const EffectManager = require("./EffectManager.js");
 const AbilityManager = require("./AbilityManager.js");
 const RoleManager = require("./RoleManager.js");
-const {GameStateManager, Subphase, GameState} = require("./GameStateManager.js");
+const {GameStateManager, Subphase, GameState, PhaseLength} = require("./GameStateManager.js");
 const GameDataManager = require("./GameDataManager.js");
 const DiscordService = require("./DiscordService.js");
 const { VoteManager, TrialVote, VotingOutcome, TrialOutcome } = require("./VoteManager.js");
@@ -993,7 +993,7 @@ class GameManager {
 		this.logger.log("Waiting For Day 1 to End");
 
 		if (!this.isMockGame) {
-			await wait({minutes: PhaseWaitTimes.FirstDay});
+			await wait({minutes: PhaseLength.FIRST_DAY});
 			await this.startNight(day_first_day_ended);
 		}
 	}
@@ -1049,15 +1049,15 @@ class GameManager {
 		this.logger.log("Waiting for Voting to End");
 
 		if (!this.isMockGame) {
-			await wait({minutes: PhaseWaitTimes.Voting*4/5});
+			await wait({minutes: PhaseLength.VOTING*4/5});
 
 			if (!this.state_manager.canStartTrial(days_passed_last_voting)) {
 				this.announceMessages(
-					Announcement.PHASE_ALMOST_OVER_WARNING(PhaseWaitTimes.Voting*1/5)
+					Announcement.PHASE_ALMOST_OVER_WARNING(PhaseLength.VOTING*1/5)
 				)
 			}
 
-			await wait({minutes: PhaseWaitTimes.Voting*1/5});
+			await wait({minutes: PhaseLength.VOTING*1/5});
 
 			this.startTrial(days_passed_last_voting);
 		}
@@ -1104,15 +1104,15 @@ class GameManager {
 		this.logger.log("Waiting for Trial Voting to End");
 
 		if (!this.isMockGame) {
-			await wait({minutes: PhaseWaitTimes.Trial*4/5});
+			await wait({minutes: PhaseLength.TRIAL*4/5});
 
 			if (!this.state_manager.canStartTrialResults(days_passed_last_trial)) {
 				this.announceMessages(
-					Announcement.PHASE_ALMOST_OVER_WARNING(PhaseWaitTimes.Trial*1/5)
+					Announcement.PHASE_ALMOST_OVER_WARNING(PhaseLength.TRIAL*1/5)
 				)
 			}
 
-			await wait({minutes: PhaseWaitTimes.Trial*1/5});
+			await wait({minutes: PhaseLength.TRIAL*1/5});
 
 			await this.startTrialResults(days_passed_last_trial);
 		}
@@ -1174,15 +1174,15 @@ class GameManager {
 		this.logger.log("Waiting for Night to End");
 
 		if (!this.isMockGame) {
-			await wait({minutes: PhaseWaitTimes.Night * 4/5});
+			await wait({minutes: PhaseLength.NIGHT * 4/5});
 
 			if (!this.state_manager.canStartDay(days_passed_last_night)) {
 				this.announceMessages(
-					Announcement.PHASE_ALMOST_OVER_WARNING(PhaseWaitTimes.Night*1/5)
+					Announcement.PHASE_ALMOST_OVER_WARNING(PhaseLength.NIGHT*1/5)
 				)
 			}
 
-			await wait({minutes: PhaseWaitTimes.Night * 1/5});
+			await wait({minutes: PhaseLength.NIGHT * 1/5});
 
 			await this.startDay(days_passed_last_night);
 		}
@@ -2001,7 +2001,7 @@ class GameManager {
 	async startSignUps() {
 		await GameManager.openJoinChannel();
 		this.state_manager.changeToSignUps();
-		const starting_unix_timestamp = createNowUnixTimestamp() + PhaseWaitTimes.SignUps*60;
+		const starting_unix_timestamp = createNowUnixTimestamp() + PhaseLength.SIGN_UPS*60;
 
 		this.announceMessages(
 			Announcement.START_SIGN_UPS(
@@ -2013,7 +2013,7 @@ class GameManager {
 
 		if (!this.isMockGame) {
 
-			await wait({minutes: PhaseWaitTimes.SignUps*(2/3)});
+			await wait({minutes: PhaseLength.SIGN_UPS*(2/3)});
 
 			if (!this.state_manager.isInSignUps()) return;
 
@@ -2024,7 +2024,7 @@ class GameManager {
 				)
 			);
 
-			await wait({minutes: PhaseWaitTimes.SignUps*(4/15)});
+			await wait({minutes: PhaseLength.SIGN_UPS*(4/15)});
 
 			if (!this.state_manager.isInSignUps()) return;
 
@@ -2035,7 +2035,7 @@ class GameManager {
 				)
 			);
 
-			await wait({minutes: PhaseWaitTimes.SignUps*(1/15)});
+			await wait({minutes: PhaseLength.SIGN_UPS*(1/15)});
 
 			if (!this.state_manager.isInSignUps()) return;
 		}

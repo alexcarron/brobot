@@ -11,6 +11,17 @@ const Phase = Object.freeze({
 });
 
 /**
+ * Enum of length of game phases in minutes
+ */
+const PhaseLength = Object.freeze({
+	FIRST_DAY: 2,
+	NIGHT: 5,
+	SIGN_UPS: 15,
+	VOTING: 7,
+	TRIAL: 5,
+});
+
+/**
  * Enum of possible subphases of the game
  */
 const Subphase = Object.freeze({
@@ -458,6 +469,7 @@ class GameStateManager {
 		)
 	}
 
+
 	logCurrentState() {
 		this.game.logger.log({
 			state: this.state,
@@ -468,4 +480,4 @@ class GameStateManager {
 	}
 }
 
-module.exports = { GameStateManager, Phase, Subphase, GameState };
+module.exports = { GameStateManager, Phase, Subphase, GameState, PhaseLength };
