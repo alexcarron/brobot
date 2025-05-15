@@ -1,9 +1,10 @@
-const { RoleNames, AbilityArgName } = require("../../modules/enums");
+const { RoleNames, } = require("../../modules/enums");
 const RapidDiscordMafia = require("./RapidDiscordMafia");
 const { RoleIdentifier } = require("./RoleIdentifier");
 const RoleManager = require("./RoleManager");
 const GameManager = require("./GameManager");
 const { AbilityName } = require("./Ability");
+const { AbilityArgName } = require("./Arg");
 
 describe('Player', () => {
 	/**
@@ -55,7 +56,7 @@ describe('Player', () => {
 
 			const feedback = kidnapper_player.useAbility(
 				mock_game.ability_manager.getAbility(AbilityName.KIDNAP),
-				{ [AbilityArgName.PlayerKidnapping]: doctor_name },
+				{ [AbilityArgName.PLAYER_KIDNAPPING]: doctor_name },
 			);
 			console.log({feedback})
 

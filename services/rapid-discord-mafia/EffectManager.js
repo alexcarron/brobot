@@ -1,9 +1,9 @@
 const Effect = require("./Effect");
-const { RoleNames, AbilityArgName, } = require("../../modules/enums");
+const { RoleNames, } = require("../../modules/enums");
 const Logger = require("./Logger");
 const { AbilityUseCount, AbilityName } = require("./Ability");
 const { Faction, Alignment, Immunity } = require("./Role");
-const { AbilityArgType, ArgumentSubtype } = require("./Arg");
+const { AbilityArgType, ArgumentSubtype, AbilityArgName } = require("./Arg");
 const { Feedback } = require("./constants/possible-messages");
 
 /**
@@ -346,8 +346,8 @@ class EffectManager {
 			name: this.EffectName.Control,
 			applyEffect: async function(game, player_using_ability, ability, arg_values) {
 				const
-					player_controlling_name = arg_values[AbilityArgName.PlayerControlling],
-					player_controlling_into_name = arg_values[AbilityArgName.PlayerControlledInto],
+					player_controlling_name = arg_values[AbilityArgName.PLAYER_CONTROLLING],
+					player_controlling_into_name = arg_values[AbilityArgName.PLAYER_CONTROLLED_INTO],
 					player_controlling = game.player_manager.get(player_controlling_name),
 					player_controlling_role = game.role_manager.getRole(player_controlling.role),
 					ability_to_control = player_controlling_role.abilities[0];

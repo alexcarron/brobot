@@ -1,25 +1,5 @@
 
 const Enums = {
-	AbilityArgName: {
-		PlayerKidnapping: "Player Kidnapping",
-		PlayerKilling: "Player Killing",
-		PlayerTracking: "Player Tracking",
-		PlayerWatching: "Player Watching",
-		PlayerRoleblocking: "Player Roleblocking",
-		PlayerHealing: "Player Healing",
-		PlayerShooting: "Player Shooting",
-		PlayerFraming: "Player Framing",
-		PlayerEvaluating: "Player Evaluating",
-		PlayerInvestigating: "Player Investigating",
-		PlayerConsorting: "Player Consorting",
-		PlayerKnifing: "Player Knifing",
-		PlayerSmithingFor: "Player Smithing For",
-		PlayerControlling: "Player Controlling",
-		PlayerControlledInto: "Player Target Is Controlled Into",
-		PlayerObserving: "Player Observing",
-		PlayerReplacing: "Player Replacing",
-	},
-
 	RoleNames: {
 		Mafioso: "Mafioso",
 		Godfather: "Godfather",

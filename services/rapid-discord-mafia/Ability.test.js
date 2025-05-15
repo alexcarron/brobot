@@ -1,7 +1,6 @@
-const { AbilityArgName, } = require("../../modules/enums");
 const { EffectName } = require("./EffectManager");
 const { Ability, AbilityUseCount, AbilityType, AbilityPriority, AbilityDuration, AbilityName } = require("./Ability");
-const {Arg, AbilityArgType, ArgumentSubtype} = require("./Arg");
+const {Arg, AbilityArgType, ArgumentSubtype, AbilityArgName} = require("./Arg");
 const { Phase } = require("./GameStateManager");
 
 describe('Ability', () => {
@@ -18,7 +17,7 @@ describe('Ability', () => {
 			const feedback = (player_healing, player_name="You", isYou=true) => {return "feedback"}
 			const args = [
 				new Arg({
-					name: AbilityArgName.PlayerConsorting,
+					name: AbilityArgName.PLAYER_CONSORTING,
 					description: "description",
 					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtype.CERTAIN_PLAYERS],
@@ -66,7 +65,7 @@ describe('Ability', () => {
 			const feedback = (player_healing, player_name="You", isYou=true) => {return "feedback"}
 			const args = [
 				{
-					name: AbilityArgName.PlayerConsorting,
+					name: AbilityArgName.PLAYER_CONSORTING,
 					description: "description",
 					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtype.CERTAIN_PLAYERS],

@@ -1,4 +1,4 @@
-const { RoleNames, AbilityArgName } = require("../../modules/enums");
+const { RoleNames, } = require("../../modules/enums");
 const RapidDiscordMafia = require("./RapidDiscordMafia");
 const {RoleIdentifier, RoleIdentifierKeyword} = require("./RoleIdentifier");
 const GameManager = require("./GameManager");
@@ -10,6 +10,7 @@ const { Faction, Alignment } = require("./Role");
 const { TrialOutcome } = require("./VoteManager");
 const { Feedback } = require("./constants/possible-messages");
 const { AbilityName } = require("./Ability");
+const { AbilityArgName } = require("./Arg");
 
 
 describe('GameManager', () => {
@@ -746,13 +747,13 @@ describe('GameManager', () => {
 			mafioso_player.useAbility(
 				mock_game.ability_manager.getAbility(AbilityName.MURDER),
 				{
-					[AbilityArgName.PlayerKilling]: townie_player.name,
+					[AbilityArgName.PLAYER_KILLING]: townie_player.name,
 				}
 			);
 			fool_player.useAbility(
 				mock_game.ability_manager.getAbility(AbilityName.DEATH_CURSE),
 				{
-					[AbilityArgName.PlayerKilling]: townie_player.name,
+					[AbilityArgName.PLAYER_KILLING]: townie_player.name,
 				}
 			);
 

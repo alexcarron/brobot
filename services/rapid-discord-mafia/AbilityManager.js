@@ -1,7 +1,6 @@
-const { AbilityArgName } = require("../../modules/enums.js")
 const {Ability, AbilityUseCount, AbilityType, AbilityPriority, AbilityDuration, AbilityName} = require("./Ability.js")
 const { EffectName } = require("./EffectManager.js")
-const {Arg, AbilityArgType, ArgumentSubtype} = require("./Arg.js");
+const {Arg, AbilityArgType, ArgumentSubtype, AbilityArgName} = require("./Arg.js");
 const { Phase } = require("./GameStateManager.js");
 const { Announcement, Feedback } = require("./constants/possible-messages.js");
 
@@ -27,7 +26,7 @@ class AbilityManager {
 			},
 			args: [
 				new Arg({
-					name: AbilityArgName.PlayerHealing,
+					name: AbilityArgName.PLAYER_HEALING,
 					description: "The player you're healing",
 					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NOT_SELF],
@@ -72,7 +71,7 @@ class AbilityManager {
 			},
 			args: [
 				new Arg({
-					name: AbilityArgName.PlayerEvaluating,
+					name: AbilityArgName.PLAYER_EVLUATING,
 					description: "The player you are evaluating",
 					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NOT_SELF]
@@ -95,7 +94,7 @@ class AbilityManager {
 			},
 			args: [
 				new Arg({
-					name: AbilityArgName.PlayerTracking,
+					name: AbilityArgName.PLAYER_TRACKING,
 					description: "The player whose visit your tracking",
 					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NOT_SELF]
@@ -118,7 +117,7 @@ class AbilityManager {
 			},
 			args: [
 				new Arg({
-					name: AbilityArgName.PlayerWatching,
+					name: AbilityArgName.PLAYER_WATCHING,
 					description: "The player whose house your watching for visits",
 					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NOT_SELF]
@@ -142,7 +141,7 @@ class AbilityManager {
 			},
 			args: [
 				new Arg({
-					name: AbilityArgName.PlayerRoleblocking,
+					name: AbilityArgName.PLAYER_ROLEBLOCKING,
 					description: "The player your roleblocking",
 					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NOT_SELF]
@@ -169,7 +168,7 @@ class AbilityManager {
 			},
 			args: [
 				new Arg({
-					name: AbilityArgName.PlayerShooting,
+					name: AbilityArgName.PLAYER_SHOOTING,
 					description: "The player your shooting",
 					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NOT_SELF]
@@ -217,7 +216,7 @@ class AbilityManager {
 			},
 			args: [
 				new Arg({
-					name: AbilityArgName.PlayerKilling,
+					name: AbilityArgName.PLAYER_KILLING,
 					description: "The player your killing",
 					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NON_MAFIA]
@@ -241,7 +240,7 @@ class AbilityManager {
 			},
 			args: [
 				new Arg({
-					name: AbilityArgName.PlayerFraming,
+					name: AbilityArgName.PLAYER_FRAMING,
 					description: "The player your framing to be the Mafioso",
 					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NON_MAFIA]
@@ -268,7 +267,7 @@ class AbilityManager {
 			},
 			args: [
 				new Arg({
-					name: AbilityArgName.PlayerConsorting,
+					name: AbilityArgName.PLAYER_CONSORTING,
 					description: "The player your roleblocking",
 					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NOT_SELF]
@@ -292,7 +291,7 @@ class AbilityManager {
 			feedback: function(player_investigating, player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to investigate the role of **${player_investigating}** tonight`},
 			args: [
 				new Arg({
-					name: AbilityArgName.PlayerInvestigating,
+					name: AbilityArgName.PLAYER_INVESTIGATING,
 					description: "The player whose role your investigating",
 					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NON_MAFIA]
@@ -331,7 +330,7 @@ class AbilityManager {
 			feedback: function(player_cursing, player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to curse **${player_cursing}** with death tonight`},
 			args: [
 				new Arg({
-					name: AbilityArgName.PlayerKilling,
+					name: AbilityArgName.PLAYER_KILLING,
 					description: "The player your cursing with death",
 					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.CERTAIN_PLAYERS]
@@ -389,7 +388,7 @@ class AbilityManager {
 			},
 			args: [
 				new Arg({
-					name: AbilityArgName.PlayerKnifing,
+					name: AbilityArgName.PLAYER_KNIFING,
 					description: "The player your stabbing",
 					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NOT_SELF]
@@ -425,7 +424,7 @@ class AbilityManager {
 			feedback: function(player_smithing_for, player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to smith a bulletproof vest for **${player_smithing_for}** tonight`},
 			args: [
 				new Arg({
-					name: AbilityArgName.PlayerSmithingFor,
+					name: AbilityArgName.PLAYER_SMITHING_FOR,
 					description: "The player your smithing a bulletproof vest for",
 					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NOT_SELF]
@@ -486,13 +485,13 @@ class AbilityManager {
 			feedback: function(player_controlling, player_controlled_into, player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to control **${player_controlling}** into using their ability on **${player_controlled_into}** tonight`},
 			args: [
 				new Arg({
-					name: AbilityArgName.PlayerControlling,
+					name: AbilityArgName.PLAYER_CONTROLLING,
 					description: "The player your controlling",
 					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NOT_SELF]
 				}),
 				new Arg({
-					name: AbilityArgName.PlayerControlledInto,
+					name: AbilityArgName.PLAYER_CONTROLLED_INTO,
 					description: "The player your forcing whoever your controlling to visit",
 					type: AbilityArgType.PLAYER,
 					subtypes: []
@@ -515,7 +514,7 @@ class AbilityManager {
 			},
 			args: [
 				new Arg({
-					name: AbilityArgName.PlayerObserving,
+					name: AbilityArgName.PLAYER_OBSERVING,
 					description: "The player you're observing",
 					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NOT_SELF]
@@ -539,7 +538,7 @@ class AbilityManager {
 			},
 			args: [
 				new Arg({
-					name: AbilityArgName.PlayerReplacing,
+					name: AbilityArgName.PLAYER_REPLACING,
 					description: "The player you're attacking and replacing",
 					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NOT_SELF]
@@ -562,7 +561,7 @@ class AbilityManager {
 			},
 			args: [
 				new Arg({
-					name: AbilityArgName.PlayerKidnapping,
+					name: AbilityArgName.PLAYER_KIDNAPPING,
 					description: "The player you're kidnapping",
 					type: AbilityArgType.PLAYER,
 					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NON_MAFIA, ArgumentSubtype.NOT_SELF]
