@@ -9,8 +9,7 @@ const
 	ids = require('./bot-config/discord-ids.js'),
 	fs = require("fs"), // Used to interact with file system
 	Discord = require('discord.js'),
-	{ REST, Routes, Events, GatewayIntentBits, Partials } = require('discord.js'),
-	{ discord_token } = require("./modules/token.js");
+	{ REST, Routes, Events, GatewayIntentBits, Partials } = require('discord.js');
 
 global.client = new Discord.Client({
 	intents: [
@@ -38,6 +37,7 @@ const DailyMessageHandler = require('./services/discussion-prompts/DailyMessageH
 const path = require('path');
 const { setupEventListeners } = require('./event-listeners/event-listener-setup.js');
 const { loadObjectFromJsonInGitHub } = require('./utilities/github-json-storage-utils.js');
+const { DISCORD_TOKEN } = require('./bot-config/token.js');
 
 // ! Store a list of command cooldowns
 client.cooldowns = new Collection();
@@ -106,7 +106,7 @@ function getAllJSFiles(directoryPath) {
 
 	// ! Deploy slash commands
 	// Construct and prepare an instance of the REST module
-	const rest = new REST().setToken(discord_token);
+	const rest = new REST().setToken(DISCORD_TOKEN);
 
 	try {
 		console.log(`Started refreshing application (/) commands.`);
@@ -167,7 +167,7 @@ function getAllJSFiles(directoryPath) {
 })();
 
 // Authenticate and connect Brobot to Discord API
-global.client.login(discord_token);
+global.client.login(DISCORD_TOKEN);
 
 // when the client is ready, run this code
 // this event will only trigger one time after Brobot has successfully fully connected to the Discord API

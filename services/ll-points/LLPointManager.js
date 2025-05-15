@@ -1,6 +1,6 @@
+const { GITHUB_TOKEN } = require("../../bot-config/token.js");
 const { DatabaseURLs, LLPointTiers, } = require("../../modules/enums.js");
 const Viewer = require("./Viewer.js");
-const { github_token } =  require("../../modules/token.js");
 
 class LLPointManager {
 	constructor() {
@@ -15,7 +15,7 @@ class LLPointManager {
 		const options = {
 			url: DatabaseURLs.Viewers,
 			headers: {
-				'Authorization': `Token ${github_token}`
+				'Authorization': `Token ${GITHUB_TOKEN}`
 			},
 		};
 
@@ -53,7 +53,7 @@ class LLPointManager {
 					`https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
 					{
 						headers: {
-							'Authorization': `Token ${github_token}`
+							'Authorization': `Token ${GITHUB_TOKEN}`
 						}
 					}
 				);
@@ -70,7 +70,7 @@ class LLPointManager {
 					},
 					{
 						headers: {
-							'Authorization': `Token ${github_token}`
+							'Authorization': `Token ${GITHUB_TOKEN}`
 						}
 					}
 				);

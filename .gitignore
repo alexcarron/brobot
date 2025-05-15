@@ -6,9 +6,10 @@ unused/
 
 # Local Only
 .eslintrc.json
-token.json
+*token.json
 .vscode
 .npm
+*token.js
 
 # Planning & Design
 planning/

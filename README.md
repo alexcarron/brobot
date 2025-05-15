@@ -90,7 +90,6 @@ Contains the main entry point and all project-level configuration files.
 * **`package-lock.json`** Ensures consistent dependency versions across installs
 * **`package.json`** Contains project metadata and dependencies
 * **`README.md`** Provides documentation and a description of the project
-* **`token.json`** *(hidden)* Stores sensitive data like bot tokens and API keys
 
 ### 📂 `bot-config/`
 
@@ -101,7 +100,9 @@ Contains configuration files related to Brobot.
   * `isOn`: Whether Brobot is currently active
   * `isSleep`: If true, only admins can use Brobot (non-admins are restricted)
   * `blocked_users`: List of user IDs blocked from using Brobot
-* **`discord-ids.js`** Stores relevant Discord server, role, channel, category, and user IDs used throughout the code (e.g., admin IDs, allowed role IDs)
+* **`discord-ids.js`** Stores relevant Discord server, role, channel, category, and user IDs used throughout the code (e.g.,
+ admin IDs, allowed role IDs)
+* **`token.js`** *(hidden)* Stores sensitive data like bot tokens and API keys
 
 ### 📂 `commands/`
 

@@ -1,7 +1,8 @@
+const { GITHUB_TOKEN } = require('../bot-config/token');
+
 constaxios = require('axios');
 const REPO_OWNER = "alexcarron";
 const REPO_NAME = "brobot-database";
-const github_token = require("../token.json")
 
 /**
  * Saves an object to a specified file in the GitHub repository
@@ -22,7 +23,7 @@ const saveObjectToJsonInGitHub = async (object, jsonFileName) => {
 				`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`,
 				{
 					headers: {
-						'Authorization': `Token ${github_token}`
+						'Authorization': `Token ${GITHUB_TOKEN}`
 					}
 				}
 			);
@@ -44,7 +45,7 @@ const saveObjectToJsonInGitHub = async (object, jsonFileName) => {
 			},
 			{
 				headers: {
-					'Authorization': `Token ${github_token}`
+					'Authorization': `Token ${GITHUB_TOKEN}`
 				}
 			}
 		);
@@ -68,7 +69,7 @@ const loadObjectFromJsonInGitHub = async (jsonFileName) => {
 			`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`,
 			{
 				headers: {
-					'Authorization': `Token ${github_token}`
+					'Authorization': `Token ${GITHUB_TOKEN}`
 				}
 			}
 		)

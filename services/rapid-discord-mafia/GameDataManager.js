@@ -1,6 +1,6 @@
 const axios = require('axios');
-const { github_token } =  require("../../modules/token.js");
 const PlayerManager = require('./PlayerManager.js');
+const { GITHUB_TOKEN } = require('../../bot-config/token.js');
 
 /**
  * A class to handle the game data that persists across mulitple sessions on github
@@ -75,7 +75,7 @@ class GameDataManager {
 						`https://api.github.com/repos/${GameDataManager.REPO_OWNER}/${GameDataManager.REPO_NAME}/contents/${GameDataManager.JSON_FILE_NAME}`,
 						{
 							headers: {
-								'Authorization': `Token ${github_token}`
+								'Authorization': `Token ${GITHUB_TOKEN}`
 							}
 						}
 					);
@@ -90,7 +90,7 @@ class GameDataManager {
 					},
 					{
 						headers: {
-							'Authorization': `Token ${github_token}`
+							'Authorization': `Token ${GITHUB_TOKEN}`
 						}
 					}
 				);
@@ -112,7 +112,7 @@ class GameDataManager {
 					`https://api.github.com/repos/${GameDataManager.REPO_OWNER}/${GameDataManager.REPO_NAME}/contents/${GameDataManager.JSON_FILE_NAME}`,
 					{
 						headers: {
-							'Authorization': `Token ${github_token}`
+							'Authorization': `Token ${GITHUB_TOKEN}`
 						}
 					}
 				)
