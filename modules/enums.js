@@ -3,13 +3,6 @@ const { createListFromWords } = require("../utilities/text-formatting-utils.js")
 const { createNowUnixTimestamp } = require("../utilities/date-time-utils.js");
 
 const Enums = {
-	Duration: {
-		DayAndNight: 1,
-		OneDay: 0.5,
-		OneNight: 0.5,
-		Indefinite: -1,
-	},
-
 	Immunities: {
 		Roleblock: "roleblock",
 		Control: "control",

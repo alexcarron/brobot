@@ -1,4 +1,4 @@
-const { Duration, Phases } = require("../../modules/enums.js");
+const { Phases } = require("../../modules/enums.js");
 const Arg = require("./Arg.js");
 
 /**
@@ -31,6 +31,13 @@ const AbilityPriority = Object.freeze({
 	SUICIDE: 4,
 	MANIPULATION: 5,
 	INVESTIGATIVE: 6,
+});
+
+const AbilityDuration = Object.freeze({
+	DAY_AND_NIGHT: 1,
+	ONE_DAY: 0.5,
+	ONE_NIGHT: 0.5,
+	INDEFINITE: -1,
 });
 
 /**
@@ -196,4 +203,4 @@ class Ability {
 	}
 }
 
-module.exports = {Ability, AbilityUseCount, AbilityType, AbilityPriority};
+module.exports = {Ability, AbilityUseCount, AbilityType, AbilityPriority, AbilityDuration};
