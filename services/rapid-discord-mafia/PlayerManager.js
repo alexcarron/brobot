@@ -1,9 +1,10 @@
 const { getRandomElement } = require("../../utilities/data-structure-utils");
-const { Feedback, Announcements, RoleNames, AbilityName } = require("../../modules/enums");
+const { RoleNames, AbilityName } = require("../../modules/enums");
 const Logger = require("./Logger");
 const Player = require("./Player");
 const { Faction } = require("./Role");
 const { AbilityType } = require("./Ability");
+const { Feedback, Announcement } = require("./constants/possible-messages");
 
 class PlayerManager {
 	/**
@@ -181,8 +182,8 @@ class PlayerManager {
 	 * @param {Player} player
 	 */
 	async smitePlayer(player) {
-		await player.sendFeedback(Feedback.Smitten(player));
-		this.game_manager.addDeath(player, player, Announcements.PlayerSmitten);
+		await player.sendFeedback(Feedback.SMITTEN(player));
+		this.game_manager.addDeath(player, player, Announcement.PLAYER_SMITTEN);
 	}
 
 	async incrementInactvity() {
@@ -198,7 +199,7 @@ class PlayerManager {
 				actual_phases_inactive < Player.MAX_INACTIVE_PHASES
 			) {
 				const remaining_inactive_phases = Player.MAX_INACTIVE_PHASES-actual_phases_inactive;
-				await player.sendFeedback(Feedback.InactivityWarning(this, actual_phases_inactive, remaining_inactive_phases));
+				await player.sendFeedback(Feedback.INACTIVITY_WARNING(this, actual_phases_inactive, remaining_inactive_phases));
 			}
 		}
 	}
@@ -216,8 +217,8 @@ class PlayerManager {
 		if (target_player.defense < attacker_player.attack) {
 			this.game_manager.addDeath(target_player, attacker_player);
 
-			target_player.addFeedback(Feedback.KilledByAttack);
-			attacker_player.addFeedback(Feedback.KilledPlayer(target_player.name));
+			target_player.addFeedback(Feedback.KILLED_BY_ATTACK);
+			attacker_player.addFeedback(Feedback.KILLED_PLAYER(target_player.name));
 
 			const target_role = this.game_manager.role_manager.getRole(target_player.role);
 			if (
@@ -241,21 +242,21 @@ class PlayerManager {
 			if ( protection_affects_on_target.length > 0 ) {
 				for (let protection_affect of protection_affects_on_target) {
 					const protecter_player = this.get(protection_affect.by);
-					protecter_player.addFeedback(Feedback.ProtectedAnAttackedPlayer);
+					protecter_player.addFeedback(Feedback.PROTECTED_AN_ATTACKED_PLAYER);
 
 					this.logger.log(`${protecter_player.name} has protected the victim ${target_player.name}`);
 
 					if (protection_affect.name === AbilityName.Smith) {
 						this.logger.log(`${protecter_player.name} successfully smithed a vest and achieved their win condition.`);
 
-						protecter_player.addFeedback(Feedback.DidSuccessfulSmith);
+						protecter_player.addFeedback(Feedback.DID_SUCCESSFUL_SMITH);
 						this.game_manager.makePlayerAWinner(protecter_player);
 					}
 				}
 			}
 
-			target_player.addFeedback(Feedback.AttackedButSurvived);
-			attacker_player.addFeedback(Feedback.AttackFailed(target_player.name));
+			target_player.addFeedback(Feedback.ATTACKED_BUT_SURVIVED);
+			attacker_player.addFeedback(Feedback.ATTACK_FAILED(target_player.name));
 		}
 	}
 
@@ -266,7 +267,7 @@ class PlayerManager {
 	havePlayerLeave(player) {
 		this.logger.log(`**${player.name}** left the game.`);
 		this.game_manager.announceMessages(`**${player.name}** left the game.`);
-		this.game_manager.addDeath(player, player, Announcements.PlayerSuicide);
+		this.game_manager.addDeath(player, player, Announcement.PLAYER_SUICIDE);
 	}
 
 	/**
@@ -295,7 +296,7 @@ class PlayerManager {
 		player.role_log += " -> " + role.name;
 
 		await player.sendFeedback(
-			Feedback.ConvertedToRole(player, current_role_name, role.name)
+			Feedback.CONVERTED_TO_ROLE(player, current_role_name, role.name)
 		);
 		await player.sendFeedback(role.toString(), true);
 
@@ -351,10 +352,10 @@ class PlayerManager {
 					}
 
 					case AbilityType.SUICIDE: {
-						this.game_manager.addDeath(player, player, Announcements.VigilanteSuicide);
+						this.game_manager.addDeath(player, player, Announcement.VIGILANTE_SUICIDE);
 
-						await player.sendFeedback(Feedback.ComittingSuicide);
-						player.addFeedback(Feedback.ComittedSuicide);
+						await player.sendFeedback(Feedback.COMITTING_SUICIDE);
+						player.addFeedback(Feedback.COMITTED_SUICIDE);
 						break;
 					}
 				}

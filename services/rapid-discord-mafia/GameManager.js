@@ -1,4 +1,4 @@
-const { MessageDelays, RDMRoles, Feedback, Announcements, RoleNames, PhaseWaitTimes, RoleIdentifierTypes, CoinRewards, } = require("../../modules/enums.js");
+const { MessageDelays, RDMRoles, RoleNames, PhaseWaitTimes, RoleIdentifierTypes, CoinRewards, } = require("../../modules/enums.js");
 const ids = require("../../bot-config/discord-ids.js");
 const { PermissionFlagsBits, Role, Interaction } = require("discord.js");
 const Death = require("./Death.js");
@@ -20,6 +20,7 @@ const { wait } = require("../../utilities/realtime-utils.js");
 const { Goal, Faction } = require("./Role.js");
 // const Logger = require("./Logger.js");
 const { Phase } = require("./GameStateManager.js");
+const { Announcement, Feedback } = require("./constants/possible-messages.js");
 
 class GameManager {
 	/**
@@ -262,7 +263,7 @@ class GameManager {
 		}
 
 		await this.announceMessages(
-			Announcements.LivingPlayers(this.player_manager.getAlivePlayerNames())
+			Announcement.SHOW_LIVING_PLAYERS(this.player_manager.getAlivePlayerNames())
 		);
 
 		this.player_manager.getPlayerList().forEach(player => {
@@ -282,7 +283,7 @@ class GameManager {
 		const announce_chnl = await fetchChannel(rdm_guild, ids.rapid_discord_mafia.channels.game_announce);
 		const role_list_txt =
 			`_ _` + "\n" +
-			Announcements.RoleList(role_identifiers)
+			Announcement.SHOW_ROLE_LIST(role_identifiers)
 
 		await announce_chnl.messages
 			.fetchPinned()
@@ -492,7 +493,7 @@ class GameManager {
 	async killDeadPlayers() {
 		await this.announceAllDeaths();
 		await this.announceMessages(
-			Announcements.LivingPlayers(this.player_manager.getAlivePlayerNames())
+			Announcement.SHOW_LIVING_PLAYERS(this.player_manager.getAlivePlayerNames())
 		);
 
 		/**
@@ -539,13 +540,13 @@ class GameManager {
 
 				if (this.timeout_counter >= GameManager.MAX_TIMEOUT_COUNTER) {
 					await this.announceMessages(
-						Announcements.DrawGameFromTimeout(this.timeout_counter) + "\n_ _"
+						Announcement.DRAW_GAME_FROM_TIMEOUT(this.timeout_counter) + "\n_ _"
 					);
 					await this.endGame();
 				}
 				else {
 					await this.announceMessages(
-						Announcements.TimeoutWarning(GameManager.MAX_TIMEOUT_COUNTER, this.timeout_counter) + `\n`
+						Announcement.TIMEOUT_WARNING(GameManager.MAX_TIMEOUT_COUNTER, this.timeout_counter) + `\n`
 					);
 				}
 			}
@@ -580,9 +581,9 @@ class GameManager {
 		await player_on_trial.kill(death);
 
 		if (player_on_trial.role === RoleNames.Fool) {
-			await player_on_trial.sendFeedback(Feedback.WonAsFool);
+			await player_on_trial.sendFeedback(Feedback.WON_AS_FOOL);
 
-			await this.announceMessages("_ _\n" + Announcements.LynchedFool);
+			await this.announceMessages("_ _\n" + Announcement.LYNCHED_FOOL);
 
 			const players_voting_guilty =
 				Object.entries(this.trial_votes)
@@ -605,7 +606,7 @@ class GameManager {
 
 			if ( exe.exe_target === player_on_trial.name ) {
 				const exe_player = this.player_manager.get(exe.name);
-				await exe_player.sendFeedback(Feedback.WonAsExecutioner);
+				await exe_player.sendFeedback(Feedback.WON_AS_EXECUTIONER);
 				this.makePlayerAWinner(exe_player);
 			}
 		}
@@ -634,20 +635,20 @@ class GameManager {
 		const player_on_trial = this.player_manager.get(this.on_trial);
 
 		if (this.verdict === TrialOutcome.TIE) {
-			trial_outcome_message = Announcements.TrialOutcomeTie(player_on_trial);
+			trial_outcome_message = Announcement.TRIAL_OUTCOME_TIE(player_on_trial);
 		}
 		else if (this.verdict === TrialOutcome.NO_VOTES) {
-			trial_outcome_message = Announcements.TrialOutcomeNoVotes(player_on_trial);
+			trial_outcome_message = Announcement.TRIAL_OUTCOME_NO_VOTES(player_on_trial);
 		}
 		else if (this.verdict === TrialOutcome.INNOCENT) {
-			trial_outcome_message = Announcements.TrialOutcomeInnocent(player_on_trial);
+			trial_outcome_message = Announcement.TRIAL_OUTCOME_INNOCENT(player_on_trial);
 		}
 		else if (this.verdict === TrialOutcome.GUILTY) {
-			trial_outcome_message = Announcements.TrialOutcomeGuilty(player_on_trial);
+			trial_outcome_message = Announcement.TRIAL_OUTCOME_GUILTY(player_on_trial);
 		}
 
 		await this.announceMessages(
-			Announcements.TrialOver(ids.rapid_discord_mafia.roles.living),
+			Announcement.TRIAL_OVER(ids.rapid_discord_mafia.roles.living),
 			trial_outcome_message,
 		);
 	}
@@ -668,22 +669,22 @@ class GameManager {
 		const voting_outcome = this.on_trial;
 
 		await this.announceMessages(
-			Announcements.VotingOver(ids.rapid_discord_mafia.roles.living)
+			Announcement.VOTING_OVER(ids.rapid_discord_mafia.roles.living)
 		);
 
 		let voting_outcome_message = ""
 
 		if (voting_outcome === VotingOutcome.NOBODY) {
-			voting_outcome_message = Announcements.VotingOutcomeNobody;
+			voting_outcome_message = Announcement.VOTING_OUTCOME_NOBODY;
 		}
 		else if (voting_outcome == VotingOutcome.TIE) {
-			voting_outcome_message = Announcements.VotingOutcomeTie;
+			voting_outcome_message = Announcement.VOTING_OUTCOME_TIE;
 		}
 		else if (voting_outcome == VotingOutcome.NO_VOTES) {
-			voting_outcome_message = Announcements.VotingOutcomeNoVotes;
+			voting_outcome_message = Announcement.VOTING_OUTCOME_NO_VOTES;
 		}
 		else {
-			voting_outcome_message = Announcements.VotingOutcomePlayer(voting_outcome);
+			voting_outcome_message = Announcement.VOTING_OUTCOME_PLAYER(voting_outcome);
 		}
 
 		await this.announceMessages(
@@ -777,7 +778,7 @@ class GameManager {
 		const phase_num = this.state_manager.day_num;
 
 		await this.announceMessages(
-			...Announcements.StartDay(ids.rapid_discord_mafia.roles.living, phase_num)
+			...Announcement.START_DAY(ids.rapid_discord_mafia.roles.living, phase_num)
 		);
 
 		this.logger.log(`Announced Day ${phase_num}.`);
@@ -787,10 +788,10 @@ class GameManager {
 	async announceNight() {
 		const night_num = this.state_manager.day_num;
 
-		await this.remindPlayersTo(Announcements.UseNightAbilityReminder);
+		await this.remindPlayersTo(Announcement.USE_NIGHT_ABILITY_REMINDER);
 
 		await this.announceMessages(
-			...Announcements.StartNight(ids.rapid_discord_mafia.roles.living, night_num),
+			...Announcement.START_NIGHT(ids.rapid_discord_mafia.roles.living, night_num),
 		);
 
 		this.logger.log(`Announced Night ${night_num}.`);
@@ -967,16 +968,16 @@ class GameManager {
 			await GameManager.closePreGameChannels();
 
 		await this.announceMessages(
-			...Announcements.GameStarted(ids.rapid_discord_mafia.roles.living, ids.rapid_discord_mafia.channels.role_list)
+			...Announcement.GAME_STARTED(ids.rapid_discord_mafia.roles.living, ids.rapid_discord_mafia.channels.role_list)
 		)
 
 		this.announceMessages(
-			...Announcements.Day1Started()
+			...Announcement.DAY_ONE_STARTED
 		)
 
 		if (!this.isMockGame) {
 			await GameManager.openDayChat();
-			await this.discord_service.announce(Announcements.OpenDayChat(ids.rapid_discord_mafia.channels.town_discussion));
+			await this.discord_service.announce(Announcement.OPEN_DAY_CHAT(ids.rapid_discord_mafia.channels.town_discussion));
 		}
 
 		this.logger.log("Waiting For Day 1 to End");
@@ -1015,7 +1016,7 @@ class GameManager {
 
 		if (!this.isMockGame) {
 			await GameManager.openDayChat();
-			await this.discord_service.announce(Announcements.OpenDayChat(day_chat_chnl.id));
+			await this.discord_service.announce(Announcement.OPEN_DAY_CHAT(day_chat_chnl.id));
 		}
 
 		await this.startVoting(days_passed_last_day);
@@ -1030,9 +1031,9 @@ class GameManager {
 		const days_passed_last_voting = this.days_passed;
 
 		this.resetVotes();
-		this.remindPlayersTo(Announcements.VotingReminder, true);
+		this.remindPlayersTo(Announcement.VOTING_REMINDER, true);
 		this.announceMessages(
-			...Announcements.StartVoting()
+			...Announcement.START_VOTING
 		);
 
 		this.logger.log("Waiting for Voting to End");
@@ -1042,7 +1043,7 @@ class GameManager {
 
 			if (!this.state_manager.canStartTrial(days_passed_last_voting)) {
 				this.announceMessages(
-					Announcements.PhaseAlmostOverWarning(PhaseWaitTimes.Voting*1/5)
+					Announcement.PHASE_ALMOST_OVER_WARNING(PhaseWaitTimes.Voting*1/5)
 				)
 			}
 
@@ -1083,12 +1084,12 @@ class GameManager {
 
 		const player_on_trial = this.player_manager.get(this.on_trial);
 
-		await this.announceMessages(...Announcements.StartTrial(player_on_trial));
+		await this.announceMessages(...Announcement.START_TRIAL(player_on_trial));
 		await this.givePlayerOnTrialRole(player_on_trial);
 		await this.announceMessages(
-			Announcements.OnTrialPlayerGiveDefense(ids.rapid_discord_mafia.roles.on_trial),
+			Announcement.ON_TRIAL_PLAYER_GIVE_DEFENSE(ids.rapid_discord_mafia.roles.on_trial),
 		);
-		this.remindPlayersTo(Announcements.TrialVotingReminder(player_on_trial), true);
+		this.remindPlayersTo(Announcement.TRIAL_VOTING_REMINDER(player_on_trial), true);
 
 		this.logger.log("Waiting for Trial Voting to End");
 
@@ -1097,7 +1098,7 @@ class GameManager {
 
 			if (!this.state_manager.canStartTrialResults(days_passed_last_trial)) {
 				this.announceMessages(
-					Announcements.PhaseAlmostOverWarning(PhaseWaitTimes.Trial*1/5)
+					Announcement.PHASE_ALMOST_OVER_WARNING(PhaseWaitTimes.Trial*1/5)
 				)
 			}
 
@@ -1167,7 +1168,7 @@ class GameManager {
 
 			if (!this.state_manager.canStartDay(days_passed_last_night)) {
 				this.announceMessages(
-					Announcements.PhaseAlmostOverWarning(PhaseWaitTimes.Night*1/5)
+					Announcement.PHASE_ALMOST_OVER_WARNING(PhaseWaitTimes.Night*1/5)
 				)
 			}
 
@@ -1439,7 +1440,7 @@ class GameManager {
 
 		// Make cause of death message
 		if (type == "attack") {
-			death_announcement_msgs.push(`_ _\n${Announcements.PlayerFoundDead(victim_player)}`);
+			death_announcement_msgs.push(`_ _\n${Announcement.PLAYER_FOUND_DEAD(victim_player)}`);
 
 
 			for (let [index, kill] of death.kills.entries()) {
@@ -1453,21 +1454,21 @@ class GameManager {
 				) {
 					if (index == 0)
 						death_announcement_msgs.push(
-							`\n` + Feedback.AnnounceMurderByFaction(Faction.MAFIA)
+							`\n` + Feedback.ANNOUNCE_MURDER_BY_FACTION(Faction.MAFIA)
 						);
 					else
 						death_announcement_msgs.push(
-							`\n` + Feedback.AnnounceAnotherMurderByFaction(Faction.MAFIA)
+							`\n` + Feedback.ANNOUNCE_ANOTHER_MURDER_BY_FACTION(Faction.MAFIA)
 						);
 				}
 				else {
 					if (index == 0)
 						death_announcement_msgs.push(
-							`\n` + Feedback.AnnounceMurderByRole(kill.killer_role)
+							`\n` + Feedback.ANNOUNCE_MURDER_BY_ROLE(kill.killer_role)
 						);
 					else
 					death_announcement_msgs.push(
-						`\n` + Feedback.AnnounceAnotherMurderByRole(kill.killer_role)
+						`\n` + Feedback.ANNOUNCE_ANOTHER_MURDER_BY_ROLE(kill.killer_role)
 					);
 				}
 
@@ -1483,21 +1484,21 @@ class GameManager {
 
 		// Make last will message
 		if (victim_player.isUnidentifiable) {
-			death_announcement_msgs.push(Announcements.LastWillUnidentifiable())
+			death_announcement_msgs.push(Announcement.LAST_WILL_UNIDENTIFIABLE)
 		}
 		else if (!victim_player.last_will) {
-			death_announcement_msgs.push(Announcements.LastWillNotFound())
+			death_announcement_msgs.push(Announcement.LAST_WILL_NOT_FOUND)
 		}
 		else {
-			death_announcement_msgs.push(Announcements.LastWillFound(victim_player.last_will));
+			death_announcement_msgs.push(Announcement.LAST_WILL_FOUND(victim_player.last_will));
 		}
 
 		// Make role reveal message
 		if (victim_player.isUnidentifiable) {
-			death_announcement_msgs.push(Announcements.RoleIsUnidentifiable(victim_player));
+			death_announcement_msgs.push(Announcement.ROLE_IS_UNIDENTIFIABLE(victim_player));
 		}
 		else {
-			death_announcement_msgs.push(Announcements.RoleReveal(victim_player));
+			death_announcement_msgs.push(Announcement.ROLE_REVEAL(victim_player));
 		}
 
 		return death_announcement_msgs;
@@ -1524,7 +1525,7 @@ class GameManager {
 	async endGame(isDraw=false) {
 		if (!isDraw) {
 			await this.announceMessages(
-				...Announcements.CongratulateWinners(this.winning_factions, this.winning_players)
+				...Announcement.CONGRATULATE_WINNERS(this.winning_factions, this.winning_players)
 			);
 		}
 		else {
@@ -1539,7 +1540,7 @@ class GameManager {
 		});
 
 		await global.game_manager.announceMessages(
-			Announcements.RewardCoinsToPlayers(
+			Announcement.REWARD_COINS_TO_PLAYERS(
 				this.player_manager.getPlayerList().map(player => player.name),
 				CoinRewards.Participation
 			)
@@ -1553,7 +1554,7 @@ class GameManager {
 			contestant.giveCoins(coins_rewarded);
 
 			await global.game_manager.announceMessages(
-				Announcements.RewardCoinsToPlayer(player.name, coins_rewarded)
+				Announcement.REWARD_COINS_TO_PLAYER(player.name, coins_rewarded)
 			);
 		});
 		await this.data_manager.saveToGithub();
@@ -1993,7 +1994,7 @@ class GameManager {
 		const starting_unix_timestamp = createNowUnixTimestamp() + PhaseWaitTimes.SignUps*60;
 
 		this.announceMessages(
-			Announcements.StartSignUps(
+			Announcement.START_SIGN_UPS(
 				ids.rapid_discord_mafia.roles.sign_up_ping,
 				ids.rapid_discord_mafia.channels.join_chat,
 				starting_unix_timestamp
@@ -2007,7 +2008,7 @@ class GameManager {
 			if (!this.state_manager.isInSignUps()) return;
 
 			this.announceMessages(
-				Announcements.SignUpsReminder(
+				Announcement.SIGN_UPS_REMINDER(
 					ids.rapid_discord_mafia.channels.join_chat,
 					starting_unix_timestamp
 				)
@@ -2018,7 +2019,7 @@ class GameManager {
 			if (!this.state_manager.isInSignUps()) return;
 
 			this.announceMessages(
-				Announcements.SignUpsFinalReminder(
+				Announcement.SIGN_UPS_FINAL_REMINDER(
 					ids.rapid_discord_mafia.channels.join_chat,
 					starting_unix_timestamp
 				)
@@ -2033,14 +2034,14 @@ class GameManager {
 
 		if (player_count >= GameManager.MIN_PLAYER_COUNT) {
 			await this.announceMessages(
-				Announcements.SignUpsClosed(ids.users.LL, ids.rapid_discord_mafia.roles.living, player_count)
+				Announcement.SIGN_UPS_CLOSED(ids.users.LL, ids.rapid_discord_mafia.roles.living, player_count)
 			);
 
 			this.state_manager.changeToReadyToStart();
 		}
 		else {
 			await this.announceMessages(
-				Announcements.NotEnoughSignUps(player_count, GameManager.MIN_PLAYER_COUNT)
+				Announcement.NOT_ENOUGH_SIGN_UPS(player_count, GameManager.MIN_PLAYER_COUNT)
 			)
 			await GameManager.reset();
 		}

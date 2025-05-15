@@ -1,9 +1,10 @@
 const Effect = require("./Effect");
-const { RoleNames, AbilityName, AbilityArgName, Feedback, } = require("../../modules/enums");
+const { RoleNames, AbilityName, AbilityArgName, } = require("../../modules/enums");
 const Logger = require("./Logger");
 const { AbilityUseCount } = require("./Ability");
 const { Faction, Alignment, Immunity } = require("./Role");
 const { AbilityArgType, ArgumentSubtype } = require("./Arg");
+const { Feedback } = require("./constants/possible-messages");
 
 /**
  * Used to handle ability effects and apply them
@@ -58,10 +59,10 @@ class EffectManager {
 					)
 				) {
 					roleblocked_player.isRoleblocked = true;
-					roleblocked_player.addFeedback(Feedback.WasRoleblocked);
+					roleblocked_player.addFeedback(Feedback.WAS_ROLEBLOCKED);
 				}
 				else {
-					roleblocked_player.addFeedback(Feedback.WasRoleblockedButImmune);
+					roleblocked_player.addFeedback(Feedback.WAS_ROLEBLOCKED_BUT_IMMUNE);
 				}
 
 				if (
@@ -80,10 +81,10 @@ class EffectManager {
 						}
 
 					roleblocked_player.visiting = player_using_ability.name;
-					roleblocked_player.addFeedback(Feedback.AttackedRoleblocker);
+					roleblocked_player.addFeedback(Feedback.ATTACKED_ROLEBLOCKER);
 				}
 
-				player_using_ability.addFeedback(Feedback.RoleblockedPlayer(roleblocked_player));
+				player_using_ability.addFeedback(Feedback.ROLEBLOCKED_PLAYER(roleblocked_player));
 
 				roleblocked_player.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5);
 			}
@@ -92,7 +93,7 @@ class EffectManager {
 		[this.EffectName.Cautious]: new Effect({
 			name: this.EffectName.Cautious,
 			applyEffect: async function(game, player_using_ability, ability, arg_values) {
-				player_using_ability.addFeedback(Feedback.DidCautious);
+				player_using_ability.addFeedback(Feedback.DID_CAUTIOUS);
 				player_using_ability.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5);
 			}
 		}),
@@ -221,16 +222,16 @@ class EffectManager {
 				let feedback = "";
 
 				if (player_evaluating.isDoused) {
-					feedback = Feedback.GotUnclearEvaluation(player_evaluating_name);
+					feedback = Feedback.GOT_UNCLEAR_EVALUATION(player_evaluating_name);
 				}
 				else if (
 					evaluatedPlayerInMafia ||
 					evaluatedPlayerIsNeutralKilling
 				) {
-					feedback = Feedback.GotSuspiciousEvaluation(player_evaluating_name);
+					feedback = Feedback.GOT_SUSPICIOUS_EVALUATION(player_evaluating_name);
 				}
 				else {
-					feedback = Feedback.GotInnocentEvaluation(player_evaluating_name);
+					feedback = Feedback.GOT_INNOCENT_EVALUATION(player_evaluating_name);
 				}
 
 				game.player_manager.removeManipulationEffectsFromPlayer(player_evaluating);
@@ -255,10 +256,10 @@ class EffectManager {
 					player_seen_visiting &&
 					player_seen_visiting !== tracked_player_name
 				) {
-					feedback = Feedback.TrackerSawPlayerVisit(tracked_player_name, player_seen_visiting);
+					feedback = Feedback.TRACKER_SAW_PLAYER_VISIT(tracked_player_name, player_seen_visiting);
 				}
 				else {
-					feedback = Feedback.TrackerSawPlayerNotVisit(tracked_player_name);
+					feedback = Feedback.TRACKER_SAW_PLAYER_NOT_VISIT(tracked_player_name);
 				}
 
 				player_using_ability.addFeedback(feedback);
@@ -296,9 +297,9 @@ class EffectManager {
 				});
 
 				if (players_seen_visiting.length > 0)
-					player_using_ability.addFeedback(Feedback.LookoutSeesVisits(target_player, players_seen_visiting));
+					player_using_ability.addFeedback(Feedback.LOOKOUT_SEES_VISITS(target_player, players_seen_visiting));
 				else
-					player_using_ability.addFeedback(Feedback.LookoutSeesNoVisits(target_player));
+					player_using_ability.addFeedback(Feedback.LOOKOUT_SEES_NO_VISITS(target_player));
 
 				target_player.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5);
 			}
@@ -312,7 +313,7 @@ class EffectManager {
 					investigated_player = game.player_manager.get(investigated_player_name),
 					evaluated_role_name = investigated_player.getPercievedRole();
 
-				player_using_ability.addFeedback(Feedback.InvestigatedPlayersRole(investigated_player_name, evaluated_role_name));
+				player_using_ability.addFeedback(Feedback.INVESTIGATED_PLAYERS_ROLE(investigated_player_name, evaluated_role_name));
 
 				investigated_player.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5);
 			}
@@ -325,7 +326,7 @@ class EffectManager {
 					smithed_player_name = player_using_ability.visiting,
 					smithed_player = game.player_manager.get(smithed_player_name);
 
-				player_using_ability.addFeedback(Feedback.SmithedVestForPlayer(smithed_player))
+				player_using_ability.addFeedback(Feedback.SMITHED_VEST_FOR_PLAYER(smithed_player))
 
 				smithed_player.giveDefenseLevel(1);
 
@@ -386,7 +387,7 @@ class EffectManager {
 					isTargetImmune
 				) {
 					player_using_ability.addFeedback(
-						Feedback.ControlFailed(player_controlling_name)
+						Feedback.CONTROL_FAILED(player_controlling_name)
 					);
 					return;
 				}
@@ -415,14 +416,14 @@ class EffectManager {
 					ability_arguments: ability_arguments,
 				});
 
-				player_controlling.addFeedback(Feedback.Controlled);
+				player_controlling.addFeedback(Feedback.CONTROLLED);
 
 				player_using_ability.addFeedback(
-					Feedback.ControlSucceeded(player_controlling_name, player_controlling_into_name)
+					Feedback.CONTROL_SUCCEEDED(player_controlling_name, player_controlling_into_name)
 				);
 
 				player_using_ability.addFeedback(
-					Feedback.InvestigatedPlayersRole(
+					Feedback.INVESTIGATED_PLAYERS_ROLE(
 						player_controlling_name,
 						player_controlling.getPercievedRole()
 					)
@@ -443,7 +444,7 @@ class EffectManager {
 				let feedback = "";
 
 				if (!hasObservedPlayerBefore) {
-					feedback = Feedback.ObservedWithNoPreviousObserve(player_observing);
+					feedback = Feedback.OBSERVED_WITH_NO_PREVIOUS_OBSERVE(player_observing);
 				}
 				else {
 					const
@@ -452,13 +453,13 @@ class EffectManager {
 						percieved_faction_of_last_target = percieved_role_of_last_target.faction;
 
 					if (last_player_observed.name === player_observing.name) {
-						feedback = Feedback.ObservedSamePerson(player_observing);
+						feedback = Feedback.OBSERVED_SAME_PERSON(player_observing);
 					}
 					else if (percieved_faction_of_target === percieved_faction_of_last_target) {
-						feedback = Feedback.ObservedWorkingTogether(player_observing, last_player_observed);
+						feedback = Feedback.OBSERVED_WORKING_TOGETHER(player_observing, last_player_observed);
 					}
 					else if (percieved_faction_of_target !== percieved_faction_of_last_target) {
-						feedback = Feedback.ObservedNotWorkingTogether(player_observing, last_player_observed);
+						feedback = Feedback.OBSERVED_NOT_WORKING_TOGETHER(player_observing, last_player_observed);
 					}
 
 					game.player_manager.removeManipulationEffectsFromPlayer(player_observing);
@@ -488,14 +489,14 @@ class EffectManager {
 
 					player_replacing.isUnidentifiable = true;
 
-					player_using_ability.addFeedback(Feedback.ReplacedPlayer(player_replacing));
-					player_replacing.addFeedback(Feedback.ReplacedByReplacer);
+					player_using_ability.addFeedback(Feedback.REPLACED_PLAYER(player_replacing));
+					player_replacing.addFeedback(Feedback.REPLACED_BY_REPLACER);
 
 					player_replacing.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5);
 				}
 				// Attack Failed
 				else {
-					player_using_ability.addFeedback(Feedback.ReplaceFailed(player_replacing));
+					player_using_ability.addFeedback(Feedback.REPLACE_FAILED(player_replacing));
 				}
 			}
 		}),
@@ -510,11 +511,11 @@ class EffectManager {
 
 				game.logger.log(`${player_using_ability.name} attempts to kidnap ${kidnapped_player_name}.`);
 
-				kidnapped_player.addFeedback(Feedback.Kidnapped);
+				kidnapped_player.addFeedback(Feedback.KIDNAPPED);
 
 				if (kidnapped_player.attack > 0) {
-					player_using_ability.addFeedback(Feedback.AttackedByKidnappedPlayer(kidnapped_player));
-					kidnapped_player.addFeedback(Feedback.AttackedKidnapper);
+					player_using_ability.addFeedback(Feedback.ATTACK_BY_KIDNAPPED_PLAYER(kidnapped_player));
+					kidnapped_player.addFeedback(Feedback.ATTACKED_KIDNAPPER);
 
 					game.player_manager.attackPlayer({
 						attacker_player: kidnapped_player,
@@ -522,7 +523,7 @@ class EffectManager {
 					});
 				}
 				else {
-					player_using_ability.addFeedback(Feedback.KidnappedPlayer(kidnapped_player));
+					player_using_ability.addFeedback(Feedback.KIDNAPPED_PLAYER(kidnapped_player));
 				}
 
 				if (
@@ -530,10 +531,10 @@ class EffectManager {
 						kidnapped_player_role.immunities.includes(Immunity.ROLEBLOCK))
 				) {
 					kidnapped_player.isRoleblocked = true;
-					kidnapped_player.addFeedback(Feedback.RoleblockedByKidnapper);
+					kidnapped_player.addFeedback(Feedback.ROLEBLOCKED_BY_KIDNAPPER);
 				}
 				else {
-					kidnapped_player.addFeedback(Feedback.RoleblockedByKidnapperButImmune);
+					kidnapped_player.addFeedback(Feedback.ROLEBLOCKED_BY_KIDNAPPER_BUT_IMMUNE);
 				}
 
 				kidnapped_player.giveDefenseLevel(4);

@@ -1,6 +1,7 @@
-const { RoleNames, AbilityName, AbilityArgName, Feedback } = require("../../modules/enums");
+const { RoleNames, AbilityName, AbilityArgName } = require("../../modules/enums");
 const RapidDiscordMafia = require("./RapidDiscordMafia");
 const GameManager = require("./GameManager");
+const { Feedback } = require("./constants/possible-messages");
 
 describe('EffectManager', () => {
 	/**
@@ -46,12 +47,12 @@ describe('EffectManager', () => {
 
 			expect(
 				mafioso_feedback.includes(
-					Feedback.WasRoleblocked
+					Feedback.WAS_ROLEBLOCKED
 				)
 			).toBe(true);
 
 			expect(
-				escort_player.feedback.includes(Feedback.RoleblockedPlayer(mafioso_player))
+				escort_player.feedback.includes(Feedback.ROLEBLOCKED_PLAYER(mafioso_player))
 			)
 			.toBe(true);
 
@@ -97,13 +98,13 @@ describe('EffectManager', () => {
 
 			expect(
 				escort2_feedback.includes(
-					Feedback.WasRoleblockedButImmune
+					Feedback.WAS_ROLEBLOCKED_BUT_IMMUNE
 				)
 			)
 			.toBe(true);
 
 			expect(
-				escort_player.feedback.includes(Feedback.RoleblockedPlayer(escort2_player))
+				escort_player.feedback.includes(Feedback.ROLEBLOCKED_PLAYER(escort2_player))
 			)
 			.toBe(true);
 
@@ -148,13 +149,13 @@ describe('EffectManager', () => {
 			expect(serial_killer_player.visiting).toBe(escort_player.name);
 
 			expect(
-				serial_killer_player.feedback.includes(Feedback.AttackedRoleblocker) &&
-				serial_killer_player.feedback.includes(Feedback.WasRoleblockedButImmune)
+				serial_killer_player.feedback.includes(Feedback.ATTACKED_ROLEBLOCKER) &&
+				serial_killer_player.feedback.includes(Feedback.WAS_ROLEBLOCKED_BUT_IMMUNE)
 			)
 			.toBe(true);
 
 			expect(
-				escort_player.feedback.includes(Feedback.RoleblockedPlayer(serial_killer_player))
+				escort_player.feedback.includes(Feedback.ROLEBLOCKED_PLAYER(serial_killer_player))
 			)
 			.toBe(true);
 
@@ -199,13 +200,13 @@ describe('EffectManager', () => {
 			expect(serial_killer_player.visiting).not.toBe(escort_player.name);
 
 			expect(
-				!serial_killer_player.feedback.includes(Feedback.AttackedRoleblocker) &&
-				serial_killer_player.feedback.includes(Feedback.WasRoleblockedButImmune)
+				!serial_killer_player.feedback.includes(Feedback.ATTACKED_ROLEBLOCKER) &&
+				serial_killer_player.feedback.includes(Feedback.WAS_ROLEBLOCKED_BUT_IMMUNE)
 			)
 			.toBe(true);
 
 			expect(
-				escort_player.feedback.includes(Feedback.RoleblockedPlayer(serial_killer_player))
+				escort_player.feedback.includes(Feedback.ROLEBLOCKED_PLAYER(serial_killer_player))
 			)
 			.toBe(true);
 
@@ -237,7 +238,7 @@ describe('EffectManager', () => {
 
 			expect(
 				serial_killer_player.feedback.includes(
-					Feedback.DidCautious
+					Feedback.DID_CAUTIOUS
 				)
 			).toBe(true);
 
@@ -365,7 +366,7 @@ describe('EffectManager', () => {
 
 			expect(
 				blacksmith_player.feedback.includes(
-					Feedback.SmithedVestForPlayer(mafioso_player)
+					Feedback.SMITHED_VEST_FOR_PLAYER(mafioso_player)
 				)
 			)
 			.toBe(true);
@@ -432,7 +433,7 @@ describe('EffectManager', () => {
 			await mock_game.performCurrentNightAbilities();
 
 			expect(
-				mafioso_player.feedback.includes(Feedback.KilledByAttack)
+				mafioso_player.feedback.includes(Feedback.KILLED_BY_ATTACK)
 			)
 			.toBe(true);
 
@@ -608,7 +609,7 @@ describe('EffectManager', () => {
 
 			expect(
 				sheriff_player.feedback.includes(
-					Feedback.GotSuspiciousEvaluation(doctor_player.name)
+					Feedback.GOT_SUSPICIOUS_EVALUATION(doctor_player.name)
 				)
 			)
 			.toBe(true);
@@ -650,7 +651,7 @@ describe('EffectManager', () => {
 
 			expect(
 				sheriff_player.feedback.includes(
-					Feedback.GotUnclearEvaluation(mafioso_player.name)
+					Feedback.GOT_UNCLEAR_EVALUATION(mafioso_player.name)
 				)
 			)
 			.toBe(true);
@@ -680,7 +681,7 @@ describe('EffectManager', () => {
 
 			expect(
 				sheriff_player.feedback.includes(
-					Feedback.GotSuspiciousEvaluation(serial_killer_player.name)
+					Feedback.GOT_SUSPICIOUS_EVALUATION(serial_killer_player.name)
 				)
 			)
 			.toBe(true);
@@ -710,7 +711,7 @@ describe('EffectManager', () => {
 
 			expect(
 				sheriff_player.feedback.includes(
-					Feedback.GotInnocentEvaluation(impersonator_player.name)
+					Feedback.GOT_INNOCENT_EVALUATION(impersonator_player.name)
 				)
 			)
 			.toBe(true);
@@ -749,7 +750,7 @@ describe('EffectManager', () => {
 
 			expect(
 				tracker_player.feedback.includes(
-					Feedback.TrackerSawPlayerVisit(doctor_player.name, mafioso_player.name)
+					Feedback.TRACKER_SAW_PLAYER_VISIT(doctor_player.name, mafioso_player.name)
 				)
 			)
 			.toBe(true);
@@ -791,7 +792,7 @@ describe('EffectManager', () => {
 
 			expect(
 				tracker_player.feedback.includes(
-					Feedback.TrackerSawPlayerNotVisit(doctor_player.name)
+					Feedback.TRACKER_SAW_PLAYER_NOT_VISIT(doctor_player.name)
 				)
 			)
 			.toBe(true);
@@ -837,7 +838,7 @@ describe('EffectManager', () => {
 
 			expect(
 				tracker_player.feedback.includes(
-					Feedback.TrackerSawPlayerNotVisit(doctor_player.name)
+					Feedback.TRACKER_SAW_PLAYER_NOT_VISIT(doctor_player.name)
 				)
 			)
 			.toBe(true);
@@ -885,7 +886,7 @@ describe('EffectManager', () => {
 
 			expect(
 				lookout_player.feedback.includes(
-					Feedback.LookoutSeesNoVisits(doctor_player)
+					Feedback.LOOKOUT_SEES_NO_VISITS(doctor_player)
 				)
 			)
 			.toBe(true);
@@ -927,7 +928,7 @@ describe('EffectManager', () => {
 
 			expect(
 				lookout_player.feedback.includes(
-					Feedback.LookoutSeesNoVisits(doctor_player)
+					Feedback.LOOKOUT_SEES_NO_VISITS(doctor_player)
 				)
 			)
 			.toBe(true);
@@ -974,7 +975,7 @@ describe('EffectManager', () => {
 
 			expect(
 				lookout_player.feedback.includes(
-					Feedback.LookoutSeesVisits(mafioso_player, [doctor_player])
+					Feedback.LOOKOUT_SEES_VISITS(mafioso_player, [doctor_player])
 				)
 			)
 			.toBe(true);
@@ -1008,7 +1009,7 @@ describe('EffectManager', () => {
 
 			expect(
 				consig_player.feedback.includes(
-					Feedback.InvestigatedPlayersRole(doctor_player.name, RoleNames.Doctor)
+					Feedback.INVESTIGATED_PLAYERS_ROLE(doctor_player.name, RoleNames.Doctor)
 				)
 			)
 			.toBe(true);
@@ -1062,7 +1063,7 @@ describe('EffectManager', () => {
 
 			expect(
 				witch_player.feedback.includes(
-					Feedback.ControlFailed(executioner_player.name)
+					Feedback.CONTROL_FAILED(executioner_player.name)
 				)
 			)
 			.toBe(true);
@@ -1098,7 +1099,7 @@ describe('EffectManager', () => {
 
 			expect(
 				witch_player.feedback.includes(
-					Feedback.ControlFailed(witch2_player.name)
+					Feedback.CONTROL_FAILED(witch2_player.name)
 				)
 			)
 			.toBe(true);
@@ -1142,21 +1143,21 @@ describe('EffectManager', () => {
 
 			expect(
 				executioner_player.feedback.includes(
-					Feedback.Controlled
+					Feedback.CONTROLLED
 				)
 			)
 			.toBe(true);
 
 			expect(
 				witch_player.feedback.includes(
-					Feedback.ControlSucceeded(executioner_player.name, RoleNames.Mafioso)
+					Feedback.CONTROL_SUCCEEDED(executioner_player.name, RoleNames.Mafioso)
 				)
 			)
 			.toBe(true);
 
 			expect(
 				witch_player.feedback.includes(
-					Feedback.InvestigatedPlayersRole(executioner_player.name, RoleNames.Executioner)
+					Feedback.INVESTIGATED_PLAYERS_ROLE(executioner_player.name, RoleNames.Executioner)
 				)
 			)
 			.toBe(true);
@@ -1202,21 +1203,21 @@ describe('EffectManager', () => {
 
 			expect(
 				doctor_player.feedback.includes(
-					Feedback.Controlled
+					Feedback.CONTROLLED
 				)
 			)
 			.toBe(true);
 
 			expect(
 				witch_player.feedback.includes(
-					Feedback.ControlSucceeded(doctor_player.name, RoleNames.Mafioso)
+					Feedback.CONTROL_SUCCEEDED(doctor_player.name, RoleNames.Mafioso)
 				)
 			)
 			.toBe(true);
 
 			expect(
 				witch_player.feedback.includes(
-					Feedback.InvestigatedPlayersRole(doctor_player.name, RoleNames.Doctor)
+					Feedback.INVESTIGATED_PLAYERS_ROLE(doctor_player.name, RoleNames.Doctor)
 				)
 			)
 			.toBe(true);
@@ -1251,7 +1252,7 @@ describe('EffectManager', () => {
 
 			expect(
 				oracle_player.feedback.includes(
-					Feedback.ObservedWithNoPreviousObserve(doctor_player)
+					Feedback.OBSERVED_WITH_NO_PREVIOUS_OBSERVE(doctor_player)
 				)
 			)
 			.toBe(true);
@@ -1303,7 +1304,7 @@ describe('EffectManager', () => {
 
 			expect(
 				oracle_player.feedback.includes(
-					Feedback.ObservedSamePerson(doctor_player)
+					Feedback.OBSERVED_SAME_PERSON(doctor_player)
 				)
 			)
 			.toBe(true);
@@ -1359,7 +1360,7 @@ describe('EffectManager', () => {
 
 			expect(
 				oracle_player.feedback.includes(
-					Feedback.ObservedWorkingTogether(mafioso_player, framer_player)
+					Feedback.OBSERVED_WORKING_TOGETHER(mafioso_player, framer_player)
 				)
 			)
 			.toBe(true);
@@ -1423,7 +1424,7 @@ describe('EffectManager', () => {
 
 			expect(
 				oracle_player.feedback.includes(
-					Feedback.ObservedNotWorkingTogether(doctor_player, framer_player)
+					Feedback.OBSERVED_NOT_WORKING_TOGETHER(doctor_player, framer_player)
 				)
 			)
 			.toBe(true);
@@ -1482,14 +1483,14 @@ describe('EffectManager', () => {
 
 			expect(
 				impersonator_player.feedback.includes(
-					Feedback.ReplacedPlayer(doctor_player)
+					Feedback.REPLACED_PLAYER(doctor_player)
 				)
 			)
 			.toBe(true);
 
 			expect(
 				doctor_player.feedback.includes(
-					Feedback.ReplacedByReplacer
+					Feedback.REPLACED_BY_REPLACER
 				)
 			)
 			.toBe(true);
@@ -1539,14 +1540,14 @@ describe('EffectManager', () => {
 
 			expect(
 				impersonator_player.feedback.includes(
-					Feedback.ReplaceFailed(mafioso_player)
+					Feedback.REPLACE_FAILED(mafioso_player)
 				)
 			)
 			.toBe(true);
 
 			expect(
 				mafioso_player.feedback.includes(
-					Feedback.ReplacedByReplacer
+					Feedback.REPLACED_BY_REPLACER
 				)
 			)
 			.toBe(false);
@@ -1578,16 +1579,16 @@ describe('EffectManager', () => {
 			await mock_game.setPhaseToNextPhase();
 			await mock_game.performCurrentNightAbilities();
 
-			expect( doctor_player.feedback.includes(Feedback.Kidnapped) )
+			expect( doctor_player.feedback.includes(Feedback.KIDNAPPED) )
 			.toBe(true);
 
 			expect( doctor_player.feedback.includes(
-				Feedback.RoleblockedByKidnapper
+				Feedback.ROLEBLOCKED_BY_KIDNAPPER
 			) )
 			.toBe(true);
 
 			expect( kidnapper_player.feedback.includes(
-				Feedback.KidnappedPlayer(doctor_player)
+				Feedback.KIDNAPPED_PLAYER(doctor_player)
 			) )
 			.toBe(true);
 
@@ -1640,14 +1641,14 @@ describe('EffectManager', () => {
 
 			expect(
 				vigilante_player.feedback.includes(
-					Feedback.AttackedKidnapper
+					Feedback.ATTACKED_KIDNAPPER
 				)
 			)
 			.toBe(true);
 
 			expect(
 				kidnapper_player.feedback.includes(
-					Feedback.AttackedByKidnappedPlayer(vigilante_player)
+					Feedback.ATTACK_BY_KIDNAPPED_PLAYER(vigilante_player)
 				)
 			)
 			.toBe(true);
@@ -1681,7 +1682,7 @@ describe('EffectManager', () => {
 
 			expect(
 				escort_player.feedback.includes(
-					Feedback.RoleblockedByKidnapperButImmune
+					Feedback.ROLEBLOCKED_BY_KIDNAPPER_BUT_IMMUNE
 				)
 			)
 			.toBe(true);

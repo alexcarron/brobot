@@ -1,8 +1,9 @@
-const { AbilityArgName, Announcements, Feedback } = require("../../modules/enums.js")
+const { AbilityArgName } = require("../../modules/enums.js")
 const {Ability, AbilityUseCount, AbilityType, AbilityPriority, AbilityDuration} = require("./Ability.js")
 const { EffectName } = require("./EffectManager.js")
 const {Arg, AbilityArgType, ArgumentSubtype} = require("./Arg.js");
 const { Phase } = require("./GameStateManager.js");
+const { Announcement, Feedback } = require("./constants/possible-messages.js");
 
 class AbilityManager {
 	constructor(game_manager) {
@@ -492,10 +493,10 @@ class AbilityManager {
 				EffectName.Attack
 			],
 			reverseEffects: async (player, game_manager) => {
-				game_manager.addDeath(player, player, Announcements.VigilanteSuicide);
+				game_manager.addDeath(player, player, Announcement.VIGILANTE_SUICIDE);
 
-				player.sendFeedback(Feedback.ComittingSuicide);
-				player.addFeedback(Feedback.ComittedSuicide);
+				player.sendFeedback(Feedback.COMITTING_SUICIDE);
+				player.addFeedback(Feedback.COMITTED_SUICIDE);
 			},
 		}),
 
@@ -600,7 +601,7 @@ class AbilityManager {
 				player.regainVotingAbility();
 				player.isRoleblocked = false;
 				player.restoreOldDefense();
-				player.sendFeedback(Feedback.Unkidnapped);
+				player.sendFeedback(Feedback.UNKIDNAPPED);
 			},
 		}),
 	}

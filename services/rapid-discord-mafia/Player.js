@@ -1,4 +1,4 @@
-const { RDMRoles, Announcements, Feedback, RoleNames, AbilityName: AbilityName, AbilityArgName, } = require("../../modules/enums.js");
+const { RDMRoles, RoleNames, AbilityName: AbilityName, AbilityArgName, } = require("../../modules/enums.js");
 const RoleManager = require("./RoleManager.js");
 const ids = require("../../bot-config/discord-ids.js");
 const { Role, Faction } = require("./Role.js");
@@ -7,6 +7,7 @@ const DiscordService = require("./DiscordService.js");
 const { fetchRDMGuild, fetchRoleByName } = require("../../utilities/discord-fetch-utils.js");
 const { addRoleToMember, removeRoleFromMember } = require("../../utilities/discord-action-utils.js");
 const { ArgumentSubtype } = require("./Arg.js");
+const { Announcement, Feedback } = require("./constants/possible-messages.js");
 
 const rdm_ids = require("../../bot-config/discord-ids.js").rapid_discord_mafia;
 
@@ -229,7 +230,7 @@ class Player {
 
 			this.discord_service.sendAndPinMessage({
 				channel_id: this.channel_id,
-				contents: Feedback.CreatedPlayerActionChannel(this),
+				contents: Feedback.CREATED_PLAYER_ACTION_CHANNEL(this),
 			});
 		}
 	}
@@ -295,7 +296,7 @@ class Player {
 
 	async setExeTarget(player) {
 		this.exe_target = player.name;
-		await this.sendFeedback(Announcements.ExeTarget(this.exe_target), true)
+		await this.sendFeedback(Announcement.GIVE_EXE_TARGET(this.exe_target), true)
 	}
 
 	setVisiting(player_name) {
@@ -482,12 +483,12 @@ class Player {
 
 	async whisper(player_whispering_to, whisper_contents) {
 		await this.discord_service.sendToTownDiscussion(
-			Announcements.Whisper(this, player_whispering_to)
+			Announcement.WHISPER(this, player_whispering_to)
 		);
 
 		await this.discord_service.sendMessage({
 			channel_id: player_whispering_to.channel_id,
-			contents: Feedback.WhisperedTo(this, whisper_contents)
+			contents: Feedback.WHISPERED_TO(this, whisper_contents)
 		});
 	}
 

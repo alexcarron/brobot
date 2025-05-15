@@ -1,4 +1,4 @@
-const { RoleNames, RoleIdentifierKeywords, AbilityName, AbilityArgName, Feedback } = require("../../modules/enums");
+const { RoleNames, RoleIdentifierKeywords, AbilityName, AbilityArgName } = require("../../modules/enums");
 const RapidDiscordMafia = require("./RapidDiscordMafia");
 const RoleIdentifier = require("./RoleIdentifier");
 const GameManager = require("./GameManager");
@@ -8,6 +8,7 @@ const { abilities } = require("./AbilityManager");
 const { arraysHaveSameElements } = require("../../utilities/data-structure-utils");
 const { Faction, Alignment } = require("./Role");
 const { TrialOutcome } = require("./VoteManager");
+const { Feedback } = require("./constants/possible-messages");
 
 
 describe('GameManager', () => {
@@ -792,13 +793,13 @@ describe('GameManager', () => {
 			console.log({death_messages});
 			const doesMessagesIncludeMafiaKill = death_messages.some(
 				message =>
-					message.includes(Feedback.AnnounceAnotherMurderByFaction(Faction.MAFIA)) ||
-					message.includes(Feedback.AnnounceMurderByFaction(Faction.MAFIA))
+					message.includes(Feedback.ANNOUNCE_ANOTHER_MURDER_BY_FACTION(Faction.MAFIA)) ||
+					message.includes(Feedback.ANNOUNCE_MURDER_BY_FACTION(Faction.MAFIA))
 			);
 			const doesMessagesIncludeFoolKill = death_messages.some(
 				message =>
-					message.includes(Feedback.AnnounceMurderByRole(RoleNames.Fool)) ||
-					message.includes(Feedback.AnnounceAnotherMurderByRole(RoleNames.Fool))
+					message.includes(Feedback.ANNOUNCE_MURDER_BY_ROLE(RoleNames.Fool)) ||
+					message.includes(Feedback.ANNOUNCE_ANOTHER_MURDER_BY_ROLE(RoleNames.Fool))
 			);
 
 			expect(doesMessagesIncludeMafiaKill).toBe(true);
