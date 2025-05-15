@@ -2,7 +2,7 @@ const tts = require('google-tts-api');
 const { createAudioResource, createAudioPlayer, VoiceConnection } = require('@discordjs/voice');
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffmpeg = require('fluent-ffmpeg');
-const { wrapTextByLineWidth, removeLinks, removeEmojis } = require('../utilities/text-formatting-utils');
+const { wrapTextByLineWidth, removeLinks, removeEmojis } = require('../../utilities/text-formatting-utils');
 ffmpeg.setFfmpegPath(ffmpegPath);
 
 class TextToSpeechHandler {
