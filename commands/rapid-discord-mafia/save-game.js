@@ -2,7 +2,7 @@ const { PermissionFlagsBits } = require("discord.js");
 const SlashCommand = require("../../services/command-creation/SlashCommand");
 const ids = require(`../../bot-config/discord-ids.js`);
 const { editReplyToInteraction } = require("../../utilities/discord-actions-utils.js");
-const GameManager = require("../../services/rapid-discord-mafia/GameManager");
+const { GameManager } = require("../../services/rapid-discord-mafia/GameManager");
 
 module.exports = {
 

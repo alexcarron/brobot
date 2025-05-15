@@ -1,6 +1,6 @@
 const RapidDiscordMafia = require("./RapidDiscordMafia");
 const {RoleIdentifier, RoleIdentifierKeyword} = require("./RoleIdentifier");
-const GameManager = require("./GameManager");
+const { GameManager } = require("./GameManager");
 const Player = require("./Player");
 const RoleManager = require("./RoleManager");
 const { abilities } = require("./AbilityManager");

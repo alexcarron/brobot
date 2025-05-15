@@ -4,7 +4,7 @@ const { RoleIdentifier } = require("./RoleIdentifier.js");
 const RoleManager = require("./RoleManager.js");
 const DiscordLogger = require("./DiscordLogger.js");
 const ids = require("../../bot-config/discord-ids.js");
-const GameManager = require("./GameManager.js");
+const { GameManager } = require("./GameManager.js");
 const { fetchChannel, fetchRDMGuild } = require("../../utilities/discord-fetch-utils.js");
 const { loadObjectFromJsonInGitHub } = require("../../utilities/github-json-storage-utils.js");
 

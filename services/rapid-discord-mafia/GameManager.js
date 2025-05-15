@@ -1,4 +1,4 @@
-const { MessageDelays, RDMRoles, PhaseWaitTimes, CoinRewards, } = require("../../modules/enums.js");
+const { RDMRoles, PhaseWaitTimes, CoinRewards, } = require("../../modules/enums.js");
 const ids = require("../../bot-config/discord-ids.js");
 const { PermissionFlagsBits, Role, Interaction } = require("discord.js");
 const Death = require("./Death.js");
@@ -22,6 +22,15 @@ const { Goal, Faction, RoleName } = require("./Role.js");
 const { Phase } = require("./GameStateManager.js");
 const { Announcement, Feedback } = require("./constants/possible-messages.js");
 const { RoleIdentifierType } = require("./RoleIdentifier.js");
+
+/**
+ * Enum of possible amount of seconds to wait to allow a message to be read
+ */
+const MessageReadTime = Object.freeze({
+	SHORT: 1,
+	NORMAL: 4,
+	LONG: 8
+});
 
 class GameManager {
 	/**
@@ -949,7 +958,7 @@ class GameManager {
 			await this.discord_service.announce(message);
 
 			if (!this.isMockGame && !GameManager.IS_TESTING)
-				await wait({seconds: MessageDelays.Normal});
+				await wait({seconds: MessageReadTime.NORMAL});
 		}
 	}
 
@@ -2113,4 +2122,4 @@ class GameManager {
 	}
 }
 
-module.exports = GameManager;
+module.exports = {GameManager, MessageReadTime};

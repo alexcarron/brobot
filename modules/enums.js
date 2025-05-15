@@ -1,11 +1,5 @@
 
 const Enums = {
-	MessageDelays: {
-		Short: 1,
-		Normal: 4,
-		Long: 8
-	},
-
 	PhaseWaitTimes: {
 		FirstDay: 2,
 		Night: 5,

@@ -2,7 +2,7 @@ const Parameter = require("../../services/command-creation/Paramater");
 const ids = require("../../bot-config/discord-ids.js");
 const SlashCommand = require("../../services/command-creation/SlashCommand");
 const { deferInteraction } = require("../../utilities/discord-action-utils");
-const GameManager = require("../../services/rapid-discord-mafia/GameManager");
+const { GameManager } = require("../../services/rapid-discord-mafia/GameManager");
 
 const Parameters = {
 	BugReporting: new Parameter({

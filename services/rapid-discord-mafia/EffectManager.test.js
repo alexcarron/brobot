@@ -1,5 +1,5 @@
 const RapidDiscordMafia = require("./RapidDiscordMafia");
-const GameManager = require("./GameManager");
+const { GameManager } = require("./GameManager");
 const { Feedback } = require("./constants/possible-messages");
 const { AbilityName } = require("./Ability");
 const { AbilityArgName } = require("./Arg");
