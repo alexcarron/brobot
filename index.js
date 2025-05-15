@@ -173,7 +173,7 @@ global.client.login(discord_token);
 // this event will only trigger one time after Brobot has successfully fully connected to the Discord API
 global.client.once(Events.ClientReady, async () => {
 	const
-		LLPointManager = require("./modules/llpointmanager.js"),
+		LLPointManager = require("./services/ll-points/LLPointManager.js"),
 		config = require('./bot-config/config.json');
 
 	client.user.setPresence({

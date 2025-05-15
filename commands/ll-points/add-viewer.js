@@ -1,5 +1,5 @@
 
-const Viewer = require('../../modules/viewer.js');
+const Viewer = require('../../services/ll-points/Viewer.js');
 const Parameter = require('../../services/command-creation/Paramater.js');
 const SlashCommand = require('../../services/command-creation/SlashCommand.js');
 const { PermissionFlagsBits } = require('discord.js');

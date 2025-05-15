@@ -1,9 +1,9 @@
-const Viewer = require("../../modules/viewer.js");
 const ids = require("../../bot-config/discord-ids.js");
 const { GuildScheduledEventManager, Message, GuildScheduledEventPrivacyLevel, GuildScheduledEventEntityType } = require("discord.js");
 const cron = require("cron");
 const { fetchGuild, fetchChannel, fetchUser } = require("../../utilities/discord-fetch-utils.js");
 const { saveObjectToJsonInGitHub } = require("../../utilities/github-json-storage-utils.js");
+const Viewer = require("../ll-points/Viewer.js");
 
 /**
  * Represents a LL Game Show Discord event.

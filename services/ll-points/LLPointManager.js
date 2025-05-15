@@ -1,6 +1,6 @@
-const { DatabaseURLs, LLPointTiers, } = require("./enums");
-const Viewer = require("./viewer");
-const { github_token } =  require("../modules/token.js");
+const { DatabaseURLs, LLPointTiers, } = require("../../modules/enums.js");
+const Viewer = require("./Viewer.js");
+const { github_token } =  require("../../modules/token.js");
 
 class LLPointManager {
 	constructor() {
