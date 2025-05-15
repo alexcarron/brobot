@@ -1,6 +1,6 @@
-const { Factions, Alignments, Immunities, WinConditions, RoleNames, AbilityUses } = require("../../modules/enums.js");
+const { Factions, Alignments, Immunities, RoleNames } = require("../../modules/enums.js");
 const { abilities, AbilityName } = require("./AbilityManager.js");
-const Role = require("./Role.js");
+const {Role, Goal} = require("./Role.js");
 
 class RoleManager {
 	constructor() {}
@@ -12,7 +12,7 @@ class RoleManager {
 			alignment: Alignments.Crowd,
 			attack: 0,
 			defense: 0,
-			goal: WinConditions.EliminateOtherFactions,
+			goal: Goal.ELIMINATE_OTHER_FACTIONS,
 		}),
 		[RoleNames.Doctor]: new Role({
 			name: RoleNames.Doctor,
@@ -20,7 +20,7 @@ class RoleManager {
 			alignment: Alignments.Protective,
 			attack: 0,
 			defense: 0,
-			goal: WinConditions.EliminateOtherFactions,
+			goal: Goal.ELIMINATE_OTHER_FACTIONS,
 			abilities: [
 				abilities[AbilityName.Heal],
 				abilities[AbilityName.HealSelf],
@@ -32,7 +32,7 @@ class RoleManager {
 			alignment: Alignments.Investigative,
 			attack: 0,
 			defense: 0,
-			goal: WinConditions.EliminateOtherFactions,
+			goal: Goal.ELIMINATE_OTHER_FACTIONS,
 			abilities: [
 				abilities[AbilityName.Evaluate],
 			]
@@ -43,7 +43,7 @@ class RoleManager {
 			alignment: Alignments.Investigative,
 			attack: 0,
 			defense: 0,
-			goal: WinConditions.EliminateOtherFactions,
+			goal: Goal.ELIMINATE_OTHER_FACTIONS,
 			abilities: [
 				abilities[AbilityName.Track],
 			]
@@ -54,7 +54,7 @@ class RoleManager {
 			alignment: Alignments.Investigative,
 			attack: 0,
 			defense: 0,
-			goal: WinConditions.EliminateOtherFactions,
+			goal: Goal.ELIMINATE_OTHER_FACTIONS,
 			abilities: [
 				abilities[AbilityName.Lookout],
 			]
@@ -66,7 +66,7 @@ class RoleManager {
 			immunities: [Immunities.Roleblock],
 			attack: 0,
 			defense: 0,
-			goal: WinConditions.EliminateOtherFactions,
+			goal: Goal.ELIMINATE_OTHER_FACTIONS,
 			abilities: [
 				abilities[AbilityName.Roleblock],
 			]
@@ -77,7 +77,7 @@ class RoleManager {
 			alignment: Alignments.Killing,
 			attack: 1,
 			defense: 0,
-			goal: WinConditions.EliminateOtherFactions,
+			goal: Goal.ELIMINATE_OTHER_FACTIONS,
 			abilities: [
 				abilities[AbilityName.Shoot],
 			],
@@ -105,7 +105,7 @@ class RoleManager {
 			isUnique: true,
 			attack: 1,
 			defense: 0,
-			goal: WinConditions.EliminateOtherFactions,
+			goal: Goal.ELIMINATE_OTHER_FACTIONS,
 			abilities: [
 				abilities[AbilityName.Murder],
 			],
@@ -117,7 +117,7 @@ class RoleManager {
 			alignment: Alignments.Deception,
 			attack: 0,
 			defense: 0,
-			goal: WinConditions.EliminateOtherFactions,
+			goal: Goal.ELIMINATE_OTHER_FACTIONS,
 			abilities: [
 				abilities[AbilityName.Frame],
 			]
@@ -129,7 +129,7 @@ class RoleManager {
 			immunities: [Immunities.Roleblock],
 			attack: 0,
 			defense: 0,
-			goal: WinConditions.EliminateOtherFactions,
+			goal: Goal.ELIMINATE_OTHER_FACTIONS,
 			abilities: [
 				abilities[AbilityName.Consort],
 			]
@@ -140,7 +140,7 @@ class RoleManager {
 			alignment: Alignments.Support,
 			attack: 0,
 			defense: 0,
-			goal: WinConditions.EliminateOtherFactions,
+			goal: Goal.ELIMINATE_OTHER_FACTIONS,
 			abilities: [
 				abilities[AbilityName.Investigate],
 			]
@@ -151,7 +151,7 @@ class RoleManager {
 			alignment: Alignments.Support,
 			attack: 0,
 			defense: 0,
-			goal: WinConditions.EliminateOtherFactions,
+			goal: Goal.ELIMINATE_OTHER_FACTIONS,
 			abilities: [
 				abilities[AbilityName.Kidnap],
 			]
@@ -162,7 +162,7 @@ class RoleManager {
 			alignment: Alignments.Evil,
 			attack: 4,
 			defense: 0,
-			goal: WinConditions.Fool,
+			goal: Goal.BE_LYNCHED,
 			abilities: [
 				abilities[AbilityName.SelfFrame],
 				abilities[AbilityName.DeathCurse],
@@ -174,7 +174,7 @@ class RoleManager {
 			alignment: Alignments.Evil,
 			attack: 0,
 			defense: 1,
-			goal: WinConditions.Executioner,
+			goal: Goal.GET_TARGET_LYNCHED,
 			abilities: [
 				abilities[AbilityName.FrameTarget],
 			],
@@ -186,7 +186,7 @@ class RoleManager {
 			alignment: Alignments.Benign,
 			attack: 0,
 			defense: 0,
-			goal: WinConditions.Survive,
+			goal: Goal.SURVIVE,
 			abilities: [
 				abilities[AbilityName.SelfVest],
 			]
@@ -198,7 +198,7 @@ class RoleManager {
 			immunities: [Immunities.Roleblock],
 		attack: 1,
 			defense: 1,
-			goal: WinConditions.SurviveEliminateOtherFactions,
+			goal: Goal.SURVIVE_ELIMINATED_OTHER_FACTIONS,
 			abilities: [
 				abilities[AbilityName.Knife],
 				abilities[AbilityName.Cautious],
@@ -211,7 +211,7 @@ class RoleManager {
 			alignment: Alignments.Benign,
 			attack: 0,
 			defense: 0,
-			goal: WinConditions.Blacksmith,
+			goal: Goal.SAVE_PLAYER_WITH_VEST,
 			abilities: [
 				abilities[AbilityName.Smith],
 				abilities[AbilityName.SelfSmith],
@@ -223,7 +223,7 @@ class RoleManager {
 			alignment: Alignments.Evil,
 			attack: 0,
 			defense: 0,
-			goal: WinConditions.SurviveTownLose,
+			goal: Goal.SURVIVE_UNTIL_TOWN_LOSES,
 			immunities: [Immunities.Roleblock, Immunities.Control],
 			abilities: [
 				abilities[AbilityName.Control],
@@ -235,7 +235,7 @@ class RoleManager {
 			alignment: Alignments.Investigative,
 			attack: 0,
 			defense: 0,
-			goal: WinConditions.EliminateOtherFactions,
+			goal: Goal.ELIMINATE_OTHER_FACTIONS,
 			abilities: [
 				abilities[AbilityName.Observe],
 			],
@@ -246,7 +246,7 @@ class RoleManager {
 			alignment: Alignments.Chaos,
 			attack: 2,
 			defense: 0,
-			goal: WinConditions.Impersonator,
+			goal: Goal.DO_GOAL_OF_REPLACED_PLAYER,
 			abilities: [
 				abilities[AbilityName.Replace],
 			],

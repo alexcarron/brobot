@@ -1,4 +1,4 @@
-const { GameStates, Phases, Subphases, MessageDelays, Factions, RDMRoles, WinConditions, Feedback, Announcements, RoleNames, PhaseWaitTimes, VotingOutcomes, TrialOutcomes, TrialVotes, RoleIdentifierTypes, ArgumentSubtypes, CoinRewards, ArgumentTypes } = require("../../modules/enums.js");
+const { GameStates, Phases, Subphases, MessageDelays, Factions, RDMRoles, Feedback, Announcements, RoleNames, PhaseWaitTimes, VotingOutcomes, TrialOutcomes, TrialVotes, RoleIdentifierTypes, ArgumentSubtypes, CoinRewards, ArgumentTypes } = require("../../modules/enums.js");
 const ids = require("../../bot-config/discord-ids.js");
 const { PermissionFlagsBits, Role, Interaction } = require("discord.js");
 const Death = require("./Death.js");
@@ -17,6 +17,7 @@ const { getShuffledArray, getRandomElement } = require("../../utilities/data-str
 const { fetchChannel, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchRoleByName } = require("../../utilities/discord-fetch-utils.js");
 const { addRoleToMember, removeRoleFromMember } = require("../../utilities/discord-action-utils.js");
 const { wait } = require("../../utilities/realtime-utils.js");
+const { Goal } = require("./Role.js");
 // const Logger = require("./Logger.js");
 
 class GameManager {
@@ -1279,23 +1280,23 @@ class GameManager {
 			const player_role = this.role_manager.getRole(player_info.role);
 
 			// Roles that need to survive while eliminating every other faction
-			if (player_role.goal == WinConditions.SurviveEliminateOtherFactions) {
+			if (player_role.goal == Goal.SURVIVE_ELIMINATED_OTHER_FACTIONS) {
 				if (!living_lone_survival_roles.includes(player_role.name))
 					living_lone_survival_roles.push(player_role.name);
 			}
 			// Roles that only need to survive to the end
-			else if (player_role.goal == WinConditions.Survive) {
+			else if (player_role.goal == Goal.SURVIVE) {
 				if (!living_survival_roles.includes(player_role.name))
 					living_survival_roles.push(player_role.name);
 			}
 			// Roles that need to survive while town loses
-			else if (player_role.goal == WinConditions.SurviveTownLose) {
+			else if (player_role.goal == Goal.SURVIVE_UNTIL_TOWN_LOSES) {
 				if (!living_survive_without_town_roles.includes(player_role.faction))
 				living_survive_without_town_roles.push(player_role.faction);
 
 			}
 			// Factions that just need the other factions eliminated to win
-			else if (player_role.goal == WinConditions.EliminateOtherFactions) {
+			else if (player_role.goal == Goal.ELIMINATE_OTHER_FACTIONS) {
 				if (!living_factions.includes(player_role.faction))
 					living_factions.push(player_role.faction);
 			}

@@ -3,18 +3,6 @@ const { createListFromWords } = require("../utilities/text-formatting-utils.js")
 const { createNowUnixTimestamp } = require("../utilities/date-time-utils.js");
 
 const Enums = {
-	WinConditions: {
-		EliminateOtherFactions: "Eliminate all non-neutral factions outside of your own as well as any Neutral Killing/Tyrant roles.",
-		SurviveEliminateOtherFactions: "Survive until the end of the game and eliminate all non-neutral factions outside of your own as well as any different Neutral Killing/Tyrant roles.",
-		Survive: "Survive until the end of the game.",
-		SurviveTownLose: "Survive until the end of the game to see town lose.",
-
-		Fool: "Be successfully lynched.",
-		Executioner: "Get your target successfully lynched.",
-		Blacksmith: "Have a player you smithed a vest for be saved from an attack.",
-		Impersonator: "Replace someone and accomplish their win condition.",
-	},
-
 	AbilityUses: {
 		Unlimited: -1,
 		None: 0,

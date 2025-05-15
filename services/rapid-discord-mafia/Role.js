@@ -1,6 +1,17 @@
 const { toTitleCase } = require("../../utilities/text-formatting-utils.js");
 const { Factions } = require("../../modules/enums.js");
 
+const Goal = Object.freeze({
+	ELIMINATE_OTHER_FACTIONS: "Eliminate all non-neutral factions outside of your own as well as any Neutral Killing/Tyrant roles.",
+	SURVIVE_ELIMINATED_OTHER_FACTIONS: "Survive until the end of the game and eliminate all non-neutral factions outside of your own as well as any different Neutral Killing/Tyrant roles.",
+	SURVIVE: "Survive until the end of the game.",
+	SURVIVE_UNTIL_TOWN_LOSES: "Survive until the end of the game to see town lose.",
+	BE_LYNCHED: "Be successfully lynched.",
+	GET_TARGET_LYNCHED: "Get your target successfully lynched.",
+	SAVE_PLAYER_WITH_VEST: "Have a player you smithed a vest for be saved from an attack.",
+	DO_GOAL_OF_REPLACED_PLAYER: "Replace someone and accomplish their win condition.",
+});
+
 class Role {
 	constructor({name, faction, alignment, attack, defense, goal, isUnique = false, immunities = [], abilities = [], notes = ""}) {
 		this.name = name;
@@ -60,4 +71,4 @@ class Role {
 	}
 }
 
-module.exports = Role;
+module.exports = { Role, Goal };
