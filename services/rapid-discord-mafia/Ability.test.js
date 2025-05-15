@@ -1,6 +1,6 @@
-const { AbilityName, AbilityTypes, AbilityPriority, Duration, Phases, AbilityArgName, ArgumentTypes, ArgumentSubtypes } = require("../../modules/enums");
+const { AbilityName, AbilityPriority, Duration, Phases, AbilityArgName, ArgumentTypes, ArgumentSubtypes } = require("../../modules/enums");
 const { EffectName } = require("./EffectManager");
-const { Ability, AbilityUseCount } = require("./Ability");
+const { Ability, AbilityUseCount, AbilityType } = require("./Ability");
 const Arg = require("./Arg");
 
 describe('Ability', () => {
@@ -8,7 +8,7 @@ describe('Ability', () => {
 		it('SHOULD set name, type, uses, feedback functoin, phases_can_use, description, priority, duration, args, and effects fields', () => {
 			const name = AbilityName.Cautious;
 			const description = "description";
-			const type = AbilityTypes.Attacking;
+			const type = AbilityType.ATTACKING;
 			const priority = AbilityPriority.Attacking;
 			const uses = AbilityUseCount.None;
 			const duration = Duration.DayAndNight;
@@ -56,7 +56,7 @@ describe('Ability', () => {
 		it('SHOULD make args instance of Arg WHEN passed args are not instances of Arg', () => {
 			const name = AbilityName.Cautious;
 			const description = "description";
-			const type = AbilityTypes.Attacking;
+			const type = AbilityType.ATTACKING;
 			const priority = AbilityPriority.Attacking;
 			const uses = AbilityUseCount.None;
 			const duration = Duration.DayAndNight;

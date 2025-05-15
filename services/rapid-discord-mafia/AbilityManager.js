@@ -1,5 +1,5 @@
-const { AbilityTypes, Duration, Phases, AbilityArgName, ArgumentTypes, ArgumentSubtypes, AbilityPriority, Announcements, Feedback } = require("../../modules/enums.js")
-const {Ability, AbilityUseCount} = require("./Ability.js")
+const { Duration, Phases, AbilityArgName, ArgumentTypes, ArgumentSubtypes, AbilityPriority, Announcements, Feedback } = require("../../modules/enums.js")
+const {Ability, AbilityUseCount, AbilityType} = require("./Ability.js")
 const { EffectName } = require("./EffectManager.js")
 const Arg = require("./Arg.js")
 
@@ -40,7 +40,7 @@ class AbilityManager {
 		[this.AbilityName.Heal]: new Ability({
 			name: this.AbilityName.Heal,
 			description: "At night, you can heal a player that's not yourself at night to give them a level two defense for the night and following day. You and your target will be notified if your target was attacked while healed.",
-			type: AbilityTypes.Protection,
+			type: AbilityType.PROTECTION,
 			priority: AbilityPriority.Protection,
 			uses: AbilityUseCount.UNLIMITED,
 			duration: Duration.DayAndNight,
@@ -67,7 +67,7 @@ class AbilityManager {
 		[this.AbilityName.HealSelf]: new Ability({
 			name: this.AbilityName.HealSelf,
 			description: "At night, you can heal yourself at night to give yourself a level two defense for the night and following day.",
-			type: AbilityTypes.Protection,
+			type: AbilityType.PROTECTION,
 			priority: AbilityPriority.Protection,
 			uses: AbilityUseCount.AMOUNT(1),
 			duration: Duration.DayAndNight,
@@ -86,7 +86,7 @@ class AbilityManager {
 		[this.AbilityName.Evaluate]: new Ability({
 			name: this.AbilityName.Evaluate,
 			description: "At night, you can evaluate a player that's not yourself at night to see if their suspicious or innocent. Mafia, Coven, and Neutral Killing seem suspicious. Town and non-Killing Neutrals seem innocent. Those douesd by an Arsonist will be unclear. These results are affected by the players' perceived role.",
-			type: AbilityTypes.Investigative,
+			type: AbilityType.INVESTIGATIVE,
 			priority: AbilityPriority.Investigative,
 			uses: AbilityUseCount.UNLIMITED,
 			phases_can_use: [Phases.Night],
@@ -109,7 +109,7 @@ class AbilityManager {
 		[this.AbilityName.Track]: new Ability({
 			name: this.AbilityName.Track,
 			description: "At night, you can track a player that's not yourself at night to see who they are percieved to be visiting. You will never see players visit themself.",
-			type: AbilityTypes.Investigative,
+			type: AbilityType.INVESTIGATIVE,
 			priority: AbilityPriority.Investigative,
 			uses: AbilityUseCount.UNLIMITED,
 			phases_can_use: [Phases.Night],
@@ -132,7 +132,7 @@ class AbilityManager {
 		[this.AbilityName.Lookout]: new Ability({
 			name: this.AbilityName.Lookout,
 			description: "At night, watch a player's house that isn't yourself. If any players are percieved to have visited them, you'll be told every player that did that night. You will never see players visit themself.",
-			type: AbilityTypes.Investigative,
+			type: AbilityType.INVESTIGATIVE,
 			priority: AbilityPriority.Investigative,
 			uses: AbilityUseCount.UNLIMITED,
 			phases_can_use: [Phases.Night],
@@ -155,7 +155,7 @@ class AbilityManager {
 		[this.AbilityName.Roleblock]: new Ability({
 			name: this.AbilityName.Roleblock,
 			description: "At night, you can roleblock a player that is not yourself at night so that they can't perform their ability that night and following day. They will be notified of this.",
-			type: AbilityTypes.Roleblock,
+			type: AbilityType.ROLEBLOCK,
 			priority: AbilityPriority.Roleblock,
 			uses: AbilityUseCount.UNLIMITED,
 			duration: Duration.DayAndNight,
@@ -182,7 +182,7 @@ class AbilityManager {
 		[this.AbilityName.Shoot]: new Ability({
 			name: this.AbilityName.Shoot,
 			description: "At night, you can shoot a player that isn't yourself at night, attacking them.",
-			type: AbilityTypes.Attacking,
+			type: AbilityType.ATTACKING,
 			priority: AbilityPriority.Attacking,
 			uses: AbilityUseCount.AMOUNT(3),
 			duration: Duration.OneNight,
@@ -230,7 +230,7 @@ class AbilityManager {
 		[this.AbilityName.Murder]: new Ability({
 			name: this.AbilityName.Murder,
 			description: "At night, you can murder a non-mafia player at night, attacking them.",
-			type: AbilityTypes.Attacking,
+			type: AbilityType.ATTACKING,
 			priority: AbilityPriority.Attacking,
 			uses: AbilityUseCount.UNLIMITED,
 			duration: Duration.OneNight,
@@ -254,7 +254,7 @@ class AbilityManager {
 		[this.AbilityName.Frame]: new Ability({
 			name: this.AbilityName.Frame,
 			description: "At night, you can frame a non-mafia player at night, making them perceived to be a Mafioso until after they're investigated by a player that gets any information based off of percieved roles.",
-			type: AbilityTypes.Manipulation,
+			type: AbilityType.MANIPULATION,
 			priority: AbilityPriority.Manipulation,
 			uses: AbilityUseCount.UNLIMITED,
 			duration: Duration.DayAndNight,
@@ -281,7 +281,7 @@ class AbilityManager {
 		[this.AbilityName.Consort]: new Ability({
 			name: this.AbilityName.Consort,
 			description: "At night, you can consort a player who's not yourself at night, roleblocking them that night and following day. They will be notified.",
-			type: AbilityTypes.Roleblock,
+			type: AbilityType.ROLEBLOCK,
 			priority: AbilityPriority.Roleblock,
 			uses: AbilityUseCount.UNLIMITED,
 			duration: Duration.DayAndNight,
@@ -308,7 +308,7 @@ class AbilityManager {
 		[this.AbilityName.Investigate]: new Ability({
 			name: this.AbilityName.Investigate,
 			description: "At night, you can investigate a non-mafia player at night, learning their percieved role.",
-			type: AbilityTypes.Investigative,
+			type: AbilityType.INVESTIGATIVE,
 			priority: AbilityPriority.Investigative,
 			uses: AbilityUseCount.UNLIMITED,
 			phases_can_use: [Phases.Night],
@@ -329,7 +329,7 @@ class AbilityManager {
 		[this.AbilityName.SelfFrame]: new Ability({
 			name: this.AbilityName.SelfFrame,
 			description: "At night, you can frame yourself at night, making yourself perceived as a Mafioso until after you're investigated by a player that gets any information based off of percieved roles.",
-			type: AbilityTypes.Manipulation,
+			type: AbilityType.MANIPULATION,
 			priority: AbilityPriority.Manipulation,
 			uses: AbilityUseCount.AMOUNT(1),
 			duration: Duration.Indefinite,
@@ -346,7 +346,7 @@ class AbilityManager {
 		[this.AbilityName.DeathCurse]: new Ability({
 			name: this.AbilityName.DeathCurse,
 			description: "After you've satisfied your win condition and been lynched, you can curse a chosen player who voted guilty during your trial with death at night, attacking them.",
-			type: AbilityTypes.Attacking,
+			type: AbilityType.ATTACKING,
 			priority: AbilityPriority.Attacking,
 			uses: AbilityUseCount.AMOUNT(1),
 			duration: Duration.OneNight,
@@ -368,7 +368,7 @@ class AbilityManager {
 		[this.AbilityName.FrameTarget]: new Ability({
 			name: this.AbilityName.FrameTarget,
 			description: "At night, you can frame your target at night, making them perceived as a Mafioso until after you're investigated by a player that gets any information based off of percieved roles.",
-			type: AbilityTypes.Manipulation,
+			type: AbilityType.MANIPULATION,
 			priority: AbilityPriority.Manipulation,
 			uses: AbilityUseCount.AMOUNT(1),
 			duration: Duration.Indefinite,
@@ -385,7 +385,7 @@ class AbilityManager {
 		[this.AbilityName.SelfVest]: new Ability({
 			name: this.AbilityName.SelfVest,
 			description: "At night, you can put on a vest at night, gaining a level two defense for the night and following day.",
-			type: AbilityTypes.Protection,
+			type: AbilityType.PROTECTION,
 			priority: AbilityPriority.Protection,
 			uses: AbilityUseCount.AMOUNT(4),
 			duration: Duration.DayAndNight,
@@ -402,7 +402,7 @@ class AbilityManager {
 		[this.AbilityName.Knife]: new Ability({
 			name: this.AbilityName.Knife,
 			description: "At night, you can knife a player that's not yourself at night, attacking them.",
-			type: AbilityTypes.Attacking,
+			type: AbilityType.ATTACKING,
 			priority: AbilityPriority.Attacking,
 			uses: AbilityUseCount.UNLIMITED,
 			duration: Duration.OneNight,
@@ -426,7 +426,7 @@ class AbilityManager {
 		[this.AbilityName.Cautious]: new Ability({
 			name: this.AbilityName.Cautious,
 			description: "At night, you can choose to be cautious at night, not attacking anyone who roleblocks you.",
-			type: AbilityTypes.Modifier,
+			type: AbilityType.MODIFIER,
 			priority: AbilityPriority.Modifier,
 			uses: AbilityUseCount.UNLIMITED,
 			duration: Duration.OneNight,
@@ -440,7 +440,7 @@ class AbilityManager {
 		[this.AbilityName.Smith]: new Ability({
 			name: this.AbilityName.Smith,
 			description: "At night, you can smith a bulletproof vest for a player that's not yourself at night, giving them a level one defense that night and following day. You and your target will be notified if your target was attacked while wearing the vest.",
-			type: AbilityTypes.Protection,
+			type: AbilityType.PROTECTION,
 			priority: AbilityPriority.Protection,
 			uses: AbilityUseCount.AMOUNT(3),
 			duration: Duration.DayAndNight,
@@ -465,7 +465,7 @@ class AbilityManager {
 		[this.AbilityName.SelfSmith]: new Ability({
 			name: this.AbilityName.SelfSmith,
 			description: "At night, you can smith a bulletproof vest for yourself at night, gaining a level one defense that night and following day.",
-			type: AbilityTypes.Protection,
+			type: AbilityType.PROTECTION,
 			priority: AbilityPriority.Protection,
 			uses: AbilityUseCount.AMOUNT(1),
 			duration: Duration.DayAndNight,
@@ -482,7 +482,7 @@ class AbilityManager {
 		[this.AbilityName.Suicide]: new Ability({
 			name: this.AbilityName.Suicide,
 			description: "You will shoot yourself, attacking yourself with a level four attack.",
-			type: AbilityTypes.Suicide,
+			type: AbilityType.SUICIDE,
 			priority: AbilityPriority.Attacking,
 			uses: AbilityUseCount.NONE,
 			duration: Duration.OneNight,
@@ -501,7 +501,7 @@ class AbilityManager {
 		[this.AbilityName.Control]: new Ability({
 			name: this.AbilityName.Control,
 			description: "At night, you can control a player that's not yourself, forcing them to use their main ability on another player or themself. You will learn the perceived role of who you controlled and they will be notified that they were controlled. Your control will fail if the player has no ability that can be used on another player or themself.",
-			type: AbilityTypes.Control,
+			type: AbilityType.CONTROL,
 			priority: AbilityPriority.Control,
 			uses: AbilityUseCount.UNLIMITED,
 			duration: Duration.OneNight,
@@ -529,7 +529,7 @@ class AbilityManager {
 		[this.AbilityName.Observe]: new Ability({
 			name: this.AbilityName.Observe,
 			description: "At night, you can observe a player that isn't yourself and be told if this player and the last one you observed are percieved to be in the same faction. If this is the first player you observe, you are told nothing.",
-			type: AbilityTypes.Investigative,
+			type: AbilityType.INVESTIGATIVE,
 			priority: AbilityPriority.Investigative,
 			uses: AbilityUseCount.UNLIMITED,
 			phases_can_use: [Phases.Night],
@@ -552,7 +552,7 @@ class AbilityManager {
 		[this.AbilityName.Replace]: new Ability({
 			name: this.AbilityName.Replace,
 			description: "At night, you can replace a player that isn't yourself. You will attack them, and if you successfully kill them you will be converted to their actual role. Their role and last will won't be revealed upon death.",
-			type: AbilityTypes.Attacking,
+			type: AbilityType.ATTACKING,
 			priority: AbilityPriority.Attacking,
 			uses: AbilityUseCount.UNLIMITED,
 			phases_can_use: [Phases.Night],
@@ -576,7 +576,7 @@ class AbilityManager {
 		[this.AbilityName.Kidnap]: new Ability({
 			name: this.AbilityName.Kidnap,
 			description: "At night, kidnap a non-mafia player. They will gain a level four defense for the night but they will be roleblocked and won't be able to speak or vote the next day. If you kidnap a role with an attack level above zero, they will attack you while kidnapped without using up an ability no matter what.",
-			type: AbilityTypes.Roleblock,
+			type: AbilityType.ROLEBLOCK,
 			priority: AbilityPriority.Roleblock,
 			uses: AbilityUseCount.UNLIMITED,
 			phases_can_use: [Phases.Night],

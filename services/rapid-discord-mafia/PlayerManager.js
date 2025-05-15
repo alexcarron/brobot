@@ -1,8 +1,9 @@
 const { getRandomElement } = require("../../utilities/data-structure-utils");
-const { Feedback, Announcements, RoleNames, AbilityTypes, AbilityName } = require("../../modules/enums");
+const { Feedback, Announcements, RoleNames, AbilityName } = require("../../modules/enums");
 const Logger = require("./Logger");
 const Player = require("./Player");
 const { Faction } = require("./Role");
+const { AbilityType } = require("./Ability");
 
 class PlayerManager {
 	/**
@@ -233,7 +234,7 @@ class PlayerManager {
 					const ability_name = affect.name;
 
 					const ability = this.game_manager.ability_manager.getAbility(ability_name);
-					return ability.type == AbilityTypes.Protection;
+					return ability.type == AbilityType.PROTECTION;
 				}
 			);
 
@@ -330,26 +331,26 @@ class PlayerManager {
 			if (phase_affect_ends <= this.game_manager.days_passed) {
 
 				switch (ability.type) {
-					case AbilityTypes.Protection: {
+					case AbilityType.PROTECTION: {
 						player.restoreOldDefense();
 						break;
 					}
 
-					case AbilityTypes.Manipulation: {
+					case AbilityType.MANIPULATION: {
 						player.resetPercieved();
 						break;
 					}
 
-					case AbilityTypes.Roleblock: {
+					case AbilityType.ROLEBLOCK: {
 						player.isRoleblocked = false;
 						break;
 					}
 
-					case AbilityTypes.Modifier: {
+					case AbilityType.MODIFIER: {
 						break;
 					}
 
-					case AbilityTypes.Suicide: {
+					case AbilityType.SUICIDE: {
 						this.game_manager.addDeath(player, player, Announcements.VigilanteSuicide);
 
 						await player.sendFeedback(Feedback.ComittingSuicide);
@@ -374,7 +375,7 @@ class PlayerManager {
 			for (let [index, affect] of player.affected_by.entries()) {
 				const ability_affected_by = this.game_manager.ability_manager.getAbility(affect.name);
 
-				if (ability_affected_by.type === AbilityTypes.Manipulation) {
+				if (ability_affected_by.type === AbilityType.MANIPULATION) {
 					player.affected_by.splice(index, 1);
 					player.resetPercieved();
 				}
