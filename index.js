@@ -1,6 +1,6 @@
 const RapidDiscordMafia = require('./services/rapid-discord-mafia/RapidDiscordMafia.js');
 const Event = require('./services/discord-events/Event.js');
-const Timer = require('./modules/Timer.js');
+const Timer = require('./services/timers/Timer.js');
 const { Player } = require("discord-player");
 
 console.log(`discord.js version: ${require('discord.js').version}`);
