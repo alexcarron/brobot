@@ -1,6 +1,6 @@
-const { Alignments, Immunities, RoleNames } = require("../../modules/enums.js");
+const { Immunities, RoleNames } = require("../../modules/enums.js");
 const { abilities, AbilityName } = require("./AbilityManager.js");
-const {Role, Goal, Faction} = require("./Role.js");
+const {Role, Goal, Faction, Alignment} = require("./Role.js");
 
 class RoleManager {
 	constructor() {}
@@ -9,7 +9,7 @@ class RoleManager {
 		[RoleNames.Townie]: new Role({
 			name: RoleNames.Townie,
 			faction: Faction.TOWN,
-			alignment: Alignments.Crowd,
+			alignment: Alignment.CROWD,
 			attack: 0,
 			defense: 0,
 			goal: Goal.ELIMINATE_OTHER_FACTIONS,
@@ -17,7 +17,7 @@ class RoleManager {
 		[RoleNames.Doctor]: new Role({
 			name: RoleNames.Doctor,
 			faction: Faction.TOWN,
-			alignment: Alignments.Protective,
+			alignment: Alignment.PROTECTIVE,
 			attack: 0,
 			defense: 0,
 			goal: Goal.ELIMINATE_OTHER_FACTIONS,
@@ -29,7 +29,7 @@ class RoleManager {
 		[RoleNames.Sheriff]: new Role({
 			name: RoleNames.Sheriff,
 			faction: Faction.TOWN,
-			alignment: Alignments.Investigative,
+			alignment: Alignment.INVESTIGATIVE,
 			attack: 0,
 			defense: 0,
 			goal: Goal.ELIMINATE_OTHER_FACTIONS,
@@ -40,7 +40,7 @@ class RoleManager {
 		[RoleNames.Tracker]: new Role({
 			name: RoleNames.Tracker,
 			faction: Faction.TOWN,
-			alignment: Alignments.Investigative,
+			alignment: Alignment.INVESTIGATIVE,
 			attack: 0,
 			defense: 0,
 			goal: Goal.ELIMINATE_OTHER_FACTIONS,
@@ -51,7 +51,7 @@ class RoleManager {
 		[RoleNames.Lookout]: new Role({
 			name: RoleNames.Lookout,
 			faction: Faction.TOWN,
-			alignment: Alignments.Investigative,
+			alignment: Alignment.INVESTIGATIVE,
 			attack: 0,
 			defense: 0,
 			goal: Goal.ELIMINATE_OTHER_FACTIONS,
@@ -62,7 +62,7 @@ class RoleManager {
 		[RoleNames.Escort]: new Role({
 			name: RoleNames.Escort,
 			faction: Faction.TOWN,
-			alignment: Alignments.Support,
+			alignment: Alignment.SUPPORT,
 			immunities: [Immunities.Roleblock],
 			attack: 0,
 			defense: 0,
@@ -74,7 +74,7 @@ class RoleManager {
 		[RoleNames.Vigilante]: new Role({
 			name: RoleNames.Vigilante,
 			faction: Faction.TOWN,
-			alignment: Alignments.Killing,
+			alignment: Alignment.KILLING,
 			attack: 1,
 			defense: 0,
 			goal: Goal.ELIMINATE_OTHER_FACTIONS,
@@ -101,7 +101,7 @@ class RoleManager {
 		[RoleNames.Mafioso]: new Role({
 			name: RoleNames.Mafioso,
 			faction: Faction.MAFIA,
-			alignment: Alignments.Killing,
+			alignment: Alignment.KILLING,
 			isUnique: true,
 			attack: 1,
 			defense: 0,
@@ -114,7 +114,7 @@ class RoleManager {
 		[RoleNames.Framer]: new Role({
 			name: RoleNames.Framer,
 			faction: Faction.MAFIA,
-			alignment: Alignments.Deception,
+			alignment: Alignment.DECEPTION,
 			attack: 0,
 			defense: 0,
 			goal: Goal.ELIMINATE_OTHER_FACTIONS,
@@ -125,7 +125,7 @@ class RoleManager {
 		[RoleNames.Consort]: new Role({
 			name: RoleNames.Consort,
 			faction: Faction.MAFIA,
-			alignment: Alignments.Support,
+			alignment: Alignment.SUPPORT,
 			immunities: [Immunities.Roleblock],
 			attack: 0,
 			defense: 0,
@@ -137,7 +137,7 @@ class RoleManager {
 		[RoleNames.Consigliere]: new Role({
 			name: RoleNames.Consigliere,
 			faction: Faction.MAFIA,
-			alignment: Alignments.Support,
+			alignment: Alignment.SUPPORT,
 			attack: 0,
 			defense: 0,
 			goal: Goal.ELIMINATE_OTHER_FACTIONS,
@@ -148,7 +148,7 @@ class RoleManager {
 		[RoleNames.Kidnapper]: new Role({
 			name: RoleNames.Kidnapper,
 			faction: Faction.MAFIA,
-			alignment: Alignments.Support,
+			alignment: Alignment.SUPPORT,
 			attack: 0,
 			defense: 0,
 			goal: Goal.ELIMINATE_OTHER_FACTIONS,
@@ -159,7 +159,7 @@ class RoleManager {
 		[RoleNames.Fool]: new Role({
 			name: RoleNames.Fool,
 			faction: Faction.NEUTRAL,
-			alignment: Alignments.Evil,
+			alignment: Alignment.EVIL,
 			attack: 4,
 			defense: 0,
 			goal: Goal.BE_LYNCHED,
@@ -171,7 +171,7 @@ class RoleManager {
 		[RoleNames.Executioner]: new Role({
 			name: RoleNames.Executioner,
 			faction: Faction.NEUTRAL,
-			alignment: Alignments.Evil,
+			alignment: Alignment.EVIL,
 			attack: 0,
 			defense: 1,
 			goal: Goal.GET_TARGET_LYNCHED,
@@ -183,7 +183,7 @@ class RoleManager {
 		[RoleNames.Survivor]: new Role({
 			name: RoleNames.Survivor,
 			faction: Faction.NEUTRAL,
-			alignment: Alignments.Benign,
+			alignment: Alignment.BENIGN,
 			attack: 0,
 			defense: 0,
 			goal: Goal.SURVIVE,
@@ -194,7 +194,7 @@ class RoleManager {
 		[RoleNames.SerialKiller]: new Role({
 			name: RoleNames.SerialKiller,
 			faction: Faction.NEUTRAL,
-			alignment: Alignments.Killing,
+			alignment: Alignment.KILLING,
 			immunities: [Immunities.Roleblock],
 		attack: 1,
 			defense: 1,
@@ -208,7 +208,7 @@ class RoleManager {
 		[RoleNames.Blacksmith]: new Role({
 			name: RoleNames.Blacksmith,
 			faction: Faction.NEUTRAL,
-			alignment: Alignments.Benign,
+			alignment: Alignment.BENIGN,
 			attack: 0,
 			defense: 0,
 			goal: Goal.SAVE_PLAYER_WITH_VEST,
@@ -220,7 +220,7 @@ class RoleManager {
 		[RoleNames.Witch]: new Role({
 			name: RoleNames.Witch,
 			faction: Faction.NEUTRAL,
-			alignment: Alignments.Evil,
+			alignment: Alignment.EVIL,
 			attack: 0,
 			defense: 0,
 			goal: Goal.SURVIVE_UNTIL_TOWN_LOSES,
@@ -232,7 +232,7 @@ class RoleManager {
 		[RoleNames.Oracle]: new Role({
 			name: RoleNames.Oracle,
 			faction: Faction.TOWN,
-			alignment: Alignments.Investigative,
+			alignment: Alignment.INVESTIGATIVE,
 			attack: 0,
 			defense: 0,
 			goal: Goal.ELIMINATE_OTHER_FACTIONS,
@@ -243,7 +243,7 @@ class RoleManager {
 		[RoleNames.Impersonator]: new Role({
 			name: RoleNames.Impersonator,
 			faction: Faction.NEUTRAL,
-			alignment: Alignments.Chaos,
+			alignment: Alignment.CHAOS,
 			attack: 2,
 			defense: 0,
 			goal: Goal.DO_GOAL_OF_REPLACED_PLAYER,
@@ -289,7 +289,7 @@ class RoleManager {
 			Faction.MAFIA,
 			Faction.TOWN,
 			...RoleManager.getListOfRoles()
-				.filter((role) => `${role.faction} ${role.alignment}` === `${Faction.NEUTRAL} ${Alignments.Killing}`)
+				.filter((role) => `${role.faction} ${role.alignment}` === `${Faction.NEUTRAL} ${Alignment.KILLING}`)
 				.map((role) => role.name)
 		];
 	}

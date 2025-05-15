@@ -1,5 +1,5 @@
-const { RoleNames, RoleIdentifierKeywords, Alignments, RoleIdentifierTypes, RoleIdentifierPriorities } = require("../../modules/enums");
-const { Faction } = require("./Role");
+const { RoleNames, RoleIdentifierKeywords, RoleIdentifierTypes, RoleIdentifierPriorities } = require("../../modules/enums");
+const { Faction, Alignment } = require("./Role");
 const RoleIdentifier = require("./RoleIdentifier");
 const RoleManager = require("./RoleManager");
 
@@ -26,7 +26,7 @@ const RoleManager = require("./RoleManager");
 test.concurrent(
 	"RoleIdentifier Constructor for Town Killing failed",
 	() => {
-		const input_role_identifier_str = `${Faction.TOWN} ${Alignments.Killing}`;
+		const input_role_identifier_str = `${Faction.TOWN} ${Alignment.KILLING}`;
 
 		const expected_obj = {
 			name: input_role_identifier_str,
@@ -177,7 +177,7 @@ test.concurrent(
 	test.concurrent(
 		"isValidIdentfierStr SHOULD return false for \"Random Killing\"",
 		() => {
-			const input_identfier_str = `${RoleIdentifierKeywords.Random} ${Alignments.Killing}`;
+			const input_identfier_str = `${RoleIdentifierKeywords.Random} ${Alignment.KILLING}`;
 			const expected_output = false;
 
 			const actual_output = RoleIdentifier.isValidIdentifierStr(input_identfier_str)
@@ -317,7 +317,7 @@ test.concurrent(
 		".getAlignment() on \"protective town\" returns Protective",
 		() => {
 			const input_role_identifier = new RoleIdentifier("protective town");
-			const expected_output = Alignments.Protective;
+			const expected_output = Alignment.PROTECTIVE;
 
 			const actual_output = input_role_identifier.getAlignment()
 
@@ -343,7 +343,7 @@ test.concurrent(
 	test.concurrent(
 		".getPossibleRoles() on Town Protective SHOULD return just Doctor",
 		() => {
-			const input_role_identifier = new RoleIdentifier(`${Faction.TOWN} ${Alignments.Protective}`);
+			const input_role_identifier = new RoleIdentifier(`${Faction.TOWN} ${Alignment.PROTECTIVE}`);
 			const expected_output = [RoleManager.roles[RoleNames.Doctor]];
 
 			const actual_output = input_role_identifier.getPossibleRoles()
@@ -368,7 +368,7 @@ test.concurrent(
 		".getPossibleRoles() on Any SHOULD return all roles but Town Crowd",
 		() => {
 			const input_role_identifier = new RoleIdentifier(`${RoleIdentifierKeywords.Any}`);
-			const expected_output = RoleManager.getListOfRoles().filter(role => !(role.faction === Faction.TOWN && role.alignment === Alignments.Crowd));
+			const expected_output = RoleManager.getListOfRoles().filter(role => !(role.faction === Faction.TOWN && role.alignment === Alignment.CROWD));
 
 			const actual_output = input_role_identifier.getPossibleRoles()
 
@@ -384,12 +384,12 @@ test.concurrent(
 		const input_role_identifiers = [
 			new RoleIdentifier(`${RoleIdentifierKeywords.Random} ${Faction.TOWN}`),
 			new RoleIdentifier(`${RoleIdentifierKeywords.Any}`),
-			new RoleIdentifier(`${Faction.TOWN} ${Alignments.Killing} `),
+			new RoleIdentifier(`${Faction.TOWN} ${Alignment.KILLING} `),
 			new RoleIdentifier(RoleNames.Mafioso),
 		]
 		const expected_role_identifiers = [
 			new RoleIdentifier(RoleNames.Mafioso),
-			new RoleIdentifier(`${Faction.TOWN} ${Alignments.Killing} `),
+			new RoleIdentifier(`${Faction.TOWN} ${Alignment.KILLING} `),
 			new RoleIdentifier(`${RoleIdentifierKeywords.Random} ${Faction.TOWN}`),
 			new RoleIdentifier(`${RoleIdentifierKeywords.Any}`),
 		]
@@ -403,14 +403,14 @@ test.concurrent(
 // ^ .getPriority()
 describe('.getPriority()', () => {
 	it('SHOULD return 6 for input neutral_benign_role_identifier', () => {
-		const neutral_benign_role_identifier = new RoleIdentifier(Faction.NEUTRAL + " " + Alignments.Benign);
+		const neutral_benign_role_identifier = new RoleIdentifier(Faction.NEUTRAL + " " + Alignment.BENIGN);
 
 		expect(neutral_benign_role_identifier.priority)
 		.toStrictEqual(6);
 	});
 
 	it('SHOULD return 2 for input neutral_killing_role_identifier', () => {
-		const neutral_killing_role_identifier = new RoleIdentifier(`${Faction.NEUTRAL} ${Alignments.Killing}`);
+		const neutral_killing_role_identifier = new RoleIdentifier(`${Faction.NEUTRAL} ${Alignment.KILLING}`);
 
 		expect(neutral_killing_role_identifier.priority)
 		.toStrictEqual(2);

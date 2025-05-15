@@ -6,6 +6,20 @@ const Faction = Object.freeze({
 	NEUTRAL: "Neutral",
 });
 
+const Alignment = Object.freeze({
+	CROWD: "Crowd",
+	INVESTIGATIVE: "Investigative",
+	PROTECTIVE: "Protective",
+	KILLING: "Killing",
+	SUPPORT: "Support",
+	DECEPTION: "Deception",
+	EVIL: "Evil",
+	CHAOS: "Chaos",
+	BENIGN: "Benign",
+	TYRANT: "Tyrant",
+	RANDOM: "Random",
+});
+
 const Goal = Object.freeze({
 	ELIMINATE_OTHER_FACTIONS: "Eliminate all non-neutral factions outside of your own as well as any Neutral Killing/Tyrant roles.",
 	SURVIVE_ELIMINATED_OTHER_FACTIONS: "Survive until the end of the game and eliminate all non-neutral factions outside of your own as well as any different Neutral Killing/Tyrant roles.",
@@ -76,4 +90,4 @@ class Role {
 	}
 }
 
-module.exports = { Role, Faction, Goal };
+module.exports = { Role, Faction, Goal, Alignment };

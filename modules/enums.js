@@ -3,20 +3,6 @@ const { createListFromWords } = require("../utilities/text-formatting-utils.js")
 const { createNowUnixTimestamp } = require("../utilities/date-time-utils.js");
 
 const Enums = {
-	Alignments: {
-		Crowd: "Crowd",
-		Investigative: "Investigative",
-		Protective: "Protective",
-		Killing: "Killing",
-		Support: "Support",
-		Deception: "Deception",
-		Evil: "Evil",
-		Chaos: "Chaos",
-		Benign: "Benign",
-		Tyrant: "Tyrant",
-		Random: "Random",
-	},
-
 	AbilityTypes: {
 		Protection: "protection",
 		Manipulation: "manipulation",

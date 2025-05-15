@@ -1,4 +1,4 @@
-const { RoleNames, Alignments, RoleIdentifierKeywords, TrialOutcomes, AbilityName, AbilityArgName, Feedback } = require("../../modules/enums");
+const { RoleNames, RoleIdentifierKeywords, TrialOutcomes, AbilityName, AbilityArgName, Feedback } = require("../../modules/enums");
 const RapidDiscordMafia = require("./RapidDiscordMafia");
 const RoleIdentifier = require("./RoleIdentifier");
 const GameManager = require("./GameManager");
@@ -6,7 +6,7 @@ const Player = require("./Player");
 const RoleManager = require("./RoleManager");
 const { abilities } = require("./AbilityManager");
 const { arraysHaveSameElements } = require("../../utilities/data-structure-utils");
-const { Faction } = require("./Role");
+const { Faction, Alignment } = require("./Role");
 
 
 describe('GameManager', () => {
@@ -52,8 +52,8 @@ describe('GameManager', () => {
 				const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
 				rdm_game.role_identifiers = RoleIdentifier.convertIdentifierStrings(
 					[
-						Faction.NEUTRAL + " " + Alignments.Benign,
-						Faction.NEUTRAL + " " + Alignments.Killing,
+						Faction.NEUTRAL + " " + Alignment.BENIGN,
+						Faction.NEUTRAL + " " + Alignment.KILLING,
 						Faction.TOWN + " " + RoleIdentifierKeywords.Random,
 					]
 				);
@@ -76,7 +76,7 @@ describe('GameManager', () => {
 				const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
 				rdm_game.role_identifiers = RoleIdentifier.convertIdentifierStrings(
 					[
-						Faction.NEUTRAL + " " + Alignments.Benign,
+						Faction.NEUTRAL + " " + Alignment.BENIGN,
 						Faction.MAFIA + " " + RoleIdentifierKeywords.Random,
 						Faction.TOWN + " " + RoleIdentifierKeywords.Random,
 					]
@@ -122,11 +122,11 @@ describe('GameManager', () => {
 		test.concurrent(
 			`.getRoleFromRoleIdentifier(RoleIdentifier("Town Crowd")) SHOULD return Townie role`,
 			async () => {
-				const input_identifier = new RoleIdentifier(`${Faction.TOWN} ${Alignments.Crowd}`);
+				const input_identifier = new RoleIdentifier(`${Faction.TOWN} ${Alignment.CROWD}`);
 				const existing_role_list = [];
 				const existing_role_identifiers = RoleIdentifier.convertIdentifierStrings(
 					[
-						`${Faction.TOWN} ${Alignments.Crowd}`
+						`${Faction.TOWN} ${Alignment.CROWD}`
 					]
 				);
 				const expected_output = RoleManager.roles[RoleNames.Townie];
@@ -144,11 +144,11 @@ describe('GameManager', () => {
 		test.concurrent(
 			`.getRoleFromRoleIdentifier(RoleIdentifier("Neutral Killing")) SHOULD return role in Neutral faction and Killing alignment`,
 			async () => {
-				const input_identifier = new RoleIdentifier(`${Faction.NEUTRAL} ${Alignments.Killing}`);
+				const input_identifier = new RoleIdentifier(`${Faction.NEUTRAL} ${Alignment.KILLING}`);
 				const existing_role_list = [];
 				const existing_role_identifiers = RoleIdentifier.convertIdentifierStrings(
 					[
-						`${Faction.NEUTRAL} ${Alignments.Killing}`
+						`${Faction.NEUTRAL} ${Alignment.KILLING}`
 					]
 				);
 
@@ -159,7 +159,7 @@ describe('GameManager', () => {
 				const actual_output = rdm_game.getRoleFromRoleIdentifier(input_identifier, {})
 
 				expect(actual_output.faction).toStrictEqual(Faction.NEUTRAL);
-				expect(actual_output.alignment).toStrictEqual(Alignments.Killing);
+				expect(actual_output.alignment).toStrictEqual(Alignment.KILLING);
 			}
 		)
 
@@ -239,11 +239,11 @@ describe('GameManager', () => {
 		test.concurrent(
 			`.getPossibleRolesFromIdentifier(RoleIdentifier("Town Crowd")) SHOULD return [Townie]`,
 			async () => {
-				const input_identifier = new RoleIdentifier(`${Faction.TOWN} ${Alignments.Crowd}`);
+				const input_identifier = new RoleIdentifier(`${Faction.TOWN} ${Alignment.CROWD}`);
 				const existing_role_list = [];
 				const existing_role_identifiers = RoleIdentifier.convertIdentifierStrings(
 					[
-						`${Faction.TOWN} ${Alignments.Crowd}`
+						`${Faction.TOWN} ${Alignment.CROWD}`
 					]
 				);
 
@@ -262,17 +262,17 @@ describe('GameManager', () => {
 		test.concurrent(
 			`.getPossibleRolesFromIdentifier(RoleIdentifier("Neutral Killing")) SHOULD return list of roles in Neutral faction and Killing alignment`,
 			async () => {
-				const input_identifier = new RoleIdentifier(`${Faction.NEUTRAL} ${Alignments.Killing}`);
+				const input_identifier = new RoleIdentifier(`${Faction.NEUTRAL} ${Alignment.KILLING}`);
 				const existing_role_list = [];
 				const existing_role_identifiers = RoleIdentifier.convertIdentifierStrings(
 					[
-						`${Faction.NEUTRAL} ${Alignments.Killing}`
+						`${Faction.NEUTRAL} ${Alignment.KILLING}`
 					]
 				);
 
 				const expected_output = RoleManager.getListOfRoles().filter( role =>
 					role.faction === Faction.NEUTRAL &&
-					role.alignment === Alignments.Killing
+					role.alignment === Alignment.KILLING
 				);
 
 				const rdm_game = await RapidDiscordMafia.getEmptyGame(true);
@@ -342,7 +342,7 @@ describe('GameManager', () => {
 				expect(
 					actual_output.every(role =>
 						!(role.faction === Faction.TOWN &&
-							role.alignment === Alignments.Crowd)
+							role.alignment === Alignment.CROWD)
 					)
 				).toStrictEqual(true);
 

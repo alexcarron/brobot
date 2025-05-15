@@ -1,5 +1,5 @@
-const { RoleIdentifierTypes, RoleIdentifierKeywords, RoleIdentifierPriorities, Alignments } = require("../../modules/enums");
-const { Faction } = require("./Role");
+const { RoleIdentifierTypes, RoleIdentifierKeywords, RoleIdentifierPriorities, } = require("../../modules/enums");
+const { Faction, Alignment } = require("./Role");
 const RoleManager = require("./RoleManager");
 
 class RoleIdentifier {
@@ -36,7 +36,7 @@ class RoleIdentifier {
 			if (role_identifier_str.toLowerCase().includes(RoleIdentifierKeywords.Random.toLowerCase()))
 				return RoleIdentifierTypes.RandomRoleInFaction
 			else if (
-				Object.values(Alignments).some(alignment =>
+				Object.values(Alignment).some(alignment =>
 					role_identifier_str.toLowerCase().includes(alignment.toLowerCase())
 				)
 			)
@@ -113,7 +113,7 @@ class RoleIdentifier {
 			return undefined
 		}
 		else {
-			const alignment = Object.values(Alignments).find(alignment =>
+			const alignment = Object.values(Alignment).find(alignment =>
 				this.name.toLowerCase().includes(alignment.toLowerCase())
 			)
 
@@ -139,12 +139,12 @@ class RoleIdentifier {
 			possible_roles = RoleManager.getListOfRoles().filter( role_checking => {
 				return (
 					role_checking.faction === this.getFaction() &&
-					role_checking.alignment !== Alignments.Crowd
+					role_checking.alignment !== Alignment.CROWD
 				)
 			});
 		}
 		else if (this.type === RoleIdentifierTypes.AnyRole) {
-			possible_roles = RoleManager.getListOfRoles().filter(role => !(role.faction === Faction.TOWN && role.alignment === Alignments.Crowd));
+			possible_roles = RoleManager.getListOfRoles().filter(role => !(role.faction === Faction.TOWN && role.alignment === Alignment.CROWD));
 		}
 
 		return possible_roles;

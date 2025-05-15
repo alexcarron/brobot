@@ -1,8 +1,8 @@
 const Effect = require("./Effect");
-const { RoleNames, AbilityName, AbilityArgName, Alignments, Feedback, Immunities, ArgumentTypes, ArgumentSubtypes } = require("../../modules/enums");
+const { RoleNames, AbilityName, AbilityArgName, Feedback, Immunities, ArgumentTypes, ArgumentSubtypes } = require("../../modules/enums");
 const Logger = require("./Logger");
 const { AbilityUseCount } = require("./Ability");
-const { Faction } = require("./Role");
+const { Faction, Alignment } = require("./Role");
 
 /**
  * Used to handle ability effects and apply them
@@ -214,7 +214,7 @@ class EffectManager {
 
 				const evaluatedPlayerIsNeutralKilling = (
 					evaluated_role.faction === Faction.NEUTRAL &&
-					evaluated_role.alignment === Alignments.Killing
+					evaluated_role.alignment === Alignment.KILLING
 				);
 
 				let feedback = "";
