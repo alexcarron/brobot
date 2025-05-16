@@ -196,10 +196,6 @@ Contains all command definition files.
 * **`ll-points/`** Commands for using and managing all LL Point Leaderboard functionality
 * **`fun/`** Fun, non-utility commands to entertain users
 
-### 📂 `data`
-
-Contains all files used for referencing static data
-
 ### 📂 `event-listeners/`
 
 Contains logic for responding to various Discord events (e.g., message activity, commands, user interactions).
