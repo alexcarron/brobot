@@ -138,9 +138,17 @@ Contains logic for responding to various Discord events (e.g., message activity,
 * **`on-slash-command-executed.js`** Handles execution of slash (/) commands
 * **`on-user-joins-server.js`** Handles new user joining the server
 
-### 📂 `modules`
+### 📂 `services/`
 
-Contains all module files and services (e.g., music, moderation, command management, events, LL Points)
+Contains core services, modules, and models for Brobot's features.
+
+* **`command-creation/`** Utilities and models for creating, registering, and managing bot commands to simplify the command setup process
+* **`discord-events/`** Manages scheduling and handling of Discord events, including reminders and announcements
+* **`discussion-prompts/`** Handles recurring messages with random discussion prompts
+* **`ll-points/`** Manages LL Point Leaderboard logic
+* **`rapid-discord-mafia/`** Manages game logic for Rapid Discord Mafia, including players, roles, actions, and phases
+* **`text-to-speech/`** Manages text-to-speech functionality in voice channels
+* **`timer/`** Manages storing, tracking, and recalling persistent timers
 
 ### 📂 `utilities/`
 
