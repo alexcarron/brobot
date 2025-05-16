@@ -2,8 +2,19 @@ const RapidDiscordMafia = require('./services/rapid-discord-mafia/rapid-discord-
 const Event = require('./services/discord-events/event.js');
 const Timer = require('./services/timers/timer.js');
 const { Player } = require("discord-player");
+const { Collection } = require('discord.js');
+const SlashCommand = require('./services/command-creation/slash-command.js');
+const TextToSpeechHandler = require('./services/text-to-speech/text-to-speech-handler.js');
+const DailyMessageHandler = require('./services/discussion-prompts/daily-message-handler.js');
+const path = require('path');
+const { setupEventListeners } = require('./event-listeners/event-listener-setup.js');
+const { loadObjectFromJsonInGitHub } = require('./utilities/github-json-storage-utils.js');
+const { DISCORD_TOKEN } = require('./bot-config/token.js');
+const { botStatus } = require('./bot-config/bot-status.js');
+const { LLPointManager } = require('./services/ll-points/ll-point-manager.js');
+const { logInfo } = require('./utilities/logging-utils.js');
 
-console.log(`discord.js version: ${require('discord.js').version}`);
+logInfo(`Using discord.js version: ${require('discord.js').version}`);
 
 const
 	ids = require('./bot-config/discord-ids.js'),
@@ -28,18 +39,6 @@ global.client = new Discord.Client({
 		Partials.Reaction
 	]
 });
-
-// ! Create global paths object to store directories
-const { Collection } = require('discord.js');
-const SlashCommand = require('./services/command-creation/slash-command.js');
-const TextToSpeechHandler = require('./services/text-to-speech/text-to-speech-handler.js');
-const DailyMessageHandler = require('./services/discussion-prompts/daily-message-handler.js');
-const path = require('path');
-const { setupEventListeners } = require('./event-listeners/event-listener-setup.js');
-const { loadObjectFromJsonInGitHub } = require('./utilities/github-json-storage-utils.js');
-const { DISCORD_TOKEN } = require('./bot-config/token.js');
-const { botStatus } = require('./bot-config/bot-status.js');
-const { LLPointManager } = require('./services/ll-points/ll-point-manager.js');
 
 // ! Store a list of command cooldowns
 client.cooldowns = new Collection();

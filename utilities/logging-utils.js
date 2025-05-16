@@ -29,6 +29,13 @@ const logWithColor = (message, color) => {
 	console.log(`${startColor}${message}${resetColor}`);
 }
 
+/**
+ * Logs an error message to the console with the specified timestamp and
+ * optional error stack trace.
+ *
+ * @param {string} message - The error message to log.
+ * @param {Error} [error] - The optional error object to log the stack trace of.
+ */
 const logError = (message, error = null) => {
 	const timestamp = new Date().toISOString();
 	const errorPrefix = `[ERROR] ${timestamp}:`;
@@ -43,4 +50,19 @@ const logError = (message, error = null) => {
 	console.trace('Error location:');
 }
 
-module.exports = { logWithColor, LogColor, logError };
+/**
+ * Logs an information message to the console with the specified message.
+ *
+ * @param {string} message - The information message to log.
+ */
+const logInfo = (message) => {
+	if (typeof message !== "string")
+		throw new TypeError("Message must be a string.");
+
+	if (message.trim() === "")
+		return;
+
+	logWithColor(`[INFO] ${message}`, LogColor.BLUE);
+}
+
+module.exports = { logWithColor, LogColor, logError, logInfo };
