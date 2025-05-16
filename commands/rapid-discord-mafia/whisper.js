@@ -1,6 +1,6 @@
 const Parameter = require("../../services/command-creation/Paramater.js");
 const ids = require("../../bot-config/discord-ids.js");
-const SlashCommand = require("../../services/command-creation/SlashCommand.js");
+const SlashCommand = require("../../services/command-creation/slash-command.js");
 const { deferInteraction } = require('../../utilities/discord-action-utils.js');
 const { Phases, GameStates } = require("../../modules/enums.js");
 

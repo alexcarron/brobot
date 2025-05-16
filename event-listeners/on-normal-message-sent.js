@@ -1,5 +1,5 @@
 const { Message, MessageType, PermissionsBitField } = require("discord.js");
-const TextToSpeechHandler = require("../services/text-to-speech/TextToSpeechHandler");
+const TextToSpeechHandler = require("../services/text-to-speech/text-to-speech-handler");
 const { joinVoiceChannel } = require("@discordjs/voice");
 const { GameStates } = require("../modules/enums");
 const ids = require("../bot-config/discord-ids");

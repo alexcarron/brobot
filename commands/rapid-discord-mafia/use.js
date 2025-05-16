@@ -1,13 +1,13 @@
-const Parameter = require("../../services/command-creation/Paramater");
-const SlashCommand = require("../../services/command-creation/SlashCommand");
+const Parameter = require("../../services/command-creation/parameter.js");
+const SlashCommand = require("../../services/command-creation/slash-command.js");
 const { deferInteraction } = require("../../utilities/discord-action-utils");
 const ids = require("../../bot-config/discord-ids.js");
-const AbilityManager = require("../../services/rapid-discord-mafia/AbilityManager");
+const AbilityManager = require("../../services/rapid-discord-mafia/ability-manager.js");
 const { toTitleCase } = require("../../utilities/text-formatting-utils.js");
 const { fetchChannel, fetchRDMGuild } = require("../../utilities/discord-fetch-utils.js");
-const { AbilityUseCount, AbilityName } = require("../../services/rapid-discord-mafia/Ability.js");
-const { Faction } = require("../../services/rapid-discord-mafia/Role.js");
-const { AbilityArgType, ArgumentSubtype } = require("../../services/rapid-discord-mafia/Arg.js");
+const { AbilityUseCount, AbilityName } = require("../../services/rapid-discord-mafia/ability.js");
+const { Faction } = require("../../services/rapid-discord-mafia/role.js");
+const { AbilityArgType, ArgumentSubtype } = require("../../services/rapid-discord-mafia/arg.js");
 
 const command = new SlashCommand({
 	name: "use",

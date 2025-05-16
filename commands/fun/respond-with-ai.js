@@ -1,5 +1,5 @@
-const Parameter = require("../../services/command-creation/Paramater.js");
-const SlashCommand = require("../../services/command-creation/SlashCommand.js");
+const Parameter = require("../../services/command-creation/parameter.js");
+const SlashCommand = require("../../services/command-creation/slash-command.js");
 const { joinVoiceChannel } = require('@discordjs/voice');
 const ids = require(`../../bot-config/discord-ids.js`);
 const { PermissionsBitField, PermissionFlagsBits } = require("discord.js");

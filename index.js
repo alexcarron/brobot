@@ -1,6 +1,6 @@
-const RapidDiscordMafia = require('./services/rapid-discord-mafia/RapidDiscordMafia.js');
-const Event = require('./services/discord-events/Event.js');
-const Timer = require('./services/timers/Timer.js');
+const RapidDiscordMafia = require('./services/rapid-discord-mafia/rapid-discord-mafia.js');
+const Event = require('./services/discord-events/event.js');
+const Timer = require('./services/timers/timer.js');
 const { Player } = require("discord-player");
 
 console.log(`discord.js version: ${require('discord.js').version}`);
@@ -31,9 +31,9 @@ global.client = new Discord.Client({
 
 // ! Create global paths object to store directories
 const { Collection } = require('discord.js');
-const SlashCommand = require('./services/command-creation/SlashCommand.js');
-const TextToSpeechHandler = require('./services/text-to-speech/TextToSpeechHandler.js');
-const DailyMessageHandler = require('./services/discussion-prompts/DailyMessageHandler.js');
+const SlashCommand = require('./services/command-creation/slash-command.js');
+const TextToSpeechHandler = require('./services/text-to-speech/text-to-speech-handler.js');
+const DailyMessageHandler = require('./services/discussion-prompts/daily-message-handler.js');
 const path = require('path');
 const { setupEventListeners } = require('./event-listeners/event-listener-setup.js');
 const { loadObjectFromJsonInGitHub } = require('./utilities/github-json-storage-utils.js');
@@ -173,7 +173,7 @@ global.client.login(DISCORD_TOKEN);
 // this event will only trigger one time after Brobot has successfully fully connected to the Discord API
 global.client.once(Events.ClientReady, async () => {
 	const
-		LLPointManager = require("./services/ll-points/LLPointManager.js"),
+		LLPointManager = require("./services/ll-points/ll-point-manager.js"),
 		config = require('./bot-config/config.json');
 
 	client.user.setPresence({

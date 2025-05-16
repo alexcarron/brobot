@@ -1,10 +1,10 @@
-const Parameter = require('../../services/command-creation/Paramater.js');
-const SlashCommand = require('../../services/command-creation/SlashCommand.js');
+const Parameter = require('../../services/command-creation/parameter.js');
+const SlashCommand = require('../../services/command-creation/slash-command.js');
 const { deferInteraction } = require('../../utilities/discord-action-utils.js');
 const ids = require(`../../bot-config/discord-ids.js`);
 const { fetchUser } = require('../../utilities/discord-fetch-utils.js');
 const { confirmInteractionWithButtons } = require('../../utilities/discord-action-utils.js');
-const { LLPointPerk } = require('../../services/ll-points/LLPointManager.js');
+const { LLPointPerk } = require('../../services/ll-points/ll-point-manager.js');
 
 const Parameters = {
 	Perk: new Parameter({

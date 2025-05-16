@@ -1,5 +1,5 @@
-const Parameter = require("../../services/command-creation/Paramater");
-const SlashCommand = require("../../services/command-creation/SlashCommand");
+const Parameter = require("../../services/command-creation/parameter.js");
+const SlashCommand = require("../../services/command-creation/slash-command.js");
 const { GameStates } = require("../../modules/enums");
 const { deferInteraction } = require("../../utilities/discord-action-utils");
 const

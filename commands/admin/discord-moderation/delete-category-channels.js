@@ -1,6 +1,6 @@
 const { PermissionFlagsBits, ChannelType } = require("discord.js");
 const Parameter = require("../../../services/command-creation/Paramater");
-const SlashCommand = require("../../../services/command-creation/SlashCommand");
+const SlashCommand = require("../../../services/command-creation/slash-command");
 const { fetchChannelsInCategory } = require("../../../utilities/discord-fetch-utils");
 const { deferInteraction } = require("../../../utilities/discord-action-utils");
 

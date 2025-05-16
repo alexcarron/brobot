@@ -1,11 +1,11 @@
 const { PermissionFlagsBits } = require("discord.js");
-const SlashCommand = require("../../services/command-creation/SlashCommand.js");
-const Parameter = require("../../services/command-creation/Paramater.js");
-const { GameManager } = require("../../services/rapid-discord-mafia/GameManager.js");
+const SlashCommand = require("../../services/command-creation/slash-command.js");
+const Parameter = require("../../services/command-creation/parameter.js");
+const { GameManager } = require("../../services/rapid-discord-mafia/game-manager.js");
 
 const ids = require(`../../bot-config/discord-ids.js`);
-const { TrialVote } = require("../../services/rapid-discord-mafia/VoteManager.js");
-const { GameState } = require("../../services/rapid-discord-mafia/GameStateManager.js");
+const { TrialVote } = require("../../services/rapid-discord-mafia/vote-manager.js");
+const { GameState } = require("../../services/rapid-discord-mafia/game-state-manager.js");
 
 const Subparameters = {
 	PlayerVotingFor: new Parameter({

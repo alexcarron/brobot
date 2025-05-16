@@ -1,5 +1,5 @@
 const Parameter = require("../../services/command-creation/Paramater");
-const SlashCommand = require("../../services/command-creation/SlashCommand");
+const SlashCommand = require("../../services/command-creation/slash-command");
 const ids = require("../../bot-config/discord-ids.js");
 const { deferInteraction } = require("../../utilities/discord-action-utils");
 const { fetchGuildMember, fetchRoleByName } = require("../../utilities/discord-fetch-utils.js");

@@ -1,7 +1,7 @@
 const { rdm_server_id } = require("../../bot-config/discord-ids.js"),
 	ids = require("../../bot-config/discord-ids.js"),
 	{ RDMRoles, GameStates } = require("../../modules/enums.js");
-const SlashCommand = require('../../services/command-creation/SlashCommand.js');
+const SlashCommand = require('../../services/command-creation/slash-command.js');
 const Parameter = require('../../services/command-creation/Paramater.js');
 
 

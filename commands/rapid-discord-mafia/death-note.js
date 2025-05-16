@@ -1,6 +1,6 @@
 const Parameter = require("../../services/command-creation/Paramater");
 const ids = require("../../bot-config/discord-ids.js");
-const SlashCommand = require("../../services/command-creation/SlashCommand");
+const SlashCommand = require("../../services/command-creation/slash-command");
 const { deferInteraction, getInputFromCreatedTextModal } = require("../../utilities/discord-action-utils.js");
 
 const Parameters = {

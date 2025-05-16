@@ -1,5 +1,5 @@
 const { PermissionFlagsBits } = require("discord.js");
-const SlashCommand = require("../../services/command-creation/SlashCommand");
+const SlashCommand = require("../../services/command-creation/slash-command");
 const ids = require("../../bot-config/discord-ids.js");
 
 
