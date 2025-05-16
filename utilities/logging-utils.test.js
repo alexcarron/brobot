@@ -1,4 +1,4 @@
-const { logWithColor, LogColor, logError, logInfo } = require("./logging-utils");
+const { logWithColor, LogColor, logError, logInfo, logWarning } = require("./logging-utils");
 
 describe('logging-utils.js', () => {
 	const mockNowDate = new Date('2023-05-01T12:00:00Z'); // May 1, 2023, 12:00:00 PM UTC-07:00
@@ -103,13 +103,42 @@ describe('logging-utils.js', () => {
 		});
 	});
 
+	describe('logWarning()', () => {
+		it('should log a non-empty string message', () => {
+			const message = 'Hello World!';
+			logWarning(message);
+			expect(console.log).toHaveBeenCalled();
+		});
+
+		it('should not log an empty string message', () => {
+			const message = '';
+			logWarning(message);
+			expect(console.log).not.toHaveBeenCalled();
+		});
+
+		it('throws an error with a null message', () => {
+			const message = null;
+			expect(() => logWarning(message)).toThrowError('Message must be a string.');
+		});
+
+		it('throws an error with an undefined message', () => {
+			const message = undefined;
+			expect(() => logWarning(message)).toThrowError('Message must be a string.');
+		});
+
+		it('throws an error with a non-string message', () => {
+			const message = 123;
+			expect(() => logWarning(message)).toThrowError('Message must be a string.');
+		});
+	});
+
 	describe('logInfo()', () => {
 		it('should log a non-empty string message', () => {
 			const message = 'Hello World!';
 			logInfo(message);
 			expect(console.log).toHaveBeenCalled();
 		});
-		
+
 		it('should not log an empty string message', () => {
 			const message = '';
 			logInfo(message);
@@ -130,5 +159,5 @@ describe('logging-utils.js', () => {
 			const message = 123;
 			expect(() => logInfo(message)).toThrowError('Message must be a string.');
 		});
-	})
+	});
 });

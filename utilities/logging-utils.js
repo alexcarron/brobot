@@ -50,6 +50,16 @@ const logError = (message, error = null) => {
 	console.trace('Error location:');
 }
 
+const logWarning = (message) => {
+	if (typeof message!== "string")
+    throw new TypeError("Message must be a string.");
+
+  if (message.trim() === "")
+    return;
+
+  logWithColor(`[WARNING] ${message}`, LogColor.YELLOW);
+}
+
 /**
  * Logs an information message to the console with the specified message.
  *
@@ -65,4 +75,4 @@ const logInfo = (message) => {
 	logWithColor(`[INFO] ${message}`, LogColor.BLUE);
 }
 
-module.exports = { logWithColor, LogColor, logError, logInfo };
+module.exports = { logWithColor, LogColor, logError, logWarning, logInfo };
