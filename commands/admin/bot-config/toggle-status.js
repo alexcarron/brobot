@@ -2,6 +2,7 @@ const fs = require('node:fs/promises');
 const SlashCommand = require('../../../services/command-creation/SlashCommand');
 const { PermissionFlagsBits } = require('discord.js');
 const { deferInteraction } = require('../../../utilities/discord-action-utils');
+const { botStatus } = require('../../../bot-config/bot-status');
 
 const command = new SlashCommand({
 	name: "toggle-status",
@@ -11,16 +12,12 @@ command.required_permissions = [PermissionFlagsBits.Administrator]
 command.execute = async function(interaction) {
 	await deferInteraction(interaction);
 
-	let config = JSON.parse(await fs.readFile("bot-config/config.json"));
-	console.log({config});
-
-	if (config.isSleep) {
-			config.isSleep = false
-	} else {
-			config.isSleep = true
+	if (botStatus.isSleep) {
+		botStatus.isSleep = false
 	}
-
-	await fs.writeFile(`bot-config/config.json`, JSON.stringify(config))
+	else {
+		botStatus.isSleep = true
+	}
 
 	interaction.editReply(`Done.`)
 },

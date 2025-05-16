@@ -1,7 +1,6 @@
 const { ChannelType, Client, Events, Message, InteractionType } = require("discord.js");
 const { onNormalMessageSent } = require("./on-normal-message-sent");
 
-const { prefix } = require('../bot-config/config.json');
 const { onDmRecieved } = require("./on-dm-recieved");
 const { onSlashCommandExecuted } = require("./on-slash-command-executed");
 const { onSlashCommandAutocomplete } = require("./on-slash-command-autocomplete");
@@ -11,10 +10,6 @@ const { onUserJoinsServer } = require("./on-user-joins-server");
 const isDM = (message) =>
 	message.channel.type === ChannelType.DM ||
 	message.channel.type === ChannelType.GroupDM;
-
-const isTextCommand = (message) =>
-		message.content.startsWith(prefix) &&
-		!message.author.bot;
 
 const isSlashCommand = (interaction) =>
 	interaction.isChatInputCommand();
@@ -34,11 +29,6 @@ const setupMessageSentListener =
 
 				if (isDM(message)) {
 					await onDmRecieved(message);
-					return;
-				}
-
-				if (isTextCommand(message)) {
-					console.log("onTextCommand")
 					return;
 				}
 

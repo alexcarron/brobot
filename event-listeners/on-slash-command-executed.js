@@ -1,5 +1,6 @@
 const { ChannelType, Collection } = require("discord.js");
 const ids = require("../bot-config/discord-ids");
+const { botStatus } = require("../bot-config/bot-status");
 
 const onSlashCommandExecuted = async (interaction) => {
 	const userName = interaction.user.username;
@@ -15,8 +16,7 @@ const onSlashCommandExecuted = async (interaction) => {
 	const isUserLL = interaction.user.id === ids.users.LL;
 
 	// Is the bot on?
-	const config = require("../bot-config/config.json");
-	if (config.isSleep && !isUserLL) {
+	if (botStatus.isSleep && !isUserLL) {
 		interaction.reply({
 			content: "Someone turned me off, so you can't use me right now.",
 			ephemeral: true

@@ -38,6 +38,7 @@ const path = require('path');
 const { setupEventListeners } = require('./event-listeners/event-listener-setup.js');
 const { loadObjectFromJsonInGitHub } = require('./utilities/github-json-storage-utils.js');
 const { DISCORD_TOKEN } = require('./bot-config/token.js');
+const { botStatus } = require('./bot-config/bot-status.js');
 
 // ! Store a list of command cooldowns
 client.cooldowns = new Collection();
@@ -173,8 +174,7 @@ global.client.login(DISCORD_TOKEN);
 // this event will only trigger one time after Brobot has successfully fully connected to the Discord API
 global.client.once(Events.ClientReady, async () => {
 	const
-		LLPointManager = require("./services/ll-points/ll-point-manager.js"),
-		config = require('./bot-config/config.json');
+		LLPointManager = require("./services/ll-points/ll-point-manager.js");
 
 	client.user.setPresence({
 		activities: [{
@@ -185,9 +185,8 @@ global.client.once(Events.ClientReady, async () => {
 		status: 'online'
 	});
 
-	config.isOn = true;
+	botStatus.isOn = true;
 	console.log("I'm turned on");
-	fs.writeFileSync("./bot-config/config.json", JSON.stringify(config));
 
 	global.music_queues = new Map();
 	global.client.player = new Player(global.client, {

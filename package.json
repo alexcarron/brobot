@@ -4,7 +4,7 @@
 		"description": "A discord bot used to enhance the experience of the LL Game Shows community",
 		"main": "index.js",
 		"scripts": {
-				"test": "jest --runInBand",
+				"test": "jest --runInBand --silent",
 				"start": "node index.js",
 				"dev": "nodemon --ignore \"**/*.json\" index.js"
 		},
