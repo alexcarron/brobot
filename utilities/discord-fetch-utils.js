@@ -126,7 +126,7 @@ const fetchChannelsInCategory = async (guild, categoryID) => {
  * @returns {Promise<Guild>} A Promise that resolves with the Rapid Discord Mafia guild.
  */
 const fetchRDMGuild = async () => {
-	return await fetchGuild(ids.rapid_discord_mafia.guild_id);
+	return await fetchGuild(ids.servers.rapid_discord_mafia);
 }
 
 module.exports = { assertClientSetup, fetchGuild, fetchChannel, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchUser, fetchRole, fetchRoleByName };

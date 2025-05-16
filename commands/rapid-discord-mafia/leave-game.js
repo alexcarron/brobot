@@ -1,7 +1,7 @@
 const ids = require("../../bot-config/discord-ids.js");
 const SlashCommand = require("../../services/command-creation/slash-command");
+const { GameState } = require("../../services/rapid-discord-mafia/game-state-manager.js");
 const { deferInteraction } = require("../../utilities/discord-action-utils");
-const { GameStates, RDMRoles } = require("../../modules/enums");
 const { confirmInteractionWithButtons } = require("../../utilities/discord-action-utils.js");
 
 const command = new SlashCommand({
@@ -15,7 +15,7 @@ command.execute = async function(interaction) {
 
 	const player = global.game_manager.player_manager.getPlayerFromId(interaction.user.id);
 
-	if (global.game_manager.state === GameStates.SignUp) {
+	if (global.game_manager.state === GameState.SIGN_UP) {
 		if (
 			!await confirmInteractionWithButtons({
 				interaction,
@@ -31,7 +31,7 @@ command.execute = async function(interaction) {
 
 		global.game_manager.player_manager.havePlayerLeaveSignUps(player);
 	}
-	else if (global.game_manager.state === GameStates.InProgress) {
+	else if (global.game_manager.state === GameState.IN_PROGRESS) {
 		if (!player.isAlive) {
 			return await interaction.editReply("Dead people can't leave the game");
 		}

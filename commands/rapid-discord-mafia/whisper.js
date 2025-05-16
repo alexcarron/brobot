@@ -1,8 +1,8 @@
-const Parameter = require("../../services/command-creation/Paramater.js");
+const Parameter = require("../../services/command-creation/parameter.js");
 const ids = require("../../bot-config/discord-ids.js");
 const SlashCommand = require("../../services/command-creation/slash-command.js");
 const { deferInteraction } = require('../../utilities/discord-action-utils.js');
-const { Phases, GameStates } = require("../../modules/enums.js");
+const { GameState } = require("../../services/rapid-discord-mafia/game-state-manager.js");
 
 const Parameters = {
 	PlayerWhisperingTo: new Parameter({
@@ -31,7 +31,7 @@ command.required_servers = [ids.servers.rapid_discord_mafia];
 command.execute = async function(interaction) {
 	await deferInteraction(interaction);
 
-	if (global.game_manager.state !== GameStates.InProgress)
+	if (global.game_manager.state !== GameState.IN_PROGRESS)
 		return await interaction.editReply("Wait for the game to start!");
 
 	const player_whispering = global.game_manager.player_manager.getPlayerFromId(interaction.user.id);

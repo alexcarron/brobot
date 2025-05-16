@@ -1,11 +1,11 @@
 const { GITHUB_TOKEN } = require('../bot-config/token');
 
-constaxios = require('axios');
+const axios = require('axios');
 const REPO_OWNER = "alexcarron";
 const REPO_NAME = "brobot-database";
 
 /**
- * Enum of URLs to the json files in the GitHub repository
+ * Enum of URLs to thpe json files in the GitHub repository
  */
 const GitHubJsonURL = Object.freeze({
 	VIEWERS: `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/viewers.json`,

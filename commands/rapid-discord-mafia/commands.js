@@ -1,8 +1,8 @@
-const Parameter = require('../../services/command-creation/Paramater');
-const SlashCommand = require('../../services/command-creation/SlashCommand');
+const Parameter = require('../../services/command-creation/parameter');
+const SlashCommand = require('../../services/command-creation/slash-command');
 const { deferInteraction } = require('../../utilities/discord-action-utils');
 const ids = require(`../../bot-config/discord-ids.js`);
-const { Announcements } = require('../../modules/enums');
+const { COMMAND_EXPLANATIONS } = require('../../services/rapid-discord-mafia/constants/possible-messages.js');
 
 const command = new SlashCommand({
 	name: 'commands',
@@ -18,7 +18,7 @@ command.execute = async function (interaction) {
 
 	await interaction.editReply(
 		`## Commands\n` +
-		Announcements.Commands.map(string => `> - ${string}`).join("\n")
+		COMMAND_EXPLANATIONS.map(string => `> - ${string}`).join("\n")
 	);
 }
 

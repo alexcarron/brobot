@@ -2,13 +2,13 @@ const cron = require("cron");
 const SlashCommand = require('../../../services/command-creation/slash-command.js');
 const ids = require("../../../bot-config/discord-ids.js")
 const { ChannelType, ButtonBuilder, ActionRowBuilder, ModalBuilder, ButtonStyle, TextInputBuilder, TextInputStyle, StringSelectMenuOptionBuilder, StringSelectMenuBuilder, } = require('discord.js');
-const { LLPointTiers } = require("../../../modules/enums.js");
 const { toTitleCase } = require("../../../utilities/text-formatting-utils.js");
 const { toUnixTimestamp } = require("../../../utilities/date-time-utils.js");
 const { confirmInteractionWithButtons } = require("../../../utilities/discord-action-utils.js");
 const { wait } = require("../../../utilities/realtime-utils.js");
 const { saveObjectToJsonInGitHub } = require("../../../utilities/github-json-storage-utils.js");
 const Event = require("../../../services/discord-events/event.js");
+const { LLPointTier } = require("../../../services/ll-points/ll-point-enums.js");
 
 const command = new SlashCommand({
 	name: "host-event",
@@ -25,7 +25,7 @@ command.execute = async function(interaction) {
 
 	const viewer = await global.LLPointManager.getViewerOrCreateViewer(interaction);
 	const tier = viewer.getTier();
-	if (tier === LLPointTiers.LLViewer) {
+	if (tier === LLPointTier.VIEWER) {
 		return await interaction.editReply("Sorry, you may only host your own events if you're an LL Fan! or higher");
 	}
 

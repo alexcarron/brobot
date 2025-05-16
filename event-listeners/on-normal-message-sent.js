@@ -1,9 +1,9 @@
 const { Message, MessageType, PermissionsBitField } = require("discord.js");
 const TextToSpeechHandler = require("../services/text-to-speech/text-to-speech-handler");
 const { joinVoiceChannel } = require("@discordjs/voice");
-const { GameStates } = require("../modules/enums");
 const ids = require("../bot-config/discord-ids");
 const { fetchGuildMember } = require("../utilities/discord-fetch-utils");
+const { GameState } = require("../services/rapid-discord-mafia/game-state-manager");
 
 const onTTSMessageSent = async (message) => {
 	console.log("onTTSMessageSent", message.content);
@@ -100,7 +100,7 @@ const onNormalMessageSent = async (message) => {
 		// TODO: Encapsulate logic in rapid discord mafia service
 		global.game_manager &&
 		global.game_manager.player_manager &&
-		global.game_manager.state === GameStates.InProgress &&
+		global.game_manager.state === GameState.IN_PROGRESS &&
 		message.channel.parentId === ids.rapid_discord_mafia.category.player_action &&
 		message.type === MessageType.Default
 	) {

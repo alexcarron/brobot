@@ -1,9 +1,9 @@
 const { PermissionFlagsBits } = require('discord.js');
-const Parameter = require('../../services/command-creation/Paramater.js');
+const Parameter = require('../../services/command-creation/parameter.js');
 const SlashCommand = require('../../services/command-creation/slash-command.js');
-const { LLPointRewards, LLPointAccomplishments } = require('../../modules/enums.js')
-const { LLPointManager } = require('../../services/ll-points/ll-point-manager.js');
+const { LLPointAccomplishment, LLPointReward } = require('../../services/ll-points/ll-point-enums.js');
 const { deferInteraction } = require('../../utilities/discord-action-utils.js');
+const { LLPointManager } = require('../../services/ll-points/ll-point-manager.js');
 
 const Parameters = {
 	ViewerName: new Parameter({
@@ -52,9 +52,9 @@ command.execute = async function(interaction) {
 		return await interaction.editReply(`The viewer, **${viewer_name}**, doesn't exist.`);
 	}
 
-	if (!Object.values(LLPointAccomplishments).includes(accomplishment)) {
+	if (!Object.values(LLPointAccomplishment).includes(accomplishment)) {
 		return await interaction.editReply(
-			`The accomplishment, **${accomplishment}**, doesn't exist.\n` + Object.values(LLPointAccomplishments).join(", ")
+			`The accomplishment, **${accomplishment}**, doesn't exist.\n` + Object.values(LLPointAccomplishment).join(", ")
 		);
 	}
 
@@ -68,10 +68,10 @@ command.execute = async function(interaction) {
 		return await interaction.editReply(result_msg);
 
 	let current_ll_points = global.LLPointManager.viewers.get(viewer_name).ll_points;
-	let accomplishment_key = Object.keys(LLPointAccomplishments).find(key => LLPointAccomplishments[key] === accomplishment);
+	let accomplishment_key = Object.keys(LLPointAccomplishment).find(key => LLPointAccomplishment[key] === accomplishment);
 
 	await interaction.editReply(
-		`Giving **${viewer_name}** \`${LLPointRewards[accomplishment_key]}\` LL Point(s) for "*${accomplishment}*"\n` +
+		`Giving **${viewer_name}** \`${LLPointReward[accomplishment_key]}\` LL Point(s) for "*${accomplishment}*"\n` +
 		`They now have \`${current_ll_points}\` LL Point(s).`
 	);
 	await global.LLPointManager.updateDatabase();
@@ -83,7 +83,7 @@ command.autocomplete = async function(interaction) {
 	const entered_value = focused_param.value;
 
 	if (focused_param.name === Parameters.Accomplishment.name) {
-		autocomplete_values = Object.values(LLPointAccomplishments)
+		autocomplete_values = Object.values(LLPointAccomplishment)
 			.map((accomplishment_str) => {return {name: accomplishment_str, value: accomplishment_str}})
 			.filter(autocomplete_entry => autocomplete_entry.value.toLowerCase().startsWith(entered_value.toLowerCase()));
 

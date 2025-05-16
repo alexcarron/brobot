@@ -1,10 +1,8 @@
 const SlashCommand = require('../../services/command-creation/slash-command.js');
 const ids = require(`../../bot-config/discord-ids.js`);
-const
-	{ PermissionFlagsBits } = require('discord.js'),
-	GameManager = require("../../services/rapid-discord-mafia/game-manager.js"),
-	{ editReplyToInteraction } = require("../../utilities/discord-actions-utils.js.js");
-const { deferInteraction } = require('../../utilities/discord-action-utils.js');
+const { PermissionFlagsBits } = require('discord.js');
+const { editReplyToInteraction, deferInteraction } = require('../../utilities/discord-action-utils.js');
+const { GameManager } = require('../../services/rapid-discord-mafia/game-manager.js');
 
 const command = new SlashCommand({
 	name: "reset-game",

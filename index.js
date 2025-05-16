@@ -39,6 +39,7 @@ const { setupEventListeners } = require('./event-listeners/event-listener-setup.
 const { loadObjectFromJsonInGitHub } = require('./utilities/github-json-storage-utils.js');
 const { DISCORD_TOKEN } = require('./bot-config/token.js');
 const { botStatus } = require('./bot-config/bot-status.js');
+const { LLPointManager } = require('./services/ll-points/ll-point-manager.js');
 
 // ! Store a list of command cooldowns
 client.cooldowns = new Collection();
@@ -173,9 +174,6 @@ global.client.login(DISCORD_TOKEN);
 // when the client is ready, run this code
 // this event will only trigger one time after Brobot has successfully fully connected to the Discord API
 global.client.once(Events.ClientReady, async () => {
-	const
-		LLPointManager = require("./services/ll-points/ll-point-manager.js");
-
 	client.user.setPresence({
 		activities: [{
 				name: 'How to Cook Spaghetti',

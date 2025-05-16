@@ -1,8 +1,10 @@
 const { rdm_server_id } = require("../../bot-config/discord-ids.js"),
-	ids = require("../../bot-config/discord-ids.js"),
-	{ RDMRoles, GameStates } = require("../../modules/enums.js");
+	ids = require("../../bot-config/discord-ids.js");
+
 const SlashCommand = require('../../services/command-creation/slash-command.js');
-const Parameter = require('../../services/command-creation/Paramater.js');
+const Parameter = require('../../services/command-creation/parameter.js');
+const { GameState } = require("../../services/rapid-discord-mafia/game-state-manager.js");
+const { RDMDiscordRole } = require("../../services/rapid-discord-mafia/discord-service.js");
 
 
 const command = new SlashCommand({
@@ -10,7 +12,7 @@ const command = new SlashCommand({
 	description: "Change your name while still in sign-ups",
 });
 command.required_servers = [ids.servers.rapid_discord_mafia];
-command.required_roles = [RDMRoles.Living];
+command.required_roles = [RDMDiscordRole.LIVING];
 command.parameters = [
 	new Parameter({
 		type: "string",
@@ -26,7 +28,7 @@ command.execute = async function execute(interaction) {
 		new_player_name = interaction.options.getString(command.parameters[0].name);
 
 
-	if ( global.game_manager.state !== GameStates.SignUp ) {
+	if ( global.game_manager.state !== GameState.SIGN_UP ) {
 		return await interaction.editReply(`Sorry, you can only change your name during sign-ups.`);
 	}
 

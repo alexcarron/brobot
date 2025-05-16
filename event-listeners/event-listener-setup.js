@@ -1,4 +1,4 @@
-const { ChannelType, Client, Events, Message, InteractionType } = require("discord.js");
+const { ChannelType, Events, InteractionType } = require("discord.js");
 const { onNormalMessageSent } = require("./on-normal-message-sent");
 
 const { onDmRecieved } = require("./on-dm-recieved");

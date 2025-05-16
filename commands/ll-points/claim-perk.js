@@ -4,7 +4,7 @@ const { deferInteraction } = require('../../utilities/discord-action-utils.js');
 const ids = require(`../../bot-config/discord-ids.js`);
 const { fetchUser } = require('../../utilities/discord-fetch-utils.js');
 const { confirmInteractionWithButtons } = require('../../utilities/discord-action-utils.js');
-const { LLPointPerk } = require('../../services/ll-points/ll-point-manager.js');
+const { LLPointPerk } = require('../../services/ll-points/ll-point-enums.js');
 
 const Parameters = {
 	Perk: new Parameter({

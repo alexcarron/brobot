@@ -3,7 +3,7 @@ const SlashCommand = require('../../services/command-creation/slash-command.js')
 const ids = require(`../../bot-config/discord-ids.js`);
 const { fetchUser } = require('../../utilities/discord-fetch-utils.js');
 const { confirmInteractionWithButtons, deferInteraction } = require('../../utilities/discord-action-utils.js');
-const { LLPointAccomplishment } = require('../../services/ll-points/ll-point-manager.js');
+const { LLPointAccomplishment } = require('../../services/ll-points/ll-point-enums.js');
 
 const Parameters = {
 	Accomplishment: new Parameter({

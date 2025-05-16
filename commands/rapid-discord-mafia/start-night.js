@@ -1,10 +1,7 @@
 const { PermissionFlagsBits } = require("discord.js");
 const SlashCommand = require("../../services/command-creation/slash-command");
-const
-	{
-		deferInteraction,
-	} = require("../../modules/functions"),
-	ids = require("../../bot-config/discord-ids.js");
+const ids = require("../../bot-config/discord-ids.js");
+const { deferInteraction } = require("../../utilities/discord-action-utils.js");
 
 const command = new SlashCommand({
 	name: "start-night",

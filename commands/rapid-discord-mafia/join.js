@@ -1,9 +1,9 @@
 const Parameter = require("../../services/command-creation/parameter.js");
 const SlashCommand = require("../../services/command-creation/slash-command.js");
-const { GameStates } = require("../../modules/enums");
 const { deferInteraction } = require("../../utilities/discord-action-utils");
 const
 	ids = require(`../../bot-config/discord-ids.js`);
+const { GameState } = require("../../services/rapid-discord-mafia/game-state-manager.js");
 
 
 
@@ -43,10 +43,10 @@ command.execute = async function execute(interaction, args, isTest) {
 		else
 			isFakeUser = false;
 
-		// global.game_manager.state = GameStates.ReadyToBegin;
+		// global.game_manager.state = GameState.ReadyToBegin;
 	}
 
-	if (global.game_manager.state !== GameStates.SignUp) {
+	if (global.game_manager.state !== GameState.SIGN_UP) {
 		return await interaction.editReply("We're not in sign-ups so you can't join just yet.");
 	}
 

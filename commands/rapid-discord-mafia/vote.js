@@ -1,13 +1,8 @@
 const Parameter = require("../../services/command-creation/parameter.js");
 const SlashCommand = require("../../services/command-creation/slash-command.js");
-
-const
-	{
-
-		deferInteraction
-	} = require("../../modules/functions"),
-	ids = require("../../bot-config/discord-ids.js");
+const ids = require("../../bot-config/discord-ids.js");
 const { Vote, TrialVote } = require("../../services/rapid-discord-mafia/vote-manager.js");
+const { deferInteraction } = require("../../utilities/discord-action-utils.js");
 
 const Subparameters = {
 	PlayerVotingFor: new Parameter({

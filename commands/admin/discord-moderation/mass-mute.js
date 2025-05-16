@@ -1,5 +1,5 @@
-const Parameter = require('../../../services/command-creation/Paramater');
-const SlashCommand = require('../../../services/command-creation/SlashCommand');
+const Parameter = require('../../../services/command-creation/parameter');
+const SlashCommand = require('../../../services/command-creation/slash-command');
 
 const command = new SlashCommand({
 	name: 'mass-mute',

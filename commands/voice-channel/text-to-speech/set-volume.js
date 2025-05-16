@@ -1,5 +1,5 @@
-const Parameter = require('../../../services/command-creation/Paramater');
-const SlashCommand = require('../../../services/command-creation/SlashCommand');
+const Parameter = require('../../../services/command-creation/parameter');
+const SlashCommand = require('../../../services/command-creation/slash-command');
 const { deferInteraction } = require('../../../utilities/discord-action-utils');
 
 const command = new SlashCommand({

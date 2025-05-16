@@ -1,15 +1,13 @@
-const Parameter = require("../../services/command-creation/Paramater");
+const Parameter = require("../../services/command-creation/parameter");
 const SlashCommand = require("../../services/command-creation/slash-command");
+const { GameState } = require("../../services/rapid-discord-mafia/game-state-manager.js");
 const { RoleIdentifier } = require("../../services/rapid-discord-mafia/role-identifier");
 
 /* eslint-disable no-unused-vars */
 const
 	{ PermissionFlagsBits } = require("discord.js"),
-	{ GameStates } = require("../../modules/enums"),
-	{
-		deferInteraction
-	} = require("../../modules/functions"),
 	ids = require("../../bot-config/discord-ids.js");
+const { deferInteraction } = require("../../utilities/discord-action-utils.js");
 
 
 const command = new SlashCommand({
@@ -43,7 +41,7 @@ command.execute = async function execute(interaction, role_identifiers_str) {
 	}
 
 	if (
-		global.game_manager.state !== GameStates.ReadyToBegin &&
+		global.game_manager.state !== GameState.READY_TO_START &&
 		interaction.user.id !== ids.users.LL
 	) {
 		return await interaction.editReply(`The game isn't ready to begin. It's in the phase ${global.game_manager.state}`);

@@ -1,10 +1,10 @@
 const SlashCommand = require("../../services/command-creation/slash-command");
-const { GameStates, Announcements, PhaseWaitTimes } = require("../../modules/enums");
 const { GameManager } = require("../../services/rapid-discord-mafia/game-manager");
 const
 	{ PermissionFlagsBits } = require('discord.js'),
 	ids = require(`../../bot-config/discord-ids.js`);
 const { deferInteraction } = require("../../utilities/discord-action-utils.js");
+const { GameState } = require("../../services/rapid-discord-mafia/game-state-manager.js");
 
 
 
@@ -20,7 +20,7 @@ command.execute = async function execute(interaction) {
 	console.timeEnd("deferInteraction");
 
 	console.time("editReply");
-	if ( [GameStates.SignUp, GameStates.InProgress].includes(global.game_manager.state) ) {
+	if ( [GameState.SIGN_UP, GameState.IN_PROGRESS].includes(global.game_manager.state) ) {
 		return interaction.editReply("There's already a game in sign-ups or in progress.");
 	}
 	else {

@@ -1,8 +1,8 @@
 const fs = require('node:fs/promises');
-const SlashCommand = require('../../../services/command-creation/SlashCommand');
 const { PermissionFlagsBits } = require('discord.js');
 const { deferInteraction } = require('../../../utilities/discord-action-utils');
 const { botStatus } = require('../../../bot-config/bot-status');
+const SlashCommand = require('../../../services/command-creation/slash-command');
 
 const command = new SlashCommand({
 	name: "toggle-status",

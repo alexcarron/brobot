@@ -353,4 +353,4 @@ const Feedback = Object.freeze({
 		`_ _\n<@${kidnapper_player.id}> **${kidnapped_player.name}** screams at you:\n>>> ${message}`
 });
 
-module.exports = { Announcement, Feedback };
+module.exports = { COMMAND_EXPLANATIONS, Announcement, Feedback };
