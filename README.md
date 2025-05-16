@@ -66,13 +66,41 @@ Brobot is a feature-rich Discord.js bot built to enhance the experience of the L
 * Delete all channels in a category
 * Mute all members in a voice call
 
-## License
+## Setup Instructions
 
-This code is provided for **educational and reference purposes only**.
+### 1. Install Prerequisites
 
-You **are not permitted** to use the code to host or run your own Discord bot. You may **download** and **view** the code for learning purposes but **cannot** redistribute, modify, or use it to deploy your own bot without permission.
+* **[Download and install Git](https://git-scm.com/downloads)**
 
-If you have any questions or would like permission for a specific use, please contact me.
+* **[Download and install Node.js](https://nodejs.org/en/download/)**
+
+### 2. Clone and Configure the Repository
+
+1. **Clone the repository**: `git clone https://github.com/alexcarron/brobot.git`
+2. **Change into the repository directory**: `cd brobot`
+3. **Create a new file to store your tokens**: `touch bot-config/token.js`
+
+### 3. Configure Your Bot Tokens
+
+In `bot-config/token.js`, add the following JSON object to the `module.exports`:
+
+```javascript
+module.exports = {
+  "discord_token": "YOUR_DISCORD_TOKEN_HERE",
+  "github_token": "YOUR_GITHUB_TOKEN_HERE"
+};
+```
+
+**Token Requirements:**
+
+* `discord_token`: Replace with the authentication token for your Discord bot.
+* `github_token`: Replace with a GitHub personal access token that has read/write access to a created `brobot-database` repository.
+
+### 4. Install Dependencies and Start the Bot
+
+* Install dependencies: `npm install`
+* Start the bot: `npm run start`
+
 
 ## Project Directory Structure
 
@@ -163,6 +191,9 @@ Contains helper functions and reusable utilities for general functionality acros
 * **`realtime-utils.js`** Functions for handling real-time timing operations (e.g. waiting, scheduling)
 * **`text-formatting-utils.js`** Functions for manipulating and formatting text
 
+
+
+
 ## Terminology
 
 Here are some key terms used in this project:
@@ -182,3 +213,31 @@ A powerful JavaScript library that simplifies interaction with the Discord API, 
 ### Client
 
 The `Client` is an object that represents the bot itself and manages the connection between the bot and Discord's servers, handling events and interactions.
+
+### Intents
+
+Discord Intents are flags that indicate which events a bot is interested in receiving from Discord. They help optimize performance by allowing the bot to only receive the events it needs. For example, if your bot only needs to respond to messages, you can enable the `GUILD_MESSAGES` intent while leaving others disabled.
+
+### Slash Commands
+
+Slash commands are a way to interact with Discord bots directly through chat. They are easy-to-use, intuitive commands that start with a forward slash (/) followed by the command name (e.g., /ping). After typing the slash, Discord will automatically suggest available commands from the bot, helping users navigate bot features without needing to remember specific command syntax.
+
+### Rapid Discord Mafia
+
+A fast-paced social deduction game played on Discord, where each player is assigned a role belonging to a faction (such as Town, Mafia, or Neutral). Each player's objective is to fulfill the goal specified on their role card, which usually involves eliminating all other factions.
+
+### LL Points
+
+LL Points are virtual points earned by participating in the LL Game Show! community. You can accumulate these points by achieving specific milestones or participating in events. LL Points can be redeemed for various perks and grant special access to exclusive features within the community.
+
+### GitHub JSON Storage
+
+Persistent storage for the bot is managed through a private GitHub repository called `brobot-databases`. This odd storage solution is used for both convenience and avoiding costs, as it allows the bot to maintain data between restarts without incurring additional expenses. The data is stored in JSON files, which are updated and accessed as needed.
+
+## License
+
+This code is provided for **educational and reference purposes only**.
+
+You **are not permitted** to use the code to host or run your own Discord bot. You may **download** and **view** the code for learning purposes but **cannot** redistribute, modify, or use it to deploy your own bot without permission.
+
+If you have any questions or would like permission for a specific use, please contact me first.
