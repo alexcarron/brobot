@@ -29,4 +29,18 @@ const logWithColor = (message, color) => {
 	console.log(`${startColor}${message}${resetColor}`);
 }
 
-module.exports = { logWithColor, LogColor };
+const logError = (message, error = null) => {
+	const timestamp = new Date().toISOString();
+	const errorPrefix = `[ERROR] ${timestamp}:`;
+
+	logWithColor(`${errorPrefix} ${message}`, LogColor.RED);
+
+	if (error && error instanceof Error) {
+		logWithColor(`Stack Trace:`, LogColor.RED);
+		console.error(error.stack);
+	}
+
+	console.trace('Error location:');
+}
+
+module.exports = { logWithColor, LogColor, logError };
