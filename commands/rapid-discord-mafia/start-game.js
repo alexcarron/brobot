@@ -53,7 +53,6 @@ command.execute = async function execute(interaction, role_identifiers_str) {
 		}
 	});
 
-	console.log({role_identifier_strings});
 	await global.game_manager.start(RoleIdentifier.convertIdentifierStrings(role_identifier_strings));
 }
 

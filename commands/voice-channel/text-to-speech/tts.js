@@ -131,11 +131,7 @@ command.execute = async function(interaction) {
 	else if (subcommand_name === Parameters.ReadMyMessages.name) {
 		name = interaction.options.getString(Subparameters.Name.name);
 
-		console.log(global.tts._toggled_users);
-
 		global.tts.removeToggledUser(interaction.user.id);
-
-		console.log({name});
 
 		global.tts.addToggledUser(
 			interaction.user.id,

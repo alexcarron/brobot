@@ -6,6 +6,7 @@ const { onSlashCommandExecuted } = require("./on-slash-command-executed");
 const { onSlashCommandAutocomplete } = require("./on-slash-command-autocomplete");
 const { onButtonPressed } = require("./on-button-pressed");
 const { onUserJoinsServer } = require("./on-user-joins-server");
+const { logInfo } = require("../utilities/logging-utils");
 
 const isDM = (message) =>
 	message.channel.type === ChannelType.DM ||
@@ -63,7 +64,7 @@ const setupGuildMemberAddListener =
 	};
 
 const setupEventListeners = (client) => {
-	console.log("setupEventListeners");
+	logInfo("Setting up event listeners");
 
 	setupMessageSentListener(client);
 	setupInteractionCreateListener(client);

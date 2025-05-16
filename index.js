@@ -12,7 +12,7 @@ const { loadObjectFromJsonInGitHub } = require('./utilities/github-json-storage-
 const { DISCORD_TOKEN } = require('./bot-config/token.js');
 const { botStatus } = require('./bot-config/bot-status.js');
 const { LLPointManager } = require('./services/ll-points/ll-point-manager.js');
-const { logInfo } = require('./utilities/logging-utils.js');
+const { logInfo, logWarning, logSuccess } = require('./utilities/logging-utils.js');
 
 logInfo(`Using discord.js version: ${require('discord.js').version}`);
 
@@ -79,7 +79,7 @@ function getAllJSFiles(directoryPath) {
 		let command = await require(commandFilePath);
 
 		if (command instanceof SlashCommand) {
-			console.log('Building slash command /' + command.name);
+			logInfo('Building slash command /' + command.name);
 			command = await command.getCommand();
 		}
 
@@ -101,7 +101,7 @@ function getAllJSFiles(directoryPath) {
 				global.client.commands.set(command.name, command);
 		}
 		else {
-			console.log(`[WARNING] The command ${commandFilePath} is missing a required "execute" property.`);
+			logWarning(`The command ${commandFilePath} is missing a required "execute" property.`);
 		}
 	}
 
@@ -110,55 +110,55 @@ function getAllJSFiles(directoryPath) {
 	const rest = new REST().setToken(DISCORD_TOKEN);
 
 	try {
-		console.log(`Started refreshing application (/) commands.`);
-		console.log(public_slash_commands.map(command => command.name));
+		logInfo(`Started refreshing application (/) commands.`);
+		logInfo(public_slash_commands.map(command => command.name));
 
 		Object.values(private_slash_commands).forEach(commands => {
-			console.log(commands.map(cmd => cmd.name))
+			logInfo(commands.map(cmd => cmd.name))
 		})
 
 		// The put method is used to fully refresh all commands in the guild with the current set
 		for (const required_server_id in private_slash_commands) {
 			const slash_commands = private_slash_commands[required_server_id];
 
-			console.log("Reloading " + slash_commands.length + " private slash commands...");
+			logInfo("Reloading " + slash_commands.length + " private slash commands...");
 
 			await rest.put(
 				Routes.applicationGuildCommands(ids.client, required_server_id),
 				{ body: slash_commands },
 			);
 
-			console.log("Reloaded " + slash_commands.length + " private slash commands...");
+			logInfo("Reloaded " + slash_commands.length + " private slash commands...");
 		}
-		console.log("Reloading " + public_slash_commands.length + " public slash commands...");
+		logInfo("Reloading " + public_slash_commands.length + " public slash commands...");
 		await rest.put(
 			Routes.applicationCommands(ids.client),
 			{ body: public_slash_commands },
 		);
-		console.log("Reloaded " + public_slash_commands.length + " public slash commands...");
+		logInfo("Reloaded " + public_slash_commands.length + " public slash commands...");
 
 
 
-		console.log(`Successfully reloaded application (/) commands.`);
+		logSuccess(`Successfully reloaded application (/) commands.`);
 
 		// ! Delete Guild Command
 		// rest.delete(Routes.applicationGuildCommand(ids.client, ids.servers.rapid_discord_mafia, "1146264673470136350"))
-		// .then(() => console.log('Successfully deleted guild command'))
+		// .then(() => logSuccess('Successfully deleted guild command'))
 		// .catch(console.error);
 
 		// ! Delete Every Guild Command
 		// rest.put(Routes.applicationGuildCommands(ids.client, ids.servers.ll_game_show_center), { body: [] })
-		// .then(() => console.log('Successfully deleted all guild commands.'))
+		// .then(() => logSuccess('Successfully deleted all guild commands.'))
 		// .catch(console.error);
 
 		// ! Delete Global Commands
 		// rest.delete(Routes.applicationCommand(ids.client, 'COMMAND ID'))
-		// .then(() => console.log('Successfully deleted application command'))
+		// .then(() => logSuccess('Successfully deleted application command'))
 		// .catch(console.error);
 
 		//! Delete Every Global Command
 		// rest.put(Routes.applicationCommands(ids.client), { body: [] })
-		// .then(() => console.log('Successfully deleted all application commands.'))
+		// .then(() => logSuccess('Successfully deleted all application commands.'))
 		// .catch(console.error);
 
 	}
@@ -183,7 +183,6 @@ global.client.once(Events.ClientReady, async () => {
 	});
 
 	botStatus.isOn = true;
-	console.log("I'm turned on");
 
 	global.music_queues = new Map();
 	global.client.player = new Player(global.client, {
@@ -196,12 +195,12 @@ global.client.once(Events.ClientReady, async () => {
 	await RapidDiscordMafia.setUpRapidDiscordMafia();
 
 	global.LLPointManager = new LLPointManager();
-	console.log("Global module instantiated");
+	logSuccess("Global module instantiated");
 
 	global.LLPointManager.setViewers(
 		await loadObjectFromJsonInGitHub("viewers")
 	);
-	console.log("Viewers Database Downloaded");
+	logSuccess("Viewers Database Downloaded");
 
 	const events_json = await loadObjectFromJsonInGitHub("events");
 	let events = events_json.events;
@@ -212,7 +211,7 @@ global.client.once(Events.ClientReady, async () => {
 		events[event_index] = event;
 	}
 	global.events = events;
-	console.log("Events Database Downloaded");
+	logSuccess("Events Database Downloaded");
 
 	const timers_json = await loadObjectFromJsonInGitHub("timers");
 	let timers = timers_json.timers;
@@ -225,17 +224,17 @@ global.client.once(Events.ClientReady, async () => {
 	for (const timer of global.timers) {
 		await timer.startCronJob();
 	}
-	console.log("Timers Database Downloaded");
+	logSuccess("Timers Database Downloaded");
 
 	global.questions = [];
 	global.channelsToMessages = await loadObjectFromJsonInGitHub("messages");
-	console.log("Messages Database Downloaded");
+	logSuccess("Messages Database Downloaded");
 	const dailyMessageHandler = new DailyMessageHandler(global.channelsToMessages);
 	dailyMessageHandler.startDailyMessages();
 
 	global.tts = new TextToSpeechHandler();
 
-	console.log('Ready!');
+	logSuccess('Brobot is Ready!');
 });
 
 setupEventListeners(global.client);

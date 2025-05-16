@@ -4,6 +4,7 @@ const cron = require("cron"); // Used to have scheduled functions execute
 const { getRandomElement } = require("../../utilities/data-structure-utils.js");
 const { fetchGuild, fetchChannel } = require("../../utilities/discord-fetch-utils.js");
 const { saveObjectToJsonInGitHub } = require("../../utilities/github-json-storage-utils.js");
+const { logWarning, logInfo } = require("../../utilities/logging-utils.js");
 
 class DailyMessageHandler {
 	/**
@@ -107,14 +108,12 @@ class DailyMessageHandler {
 		const channelName = this.getRandomChannel();
 
 		if (channelName === null || channelName === undefined) {
-			console.log("No channels with messages left to send");
+			logWarning("No channels with messages left to send");
 			return;
 		}
 
 		const messageContents = this.getRandomMessage(channelName);
 		const channel = await this.convertChannelNameToChannel(channelName);
-
-		console.log({messageContents});
 
 		this.removeMessage(channelName, messageContents);
 
@@ -125,7 +124,7 @@ class DailyMessageHandler {
 		const cronJob = new cron.CronJob(
 			`00 ${DailyMessageHandler.MINUTE} ${DailyMessageHandler.HOUR} * * *`,
 			async () => {
-				console.log("Daily Message Sending...");
+				logInfo("Sending Daily Message...");
 				await this.sendDailyMessage();
 				await this.saveMessagesDatabase();
 			},
@@ -134,7 +133,7 @@ class DailyMessageHandler {
 			"America/Chicago"
 		);
 
-		console.log("Daily Message Starting...");
+		logInfo('Starting daily message sending job...');
 		cronJob.start();
 	}
 }

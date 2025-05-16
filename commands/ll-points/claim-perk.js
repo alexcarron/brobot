@@ -60,8 +60,6 @@ command.execute = async function(interaction) {
 		);
 	}
 
-	console.log({viewer, perk});
-
 	const LL_user = await fetchUser(ids.users.LL);
 	await LL_user.send(`${interaction.user.username}: <@${interaction.user.id}> wants to redeem their perk, ${perk}!`);
 

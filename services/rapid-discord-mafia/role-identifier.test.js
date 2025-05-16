@@ -240,7 +240,7 @@ test.concurrent(
 		".getFaction() on \"mafia random\" returns Mafia",
 		() => {
 			const input_role_identifier = new RoleIdentifier("mafia random");
-			console.log({input_role_identifier})
+			
 			const expected_output = Faction.MAFIA;
 
 			const actual_output = input_role_identifier.getFaction()

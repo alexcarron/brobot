@@ -58,11 +58,7 @@ command.execute = async function(interaction) {
 		);
 	}
 
-	console.log({viewer, viewer_name, accomplishment});
-
 	const result_msg = await viewer.giveReward(accomplishment, game_name);
-
-	console.log({viewer});
 
 	if (result_msg !== "Success")
 		return await interaction.editReply(result_msg);

@@ -1,12 +1,12 @@
-const { logWithColor, LogColor } = require("../../utilities/logging-utils");
+const { logWithColor, LogColor, logDebug, logInfo } = require("../../utilities/logging-utils");
 
 class Logger {
 	logDebug(message) {
-		console.log(message);
+		logDebug(message);
 	}
 
 	log(message) {
-		console.log(message);
+		logInfo(message);
 	}
 
 	logSubheading(message) {

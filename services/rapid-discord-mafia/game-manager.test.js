@@ -41,8 +41,6 @@ describe('GameManager', () => {
 				const expected_role_list = ["Doctor", "Mafioso"]
 				const actual_role_list = rdm_game.role_list
 
-				console.log({expected_role_list, actual_role_list})
-
 				expect(
 					arraysHaveSameElements(expected_role_list, actual_role_list)
 				).toStrictEqual(true);
@@ -64,11 +62,6 @@ describe('GameManager', () => {
 
 				const actual_role_list = rdm_game.role_list
 
-				console.log({actual_role_list})
-				console.log(rdm_game.role_identifiers[0].priority)
-				console.log(rdm_game.role_identifiers[1].priority)
-				console.log(rdm_game.role_identifiers[2].priority)
-
 				expect(actual_role_list.length).toStrictEqual(3);
 			}
 		);
@@ -87,11 +80,6 @@ describe('GameManager', () => {
 				await rdm_game.createRoleList();
 
 				const actual_role_list = rdm_game.role_list
-
-				console.log({actual_role_list})
-				console.log(rdm_game.role_identifiers[0].priority)
-				console.log(rdm_game.role_identifiers[1].priority)
-				console.log(rdm_game.role_identifiers[2].priority)
 
 				expect(actual_role_list.length).toStrictEqual(3);
 			}
@@ -340,8 +328,6 @@ describe('GameManager', () => {
 
 				const actual_output = rdm_game.getPossibleRolesFromIdentifier(input_identifier, {});
 
-				console.log(actual_output.map(r=>r.name))
-
 				expect(
 					actual_output.every(role =>
 						!(role.faction === Faction.TOWN &&
@@ -421,8 +407,6 @@ describe('GameManager', () => {
 
 				const actual_output = rdm_game.getPossibleRolesFromIdentifier(input_identifier, input_num_roles_in_faction);
 
-				console.log({actual_output})
-
 				expect(actual_output.every(role => role.faction !== Faction.TOWN)).toStrictEqual(true);
 			}
 		)
@@ -450,8 +434,6 @@ describe('GameManager', () => {
 				rdm_game.role_list = existing_role_list;
 
 				const actual_output = rdm_game.getPossibleRolesFromIdentifier(input_identifier, input_num_roles_in_faction);
-
-				console.log({actual_output})
 
 				expect(
 					actual_output.every(role =>
@@ -492,8 +474,6 @@ describe('GameManager', () => {
 
 				const actual_output = rdm_game.getPossibleRolesFromIdentifier(input_identifier, input_num_roles_in_faction);
 
-				console.log({actual_output})
-
 				expect(
 					actual_output.every(role =>
 						role.name !== RoleName.MAFIOSO
@@ -530,8 +510,6 @@ describe('GameManager', () => {
 
 				const actual_output = rdm_game.getPossibleRolesFromIdentifier(input_identifier, input_num_roles_in_faction);
 
-				console.log({actual_output})
-
 				expect(
 					actual_output.every(role =>
 						role.name !== RoleName.MAFIOSO
@@ -562,8 +540,6 @@ describe('GameManager', () => {
 				rdm_game.role_list = existing_role_list;
 
 				const actual_output = rdm_game.getPossibleRolesFromIdentifier(input_identifier, input_num_roles_in_faction);
-
-				// console.log({actual_output})
 
 				expect(
 					actual_output.every(role =>
@@ -598,8 +574,6 @@ describe('GameManager', () => {
 				rdm_game.role_list = existing_role_list;
 
 				const actual_output = rdm_game.getPossibleRolesFromIdentifier(input_identifier, input_num_roles_in_faction);
-
-				// console.log({actual_output})
 
 				expect(
 					actual_output.every(role =>
@@ -636,8 +610,6 @@ describe('GameManager', () => {
 				rdm_game.role_list = existing_role_list;
 
 				const actual_output = rdm_game.getPossibleRolesFromIdentifier(input_identifier, input_num_roles_in_faction);
-
-				// console.log({actual_output});
 
 				expect(
 					actual_output.every(role =>
@@ -773,7 +745,6 @@ describe('GameManager', () => {
 
 			expect(townie_death).not.toBe(undefined);
 
-			console.log({townie_death});
 			const doesMafiosoKillExist = townie_death.kills.some(
 				kill =>
 					kill.killer_name === mafioso_player.name &&
@@ -791,7 +762,6 @@ describe('GameManager', () => {
 
 			const death_messages = mock_game.getDeathMessages(townie_death);
 
-			console.log({death_messages});
 			const doesMessagesIncludeMafiaKill = death_messages.some(
 				message =>
 					message.includes(Feedback.ANNOUNCE_ANOTHER_MURDER_BY_FACTION(Faction.MAFIA)) ||

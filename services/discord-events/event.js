@@ -205,11 +205,6 @@ class Event {
 			`## Last Minute Joiners` + "\n" +
 			`>>> ${this._instructions}`;
 
-
-		for (const property of Object.values(this)) {
-			console.log(property)
-		}
-
 		if (this._host) {
 			const host_user = await fetchUser(this._host.user_id);
 			host_user.send(

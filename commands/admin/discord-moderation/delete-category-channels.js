@@ -3,6 +3,7 @@ const Parameter = require("../../../services/command-creation/parameter");
 const SlashCommand = require("../../../services/command-creation/slash-command");
 const { fetchChannelsInCategory } = require("../../../utilities/discord-fetch-utils");
 const { deferInteraction } = require("../../../utilities/discord-action-utils");
+const { logInfo } = require("../../../utilities/logging-utils");
 
 const Parameters = {
 	CategoryChannelId: new Parameter({
@@ -33,7 +34,7 @@ command.execute = async function(interaction) {
 		async (channel) => {
 			await channel.delete()
 				.then(() => {
-					console.log(`Deleted ${channel.name}`);
+					logInfo(`Deleted ${channel.name}`);
 				})
 				.catch(console.error);
 		}
@@ -54,7 +55,6 @@ command.autocomplete = async function(interaction) {
 			return {name: chnl_category.name, value: chnl_category.id}
 		})
 		.filter(autocomplete_entry => {
-			console.log({autocomplete_entry})
 			return autocomplete_entry.name.toLowerCase().startsWith(entered_value.toLowerCase())
 		});
 

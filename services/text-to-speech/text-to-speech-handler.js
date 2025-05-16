@@ -3,6 +3,7 @@ const { createAudioResource, createAudioPlayer, VoiceConnection } = require('@di
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffmpeg = require('fluent-ffmpeg');
 const { wrapTextByLineWidth, removeLinks, removeEmojis } = require('../../utilities/text-formatting-utils');
+const { logError, logSuccess } = require('../../utilities/logging-utils');
 ffmpeg.setFfmpegPath(ffmpegPath);
 
 class TextToSpeechHandler {
@@ -125,8 +126,6 @@ class TextToSpeechHandler {
 		// Filter out empty messages
 		if (message.replace(`${speaker_name} said`, '').trim() === '') return;
 
-		console.log(message);
-
 		message = message.toLowerCase();
 		const messages_to_speak = wrapTextByLineWidth(message, 200);
 
@@ -180,7 +179,6 @@ class TextToSpeechHandler {
 				});
 		});
 		this._messages.shift();
-		console.log(this._messages);
 
 		if (this._messages.length > 0)
 			this.playAudio(voice_connection, speaker_name);
@@ -220,11 +218,11 @@ class TextToSpeechHandler {
 
 			ffmpeg(audioUrl)
 				.on('error', function(err) {
-					console.log('An error occurred: ' + err.message);
+					logError('Error converting audio', err);
 					reject(err);
 				})
 				.on('end', function() {
-					console.log('Finished');
+					logSuccess('Audio converted successfully');
 					resolve(outputFilePath);
 				})
 				.audioFilters(`atempo=${this._speedMultiplier},volume=${this._volumeMultiplier}`) // Use audioFilters instead of inputOptions for filters

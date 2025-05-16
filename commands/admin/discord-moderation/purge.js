@@ -26,9 +26,6 @@ command.execute = async function(interaction) {
 	const times_purging = Math.floor(num_messages_deleting / 100)
 	const last_num_messages_deleting = num_messages_deleting % 100;
 
-
-	console.log({num_messages_deleting, times_purging, last_num_messages_deleting});
-
 	for (let num_purge = 0; num_purge < times_purging; num_purge++) {
 		try {
 			await interaction.channel.bulkDelete(100);

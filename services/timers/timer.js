@@ -143,11 +143,8 @@ class Timer {
 	}
 
 	async deleteTimer() {
-		console.log(global.timers);
 		global.timers = global.timers.filter((timer) => timer !== this);
 		await saveObjectToJsonInGitHub({timers: global.timers}, "timers");
-		console.log(global.timers);
-
 	}
 
 	async endTimer() {
@@ -184,7 +181,6 @@ class Timer {
 	async startCronJob() {
 		const now = new Date();
 		const end_date = new Date(this._end_time);
-		console.log({end_date});
 		const timer = this;
 
 		const timer_ends_cron_job = new cron.CronJob(

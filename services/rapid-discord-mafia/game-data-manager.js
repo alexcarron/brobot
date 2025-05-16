@@ -37,8 +37,6 @@ class GameDataManager {
 	}
 
 	async setGameFromGameObj(game_obj) {
-		console.log({game_obj});
-
 		for (const property in game_obj) {
 			if (property === "next_deaths") {
 				this.game_manager.next_deaths = [];

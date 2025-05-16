@@ -1599,7 +1599,6 @@ describe('EffectManager', () => {
 			expect(doctor_player.isMuted).toBe(true);
 			expect(doctor_player.canVote).toBe(false);
 
-			console.log(doctor_player.affected_by);
 			expect(
 				doctor_player.affected_by.some(affect => {
 					return (

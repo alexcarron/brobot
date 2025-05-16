@@ -58,8 +58,6 @@ command.execute = async function(interaction) {
 		);
 	}
 
-	console.log({viewer, accomplishment});
-
 	if (
 		accomplishment === LLPointAccomplishment.DO_DELTARUNE_QUIZ &&
 		viewer.didDeltaruneQuiz

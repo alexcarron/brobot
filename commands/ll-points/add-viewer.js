@@ -29,14 +29,8 @@ command.execute = async function(interaction) {
 	const viewer_name = viewer_user.username
 	const viewer_id = viewer_user.id;
 
-	console.log({viewer_user, viewer_name, viewer_id});
-
 	let existing_new_viewer = await global.LLPointManager.getViewerByName(viewer_name);
 	let existing_new_viewer_by_id = await global.LLPointManager.getViewerById(viewer_id);
-
-
-	console.log({existing_new_viewer, existing_new_viewer_by_id});
-	console.log(!existing_new_viewer && !existing_new_viewer_by_id);
 
 	if (!existing_new_viewer && !existing_new_viewer_by_id) {
 		let new_viewer_obj = {

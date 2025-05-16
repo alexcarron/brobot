@@ -5,6 +5,7 @@ const SlashCommand = require("../../services/command-creation/slash-command.js")
 const { LLPointManager } = require("../../services/ll-points/ll-point-manager.js");
 const { deferInteraction } = require("../../utilities/discord-action-utils.js");
 const { LLPointTier } = require('../../services/ll-points/ll-point-enums.js');
+const { logInfo } = require('../../utilities/logging-utils.js');
 
 
 const Parameters = {
@@ -43,11 +44,9 @@ command.execute = async function(interaction) {
 			if (viewer)
 				return viewer;
 
-			console.log(`No viewer with name ${viewer_name} or id ${interaction.user.id}`);
+			logInfo(`No viewer with name ${viewer_name} or id ${interaction.user.id}`);
 			return undefined;
 		}
-
-	console.log({specified_viewer_name, noSpecifiedUser});
 
 	let viewer,
 		viewer_name,
@@ -65,7 +64,6 @@ command.execute = async function(interaction) {
 		avatar = interaction.user.avatarURL();
 	}
 
-	console.log({viewer_name});
 	viewer = await getViewer(viewer_name);
 
 	if (viewer) {

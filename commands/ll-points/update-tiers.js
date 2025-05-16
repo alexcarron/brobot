@@ -1,5 +1,6 @@
 const { PermissionFlagsBits } = require("discord.js");
 const SlashCommand = require("../../services/command-creation/slash-command");
+const { deferInteraction } = require("../../utilities/discord-action-utils");
 
 const command = new SlashCommand({
 	name: "update-tiers",
@@ -8,15 +9,7 @@ const command = new SlashCommand({
 command.required_permissions = [PermissionFlagsBits.Administrator];
 command.allowsDMs = true;
 command.execute = async function(interaction) {
-	if (interaction) {
-		try {
-			await interaction.deferReply({ephemeral: true});
-		}
-		catch {
-			console.log("Failed Defer: Reply Already Exists");
-			await interaction.editReply({ content: "Sending Command...", ephemeral: true});
-		}
-	}
+	deferInteraction(interaction);
 
 	await global.LLPointManager.giveTiersToViewers();
 

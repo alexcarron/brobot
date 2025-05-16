@@ -1,4 +1,4 @@
-const { logWithColor, LogColor, logError, logInfo, logWarning } = require("./logging-utils");
+const { logWithColor, LogColor, logError, logInfo, logWarning, logDebug, logSuccess } = require("./logging-utils");
 
 describe('logging-utils.js', () => {
 	const mockNowDate = new Date('2023-05-01T12:00:00Z'); // May 1, 2023, 12:00:00 PM UTC-07:00
@@ -34,22 +34,22 @@ describe('logging-utils.js', () => {
 			expect(console.log).toHaveBeenCalledWith(`\x1b[32m${message}\x1b[0m`);
 		});
 
-		it('throws an error with a null message', () => {
+		it('should not throw an error with a null message', () => {
 			const message = null;
 			const color = LogColor.GREEN; // Green
-			expect(() => logWithColor(message, color)).toThrowError(TypeError);
+			expect(() => logWithColor(message, color)).not.toThrowError(TypeError);
 		});
 
-		it('throws an error with an undefined message', () => {
+		it('should not throw an error with an undefined message', () => {
 			const message = undefined;
 			const color = LogColor.GREEN; // Green
-			expect(() => logWithColor(message, color)).toThrowError(TypeError);
+			expect(() => logWithColor(message, color)).not.toThrowError(TypeError);
 		});
 
-		it('throws an error with a non-string message', () => {
+		it('should not throw an error with a non-string message', () => {
 			const message = 123;
 			const color = LogColor.GREEN; // Green
-			expect(() => logWithColor(message, color)).toThrowError(TypeError);
+			expect(() => logWithColor(message, color)).not.toThrowError(TypeError);
 		});
 
 		it('logs a message with a valid color', () => {
@@ -116,19 +116,19 @@ describe('logging-utils.js', () => {
 			expect(console.log).not.toHaveBeenCalled();
 		});
 
-		it('throws an error with a null message', () => {
+		it('should not throw an error with a null message', () => {
 			const message = null;
-			expect(() => logWarning(message)).toThrowError('Message must be a string.');
+			expect(() => logWarning(message)).not.toThrowError('Message must be a string.');
 		});
 
-		it('throws an error with an undefined message', () => {
+		it('should not throw an error with an undefined message', () => {
 			const message = undefined;
-			expect(() => logWarning(message)).toThrowError('Message must be a string.');
+			expect(() => logWarning(message)).not.toThrowError('Message must be a string.');
 		});
 
-		it('throws an error with a non-string message', () => {
+		it('should not throw an error with a non-string message', () => {
 			const message = 123;
-			expect(() => logWarning(message)).toThrowError('Message must be a string.');
+			expect(() => logWarning(message)).not.toThrowError('Message must be a string.');
 		});
 	});
 
@@ -145,19 +145,99 @@ describe('logging-utils.js', () => {
 			expect(console.log).not.toHaveBeenCalled();
 		});
 
-		it('throws an error with a null message', () => {
+		it('should not throw an error with a null message', () => {
 			const message = null;
-			expect(() => logInfo(message)).toThrowError('Message must be a string.');
+			expect(() => logInfo(message)).not.toThrowError('Message must be a string.');
 		});
 
-		it('throws an error with an undefined message', () => {
+		it('should not throw an error with an undefined message', () => {
 			const message = undefined;
-			expect(() => logInfo(message)).toThrowError('Message must be a string.');
+			expect(() => logInfo(message)).not.toThrowError('Message must be a string.');
 		});
 
-		it('throws an error with a non-string message', () => {
+		it('should not throw an error with a non-string message', () => {
 			const message = 123;
-			expect(() => logInfo(message)).toThrowError('Message must be a string.');
+			expect(() => logInfo(message)).not.toThrowError('Message must be a string.');
+		});
+	});
+
+	describe('logSuccess()', () => {
+		it('should log a success message with a valid string', () => {
+			const message = 'Test success message';
+			logSuccess(message);
+			expect(console.log).toHaveBeenCalledTimes(1);
+			expect(console.log).toHaveBeenCalledWith(`\x1b[32m[SUCCESS] ${message}\x1b[0m`);
+		});
+
+		it('should not log a success message with an empty string', () => {
+			const message = '';
+			logSuccess(message);
+			expect(console.log).not.toHaveBeenCalled();
+		});
+
+		it('should not throw an error with a null message', () => {
+			const message = null;
+			expect(() => logSuccess(message)).not.toThrowError(TypeError);
+		});
+
+		it('should not throw an error with an undefined message', () => {
+			const message = undefined;
+			expect(() => logSuccess(message)).not.toThrowError(TypeError);
+		});
+
+		it('should not throw an error with a non-string message', () => {
+			const message = 123;
+			expect(() => logSuccess(message)).not.toThrowError(TypeError);
+		});
+	});
+
+	describe('logDebug()', () => {
+		it('should log a debug message with a valid string', () => {
+			const message = 'Hello World!';
+			logDebug(message);
+			expect(console.log).toHaveBeenCalledTimes(1);
+		});
+
+		it('should not log a debug message with an empty string', () => {
+			const message = '';
+			logDebug(message);
+			expect(console.log).not.toHaveBeenCalled();
+		});
+
+		it('should not throw an error with a null message', () => {
+			const message = null;
+			expect(() => logDebug(message)).not.toThrowError('Message must be a string.');
+		});
+
+		it('should not throw an error with an undefined message', () => {
+			const message = undefined;
+			expect(() => logDebug(message)).not.toThrowError('Message must be a string.');
+		});
+
+		it('should not throw an error with a non-string message', () => {
+			const message = 123;
+			expect(() => logDebug(message)).not.toThrowError('Message must be a string.');
+		});
+
+		it('should log a debug message with trace when includeTrace set to true', () => {
+			const message = 'Hello World!';
+			logDebug(message, true);
+			expect(console.log).toHaveBeenCalledTimes(1);
+			expect(console.trace).toHaveBeenCalledTimes(1);
+		});
+
+		it('should log a debug message without trace when includeTrace set to false', () => {
+			const message = 'Hello World!';
+			logDebug(message, false);
+			expect(console.log).toHaveBeenCalledTimes(1);
+			expect(console.trace).not.toHaveBeenCalled();
+		});
+
+		it('should log a debug message without trace when includeTrace not set', () => {
+			const message = 'Hello World!';
+			logDebug(message);
+			expect(console.log).toHaveBeenCalledTimes(1);
+			expect(console.trace).not.toHaveBeenCalled();
 		});
 	});
 });

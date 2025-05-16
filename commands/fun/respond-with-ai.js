@@ -89,11 +89,9 @@ command.execute = async function(interaction) {
 		let generated_message = '';
 		response.data.on('data', chunk => {
 				const chunk_data_string = chunk.toString();
-				// console.log({chunk_data_string})
 				const startIdx = chunk_data_string.indexOf('{'); // Find the start of JSON data
 				const endIdx = chunk_data_string.lastIndexOf('}'); // Find the end of JSON data
 				const json_data = chunk_data_string.slice(startIdx, endIdx + 1); // Extract JSON data
-				// console.log({json_data});
 
 				if (!json_data) return
 
@@ -101,11 +99,6 @@ command.execute = async function(interaction) {
 				const choices = chunk_data.choices;
 
 				if (!choices) return;
-
-				// console.log({
-				// 	chunk_data,
-				// 	choices
-				// });
 
 				const new_content = choices[0].delta.content;
 

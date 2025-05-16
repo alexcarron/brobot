@@ -57,7 +57,6 @@ describe('Player', () => {
 				mock_game.ability_manager.getAbility(AbilityName.KIDNAP),
 				{ [AbilityArgName.PLAYER_KIDNAPPING]: doctor_name },
 			);
-			console.log({feedback})
 
 			await mock_game.startDay(mock_game.days_passed);
 

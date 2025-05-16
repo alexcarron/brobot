@@ -89,10 +89,7 @@ describe('DailyMessageHandler', () => {
     expect(mockChannel.send).toHaveBeenCalled();
 
 		const channelsToMessagesAfter = { ...dailyMessageHandler.channelsToMessages };
-		console.log({
-			channelsToMessagesBefore,
-			channelsToMessagesAfter
-		});
+		
     expect(channelsToMessagesBefore).not.toEqual(channelsToMessagesAfter);
 	});
 });

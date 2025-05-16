@@ -2,6 +2,7 @@ const Discord = require('discord.js');
 const { deferInteraction } = require('../../utilities/discord-action-utils');
 const SlashCommand = require('../../services/command-creation/slash-command');
 const { ButtonBuilder, ButtonStyle, ActionRowBuilder  } = require('discord.js');
+const { logInfo } = require('../../utilities/logging-utils');
 
 const command = new SlashCommand({
 	name: "leaderboard",
@@ -32,7 +33,7 @@ command.execute = async function(interaction) {
 	};
 
 	const createLeaderboardEmbed = async function(current_page) {
-		console.log(`Create Embed #${current_page}`);
+		logInfo(`Create Embed #${current_page}`);
 
 		// Create the leaderboard embed
 		const leaderboard_embed = new Discord.EmbedBuilder()
@@ -53,8 +54,6 @@ command.execute = async function(interaction) {
 
 			embed_description += `\`#${rank}\` **${username}**: ${ll_points}` + "\n"
 		}
-
-		console.log({embed_description});
 
 		leaderboard_embed.setDescription(embed_description);
 
@@ -97,9 +96,8 @@ command.execute = async function(interaction) {
 			button_interaction = await message.awaitMessageComponent({ filter: collectorFilter, time: 60_000 });
 
 			if (button_interaction.customId === 'left') {
-				console.log("They clicked left");
+				logInfo("User clicked Left on LL Point Leaderboard");
 				if (current_page > 1) {
-					console.log("Previous Page");
 					current_page--;
 				}
 
@@ -108,9 +106,8 @@ command.execute = async function(interaction) {
 				await readButtonInteractions(message, current_page);
 			}
 			else if (button_interaction.customId === 'right') {
-				console.log("right");
+				logInfo("User clicked Right on LL Point Leaderboard");
 				if (current_page < NUM_PAGES - 1) {
-					console.log("Next Page");
 					current_page++;
 				}
 
@@ -124,7 +121,7 @@ command.execute = async function(interaction) {
 			}
 		}
 		catch {
-			console.log("Waited Too Long...")
+			logInfo("User waited too long to click on LL Point Leaderboard. Cancelling...");
 		}
 	}
 

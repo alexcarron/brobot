@@ -61,7 +61,7 @@ command.execute = async function(interaction) {
 		if (gifter_viewer)
 			return gifter_viewer
 
-		console.log(`No viewer with name ${name} or id ${id}`);
+		logInfo(`No viewer with name ${name} or id ${id}`);
 		return undefined;
 	}
 
@@ -116,8 +116,6 @@ command.execute = async function(interaction) {
 		return await interaction.editReply(`You already have a valentine! It wouldn't be special if you chose multiple`);
 	}
 
-	console.log({gifted_viewer, gifter_viewer, viewer_name, num_gifted_points});
-
 	if (gifted_viewer == gifter_viewer) {
 		return await interaction.editReply(`You can't be your own valentine.`);
 	}
@@ -144,7 +142,7 @@ command.execute = async function(interaction) {
 		`Making **${gifted_viewer.name}** your valentine and gifting them \`${num_gifted_points}\` LL Point(s)...\n` +
 		`You now have \`${gifter_viewer.ll_points}\` LL Point(s).`
 	);
-	console.log(gifted_viewer);
+
 	await gifted_viewer.dm(
 		`# 💖 Happy Valentines Day! 💞`
 	);

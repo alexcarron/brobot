@@ -19,7 +19,6 @@ const setNestedProperty = (object, propertyPath, value) => {
 	// If the property path only has one element, we can set the property directly.
 	if (propertyPath.length <= 1) {
 		object[topLevelProperty] = value;
-		console.log({object});
 		return object;
 	}
 
@@ -139,8 +138,6 @@ const arraysHaveSameElements = (...arrays) => {
 			numOccurances + 1
 		);
 	}
-
-	console.log(elementToNumOccurances);
 
 	// Check if the same elements occur in all other arrays, with the same number of occurances.
 	for (const otherArray of arrays.slice(1)) {

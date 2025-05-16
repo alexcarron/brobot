@@ -1,10 +1,11 @@
 const { ChannelType, Collection } = require("discord.js");
 const ids = require("../bot-config/discord-ids");
 const { botStatus } = require("../bot-config/bot-status");
+const { logError } = require("../utilities/logging-utils");
 
 const onSlashCommandExecuted = async (interaction) => {
 	const userName = interaction.user.username;
-	console.log(`${userName}: /${interaction.commandName}`);
+	logInfo(`${userName} executing command: ${interaction.commandName}`);
 
 	const command = interaction.client.commands.get(interaction.commandName);
 
@@ -133,8 +134,7 @@ const onSlashCommandExecuted = async (interaction) => {
 		await command.execute(interaction);
 	}
 	catch (error) {
-		console.log("There was an error while running that command")
-		console.error(error);
+		logError(`There was an error while running the command ${command.name}`, error);
 
 		if (interaction.replied || interaction.deferred) {
 			await interaction.followUp({

@@ -193,7 +193,7 @@ class LLPointManager {
 			// 	await addRoleToMember(viewer_guild_member, tier_role);
 			// }
 			// catch (exception) {
-			// 	console.log("Member not found on Discord Server");
+			// 	logInfo("Member not found on Discord Server");
 			// 	continue
 			// }
 		}
@@ -206,7 +206,7 @@ class LLPointManager {
 		if (!viewer) {
 			interaction.channel.send(`You have not been added to the LL Point database yet. You will be added as **${interaction.user.username}**`);
 			this.addViewerFromUser(interaction.user);
-			console.log(this.viewers);
+
 			await this.updateDatabase();
 
 			return await this.getViewerById(interaction.user.id);

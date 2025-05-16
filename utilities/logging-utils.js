@@ -8,6 +8,38 @@ const LogColor = Object.freeze({
 	WHITE: 37,
 });
 
+const stringifyNonString = (value) => {
+	if (value === null) {
+		return "null";
+	}
+
+	if (typeof value === "object") {
+		return JSON.stringify(value);
+	}
+
+	if (typeof value === "function") {
+		return `[Function: ${value.name}]`;
+	}
+
+	if (typeof value === "symbol") {
+		return `[Symbol: ${value.toString()}]`;
+	}
+
+	if (typeof value === "undefined") {
+		return "undefined";
+	}
+
+	if (typeof value === "number") {
+		return value.toString();
+	}
+
+	if (typeof value === "boolean") {
+		return value ? "true" : "false";
+	}
+
+	return value.toString();
+}
+
 /**
  * Logs a message to the console with the specified color.
  *
@@ -16,7 +48,7 @@ const LogColor = Object.freeze({
  */
 const logWithColor = (message, color) => {
 	if (typeof message !== "string")
-		throw new TypeError("Message must be a string.");
+		message = stringifyNonString(message);
 
 	if (typeof color !== "number")
 		throw new TypeError("Color must be a number.");
@@ -50,14 +82,29 @@ const logError = (message, error = null) => {
 	console.trace('Error location:');
 }
 
-const logWarning = (message) => {
-	if (typeof message!== "string")
-    throw new TypeError("Message must be a string.");
+const logCategory = (category, color, message) => {
+	if (typeof category !== "string")
+    throw new TypeError("Category must be a string.");
+
+  if (typeof message !== "string")
+		message = stringifyNonString(message);
+
+	if (!Object.values(LogColor).includes(color))
+		throw new TypeError("Color must be a valid LogColor.");
 
   if (message.trim() === "")
     return;
 
-  logWithColor(`[WARNING] ${message}`, LogColor.YELLOW);
+  logWithColor(`[${category.toUpperCase()}] ${message}`, color);
+}
+
+/**
+ * Logs a warning message to the console with a yellow color.
+ *
+ * @param {string} message - The warning message to log.
+ */
+const logWarning = (message) => {
+	logCategory("WARNING", LogColor.YELLOW, message);
 }
 
 /**
@@ -66,13 +113,27 @@ const logWarning = (message) => {
  * @param {string} message - The information message to log.
  */
 const logInfo = (message) => {
-	if (typeof message !== "string")
-		throw new TypeError("Message must be a string.");
-
-	if (message.trim() === "")
-		return;
-
-	logWithColor(`[INFO] ${message}`, LogColor.BLUE);
+	logCategory("INFO", LogColor.BLUE, message);
 }
 
-module.exports = { logWithColor, LogColor, logError, logWarning, logInfo };
+/**
+ * Logs a success message to the console with a green color.
+ *
+ * @param {string} message - The success message to log.
+ */
+const logSuccess = (message) => {
+	logCategory("SUCCESS", LogColor.GREEN, message);
+}
+
+/**
+ * Logs a debug message to the console with a magenta color. This is used for debugging purposes and should not be used in production code.
+ *
+ * @param {string} message - The debug message to log.
+ */
+const logDebug = (message, includeTrace = false) => {
+	logCategory("DEBUG", LogColor.MAGENTA, message);
+
+	if (includeTrace) console.trace('Debug location:');
+}
+
+module.exports = { logWithColor, LogColor, logError, logWarning, logInfo, logSuccess, logDebug };

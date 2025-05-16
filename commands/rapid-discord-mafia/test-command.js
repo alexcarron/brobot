@@ -6,6 +6,7 @@ const { GameManager } = require("../../services/rapid-discord-mafia/game-manager
 const ids = require(`../../bot-config/discord-ids.js`);
 const { TrialVote } = require("../../services/rapid-discord-mafia/vote-manager.js");
 const { GameState } = require("../../services/rapid-discord-mafia/game-state-manager.js");
+const { deferInteraction } = require("../../utilities/discord-action-utils.js");
 
 const Subparameters = {
 	PlayerVotingFor: new Parameter({
@@ -125,15 +126,7 @@ command.parameters = [
 	}),
 ];
 command.execute = async function execute(interaction) {
-	if (interaction) {
-		try {
-			await interaction.deferReply({ephemeral: true});
-		}
-		catch {
-			console.log("Failed Defer: Reply Already Exists");
-			await interaction.editReply({ content: "Sending Command...", ephemeral: true});
-		}
-	}
+	deferInteraction(interaction);
 
 	const subcommand = interaction.options.getSubcommand();
 	const FakeJoinSubcommand = command.parameters[3];
@@ -165,8 +158,6 @@ command.execute = async function execute(interaction) {
 		// const delete_chnls_command = require(`../admin/deletechannels.js`);
 
 		// await delete_chnls_command.execute(interaction, ["1031365761320624132"], true);
-
-		console.log({player_names_str, player_names});
 
 		for (let player_name of player_names) {
 			join_command.execute(interaction, [ids.users.LL, player_name, true], true);

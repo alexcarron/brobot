@@ -2,6 +2,7 @@ const ids = require("../../bot-config/discord-ids.js");
 const { fetchGuild, fetchGuildMember, fetchUser, fetchRole } = require("../../utilities/discord-fetch-utils.js");
 const { addRoleToMember, removeRoleFromMember } = require("../../utilities/discord-action-utils.js");
 const { LLPointTier, LLPointThreshold, LLPointReward, LLPointAccomplishment } = require("./ll-point-enums.js");
+const { logInfo, logError, logSuccess, logWarning } = require("../../utilities/logging-utils.js");
 
 class Viewer {
 	constructor({name, aliases=[], user_id, ll_points=0, isSubscribed=false, didUndertaleQuiz=false, didDeltaruneQuiz=false, games_participated_in=[], valentine}) {
@@ -48,7 +49,7 @@ class Viewer {
 			tier_role_id = ids.ll_game_shows.roles[tier],
 			ll_game_shows_guild = await fetchGuild(ids.ll_game_shows.server_id);
 
-		console.log(`Setting ${this.name}'s Tier to ${tier}`);
+		logInfo(`Setting ${this.name}'s Tier to ${tier}`);
 
 		if (
 			tier === LLPointTier.VIEWER ||
@@ -60,7 +61,7 @@ class Viewer {
 			viewer_guild_member = await fetchGuildMember(ll_game_shows_guild, this.user_id);
 		}
 		catch (exception) {
-			console.log(`${this.name} not found on Discord Server`);
+			logInfo(`${this.name} not found on Discord Server`);
 			return
 		}
 
@@ -69,22 +70,20 @@ class Viewer {
 			Object.values(ids.ll_game_shows.roles).map(
 				async (role_id) => {
 					const role = await fetchRole(ll_game_shows_guild, role_id);
-					console.log(`Removing ${role.name} from ${this.name}`);
+					logInfo(`Removing ${role.name} from ${this.name}`);
 					removeRoleFromMember(viewer_guild_member, role);
 				}
 			)
 
 			const tier_role = await fetchRole(ll_game_shows_guild, tier_role_id);
 			await addRoleToMember(viewer_guild_member, tier_role);
-			console.log(`Adding ${tier_role.name} to ${this.name}`);
+			logInfo(`Adding ${tier_role.name} to ${this.name}`);
 		}
-		catch (exception) {
-			console.log(exception);
-			console.log("There was an error assigning roles");
+		catch (error) {
+			logError("There was an error assigning roles", error);
 		}
 
-		console.log("Done.");
-
+		logSuccess('Tier role set successfully');
 	}
 
 	setValentine(valentine_viewer) {
@@ -96,19 +95,14 @@ class Viewer {
 
 		let accomplishments = Object.values(LLPointAccomplishment);
 		if (!accomplishments.includes(accomplishment)) {
-			console.log(`Error: No accomplishment called ${accomplishment}`);
-			console.log(`Choose between: ${accomplishments.join(", ")}`);
+			logWarning(`No accomplishment called ${accomplishment}. Choose between: ${accomplishments.join(", ")}`);
 			return `Error: No accomplishment called ${accomplishment}`;
 		}
 		let accomplishment_key = Object.keys(LLPointAccomplishment).find(key => LLPointAccomplishment[key] === accomplishment);
 
-		console.log({accomplishment});
-		console.log(LLPointAccomplishment.DO_UNDERTALE_QUIZ);
-
 		switch (accomplishment) {
 			case LLPointAccomplishment.SUBSCRIBE:
 				if (this.isSubscribed) {
-					console.log("Error: Already subscribed");
 					return "Error: Already subscribed";
 				}
 
@@ -116,19 +110,15 @@ class Viewer {
 				break;
 
 			case LLPointAccomplishment.DO_UNDERTALE_QUIZ:
-				console.log("HELLO!")
 				if (this.didUndertaleQuiz) {
-					console.log("Error: Already did Undertale Music Quiz");
 					return "Error: Already did Undertale Music Quiz";
 				}
 
 				this.didUndertaleQuiz = true;
-				console.log(this)
 				break;
 
 			case LLPointAccomplishment.DO_DELTARUNE_QUIZ:
 				if (this.didDeltaruneQuiz) {
-					console.log("Error: Already did Deltarune Music Quiz");
 					return "Error: Already did Deltarune Music Quiz";
 				}
 
@@ -137,8 +127,7 @@ class Viewer {
 
 			case LLPointAccomplishment.PARTICIPATE_IN_GAME:
 				if (this.games_participated_in.includes(game_name)) {
-					console.log(`Error: Already participated in ${game_name}`);
-					return;
+					return `Error: Already participated in ${game_name}`;
 				}
 
 				this.games_participated_in.push(game_name);
@@ -146,8 +135,7 @@ class Viewer {
 
 			case LLPointAccomplishment.PARTICIPATE_IN_EVENT:
 				if (this.games_participated_in.includes(game_name)) {
-					console.log(`Error: Already participated in ${game_name}`);
-					return;
+					return `Error: Already participated in ${game_name}`;
 				}
 
 				this.games_participated_in.push(game_name);
@@ -171,10 +159,7 @@ class Viewer {
 	}
 
 	async dmTierChange(old_tier, new_tier) {
-		console.log({old_tier, new_tier});
-		console.log(this.user_id);
 		const user = await fetchUser(this.user_id);
-		console.log({user})
 		await user.send(`You have been promoted from **${old_tier}** to **${new_tier}**. Congratulations!`);
 	}
 

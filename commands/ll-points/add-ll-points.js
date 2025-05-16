@@ -5,6 +5,7 @@ const SlashCommand = require("../../services/command-creation/slash-command.js")
 const { PermissionFlagsBits } = require('discord.js');
 const { LLPointManager } = require('../../services/ll-points/ll-point-manager.js');
 const { findStringStartingWith } = require('../../utilities/text-formatting-utils.js');
+const { deferInteraction } = require('../../utilities/discord-action-utils.js');
 
 //
 const Parameters = {
@@ -32,15 +33,7 @@ command.parameters = [
 ]
 command.allowsDMs = true;
 command.execute = async function(interaction) {
-	if (interaction) {
-		try {
-			await interaction.reply({content: "Adding LL Points...", ephemeral: true});
-		}
-		catch {
-			console.log("Failed Defer: Reply Already Exists");
-			await interaction.editReply({ content: "Sending Command...", ephemeral: true});
-		}
-	}
+	deferInteraction(interaction, "Adding LL Points...");
 
 	const
 		viewer_name_arg = interaction.options.getString(Parameters.ViewerName.name),
@@ -48,8 +41,6 @@ command.execute = async function(interaction) {
 
 	let viewer = await global.LLPointManager.getViewerByName(viewer_name_arg);
 	let viewer_name = viewer_name_arg;
-
-	console.log({viewer_name_arg, viewer_name, added_points})
 
 	if (!viewer) {
 		const autocomplete_viewer_name = findStringStartingWith(viewer_name, global.LLPointManager.getViewerNames());
@@ -63,8 +54,6 @@ command.execute = async function(interaction) {
 			return interaction.editReply(`The viewer, **${viewer_name}**, doesn't exist.`);
 		}
 	}
-
-	console.log({viewer, viewer_name, added_points});
 
 	await global.LLPointManager.viewers.get(viewer_name).addLLPoints(added_points);
 	await global.LLPointManager.updateDatabase();

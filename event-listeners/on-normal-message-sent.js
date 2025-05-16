@@ -6,7 +6,7 @@ const { fetchGuildMember } = require("../utilities/discord-fetch-utils");
 const { GameState } = require("../services/rapid-discord-mafia/game-state-manager");
 
 const onTTSMessageSent = async (message) => {
-	console.log("onTTSMessageSent", message.content);
+	logInfo(`TTS Message Sent: ${message.content}`);
 
 	const guildMember = await fetchGuildMember(message.guild, message.author.id);
 	const voiceChannel = guildMember.voice.channel;
@@ -59,7 +59,6 @@ const onRDMKidnapperMessageSent = async (message) => {
 		 * @param {Player} kidnapped_player
 		 */
 		(kidnapped_player) => {
-			console.log(kidnapped_player.channel_id + " VS " + msg.channel.id);
 			if (
 				kidnapped_player.channel_id === msg.channel.id &&
 				kidnapped_player.id === msg.author.id
@@ -90,7 +89,7 @@ const onRDMKidnapperMessageSent = async (message) => {
  * @param {Message} message
  */
 const onNormalMessageSent = async (message) => {
-	console.log("onNormalMessageSent", message.content);
+	logInfo(`Normal Message Sent: ${message.content}`);
 
 	if (TextToSpeechHandler.shouldMessageTriggerTTS(message)) {
 		await onTTSMessageSent(message);
