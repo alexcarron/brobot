@@ -4,7 +4,7 @@ const { deferInteraction } = require("../../../utilities/discord-action-utils");
 const Parameter = require("../../../services/command-creation/parameter");
 const { QueryType, Player, QueueRepeatMode } = require("discord-player");
 const { EmbedBuilder } = require("@discordjs/builders");
-const { YouTubeExtractor } = require('@discord-player/extractor');
+const { YoutubeiExtractor } = require("discord-player-youtubei");
 
 const Subparameters = {
 	VideoUrl: new Parameter({
@@ -91,35 +91,23 @@ command.execute = async function(interaction) {
 	if (player instanceof Player) {
 		const queue = await global.client.player.nodes.create(interaction.guild);
 		if (!queue.connection) {
-			console.log("connecting");
 			await queue.connect(vc);
-			console.log("connecting");
 		}
 
-		await global.client.player.extractors.register(YouTubeExtractor);
+		await global.client.player.extractors.register(YoutubeiExtractor);
 
 		let embed = new EmbedBuilder();
 
 		const subcommand = interaction.options.getSubcommand();
 
-		console.log(subcommand)
-		console.log(Parameters.Video.name)
-
 		switch (subcommand) {
 			case Parameters.Video.name: {
-				console.log("GETTING VIDEO");
 				const video_url = interaction.options.getString(Subparameters.VideoUrl.name);
-
-				console.log({video_url});
 
 				const result = await global.client.player.search(video_url, {
 					requestedBy: interaction.user,
 					searchEngine: QueryType.YOUTUBE_VIDEO,
 				});
-
-				console.log({result});
-				console.log(result.tracks);
-				console.log(result.tracks.length);
 
 				if (result.tracks.length === 0) {
 					return await interaction.editReply(`No result for ${video_url}`);
@@ -133,13 +121,11 @@ command.execute = async function(interaction) {
 					.setThumbnail(song.thumbnail)
 					.setFooter({ text: `Duration: ${song.duration}`});
 
-				console.log({queue, song});
 				break;
 			};
 
 
 			case Parameters.Playlist.name: {
-				console.log("GETTING PLAYLIST");
 				const playlist_url = interaction.options.getString(Subparameters.PlaylistUrl.name);
 
 				const result = await global.client.player.search(playlist_url, {
@@ -147,8 +133,6 @@ command.execute = async function(interaction) {
 					fallbackSearchEngine: 'youtubePlaylist',
 					searchEngine: QueryType.YOUTUBE_PLAYLIST,
 				});
-
-				console.log(result.tracks);
 
 				if (result.tracks.length === 0 || !result.playlist) {
 					return await interaction.editReply(`No result for ${playlist_url}`);
@@ -159,22 +143,16 @@ command.execute = async function(interaction) {
 				embed
 					.setDescription(`${result.tracks.length} songs from **${playlist.title}: ${playlist.url}** has been added to the queue`)
 					.setThumbnail(playlist.thumbnail)
-
-				console.log({queue, playlist});
 				break;
 			};
 
 			case Parameters.Search.name: {
 				const search_keywords = interaction.options.getString(Subparameters.SearchKeywords.name);
 
-				console.log({search_keywords});
-
 				const result = await global.client.player.search(search_keywords, {
 					requestedBy: interaction.user,
 					searchEngine: QueryType.AUTO,
 				});
-
-				console.log({result});
 
 				if (result.tracks.length === 0) {
 					return await interaction.editReply(`No result for ${search_keywords}`);
@@ -182,18 +160,13 @@ command.execute = async function(interaction) {
 
 				const song = result.tracks[0];
 
-				console.log({song});
-
 				await queue.addTrack(song);
-
-				console.log({queue});
 
 				embed
 					.setDescription(`**${song.title}: ${song.url}** has been added to the queue`)
 					.setThumbnail(song.thumbnail)
 					.setFooter({ text: `Duration: ${song.duration}`});
-
-				console.log({queue, song});
+					
 				break;
 			};
 		}
