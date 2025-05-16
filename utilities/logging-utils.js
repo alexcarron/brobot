@@ -14,7 +14,7 @@ const stringifyNonString = (value) => {
 	}
 
 	if (typeof value === "object") {
-		return JSON.stringify(value);
+		return JSON.stringify(value, null, 2);
 	}
 
 	if (typeof value === "function") {
@@ -62,6 +62,80 @@ const logWithColor = (message, color) => {
 }
 
 /**
+ * Logs a formatted string to the console with the specified colors.
+ *
+ * Use Format: logWithColors`A normal message with ${['green', LogColor.GREEN]} and ${['blue', LogColor.BLUE]}.`;
+ *
+ * @param {Array<string>} strings - The strings to log, with placeholders for expressions.
+ * @param {...Array<string | number, number>} expressions - The expressions to fill in the placeholders, with the first element of each expression being the value and the second element being the color.
+ *
+ * @throws {TypeError} If strings or expressions are not arrays.
+ * @throws {TypeError} If strings contains non-string elements.
+ * @throws {TypeError} If expressions contains non-tuple elements or tuple elements with incorrect length.
+ * @throws {TypeError} If expressions contains tuple elements with invalid color.
+ */
+const logWithColors = (strings, ...expressions) => {
+	if (!Array.isArray(strings))
+		throw new TypeError("Strings must be an array.");
+
+	// Ensure strings contains strings
+	for (let index in strings) {
+		let string = strings[index];
+
+		if (typeof string !== "string")
+			string = stringifyNonString(string);
+
+		strings[index] = string;
+	}
+
+	if (!Array.isArray(expressions))
+		throw new TypeError("Expressions must be an array.");
+
+	expressions = expressions.map(expression => {
+		if (!Array.isArray(expression))
+			return [expression, undefined];
+
+		if (expression.length < 2)
+			return [expression[0], undefined];
+
+		if (expression.length > 2)
+			return [expression[0], expression[1]];
+
+		if (!Object.values(LogColor).includes(expression[1]))
+			throw new TypeError("Expression color must be a valid LogColor.");
+
+		return expression;
+	});
+
+	// Stringify expressions
+	expressions = expressions.map(expression => {
+		let value = expression[0];
+
+		if (typeof value !== "string")
+			value = stringifyNonString(value);
+
+		return [value, expression[1]];
+	});
+
+	// Construct the formatted string
+	const formattedStrings = [];
+	for (let index in strings) {
+		let string = strings[index];
+		let expression = expressions[index];
+
+		if (expression === undefined)
+			formattedStrings.push(string);
+		else if (expression[1] === undefined)
+			formattedStrings.push(string, expression[0]);
+		else
+			formattedStrings.push(string, `\x1b[${expression[1]}m${expression[0]}\x1b[0m`);
+	}
+
+	// Log the formatted string
+	console.log(formattedStrings.join(''));
+}
+
+/**
  * Logs an error message to the console with the specified timestamp and
  * optional error stack trace.
  *
@@ -95,7 +169,9 @@ const logCategory = (category, color, message) => {
   if (message.trim() === "")
     return;
 
-  logWithColor(`[${category.toUpperCase()}] ${message}`, color);
+	const categoryPrefix = `[${category.toUpperCase()}]`;
+
+	logWithColors`${[categoryPrefix, color]} ${message}`;
 }
 
 /**
@@ -136,4 +212,4 @@ const logDebug = (message, includeTrace = false) => {
 	if (includeTrace) console.trace('Debug location:');
 }
 
-module.exports = { logWithColor, LogColor, logError, logWarning, logInfo, logSuccess, logDebug };
+module.exports = { logWithColor, LogColor, logError, logWarning, logInfo, logSuccess, logDebug, logWithColors };

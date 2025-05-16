@@ -128,16 +128,14 @@ function getAllJSFiles(directoryPath) {
 				{ body: slash_commands },
 			);
 
-			logInfo("Reloaded " + slash_commands.length + " private slash commands...");
+			logSuccess("Reloaded " + slash_commands.length + " private slash commands");
 		}
 		logInfo("Reloading " + public_slash_commands.length + " public slash commands...");
 		await rest.put(
 			Routes.applicationCommands(ids.client),
 			{ body: public_slash_commands },
 		);
-		logInfo("Reloaded " + public_slash_commands.length + " public slash commands...");
-
-
+		logSuccess("Reloaded " + public_slash_commands.length + " public slash commands");
 
 		logSuccess(`Successfully reloaded application (/) commands.`);
 

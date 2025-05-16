@@ -1,4 +1,4 @@
-const { logWithColor, LogColor, logError, logInfo, logWarning, logDebug, logSuccess } = require("./logging-utils");
+const { logWithColor, LogColor, logError, logInfo, logWarning, logDebug, logSuccess, logWithColors } = require("./logging-utils");
 
 describe('logging-utils.js', () => {
 	const mockNowDate = new Date('2023-05-01T12:00:00Z'); // May 1, 2023, 12:00:00 PM UTC-07:00
@@ -166,7 +166,7 @@ describe('logging-utils.js', () => {
 			const message = 'Test success message';
 			logSuccess(message);
 			expect(console.log).toHaveBeenCalledTimes(1);
-			expect(console.log).toHaveBeenCalledWith(`\x1b[32m[SUCCESS] ${message}\x1b[0m`);
+			expect(console.log).toHaveBeenCalledWith(`\x1b[32m[SUCCESS]\x1b[0m ${message}`);
 		});
 
 		it('should not log a success message with an empty string', () => {
@@ -238,6 +238,56 @@ describe('logging-utils.js', () => {
 			logDebug(message);
 			expect(console.log).toHaveBeenCalledTimes(1);
 			expect(console.trace).not.toHaveBeenCalled();
+		});
+	});
+
+	describe('logWithColors()', () => {
+		it('throws an error when not using template literal', () => {
+			expect(() => logWithColors('hello')).toThrowError(TypeError);
+		});
+
+		it('handle when expression is not an array', () => {
+			logWithColors`hello ${'world'}`;
+			expect(console.log).toHaveBeenCalledTimes(1);
+			expect(console.log).toHaveBeenCalledWith('hello world');
+		});
+
+		it('does not throw an error when strings contains non-string elements', () => {
+			expect(() => logWithColors(['hello', 123], ['world', LogColor.GREEN])).not.toThrowError(TypeError);
+		});
+
+		it('does not throw an error when expressions contains tuple elements with incorrect length', () => {
+			expect(() =>
+				logWithColors`hello ${['world', LogColor.GREEN, 'extra']}`
+			).not.toThrowError(TypeError);
+		});
+
+		it('throws an error when expressions contains tuple elements with invalid color', () => {
+			expect(() => logWithColors(['hello'], ['world', 123])).toThrowError(TypeError);
+		});
+
+		it('logs the correct formatted string when strings and expressions are valid in template literal', () => {
+			logWithColors`This is a message with a ${['green', LogColor.GREEN]} and ${['blue', LogColor.BLUE]} word.`;
+			expect(console.log).toHaveBeenCalledTimes(1);
+			expect(console.log).toHaveBeenCalledWith('This is a message with a \x1b[32mgreen\x1b[0m and \x1b[34mblue\x1b[0m word.');
+		});
+
+		it('logs the correct formatted string when expressions is empty', () => {
+			logWithColors(['hello', 'world']);
+			expect(console.log).toHaveBeenCalledTimes(1);
+			expect(console.log).toHaveBeenCalledWith('helloworld');
+		});
+
+		it('logs the correct formatted string when strings contains only one element', () => {
+			logWithColors`hello ${['world', LogColor.GREEN]}`;
+			expect(console.log).toHaveBeenCalledTimes(1);
+			expect(console.log).toHaveBeenCalledWith('hello \x1b[32mworld\x1b[0m');
+		});
+
+		it('logs the correct formatted string when an expression doesnt contain a color', () => {
+			logWithColors`hello ${'world'}`;
+			expect(console.log).toHaveBeenCalledTimes(1);
+			expect(console.log).toHaveBeenCalledWith('hello world');
 		});
 	});
 });
