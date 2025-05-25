@@ -24,6 +24,18 @@ const Parameters = {
 		description: "A contestant to be included in the alliance",
 		isRequired: false,
 	}),
+	Contestant4: new Parameter({
+		type: ParameterType.USER,
+		name: "contestant-4",
+		description: "A contestant to be included in the alliance",
+		isRequired: false,
+	}),
+	Contestant5: new Parameter({
+		type: ParameterType.USER,
+		name: "contestant-5",
+		description: "A contestant to be included in the alliance",
+		isRequired: false,
+	}),
 }
 
 module.exports = new SlashCommand({
@@ -34,7 +46,9 @@ module.exports = new SlashCommand({
 	parameters: [
 		Parameters.Contestant1,
 		Parameters.Contestant2,
-		Parameters.Contestant3
+		Parameters.Contestant3,
+		Parameters.Contestant4,
+		Parameters.Contestant5,
 	],
 	/**
 	 *
@@ -44,7 +58,7 @@ module.exports = new SlashCommand({
 		await deferInteraction(interaction);
 
 		const commandUser = interaction.user;
-		const contestantIDs = [commandUser.id];
+		let contestantIDs = [commandUser.id];
 		const allianceName = 'alliance';
 
 		for (const parameter of Object.values(Parameters)) {
@@ -56,8 +70,18 @@ module.exports = new SlashCommand({
 			contestantIDs.push(contestant.id);
 		}
 
-		const sandSeason3Guild = await fetchGuild(ids.sandSeason3.guild);
+		// Filter duplicate IDs
+		contestantIDs = [...new Set(contestantIDs)];
 
+		// Stop if no contestant IDs
+		if (contestantIDs.length < 2) {
+      await editReplyToInteraction(interaction,
+				'You must specify at least one contestant to make an alliance with.'
+			);
+      return;
+    }
+
+		const sandSeason3Guild = await fetchGuild(ids.sandSeason3.guild);
 		const newChannel = await createChannel({
 			guild: sandSeason3Guild,
 			name: allianceName,
