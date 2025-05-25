@@ -1,4 +1,4 @@
-const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType } = require('discord.js');
+const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionOverwrites } = require('discord.js');
 
 /**
  * Prompt the user to confirm or cancel an action by adding buttons to the deffered reply to an existing command interaction.
@@ -231,11 +231,11 @@ const getInputFromCreatedTextModal = async ({
  * @param {Object} options - Options for creating the channel.
  * @param {Guild} options.guild - The guild in which the channel is to be created.
  * @param {string} options.name - The name of the channel.
- * @param {PermissionOverwrite[]} [options.permissions] - Permission overwrites for the channel. If not provided, the default permissions will be used.
+ * @param {PermissionOverwrite[]} [options.permissionOverwrites] - Permission overwrites for the channel. If not provided, the default permissions will be used.
  * @param {CategoryChannelResolvable} [options.parentCategory] - The parent category of the channel. If not provided, the channel will not have a parent category.
  * @returns {Promise<TextChannel>} The created channel.
  */
-const createChannel = async ({guild, name, permissions = null, parentCategory = null}) => {
+const createChannel = async ({guild, name, permissionOverwrites: permissionOverwrites = null, parentCategory = null}) => {
 	if (!guild)
 		throw new Error("Guild is required");
 
@@ -248,7 +248,7 @@ const createChannel = async ({guild, name, permissions = null, parentCategory = 
 	if (typeof name !== "string")
 		throw new Error("Channel name must be a string");
 
-	if (permissions && !Array.isArray(permissions))
+	if (permissionOverwrites && !Array.isArray(permissionOverwrites))
 		throw new Error("Permissions must be an array");
 
 	const options = {
@@ -260,14 +260,46 @@ const createChannel = async ({guild, name, permissions = null, parentCategory = 
 		options.parent = parentCategory;
 	}
 
-	if (permissions) {
-    options.permissionOverwrites = permissions;
+	if (permissionOverwrites) {
+    options.permissionOverwrites = permissionOverwrites;
   }
 
 	const channel = await guild.channels.create(options);
 
 	return channel;
 };
+
+/**
+ * Creates a permission overwrite object for a Discord channel.
+ * @param {Object} options - Options for creating the permission overwrite.
+ * @param {string} options.userOrRoleID - The ID of the user or role for which the permissions are being set.
+ * @param {PermissionFlagsBits[]} [options.allowedPermissions] - An array of permissions that are allowed for the user or role.
+ * @param {PermissionFlagsBits[]} [options.deniedPermissions] - An array of permissions that are denied for the user or role.array.
+ * @returns {PermissionOverwrites} The permission overwrite object.
+ */
+const createPermissionOverwrites = ({userOrRoleID, allowedPermissions, deniedPermissions}) => {
+	if (!userOrRoleID)
+		throw new Error("User or role ID is required");
+
+	if (!allowedPermissions && !deniedPermissions)
+		throw new Error("Permissions are required");
+
+	if (allowedPermissions && !Array.isArray(allowedPermissions))
+		throw new Error("Allowed permissions must be an array");
+
+	if (deniedPermissions && !Array.isArray(deniedPermissions))
+		throw new Error("Denied permissions must be an array");
+
+	const overwrite = {
+    id: userOrRoleID,
+  };
+
+	if (allowedPermissions)
+		overwrite.allow = allowedPermissions;
+
+	if (deniedPermissions)
+		overwrite.deny = deniedPermissions;
+}
 
 module.exports = {
 	confirmInteractionWithButtons,
@@ -277,4 +309,5 @@ module.exports = {
 	editReplyToInteraction,
 	getInputFromCreatedTextModal,
 	createChannel,
+	createPermissionOverwrites,
 };
