@@ -1,5 +1,7 @@
-const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionOverwrites, PermissionFlagsBits } = require('discord.js');
+const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionOverwrites, PermissionFlagsBits, CategoryChannel } = require('discord.js');
 const { Role } = require('../services/rapid-discord-mafia/role');
+const { fetchChannel } = require('./discord-fetch-utils');
+const { incrementEndNumber } = require('./text-formatting-utils');
 
 /**
  * Prompt the user to confirm or cancel an action by adding buttons to the deffered reply to an existing command interaction.
@@ -229,6 +231,7 @@ const getInputFromCreatedTextModal = async ({
 
 /**
  * Creates a Discord channel in a guild.
+ * If the parent category has reached its maximum number of channels, it will create a new category and place the channel within it.
  * @param {Object} options - Options for creating the channel.
  * @param {Guild} options.guild - The guild in which the channel is to be created.
  * @param {string} options.name - The name of the channel.
@@ -237,6 +240,8 @@ const getInputFromCreatedTextModal = async ({
  * @returns {Promise<TextChannel>} The created channel.
  */
 const createChannel = async ({guild, name, permissions = null, parentCategory = null}) => {
+	const MAX_CHANNELS_PER_CATEGORY = 50;
+
 	if (!guild)
 		throw new Error("Guild is required");
 
@@ -251,6 +256,42 @@ const createChannel = async ({guild, name, permissions = null, parentCategory = 
 
 	if (permissions && !Array.isArray(permissions))
 		throw new Error("Permissions must be an array");
+
+	if (parentCategory) {
+		if (!(parentCategory instanceof CategoryChannel))
+			parentCategory = await fetchChannel(guild, parentCategory);
+
+	  if (!parentCategory)
+			throw new Error("Parent category must exist");
+
+		if (parentCategory.type !== ChannelType.GuildCategory)
+			throw new Error("Parent category must be a GuildCategory");
+	}
+
+	let haveSpaceForNewChannel = false;
+
+	while (!haveSpaceForNewChannel) {
+		const childChannelCount = parentCategory.children.cache.size;
+		if (childChannelCount >= MAX_CHANNELS_PER_CATEGORY) {
+			const newCategoryName = incrementEndNumber(parentCategory.name);
+			const existingNewCategory = guild.channels.cache.find((channel) => channel.name === newCategoryName);
+
+			if (existingNewCategory) {
+        parentCategory = existingNewCategory;
+        continue;
+      }
+
+			parentCategory = await createCategory({
+				guild,
+				name: newCategoryName,
+				permissions: [createEveryoneDenyViewPermission(guild)],
+			});
+		}
+		else {
+			haveSpaceForNewChannel = true;
+			break;
+		}
+	}
 
 	const options = {
 		name: name,
@@ -268,6 +309,40 @@ const createChannel = async ({guild, name, permissions = null, parentCategory = 
 	const channel = await guild.channels.create(options);
 
 	return channel;
+};
+
+/**
+ * Creates a category in a guild.
+ * @param {Object} options - Options for creating the category.
+ * @param {Guild} options.guild - The guild in which the category is to be created.
+ * @param {string} options.name - The name of the category.
+ * @param {PermissionOverwrite[]} [options.permissions] - Permission overwrites for the category. If not provided, the default permissions will be used.
+ * @returns {Promise<CategoryChannel>} The created category.
+ */
+const createCategory = async ({guild, name, permissions = null}) => {
+	if (!guild)
+		throw new Error("Guild is required");
+
+	if (!guild instanceof Guild)
+		throw new Error("Guild object must be an instance of Guild");
+
+	if (!name)
+		throw new Error("Category name is required");
+
+	if (typeof name !== "string")
+		throw new Error("Category name must be a string");
+
+	const options = {
+		name: name,
+		type: ChannelType.GuildCategory,
+	};
+	if (permissions) {
+    options.permissionOverwrites = permissions;
+  }
+
+	const category = await guild.channels.create(options);
+
+	return category;
 };
 
 /**
@@ -392,4 +467,5 @@ module.exports = {
 	createEveryoneDenyViewPermission,
 	addPermissionToChannel,
 	memberHasRole,
+	createCategory,
 };

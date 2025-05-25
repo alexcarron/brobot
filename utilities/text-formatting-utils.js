@@ -291,15 +291,11 @@ const incrementEndNumber = (string, incrementAmount = 1) => {
 
 	const endNumberMatch = string.match(/\d+$/);
 	const hasEndNumber = endNumberMatch !== null;
-	console.debug(`End number match: ${endNumberMatch}`);
-	console.debug(`Has end number: ${hasEndNumber}`);
 
 	if (!hasEndNumber)
 		return string + (1 + incrementAmount);
 
-
 	const endNumber = Number(string.match(/\d+$/));
-	console.debug(`Current end number: ${endNumber}`);
 	const numDigits = endNumber.toString().length;
 	const stringWithoutEndNumber = string.slice(0, -numDigits);
 	const newNumber = endNumber + incrementAmount;
