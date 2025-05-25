@@ -1,4 +1,4 @@
-const { Client, Guild, TextChannel, VoiceChannel, Message, ChannelType, Snowflake, GuildMember, User, Role, Collection } = require("discord.js");
+const { Client, Guild, TextChannel, VoiceChannel, Message, ChannelType, Snowflake, GuildMember, User, Role, Collection, ChatInputCommandInteraction } = require("discord.js");
 const ids = require("../bot-config/discord-ids");
 
 /**
@@ -129,4 +129,31 @@ const fetchRDMGuild = async () => {
 	return await fetchGuild(ids.servers.rapid_discord_mafia);
 }
 
-module.exports = { assertClientSetup, fetchGuild, fetchChannel, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchUser, fetchRole, fetchRoleByName };
+/**
+ * Gets a string parameter value of a slash command by name.
+ * @param {ChatInputCommandInteraction} interaction
+ * @param {string} name - The name of the parameter
+ * @returns {string | null}
+ */
+const getStringParamValue = (interaction, name) => {
+	return interaction.options.getString(name);
+}
+
+/**
+ * Gets a user parameter value of a slash command by name.
+ * @param {ChatInputCommandInteraction} interaction
+ * @param {string} name - The name of the parameter
+ * @returns {User | null}
+ */
+const getUserParamValue = (interaction, name) => {
+	return interaction.options.getUser(name);
+}
+
+/**
+ * Gets the everyone role of a given guild.
+ * @param {Guild} guild The guild whose everyone role you want to fetch.
+ * @returns {Role} The everyone role of the guild.
+ */
+const getEveryoneRole = (guild) => guild.roles.everyone;
+
+module.exports = { assertClientSetup, fetchGuild, fetchChannel, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchUser, fetchRole, fetchRoleByName, getStringParamValue, getUserParamValue, getEveryoneRole };

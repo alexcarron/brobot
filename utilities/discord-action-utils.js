@@ -1,4 +1,4 @@
-const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionOverwrites } = require('discord.js');
+const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionOverwrites, PermissionFlagsBits } = require('discord.js');
 
 /**
  * Prompt the user to confirm or cancel an action by adding buttons to the deffered reply to an existing command interaction.
@@ -123,7 +123,7 @@ const deferInteraction = async (
  */
 const editReplyToInteraction = async (interaction, newMessageContents) => {
 	if (interaction && (interaction.replied || interaction.deferred)) {
-		return await interaction.editReply(new_message);
+		return await interaction.editReply(newMessageContents);
 	}
 }
 
@@ -231,11 +231,11 @@ const getInputFromCreatedTextModal = async ({
  * @param {Object} options - Options for creating the channel.
  * @param {Guild} options.guild - The guild in which the channel is to be created.
  * @param {string} options.name - The name of the channel.
- * @param {PermissionOverwrite[]} [options.permissionOverwrites] - Permission overwrites for the channel. If not provided, the default permissions will be used.
+ * @param {PermissionOverwrite[]} [options.permissions] - Permission overwrites for the channel. If not provided, the default permissions will be used.
  * @param {CategoryChannelResolvable} [options.parentCategory] - The parent category of the channel. If not provided, the channel will not have a parent category.
  * @returns {Promise<TextChannel>} The created channel.
  */
-const createChannel = async ({guild, name, permissionOverwrites: permissionOverwrites = null, parentCategory = null}) => {
+const createChannel = async ({guild, name, permissions = null, parentCategory = null}) => {
 	if (!guild)
 		throw new Error("Guild is required");
 
@@ -248,7 +248,7 @@ const createChannel = async ({guild, name, permissionOverwrites: permissionOverw
 	if (typeof name !== "string")
 		throw new Error("Channel name must be a string");
 
-	if (permissionOverwrites && !Array.isArray(permissionOverwrites))
+	if (permissions && !Array.isArray(permissions))
 		throw new Error("Permissions must be an array");
 
 	const options = {
@@ -260,8 +260,8 @@ const createChannel = async ({guild, name, permissionOverwrites: permissionOverw
 		options.parent = parentCategory;
 	}
 
-	if (permissionOverwrites) {
-    options.permissionOverwrites = permissionOverwrites;
+	if (permissions) {
+    options.permissionOverwrites = permissions;
   }
 
 	const channel = await guild.channels.create(options);
@@ -275,14 +275,14 @@ const createChannel = async ({guild, name, permissionOverwrites: permissionOverw
  * @param {string} options.userOrRoleID - The ID of the user or role for which the permissions are being set.
  * @param {PermissionFlagsBits[]} [options.allowedPermissions] - An array of permissions that are allowed for the user or role.
  * @param {PermissionFlagsBits[]} [options.deniedPermissions] - An array of permissions that are denied for the user or role.array.
- * @returns {PermissionOverwrites} The permission overwrite object.
+ * @returns {Object} The permission overwrite object.
  */
-const createPermissionOverwrites = ({userOrRoleID, allowedPermissions, deniedPermissions}) => {
+const createPermission = ({userOrRoleID, allowedPermissions, deniedPermissions}) => {
 	if (!userOrRoleID)
 		throw new Error("User or role ID is required");
 
 	if (!allowedPermissions && !deniedPermissions)
-		throw new Error("Permissions are required");
+		throw new Error("allowedPermissions or deniedPermissions are required");
 
 	if (allowedPermissions && !Array.isArray(allowedPermissions))
 		throw new Error("Allowed permissions must be an array");
@@ -299,7 +299,20 @@ const createPermissionOverwrites = ({userOrRoleID, allowedPermissions, deniedPer
 
 	if (deniedPermissions)
 		overwrite.deny = deniedPermissions;
+
+	return overwrite;
 }
+
+/**
+ * Creates a permission overwrite that denies everyone the ability to view a channel.
+ * @param {Guild} guild - The guild in which the permission overwrite is to be created.
+ * @returns {Object} The permission overwrite object.
+ */
+const createEveryoneDenyViewPermission = (guild) =>
+	createPermission({
+		userOrRoleID: guild.roles.everyone,
+		deniedPermissions: [PermissionFlagsBits.ViewChannel],
+	});
 
 module.exports = {
 	confirmInteractionWithButtons,
@@ -309,5 +322,6 @@ module.exports = {
 	editReplyToInteraction,
 	getInputFromCreatedTextModal,
 	createChannel,
-	createPermissionOverwrites,
+	createPermission,
+	createEveryoneDenyViewPermission,
 };
