@@ -314,6 +314,37 @@ const createEveryoneDenyViewPermission = (guild) =>
 		deniedPermissions: [PermissionFlagsBits.ViewChannel],
 	});
 
+const addPermissionToChannel = ({channel, userOrRoleID, allowedPermissions, deniedPermissions}) => {
+	const permissions = {}
+
+	if (!allowedPermissions && !deniedPermissions)
+		throw new Error("allowedPermissions or deniedPermissions are required");
+
+	if (allowedPermissions && !Array.isArray(allowedPermissions))
+		throw new Error("Allowed permissions must be an array");
+
+	if (deniedPermissions && !Array.isArray(deniedPermissions))
+		throw new Error("Denied permissions must be an array");
+
+	if (allowedPermissions) {
+		for (const permission of allowedPermissions) {
+			permissions[permission] = true;
+    }
+	}
+
+	if (deniedPermissions) {
+    for (const permission of deniedPermissions) {
+      permissions[permission] = false;
+    }
+  }
+
+	channel.permissionOverwrites.create(
+		userOrRoleID,
+		permissions,
+	);
+}
+
+
 module.exports = {
 	confirmInteractionWithButtons,
 	addRoleToMember,
@@ -324,4 +355,5 @@ module.exports = {
 	createChannel,
 	createPermission,
 	createEveryoneDenyViewPermission,
+	addPermissionToChannel,
 };
