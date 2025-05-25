@@ -2,8 +2,8 @@ const { CommandInteraction, ChannelType, PermissionFlagsBits } = require("discor
 const ids = require("../../bot-config/discord-ids");
 const { ParameterType, Parameter } = require("../../services/command-creation/parameter");
 const SlashCommand = require("../../services/command-creation/slash-command");
-const { deferInteraction, createChannel, createPermission: createPermissionOverwrites, editReplyToInteraction, createEveryoneDenyViewPermission, addPermissionToChannel } = require("../../utilities/discord-action-utils");
-const { fetchChannel, fetchGuild, fetchUser, getUserParamValue, getEveryoneRole } = require("../../utilities/discord-fetch-utils");
+const { deferInteraction, createChannel, createPermission: createPermissionOverwrites, editReplyToInteraction, createEveryoneDenyViewPermission, addPermissionToChannel, memberHasRole } = require("../../utilities/discord-action-utils");
+const { fetchChannel, fetchGuild, fetchUser, getUserParamValue, getEveryoneRole, fetchGuildMember, fetchRole, fetchRoleByName } = require("../../utilities/discord-fetch-utils");
 
 const Parameters = {
 	Contestant1: new Parameter({
@@ -41,7 +41,7 @@ const Parameters = {
 module.exports = new SlashCommand({
 	name: "create-alliance",
 	description: "Create an alliance with given contestants",
-	required_roles: ['Contestant'],
+	required_roles: [ids.sandSeason3.roles.contestant],
 	required_serveres: [ids.sandSeason3.guild],
 	parameters: [
 		Parameters.Contestant1,
@@ -57,6 +57,7 @@ module.exports = new SlashCommand({
 	execute: async function execute(interaction) {
 		await deferInteraction(interaction);
 
+		const sandSeason3Guild = await fetchGuild(ids.sandSeason3.guild);
 		const commandUser = interaction.user;
 		let contestantIDs = [commandUser.id];
 		const allianceName = 'alliance';
@@ -73,6 +74,20 @@ module.exports = new SlashCommand({
 		// Filter duplicate IDs
 		contestantIDs = [...new Set(contestantIDs)];
 
+		// Filter IDs without Contestant role
+		for (const index in contestantIDs) {
+			const contestantID = contestantIDs[index];
+			const member = await fetchGuildMember(sandSeason3Guild, contestantID);
+			const isContestant = await memberHasRole(member, ids.sandSeason3.roles.contestant, true);
+
+			if (!isContestant) {
+				editReplyToInteraction(interaction,
+					`User <@${contestantID}> is not a valid contestant. Please provide valid contestants.`
+				)
+				return;
+      }
+		}
+
 		// Stop if no contestant IDs
 		if (contestantIDs.length < 2) {
       await editReplyToInteraction(interaction,
@@ -81,7 +96,6 @@ module.exports = new SlashCommand({
       return;
     }
 
-		const sandSeason3Guild = await fetchGuild(ids.sandSeason3.guild);
 		const newChannel = await createChannel({
 			guild: sandSeason3Guild,
 			name: allianceName,

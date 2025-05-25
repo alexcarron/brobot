@@ -1,4 +1,5 @@
 const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionOverwrites, PermissionFlagsBits } = require('discord.js');
+const { Role } = require('../services/rapid-discord-mafia/role');
 
 /**
  * Prompt the user to confirm or cancel an action by adding buttons to the deffered reply to an existing command interaction.
@@ -355,6 +356,30 @@ const addPermissionToChannel = ({channel, userOrRoleID, allowedPermissions, deni
 }
 
 
+
+/**
+ * Checks if a guild member has a given role.
+ * @param {GuildMember} guildMember - The guild member to check.
+ * @param {Role} roleID - The role to check for.
+ * @returns {Promise<boolean>} True if the guild member has the given role, false otherwise.
+ */
+const memberHasRole = async (guildMember, roleID, useCache = false) => {
+	if (!(guildMember instanceof GuildMember))
+		throw new Error("Guild member object must be an instance of GuildMember");
+
+	if (roleID instanceof Role)
+		roleID = roleID.id;
+
+	if (typeof roleID !== "string")
+		throw new Error("Role ID must be a string");
+
+	if (!useCache)
+		await guildMember.fetch();
+
+	return guildMember.roles.cache.some(role => role.id === roleID);
+}
+
+
 module.exports = {
 	confirmInteractionWithButtons,
 	addRoleToMember,
@@ -366,4 +391,5 @@ module.exports = {
 	createPermission,
 	createEveryoneDenyViewPermission,
 	addPermissionToChannel,
+	memberHasRole,
 };
