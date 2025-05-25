@@ -276,4 +276,35 @@ const findStringStartingWith = (startingString, possibleStrings) => {
 	)
 }
 
-module.exports = { toTitleCase, createTextProgressBar, toNumericOrdinal, toWordOrdinal, createListFromWords, wrapTextByLineWidth, removeLinks, removeEmojis, findStringStartingWith };
+/**
+ * Increments the number at the end of a given string by a given amount.
+ * @param {string} string - The string to increment
+ * @param {number} [incrementAmount=1] - The amount to increment the number by
+ * @returns {string} The string with the number at the end incremented by the given amount
+ */
+const incrementEndNumber = (string, incrementAmount = 1) => {
+	if (typeof string !== 'string')
+		throw new Error('string must be a string.');
+
+	if (typeof incrementAmount!== 'number')
+		throw new Error('incrementAmount must be a number.');
+
+	const endNumberMatch = string.match(/\d+$/);
+	const hasEndNumber = endNumberMatch !== null;
+	console.debug(`End number match: ${endNumberMatch}`);
+	console.debug(`Has end number: ${hasEndNumber}`);
+
+	if (!hasEndNumber)
+		return string + (1 + incrementAmount);
+
+
+	const endNumber = Number(string.match(/\d+$/));
+	console.debug(`Current end number: ${endNumber}`);
+	const numDigits = endNumber.toString().length;
+	const stringWithoutEndNumber = string.slice(0, -numDigits);
+	const newNumber = endNumber + incrementAmount;
+
+	return `${stringWithoutEndNumber}${newNumber}`;
+}
+
+module.exports = { toTitleCase, createTextProgressBar, toNumericOrdinal, toWordOrdinal, createListFromWords, wrapTextByLineWidth, removeLinks, removeEmojis, findStringStartingWith, incrementEndNumber };

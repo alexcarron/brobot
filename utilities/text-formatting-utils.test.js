@@ -1,4 +1,4 @@
-const { toTitleCase, createTextProgressBar, toNumericOrdinal, toWordOrdinal, createListFromWords, wrapTextByLineWidth, removeLinks, removeEmojis, findStringStartingWith } = require("./text-formatting-utils");
+const { toTitleCase, createTextProgressBar, toNumericOrdinal, toWordOrdinal, createListFromWords, wrapTextByLineWidth, removeLinks, removeEmojis, findStringStartingWith, incrementEndNumber } = require("./text-formatting-utils");
 const { createNowUnixTimestamp } = require("./date-time-utils");
 
 describe('toTitleCase()', () => {
@@ -386,4 +386,54 @@ describe('findStringStartingWith()', () => {
 		const possibleStrings = 'not an array';
 		expect(() => findStringStartingWith(startingString, possibleStrings)).toThrowError();
 	});
+});
+
+describe('incrementEndNumber()', () => {
+	it('should append 2 to a string with no number at the end', () => {
+		expect(incrementEndNumber('hello')).toBe('hello2');
+	});
+
+	it('should increment a string with a number at the end by default amount (1)', () => {
+		expect(incrementEndNumber('hello1')).toBe('hello2');
+	});
+
+	it('should increment a string with a number greater than one at the end', () => {
+		expect(incrementEndNumber('hello5')).toBe('hello6');
+	});
+
+	it('should increment a string with a number at the end by a specified amount', () => {
+		expect(incrementEndNumber('hello1', 2)).toBe('hello3');
+	});
+
+	it('should increment a string with a single digit number at the end', () => {
+		expect(incrementEndNumber('hello9')).toBe('hello10');
+	});
+
+	it('should increment a string with a multi-digit number at the end', () => {
+		expect(incrementEndNumber('hello99')).toBe('hello100');
+	});
+
+	it('should increment a string with a number at the end that results in a single digit number', () => {
+		expect(incrementEndNumber('hello10', -9)).toBe('hello1');
+	});
+
+	it('should increment a string with a number at the end that results in a multi-digit number', () => {
+		expect(incrementEndNumber('hello9', 10)).toBe('hello19');
+	});
+
+	it('should throw an error with a non-string input', () => {
+		expect(() => incrementEndNumber(123)).toThrowError();
+  });
+
+	it('should throw an error with a non-number increment amount', () => {
+    expect(() => incrementEndNumber('hello', 'two')).toThrowError();
+  });
+
+	it('should handle negative end number outputs', () => {
+		expect(incrementEndNumber('hello', -2)).toBe('hello-1');
+  });
+
+	it('should handle confusing strings with many numeric characters', () => {
+		expect(incrementEndNumber('10wordswith98syllables1234567890')).toBe('10wordswith98syllables1234567891');
+  });
 });
