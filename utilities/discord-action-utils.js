@@ -1,4 +1,4 @@
-const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel } = require('discord.js');
+const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType } = require('discord.js');
 
 /**
  * Prompt the user to confirm or cancel an action by adding buttons to the deffered reply to an existing command interaction.
@@ -226,6 +226,49 @@ const getInputFromCreatedTextModal = async ({
 	return textEntered;
 }
 
+/**
+ * Creates a Discord channel in a guild.
+ * @param {Object} options - Options for creating the channel.
+ * @param {Guild} options.guild - The guild in which the channel is to be created.
+ * @param {string} options.name - The name of the channel.
+ * @param {PermissionOverwrite[]} [options.permissions] - Permission overwrites for the channel. If not provided, the default permissions will be used.
+ * @param {CategoryChannelResolvable} [options.parentCategory] - The parent category of the channel. If not provided, the channel will not have a parent category.
+ * @returns {Promise<TextChannel>} The created channel.
+ */
+const createChannel = async ({guild, name, permissions = null, parentCategory = null}) => {
+	if (!guild)
+		throw new Error("Guild is required");
+
+	if (!guild instanceof Guild)
+		throw new Error("Guild object must be an instance of Guild");
+
+	if (!name)
+		throw new Error("Channel name is required");
+
+	if (typeof name !== "string")
+		throw new Error("Channel name must be a string");
+
+	if (permissions && !Array.isArray(permissions))
+		throw new Error("Permissions must be an array");
+
+	const options = {
+		name: name,
+		type: ChannelType.GuildText,
+	};
+
+	if (parentCategory) {
+		options.parent = parentCategory;
+	}
+
+	if (permissions) {
+    options.permissionOverwrites = permissions;
+  }
+
+	const channel = await guild.channels.create(options);
+
+	return channel;
+};
+
 module.exports = {
 	confirmInteractionWithButtons,
 	addRoleToMember,
@@ -233,4 +276,5 @@ module.exports = {
 	deferInteraction,
 	editReplyToInteraction,
 	getInputFromCreatedTextModal,
+	createChannel,
 };
