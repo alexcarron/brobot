@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, CommandInteraction } = require("discord.js");
-const Parameter = require("./parameter");
+const { Parameter } = require("./parameter");
 
 /**
  * Represents a Discord command.

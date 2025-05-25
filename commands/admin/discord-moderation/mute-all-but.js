@@ -1,4 +1,4 @@
-const Parameter = require('../../../services/command-creation/parameter');
+const { Parameter } = require('../../../services/command-creation/parameter');
 const SlashCommand = require('../../../services/command-creation/slash-command');
 
 const command = new SlashCommand({

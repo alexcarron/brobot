@@ -1,7 +1,7 @@
 const { ChannelType, Collection } = require("discord.js");
 const ids = require("../bot-config/discord-ids");
 const { botStatus } = require("../bot-config/bot-status");
-const { logError } = require("../utilities/logging-utils");
+const { logError, logInfo } = require("../utilities/logging-utils");
 
 const onSlashCommandExecuted = async (interaction) => {
 	const userName = interaction.user.username;

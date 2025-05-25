@@ -110,7 +110,17 @@ const ids = {
       day: "1031365761068957771",
       archive: "1031365761672937536",
     },
-  }
+  },
+
+	sandSeason3: {
+		guild: "1375999496164479226",
+		channels: {
+			log: "1376025642386329610",
+		},
+		categories: {
+			alliance: "1376025607691046933",
+		},
+	},
 }
 
 module.exports = ids;

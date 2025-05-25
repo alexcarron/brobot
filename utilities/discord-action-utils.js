@@ -314,6 +314,16 @@ const createEveryoneDenyViewPermission = (guild) =>
 		deniedPermissions: [PermissionFlagsBits.ViewChannel],
 	});
 
+/**
+ * Adds permission overwrites to a Discord channel for a specific user or role.
+ *
+ * @param {Object} options - Options for setting permissions.
+ * @param {TextChannel} options.channel - The channel to which the permissions are applied.
+ * @param {string} options.userOrRoleID - The ID of the user or role for which the permissions are set.
+ * @param {PermissionFlagsBits[]} [options.allowedPermissions] - An array of permissions to allow.
+ * @param {PermissionFlagsBits[]} [options.deniedPermissions] - An array of permissions to deny.
+ * @throws {Error} If neither allowedPermissions nor deniedPermissions are provided, or if they are not arrays.
+ */
 const addPermissionToChannel = ({channel, userOrRoleID, allowedPermissions, deniedPermissions}) => {
 	const permissions = {}
 

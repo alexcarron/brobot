@@ -1,7 +1,7 @@
 const { PermissionFlagsBits, PermissionsBitField } = require("discord.js");
 const SlashCommand = require("../../../services/command-creation/slash-command");
 const { deferInteraction } = require("../../../utilities/discord-action-utils");
-const Parameter = require("../../../services/command-creation/parameter");
+const { Parameter } = require("../../../services/command-creation/parameter");
 const { QueryType, Player, QueueRepeatMode } = require("discord-player");
 const { EmbedBuilder } = require("@discordjs/builders");
 const { YoutubeiExtractor } = require("discord-player-youtubei");
@@ -166,7 +166,7 @@ command.execute = async function(interaction) {
 					.setDescription(`**${song.title}: ${song.url}** has been added to the queue`)
 					.setThumbnail(song.thumbnail)
 					.setFooter({ text: `Duration: ${song.duration}`});
-					
+
 				break;
 			};
 		}

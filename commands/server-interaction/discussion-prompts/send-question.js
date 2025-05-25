@@ -1,5 +1,5 @@
 const { PermissionFlagsBits } = require('discord.js');
-const Parameter = require('../../../services/command-creation/parameter');
+const { Parameter } = require('../../../services/command-creation/parameter');
 const SlashCommand = require('../../../services/command-creation/slash-command');
 const { deferInteraction } = require('../../../utilities/discord-action-utils');
 const DailyMessageHandler = require('../../../services/discussion-prompts/daily-message-handler');

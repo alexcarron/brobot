@@ -1,5 +1,5 @@
 const SlashCommand = require('../../services/command-creation/slash-command.js');
-const Parameter = require('../../services/command-creation/parameter.js');
+const { Parameter } = require('../../services/command-creation/parameter.js');
 const { createNowUnixTimestamp } = require('../../utilities/date-time-utils.js');
 
 const Parameters = {

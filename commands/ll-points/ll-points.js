@@ -1,6 +1,6 @@
 
 const { EmbedBuilder } = require('discord.js');
-const Parameter = require("../../services/command-creation/parameter.js");
+const { Parameter } = require("../../services/command-creation/parameter.js");
 const SlashCommand = require("../../services/command-creation/slash-command.js");
 const { LLPointManager } = require("../../services/ll-points/ll-point-manager.js");
 const { deferInteraction } = require("../../utilities/discord-action-utils.js");

@@ -1,4 +1,4 @@
-const Parameter = require('../../services/command-creation/parameter');
+const { Parameter } = require('../../services/command-creation/parameter');
 const SlashCommand = require('../../services/command-creation/slash-command');
 const { deferInteraction } = require('../../utilities/discord-action-utils');
 const ids = require(`../../bot-config/discord-ids.js`);

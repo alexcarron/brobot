@@ -4,6 +4,7 @@ const { joinVoiceChannel } = require("@discordjs/voice");
 const ids = require("../bot-config/discord-ids");
 const { fetchGuildMember } = require("../utilities/discord-fetch-utils");
 const { GameState } = require("../services/rapid-discord-mafia/game-state-manager");
+const { logInfo } = require("../utilities/logging-utils");
 
 const onTTSMessageSent = async (message) => {
 	logInfo(`TTS Message Sent: ${message.content}`);

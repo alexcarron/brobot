@@ -1,7 +1,7 @@
 const { PermissionFlagsBits, PermissionsBitField } = require("discord.js");
 const SlashCommand = require("../../../services/command-creation/slash-command");
 const { deferInteraction } = require("../../../utilities/discord-action-utils");
-const Parameter = require("../../../services/command-creation/parameter");
+const { Parameter } = require("../../../services/command-creation/parameter");
 const { EmbedBuilder } = require("@discordjs/builders");
 
 const Parameters = {

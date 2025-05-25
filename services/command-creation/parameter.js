@@ -1,4 +1,18 @@
 const { toTitleCase } = require('../../utilities/text-formatting-utils.js');
+
+const ParameterType = Object.freeze({
+	SUBCOMMAND: "subcommand",
+	STRING: "string",
+	CHANNEL: "channel",
+	ATTACHMENT: "attachment",
+	BOOLEAN: "boolean",
+	MENTIONABLE: "mentionable",
+	NUMBER: "number",
+	INTEGER: "integer",
+	ROLE: "role",
+	USER: "user"
+})
+
 /**
  * Represents a Discord command parameter.
  * @class
@@ -153,4 +167,4 @@ class Parameter {
 	}
 }
 
-module.exports = Parameter;
+module.exports = {Parameter, ParameterType};

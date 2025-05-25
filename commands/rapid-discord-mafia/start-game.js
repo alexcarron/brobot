@@ -1,4 +1,4 @@
-const Parameter = require("../../services/command-creation/parameter");
+const { Parameter } = require("../../services/command-creation/parameter");
 const SlashCommand = require("../../services/command-creation/slash-command");
 const { GameState } = require("../../services/rapid-discord-mafia/game-state-manager.js");
 const { RoleIdentifier } = require("../../services/rapid-discord-mafia/role-identifier");

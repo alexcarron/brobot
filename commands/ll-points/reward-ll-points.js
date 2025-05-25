@@ -1,5 +1,5 @@
 const { PermissionFlagsBits } = require('discord.js');
-const Parameter = require('../../services/command-creation/parameter.js');
+const { Parameter } = require('../../services/command-creation/parameter.js');
 const SlashCommand = require('../../services/command-creation/slash-command.js');
 const { LLPointAccomplishment, LLPointReward } = require('../../services/ll-points/ll-point-enums.js');
 const { deferInteraction } = require('../../utilities/discord-action-utils.js');
