@@ -3,9 +3,16 @@ const ids = require("../../bot-config/discord-ids");
 const { ParameterType, Parameter } = require("../../services/command-creation/parameter");
 const SlashCommand = require("../../services/command-creation/slash-command");
 const { deferInteraction, createChannel, createPermission: createPermissionOverwrites, editReplyToInteraction, createEveryoneDenyViewPermission, addPermissionToChannel, memberHasRole } = require("../../utilities/discord-action-utils");
-const { fetchChannel, fetchGuild, fetchUser, getUserParamValue, getEveryoneRole, fetchGuildMember, fetchRole, fetchRoleByName } = require("../../utilities/discord-fetch-utils");
+const { fetchChannel, fetchGuild, fetchUser, getUserParamValue, getEveryoneRole, fetchGuildMember, fetchRole, fetchRoleByName, getStringParamValue } = require("../../utilities/discord-fetch-utils");
+const { createListFromWords } = require("../../utilities/text-formatting-utils");
 
 const Parameters = {
+	Name: new Parameter({
+		type: ParameterType.STRING,
+		name: "name",
+		description: "The name of the alliance",
+		isRequired: true,
+	}),
 	Contestant1: new Parameter({
 		type: ParameterType.USER,
 		name: "contestant-1",
@@ -42,16 +49,17 @@ module.exports = new SlashCommand({
 	name: "create-alliance",
 	description: "Create an alliance with given contestants",
 	required_roles: [ids.sandSeason3.roles.contestant],
-	required_serveres: [ids.sandSeason3.guild],
+	required_servers: [ids.sandSeason3.guild],
 	parameters: [
+		Parameters.Name,
 		Parameters.Contestant1,
 		Parameters.Contestant2,
 		Parameters.Contestant3,
 		Parameters.Contestant4,
 		Parameters.Contestant5,
 	],
+
 	/**
-	 *
 	 * @param {CommandInteraction} interaction
 	 */
 	execute: async function execute(interaction) {
@@ -60,9 +68,10 @@ module.exports = new SlashCommand({
 		const sandSeason3Guild = await fetchGuild(ids.sandSeason3.guild);
 		const commandUser = interaction.user;
 		let contestantIDs = [commandUser.id];
-		const allianceName = 'alliance';
+		const allianceName = getStringParamValue(interaction, Parameters.Name.name);
 
-		for (const parameter of Object.values(Parameters)) {
+		const userParameters = Object.values(Parameters).filter(parameter => parameter.type === ParameterType.USER);
+		for (const parameter of userParameters) {
 			const contestant = getUserParamValue(interaction, parameter.name);
 			if (!contestant) {
 				continue;
@@ -114,10 +123,18 @@ module.exports = new SlashCommand({
 		}
 
 		const logChannel = await fetchChannel(sandSeason3Guild, ids.sandSeason3.channels.log);
-		logChannel.send(`${commandUser} made an alliance`);
+		logChannel.send(`${commandUser} made an alliance ${newChannel} with: ${
+			createListFromWords(contestantIDs.map(id => `<@${id}>`))
+		}`);
+
+		newChannel.send(
+			`${commandUser} created this alliance with ${
+				createListFromWords(contestantIDs.map(id => `<@${id}>`))
+			}`
+		);
 
 		await editReplyToInteraction(interaction,
-			`Alliance "${allianceName}" created with contestants: ${contestantIDs.map(id => `<@${id}>`).join(', ')}`
+			`Alliance ${newChannel} created with contestants: ${contestantIDs.map(id => `<@${id}>`).join(', ')}`
 		);
 	},
 });

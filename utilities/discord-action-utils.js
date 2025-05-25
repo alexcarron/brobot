@@ -235,7 +235,7 @@ const getInputFromCreatedTextModal = async ({
  * @param {Object} options - Options for creating the channel.
  * @param {Guild} options.guild - The guild in which the channel is to be created.
  * @param {string} options.name - The name of the channel.
- * @param {PermissionOverwrite[]} [options.permissions] - Permission overwrites for the channel. If not provided, the default permissions will be used.
+ * @param {PermissionOverwrites[]} [options.permissions] - Permission overwrites for the channel. If not provided, the default permissions will be used.
  * @param {CategoryChannelResolvable} [options.parentCategory] - The parent category of the channel. If not provided, the channel will not have a parent category.
  * @returns {Promise<TextChannel>} The created channel.
  */

@@ -140,7 +140,11 @@ function getAllJSFiles(directoryPath) {
 		logSuccess(`Successfully reloaded application (/) commands.`);
 
 		// ! Delete Guild Command
-		// rest.delete(Routes.applicationGuildCommand(ids.client, ids.servers.rapid_discord_mafia, "1146264673470136350"))
+		// rest.delete(Routes.applicationGuildCommand(
+		// 	ids.client,
+		// 	ids.sandSeason3.guild,
+		// 	"1376029058634354872"
+		// ))
 		// .then(() => logSuccess('Successfully deleted guild command'))
 		// .catch(console.error);
 
