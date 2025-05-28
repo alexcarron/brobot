@@ -119,6 +119,7 @@ const ids = {
 		},
 		categories: {
 			alliance: "1376025607691046933",
+			alliance2: "1377051357457944607",
 		},
 		roles: {
 			contestant: "1376029480606236812",

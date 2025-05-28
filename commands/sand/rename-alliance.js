@@ -18,7 +18,6 @@ module.exports = new SlashCommand({
 	description: "Reanme the alliance this command is sent in",
 	required_roles: [ids.sandSeason3.roles.contestant],
 	required_servers: [ids.sandSeason3.guild],
-	required_categories: [ids.sandSeason3.categories.alliance],
 	parameters: [
 		Parameters.Name,
 	],
@@ -28,6 +27,14 @@ module.exports = new SlashCommand({
 	 */
 	execute: async function execute(interaction) {
 		await deferInteraction(interaction);
+
+		const category = interaction.channel.parent;
+		if (!category || category.name.toLowerCase().includes("alliance") === false) {
+      await editReplyToInteraction(interaction,
+        "This command can only be used in an alliance category"
+      );
+			return
+    }
 
 		const commandUser = interaction.user;
 		const newName = getStringParamValue(interaction, Parameters.Name.name);
