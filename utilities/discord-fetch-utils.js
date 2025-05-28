@@ -130,6 +130,16 @@ const fetchRDMGuild = async () => {
 }
 
 /**
+ * Gets an integer parameter value of a slash command by name.
+ * @param {ChatInputCommandInteraction} interaction
+ * @param {string} name - The name of the parameter
+ * @returns {number | null}
+ */
+const getIntegerParamValue = (interaction, name) => {
+	return interaction.options.getInteger(name);
+}
+
+/**
  * Gets a string parameter value of a slash command by name.
  * @param {ChatInputCommandInteraction} interaction
  * @param {string} name - The name of the parameter
@@ -156,4 +166,4 @@ const getUserParamValue = (interaction, name) => {
  */
 const getEveryoneRole = (guild) => guild.roles.everyone;
 
-module.exports = { assertClientSetup, fetchGuild, fetchChannel, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchUser, fetchRole, fetchRoleByName, getStringParamValue, getUserParamValue, getEveryoneRole };
+module.exports = { assertClientSetup, fetchGuild, fetchChannel, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchUser, fetchRole, fetchRoleByName, getStringParamValue, getUserParamValue, getEveryoneRole, getIntegerParamValue };

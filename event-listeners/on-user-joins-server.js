@@ -16,6 +16,12 @@ const onUserJoinsServer = async function(guildMember) {
 
 		await addRoleToMember(guildMember, viewerRole);
 	}
+	else if (guildMember.guild.id === ids.sandSeason3.guild) {
+		const sandSeason3Guild = await fetchGuild(ids.sandSeason3.guild);
+    const spectatorRole = await fetchRole(sandSeason3Guild, ids.sandSeason3.roles.spectator);
+
+		await addRoleToMember(guildMember, spectatorRole);
+	}
 };
 
 module.exports = {onUserJoinsServer};

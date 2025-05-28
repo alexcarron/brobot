@@ -63,6 +63,7 @@ class SlashCommand {
 		required_permissions,
 		parameters = [],
 		execute = async (interaction) => {},
+		autocomplete = async (interaction) => {},
 	}) {
 		this.name = name;
 		this.description = description;
@@ -75,6 +76,7 @@ class SlashCommand {
 		this.required_permissions = required_permissions
 		this.parameters = parameters
 		this.execute = execute
+		this.autocomplete = autocomplete
 	}
 
 	async getCommand() {

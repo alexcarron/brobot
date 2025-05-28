@@ -270,7 +270,7 @@ const createChannel = async ({guild, name, permissions = null, parentCategory = 
 
 	let haveSpaceForNewChannel = false;
 
-	while (!haveSpaceForNewChannel) {
+	while (parentCategory && !haveSpaceForNewChannel) {
 		const childChannelCount = parentCategory.children.cache.size;
 		if (childChannelCount >= MAX_CHANNELS_PER_CATEGORY) {
 			const newCategoryName = incrementEndNumber(parentCategory.name);
@@ -430,6 +430,17 @@ const addPermissionToChannel = ({channel, userOrRoleID, allowedPermissions, deni
 	);
 }
 
+/**
+ * Removes all permission overwrites from a Discord channel for a specific user or role.
+ *
+ * @param {Object} options - Options for removing permissions.
+ * @param {TextChannel} options.channel - The channel from which the permissions are removed.
+ * @param {string} options.userOrRoleID - The ID of the user or role for which the permissions are removed.
+ * @returns {Promise<void>} A promise that resolves when the permissions have been removed.
+ */
+const removePermissionFromChannel = async ({channel, userOrRoleID}) => {
+	await channel.permissionOverwrites.delete(userOrRoleID);
+}
 
 
 /**
@@ -454,6 +465,17 @@ const memberHasRole = async (guildMember, roleID, useCache = false) => {
 	return guildMember.roles.cache.some(role => role.id === roleID);
 }
 
+/**
+ * Renames a Discord channel.
+ *
+ * @param {TextChannel} channel - The channel to rename.
+ * @param {string} newName - The new name for the channel.
+ * @returns {Promise<void>} A promise that resolves when the channel has been renamed.
+ */
+const renameChannel = async (channel, newName) => {
+	await channel.setName(newName);
+}
+
 
 module.exports = {
 	confirmInteractionWithButtons,
@@ -466,6 +488,8 @@ module.exports = {
 	createPermission,
 	createEveryoneDenyViewPermission,
 	addPermissionToChannel,
+	removePermissionFromChannel,
 	memberHasRole,
 	createCategory,
+	renameChannel,
 };

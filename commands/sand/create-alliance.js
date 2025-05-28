@@ -37,12 +37,6 @@ const Parameters = {
 		description: "A contestant to be included in the alliance",
 		isRequired: false,
 	}),
-	Contestant5: new Parameter({
-		type: ParameterType.USER,
-		name: "contestant-5",
-		description: "A contestant to be included in the alliance",
-		isRequired: false,
-	}),
 }
 
 module.exports = new SlashCommand({
@@ -56,7 +50,6 @@ module.exports = new SlashCommand({
 		Parameters.Contestant2,
 		Parameters.Contestant3,
 		Parameters.Contestant4,
-		Parameters.Contestant5,
 	],
 
 	/**
