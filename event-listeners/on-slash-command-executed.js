@@ -7,7 +7,7 @@ const onSlashCommandExecuted = async (interaction) => {
 	const userName = interaction.user.username;
 	logInfo(`${userName} executing command: ${interaction.commandName}`);
 
-	const command = interaction.client.commands.get(interaction.commandName);
+	const command = global.client.commands.get(interaction.commandName);
 
 	if (command === undefined) {
 		console.error(`No command matching ${interaction.commandName} was found.`);

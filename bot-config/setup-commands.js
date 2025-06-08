@@ -121,7 +121,7 @@ const mapGuildCommandsToGuildID = (commands) => {
 }
 
 /**
- * Deploys all slash commands for the bot. This function is called by the {@link setupCommands} function.
+ * Deploys all slash commands for the bot. This function is called by the {@link setupAndDeployCommands} function.
  * @param {{globalCommands: SlashCommand[], guildIDtoGuildCommands: Map<string, SlashCommand[]>}} parameters
  * @param {SlashCommand[]} parameters.globalCommands - An array of all global slash commands that should be deployed.
  * @param {Map<string, SlashCommand[]>} parameters.guildIDtoGuildCommands - An object mapping each guild ID to an array of private slash commands that should be deployed in that guild.
@@ -189,7 +189,7 @@ const deployCommands = async ({globalCommands, guildIDtoGuildCommands}) => {
  * @param {Discord.Client} client The bot client.
  * @returns {Promise<void>}
  */
-const setupCommands = async (client) => {
+const setupAndDeployCommands = async (client) => {
 	const commands = getCommands();
 	storeCommandsInMemory(client, commands);
 
@@ -202,4 +202,14 @@ const setupCommands = async (client) => {
 	});
 }
 
-module.exports = {setupCommands};
+/**
+ * Sets up all slash commands in memory for the bot without redeploying them to the Discord API.
+ * @param {Discord.Client} client The bot client.
+ * @returns {void}
+ */
+const setupCommands = (client) => {
+	const commands = getCommands();
+	storeCommandsInMemory(client, commands);
+}
+
+module.exports = {setupAndDeployCommands, setupCommands};
