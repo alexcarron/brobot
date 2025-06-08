@@ -127,7 +127,7 @@ const mapGuildCommandsToGuildID = (commands) => {
  * @param {Map<string, SlashCommand[]>} parameters.guildIDtoGuildCommands - An object mapping each guild ID to an array of private slash commands that should be deployed in that guild.
  * @returns {Promise<void>}
  */
-const deployCommands = async ({globalCommands, guildIDtoGuildCommands}) => {
+const deployCommands = async ({globalCommands = [], guildIDtoGuildCommands}) => {
 	// Construct and prepare an instance of the REST module
 	const rest = new Discord.REST().setToken(DISCORD_TOKEN);
 
@@ -189,17 +189,21 @@ const deployCommands = async ({globalCommands, guildIDtoGuildCommands}) => {
  * @param {Discord.Client} client The bot client.
  * @returns {Promise<void>}
  */
-const setupAndDeployCommands = async (client) => {
+const setupAndDeployCommands = async ({client, skipGlobalCommands = false}) => {
 	const commands = getCommands();
 	storeCommandsInMemory(client, commands);
 
 	const globalCommands = getGlobalCommands(commands);
 	const guildIDtoGuildCommands = mapGuildCommandsToGuildID(commands);
 
-	await deployCommands({
-		globalCommands,
+	const commandsToDeploy = {
 		guildIDtoGuildCommands,
-	});
+	};
+
+	if (!skipGlobalCommands)
+		commandsToDeploy.globalCommands = globalCommands;
+
+	await deployCommands(commandsToDeploy);
 }
 
 /**
