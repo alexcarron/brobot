@@ -162,6 +162,8 @@ Contains the main entry point and all project-level configuration files.
   * Defines global variables
   * Loads all commands and event listeners
   * Initializes all services
+  * Optionally registers commands (`--deploy`, `--deploy-all`)
+* **`build.js`** Registers BroBot’s slash commands with Discord. Use only when adding, removing, or updating commands, as deployment time is unreliable.
 * **`LICENSE`** Specifies the licensing terms
 * **`package-lock.json`** Ensures consistent dependency versions across installs
 * **`package.json`** Contains project metadata and dependencies
@@ -176,6 +178,9 @@ Contains configuration files related to Brobot.
   * `isSleep`: If true, only admins can use Brobot (non-admins are restricted)
 * **`discord-ids.js`** Stores relevant Discord server, role, channel, category, and user IDs used throughout the code (e.g.,
  admin IDs, allowed role IDs)
+* **`on-ready.js`** Handles setting up services and global variables when the client is ready to start running
+* **`setup-client.js`** Sets up the Discord client in the global scope with necessary intents and partials
+* **`setup-commands.js`** Handles storing all commands from the `/commands` directory in memory and registering them through Discord's API.
 * **`token.js`** *(hidden)* Stores sensitive data like bot tokens and API keys
 
 ### 📂 `commands/`

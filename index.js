@@ -5,7 +5,7 @@ const { setupCommands, setupAndDeployCommands } = require('./bot-config/setup-co
 const { setupClient } = require('./bot-config/setup-client.js');
 const { onClientReady } = require('./bot-config/on-ready.js');
 
-const DEPLOY_OPTIONS = [
+const DEPLOY_GUILD_COMMANDS_OPTIONS = [
 	'--deploy-commands',
 	'--deployCommands',
 	'--deploy',
@@ -24,7 +24,7 @@ const startBrobot = async () => {
 	logInfo(`Using discord.js version: ${require('discord.js').version}`);
 
 	const commandArguments = process.argv;
-	const isDeploying = commandArguments.some(argument => DEPLOY_OPTIONS.includes(argument));
+	const isDeploying = commandArguments.some(argument => DEPLOY_GUILD_COMMANDS_OPTIONS.includes(argument));
 	const isDeployingAll = commandArguments.some(argument => DEPLOY_ALL_OPTIONS.includes(argument));
 
 	const client = await setupClient();
