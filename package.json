@@ -8,7 +8,9 @@
 				"start": "npm run build && node index.js",
 				"build": "node build.js",
 				"build:dev": "node build.js --dev",
-				"dev": "nodemon --ignore \"**/*.json\" index.js"
+				"dev": "nodemon --ignore \"**/*.json\" index.js",
+				"dev:deploy": "nodemon --ignore \"**/*.json\" index.js --deploy-commands",
+				"dev:deploy-all": "nodemon --ignore \"**/*.json\" index.js --deploy-all-commands"
 		},
 		"dependencies": {
 				"@discordjs/builders": "^1.6.5",
