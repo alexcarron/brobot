@@ -41,6 +41,8 @@ const buildBrobot = async () => {
 	});
 
 	logSuccess("Bot built.");
+
+	process.exit(0);
 }
 
 buildBrobot();
