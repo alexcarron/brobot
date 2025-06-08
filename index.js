@@ -23,12 +23,11 @@ const DEPLOY_ALL_OPTIONS = [
 const startBrobot = async () => {
 	logInfo(`Using discord.js version: ${require('discord.js').version}`);
 
-	const client = await setupClient();
-	setupEventListeners(client);
-
 	const commandArguments = process.argv;
 	const isDeploying = commandArguments.some(argument => DEPLOY_OPTIONS.includes(argument));
 	const isDeployingAll = commandArguments.some(argument => DEPLOY_ALL_OPTIONS.includes(argument));
+
+	const client = await setupClient();
 
 	if (isDeployingAll)
 		await setupAndDeployCommands({client});
@@ -37,11 +36,15 @@ const startBrobot = async () => {
 	else
 		setupCommands(client);
 
+	setupEventListeners(client);
+
 	// when the client is ready, run this code
 	// this event will only trigger one time after Brobot has successfully fully connected to the Discord API
 	global.client.once(Events.ClientReady, async () => {
 		await onClientReady(client);
 	});
 }
+
+// 0.87
 
 startBrobot();
