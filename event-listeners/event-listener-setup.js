@@ -1,4 +1,4 @@
-const { ChannelType, Events, InteractionType } = require("discord.js");
+const { ChannelType, Events, InteractionType, Client } = require("discord.js");
 const { onNormalMessageSent } = require("./on-normal-message-sent");
 
 const { onDmRecieved } = require("./on-dm-recieved");
@@ -6,7 +6,7 @@ const { onSlashCommandExecuted } = require("./on-slash-command-executed");
 const { onSlashCommandAutocomplete } = require("./on-slash-command-autocomplete");
 const { onButtonPressed } = require("./on-button-pressed");
 const { onUserJoinsServer } = require("./on-user-joins-server");
-const { logInfo } = require("../utilities/logging-utils");
+const { logInfo, logSuccess } = require("../utilities/logging-utils");
 
 const isDM = (message) =>
 	message.channel.type === ChannelType.DM ||
@@ -22,6 +22,12 @@ const isButtonPress = (interaction) =>
 	interaction.type === InteractionType.MessageComponent &&
 	interaction.isButton();
 
+/**
+ * Sets up an event listener for when a message is sent (either in a DM or in a server channel)
+ * If the message is in a DM, the onDmRecieved function is called
+ * If the message is in a server channel, the onNormalMessageSent function is called
+ * @param {Client} client
+ */
 const setupMessageSentListener =
 	(client) => {
 
@@ -64,11 +70,13 @@ const setupGuildMemberAddListener =
 	};
 
 const setupEventListeners = (client) => {
-	logInfo("Setting up event listeners");
+	logInfo("Setting up event listeners...");
 
 	setupMessageSentListener(client);
 	setupInteractionCreateListener(client);
 	setupGuildMemberAddListener(client);
+
+	logSuccess("Event listeners set up");
 }
 
 module.exports = {setupEventListeners};

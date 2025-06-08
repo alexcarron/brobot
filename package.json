@@ -6,6 +6,7 @@
 		"scripts": {
 				"test": "jest --runInBand --silent",
 				"start": "node index.js",
+				"build": "node build.js",
 				"dev": "nodemon --ignore \"**/*.json\" index.js"
 		},
 		"dependencies": {

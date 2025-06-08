@@ -3,6 +3,7 @@ const { ParameterType, Parameter } = require("../../../services/command-creation
 const SlashCommand = require("../../../services/command-creation/slash-command");
 const { deferInteraction, editReplyToInteraction } = require("../../../utilities/discord-action-utils");
 const { getStringParamValue, fetchChannel, fetchChannelsInCategory } = require("../../../utilities/discord-fetch-utils");
+const { wait } = require("../../../utilities/realtime-utils");
 
 const Parameters = {
 	Category: new Parameter({
@@ -44,8 +45,16 @@ module.exports = new SlashCommand({
 		// All channels in the category
 		const channels = await fetchChannelsInCategory(guild, categoryID)
 
+		let numMessagesSent = 0;
+
 		channels.forEach(async (channel) => {
 			await channel.send(message);
+			numMessagesSent++;
+
+			// Rate limit to prevent spamming Discord API
+			if (numMessagesSent % 10 === 0) {
+				await wait({seconds: 0.5});
+			}
 		});
 
 		await editReplyToInteraction(interaction,

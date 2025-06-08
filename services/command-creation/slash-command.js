@@ -79,18 +79,25 @@ class SlashCommand {
 		this.autocomplete = autocomplete
 	}
 
-	async getCommand() {
+	/**
+	 * Constructs and returns a SlashCommand object configured with its name, description,
+	 * parameters, required permissions, and DM permissions.
+	 *
+	 * @returns {SlashCommand} The configured SlashCommand instance.
+	 */
+	getCommand() {
 
 		const data = new SlashCommandBuilder()
 			.setName(this.name)
 			.setDescription(this.description);
 
-		await this.parameters.forEach(async parameter => {
-			await parameter.addToCommand(data)
+		this.parameters.forEach(async parameter => {
+			parameter.addToCommand(data)
 		});
 
 		if (this.required_permissions && this.required_permissions.length > 0) {
-			const default_member_permissions = await this.required_permissions.reduce((accum_permissions, permission_bit) => accum_permissions | permission_bit, this.required_permissions[0]);
+			const default_member_permissions =
+			this.required_permissions.reduce((accum_permissions, permission_bit) => accum_permissions | permission_bit, this.required_permissions[0]);
 
 			data.setDefaultMemberPermissions(default_member_permissions)
 		}
