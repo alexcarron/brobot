@@ -4,51 +4,12 @@ Brobot is a feature-rich Discord.js bot built to enhance the experience of the L
 
 ## Table of Contents
 
-* **[Terminology](#terminology)**
 * **[Key Features](#key-features)**
+* **[Examples](#examples)**
+* **[Terminology](#terminology)**
 * **[Setup Instructions](#setup-instructions)**
 * **[Project File Structure](#project-file-structure)**
 * **[License](#license)**
-
-## Terminology
-
-Here are some key terms used in this project:
-
-### Discord API
-
-The Discord API allows developers to interact programmatically with Discord's platform, enabling bots to perform actions such as sending messages, banning users, or modifying server settings.
-
-### Bot Token
-
-A unique, secret string of characters that authenticates your bot with the Discord API. The token is required to run the bot and authorize it to take actions on Discord.
-
-### Discord.js
-
-A powerful JavaScript library that simplifies interaction with the Discord API, providing a set of easy-to-use functions for bot development.
-
-### Client
-
-The `Client` is an object that represents the bot itself and manages the connection between the bot and Discord's servers, handling events and interactions.
-
-### Intents
-
-Discord Intents are flags that indicate which events a bot is interested in receiving from Discord. They help optimize performance by allowing the bot to only receive the events it needs. For example, if your bot only needs to respond to messages, you can enable the `GUILD_MESSAGES` intent while leaving others disabled.
-
-### Slash Commands
-
-Slash commands are a way to interact with Discord bots directly through chat. They are easy-to-use, intuitive commands that start with a forward slash (/) followed by the command name (e.g., /ping). After typing the slash, Discord will automatically suggest available commands from the bot, helping users navigate bot features without needing to remember specific command syntax.
-
-### Rapid Discord Mafia
-
-A fast-paced social deduction game played on Discord, where each player is assigned a role belonging to a faction (such as Town, Mafia, or Neutral). Each player's objective is to fulfill the goal specified on their role card, which usually involves eliminating all other factions.
-
-### LL Points
-
-LL Points are virtual points earned by participating in the LL Game Show! community. You can accumulate these points by achieving specific milestones or participating in events. LL Points can be redeemed for various perks and grant special access to exclusive features within the community.
-
-### GitHub JSON Storage
-
-Persistent storage for the bot is managed through a private GitHub repository called `brobot-databases`. This odd storage solution is used for both convenience and avoiding costs, as it allows the bot to maintain data between restarts without incurring additional expenses. The data is stored in JSON files, which are updated and accessed as needed.
 
 ## Key Features
 
@@ -114,6 +75,80 @@ Persistent storage for the bot is managed through a private GitHub repository ca
 * Delete all channels in a category
 * Mute all members in a voice call
 
+## Examples
+
+Here are a few real-world examples of Brobot in action. These demonstrate how Brobot might be used to enhance my Discord game shows, moderation, or community interactions:
+
+### Add LL Points to Viewer
+
+![Add LL Points Command Usage](./docs/add-ll-points-command-usage.png "Add LL Points Command Usage")
+
+![Add LL Points Command Results](./docs/add-ll-points-command-results.png "Add LL Points Command Results")
+
+### View LL Point Leaderboard
+
+![Leaderboard Command Usage](./docs/leaderboard-command-usage.png "Leaderboard Command Usage")
+
+![Leaderboard Command Results](./docs/leaderboard-command-results.png "Leaderboard Command Results")
+
+### Use Text to Speech in Voice Chat
+
+![Text to Speech Command Usage](./docs/tts-command-usage.png "Text to Speech Command Usage")
+
+![Text to Speech Command Results](./docs/tts-command-results.png "Text to Speech Command Results")
+
+### Play a Song in Voice Chat with Search
+
+![Play Song Search Command Usage](./docs/play-song-search-command-usage.png "Play Song Search Command Usage")
+
+![Play Song Search Command Results](./docs/play-song-search-command-results.png "Play Song Search Command Results")
+
+## Mute Everyone in Voice Chat
+
+![Mass Mute Command Usage](./docs/mass-mute-command-usage.png "Mass Mute Command Usage")
+
+![Mass Mute Command Results](./docs/mass-mute-command-results.png "Mass Mute Command Results")
+
+## Terminology
+
+Here are some key terms used in this project:
+
+### Discord API
+
+The Discord API allows developers to interact programmatically with Discord's platform, enabling bots to perform actions such as sending messages, banning users, or modifying server settings.
+
+### Bot Token
+
+A unique, secret string of characters that authenticates your bot with the Discord API. The token is required to run the bot and authorize it to take actions on Discord.
+
+### Discord.js
+
+A powerful JavaScript library that simplifies interaction with the Discord API, providing a set of easy-to-use functions for bot development.
+
+### Client
+
+The `Client` is an object that represents the bot itself and manages the connection between the bot and Discord's servers, handling events and interactions.
+
+### Intents
+
+Discord Intents are flags that indicate which events a bot is interested in receiving from Discord. They help optimize performance by allowing the bot to only receive the events it needs. For example, if your bot only needs to respond to messages, you can enable the `GUILD_MESSAGES` intent while leaving others disabled.
+
+### Slash Commands
+
+Slash commands are a way to interact with Discord bots directly through chat. They are easy-to-use, intuitive commands that start with a forward slash (/) followed by the command name (e.g., /ping). After typing the slash, Discord will automatically suggest available commands from the bot, helping users navigate bot features without needing to remember specific command syntax.
+
+### Rapid Discord Mafia
+
+A fast-paced social deduction game played on Discord, where each player is assigned a role belonging to a faction (such as Town, Mafia, or Neutral). Each player's objective is to fulfill the goal specified on their role card, which usually involves eliminating all other factions.
+
+### LL Points
+
+LL Points are virtual points earned by participating in the LL Game Show! community. You can accumulate these points by achieving specific milestones or participating in events. LL Points can be redeemed for various perks and grant special access to exclusive features within the community.
+
+### GitHub JSON Storage
+
+Persistent storage for the bot is managed through a private GitHub repository called `brobot-databases`. This odd storage solution is used for both convenience and avoiding costs, as it allows the bot to maintain data between restarts without incurring additional expenses. The data is stored in JSON files, which are updated and accessed as needed.
+
 ## Setup Instructions
 
 ### 1. Install Prerequisites
@@ -148,7 +183,6 @@ module.exports = {
 
 * Install dependencies: `npm install`
 * Start the bot: `npm run start`
-
 
 ## Project File Structure
 
