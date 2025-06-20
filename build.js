@@ -2,20 +2,17 @@ const { setupClient } = require("./bot-config/setup-client");
 const { setupAndDeployCommands } = require("./bot-config/setup-commands");
 const { logInfo, logSuccess } = require("./utilities/logging-utils");
 
-const NO_GLOBAL_COMMANDS_OPTIONS = [
+const GUILD_COMMANDS_ONLY_OPTIONS = [
+	'--without-global-commands',
+	'--withoutGlobalCommands',
 	'--no-global-commands',
 	'--noGlobalCommands',
-	'--ngc',
-	'--ng',
 	'--no-global',
 	'--noGlobal',
 	'--guild-commands-only',
 	'--guildCommandsOnly',
-	'--gco',
-	'--gc',
-	'--guild-only',
-	'--guildOnly',
-	'--dev',
+	'--guild-commands',
+	'--guildCommands',
 ];
 
 /**
@@ -29,7 +26,7 @@ const buildBrobot = async () => {
 	let isSkippingGlobalCommands = false;
 
 	const commandArguments = process.argv;
-	if (commandArguments.some(argument => NO_GLOBAL_COMMANDS_OPTIONS.includes(argument))) {
+	if (commandArguments.some(argument => GUILD_COMMANDS_ONLY_OPTIONS.includes(argument))) {
 		logInfo("Skipping deployment of global commands.");
 		isSkippingGlobalCommands = true;
 	}

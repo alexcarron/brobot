@@ -11,6 +11,11 @@ const botStatus = {
 	 * If true, only admins can use Brobot (non-admins are restricted)
 	 */
 	isSleep: false,
+
+	/**
+	 * Whether the bot is in development mode (e.g., for testing purposes)
+	 */
+	isInDevelopmentMode: false,
 }
 
 module.exports = { botStatus }

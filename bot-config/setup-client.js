@@ -27,7 +27,9 @@ const setupClient = async () => {
 		]
 	});
 
-	await client.login(DISCORD_TOKEN);
+	let token = DISCORD_TOKEN();
+
+	await client.login(token);
 
 	client.cooldowns = new Discord.Collection();
 

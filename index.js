@@ -4,20 +4,29 @@ const { Events } = require('discord.js');
 const { setupCommands, setupAndDeployCommands } = require('./bot-config/setup-commands.js');
 const { setupClient } = require('./bot-config/setup-client.js');
 const { onClientReady } = require('./bot-config/on-ready.js');
+const { botStatus } = require('./bot-config/bot-status.js');
 
 const DEPLOY_GUILD_COMMANDS_OPTIONS = [
-	'--deploy-commands',
-	'--deployCommands',
-	'--deploy',
-	'--dc',
-	'--d',
+	'--deploy-guild-commands',
+	'--deployGuildCommands',
+	'--deploy-guild',
+	'--deployGuild',
 ];
 
 const DEPLOY_ALL_OPTIONS = [
 	'--deploy-all-commands',
 	'--deployAllCommands',
+	'--deploy-all',
 	'--deployAll',
+	'--dac',
 	'--da',
+];
+
+const DEVELOPMENT_ENVIRONMENT_OPTIONS = [
+	'--dev',
+	'--development',
+	'--dev-env',
+	'--devEnvironment',
 ];
 
 const startBrobot = async () => {
@@ -25,7 +34,16 @@ const startBrobot = async () => {
 
 	const commandArguments = process.argv;
 	const isDeploying = commandArguments.some(argument => DEPLOY_GUILD_COMMANDS_OPTIONS.includes(argument));
-	const isDeployingAll = commandArguments.some(argument => DEPLOY_ALL_OPTIONS.includes(argument));
+	const isDeployingAll = commandArguments.some(argument =>
+		DEPLOY_ALL_OPTIONS.includes(argument)
+	);
+	const isDevelopmentEnvironment = commandArguments.some(argument =>
+		DEVELOPMENT_ENVIRONMENT_OPTIONS.includes(argument)
+	);
+
+	if (isDevelopmentEnvironment) {
+		botStatus.isInDevelopmentMode = true;
+	}
 
 	const client = await setupClient();
 
@@ -34,7 +52,7 @@ const startBrobot = async () => {
 	else if (isDeploying)
 		await setupAndDeployCommands({client, skipGlobalCommands: true});
 	else
-		setupCommands(client);
+		setupCommands(client, isDevelopmentEnvironment);
 
 	setupEventListeners(client);
 

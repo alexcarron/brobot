@@ -1,3 +1,5 @@
+const { botStatus } = require("./bot-status");
+
 const ids = {
 	users: {
     LL: "276119804182659072",
@@ -9,10 +11,14 @@ const ids = {
     rapid_discord_mafia: "1031365759919726622",
     LLGameShowCenter: "1137452342850097252",
     ll_game_show_center: "1137452342850097252",
+		namesmith: "1347359771799453777",
   },
   ll_user_id: "276119804182659072",
-  brobot_user_id: "803333218614116392",
-  client: "803333218614116392",
+  client: () => {
+		if (botStatus.isInDevelopmentMode)
+			return "1385404315581157498"
+		else return "803333218614116392"
+	},
 
   ll_game_shows: {
     server_id: "1137452342850097252",
@@ -126,6 +132,15 @@ const ids = {
 			spectator: "1376690406087200848",
 		}
 	},
+
+	namesmith: {
+		roles: {
+			namesmither: "1385046899685462186",
+			spectator: "1383979159625138196",
+			noName: "1383978619407302796",
+			smithedName: "1383979126276489308",
+		}
+	}
 }
 
 module.exports = ids;

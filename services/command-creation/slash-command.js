@@ -22,7 +22,7 @@ class SlashCommand {
 	required_channels;
 
 	/** @field {string[]} IDs of channel categories this command can only be run in */
-	required_channels;
+	required_categories;
 
 	/** @field {string[]} Names of roles users must have to run this command */
 	required_roles;

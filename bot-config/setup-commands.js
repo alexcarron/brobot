@@ -3,12 +3,14 @@ const { Routes } = require('discord.js');
 const SlashCommand = require("../services/command-creation/slash-command");
 const path = require('path');
 const fs = require('fs');
-const { logInfo, logSuccess, logWarning } = require('../utilities/logging-utils');
+const { logInfo, logSuccess, logWarning, logError } = require('../utilities/logging-utils');
 const ids = require('./discord-ids.js');
 
 const COMMANDS_DIR_NAME = 'commands';
 const COMMANDS_DIR_PATH = path.join(__dirname, '..', COMMANDS_DIR_NAME);
 const { DISCORD_TOKEN } = require('./token.js');
+const { botStatus } = require('./bot-status.js');
+const { fetchGuild } = require('../utilities/discord-fetch-utils.js');
 
 /**
  * Recursively finds all .js files in the given directory and all its subdirectories.
@@ -50,6 +52,9 @@ const getCommands = () => {
 		let command = require(commandFilePath);
 
 		if (command instanceof SlashCommand) {
+			if (botStatus.isInDevelopmentMode) {
+				command.required_permissions = [Discord.PermissionFlagsBits.Administrator];
+			}
 			command = command.getCommand();
 		}
 
@@ -129,7 +134,7 @@ const mapGuildCommandsToGuildID = (commands) => {
  */
 const deployCommands = async ({globalCommands = [], guildIDtoGuildCommands}) => {
 	// Construct and prepare an instance of the REST module
-	const rest = new Discord.REST().setToken(DISCORD_TOKEN);
+	const rest = new Discord.REST().setToken(DISCORD_TOKEN());
 
 	logInfo(`Started deploying slash commands...`);
 
@@ -139,19 +144,26 @@ const deployCommands = async ({globalCommands = [], guildIDtoGuildCommands}) => 
 
 		logInfo(`Deploying ${slashCommands.length} private slash commands from guild ${requiredServerID}...`);
 
-		await rest.put(
-			Routes.applicationGuildCommands(ids.client, requiredServerID),
-			{ body:
-				slashCommands.map(command => command.data.toJSON())
-			},
-		);
+		try {
+			await rest.put(
+				Routes.applicationGuildCommands(ids.client(), requiredServerID),
+				{ body:
+					slashCommands.map(command => command.data.toJSON())
+				},
+			);
+		}
+		catch (error) {
+			if (error.code === 20012) {
+				logError(`Failed to deploy slash commands due not being authorized in the guild ${requiredServerID}.`);
+			}
+		}
 
 		logSuccess(`Deployed ${slashCommands.length} private slash commands from guild ${requiredServerID}.`);
 	}
 
 	logInfo(`Deploying ${globalCommands.length} global slash commands...`);
 	await rest.put(
-		Routes.applicationCommands(ids.client),
+		Routes.applicationCommands(ids.client()),
 		{ body: globalCommands.map(command => command.data.toJSON()) },
 	);
 	logSuccess(`Deployed ${globalCommands.length} public slash commands`);
@@ -160,7 +172,7 @@ const deployCommands = async ({globalCommands = [], guildIDtoGuildCommands}) => 
 
 	// ! Delete Guild Command
 	// rest.delete(Routes.applicationGuildCommand(
-	// 	ids.client,
+	// 	ids.client(),
 	// 	ids.sandSeason3.guild,
 	// 	"1376029058634354872"
 	// ))
@@ -168,17 +180,17 @@ const deployCommands = async ({globalCommands = [], guildIDtoGuildCommands}) => 
 	// .catch(console.error);
 
 	// ! Delete Every Guild Command
-	// rest.put(Routes.applicationGuildCommands(ids.client, ids.servers.ll_game_show_center), { body: [] })
+	// rest.put(Routes.applicationGuildCommands(ids.client(), ids.servers.ll_game_show_center), { body: [] })
 	// .then(() => logSuccess('Successfully deleted all guild commands.'))
 	// .catch(console.error);
 
 	// ! Delete Global Commands
-	// rest.delete(Routes.applicationCommand(ids.client, 'COMMAND ID'))
+	// rest.delete(Routes.applicationCommand(ids.client(), 'COMMAND ID'))
 	// .then(() => logSuccess('Successfully deleted application command'))
 	// .catch(console.error);
 
 	//! Delete Every Global Command
-	// rest.put(Routes.applicationCommands(ids.client), { body: [] })
+	// rest.put(Routes.applicationCommands(ids.client()), { body: [] })
 	// .then(() => logSuccess('Successfully deleted all application commands.'))
 	// .catch(console.error);
 }
@@ -191,6 +203,9 @@ const deployCommands = async ({globalCommands = [], guildIDtoGuildCommands}) => 
  */
 const setupAndDeployCommands = async ({client, skipGlobalCommands = false}) => {
 	const commands = getCommands();
+	commands.forEach(command =>
+		command.requir
+	)
 	storeCommandsInMemory(client, commands);
 
 	const globalCommands = getGlobalCommands(commands);
@@ -211,8 +226,8 @@ const setupAndDeployCommands = async ({client, skipGlobalCommands = false}) => {
  * @param {Discord.Client} client The bot client.
  * @returns {void}
  */
-const setupCommands = (client) => {
-	const commands = getCommands();
+const setupCommands = (client, isDevelopmentEnvironment = false) => {
+	const commands = getCommands({isDevelopmentEnvironment});
 	storeCommandsInMemory(client, commands);
 }
 

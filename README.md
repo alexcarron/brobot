@@ -169,8 +169,8 @@ In `bot-config/token.js`, add the following JSON object to the `module.exports`:
 
 ```javascript
 module.exports = {
-  "discord_token": "YOUR_DISCORD_TOKEN_HERE",
-  "github_token": "YOUR_GITHUB_TOKEN_HERE"
+  "DISCORD_TOKEN": () => "YOUR_DISCORD_TOKEN_HERE",
+  "GITHUB_TOKEN": "YOUR_GITHUB_TOKEN_HERE"
 };
 ```
 
