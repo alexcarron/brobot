@@ -86,10 +86,20 @@ const onSlashCommandExecuted = async (interaction) => {
 		const userRoleIDs = interaction.member.roles.cache.map(role => role.id);
 
 		if (
-			!command.required_roles.every( role =>
-				userRoleNames.includes(role) ||
-				userRoleIDs.includes(role)
-			)
+			!command.required_roles.every( role => {
+				if (Array.isArray(role)) {
+					return role.some(role =>
+						userRoleNames.includes(role) ||
+						userRoleIDs.includes(role)
+					);
+				}
+				else {
+					return (
+						userRoleNames.includes(role) ||
+						userRoleIDs.includes(role)
+					);
+				}
+			})
 		) {
 			return interaction.reply({
 				content: `You don't have the roles required to use this command.`,

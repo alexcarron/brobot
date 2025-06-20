@@ -52,7 +52,10 @@ const getCommands = () => {
 		let command = require(commandFilePath);
 
 		if (command instanceof SlashCommand) {
-			if (botStatus.isInDevelopmentMode) {
+			if (
+				botStatus.isInDevelopmentMode &&
+				!command.isInDevelopment
+			) {
 				command.required_permissions = [Discord.PermissionFlagsBits.Administrator];
 			}
 			command = command.getCommand();
@@ -144,12 +147,23 @@ const deployCommands = async ({globalCommands = [], guildIDtoGuildCommands}) => 
 
 		logInfo(`Deploying ${slashCommands.length} private slash commands from guild ${requiredServerID}...`);
 
-		await rest.put(
-			Routes.applicationGuildCommands(ids.client(), requiredServerID),
-			{ body:
-				slashCommands.map(command => command.data.toJSON())
-			},
-		);
+		try {
+			await rest.put(
+				Routes.applicationGuildCommands(ids.client(), requiredServerID),
+				{ body:
+					slashCommands.map(command => command.data.toJSON())
+				},
+			);
+    } catch (error) {
+			if (error.code === 50001) {
+				logWarning(`Bot is not in guild ${requiredServerID} or lacks permission.`);
+			} else if (error.code === 10004) {
+				logWarning(`Guild ${requiredServerID} does not exist or bot is not in it.`);
+			} else {
+				logError('Unexpected error during command registration:', error);
+				throw error;
+			}
+    }
 
 		logSuccess(`Deployed ${slashCommands.length} private slash commands from guild ${requiredServerID}.`);
 	}

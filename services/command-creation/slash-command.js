@@ -33,6 +33,9 @@ class SlashCommand {
 	/** @field {Parameter[]} Parameters that users can enter when running the command */
 	parameters;
 
+	/** @field {boolean} If the command is currently in development */
+	isInDevelopment;
+
 	/**
 	 * @type {(interaction: CommandInteraction) => any} A function which takes a discord.js Interaction that executes when the command is run
 	 * */
@@ -64,19 +67,21 @@ class SlashCommand {
 		parameters = [],
 		execute = async (interaction) => {},
 		autocomplete = async (interaction) => {},
+		isInDevelopment = false,
 	}) {
 		this.name = name;
 		this.description = description;
 		this.cooldown = cooldown;
-		this.allowsDMs = allowsDMs
-		this.required_servers = required_servers
-		this.required_channels = required_channels
-		this.required_categories = required_categories
-		this.required_roles = required_roles
-		this.required_permissions = required_permissions
-		this.parameters = parameters
-		this.execute = execute
-		this.autocomplete = autocomplete
+		this.allowsDMs = allowsDMs;
+		this.required_servers = required_servers;
+		this.required_channels = required_channels;
+		this.required_categories = required_categories;
+		this.required_roles = required_roles;
+		this.required_permissions = required_permissions;
+		this.parameters = parameters;
+		this.execute = execute;
+		this.autocomplete = autocomplete;
+		this.isInDevelopment = isInDevelopment;
 	}
 
 	/**

@@ -8,7 +8,8 @@
 				"start": "npm run build && node index.js",
 				"build": "node build.js",
 				"build:guild": "node build.js --guild-commands-only",
-				"dev": "nodemon --ignore \"**/*.json\" index.js --dev",
+				"build:dev": "node build.js --development",
+				"dev": "nodemon --ignore \"**/*.json\" index.js --development",
 				"dev:deploy": "npm run dev -- --deploy-guild-commands",
 				"dev:deploy-all": "npm run dev -- --deploy-all-commands"
 		},

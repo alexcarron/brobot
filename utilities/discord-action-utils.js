@@ -482,7 +482,7 @@ const renameChannel = async (channel, newName) => {
  * @param {string} newNickname - The new nickname for the guild member.
  * @returns {Promise<void>} A promise that resolves when the nickname has been set.
  */
-const setNicknameofMember = async (guildMember, newNickname) => {
+const setNicknameOfMember = async (guildMember, newNickname) => {
 	await guildMember.setNickname(newNickname);
 }
 
@@ -502,5 +502,5 @@ module.exports = {
 	memberHasRole,
 	createCategory,
 	renameChannel,
-	setNicknameofMember,
+	setNicknameOfMember,
 };
