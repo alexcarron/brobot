@@ -56,6 +56,13 @@ Brobot is a feature-rich Discord.js bot built to enhance the experience of the L
   * Report bugs or issues
   * Run a command as another player (for testing/debugging)
 
+### Namesmith (Game System)
+
+* Discord Server Setup & Configuration
+* Gameplay Actions:
+  * Open a mystery box
+  * Publish your current name
+
 ### Fun and Games
 
 * Ask Brobot a question (AI-powered responses)
@@ -233,6 +240,7 @@ Contains all command definition files.
   * **`events/`** Commands for creating and running game show events
 * **`rapid-discord-mafia/`** Commands for playing and managing the Rapid Discord Mafia game
 * **`ll-points/`** Commands for using and managing all LL Point Leaderboard functionality
+* **`namesmith/`** CCommands for playing and managing the Namesmith game
 * **`fun/`** Fun, non-utility commands to entertain users
 
 ### 📂 `event-listeners/`
@@ -255,6 +263,7 @@ Contains core services, modules, and models for Brobot's features.
 * **`discord-events/`** Manages scheduling and handling of Discord events, including reminders and announcements
 * **`discussion-prompts/`** Handles recurring messages with random discussion prompts
 * **`ll-points/`** Manages LL Point Leaderboard logic
+* **`namesmith/`** Manages game logic for Namesmith, including setup, actions, and Discord configuration
 * **`rapid-discord-mafia/`** Manages game logic for Rapid Discord Mafia, including players, roles, actions, and phases
 * **`text-to-speech/`** Manages text-to-speech functionality in voice channels
 * **`timer/`** Manages storing, tracking, and recalling persistent timers
