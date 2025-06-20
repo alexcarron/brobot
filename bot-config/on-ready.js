@@ -32,6 +32,12 @@ const onClientReady = async (client) => {
 		}
 	});
 
+	// Only set up services if not in development mode
+	if (botStatus.isInDevelopmentMode) {
+		logSuccess('Brobot is Ready!');
+		return;
+	}
+
 	logInfo("Setting up Rapid Discord Mafia");
 	await RapidDiscordMafia.setUpRapidDiscordMafia();
 	logSuccess("Rapid Discord Mafia set up");

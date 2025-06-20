@@ -139,6 +139,9 @@ const ids = {
 			spectator: "1383979159625138196",
 			noName: "1383978619407302796",
 			smithedName: "1383979126276489308",
+		},
+		channels: {
+			openMysteryBoxes: "1384680717879087156",
 		}
 	}
 }

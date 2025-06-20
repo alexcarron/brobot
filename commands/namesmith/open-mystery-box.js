@@ -11,12 +11,14 @@ const command = new SlashCommand({
 });
 command.required_servers = [ids.servers.namesmith];
 command.required_roles = [ids.namesmith.roles.namesmither];
+command.required_channels = [ids.namesmith.channels.openMysteryBoxes]
+command.cooldown = 30;
 command.execute = async function execute(interaction) {
 	await deferInteraction(interaction);
 
 	const recievedCharacter = getRandomElement(CHARACTER_SET);
 
-	await interaction.editReply(`The character you recieved is:\n\`${recievedCharacter}\``);
+	await interaction.editReply(`The character in your mystery box is:\n\`\`\`${recievedCharacter}\`\`\``);
 }
 
 module.exports = command;

@@ -144,19 +144,12 @@ const deployCommands = async ({globalCommands = [], guildIDtoGuildCommands}) => 
 
 		logInfo(`Deploying ${slashCommands.length} private slash commands from guild ${requiredServerID}...`);
 
-		try {
-			await rest.put(
-				Routes.applicationGuildCommands(ids.client(), requiredServerID),
-				{ body:
-					slashCommands.map(command => command.data.toJSON())
-				},
-			);
-		}
-		catch (error) {
-			if (error.code === 20012) {
-				logError(`Failed to deploy slash commands due not being authorized in the guild ${requiredServerID}.`);
-			}
-		}
+		await rest.put(
+			Routes.applicationGuildCommands(ids.client(), requiredServerID),
+			{ body:
+				slashCommands.map(command => command.data.toJSON())
+			},
+		);
 
 		logSuccess(`Deployed ${slashCommands.length} private slash commands from guild ${requiredServerID}.`);
 	}

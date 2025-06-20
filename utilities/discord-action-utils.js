@@ -476,6 +476,16 @@ const renameChannel = async (channel, newName) => {
 	await channel.setName(newName);
 }
 
+/**
+ * Sets the nickname of a guild member.
+ * @param {GuildMember} guildMember - The guild member whose nickname is to be set.
+ * @param {string} newNickname - The new nickname for the guild member.
+ * @returns {Promise<void>} A promise that resolves when the nickname has been set.
+ */
+const setNicknameofMember = async (guildMember, newNickname) => {
+	await guildMember.setNickname(newNickname);
+}
+
 
 module.exports = {
 	confirmInteractionWithButtons,
@@ -492,4 +502,5 @@ module.exports = {
 	memberHasRole,
 	createCategory,
 	renameChannel,
+	setNicknameofMember,
 };
