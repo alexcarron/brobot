@@ -1,4 +1,4 @@
-const { setNestedProperty, appendToNestedProperty, getShuffledArray, arraysHaveSameElements, getRandomElement } = require("./data-structure-utils");
+const { setNestedProperty, appendToNestedProperty, getShuffledArray, arraysHaveSameElements, getRandomElement, getCharacterDifferencesInStrings } = require("./data-structure-utils");
 
 describe('setNestedProperty', () => {
 	it('sets a property directly', () => {
@@ -213,5 +213,116 @@ describe('getRandomElement()', () => {
 		const array = [1, 2, 3, 4, 5];
 		getRandomElement(array);
 		expect(array).toEqual([1, 2, 3, 4, 5]);
+	});
+});
+
+describe('getCharacterDifferencesInStrings()', () => {
+	it('should return empty arrays for identical strings', () => {
+		const originalString = 'hello';
+		const modifiedString = 'hello';
+		const result = getCharacterDifferencesInStrings(originalString, modifiedString);
+		expect(result).toEqual({
+			missingCharacters: [],
+			extraCharacters: []
+		});
+	});
+
+	it('should return extra characters in modified string', () => {
+		const originalString = 'hello';
+		const modifiedString = 'helloo';
+		const result = getCharacterDifferencesInStrings(originalString, modifiedString);
+		expect(result).toEqual({
+			missingCharacters: [],
+			extraCharacters: ['o']
+		});
+	});
+
+	it('should return missing characters in modified string', () => {
+		const originalString = 'hello';
+		const modifiedString = 'hell';
+		const result = getCharacterDifferencesInStrings(originalString, modifiedString);
+		expect(result).toEqual({
+			missingCharacters: ['o'],
+			extraCharacters: []
+		});
+	});
+
+	it('should return both extra and missing characters in modified string', () => {
+		const originalString = 'hello';
+		const modifiedString = 'hxlloo';
+		const result = getCharacterDifferencesInStrings(originalString, modifiedString);
+		expect(result).toEqual({
+			missingCharacters: ['e'],
+			extraCharacters: ['o', 'x']
+		});
+	});
+
+	it('should return empty arrays for empty strings', () => {
+		const originalString = '';
+		const modifiedString = '';
+		const result = getCharacterDifferencesInStrings(originalString, modifiedString);
+		expect(result).toEqual({
+			missingCharacters: [],
+			extraCharacters: []
+		});
+	});
+
+	it('should return extra character for single character strings', () => {
+		const originalString = 'a';
+		const modifiedString = 'b';
+		const result = getCharacterDifferencesInStrings(originalString, modifiedString);
+		expect(result).toEqual({
+			missingCharacters: ['a'],
+			extraCharacters: ['b']
+		});
+	});
+
+	it('should return correct differences for strings of different lengths', () => {
+		const originalString = 'hello';
+		const modifiedString = 'hello world';
+		const result = getCharacterDifferencesInStrings(originalString, modifiedString);
+		expect(result).toEqual({
+			missingCharacters: [],
+			extraCharacters: [' ', 'd', 'l', 'o', 'r', 'w']
+		});
+	});
+
+	it('should return correct differences for strings containing repeated characters', () => {
+		const originalString = 'hello';
+		const modifiedString = 'hellooo';
+		const result = getCharacterDifferencesInStrings(originalString, modifiedString);
+		expect(result).toEqual({ missingCharacters: [], extraCharacters: ['o', 'o'] });
+	});
+
+	it('should return correct differences for strings containing special characters', () => {
+		const originalString = 'hello!';
+		const modifiedString = 'hello@';
+		const result = getCharacterDifferencesInStrings(originalString, modifiedString);
+		expect(result).toEqual({
+			missingCharacters: ['!'],
+			extraCharacters: ['@']
+		});
+	});
+
+	it('should return correct differences for strings containing numbers', () => {
+		const originalString = 'hello123';
+		const modifiedString = 'hello456';
+		const result = getCharacterDifferencesInStrings(originalString, modifiedString);
+		expect(result).toEqual({
+			missingCharacters: ['1', '2', '3'],
+			extraCharacters: ['4', '5', '6']
+		});
+	});
+
+	it('should throw an error for null input', () => {
+		expect(() => getCharacterDifferencesInStrings(null, 'hello')).toThrow(TypeError);
+	});
+
+	it('should throw an error for undefined input', () => {
+		expect(() => getCharacterDifferencesInStrings(undefined, 'hello')).toThrow(TypeError);
+	});
+
+	it('should throw an error for non-string input', () => {
+		expect(() => getCharacterDifferencesInStrings(123, 'hello')).toThrow(TypeError);
 	});
 });

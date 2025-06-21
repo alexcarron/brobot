@@ -181,4 +181,64 @@ const getRandomElement = (array) => {
 	return array[randomIndex];
 }
 
-module.exports = { setNestedProperty, appendToNestedProperty, getShuffledArray, arraysHaveSameElements, getRandomElement };
+/**
+ * Identifies the differences between two strings by comparing their characters.
+ * It determines which characters are extra or missing in the modified string compared to the original string.
+ *
+ * @param {string} originalString - The original string for comparison.
+ * @param {string} modifiedString - The modified string to compare against the original.
+ * @returns {Object} An object containing two arrays: `missingCharacters` (characters present in the original but missing in the modified) and `extraCharacters` (characters present in the modified but not in the original).
+ */
+const getCharacterDifferencesInStrings = (originalString, modifiedString) => {
+	if (typeof originalString !== 'string' || typeof modifiedString !== 'string') {
+		throw new TypeError('Both the original and modified strings arguments must be strings.');
+	}
+	// Check if extra or missing characters
+	const sortedOriginalString = [...originalString].sort();
+	const sortedModifiedString = [...modifiedString].sort();
+
+	let originalCharacterIndex = 0;
+	let newCharacterIndex = 0;
+	const missingCharacters = [];
+	const extraCharacters = [];
+
+	// Find specific missing or extra characters
+	while (true) {
+		if (originalCharacterIndex >= sortedOriginalString.length) {
+			const restOfNewCharacters = sortedModifiedString.slice(newCharacterIndex);
+			extraCharacters.push(
+				...restOfNewCharacters
+			);
+			break;
+		}
+		else if (newCharacterIndex >= sortedModifiedString.length) {
+			const restOfOriginalCharacters = sortedOriginalString.slice(originalCharacterIndex);
+			missingCharacters.push(
+				...restOfOriginalCharacters
+			);
+			break;
+		}
+
+		const originalCharacter = sortedOriginalString[originalCharacterIndex];
+		const newCharacter = sortedModifiedString[newCharacterIndex];
+		// ab efjjklllmnop
+		// abcefj  lll
+
+		if (originalCharacter === newCharacter) {
+			originalCharacterIndex += 1;
+			newCharacterIndex += 1;
+		}
+		else if (newCharacter < originalCharacter) {
+			newCharacterIndex += 1;
+			extraCharacters.push(newCharacter);
+		}
+		else if (newCharacter > originalCharacter) {
+			originalCharacterIndex += 1;
+			missingCharacters.push(originalCharacter);
+		}
+	}
+
+	return { missingCharacters, extraCharacters };
+}
+
+module.exports = { setNestedProperty, appendToNestedProperty, getShuffledArray, arraysHaveSameElements, getRandomElement, getCharacterDifferencesInStrings };
