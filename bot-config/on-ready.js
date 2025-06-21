@@ -53,12 +53,6 @@ const onClientReady = async (client) => {
 	global.tts = new TextToSpeechHandler();
 	logSuccess('Text to Speech set up');
 
-	// Only set up services if not in development mode
-	if (botStatus.isInDevelopmentMode) {
-		logSuccess('Brobot is Ready!');
-		return;
-	}
-
 	logInfo("Setting up Rapid Discord Mafia");
 	await RapidDiscordMafia.setUpRapidDiscordMafia();
 	logSuccess("Rapid Discord Mafia set up");

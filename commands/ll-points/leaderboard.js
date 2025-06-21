@@ -100,6 +100,9 @@ command.execute = async function(interaction) {
 				if (current_page > 1) {
 					current_page--;
 				}
+				else {
+					current_page = NUM_PAGES;
+				}
 
 				const message_options = await createLeaderboardMessage(current_page);
 				await button_interaction.update(message_options);
@@ -107,8 +110,11 @@ command.execute = async function(interaction) {
 			}
 			else if (button_interaction.customId === 'right') {
 				logInfo("User clicked Right on LL Point Leaderboard");
-				if (current_page < NUM_PAGES - 1) {
+				if (current_page < NUM_PAGES) {
 					current_page++;
+				}
+				else {
+					current_page = 1;
 				}
 
 				const message_options = await createLeaderboardMessage(current_page);
