@@ -59,4 +59,11 @@ const getPublishedNameOfPlayer = (playerID) => {
   return getPublishedNameInDatabase(playerID);
 }
 
-module.exports = { addCharacterToMember, fetchPlayerName, publishNameOfPlayer, getPublishedNameOfPlayer };
+const changeNameOfPlayer = async (playerID, newName) => {
+	await setNicknameOfMember(
+		await fetchNamesmithGuildMember(playerID),
+		newName
+	);
+}
+
+module.exports = { addCharacterToMember, fetchPlayerName, publishNameOfPlayer, getPublishedNameOfPlayer, changeNameOfPlayer };

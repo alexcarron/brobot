@@ -42,7 +42,7 @@ command.execute = async function(interaction) {
 
 	if (interaction.options.getSubcommand() === Parameters.Edit.name) {
 		const contents = await getInputFromCreatedTextModal({
-			channelToSendIn: interaction.channel,
+			interaction,
 			modalTitle: "Death Note",
 			initialMessageText: "Click the button to edit your death note",
 			showModalButtonText: "Edit Death Note",

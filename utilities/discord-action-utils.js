@@ -1,7 +1,8 @@
-const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionOverwrites, PermissionFlagsBits, CategoryChannel } = require('discord.js');
+const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionOverwrites, PermissionFlagsBits, CategoryChannel, ChatInputCommandInteraction, Message } = require('discord.js');
 const { Role } = require('../services/rapid-discord-mafia/role');
 const { fetchChannel } = require('./discord-fetch-utils');
 const { incrementEndNumber } = require('./text-formatting-utils');
+const { logInfo, logError } = require('./logging-utils');
 
 /**
  * Prompt the user to confirm or cancel an action by adding buttons to the deffered reply to an existing command interaction.
@@ -120,9 +121,9 @@ const deferInteraction = async (
 /**
  * Edits the reply to an interaction with new message contents.
  *
- * @param {Interaction} interaction - The interaction whose reply is being updated.
+ * @param {ChatInputCommandInteraction} interaction - The interaction whose reply is being updated.
  * @param {string | object} newMessageContents - The new contents for the message.
- * @returns {Promise<void>} A promise that resolves when the message is edited.
+ * @returns {Promise<Message<boolean>>} A promise that resolves when the message is edited.
  */
 const editReplyToInteraction = async (interaction, newMessageContents) => {
 	if (interaction && (interaction.replied || interaction.deferred)) {
@@ -134,7 +135,7 @@ const editReplyToInteraction = async (interaction, newMessageContents) => {
  * Shows a modal to a user, prompting them for text input. Returns the text entered by the user.
  *
  * @param {Object} options
- * @param {TextChannel} options.channelToSendIn The channel to send the message to.
+ * @param {ChatInputCommandInteraction} options.interaction The interaction that triggered the modal.
  * @param {string} [options.modalTitle=""] The title of the modal.
  * @param {string} [options.showModalButtonText=""] The text of the button which shows the modal.
  * @param {string} [options.initialMessageText=""] The text to send to the user when prompting them to press the button.
@@ -142,13 +143,13 @@ const editReplyToInteraction = async (interaction, newMessageContents) => {
  * @returns {Promise<string>} The text entered by the user.
  */
 const getInputFromCreatedTextModal = async ({
-		channelToSendIn,
+		interaction,
 		modalTitle="",
 		initialMessageText="",
 		showModalButtonText="",
 		placeholder="",
 }) => {
-	if (!channelToSendIn) return;
+	if (!interaction) return;
 
 	const showModalButtonID = showModalButtonText.replace(" ", "");
 	const modalID = `${modalTitle.replace(" ", "")}Modal`;
@@ -164,10 +165,10 @@ const getInputFromCreatedTextModal = async ({
 	const showModalButtonActionRow = new ActionRowBuilder()
 		.addComponents(showModalButton);
 
-	// Send the message with the button
-	const messageWithShowModalButton = await channelToSendIn.send({
+	const messageWithShowModalButton = await editReplyToInteraction(interaction, {
 		content: initialMessageText,
 		components: [showModalButtonActionRow],
+		ephemeral: true
 	});
 
 	// Create the modal
@@ -191,26 +192,30 @@ const getInputFromCreatedTextModal = async ({
 	// Add the action row to the modal
 	modal.addComponents(textInputActionRow);
 
-	let interaction;
-
+	let modalInteraction;
 	try {
 		// Wait for user to press the button
-		interaction = await messageWithShowModalButton.awaitMessageComponent({
+		modalInteraction = await messageWithShowModalButton.awaitMessageComponent({
 			filter: (interaction) => interaction.customId === showModalButtonID,
 			time: 1_000_000,
 		});
 
+		// Delete button from original message
+		await interaction.editReply({
+			components: [],
+		})
+
 		// Show the modal
-		await interaction.showModal(modal);
+		await modalInteraction.showModal(modal);
+
 
 		// Wait for user to submit the modal
-		interaction = await messageWithShowModalButton.awaitMessageComponent({
+		modalInteraction = await modalInteraction.awaitModalSubmit({
 			filter: (interaction) => interaction.customId === modalID,
 			time: 1_000_000,
 		});
 	}
-	catch {
-		// If the user doesn't respond in time, delete the message and return undefined
+	catch (error) {
 		await messageWithShowModalButton.edit({
 			content: `\`Response not recieved in time\``,
 			components: [],
@@ -219,12 +224,10 @@ const getInputFromCreatedTextModal = async ({
 	}
 
 	// Get the data entered by the user
-	const textEntered = interaction.fields.getTextInputValue(textInputID);
+	const textEntered = modalInteraction.fields.getTextInputValue(textInputID);
 
-	// Confirm the user's input
-	const reply = await interaction.reply("Confirmed");
-	reply.delete();
-	messageWithShowModalButton.delete();
+	// Acknowledge the interaction but don't update the message
+	await modalInteraction.deferUpdate();
 
 	return textEntered;
 }
