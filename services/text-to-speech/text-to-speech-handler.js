@@ -3,7 +3,7 @@ const { createAudioResource, createAudioPlayer, VoiceConnection } = require('@di
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffmpeg = require('fluent-ffmpeg');
 const { wrapTextByLineWidth, removeLinks, removeEmojis } = require('../../utilities/text-formatting-utils');
-const { logError, logSuccess } = require('../../utilities/logging-utils');
+const { logError, logSuccess, logInfo } = require('../../utilities/logging-utils');
 ffmpeg.setFfmpegPath(ffmpegPath);
 
 class TextToSpeechHandler {
@@ -114,6 +114,10 @@ class TextToSpeechHandler {
 
 	updateToggledUserName(user_id, name) {
 		const toggled_user = this.getToggledUser(user_id);
+
+		if (!toggled_user)
+			return;
+
 		toggled_user.name = name;
 	}
 
@@ -274,7 +278,7 @@ class TextToSpeechHandler {
 		if (name && name !== null)
 			global.tts.addMessage(
 				voiceConnection,
-				`${name} said ${msg.content}`,
+				`${name} said ${message.content}`,
 				user.id,
 				username
 			);

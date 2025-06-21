@@ -58,7 +58,7 @@ module.exports = new SlashCommand({
 		});
 
 		await editReplyToInteraction(interaction,
-			`Sent message in ${channels.size} channels in ${category.name}`
+			`Sent message in \`${channels.size}\` channels in **${category.name}**`
 		);
 	},
 

@@ -1,9 +1,9 @@
-const { PermissionFlagsBits, ChannelType } = require("discord.js");
+const { PermissionFlagsBits, ChannelType, CategoryChannel } = require("discord.js");
 const { Parameter } = require("../../../services/command-creation/parameter");
 const SlashCommand = require("../../../services/command-creation/slash-command");
-const { fetchChannelsInCategory } = require("../../../utilities/discord-fetch-utils");
-const { deferInteraction } = require("../../../utilities/discord-action-utils");
-const { logInfo } = require("../../../utilities/logging-utils");
+const { fetchChannelsInCategory, fetchChannel } = require("../../../utilities/discord-fetch-utils");
+const { deferInteraction, editReplyToInteraction } = require("../../../utilities/discord-action-utils");
+const { logInfo, logError } = require("../../../utilities/logging-utils");
 
 const Parameters = {
 	CategoryChannelId: new Parameter({
@@ -27,18 +27,26 @@ command.execute = async function(interaction) {
 
 	// Delete Channels
 	const
-		category_id = interaction.options.getString(Parameters.CategoryChannelId.name),
-		category_chnls = await fetchChannelsInCategory(interaction.guild, category_id);
+		categoryID = interaction.options.getString(Parameters.CategoryChannelId.name),
+		categoryChannels = await fetchChannelsInCategory(interaction.guild, categoryID);
 
-	await category_chnls.forEach(
-		async (channel) => {
-			await channel.delete()
-				.then(() => {
-					logInfo(`Deleted ${channel.name}`);
-				})
-				.catch(console.error);
+	const category = await fetchChannel(interaction.guild, categoryID);
+	const numChannels = categoryChannels.length;
+
+	for (const channel of categoryChannels) {
+		console.log(channel);
+		try {
+			await channel.delete();
+			logInfo(`Deleted ${channel.name}`);
 		}
-	);
+		catch (error) {
+			logError(error);
+		}
+	}
+
+	await editReplyToInteraction(interaction,
+		`Deleted \`${numChannels}\` channels in **${category.name}**`
+	)
 }
 command.autocomplete = async function(interaction) {
 	let autocomplete_values;

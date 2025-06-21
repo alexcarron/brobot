@@ -1,6 +1,7 @@
 const SlashCommand = require('../../services/command-creation/slash-command.js');
 const { Parameter } = require('../../services/command-creation/parameter.js');
 const { createNowUnixTimestamp } = require('../../utilities/date-time-utils.js');
+const Timer = require('../../services/timers/timer.js');
 
 const Parameters = {
 	ReasonForTimer: new Parameter({
@@ -62,6 +63,16 @@ command.execute = async function(interaction) {
 	const hours = interaction.options.getInteger(Parameters.Hours.name);
 	const minutes = interaction.options.getInteger(Parameters.Minutes.name);
 	const seconds = interaction.options.getInteger(Parameters.Seconds.name);
+
+	if (
+		days === null &&
+		hours === null &&
+		minutes === null &&
+		seconds === null
+	) {
+		await interaction.editReply("You must specify a duration for the timer.");
+		return;
+	}
 
 	let now_unix_timestamp = createNowUnixTimestamp();
 

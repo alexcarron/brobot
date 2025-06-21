@@ -1,7 +1,7 @@
 const { PermissionFlagsBits } = require("discord.js");
 const { Parameter } = require("../../../services/command-creation/parameter");
 const SlashCommand = require("../../../services/command-creation/slash-command");
-const { deferInteraction } = require("../../../utilities/discord-action-utils");
+const { deferInteraction, editReplyToInteraction } = require("../../../utilities/discord-action-utils");
 
 const Parameters = {
 	NumMessagesDeleting: new Parameter({
@@ -22,9 +22,9 @@ command.parameters = [
 command.execute = async function(interaction) {
 	await deferInteraction(interaction);
 
-	const num_messages_deleting = interaction.options.getInteger(Parameters.NumMessagesDeleting.name);
-	const times_purging = Math.floor(num_messages_deleting / 100)
-	const last_num_messages_deleting = num_messages_deleting % 100;
+	const numMessagesDeleting = interaction.options.getInteger(Parameters.NumMessagesDeleting.name);
+	const times_purging = Math.floor(numMessagesDeleting / 100)
+	const lastNumMessagesDeleting = numMessagesDeleting % 100;
 
 	for (let num_purge = 0; num_purge < times_purging; num_purge++) {
 		try {
@@ -35,8 +35,12 @@ command.execute = async function(interaction) {
 		}
 	}
 
-	if (last_num_messages_deleting > 0) {
-		await interaction.channel.bulkDelete(last_num_messages_deleting);
+	if (lastNumMessagesDeleting > 0) {
+		await interaction.channel.bulkDelete(lastNumMessagesDeleting);
 	}
+
+	await editReplyToInteraction(interaction,
+		`Deleted \`${numMessagesDeleting}\` messages.`
+	)
 }
 module.exports = command;

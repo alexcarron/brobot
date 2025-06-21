@@ -3,6 +3,7 @@ const { Parameter } = require('../../../services/command-creation/parameter.js')
 const { joinVoiceChannel, createAudioResource, createAudioPlayer } = require('@discordjs/voice');
 const { PermissionsBitField, Interaction } = require('discord.js');
 const { deferInteraction } = require('../../../utilities/discord-action-utils.js');
+const { logInfo } = require('../../../utilities/logging-utils.js');
 
 const Subparameters = {
 	Message: new Parameter({
@@ -95,6 +96,7 @@ command.execute = async function(interaction) {
 
 	const subcommand_name = interaction.options.getSubcommand();
 
+	console.log({subcommand_name});
 	if (subcommand_name === Parameters.Say.name) {
 		message = interaction.options.getString(Subparameters.Message.name);
 		name = interaction.options.getString(Subparameters.Name.name);
@@ -117,6 +119,9 @@ command.execute = async function(interaction) {
 
 		if (speaker_name == null)
 			speaker_name = interaction.user.username;
+
+		if (message === null)
+			message = "Nothing";
 
 		global.tts.addMessage(
 			voice_connection,

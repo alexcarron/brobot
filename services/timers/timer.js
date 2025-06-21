@@ -157,7 +157,6 @@ class Timer {
 	}
 
 	async startTimer() {
-		await this.startCronJob();
 		const channel = await this.fetchChannel();
 		await channel.send(
 			`# <@${this._user_id}> started a timer` + "\n" +
@@ -172,7 +171,10 @@ class Timer {
 
 		if (now >= end_date) {
 			this.endTimer();
-		};
+		}
+		else {
+			await this.startCronJob();
+		}
 	}
 
 	/**

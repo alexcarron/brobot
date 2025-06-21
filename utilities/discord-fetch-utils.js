@@ -111,14 +111,14 @@ const fetchCategoriesOfGuild = async (guild) => {
  * Fetches all the channels in a category.
  * @param {Guild} guild The guild whose category you want to fetch the channels of.
  * @param {string} categoryID The ID of the category whose channels you want to fetch.
- * @returns {Promise<Collection<string, GuildChannel>>} A Promise that resolves with a Collection of the channels in the category.
+ * @returns {Promise<GuildChannel[]>} A Promise that resolves with an array of the channels in the category.
  */
 const fetchChannelsInCategory = async (guild, categoryID) => {
 	const allChannelsInGuild = await guild.channels.fetch();
 
-	return allChannelsInGuild.filter((channel) =>
+	return Array.from(allChannelsInGuild.filter((channel) =>
 		channel.parentId === categoryID
-	);
+	).values());
 }
 
 /**

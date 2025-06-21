@@ -57,6 +57,13 @@ module.exports = new SlashCommand({
 		const categoryID = getStringParamValue(interaction, Parameters.Category.name);
 		const message = getStringParamValue(interaction, Parameters.Message.name);
 
+		if (amount <= 0) {
+			await editReplyToInteraction(interaction,
+				"Number of channels must be greater than 0."
+			);
+			return;
+		}
+
 		channelName += "-1"
 
 		for (let numChannel = 1; numChannel <= amount; numChannel++) {

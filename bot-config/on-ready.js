@@ -35,6 +35,24 @@ const onClientReady = async (client) => {
 
 	await setupNamesmith();
 
+	logInfo("Loading timers database");
+	const timersJSON = await loadObjectFromJsonInGitHub("timers");
+	let timers = timersJSON.timers;
+	for (const timerIndex in timers) {
+		let timer = timers[timerIndex];
+		timer = new Timer(timer);
+		timers[timerIndex] = timer;
+	}
+	global.timers = timers;
+	for (const timer of global.timers) {
+		await timer.startCronJob();
+	}
+	logSuccess("Timers Database Downloaded");
+
+	logInfo('Setting up Text to Speech');
+	global.tts = new TextToSpeechHandler();
+	logSuccess('Text to Speech set up');
+
 	// Only set up services if not in development mode
 	if (botStatus.isInDevelopmentMode) {
 		logSuccess('Brobot is Ready!');
@@ -65,29 +83,12 @@ const onClientReady = async (client) => {
 	global.events = events;
 	logSuccess("Events Database Downloaded");
 
-	logInfo("Loading timers database");
-	const timers_json = await loadObjectFromJsonInGitHub("timers");
-	let timers = timers_json.timers;
-	for (const timer_index in timers) {
-		let timer = timers[timer_index];
-		timer = new Timer(timer);
-		timers[timer_index] = timer;
-	}
-	global.timers = timers;
-	for (const timer of global.timers) {
-		await timer.startCronJob();
-	}
-	logSuccess("Timers Database Downloaded");
-
 	logInfo("Loading messages database");
 	global.questions = [];
 	global.channelsToMessages = await loadObjectFromJsonInGitHub("messages");
 	logSuccess("Messages Database Downloaded");
 	const dailyMessageHandler = new DailyMessageHandler(global.channelsToMessages);
 	dailyMessageHandler.startDailyMessages();
-
-	console.log("Setting up Text To Speech");
-	global.tts = new TextToSpeechHandler();
 
 	logSuccess('Brobot is Ready!');
 };

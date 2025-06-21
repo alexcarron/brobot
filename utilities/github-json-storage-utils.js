@@ -1,7 +1,7 @@
 const { GITHUB_TOKEN } = require('../bot-config/token');
 
 const axios = require('axios');
-const { logError } = require('./logging-utils');
+const { logError, logWarning, logInfo } = require('./logging-utils');
 const REPO_OWNER = "alexcarron";
 const REPO_NAME = "brobot-database";
 
@@ -32,13 +32,16 @@ const saveObjectToJsonInGitHub = async (object, jsonFileName) => {
 		const {data: currentFile} =
 			await axios.get(
 				githubJsonFileURL,
-				{ headers: {'Authorization': `Token ${GITHUB_TOKEN}`} }
+				{ headers: {
+					'Authorization': `Token ${GITHUB_TOKEN}`,
+					'Accept': 'application/vnd.github+json'
+				} }
 			);
 
 		sha = currentFile.sha;
 	}
 	catch (error) {
-		// Ignore if the file doesn't exist
+		logWarning(`File ${jsonFileName} does not exist in GitHub, creating new file`);
 	}
 
 	const requestBody = {
@@ -52,21 +55,28 @@ const saveObjectToJsonInGitHub = async (object, jsonFileName) => {
 
 	// The sha of the current file is needed to update the file
 	// https://docs.github.com/en/rest/reference/repos#update-a-file
-	if (sha !== undefined)
+	if (sha !== undefined) {
 		requestBody.sha = sha;
+	}
 
 
 	// Create or update the file content
 	// The `put` endpoint will update the file if it already exists or create a new file if it doesn't
 	// https://docs.github.com/en/rest/reference/repos#create-or-update-file-contents
-	await axios.put(
-		githubJsonFileURL,
-		requestBody,
-		{ headers: {
-			'Authorization': `Token ${GITHUB_TOKEN}`,
-			'accept': 'application/vnd.github+json'
-		} }
-	);
+	try {
+		await axios.put(
+			githubJsonFileURL,
+			requestBody,
+			{ headers: {
+				'Authorization': `Token ${GITHUB_TOKEN}`,
+				'accept': 'application/vnd.github+json'
+			} }
+		);
+	}
+	catch (error) {
+		logError("Error saving object to GitHub", error);
+		throw error;
+	}
 };
 
 /**

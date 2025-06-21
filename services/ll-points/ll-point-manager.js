@@ -172,9 +172,9 @@ class LLPointManager {
 	async giveTiersToViewers() {
 		this.getArrayOfViewers().forEach(viewer => viewer.tier = viewer.getTier());
 
-		const viewers_with_id = await this.getArrayOfViewers().filter(viewer => viewer.user_id);
+		const viewersWithUserID = this.getArrayOfViewers().filter(viewer => viewer.user_id);
 
-		for (const viewer of viewers_with_id) {
+		for (const viewer of viewersWithUserID) {
 			viewer.tier = await viewer.getTier();
 			await viewer.setTierRole();
 			// let tier = viewer.tier;
