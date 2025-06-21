@@ -15,8 +15,7 @@ command.required_servers = [ids.servers.namesmith];
 command.required_roles = [
 	[ids.namesmith.roles.namesmither, ids.namesmith.roles.noName, ids.namesmith.roles.smithedName],
 ];
-command.required_channels = [ids.namesmith.channels.openMysteryBoxes]
-command.cooldown = 30;
+command.required_channels = [ids.namesmith.channels.openMysteryBoxes];
 command.isInDevelopment = true;
 command.execute = async function execute(interaction) {
 	await deferInteraction(interaction);

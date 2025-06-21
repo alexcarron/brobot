@@ -166,4 +166,13 @@ const getUserParamValue = (interaction, name) => {
  */
 const getEveryoneRole = (guild) => guild.roles.everyone;
 
-module.exports = { assertClientSetup, fetchGuild, fetchChannel, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchUser, fetchRole, fetchRoleByName, getStringParamValue, getUserParamValue, getEveryoneRole, getIntegerParamValue };
+/**
+ * Gets the nickname of the user who invoked a slash command.
+ * @param {ChatInputCommandInteraction} interaction The interaction object of the slash command.
+ * @returns {string} A Promise that resolves with the nickname of the user who invoked the slash command.
+ */
+const getNicknameOfInteractionUser = (interaction) => {
+	return interaction.member.nickname
+}
+
+module.exports = { assertClientSetup, fetchGuild, fetchChannel, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchUser, fetchRole, fetchRoleByName, getStringParamValue, getUserParamValue, getEveryoneRole, getIntegerParamValue, getNicknameOfInteractionUser };

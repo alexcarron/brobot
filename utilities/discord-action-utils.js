@@ -51,14 +51,14 @@ const confirmInteractionWithButtons = async ({
 
 		if (confirmation.customId === 'confirm') {
 			await confirmation.update({
-				content: `\`${confirmUpdateText}\``,
+				content: `${confirmUpdateText}`,
 				components: [],
 			});
 			return true;
 		}
 		else if (confirmation.customId === 'cancel') {
 			await confirmation.update({
-				content: `\`${cancelUpdateText}\``,
+				content: `${cancelUpdateText}`,
 				components: [],
 			});
 			return false;
@@ -66,7 +66,7 @@ const confirmInteractionWithButtons = async ({
 	}
 	catch {
 		await interaction.editReply({
-			content: `\`Response not recieved in time\``,
+			content: `Response not recieved in time`,
 			components: [],
 		});
 	}

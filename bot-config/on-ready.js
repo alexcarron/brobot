@@ -8,6 +8,7 @@ const Event = require('../services/discord-events/event.js');
 const Timer = require('../services/timers/timer.js');
 const DailyMessageHandler = require('../services/discussion-prompts/daily-message-handler.js');
 const TextToSpeechHandler = require('../services/text-to-speech/text-to-speech-handler.js');
+const { setupNamesmith } = require('../services/namesmith/namesmith-lifecycle.js');
 
 
 /**
@@ -31,6 +32,8 @@ const onClientReady = async (client) => {
 			highWaterMark: 1 << 25
 		}
 	});
+
+	await setupNamesmith();
 
 	// Only set up services if not in development mode
 	if (botStatus.isInDevelopmentMode) {

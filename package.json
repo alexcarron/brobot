@@ -10,8 +10,8 @@
 				"build:guild": "node build.js --guild-commands-only",
 				"build:dev": "node build.js --development",
 				"dev": "nodemon --ignore \"**/*.json\" index.js --development",
-				"dev:deploy": "npm run dev -- --deploy-guild-commands",
-				"dev:deploy-all": "npm run dev -- --deploy-all-commands"
+				"dev:deploy": "node build.js --development --guild-commands-only && npm run dev",
+				"dev:deploy-all": "node build.js --development && npm run dev"
 		},
 		"dependencies": {
 				"@discordjs/builders": "^1.6.5",
