@@ -10,6 +10,7 @@ unused/
 .vscode
 .npm
 *token.js
+*cookies.txt
 
 # Planning & Design
 planning/

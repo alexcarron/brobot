@@ -9,6 +9,7 @@ const Timer = require('../services/timers/timer.js');
 const DailyMessageHandler = require('../services/discussion-prompts/daily-message-handler.js');
 const TextToSpeechHandler = require('../services/text-to-speech/text-to-speech-handler.js');
 const { setupNamesmith } = require('../services/namesmith/namesmith-lifecycle.js');
+const fs = require('fs');
 
 
 /**
@@ -30,7 +31,16 @@ const onClientReady = async (client) => {
 		ytdlOptions: {
 			quality: "highestaudio",
 			highWaterMark: 1 << 25
-		}
+		},
+		requestOptions: {
+      headers: {
+        cookie: fs.readFileSync('./youtube-cookies.txt', 'utf-8')
+          .split('\n')
+          .map(line => line.trim())
+          .filter(Boolean)
+          .join('; '), // format cookies as header string
+      }
+    },
 	});
 
 	await setupNamesmith();
