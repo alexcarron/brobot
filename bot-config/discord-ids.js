@@ -143,8 +143,14 @@ const ids = {
 		channels: {
 			openMysteryBoxes: "1384680717879087156",
 			publishedNames: "1384682059938791576",
-		}
-	}
+		},
+	},
+
+	evolutionGame: {
+		channels: {
+			evolutions: "1386388834480165035",
+		},
+	},
 }
 
 module.exports = ids;

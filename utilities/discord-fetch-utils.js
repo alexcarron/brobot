@@ -175,4 +175,35 @@ const getNicknameOfInteractionUser = (interaction) => {
 	return interaction.member.nickname
 }
 
-module.exports = { assertClientSetup, fetchGuild, fetchChannel, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchUser, fetchRole, fetchRoleByName, getStringParamValue, getUserParamValue, getEveryoneRole, getIntegerParamValue, getNicknameOfInteractionUser };
+/**
+ * Fetches all messages in a channel
+ * @param {TextChannel} channel The channel whose messages you want to fetch
+ * @returns {Promise<Message[]>} A Promise that resolves with an array of all messages in the channel
+ */
+const fetchMessagesInChannel = async (channel) => {
+  if (!channel || !(channel instanceof TextChannel)) {
+    console.error('Channel is not a text channel or not found.');
+    return;
+  }
+
+  const allMessages = [];
+  let oldestMessageID = undefined;
+
+  while (true) {
+    const fetched = await channel.messages.fetch({
+			limit: 100,
+			before: oldestMessageID
+		});
+    if (fetched.size === 0) break;
+
+    allMessages.push(...fetched.values());
+    oldestMessageID = fetched.last()?.id;
+  }
+
+	// Ensure messages are in chronological order
+	allMessages.reverse();
+
+	return allMessages;
+}
+
+module.exports = { assertClientSetup, fetchGuild, fetchChannel, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchUser, fetchRole, fetchRoleByName, getStringParamValue, getUserParamValue, getEveryoneRole, getIntegerParamValue, getNicknameOfInteractionUser, fetchMessagesInChannel };

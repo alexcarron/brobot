@@ -9,6 +9,7 @@
 				"build": "node build.js",
 				"build:guild": "node build.js --guild-commands-only",
 				"build:dev": "node build.js --development",
+				"build:dev:guild": "node build.js --development --guild-commands-only",
 				"dev": "nodemon --ignore \"**/*.json\" index.js --development",
 				"dev:deploy": "node build.js --development --guild-commands-only && npm run dev",
 				"dev:deploy-all": "node build.js --development && npm run dev"
