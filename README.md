@@ -56,6 +56,10 @@ Brobot is a feature-rich Discord.js bot built to enhance the experience of the L
   * Open a mystery box
   * Publish your current name
 
+### Evolution Game (Game System)
+
+* Dynamically list all creatures by evolution hierarchy
+
 ### Fun and Games
 
 * Ask Brobot a question (AI-powered responses)
@@ -225,15 +229,17 @@ Contains all command definition files.
   * **`discord-interactions/`** Commands for performing specific Discord actions (e.g., send a message, join VC)
   * **`discord-moderation/`** Commands for moderation or admin-only Discord actions (e.g., deleting channels, muting members)
   * **`bot-config/`** Bot-owner-only commands for configuring Brobot
-* **`voice-channel/`** Commands for voice channels features
-  * **`text-to-speech/`** Commands for using text-to-speech in a voice channel
+* **`evolution-game/`** Utility commands for helping play the Evolution Game
+* **`fun/`** Fun, non-utility commands to entertain users
+* **`ll-points/`** Commands for using and managing all LL Point Leaderboard functionality
+* **`namesmith/`** CCommands for playing and managing the Namesmith game
+* **`rapid-discord-mafia/`** Commands for playing and managing the Rapid Discord Mafia game
+* **`sand/`** Commands for playing and managing SAND Season 3
 * **`server-interaction/`** Commands for creating events and interactions on the server
   * **`discussion-prompts/`** Commands for sending and adding discussion prompts
   * **`events/`** Commands for creating and running game show events
-* **`rapid-discord-mafia/`** Commands for playing and managing the Rapid Discord Mafia game
-* **`ll-points/`** Commands for using and managing all LL Point Leaderboard functionality
-* **`namesmith/`** CCommands for playing and managing the Namesmith game
-* **`fun/`** Fun, non-utility commands to entertain users
+* **`voice-channel/`** Commands for voice channels features
+  * **`text-to-speech/`** Commands for using text-to-speech in a voice channel
 
 ### 📂 `event-listeners/`
 
@@ -254,6 +260,7 @@ Contains core services, modules, and models for Brobot's features.
 * **`command-creation/`** Utilities and models for creating, registering, and managing bot commands to simplify the command setup process
 * **`discord-events/`** Manages scheduling and handling of Discord events, including reminders and announcements
 * **`discussion-prompts/`** Handles recurring messages with random discussion prompts
+* **`evolution-game/`** Handles logic and utilities for parsing, managing, and sending creatures in the Evolution Game
 * **`ll-points/`** Manages LL Point Leaderboard logic
 * **`namesmith/`** Manages game logic for Namesmith, including setup, actions, and Discord configuration
 * **`rapid-discord-mafia/`** Manages game logic for Rapid Discord Mafia, including players, roles, actions, and phases

@@ -12,6 +12,7 @@ const ids = {
     LLGameShowCenter: "1137452342850097252",
     ll_game_show_center: "1137452342850097252",
 		namesmith: "1347359771799453777",
+		evolutionGame: "1385961369223954522",
   },
   ll_user_id: "276119804182659072",
   client: () => {
@@ -148,7 +149,7 @@ const ids = {
 
 	evolutionGame: {
 		channels: {
-			evolutions: "1386388834480165035",
+			evolutions: "1385970928046964816",
 		},
 	},
 }
