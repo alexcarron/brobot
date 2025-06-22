@@ -8,7 +8,6 @@ Contains all command definition files.
   * **`bot-config/`** Bot-owner-only commands for configuring Brobot
 * **`voice-channel/`** Commands for voice channels features
   * **`text-to-speech/`** Commands for using text-to-speech in a voice channel
-  * **`music-player/`** Commands for controlling music playback in the voice channel
 * **`server-interaction/`** Commands for creating events and interactions on the server
   * **`discussion-prompts/`** Commands for sending and adding discussion prompts
   * **`events/`** Commands for creating and running game show events

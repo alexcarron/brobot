@@ -25,13 +25,6 @@ Brobot is a feature-rich Discord.js bot built to enhance the experience of the L
   * Send a random discussion question on command
   * Post daily discussion topics in different channels
 
-### Music Playback
-
-* Play a specific song
-* Pause, resume, skip, or stop music
-* View the current song or full queue
-* Loop or shuffle the queue
-
 ### Text-to-Speech in Voice Chat
 
 * Send text-to-speech messages
@@ -234,7 +227,6 @@ Contains all command definition files.
   * **`bot-config/`** Bot-owner-only commands for configuring Brobot
 * **`voice-channel/`** Commands for voice channels features
   * **`text-to-speech/`** Commands for using text-to-speech in a voice channel
-  * **`music-player/`** Commands for controlling music playback in the voice channel
 * **`server-interaction/`** Commands for creating events and interactions on the server
   * **`discussion-prompts/`** Commands for sending and adding discussion prompts
   * **`events/`** Commands for creating and running game show events
