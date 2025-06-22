@@ -4,6 +4,8 @@ const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffmpeg = require('fluent-ffmpeg');
 const { wrapTextByLineWidth, removeLinks, removeEmojis } = require('../../utilities/text-formatting-utils');
 const { logError, logSuccess, logInfo } = require('../../utilities/logging-utils');
+const { default: axios } = require('axios');
+const fs = require('fs');
 ffmpeg.setFfmpegPath(ffmpegPath);
 
 class TextToSpeechHandler {
@@ -200,6 +202,32 @@ class TextToSpeechHandler {
 		return this.speedUpAndVolumeAudio(audioUrl);
 	}
 
+	/**
+	 * Downloads the audio file from the given URL and saves it to a temporary file
+	 * @param {string} audioUrl URL of the audio file to download
+	 * @return {Promise<string>} Temporary file path to the downloaded audio file
+	 */
+	async downloadAudio(audioUrl) {
+		const tempInputPath = 'temp-input.mp3';
+
+		// Step 1: Download audio
+		const downloadAudio = async (audioUrl) => {
+			const response = await axios.get(audioUrl,
+				{ responseType: 'stream' }
+			);
+			const writer = fs.createWriteStream(tempInputPath);
+			response.data.pipe(writer);
+			return new Promise((resolve, reject) => {
+				writer.on('finish', resolve);
+				writer.on('error', reject);
+			});
+		};
+
+		await downloadAudio(audioUrl);
+
+		return tempInputPath;
+	}
+
 	async getGoogleTranslateTTSAudioUrl(text, language="en") {
 		const audio_file_url = tts.getAudioUrl(text, {
 			lang: language,
@@ -216,11 +244,15 @@ class TextToSpeechHandler {
 	 * @return {Promise<string>} new audio url
 	 */
 	async speedUpAndVolumeAudio(audioUrl) {
+		const audioFilePath = await this.downloadAudio(audioUrl);
     return new Promise((resolve, reject) => {
 			// Generate a unique filename to avoid overwriting
 			const outputFilePath = 'audioUrl.mp3';
 
-			ffmpeg(audioUrl)
+			ffmpeg(audioFilePath)
+				.on('start', (commandLine) => {
+					logInfo(`Audio conversion started with command: ${commandLine}`);
+				})
 				.on('error', function(err) {
 					logError('Error converting audio', err);
 					reject(err);
