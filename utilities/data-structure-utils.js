@@ -1,3 +1,5 @@
+const { Collection } = require("discord.js");
+
 /**
  * Sets a nested property in an object.
  * @param {Object} object - The object that contains the property to be set.
@@ -241,4 +243,13 @@ const getCharacterDifferencesInStrings = (originalString, modifiedString) => {
 	return { missingCharacters, extraCharacters };
 }
 
-module.exports = { setNestedProperty, appendToNestedProperty, getShuffledArray, arraysHaveSameElements, getRandomElement, getCharacterDifferencesInStrings };
+/**
+ * Converts a Discord.js Collection into an array
+ * @param {Collection} collection Discord.js Collection
+ * @returns {Array} Array of values from the Collection
+ */
+const discordCollectionToArray = (collection) => {
+	return Array.from(collection.values());
+}
+
+module.exports = { setNestedProperty, appendToNestedProperty, getShuffledArray, arraysHaveSameElements, getRandomElement, getCharacterDifferencesInStrings, discordCollectionToArray };

@@ -1,5 +1,6 @@
 const { Client, Guild, TextChannel, VoiceChannel, Message, ChannelType, Snowflake, GuildMember, User, Role, Collection, ChatInputCommandInteraction } = require("discord.js");
 const ids = require("../bot-config/discord-ids");
+const { discordCollectionToArray } = require("./data-structure-utils");
 
 /**
  * Asserts that the Discord client is setup and ready.
@@ -23,6 +24,17 @@ const assertClientSetup = () => {
 const fetchGuild = async (guildID) => {
 	assertClientSetup();
 	return await global.client.guilds.fetch(guildID);
+}
+
+/**
+ * Fetches all channels in a given guild.
+ * @param {Guild} guild The guild whose channels to fetch.
+ * @returns {Promise<GuildChannel[]>} A Promise that resolves with an array of all channels in the guild.
+ * @throws {Error} If the client is not setup or not ready.
+ */
+const fetchChannelsOfGuild = async (guild) => {
+	const channels = await guild.channels.fetch();
+	return discordCollectionToArray(channels);
 }
 
 /**
@@ -79,10 +91,11 @@ const fetchRole = async (guild, roleID) => {
 /**
  * Fetches all roles in a given guild.
  * @param {Guild} guild The guild whose roles we want to fetch.
- * @returns {Promise<Collection<Snowflake, Role>>} A Promise that resolves with a Collection of all roles in the guild.
+ * @returns {Promise<Role[]>} A Promise that resolves with a array of all roles in the guild.
  */
 const fetchRolesInGuild = async (guild) => {
-	return await guild.roles.fetch();
+	const roles = await guild.roles.fetch();
+	return discordCollectionToArray(roles);
 }
 
 /**
@@ -99,10 +112,11 @@ const fetchRoleByName = async (guild, roleName) => {
 /**
  * Fetches all the categories of a given guild.
  * @param {Guild} guild The guild whose categories you want to fetch.
- * @returns {Promise<Collection<string, GuildChannel>>} A Promise that resolves with a Collection of the categories of the guild.
+ * @returns {Promise<GuildChannel[]>} A Promise that resolves with a Collection of the categories of the guild.
  */
 const fetchCategoriesOfGuild = async (guild) => {
-	return await guild.channels.filter((channel) =>
+	const channels = await fetchChannelsOfGuild(guild);
+	return channels.filter((channel) =>
 		channel.type === ChannelType.GuildCategory
 	);
 }
@@ -206,4 +220,4 @@ const fetchMessagesInChannel = async (channel) => {
 	return allMessages;
 }
 
-module.exports = { assertClientSetup, fetchGuild, fetchChannel, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchUser, fetchRole, fetchRoleByName, getStringParamValue, getUserParamValue, getEveryoneRole, getIntegerParamValue, getNicknameOfInteractionUser, fetchMessagesInChannel };
+module.exports = { assertClientSetup, fetchGuild, fetchChannel, fetchChannelsOfGuild, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchUser, fetchRole, fetchRoleByName, getStringParamValue, getUserParamValue, getEveryoneRole, getIntegerParamValue, getNicknameOfInteractionUser, fetchMessagesInChannel };

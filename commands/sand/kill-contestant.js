@@ -1,0 +1,82 @@
+const { PermissionFlagsBits, ChannelType } = require("discord.js");
+const ids = require("../../bot-config/discord-ids");
+const SlashCommand = require("../../services/command-creation/slash-command");
+const { deferInteraction, editReplyToInteraction, removePermissionFromChannel } = require("../../utilities/discord-action-utils");
+const { fetchGuild, fetchChannel, fetchGuildMember, fetchAllChannels, fetchChannelsInCategory, getUserParamValue, fetchAllCategoryChannels, fetchCategoriesOfGuild } = require("../../utilities/discord-fetch-utils");
+const { Parameter, ParameterType } = require("../../services/command-creation/parameter");
+
+
+const Parameters = {
+	Contestant: new Parameter({
+		type: ParameterType.USER,
+		name: "contestant-removing",
+		description: "A contestant to be removed from all alliances",
+		isRequired: true,
+	}),
+};
+
+const command = new SlashCommand({
+	name: "kill-contestant",
+	description: "Remove a contestant from all alliances",
+	required_servers: [ids.sandSeason3.guild],
+	required_permissions: [PermissionFlagsBits.Administrator],
+	parameters: [
+		Parameters.Contestant,
+	],
+
+	/**
+	 * @param {CommandInteraction} interaction
+	 */
+	execute: async function execute(interaction) {
+		await deferInteraction(interaction);
+
+		const contestantUser = getUserParamValue(interaction, Parameters.Contestant.name);
+
+		const sandSeason3Guild = interaction.guild;
+
+		const allCategoryChannels = await fetchCategoriesOfGuild(sandSeason3Guild);
+
+		const allianceCategories = allCategoryChannels.filter(
+			(channel) => {
+				return channel.name.toLowerCase().includes('alliance');
+			}
+		);
+
+		const allAllianceChannels = [];
+
+		for (const category of allianceCategories) {
+			const categoryChannels = await fetchChannelsInCategory(
+				sandSeason3Guild,
+				category.id
+			);
+			allAllianceChannels.push(...categoryChannels);
+		}
+
+		for (const allianceChannel of allAllianceChannels) {
+			const currentNumPerrmissions = allianceChannel.permissionOverwrites.cache.size;
+
+			await removePermissionFromChannel({
+				channel: allianceChannel,
+				userOrRoleID: contestantUser.id,
+			});
+
+			const newNumPermissions = allianceChannel.permissionOverwrites.cache.size;
+			const numNewPermissions = newNumPermissions - currentNumPerrmissions;
+
+			if (numNewPermissions !== 0) {
+				await allianceChannel.send(`${contestantUser} was removed from ${allianceChannel}`);
+			}
+
+			if (newNumPermissions <= 1) {
+				await allianceChannel.send(`This alliance is now empty and is marked for archiving <@276119804182659072>`);
+			}
+		}
+
+		await editReplyToInteraction(interaction,
+			`Removed ${contestantUser} from all alliances`
+		);
+	},
+});
+command.isInDevelopment = true;
+
+module.exports = command;

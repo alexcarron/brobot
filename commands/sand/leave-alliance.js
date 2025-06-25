@@ -34,6 +34,11 @@ module.exports = new SlashCommand({
 
 		allianceChannel.send(`${commandUser} left the alliance`);
 
+		const numPermissions = allianceChannel.permissionOverwrites.cache.size;
+		if (numPermissions <= 1) {
+			await allianceChannel.send(`This alliance is now empty and is marked for archiving <@276119804182659072>`);
+		}
+
 		const logChannel = await fetchChannel(sandSeason3Guild, ids.sandSeason3.channels.log);
 		logChannel.send(`${commandUser} left ${allianceChannel}`);
 
