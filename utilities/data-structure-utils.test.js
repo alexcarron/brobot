@@ -1,4 +1,4 @@
-const { setNestedProperty, appendToNestedProperty, getShuffledArray, arraysHaveSameElements, getRandomElement, getCharacterDifferencesInStrings } = require("./data-structure-utils");
+const { setNestedProperty, appendToNestedProperty, getShuffledArray, arraysHaveSameElements, getRandomElement, getCharacterDifferencesInStrings, getRandomWeightedElement } = require("./data-structure-utils");
 
 describe('setNestedProperty', () => {
 	it('sets a property directly', () => {
@@ -325,4 +325,38 @@ describe('getCharacterDifferencesInStrings()', () => {
 	it('should throw an error for non-string input', () => {
 		expect(() => getCharacterDifferencesInStrings(123, 'hello')).toThrow(TypeError);
 	});
+});
+
+describe('getRandomWeightedElement()', () => {
+  it('should return a random element from the object', () => {
+    const elementToWeight = { a: 1, b: 2, c: 3 };
+    const result = getRandomWeightedElement(elementToWeight);
+    expect(Object.keys(elementToWeight)).toContain(result);
+  });
+
+  it('should throw an error when the input is not an object', () => {
+    expect(() => getRandomWeightedElement('hello')).toThrowError('getRandomWeightedElement: elementToWeight must be an object.');
+  });
+
+  it('should throw an error when any of the weights is not a positive number', () => {
+    const elementToWeight = { a: -1, b: 2, c: 3 };
+    expect(() => getRandomWeightedElement(elementToWeight)).toThrowError('getRandomWeightedElement: Invalid weight: -1');
+  });
+
+  it('should throw an error when the total weight is not greater than 0', () => {
+    const elementToWeight = { a: 0, b: 0, c: 0 };
+    expect(() => getRandomWeightedElement(elementToWeight)).toThrowError('getRandomWeightedElement: total weight must be > 0');
+  });
+
+  it('should return a random element from the object with multiple elements', () => {
+    const elementToWeight = { a: 1, b: 2, c: 3, d: 4, e: 5 };
+    const result = getRandomWeightedElement(elementToWeight);
+    expect(Object.keys(elementToWeight)).toContain(result);
+  });
+
+  it('should return a random element from the object with a single element', () => {
+    const elementToWeight = { a: 1 };
+    const result = getRandomWeightedElement(elementToWeight);
+    expect(result).toBe('a');
+  });
 });

@@ -252,4 +252,41 @@ const discordCollectionToArray = (collection) => {
 	return Array.from(collection.values());
 }
 
-module.exports = { setNestedProperty, appendToNestedProperty, getShuffledArray, arraysHaveSameElements, getRandomElement, getCharacterDifferencesInStrings, discordCollectionToArray };
+/**
+ * Returns a random element from a given object where the property values are used as weights.
+ * @param {Object} elementToWeight An object where the property values are used as weights.
+ * @returns {any} The selected element.
+ * @throws {Error} If the elementToWeight is not an object.
+ * @throws {Error} If any of the weights is not a positive number.
+ * @throws {Error} If the total weight is not greater than 0.
+ */
+const getRandomWeightedElement = (elementToWeight) => {
+	if (typeof elementToWeight !== 'object') {
+		throw new Error('getRandomWeightedElement: elementToWeight must be an object.');
+	}
+
+	const elementToWeightEntries = Object.entries(elementToWeight);
+	const totalWeight = elementToWeightEntries.reduce((accumulatedWeight, [_, weight]) => {
+    if (typeof weight !== 'number' || weight < 0) {
+      throw new Error(`getRandomWeightedElement: Invalid weight: ${weight}`);
+    }
+    return accumulatedWeight + weight;
+  }, 0);
+
+
+  if (totalWeight <= 0) {
+    throw new Error('getRandomWeightedElement: total weight must be > 0');
+  }
+
+	const randomWeight = Math.random() * totalWeight;
+  let cumulativeWeight = 0;
+
+  for (const [element, weight] of elementToWeightEntries) {
+    cumulativeWeight += weight;
+    if (randomWeight < cumulativeWeight) return element;
+  }
+
+	throw new Error('getRandomWeightedElement failed: no element selected.');
+}
+
+module.exports = { setNestedProperty, appendToNestedProperty, getShuffledArray, arraysHaveSameElements, getRandomElement, getCharacterDifferencesInStrings, discordCollectionToArray, getRandomWeightedElement };

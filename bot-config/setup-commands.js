@@ -149,7 +149,7 @@ const deployCommands = async ({globalCommands = [], guildIDtoGuildCommands}) => 
 
 		try {
 			await rest.put(
-				Routes.applicationGuildCommands(ids.client(), requiredServerID),
+				Routes.applicationGuildCommands(ids.client, requiredServerID),
 				{ body:
 					slashCommands.map(command => command.data.toJSON())
 				},
@@ -170,7 +170,7 @@ const deployCommands = async ({globalCommands = [], guildIDtoGuildCommands}) => 
 
 	logInfo(`Deploying ${globalCommands.length} global slash commands...`);
 	await rest.put(
-		Routes.applicationCommands(ids.client()),
+		Routes.applicationCommands(ids.client),
 		{ body: globalCommands.map(command => command.data.toJSON()) },
 	);
 	logSuccess(`Deployed ${globalCommands.length} public slash commands`);
@@ -179,7 +179,7 @@ const deployCommands = async ({globalCommands = [], guildIDtoGuildCommands}) => 
 
 	// ! Delete Guild Command
 	// rest.delete(Routes.applicationGuildCommand(
-	// 	ids.client(),
+	// 	ids.client,
 	// 	ids.sandSeason3.guild,
 	// 	"1376029058634354872"
 	// ))
@@ -187,17 +187,17 @@ const deployCommands = async ({globalCommands = [], guildIDtoGuildCommands}) => 
 	// .catch(console.error);
 
 	// ! Delete Every Guild Command
-	// rest.put(Routes.applicationGuildCommands(ids.client(), ids.servers.ll_game_show_center), { body: [] })
+	// rest.put(Routes.applicationGuildCommands(ids.client, ids.servers.ll_game_show_center), { body: [] })
 	// .then(() => logSuccess('Successfully deleted all guild commands.'))
 	// .catch(console.error);
 
 	// ! Delete Global Commands
-	// rest.delete(Routes.applicationCommand(ids.client(), 'COMMAND ID'))
+	// rest.delete(Routes.applicationCommand(ids.client, 'COMMAND ID'))
 	// .then(() => logSuccess('Successfully deleted application command'))
 	// .catch(console.error);
 
 	//! Delete Every Global Command
-	// rest.put(Routes.applicationCommands(ids.client()), { body: [] })
+	// rest.put(Routes.applicationCommands(ids.client), { body: [] })
 	// .then(() => logSuccess('Successfully deleted all application commands.'))
 	// .catch(console.error);
 }

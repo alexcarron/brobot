@@ -1,9 +1,10 @@
 const { ChatInputCommandInteraction } = require("discord.js");
 const ids = require("../../bot-config/discord-ids");
 const SlashCommand = require("../../services/command-creation/slash-command");
-const { fetchPlayerName, getPublishedNameOfPlayer, publishNameOfPlayer, changeNameOfPlayer } = require("../../services/namesmith/namesmith-utilities");
-const { confirmInteractionWithButtons, deferInteraction, editReplyToInteraction, getInputFromCreatedTextModal } = require("../../utilities/discord-action-utils");
+const { confirmInteractionWithButtons, deferInteraction, getInputFromCreatedTextModal } = require("../../utilities/discord-action-utils");
 const { getCharacterDifferencesInStrings } = require("../../utilities/data-structure-utils");
+const { getNamesmithServices } = require("../../services/namesmith/services/get-namesmith-services");
+const { changeDiscordNameOfPlayer } = require("../../services/namesmith/utilities/discord-action.utility");
 
 const command = new SlashCommand({
 	name: "rearrange-name",
@@ -25,7 +26,8 @@ command.execute = async function execute(interaction) {
 
 	const playerID = interaction.user.id;
 
-	const currentName = await fetchPlayerName(playerID);
+	const { playerService } = getNamesmithServices();
+	const currentName = await playerService.getCurrentName(playerID);
 
 	let correctlyRearrangedName = false;
 	let initialMessageText = "Click the button to rearrange the characters in your name";
@@ -68,14 +70,14 @@ command.execute = async function execute(interaction) {
 			`Are you sure you want to change your name to: \`${newName}\`?`,
 		confirmText: "Yes, Change My Name",
 		cancelText: "No, Don't Change My Name",
-		confirmUpdateText: `You just changed your current name to \`${currentName}\``,
+		confirmUpdateText: `You just changed your current name to \`${newName}\``,
 		cancelUpdateText: "Canceled",
 	});
 
 	if (!didConfirmAction)
 		return;
 
-	await changeNameOfPlayer(playerID, newName);
+	await playerService.changeCurrentName(playerID, newName);
 }
 
 module.exports = command;

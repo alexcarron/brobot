@@ -1,26 +1,9 @@
 const { GuildMember } = require("discord.js");
-const ids = require("../../bot-config/discord-ids");
-const { fetchRole } = require("../../utilities/discord-fetch-utils");
-const { addRoleToMember, setNicknameOfMember } = require("../../utilities/discord-action-utils");
-const { loadObjectFromJsonInGitHub } = require("../../utilities/github-json-storage-utils");
-const { logInfo, logSuccess } = require("../../utilities/logging-utils");
+const ids = require("../../../bot-config/discord-ids");
+const { fetchRole } = require("../../../utilities/discord-fetch-utils");
+const { addRoleToMember, setNicknameOfMember } = require("../../../utilities/discord-action-utils");
 
 const NO_NAME = "ˑ";
-const GITHUB_JSON_FILE_NAME = "namesmith";
-
-/**
- * Sets up Namesmith by loading the Namesmith data from a GitHub JSON file into the global object.
- * @returns {Promise<void>} A promise that resolves once the Namesmith data has been loaded and set up.
- */
-const setupNamesmith = async () => {
-	logInfo("Setting up Namesmith...");
-
-	const namesmithData = await loadObjectFromJsonInGitHub(GITHUB_JSON_FILE_NAME);
-
-	global.namesmith = namesmithData;
-
-	logSuccess("Namesmith set up");
-}
 
 /**
  * Checks if a guild member is a member of the Namesmith server.
@@ -47,4 +30,4 @@ const onUserJoinsNamesmith = async function(guildMember) {
 	await setNicknameOfMember(guildMember, NO_NAME);
 }
 
-module.exports = { isMemberInNamesmith, onUserJoinsNamesmith, setupNamesmith };
+module.exports = { isMemberInNamesmith, onUserJoinsNamesmith };

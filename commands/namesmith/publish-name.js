@@ -1,8 +1,7 @@
 const ids = require("../../bot-config/discord-ids");
 const SlashCommand = require("../../services/command-creation/slash-command");
-const { fetchPlayerName, getPublishedNameOfPlayer, publishNameOfPlayer } = require("../../services/namesmith/namesmith-utilities");
-const { confirmInteractionWithButtons, deferInteraction, editReplyToInteraction } = require("../../utilities/discord-action-utils");
-const { getNicknameOfInteractionUser, fetchChannel } = require("../../utilities/discord-fetch-utils");
+const { getNamesmithServices } = require("../../services/namesmith/services/get-namesmith-services");
+const { confirmInteractionWithButtons, deferInteraction } = require("../../utilities/discord-action-utils");
 
 const command = new SlashCommand({
 	name: "publish-name",
@@ -17,10 +16,12 @@ command.isInDevelopment = true;
 command.execute = async function execute(interaction) {
 	await deferInteraction(interaction);
 
+	const { playerService } = getNamesmithServices();
+
 	const playerID = interaction.user.id;
 
-	const currentName = await fetchPlayerName(playerID);
-	const currentPublishedName = getPublishedNameOfPlayer(playerID);
+	const currentName = await playerService.getCurrentName(playerID);
+	const currentPublishedName = await playerService.getPublishedName(playerID);
 
 	const didConfirmAction = await confirmInteractionWithButtons({
 		interaction,
@@ -39,7 +40,7 @@ command.execute = async function execute(interaction) {
 	if (!didConfirmAction)
 		return;
 
-	await publishNameOfPlayer(playerID);
+	await playerService.publishName(playerID);
 }
 
 module.exports = command;

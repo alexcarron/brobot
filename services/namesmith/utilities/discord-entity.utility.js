@@ -1,5 +1,5 @@
-const ids = require("../../bot-config/discord-ids");
-const { fetchGuild, fetchChannel, fetchGuildMember } = require("../../utilities/discord-fetch-utils");
+const ids = require("../../../bot-config/discord-ids");
+const { fetchGuild, fetchChannel, fetchGuildMember } = require("../../../utilities/discord-fetch-utils");
 
 /**
  * Fetches the Namesmith server from Discord.

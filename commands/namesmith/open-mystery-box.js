@@ -1,11 +1,10 @@
 const ids = require("../../bot-config/discord-ids");
 const SlashCommand = require("../../services/command-creation/slash-command");
-const { addCharacterToMember } = require("../../services/namesmith/namesmith-utilities");
-const { getRandomElement } = require("../../utilities/data-structure-utils");
+const { getNamesmithServices } = require("../../services/namesmith/services/get-namesmith-services");
+const { openMysteryBox } = require("../../services/namesmith/workflows/open-mystery-box.workflow");
 const { deferInteraction } = require("../../utilities/discord-action-utils");
 const { fetchGuildMember } = require("../../utilities/discord-fetch-utils");
 
-const CHARACTER_SET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('');
 
 const command = new SlashCommand({
 	name: "open-mystery-box",
@@ -20,12 +19,12 @@ command.isInDevelopment = true;
 command.execute = async function execute(interaction) {
 	await deferInteraction(interaction);
 
-	const recievedCharacter = getRandomElement(CHARACTER_SET);
+	const playerID = interaction.user.id;
+	const mysteryBoxID = 1;
+	const { character } = await openMysteryBox(playerID, mysteryBoxID);
+	const characterValue = character.value;
 
-	await interaction.editReply(`The character in your mystery box is:\n\`\`\`${recievedCharacter}\`\`\``);
-
-	const guildMember = await fetchGuildMember(interaction.guild, interaction.user.id);
-	addCharacterToMember(guildMember, recievedCharacter);
+	await interaction.editReply(`The character in your mystery box is:\n\`\`\`${characterValue}\`\`\``);
 }
 
 module.exports = command;

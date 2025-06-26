@@ -11,14 +11,18 @@ const ids = {
     rapid_discord_mafia: "1031365759919726622",
     LLGameShowCenter: "1137452342850097252",
     ll_game_show_center: "1137452342850097252",
-		namesmith: "1347359771799453777",
+		get namesmith() {
+			if (botStatus.isInDevelopmentMode)
+				return "1386449684213530796";
+			"1347359771799453777";
+		},
 		evolutionGame: "1385961369223954522",
   },
   ll_user_id: "276119804182659072",
-  client: () => {
+  get client() {
 		if (botStatus.isInDevelopmentMode)
-			return "1385404315581157498"
-		else return "803333218614116392"
+			return "1385404315581157498";
+		else return "803333218614116392";
 	},
 
   ll_game_shows: {
@@ -136,14 +140,38 @@ const ids = {
 
 	namesmith: {
 		roles: {
-			namesmither: "1385046899685462186",
-			spectator: "1383979159625138196",
-			noName: "1383978619407302796",
-			smithedName: "1383979126276489308",
+			get namesmither() {
+				if (botStatus.isInDevelopmentMode)
+					return "1386449684213530798";
+				else return "1385046899685462186";
+			},
+			get spectator() {
+				if (botStatus.isInDevelopmentMode)
+					return "1386449684213530797";
+				else return "1383979159625138196";
+			},
+			get noName() {
+				if (botStatus.isInDevelopmentMode)
+					return "1386449684213530800";
+				else return "1383978619407302796";
+			},
+			get smithedName() {
+				if (botStatus.isInDevelopmentMode)
+					return "1386449684213530799";
+				else return "1383979126276489308";
+			},
 		},
 		channels: {
-			openMysteryBoxes: "1384680717879087156",
-			publishedNames: "1384682059938791576",
+			get openMysteryBoxes() {
+				if (botStatus.isInDevelopmentMode)
+					return "1386449685497254137";
+				else return "1384680717879087156";
+			},
+			get publishedNames() {
+				if (botStatus.isInDevelopmentMode)
+					return "1386449685283209282";
+				else return "1384682059938791576";
+			},
 		},
 	},
 
