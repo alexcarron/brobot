@@ -108,6 +108,22 @@ class LLPointManager {
 		this.viewers.set(viewer.name, viewer);
 	}
 
+	/**
+	 * Changes the name of an existing viewer.
+	 * @param {string} currentViewerName - The current name of the viewer to be changed.
+	 * @param {string} newViewerName - The new name to assign to the viewer.
+	 * @returns {Promise<void>} A promise that resolves once the viewer's name has been updated in the database.
+	 */
+	async changeNameOfViewer(currentViewerName, newViewerName) {
+		const viewer = this.viewers.get(currentViewerName);
+		if (!viewer) return;
+
+		viewer.name = newViewerName;
+		this.viewers.set(newViewerName, viewer);
+		this.viewers.delete(currentViewerName);
+		await this.updateDatabase();
+	}
+
 	addViewerFromUser(viewer_user) {
 		let new_viewer = new Viewer({
 			name: viewer_user.username,
