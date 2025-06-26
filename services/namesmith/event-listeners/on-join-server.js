@@ -2,6 +2,7 @@ const { GuildMember } = require("discord.js");
 const ids = require("../../../bot-config/discord-ids");
 const { fetchRole } = require("../../../utilities/discord-fetch-utils");
 const { addRoleToMember, setNicknameOfMember } = require("../../../utilities/discord-action-utils");
+const { getNamesmithServices } = require("../services/get-namesmith-services");
 
 const NO_NAME = "ˑ";
 
@@ -28,6 +29,9 @@ const onUserJoinsNamesmith = async function(guildMember) {
 	await addRoleToMember(guildMember, noNameRole);
 
 	await setNicknameOfMember(guildMember, NO_NAME);
+
+	const { playerService } = getNamesmithServices();
+	await playerService.addNewPlayer(guildMember.id);
 }
 
 module.exports = { isMemberInNamesmith, onUserJoinsNamesmith };

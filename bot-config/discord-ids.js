@@ -172,6 +172,11 @@ const ids = {
 					return "1386449685283209282";
 				else return "1384682059938791576";
 			},
+			get namesToVoteOn() {
+				if (botStatus.isInDevelopmentMode)
+					return "1387849102687207444";
+				else return "1387849216319291553";
+			}
 		},
 	},
 

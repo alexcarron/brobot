@@ -1,7 +1,9 @@
 const { saveObjectToJsonInGitHub, loadObjectFromJsonInGitHub } = require("../../../utilities/github-json-storage-utils");
 
+// TODO: Implement with SQLite and Redis
+
 /**
- * Provides access to the static mystery box data.
+ * Provides access to the dynamic player data.
  */
 class PlayerRepository {
 	static REPO_NAME = "namesmith-players";
@@ -58,6 +60,28 @@ class PlayerRepository {
 	}
 
 	/**
+	 * Retrieves a list of players without published names.
+	 * @returns {Promise<Array<{
+	 * 	id: string,
+	 * 	currentName: string,
+	 * 	publishedName: undefined | null,
+	 * 	tokens: number,
+	 * 	role: string | null,
+	 * 	perks: string[] | null,
+	 * 	inventory: string,
+	 * 	unlockedRecipes: number[],
+	 * 	unlockedMysteryBoxes: number[]
+	 * }>>} An array of player objects without a published name.
+	 */
+	async getPlayersWithoutPublishedNames() {
+		await this.load();
+		return this.players.filter(player =>
+			player.publishedName === undefined ||
+			player.publishedName === null
+		);
+	}
+
+	/**
 	 * Retrieves the current name of a player.
 	 * @param {string} playerID - The ID of the player whose name is being retrieved.
 	 * @returns {Promise<string>} The current name of the player.
@@ -68,7 +92,6 @@ class PlayerRepository {
 	}
 
 	/**
-	 * TODO: Implement with SQLite and Redis
 	 * Changes the current name of a player.
 	 * @param {string} playerID - The ID of the player whose name is being changed.
 	 * @param {string} newName - The new name to assign to the player.
@@ -81,7 +104,6 @@ class PlayerRepository {
 	}
 
 	/**
-	 * TODO: Implement with SQLite and Redis
 	 * Retrieves a player's published name from the namesmith database.
 	 * @param {string} playerID - The ID of the player whose name is being retrieved.
 	 * @returns {Promise<string | undefined>} The published name of the player, or undefined if the player has no published name.
@@ -92,7 +114,6 @@ class PlayerRepository {
 	}
 
 	/**
-	 * TODO: Implement with SQLite and Redis
 	 * Publishes a player's name to the namesmith database.
 	 * @param {string} playerID - The ID of the player whose name is being published.
 	 * @param {string} name - The name to be published for the player.
@@ -101,6 +122,30 @@ class PlayerRepository {
 	async publishName(playerID, name) {
 		const player = await this.getPlayerById(playerID);
 		player.publishedName = name;
+		await this.save();
+	}
+
+	/**
+	 * Adds a new player to the game's database.
+	 * @param {string} playerID - The ID of the player to be added.
+	 * @returns {Promise<void>} A promise that resolves once the player has been added.
+	 */
+	async addPlayer(playerID) {
+		const existingPlayer = await this.getPlayerById(playerID);
+		if (existingPlayer) return;
+
+		const player = {
+			id: playerID,
+			currentName: "",
+			publishedName: null,
+			tokens: 0,
+			role: null,
+			perks: null,
+			inventory: "",
+			unlockedRecipes: [],
+			unlockedMysteryBoxes: []
+		};
+		this.players.push(player);
 		await this.save();
 	}
 }

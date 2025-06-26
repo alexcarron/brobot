@@ -60,7 +60,7 @@ module.exports = new SlashCommand({
       return;
     }
 
-		addPermissionToChannel({
+		await addPermissionToChannel({
 			channel: allianceChannel,
       userOrRoleID: contestantAdded.id,
       allowedPermissions: [PermissionFlagsBits.ViewChannel],

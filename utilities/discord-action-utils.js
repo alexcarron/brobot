@@ -402,8 +402,9 @@ const createEveryoneDenyViewPermission = (guild) =>
  * @param {PermissionFlagsBits[]} [options.allowedPermissions] - An array of permissions to allow.
  * @param {PermissionFlagsBits[]} [options.deniedPermissions] - An array of permissions to deny.
  * @throws {Error} If neither allowedPermissions nor deniedPermissions are provided, or if they are not arrays.
+ * @returns {Promise<void>} A promise that resolves when the permissions have been set.
  */
-const addPermissionToChannel = ({channel, userOrRoleID, allowedPermissions, deniedPermissions}) => {
+const addPermissionToChannel = async ({channel, userOrRoleID, allowedPermissions, deniedPermissions}) => {
 	const permissions = {}
 
 	if (!allowedPermissions && !deniedPermissions)
@@ -427,7 +428,7 @@ const addPermissionToChannel = ({channel, userOrRoleID, allowedPermissions, deni
     }
   }
 
-	channel.permissionOverwrites.create(
+	await channel.permissionOverwrites.create(
 		userOrRoleID,
 		permissions,
 	);
@@ -443,6 +444,57 @@ const addPermissionToChannel = ({channel, userOrRoleID, allowedPermissions, deni
  */
 const removePermissionFromChannel = async ({channel, userOrRoleID}) => {
 	await channel.permissionOverwrites.delete(userOrRoleID);
+}
+
+/**
+ * Updates the permission overwrites for a Discord channel for a specific user or role.
+ *
+ * @param {Object} options - Options for updating the permissions.
+ * @param {TextChannel} options.channel - The channel for which the permissions are being updated.
+ * @param {string} options.userOrRoleID - The ID of the user or role for which the permissions are being updated.
+ * @param {PermissionFlagsBits[]} [options.allowedPermissions] - An array of permissions that should be allowed for the user or role.
+ * @param {PermissionFlagsBits[]} [options.unsetPermissions] - An array of permissions that should be unset for the user or role.
+ * @param {PermissionFlagsBits[]} [options.deniedPermissions] - An array of permissions that should be denied for the user or role.
+ * @throws Will throw an error if none of allowedPermissions, deniedPermissions, or unsetPermissions are provided, or if any of them are not arrays.
+ * @returns {Promise<void>} A promise that resolves when the permissions have been updated.
+ */
+const changePermissionOnChannel = async ({channel, userOrRoleID, allowedPermissions, unsetPermissions, deniedPermissions}) => {
+	const permissions = {}
+
+	if (!allowedPermissions && !deniedPermissions && !unsetPermissions)
+		throw new Error("allowedPermissions, deniedPermissions, or unsetPermissions are required");
+
+	if (allowedPermissions && !Array.isArray(allowedPermissions))
+		throw new Error("Allowed permissions must be an array");
+
+	if (deniedPermissions && !Array.isArray(deniedPermissions))
+		throw new Error("Denied permissions must be an array");
+
+	if (unsetPermissions && !Array.isArray(unsetPermissions))
+		throw new Error("Unset permissions must be an array");
+
+	if (allowedPermissions) {
+		for (const permission of allowedPermissions) {
+			permissions[permission] = true;
+    }
+	}
+
+	if (unsetPermissions) {
+		for (const permission of unsetPermissions) {
+			permissions[permission] = null;
+		}
+	}
+
+	if (deniedPermissions) {
+    for (const permission of deniedPermissions) {
+      permissions[permission] = false;
+    }
+  }
+
+	channel.permissionOverwrites.edit(
+		userOrRoleID,
+		permissions,
+	);
 }
 
 
@@ -502,6 +554,7 @@ module.exports = {
 	createEveryoneDenyViewPermission,
 	addPermissionToChannel,
 	removePermissionFromChannel,
+	changePermissionOnChannel,
 	memberHasRole,
 	createCategory,
 	renameChannel,

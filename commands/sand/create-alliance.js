@@ -108,7 +108,7 @@ module.exports = new SlashCommand({
 		});
 
 		for (const contestantID of contestantIDs) {
-			addPermissionToChannel({
+			await addPermissionToChannel({
 				channel: newChannel,
 				userOrRoleID: contestantID,
 				allowedPermissions: [PermissionFlagsBits.ViewChannel],

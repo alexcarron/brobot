@@ -1,4 +1,4 @@
-const { ChatInputCommandInteraction } = require("discord.js");
+	const { ChatInputCommandInteraction } = require("discord.js");
 const ids = require("../../bot-config/discord-ids");
 const SlashCommand = require("../../services/command-creation/slash-command");
 const { confirmInteractionWithButtons, deferInteraction, getInputFromCreatedTextModal } = require("../../utilities/discord-action-utils");

@@ -1,4 +1,8 @@
 /**
+ * @fileoverview Utility functions for working with characters.
+ */
+
+/**
  * Retrieves the Unicode code point value of a given character.
  *
  * @param {string} character - The character from which to retrieve the code point value. Must be a single character string.

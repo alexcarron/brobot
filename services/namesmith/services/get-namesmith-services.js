@@ -1,3 +1,4 @@
+const GameStateService = require("./gameState.service");
 const MysteryBoxService = require("./mysteryBox.service");
 const PlayerService = require("./player.service");
 
@@ -6,8 +7,9 @@ const PlayerService = require("./player.service");
  * @returns {{
  *  mysteryBoxService: MysteryBoxService,
  *  playerService: PlayerService,
+ *  gameStateService: GameStateService,
  * }}
- * @throws {Error} If Namesmith, MysteryBoxService, or PlayerService is not set up yet.
+ * @throws {Error} If Namesmith, MysteryBoxService, PlayerService, or GameStateService is not set up yet.
  */
 const getNamesmithServices = () => {
 	if (!global.namesmith)
@@ -19,9 +21,14 @@ const getNamesmithServices = () => {
 	if (!global.namesmith.playerService)
 		throw new Error("getNamesmithServices: PlayerService is not set up yet.");
 
+	if (!global.namesmith.gameStateService)
+		throw new Error("getNamesmithServices: GameStateService is not set up yet.");
+
+
 	return {
 		mysteryBoxService: global.namesmith.mysteryBoxService,
 		playerService: global.namesmith.playerService,
+		gameStateService: global.namesmith.gameStateService,
 	}
 }
 

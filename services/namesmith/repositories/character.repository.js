@@ -1,5 +1,4 @@
 const { loadObjectFromJsonInGitHub } = require("../../../utilities/github-json-storage-utils");
-const { getIDfromCharacterValue } = require("../utilities/character.utility");
 
 /**
  * Provides access to all static character data.
