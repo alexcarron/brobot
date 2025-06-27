@@ -7,6 +7,7 @@ const { onSlashCommandAutocomplete } = require("./on-slash-command-autocomplete"
 const { onButtonPressed } = require("./on-button-pressed");
 const { onUserJoinsServer } = require("./on-user-joins-server");
 const { logInfo, logSuccess } = require("../utilities/logging-utils");
+const { onMessageDeleted } = require("./on-message-deleted");
 
 const isDM = (message) =>
 	message.channel.type === ChannelType.DM ||
@@ -69,12 +70,27 @@ const setupGuildMemberAddListener =
 		);
 	};
 
+/**
+ * Sets up an event listener for when a message is deleted.
+ * When a message is deleted, the onMessageDeleted function is called.
+ * @param {Client} client The Discord client instance.
+ */
+const setupMessageDeleteListener =
+	(client) => {
+		client.on(Events.MessageDelete,
+			async (message) => {
+				await onMessageDeleted(message);
+			}
+		);
+	};
+
 const setupEventListeners = (client) => {
 	logInfo("Setting up event listeners...");
 
 	setupMessageSentListener(client);
 	setupInteractionCreateListener(client);
 	setupGuildMemberAddListener(client);
+	setupMessageDeleteListener(client);
 
 	logSuccess("Event listeners set up");
 }

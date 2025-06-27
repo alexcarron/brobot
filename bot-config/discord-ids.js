@@ -17,6 +17,11 @@ const ids = {
 			"1347359771799453777";
 		},
 		evolutionGame: "1385961369223954522",
+		get sandSeason3() {
+			if (botStatus.isInDevelopmentMode)
+				return "1387934149985173654";
+			else return "1375999496164479226";
+		}
   },
   ll_user_id: "276119804182659072",
   get client() {
@@ -127,6 +132,60 @@ const ids = {
 		guild: "1375999496164479226",
 		channels: {
 			log: "1376025642386329610",
+			team1: {
+				get storageRoom() {
+					if (botStatus.isInDevelopmentMode)
+						return "1387934766438813717";
+					else return "1387954120920666333";
+				},
+				get kitchen() {
+					if (botStatus.isInDevelopmentMode)
+						return "1387934962002690151";
+					else return "1387954179368026122";
+				},
+				get hallway() {
+					if (botStatus.isInDevelopmentMode)
+						return "1387934976523108553";
+					else return "1387954225186738196";
+				},
+				get bathroom() {
+					if (botStatus.isInDevelopmentMode)
+						return "1387934990406385806";
+					else return "1387954271886119018";
+				},
+				get cyrostasisChamber() {
+					if (botStatus.isInDevelopmentMode)
+						return "1387935033926353008";
+					else return "1387954344988508301";
+				},
+			},
+			team2: {
+				get storageRoom() {
+					if (botStatus.isInDevelopmentMode)
+						return "1387935051248959498";
+					else return "1387954135923429466";
+				},
+				get kitchen() {
+					if (botStatus.isInDevelopmentMode)
+						return "1387935078943817818";
+					else return "1387954195599982602";
+				},
+				get hallway() {
+					if (botStatus.isInDevelopmentMode)
+						return "1387935124263407736";
+					else return "1387954244333867038";
+				},
+				get bathroom() {
+					if (botStatus.isInDevelopmentMode)
+						return "1387935138867843142";
+					else return "1387954292677410947";
+				},
+				get cyrostasisChamber() {
+					if (botStatus.isInDevelopmentMode)
+						return "1387935159155822652";
+					else return "1387954361610539119";
+				},
+			}
 		},
 		categories: {
 			alliance: "1376025607691046933",

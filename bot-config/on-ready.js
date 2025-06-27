@@ -1,4 +1,3 @@
-const { Player } = require('discord-player');
 const { botStatus } = require('./bot-status.js');
 const RapidDiscordMafia = require('../services/rapid-discord-mafia/rapid-discord-mafia.js');
 const { LLPointManager } = require('../services/ll-points/ll-point-manager.js');
@@ -9,6 +8,8 @@ const Timer = require('../services/timers/timer.js');
 const DailyMessageHandler = require('../services/discussion-prompts/daily-message-handler.js');
 const TextToSpeechHandler = require('../services/text-to-speech/text-to-speech-handler.js');
 const { setupNamesmith } = require('../services/namesmith/event-listeners/on-setup.js');
+const { setupNamesmith } = require('../services/namesmith/namesmith-lifecycle.js');
+const setupAnomolyService = require('../services/sand-season-3/anomoly/on-setup.js');
 
 /**
  * Called when the client is ready to start running.
@@ -25,6 +26,7 @@ const onClientReady = async (client) => {
 	botStatus.isOn = true;
 
 	await setupNamesmith();
+	setupAnomolyService();
 
 	logInfo("Loading timers database");
 	const timersJSON = await loadObjectFromJsonInGitHub("timers");
