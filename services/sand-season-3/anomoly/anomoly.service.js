@@ -118,8 +118,8 @@ class AnomolyService {
 	startCronJobForHour(numHour) {
 		const now = new Date();
 		const cronStartTime = this.startTime;
-		cronStartTime.setSeconds(cronStartTime.getSeconds() +
-			numHour * 6 * ANOMOLY_INTERVAL_IN_HOURS
+		cronStartTime.setHours(cronStartTime.getHours() +
+			numHour * ANOMOLY_INTERVAL_IN_HOURS
 		);
 
 		const anomolyService = this;
