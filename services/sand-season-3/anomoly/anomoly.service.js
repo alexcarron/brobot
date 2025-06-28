@@ -18,7 +18,7 @@ const RoomIdentifier = Object.freeze({
 	KITCHEN: "kitchen",
 	HALLWAY: "hallway",
 	BATHROOM: "bathroom",
-	CRYOSTATIS_CHAMBER: "cyrostasisChamber"
+	CRYOSTATIS_CHAMBER: "cryostasisChamber"
 });
 
 /**
@@ -33,7 +33,7 @@ class AnomolyService {
 	startChallenge(startTime) {
 		this.startTime = startTime;
 		this.startCronJobs();
-		this.sendImageInChannels(0);
+		this.sendImagesForHour(0);
 	}
 
 	/**
