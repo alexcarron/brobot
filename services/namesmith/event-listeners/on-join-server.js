@@ -23,14 +23,6 @@ const isMemberInNamesmith = function(guildMember) {
  * @returns {Promise<void>} A promise that resolves once roles are assigned and the nickname is set.
  */
 const onUserJoinsNamesmith = async function(guildMember) {
-	const namesmithGuild = guildMember.guild;
-	const noNameRole = await fetchRole(namesmithGuild, ids.namesmith.roles.noName);
-
-	await addRoleToMember(guildMember, noNameRole);
-
-	await setNicknameOfMember(guildMember, NO_NAME);
-
-	const { playerService } = getNamesmithServices();
 	await playerService.addNewPlayer(guildMember.id);
 }
 

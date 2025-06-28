@@ -37,6 +37,17 @@ const fetchNamesToVoteOnChannel = async () => {
 }
 
 /**
+ * Fetches the 'the winner' channel from the Namesmith server.
+ * @returns {Promise<TextChannel>} A promise that resolves to the TextChannel object for the 'the winner' channel.
+ */
+const fetchTheWinnerChannel = async () => {
+	return await fetchChannel(
+		await fetchNamesmithServer(),
+		ids.namesmith.channels.theWinner
+	);
+}
+
+/**
  * Fetches a guild member from the Namesmith server by player ID.
  * @param {string} playerID The ID of the player to fetch a guild member for.
  * @returns {Promise<GuildMember>} A promise that resolves to the GuildMember object for the given player ID.
@@ -48,4 +59,4 @@ const fetchNamesmithGuildMember = async (playerID) => {
 	);
 }
 
-module.exports = { fetchNamesmithServer, fetchPublishedNamesChannel, fetchNamesToVoteOnChannel, fetchNamesmithGuildMember };
+module.exports = { fetchNamesmithServer, fetchPublishedNamesChannel, fetchNamesToVoteOnChannel, fetchNamesmithGuildMember, fetchTheWinnerChannel };

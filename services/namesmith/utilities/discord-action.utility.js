@@ -2,9 +2,9 @@
  * @fileoverview Utility functions for doing Discord actions related to Namesmith
  */
 
-const { memberHasRole, setNicknameOfMember, removeRoleFromMember, addRoleToMember, createPermission, removePermissionFromChannel, addPermissionToChannel, changePermissionOnChannel } = require("../../../utilities/discord-action-utils");
+const { memberHasRole, setNicknameOfMember, removeRoleFromMember, addRoleToMember, createPermission, removePermissionFromChannel, addPermissionToChannel, changePermissionOnChannel, closeChannel, openChannel, memberHasAnyRole } = require("../../../utilities/discord-action-utils");
 const ids = require("../../../bot-config/discord-ids");
-const { fetchPublishedNamesChannel, fetchNamesmithGuildMember, fetchNamesToVoteOnChannel } = require("./discord-entity.utility");
+const { fetchPublishedNamesChannel, fetchNamesmithGuildMember, fetchNamesToVoteOnChannel, fetchTheWinnerChannel } = require("./discord-entity.utility");
 const { getEveryoneRole } = require("../../../utilities/discord-fetch-utils");
 const { PermissionFlagsBits } = require("discord.js");
 
@@ -65,14 +65,7 @@ const sendToNamesToVoteOnChannel = async (message) => {
  */
 const openNamesToVoteOnChannel = async () => {
 	const namesToVoteOnChannel = await fetchNamesToVoteOnChannel();
-	const everyoneRole = getEveryoneRole(namesToVoteOnChannel.guild);
-
-	await changePermissionOnChannel({
-		channel: namesToVoteOnChannel,
-		userOrRoleID: everyoneRole.id,
-		unsetPermissions: [PermissionFlagsBits.ViewChannel],
-		deniedPermissions: [PermissionFlagsBits.SendMessages],
-	});
+	await openChannel(namesToVoteOnChannel);
 }
 
 /**
@@ -81,14 +74,54 @@ const openNamesToVoteOnChannel = async () => {
  */
 const closeNamesToVoteOnChannel = async () => {
 	const namesToVoteOnChannel = await fetchNamesToVoteOnChannel();
-	const everyoneRole = getEveryoneRole(namesToVoteOnChannel.guild);
-
-	await changePermissionOnChannel({
-		channel: namesToVoteOnChannel,
-		userOrRoleID: everyoneRole.id,
-		unsetPermissions: [PermissionFlagsBits.SendMessages],
-		deniedPermissions: [PermissionFlagsBits.ViewChannel],
-	});
+	await closeChannel(namesToVoteOnChannel);
 }
 
-module.exports = { changeDiscordNameOfPlayer, sendToPublishedNamesChannel, sendToNamesToVoteOnChannel, openNamesToVoteOnChannel, closeNamesToVoteOnChannel };
+/**
+ * Sends a message to the 'The Winner' channel.
+ * @param {string} message The message to be sent.
+ * @returns {Promise<void>} A promise that resolves once the message has been sent.
+ */
+const sendMessageToTheWinnerChannel = async (message) => {
+	const theWinnerChannel = await fetchTheWinnerChannel();
+	await theWinnerChannel.send(message);
+}
+
+/**
+ * Opens the 'The Winner' channel to allow everyone to view it but not send messages.
+ * @returns {Promise<void>} A promise that resolves once the channel has been opened.
+ */
+const openTheWinnerChannel = async () => {
+	const theWinnerChannel = await fetchTheWinnerChannel();
+	await openChannel(theWinnerChannel);
+}
+
+/**
+ * Closes the 'The Winner' channel to everyone so they can't view it until it is opened again.
+ * @returns {Promise<void>} A promise that resolves once the channel has been closed.
+ */
+const closeTheWinnerChannel = async () => {
+	const theWinnerChannel = await fetchTheWinnerChannel();
+	await closeChannel(theWinnerChannel);
+}
+
+/**
+ * Checks if a guild member is not a player (i.e. has the Spectator or Staff role).
+ * @param {GuildMember} guildMember The guild member to check.
+ * @returns {Promise<boolean>} True if the guild member is not a player, false otherwise.
+ */
+const isNonPlayer = async (guildMember) => {
+	const nonPlayerRoles = [
+		ids.namesmith.roles.spectator,
+		ids.namesmith.roles.staff
+	]
+
+	for (const role of nonPlayerRoles) {
+		const hasRole = await memberHasRole(guildMember, role);
+		if (hasRole) return true;
+	}
+
+	return false;
+}
+
+module.exports = { changeDiscordNameOfPlayer, sendToPublishedNamesChannel, sendToNamesToVoteOnChannel, openNamesToVoteOnChannel, closeNamesToVoteOnChannel, sendMessageToTheWinnerChannel, openTheWinnerChannel, closeTheWinnerChannel, isNonPlayer };

@@ -1,6 +1,6 @@
-const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionOverwrites, PermissionFlagsBits, CategoryChannel, ChatInputCommandInteraction, Message } = require('discord.js');
+const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionOverwrites, PermissionFlagsBits, CategoryChannel, ChatInputCommandInteraction, Message, ModalSubmitInteraction } = require('discord.js');
 const { Role } = require('../services/rapid-discord-mafia/role');
-const { fetchChannel } = require('./discord-fetch-utils');
+const { fetchChannel, getEveryoneRole } = require('./discord-fetch-utils');
 const { incrementEndNumber } = require('./text-formatting-utils');
 const { logInfo, logError } = require('./logging-utils');
 
@@ -86,11 +86,23 @@ const addRoleToMember = async (guildMember, role) => {
 /**
  * Removes a role from a guild member.
  * @param {GuildMember} guildMember The guild member we want to remove the role from.
- * @param {Role} role The role we want to remove from the guild member.
+ * @param {Role | string} role The role or role ID we want to remove from the guild member.
  * @returns {Promise<void>}
  */
 const removeRoleFromMember = async (guildMember, role) => {
 	await guildMember.roles.remove(role);
+}
+
+/**
+ * Removes all roles from a guild member.
+ * @param {GuildMember} guildMember The guild member we want to remove all roles from.
+ * @returns {Promise<void>}
+ */
+const removeAllRolesFromMember = async (guildMember) => {
+	for (const roleId of guildMember.roles.cache.keys()) {
+		if (roleId === guildMember.guild.id) continue;
+		removeRoleFromMember(guildMember, roleId);
+	}
 }
 
 /**
@@ -129,6 +141,8 @@ const editReplyToInteraction = async (interaction, newMessageContents) => {
 	if (interaction && (interaction.replied || interaction.deferred)) {
 		return await interaction.editReply(newMessageContents);
 	}
+
+	throw new Error('Interaction is not deferred or replied');
 }
 
 /**
@@ -145,31 +159,12 @@ const editReplyToInteraction = async (interaction, newMessageContents) => {
 const getInputFromCreatedTextModal = async ({
 		interaction,
 		modalTitle="",
-		initialMessageText="",
-		showModalButtonText="",
 		placeholder="",
 }) => {
-	if (!interaction) return;
+	if (!interaction) throw new Error("Interaction is required");
 
-	const showModalButtonID = showModalButtonText.replace(" ", "");
 	const modalID = `${modalTitle.replace(" ", "")}Modal`;
 	const textInputID = `${modalTitle.replace(" ", "")}TextInput`;
-
-	// Create the button to show the modal
-	const showModalButton = new ButtonBuilder()
-		.setCustomId(showModalButtonID)
-		.setLabel(showModalButtonText)
-		.setStyle(ButtonStyle.Primary);
-
-	// Create the action row with the button
-	const showModalButtonActionRow = new ActionRowBuilder()
-		.addComponents(showModalButton);
-
-	const messageWithShowModalButton = await editReplyToInteraction(interaction, {
-		content: initialMessageText,
-		components: [showModalButtonActionRow],
-		ephemeral: true
-	});
 
 	// Create the modal
 	const modal = new ModalBuilder()
@@ -192,42 +187,27 @@ const getInputFromCreatedTextModal = async ({
 	// Add the action row to the modal
 	modal.addComponents(textInputActionRow);
 
-	let modalInteraction;
+	let submittedInteraction;
 	try {
-		// Wait for user to press the button
-		modalInteraction = await messageWithShowModalButton.awaitMessageComponent({
-			filter: (interaction) => interaction.customId === showModalButtonID,
-			time: 1_000_000,
-		});
-
-		// Delete button from original message
-		await interaction.editReply({
-			components: [],
-		})
-
-		// Show the modal
-		await modalInteraction.showModal(modal);
-
+		await interaction.showModal(modal);
 
 		// Wait for user to submit the modal
-		modalInteraction = await modalInteraction.awaitModalSubmit({
+		submittedInteraction = await interaction.awaitModalSubmit({
 			filter: (interaction) => interaction.customId === modalID,
 			time: 1_000_000,
 		});
 	}
 	catch (error) {
-		await messageWithShowModalButton.edit({
-			content: `\`Response not recieved in time\``,
-			components: [],
-		});
+		logError(`Error in getInputFromCreatedTextModal`, error);
 		return undefined;
 	}
 
 	// Get the data entered by the user
-	const textEntered = modalInteraction.fields.getTextInputValue(textInputID);
+	const textEntered = submittedInteraction.fields.getTextInputValue(textInputID);
 
 	// Acknowledge the interaction but don't update the message
-	await modalInteraction.deferUpdate();
+	await submittedInteraction.deferUpdate();
+	// await submittedInteraction.deferReply({ ephemeral: true });
 
 	return textEntered;
 }
@@ -497,6 +477,40 @@ const changePermissionOnChannel = async ({channel, userOrRoleID, allowedPermissi
 	);
 }
 
+/**
+ * Opens a Discord channel to allow everyone to view it but not send messages.
+ *
+ * @param {TextChannel} channel - The channel to be opened for viewing.
+ * @returns {Promise<void>} A promise that resolves once the channel permissions have been updated.
+ */
+const openChannel = async (channel) => {
+	const everyoneRole = getEveryoneRole(channel.guild);
+
+	await changePermissionOnChannel({
+		channel: channel,
+		userOrRoleID: everyoneRole.id,
+		unsetPermissions: [PermissionFlagsBits.ViewChannel],
+		deniedPermissions: [PermissionFlagsBits.SendMessages],
+	});
+}
+
+/**
+ * Closes a Discord channel to deny everyone the ability to view it.
+ *
+ * @param {TextChannel} channel - The channel to be closed from viewing.
+ * @returns {Promise<void>} A promise that resolves once the channel permissions have been updated.
+ */
+const closeChannel = async (channel) => {
+	const everyoneRole = getEveryoneRole(channel.guild);
+
+	await changePermissionOnChannel({
+		channel: channel,
+		userOrRoleID: everyoneRole.id,
+		unsetPermissions: [PermissionFlagsBits.SendMessages],
+		deniedPermissions: [PermissionFlagsBits.ViewChannel],
+	});
+}
+
 
 /**
  * Checks if a guild member has a given role.
@@ -541,11 +555,88 @@ const setNicknameOfMember = async (guildMember, newNickname) => {
 	await guildMember.setNickname(newNickname);
 }
 
+/**
+ * Adds a button to the components array of an object representing the contents of a Discord message.
+ *
+ * @param {Object} options - Options for adding the button.
+ * @param {string | Object} options.contents - The contents of the message. Can be a string or an object with a "content" property.
+ * @param {string} options.buttonID - The custom ID of the button.
+ * @param {string} options.buttonLabel - The label of the button.
+ * @param {ButtonStyle} [options.buttonStyle=ButtonStyle.Primary] - The style of the button.
+ * @returns {Promise<Object>} The modified contents object with the button added.
+ */
+const addButtonToMessageContents = async ({
+	contents,
+	buttonID,
+	buttonLabel,
+	buttonStyle = ButtonStyle.Primary,
+}) => {
+	if (typeof contents === "string")
+		contents = {content: contents};
+
+	if (typeof contents !== "object")
+		throw new Error("Contents must be a string or an object");
+
+	if (typeof buttonID !== "string")
+		throw new Error("Button ID must be a string");
+
+	if (typeof buttonLabel !== "string")
+		throw new Error("Button label must be a string");
+
+	if (!Object.values(ButtonStyle).includes(buttonStyle))
+		throw new Error("Button style must be a valid ButtonStyle");
+
+	const button = new ButtonBuilder()
+		.setCustomId(buttonID)
+		.setLabel(buttonLabel)
+		.setStyle(buttonStyle);
+
+	const actionRow = new ActionRowBuilder()
+		.addComponents(button);
+
+	contents.components = contents.components || [];
+	contents.components.push(actionRow);
+
+	return contents;
+}
+
+/**
+ * Waits for a user to click on a button on a message with a component.
+ * @param {Message} messsageWithButton - The message with the button.
+ * @param {string} buttonID - The custom ID of the button.
+ * @param {(buttonInteraction: ButtonInteraction) => Promise<void>} onButtonPressed - The function to run when the button is pressed.
+ * @returns {Promise<void>} A promise that resolves when the user has clicked a button.
+ */
+const doWhenButtonPressed = async (messsageWithButton, buttonID, onButtonPressed) => {
+	if (!(messsageWithButton instanceof Message))
+		throw new Error("Message must be an instance of Message");
+
+	if (typeof buttonID !== "string")
+		throw new Error("Button ID must be a string");
+
+	if (typeof onButtonPressed !== "function")
+		throw new Error("onButtonPressed must be a function");
+
+	try {
+		const buttonInteraction = await messsageWithButton.awaitMessageComponent({ time: 60_000 });
+
+		if (buttonInteraction.customId === buttonID) {
+			await onButtonPressed(buttonInteraction);
+		}
+	}
+	catch (error) {
+		logError(
+			`Error while waiting for user to click button with ID ${buttonID}`,
+			error
+		)
+	}
+};
 
 module.exports = {
 	confirmInteractionWithButtons,
 	addRoleToMember,
 	removeRoleFromMember,
+	removeAllRolesFromMember,
 	deferInteraction,
 	editReplyToInteraction,
 	getInputFromCreatedTextModal,
@@ -555,8 +646,12 @@ module.exports = {
 	addPermissionToChannel,
 	removePermissionFromChannel,
 	changePermissionOnChannel,
+	openChannel,
+	closeChannel,
 	memberHasRole,
 	createCategory,
 	renameChannel,
 	setNicknameOfMember,
+	addButtonToMessageContents,
+	doWhenButtonPressed,
 };

@@ -22,6 +22,12 @@ class GameStateRepository {
 			typeof this.gameState.timeEnding === "number"
 		)
 			this.gameState.timeEnding = new Date(this.gameState.timeEnding);
+
+		if (
+			this.gameState.timeVoteIsEnding &&
+			typeof this.gameState.timeVoteIsEnding === "number"
+		)
+			this.gameState.timeVoteIsEnding = new Date(this.gameState.timeVoteIsEnding);
 	}
 
 	async save() {
@@ -39,6 +45,12 @@ class GameStateRepository {
 		)
 			gameStateClone.timeEnding = gameStateClone.timeEnding.getTime();
 
+		if (
+			gameStateClone.timeVoteIsEnding &&
+			gameStateClone.timeVoteIsEnding instanceof Date
+		)
+			gameStateClone.timeVoteIsEnding = gameStateClone.timeVoteIsEnding.getTime();
+
 		await saveObjectToJsonInGitHub(gameStateClone, GameStateRepository.REPO_NAME);
 	}
 
@@ -46,7 +58,8 @@ class GameStateRepository {
 	 * Returns the current game state.
 	 * @returns {Promise<{
 	 * 	timeStarted: Date,
-	 * 	timeEnding: Date
+	 * 	timeEnding: Date,
+	 *  timeVoteIsEnding: Date,
 	 * }>} The current game state.
 	 */
 	async getGameState() {
@@ -89,6 +102,25 @@ class GameStateRepository {
 	 */
 	async setTimeEnding(timeEnding) {
 		this.gameState.timeEnding = timeEnding;
+		await this.save();
+	}
+
+	/**
+	 * Retrieves the time when the voting phase is expected to end.
+	 * @returns {Promise<Date>} The time when the voting phase is expected to end.
+	 */
+	async getTimeVoteIsEnding() {
+		const gameState = await this.getGameState();
+		return gameState.timeVoteIsEnding;
+	}
+
+	/**
+	 * Sets the time when the voting phase is expected to end.
+	 * @param {Date} timeVoteIsEnding - The time when the voting phase is expected to end.
+	 * @returns {Promise<void>} A promise that resolves once the change has been saved.
+	 */
+	async setTimeVoteIsEnding(timeVoteIsEnding) {
+		this.gameState.timeVoteIsEnding = timeVoteIsEnding;
 		await this.save();
 	}
 }

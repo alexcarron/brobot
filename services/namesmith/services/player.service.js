@@ -1,6 +1,12 @@
-const { sendToPublishedNamesChannel, changeDiscordNameOfPlayer, sendToNamesToVoteOnChannel, } = require("../utilities/discord-action.utility");
+const { sendToPublishedNamesChannel, changeDiscordNameOfPlayer, sendToNamesToVoteOnChannel, isNonPlayer, } = require("../utilities/discord-action.utility");
 const PlayerRepository = require("../repositories/player.repository");
 const { logWarning } = require("../../../utilities/logging-utils");
+const { ButtonBuilder, EmbedBuilder } = require("@discordjs/builders");
+const { ButtonStyle } = require("discord.js");
+const { addButtonToMessageContents, addRoleToMember, setNicknameOfMember, removeRoleFromMember, removeAllRolesFromMember, memberHasRole, memberHasRoles, memberHasAnyRole } = require("../../../utilities/discord-action-utils");
+const { fetchRole, fetchAllGuildMembers, fetchGuildMember } = require("../../../utilities/discord-fetch-utils");
+const ids = require("../../../bot-config/discord-ids");
+const { fetchNamesmithServer, fetchNamesmithGuildMember } = require("../utilities/discord-entity.utility");
 
 const MAX_NAME_LENGTH = 32;
 const NO_NAME = "ˑ";
@@ -118,16 +124,19 @@ class PlayerService {
 		}
 
 		await this.changeCurrentName(playerID, publishedName);
+
 		await sendToNamesToVoteOnChannel(
-			`\`${publishedName}\``
+			await addButtonToMessageContents({
+				contents: `_ _\n${publishedName}`,
+				buttonID: `vote-${playerID}`,
+				buttonLabel: 'Vote as Favorite Name',
+				buttonStyle: ButtonStyle.Secondary
+			})
 		);
 	}
 
 	async finalizeAllNames() {
 		const players = await this.playerRepository.getPlayers();
-
-		await sendToNamesToVoteOnChannel(`The game has ended and now it's time to vote on the players' final names!`);
-		await sendToNamesToVoteOnChannel(`# Names to vote on`);
 
 		for (const player of players) {
 			await this.finalizeName(player.id);
@@ -141,7 +150,41 @@ class PlayerService {
 	 * @returns {Promise<void>} A promise that resolves once the player has been added.
 	 */
 	async addNewPlayer(playerID) {
+		const guildMember = await fetchNamesmithGuildMember(playerID);
+		const namesmithGuild = guildMember.guild;
+		const noNameRole = await fetchRole(namesmithGuild, ids.namesmith.roles.noName);
+
+		await removeAllRolesFromMember(guildMember);
+		await addRoleToMember(guildMember, noNameRole);
+		await setNicknameOfMember(guildMember, NO_NAME);
+
 		await this.playerRepository.addPlayer(playerID);
+	}
+
+	/**
+	 * Adds all members in the Namesmith server to the game.
+	 * Excludes players with the Spectator or Staff roles.
+	 * @returns {Promise<void>} A promise that resolves once all players have been added.
+	 */
+	async addEveryoneInServer() {
+		const namesmithGuild = await fetchNamesmithServer();
+		const guildMembers = await fetchAllGuildMembers(namesmithGuild);
+
+		for (const guildMember of guildMembers) {
+			if (await isNonPlayer(guildMember)) {
+				continue;
+			}
+
+			await this.addNewPlayer(guildMember.id);
+		}
+	}
+
+	/**
+	 * Resets the player repository, clearing all stored players.
+	 * @returns {Promise<void>} A promise that resolves once the repository is reset.
+	 */
+	async reset() {
+		await this.playerRepository.reset();
 	}
 }
 

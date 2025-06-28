@@ -1,6 +1,7 @@
 const GameStateService = require("./gameState.service");
 const MysteryBoxService = require("./mysteryBox.service");
 const PlayerService = require("./player.service");
+const VoteService = require("./vote.service");
 
 /**
  * Returns the Namesmith services that have been set up.
@@ -8,8 +9,9 @@ const PlayerService = require("./player.service");
  *  mysteryBoxService: MysteryBoxService,
  *  playerService: PlayerService,
  *  gameStateService: GameStateService,
+ *  voteService: VoteService,
  * }}
- * @throws {Error} If Namesmith, MysteryBoxService, PlayerService, or GameStateService is not set up yet.
+ * @throws {Error} If Namesmith, MysteryBoxService, PlayerService, GameStateService, or VoteService is not set up yet.
  */
 const getNamesmithServices = () => {
 	if (!global.namesmith)
@@ -24,11 +26,14 @@ const getNamesmithServices = () => {
 	if (!global.namesmith.gameStateService)
 		throw new Error("getNamesmithServices: GameStateService is not set up yet.");
 
+	if (!global.namesmith.voteService)
+		throw new Error("getNamesmithServices: VoteService is not set up yet.");
 
 	return {
 		mysteryBoxService: global.namesmith.mysteryBoxService,
 		playerService: global.namesmith.playerService,
 		gameStateService: global.namesmith.gameStateService,
+		voteService: global.namesmith.voteService
 	}
 }
 

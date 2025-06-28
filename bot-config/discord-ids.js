@@ -160,6 +160,11 @@ const ids = {
 					return "1386449684213530799";
 				else return "1383979126276489308";
 			},
+			get staff() {
+				if (botStatus.isInDevelopmentMode)
+					return "1386449684213530801";
+				else return "1386431888171733033";
+			}
 		},
 		channels: {
 			get openMysteryBoxes() {
@@ -176,7 +181,12 @@ const ids = {
 				if (botStatus.isInDevelopmentMode)
 					return "1387849102687207444";
 				else return "1387849216319291553";
-			}
+			},
+			get theWinner() {
+				if (botStatus.isInDevelopmentMode)
+					return "1388286079110611057";
+				else return "1388286117786292284";
+			},
 		},
 	},
 

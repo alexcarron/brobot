@@ -1,7 +1,7 @@
 	const { ChatInputCommandInteraction } = require("discord.js");
 const ids = require("../../bot-config/discord-ids");
 const SlashCommand = require("../../services/command-creation/slash-command");
-const { confirmInteractionWithButtons, deferInteraction, getInputFromCreatedTextModal } = require("../../utilities/discord-action-utils");
+const { confirmInteractionWithButtons, deferInteraction, getInputFromCreatedTextModal, editReplyToInteraction, addButtonToMessageContents, doWhenButtonPressed } = require("../../utilities/discord-action-utils");
 const { getCharacterDifferencesInStrings } = require("../../utilities/data-structure-utils");
 const { getNamesmithServices } = require("../../services/namesmith/services/get-namesmith-services");
 const { changeDiscordNameOfPlayer } = require("../../services/namesmith/utilities/discord-action.utility");
@@ -22,8 +22,6 @@ command.isInDevelopment = true;
  * @returns {Promise<void>}
  */
 command.execute = async function execute(interaction) {
-	await deferInteraction(interaction);
-
 	const playerID = interaction.user.id;
 
 	const { playerService } = getNamesmithServices();
@@ -31,18 +29,14 @@ command.execute = async function execute(interaction) {
 
 	let correctlyRearrangedName = false;
 	let initialMessageText = "Click the button to rearrange the characters in your name";
-	let newName = currentName;
+	let newName = await getInputFromCreatedTextModal({
+		interaction,
+		channelToSendIn: interaction.channel,
+		modalTitle: `Rearrange The Characters In Your Name`,
+		placeholder: currentName,
+	});
 
 	while (!correctlyRearrangedName) {
-		newName = await getInputFromCreatedTextModal({
-			interaction,
-			channelToSendIn: interaction.channel,
-			modalTitle: `Rearrange The Characters In Your Name`,
-			initialMessageText: initialMessageText,
-			showModalButtonText: `Rearrange Name`,
-			placeholder: currentName,
-		});
-
 		const { missingCharacters, extraCharacters } = getCharacterDifferencesInStrings(currentName, newName);
 
 		if (missingCharacters.length === 0 && extraCharacters.length === 0) {
@@ -62,20 +56,29 @@ command.execute = async function execute(interaction) {
 		initialMessageText =
 			message +
 			"\n\nClick the button to try to rearrange the characters in your name again";
+
+			const contents = {
+				content: initialMessageText,
+				ephemeral: true
+			}
+
+			const messageContents = await addButtonToMessageContents({
+				contents,
+				buttonID: "rearrange-name",
+				buttonLabel: "Rearrange Name"
+			})
+
+		const messageWithButton = await interaction.followUp(messageContents);
+
+		await doWhenButtonPressed(messageWithButton, "rearrange-name", async (buttonInteraction) => {
+			newName = await getInputFromCreatedTextModal({
+				interaction: buttonInteraction,
+				channelToSendIn: buttonInteraction.channel,
+				modalTitle: `Rearrange The Characters In Your Name`,
+				placeholder: currentName,
+			});
+		});
 	}
-
-	const didConfirmAction = await confirmInteractionWithButtons({
-		interaction,
-		message:
-			`Are you sure you want to change your name to: \`${newName}\`?`,
-		confirmText: "Yes, Change My Name",
-		cancelText: "No, Don't Change My Name",
-		confirmUpdateText: `You just changed your current name to \`${newName}\``,
-		cancelUpdateText: "Canceled",
-	});
-
-	if (!didConfirmAction)
-		return;
 
 	await playerService.changeCurrentName(playerID, newName);
 }

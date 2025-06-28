@@ -54,7 +54,7 @@ class PlayerRepository {
 	 * 	unlockedMysteryBoxes: number[]
 	 * } | undefined>} The player object if found, otherwise undefined.
 	 */
-	async getPlayerById(playerID) {
+	async getPlayerByID(playerID) {
 		await this.load();
 		return this.players.find(player => player.id === playerID);
 	}
@@ -87,7 +87,7 @@ class PlayerRepository {
 	 * @returns {Promise<string>} The current name of the player.
 	 */
 	async getCurrentName(playerID) {
-		const player = await this.getPlayerById(playerID);
+		const player = await this.getPlayerByID(playerID);
 		return player.currentName;
 	}
 
@@ -98,7 +98,7 @@ class PlayerRepository {
 	 * @returns {Promise<void>} A promise that resolves once the name has been changed.
 	 */
 	async changeCurrentName(playerID, newName) {
-		const player = await this.getPlayerById(playerID);
+		const player = await this.getPlayerByID(playerID);
 		player.currentName = newName;
 		await this.save();
 	}
@@ -109,7 +109,7 @@ class PlayerRepository {
 	 * @returns {Promise<string | undefined>} The published name of the player, or undefined if the player has no published name.
 	 */
 	async getPublishedName(playerID) {
-		const player = await this.getPlayerById(playerID);
+		const player = await this.getPlayerByID(playerID);
 		return player.publishedName;
 	}
 
@@ -120,7 +120,7 @@ class PlayerRepository {
 	 * @returns {Promise<void>} A promise that resolves once the published name has been saved to the database.
 	 */
 	async publishName(playerID, name) {
-		const player = await this.getPlayerById(playerID);
+		const player = await this.getPlayerByID(playerID);
 		player.publishedName = name;
 		await this.save();
 	}
@@ -131,7 +131,7 @@ class PlayerRepository {
 	 * @returns {Promise<void>} A promise that resolves once the player has been added.
 	 */
 	async addPlayer(playerID) {
-		const existingPlayer = await this.getPlayerById(playerID);
+		const existingPlayer = await this.getPlayerByID(playerID);
 		if (existingPlayer) return;
 
 		const player = {
@@ -146,6 +146,16 @@ class PlayerRepository {
 			unlockedMysteryBoxes: []
 		};
 		this.players.push(player);
+		await this.save();
+	}
+
+	/**
+	 * Resets the list of players, clearing all existing players.
+	 * @returns {Promise<void>} A promise that resolves once the players have been cleared and saved.
+	 */
+
+	async reset() {
+		this.players = []
 		await this.save();
 	}
 }

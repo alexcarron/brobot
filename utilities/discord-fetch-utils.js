@@ -79,6 +79,17 @@ const fetchGuildMember = async (guild, guildMemberID) => {
 }
 
 /**
+ * Fetches all members from a given guild.
+ * @param {Guild} guild The guild whose members you want to fetch.
+ * @returns {Promise<GuildMember[]>} A Promise that resolves with an array of all guild members.
+ * @throws {Error} If the client is not setup or not ready.
+ */
+const fetchAllGuildMembers = async (guild) => {
+	const members = await guild.members.fetch();
+	return discordCollectionToArray(members);
+}
+
+/**
  * Fetches a role from a given guild using a given role ID.
  * @param {Guild} guild The guild that the role belongs to.
  * @param {string} roleID The ID of the role to fetch.
@@ -220,4 +231,4 @@ const fetchMessagesInChannel = async (channel) => {
 	return allMessages;
 }
 
-module.exports = { assertClientSetup, fetchGuild, fetchChannel, fetchChannelsOfGuild, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchUser, fetchRole, fetchRoleByName, getStringParamValue, getUserParamValue, getEveryoneRole, getIntegerParamValue, getNicknameOfInteractionUser, fetchMessagesInChannel };
+module.exports = { assertClientSetup, fetchGuild, fetchChannel, fetchChannelsOfGuild, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchAllGuildMembers, fetchUser, fetchRole, fetchRoleByName, getStringParamValue, getUserParamValue, getEveryoneRole, getIntegerParamValue, getNicknameOfInteractionUser, fetchMessagesInChannel };
