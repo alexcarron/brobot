@@ -31,8 +31,11 @@ class AnomolyService {
 	 * @param {Date} startTime - The time at which the anomoly challenge should start.
 	 */
 	startChallenge(startTime) {
-		this.startTime = startTime;
-		this.startCronJobs();
+		const nowCT = new Date().toLocaleString("en-US", { timeZone: "America/Chicago" });
+		const noAt7PM = new Date(nowCT);		// Set to 7 PM (19:00)
+		noAt7PM.setHours(19, 0, 0, 0); // 7:00:00 PM CT
+		this.startCronJobs(noAt7PM);
+		this.startTime = noAt7PM;
 		this.sendImagesForHour(0);
 	}
 
@@ -115,18 +118,21 @@ class AnomolyService {
 	 *
 	 * @param {number} numHour - The hour for which the cron job will send images.
 	 */
-	startCronJobForHour(numHour) {
+	startCronJobForHour(numHour, startTime) {
 		const now = new Date();
-		const cronStartTime = this.startTime;
+		const cronStartTime = startTime;
 		cronStartTime.setHours(cronStartTime.getHours() +
 			numHour * ANOMOLY_INTERVAL_IN_HOURS
 		);
 
 		const anomolyService = this;
 
+		console.log(
+			`Starting cron job for hour ${numHour} at ${cronStartTime} (UTC)`);
 		const sendImagesCronJob = new CronJob(
 			cronStartTime,
 			async function() {
+				logInfo(`Sending images for hour ${numHour}`);
 				await anomolyService.sendImagesForHour(numHour);
 			},
 		);
@@ -139,10 +145,10 @@ class AnomolyService {
 	 * Starts a cron job to send images for each hour of the game.
 	 * The jobs are scheduled to run at a calculated time based on the start time and the given hour.
 	 */
-	startCronJobs() {
+	startCronJobs(startTime) {
 		for (let numHour = 1; numHour <= GAME_DURATION_IN_HOURS; numHour++) {
 			logInfo(`Starting cron job for hour ${numHour}`);
-			this.startCronJobForHour(numHour);
+			this.startCronJobForHour(numHour, startTime);
 		}
 		logInfo(`All cron jobs have been started`);
 	}

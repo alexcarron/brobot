@@ -90,8 +90,6 @@ const onRDMKidnapperMessageSent = async (message) => {
  * @param {Message} message
  */
 const onNormalMessageSent = async (message) => {
-	logInfo(`Normal Message Sent: ${message.content}`);
-
 	if (TextToSpeechHandler.shouldMessageTriggerTTS(message)) {
 		await onTTSMessageSent(message);
 	}
