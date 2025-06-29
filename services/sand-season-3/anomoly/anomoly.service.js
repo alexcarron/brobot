@@ -33,7 +33,7 @@ class AnomolyService {
 	startChallenge(startTime) {
 		const nowCT = new Date().toLocaleString("en-US", { timeZone: "America/Chicago" });
 		const noAt7PM = new Date(nowCT);		// Set to 7 PM (19:00)
-		noAt7PM.setHours(19, 0, 0, 0); // 7:00:00 PM CT
+		noAt7PM.setHours(22, 8, 0, 0); // 7:00:00 PM CT
 		this.startCronJobs(noAt7PM);
 		this.startTime = noAt7PM;
 	}
@@ -123,11 +123,13 @@ class AnomolyService {
 		cronStartTime.setHours(cronStartTime.getHours() +
 			numHour * ANOMOLY_INTERVAL_IN_HOURS
 		);
-
-		const anomolyService = this;
+		const randomMinutes = Math.floor(Math.random() * 31) - 15; // -15 to 15 inclusive
+    cronStartTime.setMinutes(cronStartTime.getMinutes() + randomMinutes);
 
 		console.log(
 			`Starting cron job for hour ${numHour} at ${cronStartTime.toISOString()} (UTC)`);
+
+		const anomolyService = this;
 		const sendImagesCronJob = new CronJob(
 			cronStartTime,
 			async function() {
