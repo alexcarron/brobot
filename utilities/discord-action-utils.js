@@ -1,8 +1,9 @@
-const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionOverwrites, PermissionFlagsBits, CategoryChannel, ChatInputCommandInteraction, Message, ModalSubmitInteraction } = require('discord.js');
+const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionOverwrites, PermissionFlagsBits, CategoryChannel, ChatInputCommandInteraction, Message, GuildChannel } = require('discord.js');
 const { Role } = require('../services/rapid-discord-mafia/role');
-const { fetchChannel, getEveryoneRole, fetchRole } = require('./discord-fetch-utils');
+const { fetchChannel, fetchChannelsInCategory, getEveryoneRole, fetchRole } = require('./discord-fetch-utils');
 const { incrementEndNumber } = require('./text-formatting-utils');
 const { logInfo, logError } = require('./logging-utils');
+const { getShuffledArray } = require('./data-structure-utils');
 
 /**
  * Prompt the user to confirm or cancel an action by adding buttons to the deffered reply to an existing command interaction.
@@ -556,6 +557,48 @@ const setNicknameOfMember = async (guildMember, newNickname) => {
 }
 
 /**
+ * Shuffles all the channels in a category in a random order, keeping the other channels in the same position.
+ * @param {Guild} guild - The guild whose category's channels are to be shuffled.
+ * @param {GuildChannel|string} category - The category whose channels are to be shuffled, or the ID of the category as a string.
+ * @param {Array<GuildChannel|string>} channelsToShuffle - The channels to shuffle. If a string is provided, it is treated as the ID of the channel to shuffle.
+ * @returns {Promise<void>} A promise that resolves when the channels have been shuffled.
+ */
+async function shuffleCategoryChannels(guild, category) {
+	// Resolve category
+	if (typeof category === "string") {
+		category = await fetchChannel(guild, category);
+	}
+
+	// Check types
+	if (!(category instanceof GuildChannel))
+		throw new Error("shuffleCategoryChannels: Category must be an instance of GuildChannel");
+
+	if (category.type !== ChannelType.GuildCategory)
+		throw new Error("shuffleCategoryChannels: Category must be an instance of GuildCategoryChannel");
+
+	let channelsToShuffle = await fetchChannelsInCategory(guild, category.id);
+  const shuffledChannels = getShuffledArray(channelsToShuffle);
+	logInfo(`Shuffled Order: ${shuffledChannels.map(channel => channel.name).join(", ")}`);
+
+  for (let i = 0; i < shuffledChannels.length; i++) {
+    try {
+      await shuffledChannels[i].setPosition(category.position + i + 1);
+      // The +1 is arbitrary: sometimes Discord expects category itself to be position 0
+    } catch (error) {
+      console.error(`Failed to set position for ${shuffledChannels[i].name}`, error);
+    }
+  }
+  await guild.channels.setPositions(
+    shuffledChannels.map((channel, position) => ({
+			channel: channel.id,
+			position: category.position + position + 1
+		}))
+  );
+
+  console.log("Channels reordered inside category.");
+}
+
+/**
  * Adds a button to the components array of an object representing the contents of a Discord message.
  *
  * @param {Object} options - Options for adding the button.
@@ -654,4 +697,5 @@ module.exports = {
 	setNicknameOfMember,
 	addButtonToMessageContents,
 	doWhenButtonPressed,
+	shuffleCategoryChannels,
 };

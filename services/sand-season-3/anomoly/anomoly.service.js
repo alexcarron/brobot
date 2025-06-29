@@ -3,6 +3,7 @@ const ids = require("../../../bot-config/discord-ids");
 const { fetchChannel, fetchGuild } = require("../../../utilities/discord-fetch-utils");
 const { logError, logInfo } = require("../../../utilities/logging-utils");
 const path = require("path");
+const { shuffleCategoryChannels } = require("../../../utilities/discord-action-utils");
 
 const GAME_DURATION_IN_HOURS = 24;
 const ANOMOLY_INTERVAL_IN_HOURS = 1;
@@ -32,10 +33,13 @@ class AnomolyService {
 	 */
 	startChallenge(startTime) {
 		const nowCT = new Date().toLocaleString("en-US", { timeZone: "America/Chicago" });
-		const noAt7PM = new Date(nowCT);		// Set to 7 PM (19:00)
-		noAt7PM.setHours(22, 8, 0, 0); // 7:00:00 PM CT
-		this.startCronJobs(noAt7PM);
-		this.startTime = noAt7PM;
+		const yesterdayAt7PM = new Date(nowCT);		// Set to 7 PM (19:00)
+		yesterdayAt7PM.setDate(yesterdayAt7PM.getDate() - 1);
+		yesterdayAt7PM.setHours(22, 8, 0, 0); // 7:00:00 PM CT
+		this.startCronJobs(yesterdayAt7PM);
+		this.startTime = yesterdayAt7PM;
+
+		this.sendImagesForHour(18);
 	}
 
 	/**
@@ -100,10 +104,22 @@ class AnomolyService {
 	 */
 
 	async sendImagesForHour(numHour) {
+		const channels = await this.fetchChannels();
+		const kitchenChannels = channels[RoomIdentifier.KITCHEN];
+		const firstChannelCategory = kitchenChannels[0].parent;
+		const secondChannelCategory = kitchenChannels[1].parent;
+		await shuffleCategoryChannels(
+			firstChannelCategory.guild,
+			firstChannelCategory
+		);
+		await shuffleCategoryChannels(
+			secondChannelCategory.guild,
+			secondChannelCategory
+		);
+
 		for (const roomIdentifier of Object.values(RoomIdentifier)) {
 			const fileName = `${roomIdentifier}${numHour}.png`;
 			const imageFilePath = path.join(ASSET_DIR_PATH, fileName);
-			const channels = await this.fetchChannels();
 			await this.sendImageInChannels(
 				channels[roomIdentifier],
 				imageFilePath
