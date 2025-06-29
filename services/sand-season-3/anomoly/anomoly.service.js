@@ -36,7 +36,6 @@ class AnomolyService {
 		noAt7PM.setHours(19, 0, 0, 0); // 7:00:00 PM CT
 		this.startCronJobs(noAt7PM);
 		this.startTime = noAt7PM;
-		this.sendImagesForHour(0);
 	}
 
 	/**
@@ -120,7 +119,7 @@ class AnomolyService {
 	 */
 	startCronJobForHour(numHour, startTime) {
 		const now = new Date();
-		const cronStartTime = startTime;
+		const cronStartTime = new Date(startTime.getTime());
 		cronStartTime.setHours(cronStartTime.getHours() +
 			numHour * ANOMOLY_INTERVAL_IN_HOURS
 		);
@@ -128,7 +127,7 @@ class AnomolyService {
 		const anomolyService = this;
 
 		console.log(
-			`Starting cron job for hour ${numHour} at ${cronStartTime} (UTC)`);
+			`Starting cron job for hour ${numHour} at ${cronStartTime.toISOString()} (UTC)`);
 		const sendImagesCronJob = new CronJob(
 			cronStartTime,
 			async function() {
@@ -137,8 +136,7 @@ class AnomolyService {
 			},
 		);
 
-		if (now < cronStartTime)
-			sendImagesCronJob.start();
+		sendImagesCronJob.start();
 	}
 
 	/**
