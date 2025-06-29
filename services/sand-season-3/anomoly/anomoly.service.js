@@ -136,7 +136,8 @@ class AnomolyService {
 			},
 		);
 
-		sendImagesCronJob.start();
+		if (now < cronStartTime)
+			sendImagesCronJob.start();
 	}
 
 	/**
