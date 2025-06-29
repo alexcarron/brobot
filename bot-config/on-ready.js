@@ -8,7 +8,6 @@ const Timer = require('../services/timers/timer.js');
 const DailyMessageHandler = require('../services/discussion-prompts/daily-message-handler.js');
 const TextToSpeechHandler = require('../services/text-to-speech/text-to-speech-handler.js');
 const { setupNamesmith } = require('../services/namesmith/event-listeners/on-setup.js');
-const { setupNamesmith } = require('../services/namesmith/namesmith-lifecycle.js');
 const setupAnomolyService = require('../services/sand-season-3/anomoly/on-setup.js');
 
 /**
