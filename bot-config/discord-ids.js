@@ -14,7 +14,7 @@ const ids = {
 		get namesmith() {
 			if (botStatus.isInDevelopmentMode)
 				return "1386449684213530796";
-			"1347359771799453777";
+			else return "1347359771799453777";
 		},
 		evolutionGame: "1385961369223954522",
 		get sandSeason3() {

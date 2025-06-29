@@ -11,7 +11,6 @@ command.required_servers = [ids.servers.namesmith];
 command.required_roles = [
 	[ids.namesmith.roles.namesmither, ids.namesmith.roles.noName, ids.namesmith.roles.smithedName],
 ];
-command.isInDevelopment = true;
 
 command.execute = async function execute(interaction) {
 	await deferInteraction(interaction);

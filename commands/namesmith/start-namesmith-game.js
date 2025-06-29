@@ -11,7 +11,7 @@ const command = new SlashCommand({
 });
 command.required_servers = [ids.servers.namesmith];
 command.required_permissions = [PermissionFlagsBits.Administrator];
-command.isInDevelopment = true;
+
 command.execute = async function execute(interaction) {
 	await deferInteraction(interaction);
 
