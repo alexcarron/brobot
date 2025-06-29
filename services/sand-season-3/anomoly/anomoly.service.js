@@ -38,8 +38,6 @@ class AnomolyService {
 		yesterdayAt7PM.setHours(22, 8, 0, 0); // 7:00:00 PM CT
 		this.startCronJobs(yesterdayAt7PM);
 		this.startTime = yesterdayAt7PM;
-
-		this.sendImagesForHour(18);
 	}
 
 	/**
