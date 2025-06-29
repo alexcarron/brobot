@@ -4,7 +4,6 @@ const SlashCommand = require("../../services/command-creation/slash-command");
 const { confirmInteractionWithButtons, deferInteraction, getInputFromCreatedTextModal, editReplyToInteraction, addButtonToMessageContents, doWhenButtonPressed } = require("../../utilities/discord-action-utils");
 const { getCharacterDifferencesInStrings } = require("../../utilities/data-structure-utils");
 const { getNamesmithServices } = require("../../services/namesmith/services/get-namesmith-services");
-const { changeDiscordNameOfPlayer } = require("../../services/namesmith/utilities/discord-action.utility");
 
 const command = new SlashCommand({
 	name: "rearrange-name",
@@ -26,6 +25,7 @@ command.execute = async function execute(interaction) {
 
 	const { playerService } = getNamesmithServices();
 	const currentName = await playerService.getCurrentName(playerID);
+	const inventory = await playerService.getInventory(playerID);
 
 	let correctlyRearrangedName = false;
 	let initialMessageText = "Click the button to rearrange the characters in your name";
@@ -37,20 +37,20 @@ command.execute = async function execute(interaction) {
 	});
 
 	while (!correctlyRearrangedName) {
-		const { missingCharacters, extraCharacters } = getCharacterDifferencesInStrings(currentName, newName);
+		const { missingCharacters, extraCharacters } = getCharacterDifferencesInStrings(inventory, newName);
 
-		if (missingCharacters.length === 0 && extraCharacters.length === 0) {
+		if (extraCharacters.length === 0) {
 			correctlyRearrangedName = true;
 			break;
 		}
 
 		let message = "";
-		if (missingCharacters.length > 0) {
-			message += `You're missing the following characters in your name: ${missingCharacters.map(char => `\`${char}\``).join(', ')}!`;
-		}
+		// if (missingCharacters.length > 0) {
+		// 	message += `You're missing the following characters in your name: ${missingCharacters.map(char => `\`${char}\``).join(', ')}!`;
+		// }
 
 		if (extraCharacters.length > 0) {
-			message += `\nYou added the following characters which you don't have in your name: ${extraCharacters.map(char => `\`${char}\``).join(', ')}!`;
+			message += `\nYou added the following characters which you don't have in your inventory: ${extraCharacters.map(char => `\`${char}\``).join(', ')}!`;
 		}
 
 		initialMessageText =

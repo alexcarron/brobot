@@ -1,6 +1,6 @@
 const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionOverwrites, PermissionFlagsBits, CategoryChannel, ChatInputCommandInteraction, Message, ModalSubmitInteraction } = require('discord.js');
 const { Role } = require('../services/rapid-discord-mafia/role');
-const { fetchChannel, getEveryoneRole } = require('./discord-fetch-utils');
+const { fetchChannel, getEveryoneRole, fetchRole } = require('./discord-fetch-utils');
 const { incrementEndNumber } = require('./text-formatting-utils');
 const { logInfo, logError } = require('./logging-utils');
 
@@ -101,7 +101,7 @@ const removeRoleFromMember = async (guildMember, role) => {
 const removeAllRolesFromMember = async (guildMember) => {
 	for (const roleId of guildMember.roles.cache.keys()) {
 		if (roleId === guildMember.guild.id) continue;
-		removeRoleFromMember(guildMember, roleId);
+		await removeRoleFromMember(guildMember, roleId);
 	}
 }
 
@@ -618,7 +618,7 @@ const doWhenButtonPressed = async (messsageWithButton, buttonID, onButtonPressed
 		throw new Error("onButtonPressed must be a function");
 
 	try {
-		const buttonInteraction = await messsageWithButton.awaitMessageComponent({ time: 60_000 });
+		const buttonInteraction = await messsageWithButton.awaitMessageComponent({ time: 10_000_000 });
 
 		if (buttonInteraction.customId === buttonID) {
 			await onButtonPressed(buttonInteraction);

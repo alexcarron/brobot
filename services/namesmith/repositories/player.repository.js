@@ -82,12 +82,25 @@ class PlayerRepository {
 	}
 
 	/**
+	 * Retrieves the inventory of a player.
+	 * @param {string} playerID - The ID of the player whose inventory is being retrieved.
+	 * @returns {Promise<string>} The inventory of the player.
+	 */
+	async getInventory(playerID) {
+		const player = await this.getPlayerByID(playerID);
+		console.log(player);
+		return player.inventory;
+	}
+
+	/**
 	 * Retrieves the current name of a player.
 	 * @param {string} playerID - The ID of the player whose name is being retrieved.
 	 * @returns {Promise<string>} The current name of the player.
 	 */
 	async getCurrentName(playerID) {
 		const player = await this.getPlayerByID(playerID);
+		console.log(player);
+
 		return player.currentName;
 	}
 
@@ -153,9 +166,20 @@ class PlayerRepository {
 	 * Resets the list of players, clearing all existing players.
 	 * @returns {Promise<void>} A promise that resolves once the players have been cleared and saved.
 	 */
-
 	async reset() {
 		this.players = []
+		await this.save();
+	}
+
+	/**
+	 * Adds a character to the player's inventory.
+	 * @param {string} playerID - The ID of the player whose inventory is being modified.
+	 * @param {string} characterValue - The value of the character to add to the player's inventory.
+	 * @returns {Promise<void>} A promise that resolves once the character has been added to the player's inventory.
+	 */
+	async addCharacterToInventory(playerID, characterValue) {
+		const player = await this.getPlayerByID(playerID);
+		player.inventory += characterValue;
 		await this.save();
 	}
 }

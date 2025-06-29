@@ -24,6 +24,15 @@ class PlayerService {
 	}
 
 	/**
+	 * Retrieves the inventory of a player.
+	 * @param {string} playerID - The ID of the player whose inventory is being retrieved.
+	 * @returns {Promise<string>} The inventory of the player.
+	*/
+	async getInventory(playerID) {
+		return await this.playerRepository.getInventory(playerID);
+	}
+
+	/**
 	 * Retrieves the current name of a player.
 	 * @param {string} playerID - The ID of the player whose name is being retrieved.
 	 * @returns {Promise<string>} The current name of the player.
@@ -63,6 +72,7 @@ class PlayerService {
 		const newName = currentName + character;
 
 		await this.changeCurrentName(playerID, newName);
+		await this.playerRepository.addCharacterToInventory(playerID, character);
 	}
 
 	async getPublishedName(playerID) {
@@ -151,11 +161,9 @@ class PlayerService {
 	 */
 	async addNewPlayer(playerID) {
 		const guildMember = await fetchNamesmithGuildMember(playerID);
-		const namesmithGuild = guildMember.guild;
-		const noNameRole = await fetchRole(namesmithGuild, ids.namesmith.roles.noName);
 
 		await removeAllRolesFromMember(guildMember);
-		await addRoleToMember(guildMember, noNameRole);
+		await addRoleToMember(guildMember, ids.namesmith.roles.noName);
 		await setNicknameOfMember(guildMember, NO_NAME);
 
 		await this.playerRepository.addPlayer(playerID);
