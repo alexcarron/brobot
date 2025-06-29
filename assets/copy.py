@@ -35,4 +35,4 @@ if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Usage: python create_copies.py <directory-path>")
     else:
-        create_copies(sys.argv[1])
+        create_copies("assets/temp")
