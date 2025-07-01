@@ -73,6 +73,32 @@ class CharacterRepository {
 		const id = getIDfromCharacterValue(value);
 		return await this.getCharacterByID(id);
 	}
+
+	/**
+	 * Gets a character from a character ID with its tags.
+	 * @param {number} id - The ID of the character to retrieve.
+	 * @returns {Promise<{
+	 * 	id: number,
+	 * 	value: string,
+	 * 	rarity: number,
+	 * 	tags: string[]
+	 * } | undefined>} The character with the given ID and its tags, or undefined if no such character exists.
+	 */
+	async getCharacterWithTags(id) {
+		const query = `
+			SELECT
+				character.*,
+				GROUP_CONCAT(characterTag.tag, ', ') AS tags
+			FROM character
+			LEFT JOIN characterTag ON character.id = characterTag.characterID
+			WHERE character.id = @id
+			GROUP BY character.id
+		`;
+		const getCharacterWithTags = db.prepare(query);
+		const character = getCharacterWithTags.get({ id });
+		character.tags = character.tags.split(', ');
+		return character;
+	}
 }
 
 module.exports = CharacterRepository;

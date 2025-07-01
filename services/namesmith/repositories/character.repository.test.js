@@ -66,4 +66,17 @@ describe('CharacterRepository', () => {
 			await expect(characterRepo.getCharacterByValue('AB')).rejects.toThrowError();
 		});
 	});
+
+	describe('getCharacterWithTags()', () => {
+		it('SHOULD return a character object with tags', async () => {
+			const character = await characterRepo.getCharacterWithTags(65);
+			expect(character).toHaveProperty('id', 65);
+			expect(character).toHaveProperty('value', 'A');
+			expect(character).toHaveProperty('rarity', expect.any(Number));
+			expect(character).toHaveProperty('tags');
+			expect(Array.isArray(character.tags)).toBe(true);
+			expect(character.tags.length).toBeGreaterThan(0);
+			expect(character.tags).toEqual(expect.arrayContaining([expect.any(String)]));
+		});
+	})
 });
