@@ -19,3 +19,6 @@ planning/
 audioUrl.mp3
 
 local/
+
+# Lite Databases
+*.db*
