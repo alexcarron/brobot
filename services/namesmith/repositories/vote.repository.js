@@ -1,18 +1,21 @@
-const { loadObjectFromJsonInGitHub, saveObjectToJsonInGitHub } = require("../../../utilities/github-json-storage-utils");
+const Database = require("better-sqlite3");
 
 /**
  * Provides access to the dynamic votes data.
  */
 class VoteRepository {
-	static REPO_NAME = "namesmith-votes";
-	votes = [];
+	/**
+	 * @type {Database}
+	 */
+	db;
 
-	async load() {
-		this.votes = await loadObjectFromJsonInGitHub(VoteRepository.REPO_NAME);
-	}
+/**
+ * Constructs a new VoteRepository instance.
+ * @param {Database} db - The database connection to use.
+ */
 
-	async save() {
-		await saveObjectToJsonInGitHub(this.votes, VoteRepository.REPO_NAME);
+	constructor(db) {
+		this.db = db;
 	}
 
 	/**
@@ -23,34 +26,37 @@ class VoteRepository {
 	 * }>>} An array of vote objects.
 	 */
 	async getVotes() {
-		await this.load();
-		return this.votes;
+		const query = `SELECT * FROM vote`;
+		const getAllVotes = this.db.prepare(query);
+		return getAllVotes.all();
 	}
 
 	/**
 	 * Retrieves a vote by the ID of the user who voted.
 	 * @param {string} voterID - The ID of the user who voted.
-	 * @returns {Promise<Array<{
+	 * @returns {Promise<{
 	 * 	voterID: string,
 	 *  playerVotedForID: string
-	 * }>>} An array of vote objects filtered by the voter ID.
+	 * } | undefined>} A vote object if found, otherwise undefined.
 	 */
 	async getVoteByVoterID(voterID) {
-		await this.load();
-		return this.votes.filter(vote => vote.voterID === voterID);
+		const query = `SELECT * FROM vote WHERE voterID = @voterID`;
+		const getVoteByVoterID = this.db.prepare(query);
+		return getVoteByVoterID.get({ voterID });
 	}
 
 	/**
-	 * Retrieves a vote by the ID of the player who was voted for.
-	 * @param {string} playerVotedForID - The ID of the player who was voted for.
+	 * Retrieves a list of votes by the ID of the player voted for.
+	 * @param {string} playerVotedForID - The ID of the player voted for.
 	 * @returns {Promise<Array<{
 	 * 	voterID: string,
 	 *  playerVotedForID: string
-	 * }>>} An array of vote objects filtered by the player voted for ID.
+	 * }>>} A list of vote objects.
 	 */
-	async getVoteByVotedForID(playerVotedForID) {
-		await this.load();
-		return this.votes.filter(vote => vote.playerVotedForID === playerVotedForID);
+	async getVotesByVotedForID(playerVotedForID) {
+		const query = `SELECT * FROM vote WHERE playerVotedForID = @playerVotedForID`;
+		const getVotesByVotedForID = this.db.prepare(query);
+		return getVotesByVotedForID.all({ playerVotedForID });
 	}
 
 	/**
@@ -59,9 +65,20 @@ class VoteRepository {
 	 * @returns {Promise<void>} A promise that resolves once the vote has been saved.
 	 */
 	async addVote({ voterID, playerVotedForID }) {
-		const vote = { voterID, playerVotedForID };
-		this.votes.push(vote);
-		await this.save();
+		if (!voterID)
+			throw new Error("addVote: Missing voterID");
+
+		if (!playerVotedForID)
+			throw new Error("addVote: Missing playerVotedForID");
+
+		const query = `
+			INSERT INTO vote (voterID, playerVotedForID)
+			VALUES (@voterID, @playerVotedForID)
+		`;
+		const addVote = this.db.prepare(query);
+		const vote = addVote.run({ voterID, playerVotedForID });
+		if (vote.changes === 0)
+			throw new Error("addVote: Failed to add vote because the voterID already exists");
 	}
 
 	/**
@@ -70,9 +87,21 @@ class VoteRepository {
 	 * @returns {Promise<void>} A promise that resolves once the vote has been saved.
 	 */
 	async changeVote({ voterID, playerVotedForID }) {
-		const vote = this.votes.find(vote => vote.voterID === voterID);
-		vote.playerVotedForID = playerVotedForID;
-		await this.save();
+		if (!voterID)
+			throw new Error("changeVote: Missing voterID");
+
+		if (!playerVotedForID)
+			throw new Error("changeVote: Missing playerVotedForID");
+
+		const query = `
+			UPDATE vote
+			SET playerVotedForID = @playerVotedForID
+			WHERE voterID = @voterID
+		`;
+		const changeVote = this.db.prepare(query);
+		const vote = changeVote.run({ voterID, playerVotedForID });
+		if (vote.changes === 0)
+			throw new Error("changeVote: Failed to change vote because the voterID does not exist");
 	}
 
 	/**
@@ -81,8 +110,11 @@ class VoteRepository {
 	 * @returns {Promise<void>} A promise that resolves once the vote has been deleted.
 	 */
 	async deleteVote(voterID) {
-		this.votes = this.votes.filter(vote => vote.voterID !== voterID);
-		await this.save();
+		const query = `DELETE FROM vote WHERE voterID = @voterID`;
+		const deleteVote = this.db.prepare(query);
+		const vote = deleteVote.run({ voterID });
+		if (vote.changes === 0)
+			throw new Error("deleteVote: Failed to delete vote because the voterID does not exist");
 	}
 
 	/**
@@ -90,8 +122,9 @@ class VoteRepository {
 	 * @returns {Promise<void>} A promise that resolves once the votes have been cleared and saved.
 	 */
 	async reset() {
-		this.votes = [];
-		await this.save();
+		const query = `DELETE FROM vote`;
+		const reset = this.db.prepare(query);
+		reset.run();
 	}
 }
 

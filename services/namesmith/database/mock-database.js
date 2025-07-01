@@ -1,5 +1,6 @@
 const Database = require('better-sqlite3');
 const { addSchemaToDB, addInitialDataToDB } = require('./static-queries/static-queries');
+const { logInfo } = require('../../../utilities/logging-utils');
 
 /**
  * Creates an in-memory SQLite database with the schema and initial data for Namesmith already populated.
@@ -43,4 +44,20 @@ const addMockPlayer = (db, { id, currentName, publishedName, tokens, role, inven
 	return player;
 };
 
-module.exports = { createMockDB, addMockPlayer };
+/**
+ * Adds a vote to the database with the given properties.
+ *
+ * @param {Database} db - The in-memory database.
+ * @param {{ voterID: string, playerVotedForID: string }} voteData - The vote data to add.
+ * @returns {{ voterID: string, playerVotedForID: string }} The vote object that was added to the database.
+ */
+const addMockVote = (db, { voterID, playerVotedForID }) => {
+	const insertVote = db.prepare(`
+		INSERT INTO vote (voterID, playerVotedForID)
+		VALUES (@voterID, @playerVotedForID)
+	`);
+	const vote = insertVote.run({ voterID, playerVotedForID });
+	return vote;
+};
+
+module.exports = { createMockDB, addMockPlayer, addMockVote };
