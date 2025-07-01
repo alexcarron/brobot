@@ -17,21 +17,23 @@ const VoteService = require("../services/vote.service");
 const setupNamesmith = async () => {
 	logInfo("Setting up Namesmith...");
 
+	const db = setupDatabase();
+
 	global.namesmith = {};
 	global.namesmith.mysteryBoxRepository =
-		new MysteryBoxRepository();
+		new MysteryBoxRepository(db);
 
 	global.namesmith.characterRepository =
-		new CharacterRepository();
+		new CharacterRepository(db);
 
 	global.namesmith.playerRepository =
-		new PlayerRepository();
+		new PlayerRepository(db);
 
 	global.namesmith.gameStateRepository =
-		new GameStateRepository();
+		new GameStateRepository(db);
 
 	global.namesmith.voteRepository =
-		new VoteRepository();
+		new VoteRepository(db);
 
 	global.namesmith.mysteryBoxService = new MysteryBoxService(
 		global.namesmith.mysteryBoxRepository,
