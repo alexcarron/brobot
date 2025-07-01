@@ -1,70 +1,94 @@
-const { saveObjectToJsonInGitHub, loadObjectFromJsonInGitHub } = require("../../../utilities/github-json-storage-utils");
+const Database = require("better-sqlite3");
 
 /**
  * Provides access to the game state data.
  */
 class GameStateRepository {
-	static REPO_NAME = "namesmith-game-state";
-	gameState = {};
+	/** @type {Database} */
+	db;
 
-	async load() {
-		this.gameState = await loadObjectFromJsonInGitHub(GameStateRepository.REPO_NAME);
-
-		// Convert timestamps to Date objects
-		if (
-			this.gameState.timeStarted &&
-			typeof this.gameState.timeStarted === "number"
-		)
-			this.gameState.timeStarted = new Date(this.gameState.timeStarted);
-
-		if (
-			this.gameState.timeEnding &&
-			typeof this.gameState.timeEnding === "number"
-		)
-			this.gameState.timeEnding = new Date(this.gameState.timeEnding);
-
-		if (
-			this.gameState.timeVoteIsEnding &&
-			typeof this.gameState.timeVoteIsEnding === "number"
-		)
-			this.gameState.timeVoteIsEnding = new Date(this.gameState.timeVoteIsEnding);
-	}
-
-	async save() {
-		const gameStateClone = { ...this.gameState };
-		// Convert Date objects to timestamps
-		if (
-			gameStateClone.timeStarted &&
-			gameStateClone.timeStarted instanceof Date
-		)
-			gameStateClone.timeStarted = gameStateClone.timeStarted.getTime();
-
-		if (
-			gameStateClone.timeEnding &&
-			gameStateClone.timeEnding instanceof Date
-		)
-			gameStateClone.timeEnding = gameStateClone.timeEnding.getTime();
-
-		if (
-			gameStateClone.timeVoteIsEnding &&
-			gameStateClone.timeVoteIsEnding instanceof Date
-		)
-			gameStateClone.timeVoteIsEnding = gameStateClone.timeVoteIsEnding.getTime();
-
-		await saveObjectToJsonInGitHub(gameStateClone, GameStateRepository.REPO_NAME);
+	/**
+	 * @param {Database} db - The database connection to use.
+	 */
+	constructor(db) {
+		this.db = db;
 	}
 
 	/**
-	 * Returns the current game state.
+	 * Retrieves the current game state.
 	 * @returns {Promise<{
-	 * 	timeStarted: Date,
-	 * 	timeEnding: Date,
-	 *  timeVoteIsEnding: Date,
+	 * 	timeStarted: Date | undefined,
+	 * 	timeEnding: Date | undefined,
+	 * 	timeVoteIsEnding: Date | undefined,
 	 * }>} The current game state.
 	 */
 	async getGameState() {
-		await this.load();
-		return this.gameState;
+		const query = `
+			SELECT timeStarted, timeEnding, timeVoteIsEnding
+			FROM gameState
+			WHERE id = 1
+		`;
+
+		const getGameState = this.db.prepare(query);
+		const dbGameState = getGameState.get();
+
+		const timeStarted = dbGameState.timeStarted ?
+			new Date(parseInt(dbGameState.timeStarted)) :
+			undefined;
+
+		const timeEnding = dbGameState.timeEnding ?
+			new Date(parseInt(dbGameState.timeEnding)) :
+			undefined;
+
+		const timeVoteIsEnding = dbGameState.timeVoteIsEnding ?
+			new Date(parseInt(dbGameState.timeVoteIsEnding)) :
+			undefined;
+
+		return {
+			timeStarted,
+			timeEnding,
+			timeVoteIsEnding,
+		};
+	}
+
+	/**
+	 * Sets the current game state.
+	 * @param {{
+	 * 	timeStarted?: Date,
+	 * 	timeEnding?: Date,
+	 *  timeVoteIsEnding?: Date,
+	 * }} gameState - The new game state.
+	 * @throws If there are no fields provided to update.
+	 * @returns {Promise<void>} A promise that resolves once the change has been saved.
+	 */
+	async setGameState({ timeStarted, timeEnding, timeVoteIsEnding }) {
+		const assignmentExpressions = [];
+		const fieldToValue = {};
+
+		if (timeStarted !== undefined) {
+			assignmentExpressions.push('timeStarted = @timeStarted');
+			fieldToValue.timeStarted = timeStarted.getTime().toString();
+		}
+		if (timeEnding !== undefined) {
+			assignmentExpressions.push('timeEnding = @timeEnding');
+			fieldToValue.timeEnding = timeEnding.getTime().toString();
+		}
+		if (timeVoteIsEnding !== undefined) {
+			assignmentExpressions.push('timeVoteIsEnding = @timeVoteIsEnding');
+			fieldToValue.timeVoteIsEnding = timeVoteIsEnding.getTime().toString();
+		}
+
+		if (assignmentExpressions.length === 0)
+			throw new Error('setGameState: There are no fields provided to update.');
+
+		const query = `
+			UPDATE gameState
+			SET ${assignmentExpressions.join(', ')}
+			WHERE id = 1
+		`;
+
+		const setGameState = this.db.prepare(query);
+		setGameState.run(fieldToValue);
 	}
 
 	/**
@@ -82,8 +106,7 @@ class GameStateRepository {
 	 * @returns {Promise<void>} A promise that resolves once the change has been saved.
 	 */
 	async setTimeStarted(timeStarted) {
-		this.gameState.timeStarted = timeStarted;
-		await this.save();
+		await this.setGameState({ timeStarted });
 	}
 
 	/**
@@ -101,8 +124,7 @@ class GameStateRepository {
 	 * @returns {Promise<void>} A promise that resolves once the change has been saved.
 	 */
 	async setTimeEnding(timeEnding) {
-		this.gameState.timeEnding = timeEnding;
-		await this.save();
+		await this.setGameState({ timeEnding });
 	}
 
 	/**
@@ -120,8 +142,7 @@ class GameStateRepository {
 	 * @returns {Promise<void>} A promise that resolves once the change has been saved.
 	 */
 	async setTimeVoteIsEnding(timeVoteIsEnding) {
-		this.gameState.timeVoteIsEnding = timeVoteIsEnding;
-		await this.save();
+		await this.setGameState({ timeVoteIsEnding });
 	}
 }
 

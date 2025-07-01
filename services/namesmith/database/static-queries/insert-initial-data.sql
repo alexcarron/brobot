@@ -1,0 +1,1 @@
+INSERT OR IGNORE INTO gameState (id) VALUES (1);
