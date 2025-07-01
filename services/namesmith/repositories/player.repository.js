@@ -1,23 +1,22 @@
-const { saveObjectToJsonInGitHub, loadObjectFromJsonInGitHub } = require("../../../utilities/github-json-storage-utils");
+const Database = require("better-sqlite3");
 
-// TODO: Implement with SQLite and Redis
+const MAX_NAME_LENGTH = 32;
 
 /**
  * Provides access to the dynamic player data.
  */
 class PlayerRepository {
-	static REPO_NAME = "namesmith-players";
-	players = [];
+	/**
+	 * @type {Database}
+	 */
+	db;
 
-	async load() {
-		this.players = await loadObjectFromJsonInGitHub(PlayerRepository.REPO_NAME);
-	}
-
-	async save() {
-		await saveObjectToJsonInGitHub(
-			this.players,
-			PlayerRepository.REPO_NAME
-		);
+	/**
+	 * Constructs a new PlayerRepository instance.
+	 * @param {Database} db - The database connection to use.
+	 */
+	constructor(db) {
+		this.db = db;
 	}
 
 	/**
@@ -27,16 +26,14 @@ class PlayerRepository {
 	 * 	currentName: string,
 	 * 	publishedName: string | null,
 	 * 	tokens: number,
-	 * 	role: null,
-	 * 	perks: null,
+	 * 	role: string | null,
 	 * 	inventory: string,
-	 * 	unlockedRecipes: string[],
-	 * 	unlockedMysteryBoxes: number[]
 	 * }>>} An array of player objects.
 	 */
 	async getPlayers() {
-		await this.load();
-		return this.players;
+		const query = `SELECT * FROM player`;
+		const getAllPlayers = this.db.prepare(query);
+		return getAllPlayers.all();
 	}
 
 	/**
@@ -48,15 +45,13 @@ class PlayerRepository {
 	 * 	publishedName: string | null,
 	 * 	tokens: number,
 	 * 	role: string | null,
-	 * 	perks: string[] | null,
 	 * 	inventory: string,
-	 * 	unlockedRecipes: number[],
-	 * 	unlockedMysteryBoxes: number[]
 	 * } | undefined>} The player object if found, otherwise undefined.
 	 */
 	async getPlayerByID(playerID) {
-		await this.load();
-		return this.players.find(player => player.id === playerID);
+		const query = `SELECT * FROM player WHERE id = @id`;
+		const getPlayerById = this.db.prepare(query);
+		return getPlayerById.get({ id: playerID });
 	}
 
 	/**
@@ -64,21 +59,16 @@ class PlayerRepository {
 	 * @returns {Promise<Array<{
 	 * 	id: string,
 	 * 	currentName: string,
-	 * 	publishedName: undefined | null,
+	 * 	publishedName: null,
 	 * 	tokens: number,
 	 * 	role: string | null,
-	 * 	perks: string[] | null,
 	 * 	inventory: string,
-	 * 	unlockedRecipes: number[],
-	 * 	unlockedMysteryBoxes: number[]
 	 * }>>} An array of player objects without a published name.
 	 */
 	async getPlayersWithoutPublishedNames() {
-		await this.load();
-		return this.players.filter(player =>
-			player.publishedName === undefined ||
-			player.publishedName === null
-		);
+		const query = `SELECT * FROM player WHERE publishedName IS NULL`;
+		const getPlayersWithoutPublishedNames = this.db.prepare(query);
+		return getPlayersWithoutPublishedNames.all();
 	}
 
 	/**
@@ -88,7 +78,9 @@ class PlayerRepository {
 	 */
 	async getInventory(playerID) {
 		const player = await this.getPlayerByID(playerID);
-		console.log(player);
+		if (!player)
+			throw new Error(`getInventory: Player with ID ${playerID} not found`);
+
 		return player.inventory;
 	}
 
@@ -99,7 +91,8 @@ class PlayerRepository {
 	 */
 	async getCurrentName(playerID) {
 		const player = await this.getPlayerByID(playerID);
-		console.log(player);
+		if (!player)
+			throw new Error(`getCurrentName: Player with ID ${playerID} not found`);
 
 		return player.currentName;
 	}
@@ -111,9 +104,22 @@ class PlayerRepository {
 	 * @returns {Promise<void>} A promise that resolves once the name has been changed.
 	 */
 	async changeCurrentName(playerID, newName) {
-		const player = await this.getPlayerByID(playerID);
-		player.currentName = newName;
-		await this.save();
+		if (newName === undefined)
+			throw new Error("changeCurrentName: newName is undefined.");
+
+		if (newName.length > MAX_NAME_LENGTH)
+			throw new Error(`changeCurrentName: newName must be less than or equal to ${MAX_NAME_LENGTH}.`);
+
+		const query = `
+			UPDATE player
+			SET currentName = @newName
+			WHERE id = @id
+		`;
+
+		const changeCurrentName = this.db.prepare(query);
+		const result = changeCurrentName.run({ newName, id: playerID });
+		if (result.changes === 0)
+			throw new Error(`changeCurrentName: Player with ID ${playerID} not found.`);
 	}
 
 	/**
@@ -123,6 +129,8 @@ class PlayerRepository {
 	 */
 	async getPublishedName(playerID) {
 		const player = await this.getPlayerByID(playerID);
+		if (!player)
+			throw new Error(`getPublishedName: Player with ID ${playerID} not found`);
 		return player.publishedName;
 	}
 
@@ -133,9 +141,22 @@ class PlayerRepository {
 	 * @returns {Promise<void>} A promise that resolves once the published name has been saved to the database.
 	 */
 	async publishName(playerID, name) {
-		const player = await this.getPlayerByID(playerID);
-		player.publishedName = name;
-		await this.save();
+		if (name === undefined)
+			throw new Error("publishName: name is undefined.");
+
+		if (name.length > MAX_NAME_LENGTH)
+			throw new Error(`publishName: name must be less than or equal to ${MAX_NAME_LENGTH}.`);
+
+		const query = `
+			UPDATE player
+			SET publishedName = @name
+			WHERE id = @id
+		`;
+
+		const publishName = this.db.prepare(query);
+		const result = publishName.run({ name, id: playerID });
+		if (result.changes === 0)
+			throw new Error(`publishName: Player with ID ${playerID} not found.`);
 	}
 
 	/**
@@ -144,22 +165,23 @@ class PlayerRepository {
 	 * @returns {Promise<void>} A promise that resolves once the player has been added.
 	 */
 	async addPlayer(playerID) {
-		const existingPlayer = await this.getPlayerByID(playerID);
-		if (existingPlayer) return;
+		const query = `
+			INSERT INTO player (id, currentName, publishedName, tokens, role, inventory)
+			VALUES (@id, @currentName, @publishedName, @tokens, @role, @inventory)
+		`;
 
-		const player = {
+		const addPlayer = this.db.prepare(query);
+		const result = addPlayer.run({
 			id: playerID,
 			currentName: "",
 			publishedName: null,
 			tokens: 0,
 			role: null,
-			perks: null,
-			inventory: "",
-			unlockedRecipes: [],
-			unlockedMysteryBoxes: []
-		};
-		this.players.push(player);
-		await this.save();
+			inventory: ""
+		});
+
+		if (result.changes === 0)
+			throw new Error(`addPlayer: Player with ID ${playerID} already exists.`);
 	}
 
 	/**
@@ -167,8 +189,9 @@ class PlayerRepository {
 	 * @returns {Promise<void>} A promise that resolves once the players have been cleared and saved.
 	 */
 	async reset() {
-		this.players = []
-		await this.save();
+		const query = `DELETE FROM player`;
+		const reset = this.db.prepare(query);
+		reset.run();
 	}
 
 	/**
@@ -178,9 +201,22 @@ class PlayerRepository {
 	 * @returns {Promise<void>} A promise that resolves once the character has been added to the player's inventory.
 	 */
 	async addCharacterToInventory(playerID, characterValue) {
-		const player = await this.getPlayerByID(playerID);
-		player.inventory += characterValue;
-		await this.save();
+		if (characterValue === undefined)
+			throw new Error("addCharacterToInventory: characterValue is undefined.");
+
+		if (characterValue.length !== 1)
+			throw new Error("addCharacterToInventory: characterValue must be a single character.");
+
+		const query = `
+			UPDATE player
+			SET inventory = inventory || @characterValue
+			WHERE id = @playerID
+		`;
+
+		const addCharacterToInventory = this.db.prepare(query);
+		const result = addCharacterToInventory.run({ characterValue, playerID });
+		if (result.changes === 0)
+			throw new Error(`addCharacterToInventory: Player with ID ${playerID} not found.`);
 	}
 }
 

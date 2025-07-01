@@ -6,11 +6,41 @@ const { addSchemaToDB, addInitialDataToDB } = require('./static-queries/static-q
  *
  * @returns {Database} The in-memory database.
  */
-function createMockDB() {
+const createMockDB = () => {
 	const db = new Database(':memory:');
 	addSchemaToDB(db);
 	addInitialDataToDB(db);
 	return db;
 }
 
-module.exports = { createMockDB };
+/**
+ * Adds a player to the database with the given properties.
+ *
+ * @param {Database} db - The in-memory database.
+ * @param {{
+ * 	id: string,
+ * 	currentName: string,
+ * 	publishedName: string | null,
+ * 	tokens: number,
+ * 	role: string | null,
+ * 	inventory: string
+ * }} playerData - The player data to add.
+ * @returns {{
+ * 	id: string,
+ * 	currentName: string,
+ * 	publishedName: string | null,
+ * 	tokens: number,
+ * 	role: string | null,
+ * 	inventory: string
+ * }} The player object that was added to the database.
+ */
+const addMockPlayer = (db, { id, currentName, publishedName, tokens, role, inventory }) => {
+	const insertPlayer = db.prepare(`
+		INSERT INTO player (id, currentName, publishedName, tokens, role, inventory)
+		VALUES (@id, @currentName, @publishedName, @tokens, @role, @inventory)
+	`);
+	const player = insertPlayer.run({ id, currentName, publishedName, tokens, role, inventory });
+	return player;
+};
+
+module.exports = { createMockDB, addMockPlayer };

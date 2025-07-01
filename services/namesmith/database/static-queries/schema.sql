@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS mysteryBoxCharacterOdds (
 
 -- Players table
 CREATE TABLE IF NOT EXISTS player (
-	id INTEGER PRIMARY KEY,
+	id TEXT PRIMARY KEY,
 	currentName TEXT NOT NULL,
 	publishedName TEXT,
 	tokens INTEGER NOT NULL,
@@ -47,15 +47,15 @@ CREATE TABLE IF NOT EXISTS player (
 
 -- Player Perks table
 CREATE TABLE IF NOT EXISTS playerPerk (
-	playerID INTEGER NOT NULL REFERENCES player(id) ON DELETE CASCADE,
+	playerID TEXT NOT NULL REFERENCES player(id) ON DELETE CASCADE,
 	perk TEXT NOT NULL,
 	PRIMARY KEY (playerID, perk)
 );
 
 -- Votes table
 CREATE TABLE IF NOT EXISTS vote (
-	voterID INTEGER PRIMARY KEY,
-	playerVotedForID INTEGER NOT NULL REFERENCES player(id) ON DELETE CASCADE
+	voterID TEXT PRIMARY KEY,
+	playerVotedForID TEXT NOT NULL REFERENCES player(id) ON DELETE CASCADE
 );
 
 -- Optional index for performance
