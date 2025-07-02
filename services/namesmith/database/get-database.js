@@ -1,7 +1,7 @@
 const Database = require("better-sqlite3");
 const path = require('path');
 const currDir = __dirname;
-const dbPath = path.join(currDir, 'namesmith.db');
+const dbPath = path.join(currDir, 'db', 'namesmith.db');
 
 /**
  * Returns an instance of the database.

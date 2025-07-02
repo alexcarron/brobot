@@ -1,5 +1,6 @@
 const { loadObjectFromJsonInGitHub } = require("../../../utilities/github-json-storage-utils");
 const getDatabase = require("../database/get-database");
+const { getCharacterValueFromID } = require("../utilities/character.utility");
 const db = getDatabase();
 
 /**
@@ -39,7 +40,7 @@ class MysteryBoxRepository {
 			const characterOdds = characterOddsRows
 				.filter(row => row.mysteryBoxID === mysteryBox.id)
 				.reduce((characterOdds, oddsRow) => {
-					characterOdds[oddsRow.characterID] = oddsRow.weight;
+					characterOdds[getCharacterValueFromID(oddsRow.characterID)] = oddsRow.weight;
 					return characterOdds;
 				}, {});
 			return {
@@ -59,6 +60,12 @@ class MysteryBoxRepository {
 	 * } | undefined>} The mystery box object with the given id or undefined if no such object exists.
 	 */
 	async getMysteryBoxByID(id) {
+		if (!id)
+			throw new Error('getMysteryBoxByID: Mystery box id must be provided.');
+
+		if (typeof id !== 'number')
+			throw new Error('getMysteryBoxByID: Mystery box id must be a number.');
+
 		const query = `SELECT * FROM mysteryBox WHERE id = @id`;
 		const getMysteryBoxById = db.prepare(query);
 		return getMysteryBoxById.get({ id });
@@ -82,7 +89,7 @@ class MysteryBoxRepository {
 		`).all({ id });
 
 		const characterOdds = characterOddsRows.reduce((characterOdds, oddsRow) => {
-			characterOdds[oddsRow.characterID] = oddsRow.weight;
+			characterOdds[getCharacterValueFromID(oddsRow.characterID)] = oddsRow.weight;
 			return characterOdds;
 		}, {});
 
@@ -90,6 +97,22 @@ class MysteryBoxRepository {
 			...mysteryBox,
 			characterOdds
 		};
+	}
+
+	/**
+	 * Given a mystery box id, returns an object with character IDs as keys and the weight of the character in the mystery box as the value.
+	 * @param {number} mysteryBoxID - The id of the mystery box to return the character odds for.
+	 * @returns {Promise<Record<number, number>>} An object with character IDs as keys and the weight of the character in the mystery box as the value.
+	 */
+	async getCharacterOdds(mysteryBoxID) {
+		const query = `SELECT characterID, weight FROM mysteryBoxCharacterOdds WHERE mysteryBoxID = @mysteryBoxID`;
+		const getCharacterOdds = db.prepare(query);
+		const characterOddsRows = getCharacterOdds.all({ mysteryBoxID });
+
+		return characterOddsRows.reduce((characterOdds, oddsRow) => {
+			characterOdds[oddsRow.characterID] = oddsRow.weight;
+			return characterOdds;
+		}, {});
 	}
 }
 

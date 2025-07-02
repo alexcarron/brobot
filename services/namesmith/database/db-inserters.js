@@ -1,19 +1,16 @@
-const CharacterRepository = require("../repositories/character.repository");
-const MysteryBoxRepository = require("../repositories/mysteryBox.repository");
 const { getIDfromCharacterValue } = require("../utilities/character.utility");
-const getDatabase = require("./get-database");
-const db = getDatabase();
 
-async function migrateCharacters() {
-	const characterRepo = new CharacterRepository();
-	const characters = await characterRepo.getCharacters();
-
+const insertCharactersToDB = async (db, characters) => {
 	const insertCharacter = db.prepare("INSERT OR IGNORE INTO character (id, value, rarity) VALUES (@id, @value, @rarity)");
 	const insertTag = db.prepare("INSERT OR IGNORE INTO characterTag (characterID, tag) VALUES (@characterID, @tag)");
 
 	const insertCharacters = db.transaction((characters) => {
 		for (const character of characters) {
-			insertCharacter.run(character);
+			insertCharacter.run({
+				id: character.id,
+				value: character.value,
+				rarity: character.rarity
+			});
 			for (const tag of character.tags) {
 				insertTag.run({ characterID: character.id, tag });
 			}
@@ -23,11 +20,7 @@ async function migrateCharacters() {
 	insertCharacters(characters);
 }
 
-async function migrateMysteryBoxes() {
-	const mysteryBoxRepo = new MysteryBoxRepository();
-	const mysteryBoxes = await mysteryBoxRepo.getMysteryBoxes();
-
-
+const insertMysteryBoxesToDB = async (db, mysteryBoxes) => {
 	const insertMysteryBox = db.prepare("INSERT OR IGNORE INTO mysteryBox (name, tokenCost) VALUES (@name, @tokenCost)");
 	const insertMysteryBoxCharacterOdds = db.prepare("INSERT OR IGNORE INTO mysteryBoxCharacterOdds (mysteryBoxID, characterID, weight) VALUES (@mysteryBoxID, @characterID, @weight)");
 
@@ -39,7 +32,10 @@ async function migrateMysteryBoxes() {
 		db.exec("UPDATE sqlite_sequence SET seq = 0 WHERE name = 'mysteryBox'");
 
 		for (const mysteryBox of mysteryBoxes) {
-			const result = insertMysteryBox.run(mysteryBox);
+			const result = insertMysteryBox.run({
+				name: mysteryBox.name,
+				tokenCost: mysteryBox.tokenCost
+			});
 			const newId = result.lastInsertRowid;
 
 			for (const [characterValue, weight] of Object.entries(mysteryBox.characterOdds)) {
@@ -56,9 +52,4 @@ async function migrateMysteryBoxes() {
 	insertMysteryBoxes(mysteryBoxes);
 }
 
-async function main() {
-	await migrateCharacters();
-	await migrateMysteryBoxes();
-}
-
-main();
+module.exports = { insertCharactersToDB, insertMysteryBoxesToDB };

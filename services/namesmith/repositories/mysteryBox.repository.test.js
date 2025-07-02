@@ -38,6 +38,7 @@ describe('MysteryBoxRepository', () => {
 				expect(mysteryBox).toHaveProperty('tokenCost', expect.any(Number));
 				expect(mysteryBox).toHaveProperty('characterOdds', expect.any(Object));
 				expect(Object.keys(mysteryBox.characterOdds).length).toBeGreaterThan(0);
+				expect(Object.keys(mysteryBox.characterOdds).every(key => typeof key === 'string')).toBe(true);
 				expect(Object.values(mysteryBox.characterOdds).every(weight => weight > 0)).toBe(true);
 
 			});

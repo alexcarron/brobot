@@ -1,0 +1,522 @@
+[
+  {
+    "id": 65,
+    "value": "A",
+    "rarity": 10,
+    "tags": [
+      "letter",
+      "vowel",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 66,
+    "value": "B",
+    "rarity": 4,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 67,
+    "value": "C",
+    "rarity": 5,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 68,
+    "value": "D",
+    "rarity": 5,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 69,
+    "value": "E",
+    "rarity": 12,
+    "tags": [
+      "letter",
+      "vowel",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 70,
+    "value": "F",
+    "rarity": 4,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 71,
+    "value": "G",
+    "rarity": 4,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 72,
+    "value": "H",
+    "rarity": 4,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 73,
+    "value": "I",
+    "rarity": 9,
+    "tags": [
+      "letter",
+      "vowel",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 74,
+    "value": "J",
+    "rarity": 2,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 75,
+    "value": "K",
+    "rarity": 2,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 76,
+    "value": "L",
+    "rarity": 6,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 77,
+    "value": "M",
+    "rarity": 2,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 78,
+    "value": "N",
+    "rarity": 6,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 79,
+    "value": "O",
+    "rarity": 8,
+    "tags": [
+      "letter",
+      "vowel",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 80,
+    "value": "P",
+    "rarity": 3,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 81,
+    "value": "Q",
+    "rarity": 1,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 82,
+    "value": "R",
+    "rarity": 6,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 83,
+    "value": "S",
+    "rarity": 5,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 84,
+    "value": "T",
+    "rarity": 6,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 85,
+    "value": "U",
+    "rarity": 4,
+    "tags": [
+      "letter",
+      "vowel",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 86,
+    "value": "V",
+    "rarity": 2,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 87,
+    "value": "W",
+    "rarity": 2,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 88,
+    "value": "X",
+    "rarity": 1,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 89,
+    "value": "Y",
+    "rarity": 2,
+    "tags": [
+      "letter",
+      "vowel",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 90,
+    "value": "Z",
+    "rarity": 1,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 97,
+    "value": "a",
+    "rarity": 10,
+    "tags": [
+      "letter",
+      "vowel",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 98,
+    "value": "b",
+    "rarity": 4,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 99,
+    "value": "c",
+    "rarity": 5,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 100,
+    "value": "d",
+    "rarity": 5,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 101,
+    "value": "e",
+    "rarity": 12,
+    "tags": [
+      "letter",
+      "vowel",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 102,
+    "value": "f",
+    "rarity": 4,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 103,
+    "value": "g",
+    "rarity": 4,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 104,
+    "value": "h",
+    "rarity": 4,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 105,
+    "value": "i",
+    "rarity": 9,
+    "tags": [
+      "letter",
+      "vowel",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 106,
+    "value": "j",
+    "rarity": 2,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 107,
+    "value": "k",
+    "rarity": 2,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 108,
+    "value": "l",
+    "rarity": 6,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 109,
+    "value": "m",
+    "rarity": 2,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 110,
+    "value": "n",
+    "rarity": 6,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 111,
+    "value": "o",
+    "rarity": 8,
+    "tags": [
+      "letter",
+      "vowel",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 112,
+    "value": "p",
+    "rarity": 3,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 113,
+    "value": "q",
+    "rarity": 1,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 114,
+    "value": "r",
+    "rarity": 6,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 115,
+    "value": "s",
+    "rarity": 5,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 116,
+    "value": "t",
+    "rarity": 6,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 117,
+    "value": "u",
+    "rarity": 4,
+    "tags": [
+      "letter",
+      "vowel",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 118,
+    "value": "v",
+    "rarity": 2,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 119,
+    "value": "w",
+    "rarity": 2,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 120,
+    "value": "x",
+    "rarity": 1,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 121,
+    "value": "y",
+    "rarity": 2,
+    "tags": [
+      "letter",
+      "vowel",
+      "uppercase"
+    ]
+  },
+  {
+    "id": 122,
+    "value": "z",
+    "rarity": 1,
+    "tags": [
+      "letter",
+      "consonant",
+      "uppercase"
+    ]
+  }
+]

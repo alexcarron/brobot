@@ -23,12 +23,13 @@ class MysteryBoxService {
 	 * 	id: number,
 	 * 	value: string,
 	 * 	rarity: number,
-	 * 	tags: string[]
 	 * }>} The character retrieved from the mystery box.
 	 */
 	async openBoxByID(mysteryBoxID) {
-		const mysteryBox = await this.mysteryBoxRepository.getMysteryBoxByID(mysteryBoxID);
+		console.log(mysteryBoxID);
+		const mysteryBox = await this.mysteryBoxRepository.getMysteryBoxWithOdds(mysteryBoxID);
 		const characterOdds = mysteryBox.characterOdds;
+		console.log(characterOdds);
 		const characterValue = getRandomWeightedElement(characterOdds);
 		return await this.characterRepository.getCharacterByValue(characterValue);
 	}
