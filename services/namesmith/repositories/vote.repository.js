@@ -77,7 +77,7 @@ class VoteRepository {
 		`;
 		const addVote = this.db.prepare(query);
 		const vote = addVote.run({ voterID, playerVotedForID });
-		console.log(vote);
+
 		if (vote.changes === 0)
 			throw new Error("addVote: Failed to add vote because the voterID already exists");
 	}

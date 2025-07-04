@@ -18,7 +18,6 @@ describe('CharacterRepository', () => {
 	describe('getCharactersWithTags()', () => {
 		it('SHOULD return an array of characters objects with tags', async () => {
 			const characters = await characterRepo.getCharactersWithTags();
-			console.log(characters);
 			expect(Array.isArray(characters)).toBe(true);
 			expect(characters.length).toBeGreaterThan(0);
 			expect(characters[0]).toHaveProperty('id', expect.any(Number));

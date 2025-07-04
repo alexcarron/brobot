@@ -2,6 +2,7 @@ const { ChannelType, Collection } = require("discord.js");
 const ids = require("../bot-config/discord-ids");
 const { botStatus } = require("../bot-config/bot-status");
 const { logError, logInfo } = require("../utilities/logging-utils");
+const { editReplyToInteraction } = require("../utilities/discord-action-utils");
 
 const onSlashCommandExecuted = async (interaction) => {
 	const userName = interaction.user.username;
@@ -153,10 +154,7 @@ const onSlashCommandExecuted = async (interaction) => {
 			});
 		}
 		else {
-			await interaction.channel.send({
-				content: 'There was an error while executing this command!',
-				ephemeral: true
-			});
+			await editReplyToInteraction(interaction, 'There was an error while executing this command!');
 		}
 	}
 }

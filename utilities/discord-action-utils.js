@@ -2,7 +2,7 @@ const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalB
 const { Role } = require('../services/rapid-discord-mafia/role');
 const { fetchChannel, fetchChannelsInCategory, getEveryoneRole, fetchRole } = require('./discord-fetch-utils');
 const { incrementEndNumber } = require('./text-formatting-utils');
-const { logInfo, logError } = require('./logging-utils');
+const { logInfo, logError, logWarning } = require('./logging-utils');
 const { getShuffledArray } = require('./data-structure-utils');
 
 /**
@@ -116,18 +116,33 @@ const deferInteraction = async (
 	interaction,
 	messageContent = "Running command..."
 ) => {
-	if (!interaction) return;
+	if (!interaction || typeof interaction.reply !== 'function') return;
 
-	const content = { content: messageContent, ephemeral: true };
+	const replyContent = { content: messageContent };
 
-	if (interaction.replied) {
-		await interaction.followUp(content);
+	try {
+		if (interaction.replied) {
+			await interaction.followUp(replyContent);
+		}
+		else if (interaction.deferred) {
+			await interaction.editReply(replyContent);
+		}
+		else {
+			try {
+				await interaction.deferReply(replyContent);
+			}
+			catch (error) {
+				logWarning("Interaction already expired: unable to reply/follow-up");
+				await interaction.reply(replyContent);
+			}
+		}
 	}
-	else if (interaction.deferred) {
-		await interaction.editReply(content);
-	}
-	else {
-		await interaction.deferReply(content);
+	catch (error) {
+    if (error.code === 10062) {
+      logWarning("Interaction already expired: unable to reply/follow-up");
+    } else {
+      logError("Error responding to interaction:", error);
+    }
 	}
 };
 

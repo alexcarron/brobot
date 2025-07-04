@@ -64,8 +64,6 @@ module.exports = new SlashCommand({
 				return autocomplete_entry.name.toLowerCase().startsWith(enteredValue.toLowerCase())
 			});
 
-		console.log({ autocompleteValues  });
-
 		if (Object.values(autocompleteValues).length <= 0) {
 			autocompleteValues = [{name: "Sorry, there are no categories to choose from", value: "N/A"}];
 		}
