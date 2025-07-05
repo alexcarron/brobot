@@ -1,47 +1,14 @@
-const { createMockDB, addMockPlayer } = require("../database/mock-database");
+const { createMockPlayerRepo, mockPlayers } = require("./mock-repositories");
 const PlayerRepository = require("./player.repository");
 
 describe('PlayerRepository', () => {
-	let mockDB;
-
 	/**
 	 * @type {PlayerRepository}
 	 */
 	let playerRepository;
 
-	const mockPlayers = [
-		{
-			id: "1234567890",
-			currentName: "John Doe",
-			publishedName: "John Doe",
-			tokens: 10,
-			role: "magician",
-			inventory: "John Doe",
-		},
-		{
-			id: "1234567891",
-			currentName: "abcdefgh",
-			publishedName: "abcd",
-			tokens: 0,
-			role: "magician",
-			inventory: "abcdefghijklmnopqrstuvwxyz",
-		},
-		{
-			id: "1234567892",
-			currentName: "UNPUBLISHED",
-			publishedName: null,
-			tokens: 0,
-			role: "magician",
-			inventory: "UNPUBLISHED",
-		}
-	];
-
 	beforeEach(() => {
-		mockDB = createMockDB();
-		playerRepository = new PlayerRepository(mockDB);
-		for (const player of mockPlayers) {
-			addMockPlayer(mockDB, player);
-		}
+		playerRepository = createMockPlayerRepo();
 	});
 
   describe('getPlayers()', () => {

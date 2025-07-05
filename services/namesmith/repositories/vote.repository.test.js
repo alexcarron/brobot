@@ -1,65 +1,14 @@
-const { createMockDB, addMockVote, addMockPlayer } = require("../database/mock-database");
+const { createMockVoteRepo, mockVotes } = require("./mock-repositories");
 const VoteRepository = require("./vote.repository");
 
 describe('VoteRepository', () => {
-	let mockDB;
-
 	/**
 	 * @type {VoteRepository}
 	 */
 	let voteRepository;
 
-	const mockPlayers = [
-		{
-			id: "1234567890",
-			currentName: "John Doe",
-			publishedName: "John Doe",
-			tokens: 10,
-			role: "magician",
-			inventory: "John Doe",
-		},
-		{
-			id: "1234567891",
-			currentName: "abcdefgh",
-			publishedName: "abcd",
-			tokens: 0,
-			role: "magician",
-			inventory: "abcdefghijklmnopqrstuvwxyz",
-		},
-		{
-			id: "1234567892",
-			currentName: "UNPUBLISHED",
-			publishedName: null,
-			tokens: 0,
-			role: "magician",
-			inventory: "UNPUBLISHED",
-		}
-	];
-
-	const mockVotes = [
-		{
-			voterID: "1234567890",
-			playerVotedForID: "1234567891",
-		},
-		{
-			voterID: "1234567891",
-			playerVotedForID: "1234567892",
-		},
-		{
-			voterID: "1234567892",
-			playerVotedForID: "1234567891",
-		},
-	];
-
 	beforeEach(() => {
-		mockDB = createMockDB();
-		voteRepository = new VoteRepository(mockDB);
-		for (const player of mockPlayers) {
-			addMockPlayer(mockDB, player);
-		}
-		for (const vote of mockVotes) {
-			addMockVote(mockDB, vote);
-		}
+		voteRepository = createMockVoteRepo();
 	})
 
 	describe('getVotes()', () => {

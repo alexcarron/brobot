@@ -1,18 +1,19 @@
-const { createMockDB } = require('../database/mock-database');
 const GameStateRepository = require('./gameState.repository');
+const { createMockGameStateRepo } = require('./mock-repositories');
 
 describe('GameStateRepository', () => {
-	let mockDB;
-	let gameStateRepository;
+	/**
+	 * @type {GameStateRepository}
+	 */
+	let gameStateRepo;
 
 	beforeEach(() => {
-		mockDB = createMockDB();
-		gameStateRepository = new GameStateRepository(mockDB);
+		gameStateRepo = createMockGameStateRepo();
 	})
 
   describe('getGameState()', () => {
     it('should return an object with timeStarted, timeEnding, and timeVoteIsEnding properties', async () => {
-      const gameState = await gameStateRepository.getGameState();
+      const gameState = await gameStateRepo.getGameState();
 
 			expect(gameState).toHaveProperty('timeStarted', undefined);
 			expect(gameState).toHaveProperty('timeEnding', undefined);
@@ -20,13 +21,13 @@ describe('GameStateRepository', () => {
     });
 
     it('should return an object with timeStarted, timeEnding, and timeVoteIsEnding properties when set', async () => {
-			await gameStateRepository.setGameState({
+			await gameStateRepo.setGameState({
 				timeStarted: new Date('2021-01-01T00:00:00.000Z'),
 				timeEnding: new Date('2021-01-01T00:00:00.000Z'),
 				timeVoteIsEnding: new Date('2021-01-01T00:00:00.000Z'),
 			});
 
-      const gameState = await gameStateRepository.getGameState();
+      const gameState = await gameStateRepo.getGameState();
 
 			expect(gameState).toHaveProperty('timeStarted', new Date('2021-01-01T00:00:00.000Z'));
 			expect(gameState).toHaveProperty('timeEnding', new Date('2021-01-01T00:00:00.000Z'));
@@ -36,13 +37,13 @@ describe('GameStateRepository', () => {
 
 	describe('setGameState()', () => {
 		it('should set the game state', async () => {
-			await gameStateRepository.setGameState({
+			await gameStateRepo.setGameState({
 				timeStarted: new Date('2021-01-01T00:00:00.000Z'),
 				timeEnding: new Date('2021-01-01T00:00:00.000Z'),
 				timeVoteIsEnding: new Date('2021-01-01T00:00:00.000Z'),
 			});
 
-			const gameState = await gameStateRepository.getGameState();
+			const gameState = await gameStateRepo.getGameState();
 
 			expect(gameState).toHaveProperty('timeStarted', new Date('2021-01-01T00:00:00.000Z'));
 			expect(gameState).toHaveProperty('timeEnding', new Date('2021-01-01T00:00:00.000Z'));
@@ -50,14 +51,14 @@ describe('GameStateRepository', () => {
 		});
 
 		it('should throw an error if the game state is not provided', async () => {
-			await expect(gameStateRepository.setGameState()).rejects.toThrow();
+			await expect(gameStateRepo.setGameState()).rejects.toThrow();
 		});
 
 		it('should partially update the game state', async () => {
-			await gameStateRepository.setGameState({
+			await gameStateRepo.setGameState({
 				timeStarted: new Date('2021-01-01T00:00:00.000Z'),
 			});
-			const gameState = await gameStateRepository.getGameState();
+			const gameState = await gameStateRepo.getGameState();
 
 			expect(gameState).toHaveProperty('timeStarted', new Date('2021-01-01T00:00:00.000Z'));
 			expect(gameState).toHaveProperty('timeEnding', undefined);
@@ -67,54 +68,54 @@ describe('GameStateRepository', () => {
 
 	describe('getTimeStarted()', () => {
 		it('should return the timeStarted property', async () => {
-			await gameStateRepository.setGameState({
+			await gameStateRepo.setGameState({
 				timeStarted: new Date('2021-01-01T00:00:00.000Z'),
 			});
-			const timeStarted = await gameStateRepository.getTimeStarted();
+			const timeStarted = await gameStateRepo.getTimeStarted();
 			expect(timeStarted).toEqual(new Date('2021-01-01T00:00:00.000Z'));
 		});
 	});
 
 	describe('setTimeStarted()', () => {
 		it('should set the timeStarted property', async () => {
-			await gameStateRepository.setTimeStarted(new Date('2021-01-01T00:00:00.000Z'));
-			const gameState = await gameStateRepository.getGameState();
+			await gameStateRepo.setTimeStarted(new Date('2021-01-01T00:00:00.000Z'));
+			const gameState = await gameStateRepo.getGameState();
 			expect(gameState.timeStarted).toEqual(new Date('2021-01-01T00:00:00.000Z'));
 		});
 	});
 
 	describe('getTimeEnding()', () => {
 		it('should return the timeEnding property', async () => {
-			await gameStateRepository.setGameState({
+			await gameStateRepo.setGameState({
 				timeEnding: new Date('2021-01-01T00:00:00.000Z'),
 			});
-			const timeEnding = await gameStateRepository.getTimeEnding();
+			const timeEnding = await gameStateRepo.getTimeEnding();
 			expect(timeEnding).toEqual(new Date('2021-01-01T00:00:00.000Z'));
 		});
 	});
 
 	describe('setTimeEnding()', () => {
 		it('should set the timeEnding property', async () => {
-			await gameStateRepository.setTimeEnding(new Date('2021-01-01T00:00:00.000Z'));
-			const gameState = await gameStateRepository.getGameState();
+			await gameStateRepo.setTimeEnding(new Date('2021-01-01T00:00:00.000Z'));
+			const gameState = await gameStateRepo.getGameState();
 			expect(gameState.timeEnding).toEqual(new Date('2021-01-01T00:00:00.000Z'));
 		});
 	});
 
 	describe('getTimeVoteIsEnding()', () => {
 		it('should return the timeVoteIsEnding property', async () => {
-			await gameStateRepository.setGameState({
+			await gameStateRepo.setGameState({
 				timeVoteIsEnding: new Date('2021-01-01T00:00:00.000Z'),
 			});
-			const timeVoteIsEnding = await gameStateRepository.getTimeVoteIsEnding();
+			const timeVoteIsEnding = await gameStateRepo.getTimeVoteIsEnding();
 			expect(timeVoteIsEnding).toEqual(new Date('2021-01-01T00:00:00.000Z'));
 		});
 	});
 
 	describe('setTimeVoteIsEnding()', () => {
 		it('should set the timeVoteIsEnding property', async () => {
-			await gameStateRepository.setTimeVoteIsEnding(new Date('2021-01-01T00:00:00.000Z'));
-			const gameState = await gameStateRepository.getGameState();
+			await gameStateRepo.setTimeVoteIsEnding(new Date('2021-01-01T00:00:00.000Z'));
+			const gameState = await gameStateRepo.getGameState();
 			expect(gameState.timeVoteIsEnding).toEqual(new Date('2021-01-01T00:00:00.000Z'));
 		});
 	});

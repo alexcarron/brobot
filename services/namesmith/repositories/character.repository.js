@@ -1,11 +1,26 @@
+const DatabaseQuerier = require("../database/database-querier");
 const getDatabase = require("../database/get-database");
 const { getIDfromCharacterValue } = require("../utilities/character.utility");
-const db = getDatabase();
 
 /**
  * Provides access to all static character data.
  */
 class CharacterRepository {
+	/**
+	 * @type {DatabaseQuerier}
+	 */
+	db;
+
+	/**
+	 * @param {DatabaseQuerier} db - The database querier instance used for executing SQL statements.
+	 */
+	constructor(db) {
+		if (!(db instanceof DatabaseQuerier))
+			throw new TypeError("CharacterRepository: db must be an instance of DatabaseQuerier.");
+
+		this.db = db;
+	}
+
 	/**
 	 * Returns an array of all character objects.
 	 * @returns {Promise<Array<{
@@ -16,7 +31,7 @@ class CharacterRepository {
 	 */
 	async getCharacters() {
 		let query = `SELECT DISTINCT * FROM character`;
-		const getAllCharacters = db.prepare(query);
+		const getAllCharacters = this.db.prepare(query);
 		return getAllCharacters.all();
 	}
 
@@ -38,7 +53,7 @@ class CharacterRepository {
 			LEFT JOIN characterTag ON character.id = characterTag.characterID
 			GROUP BY character.id
 		`;
-		const getAllCharactersWithTags = db.prepare(query);
+		const getAllCharactersWithTags = this.db.prepare(query);
 		const characters = getAllCharactersWithTags.all();
 		return characters.map(character => {
 			character.tags = character.tags.split(', ');
@@ -56,7 +71,7 @@ class CharacterRepository {
 	 * } | undefined>} The character with the given ID, or undefined if no such character exists.
 	 */
 	async getCharacterByID(id) {
-		const getCharacterByID = db.prepare(`SELECT * FROM character WHERE id = @id`);
+		const getCharacterByID = this.db.prepare(`SELECT * FROM character WHERE id = @id`);
 		return getCharacterByID.get({ id });
 	}
 
@@ -94,7 +109,7 @@ class CharacterRepository {
 			WHERE character.id = @id
 			GROUP BY character.id
 		`;
-		const getCharacterWithTags = db.prepare(query);
+		const getCharacterWithTags = this.db.prepare(query);
 		const character = getCharacterWithTags.get({ id });
 		character.tags = character.tags.split(', ');
 		return character;

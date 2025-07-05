@@ -1,12 +1,27 @@
 const { loadObjectFromJsonInGitHub } = require("../../../utilities/github-json-storage-utils");
+const DatabaseQuerier = require("../database/database-querier");
 const getDatabase = require("../database/get-database");
 const { getCharacterValueFromID } = require("../utilities/character.utility");
-const db = getDatabase();
 
 /**
  * Provides access to the static mystery box data.
  */
 class MysteryBoxRepository {
+	/**
+	 * @type {DatabaseQuerier}
+	 */
+	db;
+
+	/**
+	 * @param {DatabaseQuerier} db - The database querier instance used for executing SQL statements.
+	 */
+	constructor(db) {
+		if (!(db instanceof DatabaseQuerier))
+			throw new TypeError("CharacterRepository: db must be an instance of DatabaseQuerier.");
+
+		this.db = db;
+	}
+
 	/**
 	 * Returns a list of all mystery box objects in the game.
 	 * @returns {Promise<Array<{
@@ -18,7 +33,7 @@ class MysteryBoxRepository {
 	 */
 	async getMysteryBoxes() {
 		const query = `SELECT DISTINCT * FROM mysteryBox`;
-		const getAllMysteryBoxes = db.prepare(query);
+		const getAllMysteryBoxes = this.db.prepare(query);
 		return getAllMysteryBoxes.all();
 	}
 
@@ -34,7 +49,7 @@ class MysteryBoxRepository {
 	 */
 	async getMysteryBoxesWithOdds() {
 		const mysteryBoxes = await this.getMysteryBoxes();
-		const characterOddsRows = db.prepare(`SELECT mysteryBoxID, characterID, weight FROM mysteryBoxCharacterOdds`).all();
+		const characterOddsRows = this.db.prepare(`SELECT mysteryBoxID, characterID, weight FROM mysteryBoxCharacterOdds`).all();
 
 		return mysteryBoxes.map(mysteryBox => {
 			const characterOdds = characterOddsRows
@@ -67,7 +82,7 @@ class MysteryBoxRepository {
 			throw new Error('getMysteryBoxByID: Mystery box id must be a number.');
 
 		const query = `SELECT * FROM mysteryBox WHERE id = @id`;
-		const getMysteryBoxById = db.prepare(query);
+		const getMysteryBoxById = this.db.prepare(query);
 		return getMysteryBoxById.get({ id });
 	}
 
@@ -83,7 +98,7 @@ class MysteryBoxRepository {
 	 */
 	async getMysteryBoxWithOdds(id) {
 		const mysteryBox = await this.getMysteryBoxByID(id);
-		const characterOddsRows = db.prepare(`
+		const characterOddsRows = this.db.prepare(`
 			SELECT characterID, weight FROM mysteryBoxCharacterOdds
 			WHERE mysteryBoxID = @id
 		`).all({ id });
@@ -106,7 +121,7 @@ class MysteryBoxRepository {
 	 */
 	async getCharacterOdds(mysteryBoxID) {
 		const query = `SELECT characterID, weight FROM mysteryBoxCharacterOdds WHERE mysteryBoxID = @mysteryBoxID`;
-		const getCharacterOdds = db.prepare(query);
+		const getCharacterOdds = this.db.prepare(query);
 		const characterOddsRows = getCharacterOdds.all({ mysteryBoxID });
 
 		return characterOddsRows.reduce((characterOdds, oddsRow) => {

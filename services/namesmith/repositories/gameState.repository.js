@@ -1,16 +1,22 @@
 const Database = require("better-sqlite3");
+const DatabaseQuerier = require("../database/database-querier");
 
 /**
  * Provides access to the game state data.
  */
 class GameStateRepository {
-	/** @type {Database} */
+	/**
+	 * @type {DatabaseQuerier}
+	 */
 	db;
 
 	/**
-	 * @param {Database} db - The database connection to use.
+	 * @param {DatabaseQuerier} db - The database querier instance used for executing SQL statements.
 	 */
 	constructor(db) {
+		if (!(db instanceof DatabaseQuerier))
+			throw new TypeError("CharacterRepository: db must be an instance of DatabaseQuerier.");
+
 		this.db = db;
 	}
 

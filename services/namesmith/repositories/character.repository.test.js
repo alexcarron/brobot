@@ -1,7 +1,15 @@
 const CharacterRepository = require("./character.repository");
+const { createMockCharacterRepo } = require("./mock-repositories");
 
 describe('CharacterRepository', () => {
-	const characterRepo = new CharacterRepository();
+	/**
+	 * @type {CharacterRepository}
+	 */
+	let characterRepo;
+
+	beforeEach(() => {
+		characterRepo = createMockCharacterRepo();
+	})
 
 	describe('getCharacters()', () => {
 		it('SHOULD return an array of characters objects', async () => {
