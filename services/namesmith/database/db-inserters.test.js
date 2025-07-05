@@ -1,22 +1,33 @@
+const Database = require("better-sqlite3");
+const DatabaseQuerier = require("./database-querier");
 const { insertCharactersToDB, insertMysteryBoxesToDB } = require("./db-inserters");
-const { createMockDB } = require("./mock-database");
+const { applySchemaToDB } = require("./queries/apply-scheme");
+const { getIDfromCharacterValue } = require("../utilities/character.utility");
+
+const astrickID = getIDfromCharacterValue('*');
+const bracketID = getIDfromCharacterValue(']');
 
 describe('db-inserters.js', () => {
+	/**
+	 * @type {DatabaseQuerier}
+	 */
 	let db;
   let characters;
   let mysteryBoxes;
 
   beforeEach(() => {
-		db = createMockDB();
+		db = new DatabaseQuerier(new Database(':memory:'));
+		applySchemaToDB(db);
+
     characters = [
       {
-        id: 1234567890,
+        id: astrickID,
         value: '*',
         rarity: 3,
         tags: ['tag1', 'tag2']
       },
       {
-        id: 1234567891,
+        id: bracketID,
         value: ']',
         rarity: 12,
         tags: ['tag3', 'tag4']
@@ -27,16 +38,16 @@ describe('db-inserters.js', () => {
         name: 'mysteryBox1',
         tokenCost: 10,
         characterOdds: {
-          'A': 0.5,
-          'B': 0.3
+          '*': 0.5,
+          ']': 0.3
         }
       },
       {
         name: 'mysteryBox2',
         tokenCost: 20,
         characterOdds: {
-					'C': 0.4,
-					'D': 0.6
+					']': 0.4,
+					'*': 0.6
         }
       }
     ];
@@ -44,30 +55,42 @@ describe('db-inserters.js', () => {
 
   describe('insertCharactersToDB()', () => {
     it('inserts characters into the database', async () => {
-      await insertCharactersToDB(db, characters);
-      const result = await db.all('SELECT * FROM character');
+      insertCharactersToDB(db, characters);
+      const result = db.getRows('SELECT * FROM character');
       expect(result).toEqual([
-				{ id: 1234567890, value: '*', rarity: 3 },
-				{ id: 1234567891, value: ']', rarity: 12 }
+				{ id: astrickID, value: '*', rarity: 3 },
+				{ id: bracketID, value: ']', rarity: 12 }
       ]);
     });
 
     it('inserts tags into the database', async () => {
-      await insertCharactersToDB(db, characters);
-      const result = await db.exec('SELECT * FROM characterTag').all();
+      insertCharactersToDB(db, characters);
+      const result = db.getRows('SELECT * FROM characterTag');
       expect(result).toEqual([
-				{ characterID: 1234567890, tag: 'tag1' },
-				{ characterID: 1234567890, tag: 'tag2' },
-				{ characterID: 1234567891, tag: 'tag3' },
-				{ characterID: 1234567891, tag: 'tag4' }
+				{ characterID: astrickID, tag: 'tag1' },
+				{ characterID: astrickID, tag: 'tag2' },
+				{ characterID: bracketID, tag: 'tag3' },
+				{ characterID: bracketID, tag: 'tag4' }
       ]);
     });
+
+		it('throws an error if given characters is not an array', async () => {
+			expect(() => insertCharactersToDB(db, {})).toThrow(TypeError);
+		});
+
+		it('throws an error if given characters do not match the character schema', async () => {
+			expect(() => insertCharactersToDB(db, [{}])).toThrow(TypeError);
+		});
   });
 
   describe('insertMysteryBoxesToDB()', () => {
+		beforeEach(() => {
+      insertCharactersToDB(db, characters);
+		});
+
     it('inserts mystery boxes into the database', async () => {
-      await insertMysteryBoxesToDB(db, mysteryBoxes);
-      const result = await db.exec('SELECT * FROM mysteryBox').all();
+      insertMysteryBoxesToDB(db, mysteryBoxes);
+      const result = db.getRows('SELECT * FROM mysteryBox');
       expect(result).toEqual([
 				{ id: 1, name: 'mysteryBox1', tokenCost: 10 },
 				{ id: 2, name: 'mysteryBox2', tokenCost: 20 }
@@ -75,14 +98,22 @@ describe('db-inserters.js', () => {
     });
 
     it('inserts character odds into the database', async () => {
-      await insertMysteryBoxesToDB(db, mysteryBoxes);
-      const result = await db.exec('SELECT * FROM mysteryBoxCharacterOdds').all();
+      insertMysteryBoxesToDB(db, mysteryBoxes);
+      const result = db.getRows('SELECT * FROM mysteryBoxCharacterOdds');
       expect(result).toEqual([
-				{ mysteryBoxID: 1, characterID: 1234567890, weight: 0.5 },
-				{ mysteryBoxID: 1, characterID: 1234567891, weight: 0.3 },
-				{ mysteryBoxID: 2, characterID: 1234567890, weight: 0.4 },
-				{ mysteryBoxID: 2, characterID: 1234567891, weight: 0.6 }
+				{ mysteryBoxID: 1, characterID: astrickID, weight: 0.5 },
+				{ mysteryBoxID: 1, characterID: bracketID, weight: 0.3 },
+				{ mysteryBoxID: 2, characterID: bracketID, weight: 0.4 },
+				{ mysteryBoxID: 2, characterID: astrickID, weight: 0.6 }
       ]);
     });
+
+		it('throws an error if given mystery boxes is not an array', async () => {
+			expect(() => insertMysteryBoxesToDB(db, {})).toThrow(TypeError);
+		});
+
+		it('throws an error if given mystery boxes do not match the mystery box schema', async () => {
+			expect(() => insertMysteryBoxesToDB(db, [{}])).toThrow(TypeError);
+		});
   });
 });

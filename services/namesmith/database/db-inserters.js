@@ -1,11 +1,59 @@
-const { getIDfromCharacterValue } = require("../utilities/character.utility");
+const { getIDfromCharacterValue, getCharacterValueFromID } = require("../utilities/character.utility");
+const DatabaseQuerier = require("./database-querier");
 
-const insertCharactersToDB = async (db, characters) => {
-	const insertCharacter = db.prepare("INSERT OR IGNORE INTO character (id, value, rarity) VALUES (@id, @value, @rarity)");
-	const insertTag = db.prepare("INSERT OR IGNORE INTO characterTag (characterID, tag) VALUES (@characterID, @tag)");
+/**
+ * Inserts an array of character objects into the database.
+ * Each character is inserted into the 'character' table, and its associated tags are inserted into the 'characterTag' table.
+ * If a character or tag already exists, it will be ignored to prevent duplication.
+ *
+ * @param {DatabaseQuerier} db - The database querier instance used for executing SQL statements.
+ * @param {Array<Object>} characters - An array of character objects to be inserted.
+ * @param {number} characters[].id - The unique identifier for the character.
+ * @param {string} characters[].value - The string value representing the character.
+ * @param {number} characters[].rarity - The rarity level of the character.
+ * @param {Array<string>} characters[].tags - An array of tags associated with the character.
+ * @returns {Promise<void>} A promise that resolves once all characters and their tags have been inserted.
+ */
+const insertCharactersToDB = (db, characters) => {
+	if (!Array.isArray(characters))
+		throw new TypeError("insertCharactersToDB: characters must be an array.");
 
-	const insertCharacters = db.transaction((characters) => {
+	if (!(db instanceof DatabaseQuerier))
+		throw new TypeError("insertCharactersToDB: db must be an instance of DatabaseQuerier.");
+
+	const insertCharacter = db.getQuery("INSERT OR IGNORE INTO character (id, value, rarity) VALUES (@id, @value, @rarity)");
+	const insertTag = db.getQuery("INSERT OR IGNORE INTO characterTag (characterID, tag) VALUES (@characterID, @tag)");
+
+	const insertCharacters = db.getTransaction((characters) => {
 		for (const character of characters) {
+			if (character.id === undefined)
+				throw new TypeError("insertCharactersToDB: character id is undefined.");
+
+			if (typeof character.id !== "number")
+				throw new TypeError(`insertCharactersToDB: character id must be a number, but got ${character.id}.`);
+
+			if (character.value === undefined)
+				throw new TypeError("insertCharactersToDB: character value is undefined.");
+
+			if (typeof character.value !== "string")
+				throw new TypeError(`insertCharactersToDB: character value must be a string, but got ${character.value}.`);
+
+			if (character.value.length !== 1)
+				throw new TypeError("insertCharactersToDB: character value must be a single character.");
+
+			if (getIDfromCharacterValue(character.value) !== character.id)
+				throw new TypeError(`insertCharactersToDB: character id ${character.id} does not match character value ${character.value}.`);
+
+			if (getCharacterValueFromID(character.id) !== character.value)
+				throw new TypeError(`insertCharactersToDB: character value ${character.value} does not match character id ${character.id}.`);
+
+			if (character.rarity === undefined)
+				throw new TypeError("insertCharactersToDB: character rarity is undefined.");
+
+			if (typeof character.rarity !== "number")
+				throw new TypeError(`insertCharactersToDB: character rarity must be a number, but got ${character.rarity}.`);
+
+
 			insertCharacter.run({
 				id: character.id,
 				value: character.value,
@@ -20,18 +68,56 @@ const insertCharactersToDB = async (db, characters) => {
 	insertCharacters(characters);
 }
 
-const insertMysteryBoxesToDB = async (db, mysteryBoxes) => {
-	const insertMysteryBox = db.prepare("INSERT OR IGNORE INTO mysteryBox (name, tokenCost) VALUES (@name, @tokenCost)");
-	const insertMysteryBoxCharacterOdds = db.prepare("INSERT OR IGNORE INTO mysteryBoxCharacterOdds (mysteryBoxID, characterID, weight) VALUES (@mysteryBoxID, @characterID, @weight)");
+/**
+ * Inserts an array of mystery box objects into the database.
+ * Each mystery box is inserted into the 'mysteryBox' table, and its associated character odds
+ * are inserted into the 'mysteryBoxCharacterOdds' table. Existing entries are ignored to prevent duplication.
+ * The function first clears existing mystery box data and resets the auto-increment counter.
+ *
+ * @param {DatabaseQuerier} db - The database querier instance used for executing SQL statements.
+ * @param {Array<Object>} mysteryBoxes - An array of mystery box objects to be inserted.
+ * @param {string} mysteryBoxes[].name - The name of the mystery box.
+ * @param {number} mysteryBoxes[].tokenCost - The token cost required to open the mystery box.
+ * @param {Object} mysteryBoxes[].characterOdds - An object representing the odds of each character within the mystery box.
+ * @returns {Promise<void>} A promise that resolves once all mystery boxes and their character odds have been inserted.
+ */
 
-	const insertMysteryBoxes = db.transaction((mysteryBoxes) => {
-		db.exec("DELETE FROM mysteryBoxCharacterOdds");
-		db.exec("DELETE FROM mysteryBox");
+const insertMysteryBoxesToDB = (db, mysteryBoxes) => {
+	if (!Array.isArray(mysteryBoxes))
+		throw new TypeError("insertMysteryBoxesToDB: mysteryBoxes must be an array.");
+
+	if (!(db instanceof DatabaseQuerier))
+		throw new TypeError("insertMysteryBoxesToDB: db must be an instance of DatabaseQuerier.");
+
+	const insertMysteryBox = db.getQuery("INSERT OR IGNORE INTO mysteryBox (name, tokenCost) VALUES (@name, @tokenCost)");
+	const insertMysteryBoxCharacterOdds = db.getQuery("INSERT OR IGNORE INTO mysteryBoxCharacterOdds (mysteryBoxID, characterID, weight) VALUES (@mysteryBoxID, @characterID, @weight)");
+
+	const insertMysteryBoxes = db.getTransaction((mysteryBoxes) => {
+		db.run("DELETE FROM mysteryBoxCharacterOdds");
+		db.run("DELETE FROM mysteryBox");
 
 		// SET AUTO INCREMENT TO 1
-		db.exec("UPDATE sqlite_sequence SET seq = 0 WHERE name = 'mysteryBox'");
+		db.run("UPDATE sqlite_sequence SET seq = 0 WHERE name = 'mysteryBox'");
 
 		for (const mysteryBox of mysteryBoxes) {
+			if (mysteryBox.name === undefined)
+				throw new TypeError("insertMysteryBoxesToDB: mystery box name is undefined.");
+
+			if (typeof mysteryBox.name !== "string")
+				throw new TypeError(`insertMysteryBoxesToDB: mystery box name must be a string, but got ${mysteryBox.name}.`);
+
+			if (mysteryBox.tokenCost === undefined)
+				throw new TypeError("insertMysteryBoxesToDB: mystery box token cost is undefined.");
+
+			if (typeof mysteryBox.tokenCost !== "number")
+				throw new TypeError(`insertMysteryBoxesToDB: mystery box token cost must be a number, but got ${mysteryBox.tokenCost}.`);
+
+			if (mysteryBox.characterOdds === undefined)
+				throw new TypeError("insertMysteryBoxesToDB: mystery box character odds is undefined.");
+
+			if (typeof mysteryBox.characterOdds !== "object")
+				throw new TypeError(`insertMysteryBoxesToDB: mystery box character odds must be an object, but got ${mysteryBox.characterOdds}.`);
+
 			const result = insertMysteryBox.run({
 				name: mysteryBox.name,
 				tokenCost: mysteryBox.tokenCost
@@ -39,6 +125,18 @@ const insertMysteryBoxesToDB = async (db, mysteryBoxes) => {
 			const newId = result.lastInsertRowid;
 
 			for (const [characterValue, weight] of Object.entries(mysteryBox.characterOdds)) {
+				if (characterValue === undefined)
+					throw new TypeError("insertMysteryBoxesToDB: character value is undefined.");
+
+				if (typeof characterValue !== "string")
+					throw new TypeError(`insertMysteryBoxesToDB: character value must be a string, but got ${characterValue}.`);
+
+				if (weight === undefined)
+					throw new TypeError("insertMysteryBoxesToDB: character weight is undefined.");
+
+				if (typeof weight !== "number")
+					throw new TypeError(`insertMysteryBoxesToDB: character weight must be a number, but got ${weight}.`);
+
 				const characterID = getIDfromCharacterValue(characterValue);
 				insertMysteryBoxCharacterOdds.run({
 					mysteryBoxID: newId,

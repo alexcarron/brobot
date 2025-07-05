@@ -9,7 +9,10 @@ class DatabaseQuerier {
    * @param {Database} db - better-sqlite3 Database instance
    */
   constructor(db) {
-    this.database = db;
+		if (!(db instanceof Database))
+			throw new TypeError("DatabaseQuerier: db must be an instance of Database.");
+
+    this.db = db;
   }
 
   /**
@@ -29,7 +32,7 @@ class DatabaseQuerier {
    * }} - Wrapper object with the above methods
    */
   getQuery(sqlQuery) {
-    const queryStatement = this.database.prepare(sqlQuery);
+    const queryStatement = this.db.prepare(sqlQuery);
     return {
       run: params => {
 				if (params === undefined)
@@ -69,9 +72,24 @@ class DatabaseQuerier {
    * @returns {{ changes: number, lastInsertRowid: number }}
    */
   run(sqlQuery, params = undefined) {
-    const queryStatement = this.getQuery(sqlQuery);
-    return queryStatement.run(params);
+		try {
+			const queryStatement = this.getQuery(sqlQuery);
+			return queryStatement.run(params);
+		}
+		catch (error) {
+			if (
+				error.message.includes("The supplied SQL string contains more than one statement")
+			) {
+				if (params !== undefined) {
+					throw new Error("Parameters are not supported with multi-statement queries");
+				}
+				this.db.exec(sqlQuery);
+				return { changes: -1, lastInsertRowid: -1 };
+			}
+			throw error;
+		}
   }
+
 
   /**
    * Runs a single read query and returns a single row
@@ -112,7 +130,7 @@ class DatabaseQuerier {
    * @returns {function} A function that starts the transaction when called
    */
   getTransaction(multiQueryFunction) {
-    const transactionFunction = this.database.transaction(multiQueryFunction);
+    const transactionFunction = this.db.transaction(multiQueryFunction);
     return transactionFunction;
   }
 
@@ -126,6 +144,18 @@ class DatabaseQuerier {
     const transactionFunction = this.getTransaction(multiQueryFunction);
     return transactionFunction(...params);
   }
+
+	exec(...args) {
+		return this.db.exec(...args);
+	}
+
+	transaction(...args) {
+		return this.db.transaction(...args);
+	}
+
+	prepare(...args) {
+		return this.db.prepare(...args);
+	}
 }
 
 module.exports = DatabaseQuerier;

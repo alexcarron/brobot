@@ -1,4 +1,6 @@
 const Database = require('better-sqlite3');
+const { applySchemaToDB } = require('./queries/apply-scheme');
+const { addInitialDataToDB } = require('./static-data/insert-static-data');
 
 /**
  * Creates an in-memory SQLite database with the schema and initial data for Namesmith already populated.
@@ -6,7 +8,6 @@ const Database = require('better-sqlite3');
  * @returns {Database} The in-memory database.
  */
 const createMockDB = () => {
-	const { addInitialDataToDB, applySchemaToDB } = require('./setup-database');
 	const db = new Database(':memory:');
 	applySchemaToDB(db);
 	addInitialDataToDB(db);

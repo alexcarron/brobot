@@ -53,6 +53,25 @@ describe('DatabaseQuerier', () => {
       expect(result).toHaveProperty('lastInsertRowid', expect.any(Number));
     });
 
+		it('runs multiple queries and returns the results with negative one', async () => {
+			const queries = `
+				INSERT INTO character (value, rarity) VALUES ('character3', 'legendary');
+				INSERT INTO character (value, rarity) VALUES ('character4', 'legendary');
+			`;
+			const result = dbQuerier.run(queries);
+			expect(result).toHaveProperty('changes', -1);
+			expect(result).toHaveProperty('lastInsertRowid', -1);
+		});
+
+		it('throws an error if running multiple queries with parameters', async () => {
+			const queries = `
+				INSERT INTO character (value, rarity) VALUES (?, ?);
+				INSERT INTO character (value, rarity) VALUES (?, ?);
+			`;
+			const params = ['character3', 'legendary', 'character4', 'legendary'];
+			expect(() => dbQuerier.run(queries, params)).toThrowError();
+		});
+
     it('throws an error if the query is invalid', async () => {
       const query = 'INVALID QUERY';
       const params = ['character3', 'legendary'];
