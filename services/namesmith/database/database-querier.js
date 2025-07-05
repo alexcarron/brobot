@@ -69,7 +69,7 @@ class DatabaseQuerier {
    * - lastInsertRowid: The rowid of the last row inserted into the database
    * @param {string} sqlQuery - The SQL query to run
    * @param {object|array} params - The parameters to pass to the query
-   * @returns {{ changes: number, lastInsertRowid: number }}
+   * @returns {{ changes: number, lastInsertRowid: number }} The result of the query
    */
   run(sqlQuery, params = undefined) {
 		try {
@@ -155,6 +155,10 @@ class DatabaseQuerier {
 
 	prepare(...args) {
 		return this.db.prepare(...args);
+	}
+
+	close() {
+		return this.db.close();
 	}
 }
 
