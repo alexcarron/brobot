@@ -137,7 +137,7 @@ const mapGuildCommandsToGuildID = (commands) => {
  */
 const deployCommands = async ({globalCommands = [], guildIDtoGuildCommands}) => {
 	// Construct and prepare an instance of the REST module
-	const rest = new Discord.REST().setToken(DISCORD_TOKEN());
+	const rest = new Discord.REST().setToken(DISCORD_TOKEN);
 
 	logInfo(`Started deploying slash commands...`);
 

@@ -24,7 +24,7 @@ const setupAnomolyService = require('../services/sand-season-3/anomoly/on-setup.
 const onClientReady = async (client) => {
 	botStatus.isOn = true;
 
-	// await setupNamesmith();
+	await setupNamesmith();
 	setupAnomolyService();
 
 	logInfo("Loading timers database");

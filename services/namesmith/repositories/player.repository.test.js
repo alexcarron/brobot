@@ -30,6 +30,18 @@ describe('PlayerRepository', () => {
 		});
   });
 
+  describe('.doesPlayerExist()', () => {
+		it('returns true if the player is found', async () => {
+			const result = await playerRepository.doesPlayerExist(mockPlayers[0].id);
+			expect(result).toBe(true);
+		});
+
+		it('returns false if the player is not found', async () => {
+			const result = await playerRepository.doesPlayerExist("invalid-id");
+			expect(result).toBe(false);
+		});
+  });
+
 	describe('getPlayersWithoutPublishedNames()', () => {
 		it('returns an array of player objects without a published name', async () => {
 			const result = await playerRepository.getPlayersWithoutPublishedNames();

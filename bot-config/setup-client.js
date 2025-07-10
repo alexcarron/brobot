@@ -27,7 +27,7 @@ const setupClient = async () => {
 		]
 	});
 
-	let token = DISCORD_TOKEN();
+	let token = DISCORD_TOKEN;
 
 	await client.login(token);
 

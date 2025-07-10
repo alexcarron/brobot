@@ -1,10 +1,9 @@
 const { sendToPublishedNamesChannel, changeDiscordNameOfPlayer, sendToNamesToVoteOnChannel, isNonPlayer, } = require("../utilities/discord-action.utility");
 const PlayerRepository = require("../repositories/player.repository");
 const { logWarning } = require("../../../utilities/logging-utils");
-const { ButtonBuilder, EmbedBuilder } = require("@discordjs/builders");
 const { ButtonStyle } = require("discord.js");
-const { addButtonToMessageContents, addRoleToMember, setNicknameOfMember, removeRoleFromMember, removeAllRolesFromMember, memberHasRole, memberHasRoles, memberHasAnyRole } = require("../../../utilities/discord-action-utils");
-const { fetchRole, fetchAllGuildMembers, fetchGuildMember } = require("../../../utilities/discord-fetch-utils");
+const { addButtonToMessageContents, addRoleToMember, setNicknameOfMember, removeAllRolesFromMember } = require("../../../utilities/discord-action-utils");
+const { fetchAllGuildMembers } = require("../../../utilities/discord-fetch-utils");
 const ids = require("../../../bot-config/discord-ids");
 const { fetchNamesmithServer, fetchNamesmithGuildMember } = require("../utilities/discord-entity.utility");
 
@@ -49,15 +48,20 @@ class PlayerService {
 	 * @returns {Promise<void>} A promise that resolves once the name has been changed.
 	 */
 	async changeCurrentName(playerID, newName) {
+		if (typeof newName !== "string")
+			throw new TypeError("changeCurrentName: newName must be a string.");
+
 		if (newName.length > MAX_NAME_LENGTH)
-			throw new Error(`changeCurrentName: newName must be less than or equal to ${MAX_NAME_LENGTH}.`);
+			throw new TypeError(`changeCurrentName: newName must be less than or equal to ${MAX_NAME_LENGTH}.`);
 
-		if (newName.length === 0)
-			newName = NO_NAME;
-
-		await this.playerRepository.changeCurrentName(playerID, newName);
-
-		await changeDiscordNameOfPlayer(playerID, newName);
+		if (newName.length === 0) {
+			await this.playerRepository.changeCurrentName(playerID, "");
+			await changeDiscordNameOfPlayer(playerID, NO_NAME);
+		}
+		else {
+			await this.playerRepository.changeCurrentName(playerID, newName);
+			await changeDiscordNameOfPlayer(playerID, newName);
+		}
 	}
 
 	/**
@@ -131,6 +135,7 @@ class PlayerService {
 			publishedName.length === 0
 		) {
 			logWarning(`finalizeName: player ${playerID} has no published name to finalize.`);
+			return;
 		}
 
 		await this.changeCurrentName(playerID, publishedName);
@@ -160,6 +165,12 @@ class PlayerService {
 	 * @returns {Promise<void>} A promise that resolves once the player has been added.
 	 */
 	async addNewPlayer(playerID) {
+		if (typeof playerID !== "string")
+			throw new TypeError(`addNewPlayer: playerID must be a string, but got ${playerID}.`);
+
+		if (await this.playerRepository.doesPlayerExist(playerID))
+			throw new Error(`addNewPlayer: player ${playerID} already exists in the game.`);
+
 		const guildMember = await fetchNamesmithGuildMember(playerID);
 
 		await removeAllRolesFromMember(guildMember);
@@ -179,9 +190,11 @@ class PlayerService {
 		const guildMembers = await fetchAllGuildMembers(namesmithGuild);
 
 		for (const guildMember of guildMembers) {
-			if (await isNonPlayer(guildMember)) {
+			if (await isNonPlayer(guildMember))
 				continue;
-			}
+
+			if (await this.playerRepository.doesPlayerExist(guildMember.id))
+				continue;
 
 			await this.addNewPlayer(guildMember.id);
 		}

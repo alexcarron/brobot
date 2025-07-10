@@ -1,6 +1,5 @@
-const { GITHUB_TOKEN } = require('../bot-config/token');
-
 const axios = require('axios');
+const { GITHUB_TOKEN } = require('../bot-config/token');
 const { logError, logWarning, logInfo } = require('./logging-utils');
 const REPO_OWNER = "alexcarron";
 const REPO_NAME = "brobot-database";

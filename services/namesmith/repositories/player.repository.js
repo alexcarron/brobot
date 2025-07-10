@@ -58,6 +58,19 @@ class PlayerRepository {
 	}
 
 	/**
+	 * Checks if a player exists in the database by their ID.
+	 * @param {string} playerID - The ID of the player to check for existence.
+	 * @returns {Promise<boolean>} True if the player exists, otherwise false.
+	 */
+	async doesPlayerExist(playerID) {
+		const query = `SELECT id FROM player WHERE id = @id LIMIT 1`;
+		const idOfPlayer = this.db.getRow(query, { id: playerID });
+		if (idOfPlayer === undefined)
+			return false;
+		return true;
+	}
+
+	/**
 	 * Retrieves a list of players without published names.
 	 * @returns {Promise<Array<{
 	 * 	id: string,
