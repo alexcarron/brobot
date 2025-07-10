@@ -62,6 +62,31 @@ class VoteRepository {
 	}
 
 	/**
+	 * Checks if a vote with the given properties exists.
+	 * @param {{ voterID: string, playerVotedForID: string }} voteData - The vote data to check for.
+	 * @returns {Promise<boolean>} A promise that resolves with a boolean indicating if the vote exists.
+	 */
+	async doesVoteExist({ voterID, playerVotedForID }) {
+		if (voterID === undefined && playerVotedForID === undefined)
+			throw new TypeError(`doesVoteExist: Missing voterID and playerVotedForID`);
+		else if (voterID === undefined) {
+			const query = `SELECT * FROM vote WHERE playerVotedForID = @playerVotedForID LIMIT 1`;
+			const vote = this.db.getRow(query, { playerVotedForID });
+			return vote !== undefined;
+		}
+		else if (playerVotedForID === undefined) {
+			const query = `SELECT * FROM vote WHERE voterID = @voterID LIMIT 1`;
+			const vote = this.db.getRow(query, { voterID });
+			return vote !== undefined;
+		}
+		else {
+			const query = `SELECT * FROM vote WHERE voterID = @voterID AND playerVotedForID = @playerVotedForID LIMIT 1`;
+			const vote = this.db.getRow(query, { voterID, playerVotedForID });
+			return vote !== undefined;
+		}
+	}
+
+	/**
 	 * Adds a new vote to the list of votes.
 	 * @param {{ voterID: string, playerVotedForID: string }} vote - The vote object to add.
 	 * @returns {Promise<void>} A promise that resolves once the vote has been saved.
@@ -96,13 +121,21 @@ class VoteRepository {
 		if (!playerVotedForID)
 			throw new Error("changeVote: Missing playerVotedForID");
 
+		console.log({
+			players: this.db.getRows(`SELECT * FROM player`),
+			votesFromVoter: this.db.getRows(
+				`SELECT * FROM vote WHERE voterID = @voterID`,
+				{ voterID },
+			),
+			allVotes: this.db.getRows(`SELECT * FROM vote`),
+		});
+
 		const query = `
 			UPDATE vote
 			SET playerVotedForID = @playerVotedForID
 			WHERE voterID = @voterID
 		`;
-		const changeVote = this.db.prepare(query);
-		const vote = changeVote.run({ voterID, playerVotedForID });
+		const vote = this.db.run(query, { voterID, playerVotedForID });
 		if (vote.changes === 0)
 			throw new Error("changeVote: Failed to change vote because the voterID does not exist");
 	}

@@ -22,21 +22,22 @@ class VoteService {
 	 * @returns {Promise<string>} A promise that resolves with a message indicating the result of the vote.
 	 */
 	async addVote({ voterID, playerVotedForID }) {
-		if (!voterID && !playerVotedForID)
-			throw new Error("Missing voterID and playerVotedForID");
+		if (!voterID || !playerVotedForID)
+			throw new Error("Missing voterID or playerVotedForID");
 
-		const votes = await this.voteRepository.getVotes();
-		const existingVote = votes.find(vote => vote.voterID === voterID);
-
+		const vote = await this.voteRepository.getVoteByVoterID(voterID);
+		const hasVotedBefore = vote !== undefined;
 		const nameVotingFor = await this.playerService.getPublishedName(playerVotedForID);
 
+		if (hasVotedBefore) {
+			if (vote.playerVotedForID === playerVotedForID)
+				return `You already voted for this name as your favorite!`;
 
-		if (existingVote) {
-			if (existingVote.playerVotedForID === playerVotedForID)
-				throw new Error("You already voted for this name as your favorite!");
-
-			const oldNameVotingFor = await this.playerService.getPublishedName(existingVote.playerVotedForID);
-			await this.voteRepository.changeVote({ voterID, playerVotedForID });
+			const oldNameVotingFor = await this.playerService.getPublishedName(vote.playerVotedForID);
+			await this.voteRepository.changeVote({
+				voterID,
+				playerVotedForID
+			});
 			return `You have changed your favorite name vote from ${oldNameVotingFor} to ${nameVotingFor}`;
 		}
 
@@ -68,7 +69,7 @@ class VoteService {
 
 	/**
 	 * Finds the player with the most votes and returns their published name.
-	 * @returns {Promise<string>} A promise that resolves with the ID of the winning player.
+	 * @returns {Promise<string | null>} A promise that resolves with the ID of the winning player or null if there are are no votes or if there is a tie.
 	 */
 	async getWinningPlayerID() {
 		const votes = await this.voteRepository.getVotes();
@@ -91,6 +92,9 @@ class VoteService {
 			if (voteCount > winningVoteCount) {
 				winningPlayerID = playerID;
 				winningVoteCount = voteCount;
+			}
+			else if (voteCount === winningVoteCount) {
+				winningPlayerID = null;
 			}
 		}
 

@@ -42,6 +42,64 @@ describe('VoteRepository', () => {
 		});
 	});
 
+	describe('.doesVoteExist()', () => {
+		it('returns true if the vote exists with given voterID and playerVotedForID', async () => {
+			const result = await voteRepository.doesVoteExist({
+				voterID: mockVotes[0].voterID,
+				playerVotedForID: mockVotes[0].playerVotedForID
+			});
+			expect(result).toBe(true);
+		});
+
+		it('returns false if the vote exists with given voterID but not playerVotedForID', async () => {
+			const result = await voteRepository.doesVoteExist({
+				voterID: mockVotes[0].voterID,
+				playerVotedForID: "invalid-id"
+			});
+			expect(result).toBe(false);
+		});
+
+		it('returns false if the vote exists with given playerVotedForID but not voterID', async () => {
+			const result = await voteRepository.doesVoteExist({
+				voterID: "invalid-id",
+				playerVotedForID: mockVotes[0].playerVotedForID
+			});
+			expect(result).toBe(false);
+		});
+
+		it('returns true if the vote exists with given voterID', async () => {
+			const result = await voteRepository.doesVoteExist({
+				voterID: mockVotes[0].voterID,
+			});
+			expect(result).toBe(true);
+		});
+
+		it('returns false if the vote does not exist with given voterID', async () => {
+			const result = await voteRepository.doesVoteExist({
+				voterID: "invalid-id",
+			});
+			expect(result).toBe(false);
+		});
+
+		it('returns true if the vote exists with given playerVotedForID', async () => {
+			const result = await voteRepository.doesVoteExist({
+				playerVotedForID: mockVotes[0].playerVotedForID,
+			});
+			expect(result).toBe(true);
+		});
+
+		it('returns false if the vote does not exist with given playerVotedForID', async () => {
+			const result = await voteRepository.doesVoteExist({
+				playerVotedForID: "invalid-id",
+			});
+			expect(result).toBe(false);
+		});
+
+		it('should throw an error if both voterID and playerVotedForID are missing', async () => {
+			await expect(voteRepository.doesVoteExist({})).rejects.toThrow();
+		});
+	})
+
 	describe('addVote()', () => {
 		it('adds a new vote', async () => {
 			await voteRepository.addVote({

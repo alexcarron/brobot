@@ -99,6 +99,14 @@ const mockPlayers = [
 		tokens: 0,
 		role: "magician",
 		inventory: "UNPUBLISHED",
+	},
+	{
+		id: "1234567893",
+		currentName: "non-voter",
+		publishedName: "non-voter",
+		tokens: 0,
+		role: "magician",
+		inventory: "non-voter",
 	}
 ];
 
@@ -130,16 +138,16 @@ const createMockPlayerRepo = (mockDB, players) => {
  */
 const mockVotes = [
 	{
-		voterID: "1234567890",
-		playerVotedForID: "1234567891",
+		voterID: mockPlayers[0].id,
+		playerVotedForID: mockPlayers[1].id,
 	},
 	{
-		voterID: "1234567891",
-		playerVotedForID: "1234567892",
+		voterID: mockPlayers[1].id,
+		playerVotedForID: mockPlayers[2].id,
 	},
 	{
-		voterID: "1234567892",
-		playerVotedForID: "1234567891",
+		voterID: mockPlayers[2].id,
+		playerVotedForID: mockPlayers[1].id,
 	},
 ];
 
@@ -162,6 +170,10 @@ const createMockVoteRepo = (mockDB, votes) => {
 	const requiredPlayerIDs = [
 		...new Set(votes.map(v => v.playerVotedForID))
 	];
+
+	for (const player of mockPlayers) {
+		addMockPlayer(mockDB, player);
+	}
 
 	// Insert dummy players if they don't exist yet
 	for (const playerID of requiredPlayerIDs) {
