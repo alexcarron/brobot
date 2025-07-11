@@ -1,4 +1,4 @@
-const { sendToPublishedNamesChannel, changeDiscordNameOfPlayer, sendToNamesToVoteOnChannel, isNonPlayer, resetMemberToNewPlayer, } = require("../utilities/discord-action.utility");
+const { sendToPublishedNamesChannel, sendToNamesToVoteOnChannel, isNonPlayer, resetMemberToNewPlayer, changeDiscordNameOfPlayer, } = require("../utilities/discord-action.utility");
 const PlayerRepository = require("../repositories/player.repository");
 const { logWarning } = require("../../../utilities/logging-utils");
 const { ButtonStyle } = require("discord.js");
@@ -58,7 +58,9 @@ class PlayerService {
 		}
 		else {
 			await this.playerRepository.changeCurrentName(playerID, newName);
+			console.log(`changeCurrentName: player ${playerID} has no name.`);
 			await changeDiscordNameOfPlayer(playerID, newName);
+			console.log(`changeCurrentName: player ${playerID} has name ${newName}.`);
 		}
 	}
 
@@ -171,7 +173,7 @@ class PlayerService {
 
 		const guildMember = await fetchNamesmithGuildMember(playerID);
 
-		await resetMemberToNewPlayer(guildMember);
+		await resetMemberToNewPlayer(guildMember, PlayerService.NO_NAME);
 
 		await this.playerRepository.addPlayer(playerID);
 	}

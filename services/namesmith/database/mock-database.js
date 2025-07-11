@@ -66,6 +66,15 @@ const addMockPlayer = (db, { id, currentName, publishedName, tokens, role, inven
 	if (role !== null && typeof role !== "string")
 		throw new TypeError(`addMockPlayer: player role must be a string or null, but got ${role}.`);
 
+	const existingPlayer = db.getRow(
+		"SELECT id FROM player WHERE id = ?",
+		[id]
+	);
+
+	if (existingPlayer !== undefined) {
+		return existingPlayer;
+	}
+
 	const insertPlayer = db.prepare(`
 		INSERT INTO player (id, currentName, publishedName, tokens, role, inventory)
 		VALUES (@id, @currentName, @publishedName, @tokens, @role, @inventory)

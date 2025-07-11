@@ -81,7 +81,7 @@ describe('GameStateService', () => {
 
 	afterAll(() => {
 		jest.restoreAllMocks();
-	})
+	});
 
 	describe('constructor', () => {
 		it('should create a new GameStateService instance', () => {

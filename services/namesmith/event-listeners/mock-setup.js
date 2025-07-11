@@ -1,6 +1,53 @@
 const { createMockDB } = require("../database/mock-database");
+const CharacterRepository = require("../repositories/character.repository");
+const GameStateRepository = require("../repositories/gameState.repository");
 const { createMockMysteryBoxRepo, createMockCharacterRepo, createMockPlayerRepo, createMockGameStateRepo, createMockVoteRepo } = require("../repositories/mock-repositories");
+const MysteryBoxRepository = require("../repositories/mysteryBox.repository");
+const PlayerRepository = require("../repositories/player.repository");
+const VoteRepository = require("../repositories/vote.repository");
+const GameStateService = require("../services/gameState.service");
 const { createMockMysteryBoxService, createMockPlayerService, createMockVoteService, createMockGameStateService } = require("../services/mock-services");
+const MysteryBoxService = require("../services/mysteryBox.service");
+const PlayerService = require("../services/player.service");
+const VoteService = require("../services/vote.service");
+
+/**
+ * Creates all the mock services and repositories needed for testing.
+ *
+ * @returns {{mockDB: DatabaseQuerier, mysteryBoxRepository: MysteryBoxRepository, characterRepository: CharacterRepository, playerRepository: PlayerRepository, gameStateRepository: GameStateRepository, voteRepository: VoteRepository, mysteryBoxService: MysteryBoxService, playerService: PlayerService, voteService: VoteService, gameStateService: GameStateService}} An object containing all the mock services and repositories.
+ */
+const createAllMocks = () => {
+	const mockDB = createMockDB();
+
+	const mysteryBoxRepository = createMockMysteryBoxRepo(mockDB);
+	const characterRepository = createMockCharacterRepo(mockDB);
+	const playerRepository = createMockPlayerRepo(mockDB);
+	const gameStateRepository = createMockGameStateRepo(mockDB);
+	const voteRepository = createMockVoteRepo(mockDB);
+
+	const mysteryBoxService = createMockMysteryBoxService(mysteryBoxRepository, characterRepository);
+
+	const playerService = createMockPlayerService(playerRepository);
+
+	const voteService = createMockVoteService(voteRepository, playerService);
+
+	const gameStateService = createMockGameStateService(gameStateRepository, playerService, voteService, mysteryBoxService);
+
+	return {
+		mockDB,
+
+		mysteryBoxRepository,
+		characterRepository,
+		playerRepository,
+		gameStateRepository,
+		voteRepository,
+
+		mysteryBoxService,
+		playerService,
+		voteService,
+		gameStateService
+	};
+}
 
 /**
  * Sets up a mock Namesmith server with mock repositories and services. This is
@@ -50,4 +97,4 @@ const setupMockNamesmith = () => {
 	);
 }
 
-module.exports = { setupMockNamesmith };
+module.exports = { setupMockNamesmith, createAllMocks };

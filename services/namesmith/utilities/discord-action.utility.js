@@ -2,12 +2,9 @@
  * @fileoverview Utility functions for doing Discord actions related to Namesmith
  */
 
-const { memberHasRole, setNicknameOfMember, removeRoleFromMember, addRoleToMember, createPermission, removePermissionFromChannel, addPermissionToChannel, changePermissionOnChannel, closeChannel, openChannel, memberHasAnyRole, removeAllRolesFromMember } = require("../../../utilities/discord-action-utils");
+const { memberHasRole, setNicknameOfMember, removeRoleFromMember, addRoleToMember, closeChannel, openChannel, removeAllRolesFromMember } = require("../../../utilities/discord-action-utils");
 const ids = require("../../../bot-config/discord-ids");
 const { fetchPublishedNamesChannel, fetchNamesmithGuildMember, fetchNamesToVoteOnChannel, fetchTheWinnerChannel } = require("./discord-fetch.utility");
-const { getEveryoneRole } = require("../../../utilities/discord-fetch-utils");
-const { PermissionFlagsBits } = require("discord.js");
-const PlayerService = require("../services/player.service");
 
 const MAX_NAME_LENGTH = 32;
 const NO_NAME = "ˑ";
@@ -130,10 +127,10 @@ const isNonPlayer = async (guildMember) => {
  * @param {GuildMember} guildMember The guild member to reset.
  * @returns {Promise<void>} A promise that resolves once the guild member has been reset.
  */
-const resetMemberToNewPlayer = async (guildMember) => {
+const resetMemberToNewPlayer = async (guildMember, nameIfNoName) => {
 	await removeAllRolesFromMember(guildMember);
 	await addRoleToMember(guildMember, ids.namesmith.roles.noName);
-	await setNicknameOfMember(guildMember, PlayerService.NO_NAME);
+	await setNicknameOfMember(guildMember, nameIfNoName);
 }
 
 module.exports = { changeDiscordNameOfPlayer, sendToPublishedNamesChannel, sendToNamesToVoteOnChannel, openNamesToVoteOnChannel, closeNamesToVoteOnChannel, sendMessageToTheWinnerChannel, openTheWinnerChannel, closeTheWinnerChannel, isNonPlayer, resetMemberToNewPlayer };

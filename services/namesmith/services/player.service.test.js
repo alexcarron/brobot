@@ -227,7 +227,7 @@ describe('PlayerService', () => {
 			const mockMember = {
 				id: "new-player-id",
 			}
-			expect(resetMemberToNewPlayer).toHaveBeenCalledWith(mockMember);
+			expect(resetMemberToNewPlayer).toHaveBeenCalledWith(mockMember, expect.anything());
 		});
 
 		it('should throw an error if the player already exists', async () => {

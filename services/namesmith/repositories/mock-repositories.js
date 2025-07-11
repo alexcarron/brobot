@@ -159,34 +159,30 @@ const mockVotes = [
  * @param {DatabaseQuerier | undefined} mockDB - An optional mock database instance.
  * @returns {VoteRepository} A mock instance of the VoteRepository.
  */
-const createMockVoteRepo = (mockDB, votes) => {
+const createMockVoteRepo = (mockDB, players, votes) => {
 	if (mockDB === undefined || !(mockDB instanceof DatabaseQuerier))
 		mockDB = createMockDB();
 
 	if (votes === undefined || !Array.isArray(votes))
 		votes = mockVotes;
 
+	if (players === undefined || !Array.isArray(players))
+		players = mockPlayers;
+
 		// Get a list of unique player IDs used in votes
 	const requiredPlayerIDs = [
 		...new Set(votes.map(v => v.playerVotedForID))
 	];
 
-	for (const player of mockPlayers) {
+	for (const player of players) {
 		addMockPlayer(mockDB, player);
 	}
 
 	// Insert dummy players if they don't exist yet
 	for (const playerID of requiredPlayerIDs) {
-		const existing = mockDB.getRow(
-			"SELECT id FROM player WHERE id = ?",
-			[playerID]
+		addMockPlayer(mockDB,
+			createMockPlayerObject({id: playerID})
 		);
-
-		if (existing === undefined) {
-			addMockPlayer(mockDB,
-				createMockPlayerObject({id: playerID})
-			);
-		}
 	}
 
 	for (const vote of votes) {
