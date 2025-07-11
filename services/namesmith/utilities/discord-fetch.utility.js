@@ -2,8 +2,9 @@
  * @fileoverview Utility functions for working with Discord entities related to the Namesmith server.
  */
 
+const { GuildMember } = require("discord.js");
 const ids = require("../../../bot-config/discord-ids");
-const { fetchGuild, fetchChannel, fetchGuildMember } = require("../../../utilities/discord-fetch-utils");
+const { fetchGuild, fetchChannel, fetchGuildMember, fetchAllGuildMembers } = require("../../../utilities/discord-fetch-utils");
 
 /**
  * Fetches the Namesmith server from Discord.
@@ -59,4 +60,14 @@ const fetchNamesmithGuildMember = async (playerID) => {
 	);
 }
 
-module.exports = { fetchNamesmithServer, fetchPublishedNamesChannel, fetchNamesToVoteOnChannel, fetchNamesmithGuildMember, fetchTheWinnerChannel };
+/**
+ * Fetches all guild members from the Namesmith server.
+ * @returns {Promise<GuildMember[]>} A promise that resolves to an array of all guild members in the Namesmith server.
+ */
+const fetchNamesmithGuildMembers = async () => {
+	const namesmithGuild = await fetchNamesmithServer();
+	const guildMembers = await fetchAllGuildMembers(namesmithGuild);
+	return guildMembers;
+}
+
+module.exports = { fetchNamesmithServer, fetchPublishedNamesChannel, fetchNamesToVoteOnChannel, fetchNamesmithGuildMember, fetchTheWinnerChannel, fetchNamesmithGuildMembers };

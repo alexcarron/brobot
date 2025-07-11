@@ -1,9 +1,7 @@
-const ids = require("../../../bot-config/discord-ids");
-const { removeAllRolesFromMember, addRoleToMember, setNicknameOfMember } = require("../../../utilities/discord-action-utils");
-const { fetchAllGuildMembers } = require("../../../utilities/discord-fetch-utils");
 const { mockPlayers } = require("../repositories/mock-repositories");
 const PlayerRepository = require("../repositories/player.repository");
-const { changeDiscordNameOfPlayer, sendToPublishedNamesChannel, sendToNamesToVoteOnChannel, isNonPlayer } = require("../utilities/discord-action.utility");
+const { changeDiscordNameOfPlayer, sendToPublishedNamesChannel, sendToNamesToVoteOnChannel, isNonPlayer, resetMemberToNewPlayer } = require("../utilities/discord-action.utility");
+const { fetchNamesmithGuildMembers } = require("../utilities/discord-fetch.utility");
 const { createMockPlayerService } = require("./mock-services");
 const PlayerService = require("./player.service");
 
@@ -11,25 +9,25 @@ jest.mock("../utilities/discord-action.utility", () => ({
 	changeDiscordNameOfPlayer: jest.fn(),
 	sendToPublishedNamesChannel: jest.fn(),
 	sendToNamesToVoteOnChannel: jest.fn(),
-	isNonPlayer: jest.fn((member) => Promise.resolve(!member.isPlayer)),
+	isNonPlayer: jest.fn((member) => Promise.resolve(
+		member.isPlayer === undefined ?
+			false :
+			!member.isPlayer
+	)),
+	resetMemberToNewPlayer: jest.fn(),
 }));
 
-jest.mock("../utilities/discord-entity.utility", () => ({
+jest.mock("../utilities/discord-fetch.utility", () => ({
 	fetchNamesmithGuildMember: jest.fn( (playerID) =>
 		Promise.resolve({ id: playerID })
 	),
-	fetchNamesmithServer: jest.fn(),
+	fetchNamesmithGuildMembers: jest.fn(() =>
+		Promise.resolve(mockPlayers.map((player) => ({ id: player.id })))
+	),
 }));
 
 jest.mock("../../../utilities/discord-action-utils", () => ({
-	removeAllRolesFromMember: jest.fn(),
-	addRoleToMember: jest.fn(),
-	setNicknameOfMember: jest.fn(),
 	addButtonToMessageContents: jest.fn(),
-}));
-
-jest.mock("../../../utilities/discord-fetch-utils", () => ({
-	fetchAllGuildMembers: jest.fn(),
 }));
 
 describe('PlayerService', () => {
@@ -229,25 +227,19 @@ describe('PlayerService', () => {
 			const mockMember = {
 				id: "new-player-id",
 			}
-			expect(removeAllRolesFromMember).toHaveBeenCalledWith(mockMember);
-			expect(addRoleToMember).toHaveBeenCalledWith(mockMember, ids.namesmith.roles.noName);
-			expect(setNicknameOfMember).toHaveBeenCalledWith(mockMember, "ˑ");
+			expect(resetMemberToNewPlayer).toHaveBeenCalledWith(mockMember);
 		});
 
 		it('should throw an error if the player already exists', async () => {
 			await expect(playerService.addNewPlayer(mockPlayers[0].id)).rejects.toThrow();
-			expect(removeAllRolesFromMember).not.toHaveBeenCalled();
-			expect(addRoleToMember).not.toHaveBeenCalled();
-			expect(setNicknameOfMember).not.toHaveBeenCalled();
+			expect(resetMemberToNewPlayer).not.toHaveBeenCalled();
 			const players = await playerService.playerRepository.getPlayers();
 			expect(players.length).toBe(mockPlayers.length);
 		});
 
 		it('should throw an error if the ID is invalid', async () => {
 			await expect(playerService.addNewPlayer(1234567899)).rejects.toThrow();
-			expect(removeAllRolesFromMember).not.toHaveBeenCalled();
-			expect(addRoleToMember).not.toHaveBeenCalled();
-			expect(setNicknameOfMember).not.toHaveBeenCalled();
+			expect(resetMemberToNewPlayer).not.toHaveBeenCalled();
 			const players = await playerService.playerRepository.getPlayers();
 			expect(players.length).toBe(mockPlayers.length);
 		});
@@ -256,7 +248,7 @@ describe('PlayerService', () => {
 	describe('.addEveryoneInServer()', () => {
 		it('should add all players in the server', async () => {
 			jest.spyOn(playerService, 'addNewPlayer');
-			fetchAllGuildMembers.mockResolvedValue([
+			fetchNamesmithGuildMembers.mockResolvedValue([
 				{ id: "1", isPlayer: true },
 				{ id: "2", isPlayer: true },
 				{ id: "3", isPlayer: false },
@@ -272,7 +264,7 @@ describe('PlayerService', () => {
 		it('should skip players that already exist', async () => {
 			jest.spyOn(playerService, 'addNewPlayer');
 
-			fetchAllGuildMembers.mockResolvedValue([
+			fetchNamesmithGuildMembers.mockResolvedValue([
 				{ id: mockPlayers[0].id, isPlayer: true },
 				{ id: mockPlayers[1].id, isPlayer: true },
 				{ id: mockPlayers[2].id, isPlayer: true },

@@ -2,11 +2,12 @@
  * @fileoverview Utility functions for doing Discord actions related to Namesmith
  */
 
-const { memberHasRole, setNicknameOfMember, removeRoleFromMember, addRoleToMember, createPermission, removePermissionFromChannel, addPermissionToChannel, changePermissionOnChannel, closeChannel, openChannel, memberHasAnyRole } = require("../../../utilities/discord-action-utils");
+const { memberHasRole, setNicknameOfMember, removeRoleFromMember, addRoleToMember, createPermission, removePermissionFromChannel, addPermissionToChannel, changePermissionOnChannel, closeChannel, openChannel, memberHasAnyRole, removeAllRolesFromMember } = require("../../../utilities/discord-action-utils");
 const ids = require("../../../bot-config/discord-ids");
-const { fetchPublishedNamesChannel, fetchNamesmithGuildMember, fetchNamesToVoteOnChannel, fetchTheWinnerChannel } = require("./discord-entity.utility");
+const { fetchPublishedNamesChannel, fetchNamesmithGuildMember, fetchNamesToVoteOnChannel, fetchTheWinnerChannel } = require("./discord-fetch.utility");
 const { getEveryoneRole } = require("../../../utilities/discord-fetch-utils");
 const { PermissionFlagsBits } = require("discord.js");
+const PlayerService = require("../services/player.service");
 
 const MAX_NAME_LENGTH = 32;
 const NO_NAME = "ˑ";
@@ -124,4 +125,15 @@ const isNonPlayer = async (guildMember) => {
 	return false;
 }
 
-module.exports = { changeDiscordNameOfPlayer, sendToPublishedNamesChannel, sendToNamesToVoteOnChannel, openNamesToVoteOnChannel, closeNamesToVoteOnChannel, sendMessageToTheWinnerChannel, openTheWinnerChannel, closeTheWinnerChannel, isNonPlayer };
+/**
+ * Resets a guild member to a new player by removing all roles, giving them the No Name role, and setting their nickname to the default No Name.
+ * @param {GuildMember} guildMember The guild member to reset.
+ * @returns {Promise<void>} A promise that resolves once the guild member has been reset.
+ */
+const resetMemberToNewPlayer = async (guildMember) => {
+	await removeAllRolesFromMember(guildMember);
+	await addRoleToMember(guildMember, ids.namesmith.roles.noName);
+	await setNicknameOfMember(guildMember, PlayerService.NO_NAME);
+}
+
+module.exports = { changeDiscordNameOfPlayer, sendToPublishedNamesChannel, sendToNamesToVoteOnChannel, openNamesToVoteOnChannel, closeNamesToVoteOnChannel, sendMessageToTheWinnerChannel, openTheWinnerChannel, closeTheWinnerChannel, isNonPlayer, resetMemberToNewPlayer };

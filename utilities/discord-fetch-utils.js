@@ -9,9 +9,14 @@ const { discordCollectionToArray } = require("./data-structure-utils");
  */
 const assertClientSetup = () => {
 	const client = global.client;
-	if (!client) throw new Error('Client is not defined.');
-	if (!(client instanceof Client)) throw new Error('Client is not an instance of Client.');
-	if (!client.isReady()) throw new Error('Client is not ready.');
+	if (!client)
+		throw new Error(`assertClientSetup: client is not setup, got ${client}`);
+
+	if (!(client instanceof Client))
+		throw new Error(`assertClientSetup: client is not an instance of Client, got ${client}`);
+
+	if (!client.isReady())
+		throw new Error(`assertClientSetup: client is not ready, got ${client}`);
 }
 
 

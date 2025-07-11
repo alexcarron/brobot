@@ -11,6 +11,14 @@ describe('PlayerRepository', () => {
 		playerRepository = createMockPlayerRepo();
 	});
 
+	afterEach(() => {
+		jest.clearAllMocks();
+	});
+
+	afterAll(() => {
+		jest.restoreAllMocks();
+	});
+
   describe('getPlayers()', () => {
     it('returns an array of player objects', async () => {
       const result = await playerRepository.getPlayers();

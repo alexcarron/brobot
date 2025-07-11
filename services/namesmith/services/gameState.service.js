@@ -5,19 +5,19 @@ const { closeNamesToVoteOnChannel, openNamesToVoteOnChannel, sendToNamesToVoteOn
 const VoteService = require("./vote.service");
 const PlayerService = require("./player.service");
 
-const GAME_DURATION_IN_DAYS = 4;
-const VOTE_DURATION_IN_DAYS = 2;
-
 /**
  * Provides methods for interacting with the game state.
  */
 class GameStateService {
-/**
- * Constructs a new GameStateService instance.
- * @param {GameStateRepository} gameStateRepository - The repository used for accessing the game state.
- * @param {PlayerService} playerService - The service used for accessing players.
- * @param {VoteService} voteService - The service used for accessing votes.
- */
+	static GAME_DURATION_DAYS = 4;
+	static VOTE_DURATION_DAYS = 2;
+
+	/**
+	 * Constructs a new GameStateService instance.
+	 * @param {GameStateRepository} gameStateRepository - The repository used for accessing the game state.
+	 * @param {PlayerService} playerService - The service used for accessing players.
+	 * @param {VoteService} voteService - The service used for accessing votes.
+	 */
 	constructor(gameStateRepository, playerService, voteService) {
 		this.gameStateRepository = gameStateRepository;
 		this.playerService = playerService;
@@ -33,15 +33,17 @@ class GameStateService {
 		const now = new Date();
 		await this.gameStateRepository.setTimeStarted(now);
 
-		const endDate = new Date();
-		endDate.setDate(now.getDate() + GAME_DURATION_IN_DAYS);
-		// endDate.setSeconds(now.getSeconds() + 5);
+		const endDate = new Date(now.getTime());
+		endDate.setDate(now.getDate() +
+			GameStateService.GAME_DURATION_DAYS
+		);
 		await this.gameStateRepository.setTimeEnding(endDate);
 		this.startEndGameCronJob(endDate);
 
-		const voteEndingDate = new Date();
-		voteEndingDate.setDate(now.getDate() + VOTE_DURATION_IN_DAYS);
-		// voteEndingDate.setSeconds(now.getSeconds() + 30);
+		const voteEndingDate = new Date(endDate.getTime());
+		voteEndingDate.setDate(endDate.getDate() +
+			GameStateService.VOTE_DURATION_DAYS
+		);
 		await this.gameStateRepository.setTimeVoteIsEnding(voteEndingDate);
 		this.startVoteIsEndingCronJob(voteEndingDate);
 

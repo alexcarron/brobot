@@ -32,6 +32,12 @@ const getCharacterValueFromID = (id) => {
 	if (typeof id !== 'number') {
 		throw new Error('getIDofCharacter: id must be a number.');
 	}
+	else if (id < 0) {
+		throw new Error(`getIDofCharacter: id must be a positive number. Got ${id}.`);
+	}
+	else if (Number.isInteger(id) === false) {
+		throw new Error(`getIDofCharacter: id must be an integer. Got ${id}.`);
+	}
 
 	return String.fromCodePoint(id);
 }

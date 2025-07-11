@@ -1,19 +1,17 @@
-const { sendToPublishedNamesChannel, changeDiscordNameOfPlayer, sendToNamesToVoteOnChannel, isNonPlayer, } = require("../utilities/discord-action.utility");
+const { sendToPublishedNamesChannel, changeDiscordNameOfPlayer, sendToNamesToVoteOnChannel, isNonPlayer, resetMemberToNewPlayer, } = require("../utilities/discord-action.utility");
 const PlayerRepository = require("../repositories/player.repository");
 const { logWarning } = require("../../../utilities/logging-utils");
 const { ButtonStyle } = require("discord.js");
-const { addButtonToMessageContents, addRoleToMember, setNicknameOfMember, removeAllRolesFromMember } = require("../../../utilities/discord-action-utils");
-const { fetchAllGuildMembers } = require("../../../utilities/discord-fetch-utils");
-const ids = require("../../../bot-config/discord-ids");
-const { fetchNamesmithServer, fetchNamesmithGuildMember } = require("../utilities/discord-entity.utility");
-
-const MAX_NAME_LENGTH = 32;
-const NO_NAME = "ˑ";
+const { addButtonToMessageContents } = require("../../../utilities/discord-action-utils");
+const { fetchNamesmithGuildMember, fetchNamesmithGuildMembers } = require("../utilities/discord-fetch.utility");
 
 /**
  * Provides methods for interacting with players.
  */
 class PlayerService {
+	static MAX_NAME_LENGTH = 32;
+	static NO_NAME = "ˑ";
+
 	/**
 	 * Constructs a new PlayerService instance.
 	 * @param {PlayerRepository} playerRepository - The repository used for accessing players.
@@ -51,12 +49,12 @@ class PlayerService {
 		if (typeof newName !== "string")
 			throw new TypeError("changeCurrentName: newName must be a string.");
 
-		if (newName.length > MAX_NAME_LENGTH)
-			throw new TypeError(`changeCurrentName: newName must be less than or equal to ${MAX_NAME_LENGTH}.`);
+		if (newName.length > PlayerService.MAX_NAME_LENGTH)
+			throw new TypeError(`changeCurrentName: newName must be less than or equal to ${PlayerService.MAX_NAME_LENGTH}.`);
 
 		if (newName.length === 0) {
 			await this.playerRepository.changeCurrentName(playerID, "");
-			await changeDiscordNameOfPlayer(playerID, NO_NAME);
+			await changeDiscordNameOfPlayer(playerID, PlayerService.NO_NAME);
 		}
 		else {
 			await this.playerRepository.changeCurrentName(playerID, newName);
@@ -173,9 +171,7 @@ class PlayerService {
 
 		const guildMember = await fetchNamesmithGuildMember(playerID);
 
-		await removeAllRolesFromMember(guildMember);
-		await addRoleToMember(guildMember, ids.namesmith.roles.noName);
-		await setNicknameOfMember(guildMember, NO_NAME);
+		await resetMemberToNewPlayer(guildMember);
 
 		await this.playerRepository.addPlayer(playerID);
 	}
@@ -186,8 +182,7 @@ class PlayerService {
 	 * @returns {Promise<void>} A promise that resolves once all players have been added.
 	 */
 	async addEveryoneInServer() {
-		const namesmithGuild = await fetchNamesmithServer();
-		const guildMembers = await fetchAllGuildMembers(namesmithGuild);
+		const guildMembers = await fetchNamesmithGuildMembers();
 
 		for (const guildMember of guildMembers) {
 			if (await isNonPlayer(guildMember))
