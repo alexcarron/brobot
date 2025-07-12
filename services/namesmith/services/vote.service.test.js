@@ -30,6 +30,33 @@ describe('VoteService', () => {
 		});
 	});
 
+
+	describe('.resolveVote()', () => {
+		it('should resolve a vote object to a vote object', async () => {
+			const vote = voteService.voteRepository.getVotes()[0];
+
+			const resolvedVote = await voteService.resolveVote(vote);
+
+			expect(resolvedVote).toEqual(vote);
+		});
+
+		it('should resolve a vote ID to a vote object', async () => {
+			const vote = voteService.voteRepository.getVotes()[0];
+			const voteID = vote.voterID;
+
+			const resolvedVote = await voteService.resolveVote(voteID);
+
+			expect(resolvedVote).toEqual(vote);
+		});
+
+		it('should throw an error if the vote resolvable is invalid', () => {
+			expect(() => voteService.resolveVote(-999)).toThrow();
+			expect(() => voteService.resolveVote('invalid')).toThrow();
+			expect(() => voteService.resolveVote({})).toThrow();
+			expect(() => voteService.resolveVote()).toThrow();
+		});
+	});
+
 	describe('.addVote()', () => {
 		it('should add a new vote', async () => {
 			const message = await voteService.addVote({

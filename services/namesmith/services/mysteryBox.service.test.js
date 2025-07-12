@@ -85,7 +85,7 @@ describe('VoteService', () => {
 
 			expect(() => mysteryBoxService.resolveMysteryBox(mysteryBox, {hasCharacterOdds: true})).toThrow();
 		})
-	})
+	});
 
 	describe('.openBoxByID()', () => {
 		it('should return a character from the mystery box with the given ID', async () => {

@@ -1,5 +1,6 @@
 const { logInfo } = require("../../../utilities/logging-utils");
 const VoteRepository = require("../repositories/vote.repository");
+const { isVote } = require("../utilities/vote.utility");
 const PlayerService = require("./player.service");
 
 /**
@@ -17,6 +18,29 @@ class VoteService {
 	}
 
 	/**
+	 * Resolves a vote from the given resolvable.
+	 * @param {string | Vote} voteResolvable - The vote resolvable to resolve.
+	 * @returns {Vote} The resolved vote.
+	 * @throws {Error} If the vote resolvable is invalid.
+	 */
+	resolveVote(voteResolvable) {
+		if (isVote(voteResolvable)) {
+			const vote = voteResolvable;
+			return vote;
+		}
+		else if (typeof voteResolvable === "string") {
+			const vote = this.voteRepository.getVoteByVoterID(voteResolvable);
+
+			if (vote === undefined)
+				throw new Error(`resolveVote: Vote with id ${voteResolvable} does not exist.`);
+
+			return vote;
+		}
+
+		throw new Error(`resolveVote: Invalid vote resolvable`, voteResolvable);
+	}
+
+	/**
 	 * Adds a new vote to the list of votes.
 	 * @param {{ voterID: string, playerVotedForID: string }} vote - The vote object to add.
 	 * @returns {Promise<string>} A promise that resolves with a message indicating the result of the vote.
@@ -25,7 +49,7 @@ class VoteService {
 		if (!voterID || !playerVotedForID)
 			throw new Error("Missing voterID or playerVotedForID");
 
-		const vote = await this.voteRepository.getVoteByVoterID(voterID);
+		const vote = this.voteRepository.getVoteByVoterID(voterID);
 		const hasVotedBefore = vote !== undefined;
 		const nameVotingFor = await this.playerService.getPublishedName(playerVotedForID);
 

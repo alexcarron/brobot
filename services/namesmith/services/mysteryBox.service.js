@@ -61,15 +61,15 @@ class MysteryBoxService {
 
 	/**
 	 * Returns a character from the mystery box with the given ID. The character is chosen using the weighted random distribution of the mystery box.
-	 * @param {number} mysteryBoxID - The ID of the mystery box from which to retrieve a character.
+	 * @param {number} mysteryBoxResolvable - The ID of the mystery box from which to retrieve a character.
 	 * @return {Promise<{
 	 * 	id: number,
 	 * 	value: string,
 	 * 	rarity: number,
 	 * }>} The character retrieved from the mystery box.
 	 */
-	async openBoxByID(mysteryBoxID) {
-		const mysteryBox = await this.mysteryBoxRepository.getMysteryBoxWithOdds(mysteryBoxID);
+	async openBoxByID(mysteryBoxResolvable) {
+		const mysteryBox = this.resolveMysteryBox(mysteryBoxResolvable, {hasCharacterOdds: true});
 		const characterOdds = mysteryBox.characterOdds;
 
 		const characterValue = getRandomWeightedElement(characterOdds);
