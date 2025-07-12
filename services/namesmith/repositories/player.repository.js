@@ -87,10 +87,10 @@ class PlayerRepository {
 	/**
 	 * Retrieves the inventory of a player.
 	 * @param {string} playerID - The ID of the player whose inventory is being retrieved.
-	 * @returns {Promise<string>} The inventory of the player.
+	 * @returns {string} The inventory of the player.
 	 */
-	async getInventory(playerID) {
-		const player = await this.getPlayerByID(playerID);
+	getInventory(playerID) {
+		const player = this.getPlayerByID(playerID);
 		if (!player)
 			throw new Error(`getInventory: Player with ID ${playerID} not found`);
 
@@ -100,10 +100,10 @@ class PlayerRepository {
 	/**
 	 * Retrieves the current name of a player.
 	 * @param {string} playerID - The ID of the player whose name is being retrieved.
-	 * @returns {Promise<string>} The current name of the player.
+	 * @returns {string} The current name of the player.
 	 */
-	async getCurrentName(playerID) {
-		const player = await this.getPlayerByID(playerID);
+	getCurrentName(playerID) {
+		const player = this.getPlayerByID(playerID);
 		if (!player)
 			throw new Error(`getCurrentName: Player with ID ${playerID} not found`);
 
@@ -137,10 +137,10 @@ class PlayerRepository {
 	/**
 	 * Retrieves a player's published name from the namesmith database.
 	 * @param {string} playerID - The ID of the player whose name is being retrieved.
-	 * @returns {Promise<string | undefined>} The published name of the player, or undefined if the player has no published name.
+	 * @returns {string | undefined} The published name of the player, or undefined if the player has no published name.
 	 */
-	async getPublishedName(playerID) {
-		const player = await this.getPlayerByID(playerID);
+	getPublishedName(playerID) {
+		const player = this.getPlayerByID(playerID);
 		if (!player)
 			throw new Error(`getPublishedName: Player with ID ${playerID} not found`);
 		return player.publishedName;

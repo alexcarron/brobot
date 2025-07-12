@@ -13,14 +13,14 @@ describe('MysteryBoxRepository', () => {
 	});
 
   describe('getMysteryBoxes', () => {
-    it('returns a non-empty array', async () => {
-      const result = await mysteryBoxRepo.getMysteryBoxes();
+    it('returns a non-empty array', () => {
+      const result = mysteryBoxRepo.getMysteryBoxes();
 			expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBeGreaterThan(0);
     });
 
-    it('each mystery box object has the expected properties', async () => {
-      const result = await mysteryBoxRepo.getMysteryBoxes();
+    it('each mystery box object has the expected properties', () => {
+      const result = mysteryBoxRepo.getMysteryBoxes();
       result.forEach((mysteryBox) => {
         expect(mysteryBox).toHaveProperty('id', expect.any(Number));
         expect(mysteryBox).toHaveProperty('name', expect.any(String));
@@ -30,14 +30,14 @@ describe('MysteryBoxRepository', () => {
   });
 
 	describe('getMysteryBoxesWithOdds()', () => {
-		it('returns a non-empty array', async () => {
-			const result = await mysteryBoxRepo.getMysteryBoxesWithOdds();
+		it('returns a non-empty array', () => {
+			const result = mysteryBoxRepo.getMysteryBoxesWithOdds();
 			expect(Array.isArray(result)).toBe(true);
 			expect(result.length).toBeGreaterThan(0);
 		});
 
-		it('each mystery box object has the expected properties', async () => {
-			const result = await mysteryBoxRepo.getMysteryBoxesWithOdds();
+		it('each mystery box object has the expected properties', () => {
+			const result = mysteryBoxRepo.getMysteryBoxesWithOdds();
 			result.forEach((mysteryBox) => {
 				expect(mysteryBox).toHaveProperty('id', expect.any(Number));
 				expect(mysteryBox).toHaveProperty('name', expect.any(String));
@@ -52,8 +52,8 @@ describe('MysteryBoxRepository', () => {
 	});
 
 	describe('getMysteryBoxByID()', () => {
-		it('returns a non-empty object', async () => {
-			const result = await mysteryBoxRepo.getMysteryBoxByID(1);
+		it('returns a non-empty object', () => {
+			const result = mysteryBoxRepo.getMysteryBoxByID(1);
 			expect(result).toHaveProperty('id', 1);
 			expect(result).toHaveProperty('name', expect.any(String));
 			expect(result).toHaveProperty('tokenCost', expect.any(Number));
@@ -61,8 +61,8 @@ describe('MysteryBoxRepository', () => {
 	});
 
 	describe('getMysteryBoxWithOdds()', () => {
-		it('returns a non-empty object', async () => {
-			const result = await mysteryBoxRepo.getMysteryBoxWithOdds(1);
+		it('returns a non-empty object', () => {
+			const result = mysteryBoxRepo.getMysteryBoxWithOdds(1);
 			expect(result).toHaveProperty('id', 1);
 			expect(result).toHaveProperty('name', expect.any(String));
 			expect(result).toHaveProperty('tokenCost', expect.any(Number));

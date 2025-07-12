@@ -25,7 +25,6 @@ class MysteryBoxRepository {
 	 * @returns {Promise<Array<{
 	 * 	id: number,
 	 * 	name: string,
-	 * 	characterOdds: Record<string, number>,
 	 *  tokenCost: number,
 	 * }>>} An array of mystery box objects.
 	 */
@@ -38,15 +37,15 @@ class MysteryBoxRepository {
 	/**
 	 * Returns a list of all mystery box objects in the game with their character odds.
 	 * The character odds are an object with character IDs as keys and the weight of the character in the mystery box as the value.
-	 * @returns {Promise<Array<{
+	 * @returns {Array<{
 	 * 	id: number,
 	 * 	name: string,
 	 * 	tokenCost: number,
 	 * 	characterOdds: Record<string, number>
-	 * }>>} An array of mystery box objects with their character odds.
+	 * }>} An array of mystery box objects with their character odds.
 	 */
-	async getMysteryBoxesWithOdds() {
-		const mysteryBoxes = await this.getMysteryBoxes();
+	getMysteryBoxesWithOdds() {
+		const mysteryBoxes = this.getMysteryBoxes();
 		const characterOddsRows = this.db.prepare(`SELECT mysteryBoxID, characterID, weight FROM mysteryBoxCharacterOdds`).all();
 
 		return mysteryBoxes.map(mysteryBox => {
@@ -87,15 +86,15 @@ class MysteryBoxRepository {
 	/**
 	 * Given a mystery box id, returns the corresponding mystery box object with its character odds.
 	 * @param {number} id - The id of the mystery box to return.
-	 * @returns {Promise<{
+	 * @returns {{
 	 * 	id: number,
 	 * 	name: string,
 	 * 	tokenCost: number,
 	 * 	characterOdds: Record<string, number>
-	 * } | undefined>} The mystery box object with the given id and its character odds or undefined if no such object exists.
+	 * } | undefined} The mystery box object with the given id and its character odds or undefined if no such object exists.
 	 */
-	async getMysteryBoxWithOdds(id) {
-		const mysteryBox = await this.getMysteryBoxByID(id);
+	getMysteryBoxWithOdds(id) {
+		const mysteryBox = this.getMysteryBoxByID(id);
 		const characterOddsRows = this.db.prepare(`
 			SELECT characterID, weight FROM mysteryBoxCharacterOdds
 			WHERE mysteryBoxID = @id

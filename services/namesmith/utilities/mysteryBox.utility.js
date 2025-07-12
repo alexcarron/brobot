@@ -16,8 +16,8 @@ const isCharacterOdds = (value) => (
 /**
  * Checks if a given value is a mystery box object with the given properties.
  * @param {any} value - The value to check.
- * @param {object} options - An object with an optional properties that specify the expected properties of the mystery box object.
- * @param {boolean} options.hasCharacterOdds - If true, the mystery box object must have a characterOdds property.
+ * @param {object} [options] - An object with an optional properties that specify the expected properties of the mystery box object.
+ * @param {boolean} [options.hasCharacterOdds] - If true, the mystery box object must have a characterOdds property.
  * @returns {boolean} If the value is a mystery box object with the given properties.
  */
 const isMysteryBox = (value, {hasCharacterOdds = false} = {}) => (

@@ -4,8 +4,9 @@ node_modules/
 # Stored Unused Files
 unused/
 
-# ES Lint
+# Configuration
 .eslintrc.js*
+tsconfig.json
 
 # Local Only
 *token.json

@@ -20,39 +20,39 @@ describe('PlayerRepository', () => {
 	});
 
   describe('getPlayers()', () => {
-    it('returns an array of player objects', async () => {
-      const result = await playerRepository.getPlayers();
+    it('returns an array of player objects', () => {
+      const result = playerRepository.getPlayers();
       expect(result).toEqual(mockPlayers);
     });
   });
 
   describe('getPlayerByID()', () => {
-		it('returns a player object', async () => {
-			const result = await playerRepository.getPlayerByID(mockPlayers[0].id);
+		it('returns a player object', () => {
+			const result = playerRepository.getPlayerByID(mockPlayers[0].id);
 			expect(result).toEqual(mockPlayers[0]);
 		});
 
-		it('returns undefined if the player is not found', async () => {
-			const result = await playerRepository.getPlayerByID("invalid-id");
+		it('returns undefined if the player is not found', () => {
+			const result = playerRepository.getPlayerByID("invalid-id");
 			expect(result).toBeUndefined();
 		});
   });
 
   describe('.doesPlayerExist()', () => {
-		it('returns true if the player is found', async () => {
-			const result = await playerRepository.doesPlayerExist(mockPlayers[0].id);
+		it('returns true if the player is found', () => {
+			const result = playerRepository.doesPlayerExist(mockPlayers[0].id);
 			expect(result).toBe(true);
 		});
 
-		it('returns false if the player is not found', async () => {
-			const result = await playerRepository.doesPlayerExist("invalid-id");
+		it('returns false if the player is not found', () => {
+			const result = playerRepository.doesPlayerExist("invalid-id");
 			expect(result).toBe(false);
 		});
   });
 
 	describe('getPlayersWithoutPublishedNames()', () => {
-		it('returns an array of player objects without a published name', async () => {
-			const result = await playerRepository.getPlayersWithoutPublishedNames();
+		it('returns an array of player objects without a published name', () => {
+			const result = playerRepository.getPlayersWithoutPublishedNames();
 
 			expect(result).toEqual(
 				mockPlayers.filter(player => player.publishedName === null)
@@ -61,83 +61,83 @@ describe('PlayerRepository', () => {
 	});
 
 	describe('getInventory()', () => {
-		it('returns the inventory of a player', async () => {
-			const result = await playerRepository.getInventory(mockPlayers[0].id);
+		it('returns the inventory of a player', () => {
+			const result = playerRepository.getInventory(mockPlayers[0].id);
 			expect(result).toEqual(mockPlayers[0].inventory);
 		});
 
-		it('throws an error if the player is not found', async () => {
-			await expect(playerRepository.getInventory("invalid-id")).rejects.toThrow();
+		it('throws an error if the player is not found', () => {
+			expect(() => playerRepository.getInventory("invalid-id")).toThrow();
 		});
 	});
 
 	describe('getCurrentName()', () => {
-		it('returns the current name of a player', async () => {
-			const result = await playerRepository.getCurrentName(mockPlayers[0].id);
+		it('returns the current name of a player', () => {
+			const result = playerRepository.getCurrentName(mockPlayers[0].id);
 			expect(result).toEqual(mockPlayers[0].currentName);
 		});
 
-		it('throws an error if the player is not found', async () => {
-			await expect(playerRepository.getCurrentName("invalid-id")).rejects.toThrow();
+		it('throws an error if the player is not found', () => {
+			expect(() => playerRepository.getCurrentName("invalid-id")).toThrow();
 		});
 	});
 
 	describe('changeCurrentName()', () => {
-		it('changes the current name of a player', async () => {
-			await playerRepository.changeCurrentName(mockPlayers[0].id, "new name");
-			const result = await playerRepository.getCurrentName(mockPlayers[0].id);
+		it('changes the current name of a player', () => {
+			playerRepository.changeCurrentName(mockPlayers[0].id, "new name");
+			const result = playerRepository.getCurrentName(mockPlayers[0].id);
 			expect(result).toEqual("new name");
 		});
 
-		it('throws an error if the player is not found', async () => {
-			await expect(playerRepository.changeCurrentName("invalid-id", "new name")).rejects.toThrow();
+		it('throws an error if the player is not found', () => {
+			expect(() => playerRepository.changeCurrentName("invalid-id", "new name")).toThrow();
 		});
 
-		it('throws an error if the new name is too long', async () => {
-			await expect(playerRepository.changeCurrentName(mockPlayers[1].id, "a".repeat(33))).rejects.toThrow();
+		it('throws an error if the new name is too long', () => {
+			expect(() => playerRepository.changeCurrentName(mockPlayers[1].id, "a".repeat(33))).toThrow();
 		});
 
-		it('throws an error if the new name is empty', async () => {
-			await expect(playerRepository.changeCurrentName(mockPlayers[1].id)).rejects.toThrow();
+		it('throws an error if the new name is empty', () => {
+			expect(() => playerRepository.changeCurrentName(mockPlayers[1].id)).toThrow();
 		});
 	});
 
 	describe('getPublishedName()', () => {
-		it('returns the published name of a player', async () => {
-			const result = await playerRepository.getPublishedName(mockPlayers[0].id);
+		it('returns the published name of a player', () => {
+			const result = playerRepository.getPublishedName(mockPlayers[0].id);
 			expect(result).toEqual(mockPlayers[0].publishedName);
 		});
 
-		it('throws an error if the player is not found', async () => {
-			await expect(playerRepository.getPublishedName("invalid-id")).rejects.toThrow();
+		it('throws an error if the player is not found', () => {
+			expect(() => playerRepository.getPublishedName("invalid-id")).toThrow();
 		});
 	});
 
 	describe('publishName()', () => {
-		it('changes the published name of a player', async () => {
-			await playerRepository.publishName(mockPlayers[0].id, "new name");
-			const result = await playerRepository.getPublishedName(mockPlayers[0].id);
+		it('changes the published name of a player', () => {
+			playerRepository.publishName(mockPlayers[0].id, "new name");
+			const result = playerRepository.getPublishedName(mockPlayers[0].id);
 			expect(result).toEqual("new name");
 		});
 
-		it('throws an error if the player is not found', async () => {
-			await expect(playerRepository.publishName("invalid-id", "new name")).rejects.toThrow();
+		it('throws an error if the player is not found', () => {
+			expect(() => playerRepository.publishName("invalid-id", "new name")).toThrow();
 		});
 
-		it('throws an error if the new name is too long', async () => {
-			await expect(playerRepository.publishName(mockPlayers[1].id, "a".repeat(33))).rejects.toThrow();
+		it('throws an error if the new name is too long', () => {
+			expect(() => playerRepository.publishName(mockPlayers[1].id, "a".repeat(33))).toThrow();
 		});
 
-		it('throws an error if the new name is empty', async () => {
-			await expect(playerRepository.publishName(mockPlayers[1].id)).rejects.toThrow();
+		it('throws an error if the new name is empty', () => {
+			expect(() => playerRepository.publishName(mockPlayers[1].id)).toThrow();
 		});
 	});
 
 	describe('addPlayer()', () => {
-		it('adds a new player to the database', async () => {
-			await playerRepository.addPlayer("new-player-id");
+		it('adds a new player to the database', () => {
+			playerRepository.addPlayer("new-player-id");
 
-			const result = await playerRepository.getPlayerByID("new-player-id");
+			const result = playerRepository.getPlayerByID("new-player-id");
 
 			expect(result).toEqual({
 				id: "new-player-id",
@@ -149,38 +149,38 @@ describe('PlayerRepository', () => {
 			});
 		});
 
-		it('throws an error if the player already exists', async () => {
-			await expect(playerRepository.addPlayer(mockPlayers[0].id)).rejects.toThrow();
+		it('throws an error if the player already exists', () => {
+			expect(() => playerRepository.addPlayer(mockPlayers[0].id)).toThrow();
 		});
 	});
 
 	describe('reset()', () => {
-		it('resets the player repository', async () => {
-			await playerRepository.reset();
-			const result = await playerRepository.getPlayers();
+		it('resets the player repository', () => {
+			playerRepository.reset();
+			const result = playerRepository.getPlayers();
 			expect(result).toEqual([]);
 		});
 	});
 
 	describe('addCharacterToInventory', () => {
-		it('adds a character to the player inventory', async () => {
-			await playerRepository.addCharacterToInventory(mockPlayers[0].id, "A");
-			const result = await playerRepository.getInventory(mockPlayers[0].id);
+		it('adds a character to the player inventory', () => {
+			playerRepository.addCharacterToInventory(mockPlayers[0].id, "A");
+			const result = playerRepository.getInventory(mockPlayers[0].id);
 			expect(result).toEqual(
 				mockPlayers[0].inventory + "A"
 			);
 		});
 
-		it('throws an error if the player is not found', async () => {
-			await expect(playerRepository.addCharacterToInventory("invalid-id", "A")).rejects.toThrow();
+		it('throws an error if the player is not found', () => {
+			expect(() => playerRepository.addCharacterToInventory("invalid-id", "A")).toThrow();
 		});
 
-		it('throws an error if the character does not exist', async () => {
-			await expect(playerRepository.addCharacterToInventory(mockPlayers[0].id)).rejects.toThrow();
+		it('throws an error if the character does not exist', () => {
+			expect(() => playerRepository.addCharacterToInventory(mockPlayers[0].id)).toThrow();
 		});
 
-		it('throws an error if the character is too long', async () => {
-			await expect(playerRepository.addCharacterToInventory(mockPlayers[1].id, "aa")).rejects.toThrow();
+		it('throws an error if the character is too long', () => {
+			expect(() => playerRepository.addCharacterToInventory(mockPlayers[1].id, "aa")).toThrow();
 		});
 	})
 });

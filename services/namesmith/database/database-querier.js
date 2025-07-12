@@ -77,9 +77,6 @@ class DatabaseQuerier {
 			return queryStatement.run(params);
 		}
 		catch (error) {
-			if (!(error instanceof Error))
-				throw error;
-
 			if (
 				error.message.includes("The supplied SQL string contains more than one statement")
 			) {
