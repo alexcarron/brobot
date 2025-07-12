@@ -1,4 +1,3 @@
-const { loadObjectFromJsonInGitHub, saveObjectToJsonInGitHub } = require("../../../utilities/github-json-storage-utils");
 const { logInfo, logSuccess } = require("../../../utilities/logging-utils");
 const { setupDatabase } = require("../database/setup-database");
 const CharacterRepository = require("../repositories/character.repository");
@@ -13,9 +12,8 @@ const VoteService = require("../services/vote.service");
 
 /**
  * Sets up Namesmith by loading and setting up the necessary repositories and services when the bot starts up.
- * @returns {Promise<void>} A promise that resolves once the Namesmith data has been loaded and set up.
  */
-const setupNamesmith = async () => {
+const setupNamesmith = () => {
 	logInfo("Setting up Namesmith...");
 
 	const db = setupDatabase();

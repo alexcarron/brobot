@@ -1,10 +1,9 @@
 /**
- * @fileoverview Utility functions for working with characters.
+ * @file Utility functions for working with characters.
  */
 
 /**
  * Retrieves the Unicode code point value of a given character.
- *
  * @param {string} character - The character from which to retrieve the code point value. Must be a single character string.
  * @throws {Error} If the input is not a string or not a single character.
  * @returns {number} The Unicode code point value of the character.
@@ -23,7 +22,6 @@ const getIDfromCharacterValue = (character) => {
 
 /**
  * Retrieves the Unicode character value of a given code point value.
- *
  * @param {number} id - The code point value from which to retrieve the character. Must be a number.
  * @throws {Error} If the input is not a number.
  * @returns {string} The Unicode character value of the code point.

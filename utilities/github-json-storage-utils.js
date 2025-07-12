@@ -1,6 +1,6 @@
 const axios = require('axios');
 const { GITHUB_TOKEN } = require('../bot-config/token');
-const { logError, logWarning, logInfo } = require('./logging-utils');
+const { logError, logWarning } = require('./logging-utils');
 const REPO_OWNER = "alexcarron";
 const REPO_NAME = "brobot-database";
 
@@ -15,7 +15,7 @@ const GitHubJsonURL = Object.freeze({
 /**
  * Saves an object to a specified json file path in the GitHub repository
  * If the file already exists, it will be updated, otherwise it will be created
- * @param {Object} object - The object to save
+ * @param {object} object - The object to save
  * @param {string} jsonFileName - The name of the json file to save to
  */
 const saveObjectToJsonInGitHub = async (object, jsonFileName) => {
@@ -82,7 +82,7 @@ const saveObjectToJsonInGitHub = async (object, jsonFileName) => {
  * Loads an object from a specified json file path in the GitHub repository
  * If the file does not exist, it will be created and an empty object will be returned
  * @param {string} jsonFileName - The name of the json file to load from
- * @returns {Object} The object loaded from the file
+ * @returns {object} The object loaded from the file
  */
 const loadObjectFromJsonInGitHub = async (jsonFileName) => {
 	const path = `${jsonFileName}.json`;

@@ -54,7 +54,7 @@ describe('db-inserters.js', () => {
   });
 
   describe('insertCharactersToDB()', () => {
-    it('inserts characters into the database', async () => {
+    it('inserts characters into the database', () => {
       insertCharactersToDB(db, characters);
       const result = db.getRows('SELECT * FROM character');
       expect(result).toEqual([
@@ -63,7 +63,7 @@ describe('db-inserters.js', () => {
       ]);
     });
 
-    it('inserts tags into the database', async () => {
+    it('inserts tags into the database', () => {
       insertCharactersToDB(db, characters);
       const result = db.getRows('SELECT * FROM characterTag');
       expect(result).toEqual([
@@ -74,11 +74,11 @@ describe('db-inserters.js', () => {
       ]);
     });
 
-		it('throws an error if given characters is not an array', async () => {
+		it('throws an error if given characters is not an array', () => {
 			expect(() => insertCharactersToDB(db, {})).toThrow(TypeError);
 		});
 
-		it('throws an error if given characters do not match the character schema', async () => {
+		it('throws an error if given characters do not match the character schema', () => {
 			expect(() => insertCharactersToDB(db, [{}])).toThrow(TypeError);
 		});
   });
@@ -88,7 +88,7 @@ describe('db-inserters.js', () => {
       insertCharactersToDB(db, characters);
 		});
 
-    it('inserts mystery boxes into the database', async () => {
+    it('inserts mystery boxes into the database', () => {
       insertMysteryBoxesToDB(db, mysteryBoxes);
       const result = db.getRows('SELECT * FROM mysteryBox');
       expect(result).toEqual([
@@ -97,7 +97,7 @@ describe('db-inserters.js', () => {
       ]);
     });
 
-    it('inserts character odds into the database', async () => {
+    it('inserts character odds into the database', () => {
       insertMysteryBoxesToDB(db, mysteryBoxes);
       const result = db.getRows('SELECT * FROM mysteryBoxCharacterOdds');
       expect(result).toEqual([
@@ -108,11 +108,11 @@ describe('db-inserters.js', () => {
       ]);
     });
 
-		it('throws an error if given mystery boxes is not an array', async () => {
+		it('throws an error if given mystery boxes is not an array', () => {
 			expect(() => insertMysteryBoxesToDB(db, {})).toThrow(TypeError);
 		});
 
-		it('throws an error if given mystery boxes do not match the mystery box schema', async () => {
+		it('throws an error if given mystery boxes do not match the mystery box schema', () => {
 			expect(() => insertMysteryBoxesToDB(db, [{}])).toThrow(TypeError);
 		});
   });

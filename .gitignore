@@ -4,8 +4,10 @@ node_modules/
 # Stored Unused Files
 unused/
 
+# ES Lint
+.eslintrc.js*
+
 # Local Only
-.eslintrc.json
 *token.json
 .vscode
 .npm

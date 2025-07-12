@@ -76,15 +76,15 @@ describe('VoteService', () => {
 		});
 
 		it('should throw an error if voterID is not given', async () => {
-			expect(voteService.addVote({
+			await expect(voteService.addVote({
 				playerVotedForID: mockPlayers[3].id
-			})).rejects.toThrowError("Missing voterID or playerVotedForID");
+			})).rejects.toThrow("Missing voterID or playerVotedForID");
 		});
 
 		it('should throw an error if playerVotedForID is not given', async () => {
-			expect(voteService.addVote({
+			await expect(voteService.addVote({
 				voterID: mockPlayers[3].id
-			})).rejects.toThrowError("Missing voterID or playerVotedForID");
+			})).rejects.toThrow("Missing voterID or playerVotedForID");
 		});
 	});
 

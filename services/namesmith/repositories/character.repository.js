@@ -1,5 +1,4 @@
 const DatabaseQuerier = require("../database/database-querier");
-const getDatabase = require("../database/get-database");
 const { getIDfromCharacterValue } = require("../utilities/character.utility");
 
 /**
@@ -23,13 +22,13 @@ class CharacterRepository {
 
 	/**
 	 * Returns an array of all character objects.
-	 * @returns {Promise<Array<{
+	 * @returns {Array<{
 	 * 	id: number,
 	 * 	value: string,
 	 * 	rarity: number,
-	 * }>>} An array of character objects.
+	 * }>} An array of character objects.
 	 */
-	async getCharacters() {
+	getCharacters() {
 		let query = `SELECT DISTINCT * FROM character`;
 		const getAllCharacters = this.db.prepare(query);
 		return getAllCharacters.all();
@@ -37,14 +36,14 @@ class CharacterRepository {
 
 	/**
 	 * Returns an array of all character objects with a list of tags
-	 * @returns {Promise<Array<{
+	 * @returns {Array<{
 	 * 	id: number,
 	 * 	value: string,
 	 * 	rarity: number,
 	 * 	tags: string[]
-	 * }>>} An array of character objects with a list of tags
+	 * }>} An array of character objects with a list of tags
 	 */
-	async getCharactersWithTags() {
+	getCharactersWithTags() {
 		const query = `
 			SELECT DISTINCT
 				character.*,
@@ -64,13 +63,13 @@ class CharacterRepository {
 	/**
 	 * Gets a character from a character ID.
 	 * @param {number} id - The ID of the character to retrieve.
-	 * @returns {Promise<{
+	 * @returns {{
 	 * 	id: number,
 	 * 	value: string,
 	 * 	rarity: number,
-	 * } | undefined>} The character with the given ID, or undefined if no such character exists.
+	 * } | undefined} The character with the given ID, or undefined if no such character exists.
 	 */
-	async getCharacterByID(id) {
+	getCharacterByID(id) {
 		const getCharacterByID = this.db.prepare(`SELECT * FROM character WHERE id = @id`);
 		return getCharacterByID.get({ id });
 	}
@@ -92,14 +91,14 @@ class CharacterRepository {
 	/**
 	 * Gets a character from a character ID with its tags.
 	 * @param {number} id - The ID of the character to retrieve.
-	 * @returns {Promise<{
+	 * @returns {{
 	 * 	id: number,
 	 * 	value: string,
 	 * 	rarity: number,
 	 * 	tags: string[]
-	 * } | undefined>} The character with the given ID and its tags, or undefined if no such character exists.
+	 * } | undefined} The character with the given ID and its tags, or undefined if no such character exists.
 	 */
-	async getCharacterWithTags(id) {
+	getCharacterWithTags(id) {
 		const query = `
 			SELECT
 				character.*,

@@ -21,14 +21,14 @@ class DatabaseQuerier {
    * - `getRow(params)`: Execute the query with the given parameters and return a single row of the result set.
    * - `getRows(params)`: Execute the query with the given parameters and return all rows of the result set.
    * - `getIterator(params)`: Execute the query with the given parameters and return an iterator over the result set.
-   * - `getFirstColumnValues()`: Execute the query with no parameters and return an array of the first column of all rows of the result set.
+   * - `getFirstColumnValues()`: Execute the query with no parameters and return an Array of the first column of all rows of the result set.
    * @param {string} sqlQuery - SQL query to prepare
    * @returns {{
-   *  run: (params?: object|array) => { changes: number, lastInsertRowid: number },
-   *  getRow: (params?: object|array) => object,
-   *  getRows: (params?: object|array) => Array<object>,
-   *  getIterator: (params?: object|array) => Iterator<object>,
-   *  getFirstColumnValues: (params?: object|array) => Array
+   *  run: (params?: object|Array<any>) => import("better-sqlite3").RunResult,
+   *  getRow: (params?: object|Array<any>) => unknown,
+   *  getRows: (params?: object|Array<any>) => Array<unknown>,
+   *  getIterator: (params?: object|Array<any>) => Iterator<unknown>,
+   *  getFirstColumnValues: (params?: object|Array<any>) => Array<any>
    * }} - Wrapper object with the above methods
    */
   getQuery(sqlQuery) {
@@ -68,8 +68,8 @@ class DatabaseQuerier {
    * - changes: The total number of rows that were inserted, updated, or deleted by this operation
    * - lastInsertRowid: The rowid of the last row inserted into the database
    * @param {string} sqlQuery - The SQL query to run
-   * @param {object|array} params - The parameters to pass to the query
-   * @returns {{ changes: number, lastInsertRowid: number }} The result of the query
+   * @param {object|Array<any>|undefined} params - The parameters to pass to the query
+   * @returns {import("better-sqlite3").RunResult} The result of the query
    */
   run(sqlQuery, params = undefined) {
 		try {
@@ -77,6 +77,9 @@ class DatabaseQuerier {
 			return queryStatement.run(params);
 		}
 		catch (error) {
+			if (!(error instanceof Error))
+				throw error;
+
 			if (
 				error.message.includes("The supplied SQL string contains more than one statement")
 			) {
@@ -94,8 +97,8 @@ class DatabaseQuerier {
   /**
    * Runs a single read query and returns a single row
    * @param {string} sqlQuery - The SQL query to run
-   * @param {object|array} params - The parameters to pass to the query
-   * @returns {object | undefined} The first row of the result set or undefined if no row is found
+   * @param {object | Array<any> | undefined} params - The parameters to pass to the query
+   * @returns {unknown | undefined} The first row of the result set or undefined if no row is found
    */
   getRow(sqlQuery, params = undefined) {
     const queryStatement = this.getQuery(sqlQuery);
@@ -105,8 +108,8 @@ class DatabaseQuerier {
   /**
    * Runs a single read query and returns all rows of the result set
    * @param {string} sqlQuery - The SQL query to run
-   * @param {object|array} params - The parameters to pass to the query
-   * @returns {Array<object>} An array of all rows of the result set
+   * @param {object | Array<any> | undefined} params - The parameters to pass to the query
+   * @returns {Array<unknown>} An Array of all rows of the result set
    */
   getRows(sqlQuery, params = undefined) {
     const queryStatement = this.getQuery(sqlQuery);
@@ -116,8 +119,8 @@ class DatabaseQuerier {
   /**
    * Runs a single read query and returns an iterator over the result set
    * @param {string} sqlQuery - The SQL query to run
-   * @param {object|array} params - The parameters to pass to the query
-   * @returns {Iterator<object>} An iterator over all rows of the result set
+   * @param {object | Array<any> | undefined} params - The parameters to pass to the query
+   * @returns {Iterator<unknown>} An iterator over all rows of the result set
    */
   getIterator(sqlQuery, params = undefined) {
     const queryStatement = this.getQuery(sqlQuery);
@@ -126,8 +129,8 @@ class DatabaseQuerier {
 
   /**
    * Creates a transaction of multiple queries and returns a function that starts the transaction when called
-   * @param {function} multiQueryFunction - A function that takes no arguments and runs a series of queries
-   * @returns {function} A function that starts the transaction when called
+   * @param {(...args: any[]) => any} multiQueryFunction - A function that takes no arguments and runs a series of queries
+   * @returns {Function} A function that starts the transaction when called
    */
   getTransaction(multiQueryFunction) {
     const transactionFunction = this.db.transaction(multiQueryFunction);
@@ -136,7 +139,7 @@ class DatabaseQuerier {
 
   /**
    * Runs a transaction of multiple queries and returns the result of the transaction
-   * @param {function} multiQueryFunction - A function that takes no arguments and runs a series of queries
+   * @param {(...args: any[]) => any} multiQueryFunction - A function that takes no arguments and runs a series of queries
    * @param {...*} params - Parameters to pass to the transaction function
    * @returns {*} The result of the transaction
    */

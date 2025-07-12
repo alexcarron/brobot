@@ -1,8 +1,10 @@
 const { openMysteryBox } = require("./open-mystery-box.workflow");
 const { mockPlayers } = require("../repositories/mock-repositories");
-const { createMockPlayerService, createMockMysteryBoxService } = require("../services/mock-services");
-const { createAllMocks } = require("../event-listeners/mock-setup");
+const { setupMockNamesmith } = require("../event-listeners/mock-setup");
 const { changeDiscordNameOfPlayer } = require("../utilities/discord-action.utility");
+const { getNamesmithServices } = require("../services/get-namesmith-services");
+const MysteryBoxService = require("../services/mysteryBox.service");
+const PlayerService = require("../services/player.service");
 
 jest.mock("../utilities/discord-action.utility", () => ({
 	changeDiscordNameOfPlayer: jest.fn(),
@@ -19,7 +21,8 @@ describe('open-mystery-box.workflow', () => {
 	let services;
 
 	beforeEach(() => {
-		const { mysteryBoxService, playerService } = createAllMocks();
+		setupMockNamesmith();
+		const { mysteryBoxService, playerService } = getNamesmithServices();
 		services = {
 			mysteryBoxService,
 			playerService

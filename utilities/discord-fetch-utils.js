@@ -1,4 +1,4 @@
-const { Client, Guild, TextChannel, VoiceChannel, Message, ChannelType, Snowflake, GuildMember, User, Role, Collection, ChatInputCommandInteraction } = require("discord.js");
+const { Client, Guild, TextChannel, VoiceChannel, Message, ChannelType, GuildMember, User, Role, ChatInputCommandInteraction } = require("discord.js");
 const ids = require("../bot-config/discord-ids");
 const { discordCollectionToArray } = require("./data-structure-utils");
 
@@ -161,9 +161,9 @@ const fetchRDMGuild = async () => {
 
 /**
  * Gets an integer parameter value of a slash command by name.
- * @param {ChatInputCommandInteraction} interaction
- * @param {string} name - The name of the parameter
- * @returns {number | null}
+ * @param {ChatInputCommandInteraction} interaction - The interaction whose reply is being updated.
+ * @param {string} name - The name of the integer parameter
+ * @returns {number | null} The value of the integer parameter
  */
 const getIntegerParamValue = (interaction, name) => {
 	return interaction.options.getInteger(name);
@@ -171,9 +171,9 @@ const getIntegerParamValue = (interaction, name) => {
 
 /**
  * Gets a string parameter value of a slash command by name.
- * @param {ChatInputCommandInteraction} interaction
- * @param {string} name - The name of the parameter
- * @returns {string | null}
+ * @param {ChatInputCommandInteraction} interaction - The interaction whose reply is being updated.
+ * @param {string} name - The name of the string parameter
+ * @returns {string | null} The value of the string parameter
  */
 const getStringParamValue = (interaction, name) => {
 	return interaction.options.getString(name);
@@ -181,9 +181,9 @@ const getStringParamValue = (interaction, name) => {
 
 /**
  * Gets a user parameter value of a slash command by name.
- * @param {ChatInputCommandInteraction} interaction
+ * @param {ChatInputCommandInteraction} interaction - The interaction whose reply is being updated.
  * @param {string} name - The name of the parameter
- * @returns {User | null}
+ * @returns {User | null} The value of the user parameter
  */
 const getUserParamValue = (interaction, name) => {
 	return interaction.options.getUser(name);
@@ -218,13 +218,15 @@ const fetchMessagesInChannel = async (channel) => {
 
   const allMessages = [];
   let oldestMessageID = undefined;
+	let keepFetching = true;
 
-  while (true) {
+  while (keepFetching) {
     const fetched = await channel.messages.fetch({
 			limit: 100,
 			before: oldestMessageID
 		});
-    if (fetched.size === 0) break;
+    if (fetched.size === 0)
+			keepFetching = false;
 
     allMessages.push(...fetched.values());
     oldestMessageID = fetched.last()?.id;

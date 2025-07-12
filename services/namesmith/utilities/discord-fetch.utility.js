@@ -1,5 +1,5 @@
 /**
- * @fileoverview Utility functions for working with Discord entities related to the Namesmith server.
+ * @file Utility functions for working with Discord entities related to the Namesmith server.
  */
 
 const { GuildMember } = require("discord.js");

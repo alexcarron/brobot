@@ -38,7 +38,7 @@ describe('VoteService', () => {
 		});
 
 		it('should throw an error if the mystery box with the given ID does not exist', async () => {
-			await expect(mysteryBoxService.openBoxByID(-999)).rejects.toThrowError();
+			await expect(mysteryBoxService.openBoxByID(-999)).rejects.toThrow();
 		});
 	});
 });

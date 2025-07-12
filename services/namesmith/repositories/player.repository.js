@@ -1,4 +1,3 @@
-const Database = require("better-sqlite3");
 const DatabaseQuerier = require("../database/database-querier");
 
 const MAX_NAME_LENGTH = 32;
@@ -8,32 +7,30 @@ const MAX_NAME_LENGTH = 32;
  */
 class PlayerRepository {
 	/**
-	 * @type {DatabaseQuerier}
-	 */
-	db;
-
-	/**
 	 * @param {DatabaseQuerier} db - The database querier instance used for executing SQL statements.
 	 */
 	constructor(db) {
 		if (!(db instanceof DatabaseQuerier))
 			throw new TypeError("CharacterRepository: db must be an instance of DatabaseQuerier.");
 
+		/**
+		 * @type {DatabaseQuerier}
+		 */
 		this.db = db;
 	}
 
 	/**
 	 * Returns a list of all player objects in the game.
-	 * @returns {Promise<Array<{
+	 * @returns {Array<{
 	 * 	id: string,
 	 * 	currentName: string,
 	 * 	publishedName: string | null,
 	 * 	tokens: number,
 	 * 	role: string | null,
 	 * 	inventory: string,
-	 * }>>} An array of player objects.
+	 * }>} An array of player objects.
 	 */
-	async getPlayers() {
+	getPlayers() {
 		const query = `SELECT * FROM player`;
 		const getAllPlayers = this.db.prepare(query);
 		return getAllPlayers.all();
@@ -42,16 +39,16 @@ class PlayerRepository {
 	/**
 	 * Retrieves a player by their ID.
 	 * @param {string} playerID - The ID of the player to be retrieved.
-	 * @returns {Promise<{
+	 * @returns {{
 	 * 	id: string,
 	 * 	currentName: string,
 	 * 	publishedName: string | null,
 	 * 	tokens: number,
 	 * 	role: string | null,
 	 * 	inventory: string,
-	 * } | undefined>} The player object if found, otherwise undefined.
+	 * } | undefined} The player object if found, otherwise undefined.
 	 */
-	async getPlayerByID(playerID) {
+	getPlayerByID(playerID) {
 		const query = `SELECT * FROM player WHERE id = @id`;
 		const getPlayerById = this.db.prepare(query);
 		return getPlayerById.get({ id: playerID });
@@ -60,9 +57,9 @@ class PlayerRepository {
 	/**
 	 * Checks if a player exists in the database by their ID.
 	 * @param {string} playerID - The ID of the player to check for existence.
-	 * @returns {Promise<boolean>} True if the player exists, otherwise false.
+	 * @returns {boolean} True if the player exists, otherwise false.
 	 */
-	async doesPlayerExist(playerID) {
+	doesPlayerExist(playerID) {
 		const query = `SELECT id FROM player WHERE id = @id LIMIT 1`;
 		const idOfPlayer = this.db.getRow(query, { id: playerID });
 		if (idOfPlayer === undefined)
@@ -72,16 +69,16 @@ class PlayerRepository {
 
 	/**
 	 * Retrieves a list of players without published names.
-	 * @returns {Promise<Array<{
+	 * @returns {Array<{
 	 * 	id: string,
 	 * 	currentName: string,
 	 * 	publishedName: null,
 	 * 	tokens: number,
 	 * 	role: string | null,
 	 * 	inventory: string,
-	 * }>>} An array of player objects without a published name.
+	 * }>} An array of player objects without a published name.
 	 */
-	async getPlayersWithoutPublishedNames() {
+	getPlayersWithoutPublishedNames() {
 		const query = `SELECT * FROM player WHERE publishedName IS NULL`;
 		const getPlayersWithoutPublishedNames = this.db.prepare(query);
 		return getPlayersWithoutPublishedNames.all();
@@ -117,9 +114,8 @@ class PlayerRepository {
 	 * Changes the current name of a player.
 	 * @param {string} playerID - The ID of the player whose name is being changed.
 	 * @param {string} newName - The new name to assign to the player.
-	 * @returns {Promise<void>} A promise that resolves once the name has been changed.
 	 */
-	async changeCurrentName(playerID, newName) {
+	changeCurrentName(playerID, newName) {
 		if (newName === undefined)
 			throw new Error("changeCurrentName: newName is undefined.");
 
@@ -154,9 +150,8 @@ class PlayerRepository {
 	 * Publishes a player's name to the namesmith database.
 	 * @param {string} playerID - The ID of the player whose name is being published.
 	 * @param {string} name - The name to be published for the player.
-	 * @returns {Promise<void>} A promise that resolves once the published name has been saved to the database.
 	 */
-	async publishName(playerID, name) {
+	publishName(playerID, name) {
 		if (name === undefined)
 			throw new Error("publishName: name is undefined.");
 
@@ -178,9 +173,8 @@ class PlayerRepository {
 	/**
 	 * Adds a new player to the game's database.
 	 * @param {string} playerID - The ID of the player to be added.
-	 * @returns {Promise<void>} A promise that resolves once the player has been added.
 	 */
-	async addPlayer(playerID) {
+	addPlayer(playerID) {
 		const query = `
 			INSERT INTO player (id, currentName, publishedName, tokens, role, inventory)
 			VALUES (@id, @currentName, @publishedName, @tokens, @role, @inventory)
@@ -202,9 +196,8 @@ class PlayerRepository {
 
 	/**
 	 * Resets the list of players, clearing all existing players.
-	 * @returns {Promise<void>} A promise that resolves once the players have been cleared and saved.
 	 */
-	async reset() {
+	reset() {
 		const query = `DELETE FROM player`;
 		const reset = this.db.prepare(query);
 		reset.run();
@@ -214,9 +207,8 @@ class PlayerRepository {
 	 * Adds a character to the player's inventory.
 	 * @param {string} playerID - The ID of the player whose inventory is being modified.
 	 * @param {string} characterValue - The value of the character to add to the player's inventory.
-	 * @returns {Promise<void>} A promise that resolves once the character has been added to the player's inventory.
 	 */
-	async addCharacterToInventory(playerID, characterValue) {
+	addCharacterToInventory(playerID, characterValue) {
 		if (characterValue === undefined)
 			throw new Error("addCharacterToInventory: characterValue is undefined.");
 

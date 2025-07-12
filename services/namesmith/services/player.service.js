@@ -24,7 +24,7 @@ class PlayerService {
 	 * Retrieves the inventory of a player.
 	 * @param {string} playerID - The ID of the player whose inventory is being retrieved.
 	 * @returns {Promise<string>} The inventory of the player.
-	*/
+	 */
 	async getInventory(playerID) {
 		return await this.playerRepository.getInventory(playerID);
 	}
@@ -33,7 +33,7 @@ class PlayerService {
 	 * Retrieves the current name of a player.
 	 * @param {string} playerID - The ID of the player whose name is being retrieved.
 	 * @returns {Promise<string>} The current name of the player.
-	*/
+	 */
 	async getCurrentName(playerID) {
 		return await this.playerRepository.getCurrentName(playerID);
 	}
@@ -70,7 +70,7 @@ class PlayerService {
 	 * @param {string} character - The character to add to the player's name.
 	 * @throws {Error} - If the addition of the character to the player's name would result in a name longer than MAX_NAME_LENGTH.
 	 * @returns {Promise<void>} A promise that resolves once the name has been modified.
-	*/
+	 */
 	async addCharacterToName(playerID, character) {
 		const currentName = await this.getCurrentName(playerID);
 		const newName = currentName + character;

@@ -11,10 +11,9 @@ const VoteService = require("./vote.service");
 
 /**
  * Creates a mock GameStateService instance for testing purposes.
- *
- * @param {GameStateRepository} [mockGameStateRepo] - The mock game state repository to use.
- * @param {PlayerService} [mockPlayerService] - The mock player service to use.
- * @param {VoteService} [mockVoteService] - The mock vote service to use.
+ * @param {GameStateRepository} gameStateRepository - The mock game state repository to use.
+ * @param {PlayerService} playerService - The mock player service to use.
+ * @param {VoteService} voteService - The mock vote service to use.
  * @returns {GameStateService} A mock instance of the GameStateService.
  */
 const createMockGameStateService = (gameStateRepository, playerService, voteService) => {
@@ -32,7 +31,6 @@ const createMockGameStateService = (gameStateRepository, playerService, voteServ
 
 /**
  * Creates a mock PlayerService instance for testing purposes.
- *
  * @param {PlayerRepository} [mockPlayerRepo] - The mock player repository to use.
  * @returns {PlayerService} A mock instance of the PlayerService.
  */
@@ -45,8 +43,8 @@ const createMockPlayerService = (mockPlayerRepo) => {
 
 /**
  * Creates a mock VoteService instance for testing purposes.
- *
- * @param {VoteRepository} [mockVoteRepo] - The mock vote repository to use.
+ * @param {VoteRepository} mockVoteRepo - The mock vote repository to use.
+ * @param {PlayerService} mockPlayerService - The mock player service to use.
  * @returns {VoteService} A mock instance of the VoteService.
  */
 const createMockVoteService = (mockVoteRepo, mockPlayerService) => {
@@ -61,7 +59,6 @@ const createMockVoteService = (mockVoteRepo, mockPlayerService) => {
 
 /**
  * Creates a mock MysteryBoxService instance for testing purposes.
- *
  * @param {MysteryBoxRepository} [mockMysteryBoxRepository] - The mock mystery box repository to use.
  * @param {CharacterRepository} [mockCharacterRepository] - The mock character repository to use.
  * @returns {MysteryBoxService} A mock instance of the MysteryBoxService.
@@ -87,7 +84,6 @@ const createMockMysteryBoxService = (mockMysteryBoxRepository, mockCharacterRepo
  *
  * If any of the mock repository parameters are undefined, a default mock repository
  * instance is created for the respective service.
- *
  * @param {{mockPlayerRepo: PlayerRepository, mockVoteRepo: VoteRepository, mockMysteryBoxRepo: MysteryBoxRepository, mockCharacterRepo: CharacterRepository, gameStateRepository: GameStateRepository}} options - An object with the mock repository instances to use.
  * @returns {{playerService: PlayerService, voteService: VoteService, mysteryBoxService: MysteryBoxService, gameStateService: GameStateService}} An object with the created mock service instances.
  */

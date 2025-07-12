@@ -1,6 +1,6 @@
 const { mockPlayers } = require("../repositories/mock-repositories");
 const PlayerRepository = require("../repositories/player.repository");
-const { changeDiscordNameOfPlayer, sendToPublishedNamesChannel, sendToNamesToVoteOnChannel, isNonPlayer, resetMemberToNewPlayer } = require("../utilities/discord-action.utility");
+const { changeDiscordNameOfPlayer, sendToPublishedNamesChannel, sendToNamesToVoteOnChannel, resetMemberToNewPlayer } = require("../utilities/discord-action.utility");
 const { fetchNamesmithGuildMembers } = require("../utilities/discord-fetch.utility");
 const { createMockPlayerService } = require("./mock-services");
 const PlayerService = require("./player.service");
@@ -175,11 +175,11 @@ describe('PlayerService', () => {
 		it('should publish all unpublished names', async () => {
 			await playerService.publishUnpublishedNames();
 
-			for (const player of mockPlayers) {
-				if (!player.publishedName) {
-					const publishedName = await playerService.getPublishedName(player.id);
-					expect(publishedName).toEqual(player.currentName);
-				}
+			const playersToCheck = mockPlayers.filter(player => !player.publishedName);
+
+			for (const player of playersToCheck) {
+				const publishedName = await playerService.getPublishedName(player.id);
+				expect(publishedName).toEqual(player.currentName);
 			}
 		});
 	});
@@ -285,7 +285,7 @@ describe('PlayerService', () => {
 			await playerService.reset();
 			const players = await playerService.playerRepository.getPlayers();
 			expect(players.length).toBe(0);
-			expect(playerService.getCurrentName(mockPlayers[0].id)).rejects.toThrow();
+			await expect(playerService.getCurrentName(mockPlayers[0].id)).rejects.toThrow();
 		});
 	});
 });

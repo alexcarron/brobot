@@ -5,7 +5,6 @@ const DatabaseQuerier = require('./database-querier');
 
 /**
  * Creates an in-memory SQLite database with the schema and initial data for Namesmith already populated.
- *
  * @returns {DatabaseQuerier} The in-memory database.
  */
 const createMockDB = () => {
@@ -17,7 +16,6 @@ const createMockDB = () => {
 
 /**
  * Adds a player to the database with the given properties.
- *
  * @param {DatabaseQuerier} db - The in-memory database.
  * @param {{
  * 	id: string,
@@ -85,7 +83,6 @@ const addMockPlayer = (db, { id, currentName, publishedName, tokens, role, inven
 
 /**
  * Adds a vote to the database with the given properties.
- *
  * @param {Database | DatabaseQuerier} db - The in-memory database.
  * @param {{ voterID: string, playerVotedForID: string }} voteData - The vote data to add.
  * @returns {{ changes: number, lastInsertRowid: number }} The result of the insert operation.

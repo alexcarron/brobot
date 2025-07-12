@@ -8,7 +8,6 @@ const VoteRepository = require("./vote.repository");
 
 /**
  * Creates a mock character repository instance with an in-memory database for testing purposes.
- *
  * @param {DatabaseQuerier | undefined} mockDB - An optional mock database instance.
  * @returns {CharacterRepository} A mock instance of the CharacterRepository.
  */
@@ -20,7 +19,6 @@ const createMockCharacterRepo = (mockDB) => {
 
 /**
  * Creates a mock game state repository instance with an in-memory database for testing purposes.
- *
  * @param {DatabaseQuerier | undefined} mockDB - An optional mock database instance.
  * @returns {GameStateRepository} A mock instance of the GameStateRepository.
  */
@@ -32,7 +30,6 @@ const createMockGameStateRepo = (mockDB) => {
 
 /**
  * Creates a mock mystery box repository instance with an in-memory database for testing purposes.
- *
  * @param {DatabaseQuerier | undefined} mockDB - An optional mock database instance.
  * @returns {MysteryBoxRepository} A mock instance of the MysteryBoxRepository.
  */
@@ -67,13 +64,13 @@ const createMockPlayerObject = ({id, currentName, publishedName, tokens, role, i
 /**
  * An array of mock player data for use in tests.
  * @type {Array<{
-	 * 	id: string,
-	 * 	currentName: string,
-	 * 	publishedName: string | null,
-	 * 	tokens: number,
-	 * 	role: string | null,
-	 * 	inventory: string,
-	 * }>}
+ * 	id: string,
+ * 	currentName: string,
+ * 	publishedName: string | null,
+ * 	tokens: number,
+ * 	role: string | null,
+ * 	inventory: string,
+ * }>}
  */
 const mockPlayers = [
 	{
@@ -114,7 +111,6 @@ const mockPlayers = [
  * Creates a mock player repository instance with an in-memory database for testing purposes.
  *
  * The mock repository is populated with mock player data from the mockPlayers array.
- *
  * @param {DatabaseQuerier | undefined} mockDB - An optional mock database instance.
  * @param {Array<{id: string, currentName: string, publishedName: string, tokens: number, role: string, inventory: string}> | undefined} players - An optional array of mock player data.
  * @returns {PlayerRepository} A mock instance of the PlayerRepository.
@@ -155,8 +151,9 @@ const mockVotes = [
  * Creates a mock vote repository instance with an in-memory database for testing purposes.
  *
  * The mock repository is populated with mock vote data from the mockVotes array.
- *
  * @param {DatabaseQuerier | undefined} mockDB - An optional mock database instance.
+ * @param {Array<{id: string, currentName: string, publishedName: string, tokens: number, role: string, inventory: string}> | undefined} players - An optional array of mock player data.
+ * @param {Array<{voterID: string, playerVotedForID: string}> | undefined} votes - An optional array of mock vote data.
  * @returns {VoteRepository} A mock instance of the VoteRepository.
  */
 const createMockVoteRepo = (mockDB, players, votes) => {
@@ -201,7 +198,6 @@ const createMockVoteRepo = (mockDB, players, votes) => {
  * - mysteryBoxRepository: A mock instance of the MysteryBoxRepository.
  * - playerRepository: A mock instance of the PlayerRepository.
  * - voteRepository: A mock instance of the VoteRepository.
- *
  * @param {DatabaseQuerier | undefined} mockDB - An optional mock database instance.
  * @param {{players: Array<{id: string, currentName: string, publishedName: string, tokens: number, role: string, inventory: string}> | undefined, votes: Array<{voterID: string, playerVotedForID: string}> | undefined}} [options] - An optional object with properties for players and votes to be added to the mock repositories.
  * @returns {{db: DatabaseQuerier, characterRepository: CharacterRepository, gameStateRepository: GameStateRepository, mysteryBoxRepository: MysteryBoxRepository, playerRepository: PlayerRepository, voteRepository: VoteRepository}} A mock instance of the repositories and the in-memory database.

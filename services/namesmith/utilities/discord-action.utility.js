@@ -1,5 +1,5 @@
 /**
- * @fileoverview Utility functions for doing Discord actions related to Namesmith
+ * @file Utility functions for doing Discord actions related to Namesmith
  */
 
 const { memberHasRole, setNicknameOfMember, removeRoleFromMember, addRoleToMember, closeChannel, openChannel, removeAllRolesFromMember } = require("../../../utilities/discord-action-utils");
@@ -125,6 +125,7 @@ const isNonPlayer = async (guildMember) => {
 /**
  * Resets a guild member to a new player by removing all roles, giving them the No Name role, and setting their nickname to the default No Name.
  * @param {GuildMember} guildMember The guild member to reset.
+ * @param {string} nameIfNoName The name to set if the guild member has the No Name role.
  * @returns {Promise<void>} A promise that resolves once the guild member has been reset.
  */
 const resetMemberToNewPlayer = async (guildMember, nameIfNoName) => {

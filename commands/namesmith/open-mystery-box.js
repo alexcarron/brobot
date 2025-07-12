@@ -1,9 +1,7 @@
 const ids = require("../../bot-config/discord-ids");
 const SlashCommand = require("../../services/command-creation/slash-command");
-const { getNamesmithServices } = require("../../services/namesmith/services/get-namesmith-services");
 const { openMysteryBox } = require("../../services/namesmith/workflows/open-mystery-box.workflow");
 const { deferInteraction } = require("../../utilities/discord-action-utils");
-const { fetchGuildMember } = require("../../utilities/discord-fetch-utils");
 
 
 const command = new SlashCommand({

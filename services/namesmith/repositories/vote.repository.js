@@ -1,4 +1,3 @@
-const Database = require("better-sqlite3");
 const DatabaseQuerier = require("../database/database-querier");
 
 /**
@@ -22,12 +21,12 @@ class VoteRepository {
 
 	/**
 	 * Returns a list of all vote objects.
-	 * @returns {Promise<Array<{
+	 * @returns {Array<{
 	 * 	voterID: string,
 	 *  playerVotedForID: string
-	 * }>>} An array of vote objects.
+	 * }>} An array of vote objects.
 	 */
-	async getVotes() {
+	getVotes() {
 		const query = `SELECT * FROM vote`;
 		const getAllVotes = this.db.prepare(query);
 		return getAllVotes.all();
@@ -36,12 +35,12 @@ class VoteRepository {
 	/**
 	 * Retrieves a vote by the ID of the user who voted.
 	 * @param {string} voterID - The ID of the user who voted.
-	 * @returns {Promise<{
+	 * @returns {{
 	 * 	voterID: string,
 	 *  playerVotedForID: string
-	 * } | undefined>} A vote object if found, otherwise undefined.
+	 * } | undefined} A vote object if found, otherwise undefined.
 	 */
-	async getVoteByVoterID(voterID) {
+	getVoteByVoterID(voterID) {
 		const query = `SELECT * FROM vote WHERE voterID = @voterID`;
 		const getVoteByVoterID = this.db.prepare(query);
 		return getVoteByVoterID.get({ voterID });
@@ -50,12 +49,12 @@ class VoteRepository {
 	/**
 	 * Retrieves a list of votes by the ID of the player voted for.
 	 * @param {string} playerVotedForID - The ID of the player voted for.
-	 * @returns {Promise<Array<{
+	 * @returns {Array<{
 	 * 	voterID: string,
 	 *  playerVotedForID: string
-	 * }>>} A list of vote objects.
+	 * }>} A list of vote objects.
 	 */
-	async getVotesByVotedForID(playerVotedForID) {
+	getVotesByVotedForID(playerVotedForID) {
 		const query = `SELECT * FROM vote WHERE playerVotedForID = @playerVotedForID`;
 		const getVotesByVotedForID = this.db.prepare(query);
 		return getVotesByVotedForID.all({ playerVotedForID });
@@ -64,9 +63,9 @@ class VoteRepository {
 	/**
 	 * Checks if a vote with the given properties exists.
 	 * @param {{ voterID: string, playerVotedForID: string }} voteData - The vote data to check for.
-	 * @returns {Promise<boolean>} A promise that resolves with a boolean indicating if the vote exists.
+	 * @returns {boolean} A promise that resolves with a boolean indicating if the vote exists.
 	 */
-	async doesVoteExist({ voterID, playerVotedForID }) {
+	doesVoteExist({ voterID, playerVotedForID }) {
 		if (voterID === undefined && playerVotedForID === undefined)
 			throw new TypeError(`doesVoteExist: Missing voterID and playerVotedForID`);
 		else if (voterID === undefined) {
@@ -89,9 +88,8 @@ class VoteRepository {
 	/**
 	 * Adds a new vote to the list of votes.
 	 * @param {{ voterID: string, playerVotedForID: string }} vote - The vote object to add.
-	 * @returns {Promise<void>} A promise that resolves once the vote has been saved.
 	 */
-	async addVote({ voterID, playerVotedForID }) {
+	addVote({ voterID, playerVotedForID }) {
 		if (!voterID)
 			throw new Error("addVote: Missing voterID");
 
@@ -112,9 +110,8 @@ class VoteRepository {
 	/**
 	 * Changes the vote of a user by replacing the vote with a new player voted for ID.
 	 * @param {{ voterID: string, playerVotedForID: string }} vote - The vote object with the new player ID.
-	 * @returns {Promise<void>} A promise that resolves once the vote has been saved.
 	 */
-	async changeVote({ voterID, playerVotedForID }) {
+	changeVote({ voterID, playerVotedForID }) {
 		if (!voterID)
 			throw new Error("changeVote: Missing voterID");
 
@@ -143,9 +140,8 @@ class VoteRepository {
 	/**
 	 * Deletes a vote by a given voter ID.
 	 * @param {string} voterID - The ID of the user who voted.
-	 * @returns {Promise<void>} A promise that resolves once the vote has been deleted.
 	 */
-	async deleteVote(voterID) {
+	deleteVote(voterID) {
 		const query = `DELETE FROM vote WHERE voterID = @voterID`;
 		const deleteVote = this.db.prepare(query);
 		const vote = deleteVote.run({ voterID });
@@ -155,9 +151,8 @@ class VoteRepository {
 
 	/**
 	 * Resets the list of votes, clearing all existing votes.
-	 * @returns {Promise<void>} A promise that resolves once the votes have been cleared and saved.
 	 */
-	async reset() {
+	reset() {
 		const query = `DELETE FROM vote`;
 		const reset = this.db.prepare(query);
 		reset.run();

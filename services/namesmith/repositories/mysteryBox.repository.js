@@ -1,6 +1,4 @@
-const { loadObjectFromJsonInGitHub } = require("../../../utilities/github-json-storage-utils");
 const DatabaseQuerier = require("../database/database-querier");
-const getDatabase = require("../database/get-database");
 const { getCharacterValueFromID } = require("../utilities/character.utility");
 
 /**
@@ -31,7 +29,7 @@ class MysteryBoxRepository {
 	 *  tokenCost: number,
 	 * }>>} An array of mystery box objects.
 	 */
-	async getMysteryBoxes() {
+	getMysteryBoxes() {
 		const query = `SELECT DISTINCT * FROM mysteryBox`;
 		const getAllMysteryBoxes = this.db.prepare(query);
 		return getAllMysteryBoxes.all();
@@ -68,13 +66,13 @@ class MysteryBoxRepository {
 	/**
 	 * Given a mystery box id, returns the corresponding mystery box object.
 	 * @param {number} id - The id of the mystery box to return.
-	 * @returns {Promise<{
+	 * @returns {{
 	 * 	id: number,
 	 * 	name: string,
 	 *  tokenCost: number,
-	 * } | undefined>} The mystery box object with the given id or undefined if no such object exists.
+	 * } | undefined} The mystery box object with the given id or undefined if no such object exists.
 	 */
-	async getMysteryBoxByID(id) {
+	getMysteryBoxByID(id) {
 		if (!id)
 			throw new Error('getMysteryBoxByID: Mystery box id must be provided.');
 
@@ -117,9 +115,9 @@ class MysteryBoxRepository {
 	/**
 	 * Given a mystery box id, returns an object with character IDs as keys and the weight of the character in the mystery box as the value.
 	 * @param {number} mysteryBoxID - The id of the mystery box to return the character odds for.
-	 * @returns {Promise<Record<number, number>>} An object with character IDs as keys and the weight of the character in the mystery box as the value.
+	 * @returns {Record<number, number>} An object with character IDs as keys and the weight of the character in the mystery box as the value.
 	 */
-	async getCharacterOdds(mysteryBoxID) {
+	getCharacterOdds(mysteryBoxID) {
 		const query = `SELECT characterID, weight FROM mysteryBoxCharacterOdds WHERE mysteryBoxID = @mysteryBoxID`;
 		const getCharacterOdds = this.db.prepare(query);
 		const characterOddsRows = getCharacterOdds.all({ mysteryBoxID });

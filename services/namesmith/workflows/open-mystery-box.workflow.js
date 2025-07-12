@@ -1,10 +1,13 @@
+const MysteryBoxService = require("../services/mysteryBox.service");
+const PlayerService = require("../services/player.service");
+
 /**
  * Opens a mystery box and adds a character to the player's name.
  * @param {object} services - An object containing the services to use for opening the mystery box and adding a character to the player's name.
  * @param {MysteryBoxService} services.mysteryBoxService - The service for opening the mystery box.
  * @param {PlayerService} services.playerService - The service for adding a character to the player's name.
  * @param {string} playerID - The ID of the player.
- * @param {number} [mysteryBoxID=1] - The ID of the mystery box to open.
+ * @param {number} [mysteryBoxID] - The ID of the mystery box to open.
  * @returns {Promise<{character: {
  * 	id: number,
  * 	value: string,

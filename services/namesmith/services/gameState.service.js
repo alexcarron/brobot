@@ -1,5 +1,5 @@
 const { CronJob } = require("cron");
-const { logInfo, logWarning } = require("../../../utilities/logging-utils");
+const { logWarning } = require("../../../utilities/logging-utils");
 const GameStateRepository = require("../repositories/gameState.repository");
 const { closeNamesToVoteOnChannel, openNamesToVoteOnChannel, sendToNamesToVoteOnChannel, sendMessageToTheWinnerChannel, closeTheWinnerChannel, openTheWinnerChannel } = require("../utilities/discord-action.utility");
 const VoteService = require("./vote.service");
@@ -58,9 +58,8 @@ class GameStateService {
 	 * Starts a cron job that will end the game at the end time stored in the game state.
 	 * If the current time is before the end time, the job will be started.
 	 * @param {Date} endDate - The end time of the game.
-	 * @returns {Promise<void>} A promise that resolves once the job has been started.
 	 */
-	async startEndGameCronJob(endDate) {
+	startEndGameCronJob(endDate) {
 		if (endDate === null || endDate === undefined) {
 			logWarning(`The game has not been started yet, so the end game cron job will not be started.`);
 			return;
@@ -101,15 +100,14 @@ class GameStateService {
 	 * Starts a cron job that will end voting at the vote ending time stored in the game state.
 	 * If the current time is before the vote ending time, the job will be started.
 	 * @param {Date} voteEndingDate - The vote ending time.
-	 * @returns {Promise<void>} A promise that resolves once the job has been started.
 	 */
-	async startVoteIsEndingCronJob(voteEndingDate) {
+	startVoteIsEndingCronJob(voteEndingDate) {
 		if (voteEndingDate === null || voteEndingDate === undefined) {
 			logWarning(`The game has not been started yet, so the vote is ending cron job will not be started.`);
 			return;
 		}
 
-		if (!voteEndingDate instanceof Date)
+		if (!(voteEndingDate instanceof Date))
 			throw new Error(`The vote ending date is not a Date object: ${voteEndingDate}`);
 
 		const now = new Date();

@@ -13,7 +13,6 @@ const VoteService = require("../services/vote.service");
 
 /**
  * Creates all the mock services and repositories needed for testing.
- *
  * @returns {{mockDB: DatabaseQuerier, mysteryBoxRepository: MysteryBoxRepository, characterRepository: CharacterRepository, playerRepository: PlayerRepository, gameStateRepository: GameStateRepository, voteRepository: VoteRepository, mysteryBoxService: MysteryBoxService, playerService: PlayerService, voteService: VoteService, gameStateService: GameStateService}} An object containing all the mock services and repositories.
  */
 const createAllMocks = () => {

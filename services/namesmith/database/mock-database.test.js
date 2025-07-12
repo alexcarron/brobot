@@ -74,7 +74,7 @@ describe("mock-database", () => {
         currentName: "John Doe",
       };
 
-      expect(() => addMockPlayer(db, playerData)).toThrowError(TypeError);
+      expect(() => addMockPlayer(db, playerData)).toThrow(TypeError);
     });
   });
 
@@ -118,7 +118,7 @@ describe("mock-database", () => {
         voterID: "player-1",
       };
 
-      expect(() => addMockVote(db, voteData)).toThrowError(TypeError);
+      expect(() => addMockVote(db, voteData)).toThrow(TypeError);
     });
   });
 });

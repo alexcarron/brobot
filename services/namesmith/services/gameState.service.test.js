@@ -4,7 +4,6 @@ const { mockPlayers } = require("../repositories/mock-repositories");
 const { sendToNamesToVoteOnChannel, openNamesToVoteOnChannel, sendMessageToTheWinnerChannel, closeNamesToVoteOnChannel, openTheWinnerChannel, closeTheWinnerChannel } = require("../utilities/discord-action.utility");
 const GameStateService = require("./gameState.service");
 const { createMockServices } = require("./mock-services");
-const MysteryBoxService = require("./mysteryBox.service");
 const PlayerService = require("./player.service");
 const VoteService = require("./vote.service");
 
@@ -27,7 +26,6 @@ jest.mock('../utilities/discord-action.utility', () => ({
 
 jest.mock('../utilities/discord-fetch.utility', () => ({
 	fetchNamesmithServer: jest.fn(),
-	fetchNamesmithGuildMember: jest.fn(),
 	fetchNamesmithGuildMember: jest.fn( (playerID) =>
 		Promise.resolve({ id: playerID })
 	),
@@ -60,18 +58,12 @@ describe('GameStateService', () => {
 	 */
 	let voteService;
 
-	/**
-	 * @type {MysteryBoxService}
-	 */
-	let mysteryBoxService;
-
 
 	beforeEach(() => {
 		const services = createMockServices();
 
 		playerService = services.playerService;
 		voteService = services.voteService;
-		mysteryBoxService = services.mysteryBoxService;
 		gameStateService = services.gameStateService;
 	});
 
@@ -175,20 +167,20 @@ describe('GameStateService', () => {
 			);
 		});
 
-		it('should not start cron job if end time does not exist', async () => {
-			await gameStateService.startEndGameCronJob();
+		it('should not start cron job if end time does not exist', () => {
+			gameStateService.startEndGameCronJob();
 			expect(CronJob).toHaveBeenCalledTimes(0);
 		});
 	});
 
-	describe('.startEndGameCronJob()', () => {
-		it('should start a cron job to end voting', async () => {
+	describe('.startVoteIsEndingCronJob()', () => {
+		it('should start a cron job to end voting', () => {
 			const now = new Date();
 			const totalDays = GameStateService.GAME_DURATION_DAYS + GameStateService.VOTE_DURATION_DAYS;
 			const expectedEndTime = new Date(now.getTime() +
 				totalDays * 24 * 60 * 60 * 1000
 			);
-			await gameStateService.startVoteIsEndingCronJob(expectedEndTime);
+			gameStateService.startVoteIsEndingCronJob(expectedEndTime);
 
 			expect(CronJob).toHaveBeenCalledTimes(1);
 			expect(CronJob).toHaveBeenNthCalledWith(
@@ -208,11 +200,11 @@ describe('GameStateService', () => {
 		it('should publish all unpublished names', async () => {
 			await gameStateService.endGame();
 
-			for (const player of mockPlayers) {
-				if (!player.publishedName) {
-					const publishedName = await playerService.getPublishedName(player.id);
-					expect(publishedName).toEqual(player.currentName);
-				}
+			const playersToCheck = mockPlayers.filter(player => !player.publishedName);
+
+			for (const player of playersToCheck) {
+				const publishedName = await playerService.getPublishedName(player.id);
+				expect(publishedName).toEqual(player.currentName);
 			}
 		});
 

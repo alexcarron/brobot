@@ -10,7 +10,7 @@ const VoteService = require("./vote.service");
  *  playerService: PlayerService,
  *  gameStateService: GameStateService,
  *  voteService: VoteService,
- * }}
+ * }} The Namesmith services.
  * @throws {Error} If Namesmith, MysteryBoxService, PlayerService, GameStateService, or VoteService is not set up yet.
  */
 const getNamesmithServices = () => {

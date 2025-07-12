@@ -66,11 +66,11 @@ describe('CharacterRepository', () => {
 		});
 
 		it('SHOULD throw an error if no value is provided', async () => {
-			await expect(characterRepo.getCharacterByValue()).rejects.toThrowError();
+			await expect(characterRepo.getCharacterByValue()).rejects.toThrow();
 		});
 
 		it('SHOULD throw an error if more than one character is given', async () => {
-			await expect(characterRepo.getCharacterByValue('AB')).rejects.toThrowError();
+			await expect(characterRepo.getCharacterByValue('AB')).rejects.toThrow();
 		});
 	});
 
