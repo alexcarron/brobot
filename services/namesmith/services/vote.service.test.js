@@ -30,21 +30,20 @@ describe('VoteService', () => {
 		});
 	});
 
-
 	describe('.resolveVote()', () => {
-		it('should resolve a vote object to a vote object', async () => {
+		it('should resolve a vote object to a vote object', () => {
 			const vote = voteService.voteRepository.getVotes()[0];
 
-			const resolvedVote = await voteService.resolveVote(vote);
+			const resolvedVote = voteService.resolveVote(vote);
 
 			expect(resolvedVote).toEqual(vote);
 		});
 
-		it('should resolve a vote ID to a vote object', async () => {
+		it('should resolve a vote ID to a vote object', () => {
 			const vote = voteService.voteRepository.getVotes()[0];
 			const voteID = vote.voterID;
 
-			const resolvedVote = await voteService.resolveVote(voteID);
+			const resolvedVote = voteService.resolveVote(voteID);
 
 			expect(resolvedVote).toEqual(vote);
 		});

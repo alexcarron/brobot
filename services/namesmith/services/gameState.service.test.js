@@ -65,10 +65,14 @@ describe('GameStateService', () => {
 		playerService = services.playerService;
 		voteService = services.voteService;
 		gameStateService = services.gameStateService;
+
+		jest.useFakeTimers();
+		jest.setSystemTime(new Date('2025-07-12T12:00:00.000Z'));
 	});
 
 	afterEach(() => {
 		jest.clearAllMocks();
+		jest.useRealTimers();
 	});
 
 	afterAll(() => {

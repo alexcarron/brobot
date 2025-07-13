@@ -62,7 +62,7 @@ class MysteryBoxService {
 	/**
 	 * Returns a character from the mystery box with the given ID. The character is chosen using the weighted random distribution of the mystery box.
 	 * @param {number} mysteryBoxResolvable - The ID of the mystery box from which to retrieve a character.
-	 * @return {Promise<{
+	 * @returns {Promise<{
 	 * 	id: number,
 	 * 	value: string,
 	 * 	rarity: number,

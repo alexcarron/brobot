@@ -20,7 +20,10 @@ class VoteService {
 	/**
 	 * Resolves a vote from the given resolvable.
 	 * @param {string | Vote} voteResolvable - The vote resolvable to resolve.
-	 * @returns {Vote} The resolved vote.
+	 * @returns {{
+	 * 	voterID: string,
+	 *  playerVotedForID: string
+	 * }} The resolved vote.
 	 * @throws {Error} If the vote resolvable is invalid.
 	 */
 	resolveVote(voteResolvable) {
@@ -29,10 +32,11 @@ class VoteService {
 			return vote;
 		}
 		else if (typeof voteResolvable === "string") {
-			const vote = this.voteRepository.getVoteByVoterID(voteResolvable);
+			const voterID = voteResolvable;
+			const vote = this.voteRepository.getVoteByVoterID(voterID);
 
 			if (vote === undefined)
-				throw new Error(`resolveVote: Vote with id ${voteResolvable} does not exist.`);
+				throw new Error(`resolveVote: Vote with id ${voterID} does not exist.`);
 
 			return vote;
 		}

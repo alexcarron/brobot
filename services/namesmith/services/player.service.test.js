@@ -55,32 +55,77 @@ describe('PlayerService', () => {
 		});
 	});
 
+	describe('.resolvePlayer()', () => {
+		it('should resolve a player object to a player object', () => {
+			const player = playerService.playerRepository.getPlayers()[0];
+			const resolvedPlayer = playerService.resolvePlayer(player);
+			expect(resolvedPlayer).toEqual(player);
+		});
+
+		it('should resolve a vote ID to a vote object', () => {
+			const player = playerService.playerRepository.getPlayers()[0];
+			const playerID = player.id;
+			const resolvedPlayer = playerService.resolvePlayer(playerID);
+			expect(resolvedPlayer).toEqual(player);
+		});
+
+		it('should throw an error if the vote resolvable is invalid', () => {
+			expect(() => playerService.resolvePlayer("invalid-id")).toThrow();
+			expect(() => playerService.resolvePlayer({})).toThrow();
+			expect(() => playerService.resolvePlayer(null)).toThrow();
+			expect(() => playerService.resolvePlayer(undefined)).toThrow();
+			expect(() => playerService.resolvePlayer(-999)).toThrow();
+		});
+	});
+
+	describe('.resolvePlayerID()', () => {
+		it('should resolve a player object to a player ID', () => {
+			const player = playerService.playerRepository.getPlayers()[0];
+			const resolvedPlayerID = playerService.resolvePlayerID(player);
+			expect(resolvedPlayerID).toEqual(player.id);
+		});
+
+		it('should resolve a player ID to a player ID', () => {
+			const player = playerService.playerRepository.getPlayers()[0];
+			const playerID = player.id;
+			const resolvedPlayerID = playerService.resolvePlayerID(playerID);
+			expect(resolvedPlayerID).toEqual(playerID);
+		});
+
+		it('should throw an error if the player resolvable is invalid', () => {
+			expect(() => playerService.resolvePlayerID({})).toThrow();
+			expect(() => playerService.resolvePlayerID(null)).toThrow();
+			expect(() => playerService.resolvePlayerID(undefined)).toThrow();
+			expect(() => playerService.resolvePlayerID(-999)).toThrow();
+		});
+	});
+
 	describe('.getInventory()', () => {
-		it('should return the inventory of a player', async () => {
-			const result = await playerService.getInventory(mockPlayers[0].id);
+		it('should return the inventory of a player', () => {
+			const result = playerService.getInventory(mockPlayers[0].id);
 			expect(result).toEqual(mockPlayers[0].inventory);
 		});
 
-		it('should throw an error if the player is not found', async () => {
-			await expect(playerService.getInventory("invalid-id")).rejects.toThrow();
+		it('should throw an error if the player is not found', () => {
+			expect(() => playerService.getInventory("invalid-id")).toThrow();
 		});
 	});
 
 	describe('.getCurrentName()', () => {
-		it('should return the current name of a player', async () => {
-			const result = await playerService.getCurrentName(mockPlayers[0].id);
+		it('should return the current name of a player', () => {
+			const result = playerService.getCurrentName(mockPlayers[0].id);
 			expect(result).toEqual(mockPlayers[0].currentName);
 		});
 
-		it('should throw an error if the player is not found', async () => {
-			await expect(playerService.getCurrentName("invalid-id")).rejects.toThrow();
+		it('should throw an error if the player is not found', () => {
+			expect(() => playerService.getCurrentName("invalid-id")).toThrow();
 		});
 	});
 
 	describe('.changeCurrentName()', () => {
 		it('should change the current name of a player', async () => {
 			await playerService.changeCurrentName(mockPlayers[0].id, "new name");
-			const result = await playerService.getCurrentName(mockPlayers[0].id);
+			const result = playerService.getCurrentName(mockPlayers[0].id);
 			expect(result).toEqual("new name");
 			expect(changeDiscordNameOfPlayer).toHaveBeenCalledWith(
 				mockPlayers[0].id,
@@ -90,7 +135,7 @@ describe('PlayerService', () => {
 
 		it('should change the current name to an empty name', async () => {
 			await playerService.changeCurrentName(mockPlayers[0].id, "");
-			const result = await playerService.getCurrentName(mockPlayers[0].id);
+			const result = playerService.getCurrentName(mockPlayers[0].id);
 			expect(result).toEqual("");
 			expect(changeDiscordNameOfPlayer).toHaveBeenCalledWith(
 				mockPlayers[0].id,
@@ -112,10 +157,10 @@ describe('PlayerService', () => {
 	});
 
 	describe('.addCharacterToName()', () => {
-		it('should add a character to the current name of a player', async () => {
-			await playerService.addCharacterToName(mockPlayers[0].id, "a");
-			const currentName = await playerService.getCurrentName(mockPlayers[0].id);
-			const inventory = await playerService.getInventory(mockPlayers[0].id);
+		it('should add a character to the current name of a player', () => {
+			playerService.addCharacterToName(mockPlayers[0].id, "a");
+			const currentName = playerService.getCurrentName(mockPlayers[0].id);
+			const inventory = playerService.getInventory(mockPlayers[0].id);
 			expect(currentName).toEqual(mockPlayers[0].currentName + "a");
 			expect(inventory).toEqual(mockPlayers[0].inventory + "a");
 			expect(changeDiscordNameOfPlayer).toHaveBeenCalledWith(
@@ -124,27 +169,27 @@ describe('PlayerService', () => {
 			);
 		});
 
-		it('should throw an error if the player is not found', async () => {
-			await expect(playerService.addCharacterToName("invalid-id", "a")).rejects.toThrow();
+		it('should throw an error if the player is not found', () => {
+			expect(() => playerService.addCharacterToName("invalid-id", "a")).toThrow();
 		});
 
-		it('should throw an error if the character is too long', async () => {
-			await expect(playerService.addCharacterToName(mockPlayers[1].id, "aa")).rejects.toThrow();
+		it('should throw an error if the character is too long', () => {
+			expect(() => playerService.addCharacterToName(mockPlayers[1].id, "aa")).toThrow();
 		});
 
-		it('should throw an error if the character does not exist', async () => {
-			await expect(playerService.addCharacterToName(mockPlayers[1].id)).rejects.toThrow();
+		it('should throw an error if the character does not exist', () => {
+			expect(() => playerService.addCharacterToName(mockPlayers[1].id)).toThrow();
 		});
 	});
 
 	describe(".getPublishedName()", () => {
-		it("should return the published name of a player", async () => {
-			const result = await playerService.getPublishedName(mockPlayers[0].id);
+		it("should return the published name of a player", () => {
+			const result = playerService.getPublishedName(mockPlayers[0].id);
 			expect(result).toEqual(mockPlayers[0].publishedName);
 		});
 
-		it("should throw an error if the player is not found", async () => {
-			await expect(playerService.getPublishedName("invalid-id")).rejects.toThrow();
+		it("should throw an error if the player is not found", () => {
+			expect(() => playerService.getPublishedName("invalid-id")).toThrow();
 		});
 	});
 
@@ -152,7 +197,7 @@ describe('PlayerService', () => {
 		it("should publish the player's current name", async () => {
 			await playerService.publishName(mockPlayers[2].id);
 
-			const publishedName = await playerService.getPublishedName(mockPlayers[2].id);
+			const publishedName = playerService.getPublishedName(mockPlayers[2].id);
 			expect(publishedName).toEqual(mockPlayers[2].currentName);
 			expect(sendToPublishedNamesChannel).toHaveBeenCalled();
 		});
@@ -165,7 +210,7 @@ describe('PlayerService', () => {
 			await playerService.changeCurrentName(mockPlayers[1].id, "");
 			await playerService.publishName(mockPlayers[1].id);
 
-			const publishedName = await playerService.getPublishedName(mockPlayers[1].id);
+			const publishedName = playerService.getPublishedName(mockPlayers[1].id);
 			expect(publishedName).toEqual(mockPlayers[1].publishedName);
 			expect(sendToPublishedNamesChannel).not.toHaveBeenCalled();
 		});
@@ -178,7 +223,7 @@ describe('PlayerService', () => {
 			const playersToCheck = mockPlayers.filter(player => !player.publishedName);
 
 			for (const player of playersToCheck) {
-				const publishedName = await playerService.getPublishedName(player.id);
+				const publishedName = playerService.getPublishedName(player.id);
 				expect(publishedName).toEqual(player.currentName);
 			}
 		});
@@ -187,15 +232,15 @@ describe('PlayerService', () => {
 	describe('.finalizeName()', () => {
 		it('should change current name of player to their published name when they have one', async () => {
 			await playerService.finalizeName(mockPlayers[1].id);
-			const currentName = await playerService.getCurrentName(mockPlayers[1].id);
+			const currentName = playerService.getCurrentName(mockPlayers[1].id);
 			expect(currentName).toEqual(mockPlayers[1].publishedName);
 			expect(sendToNamesToVoteOnChannel).toHaveBeenCalled();
 		});
 
 		it('should not change current name of player to their published name when they don\'t have one', async () => {
 			await playerService.finalizeName(mockPlayers[2].id);
-			const currentName = await playerService.getCurrentName(mockPlayers[2].id);
-			const publishedName = await playerService.getPublishedName(mockPlayers[2].id);
+			const currentName = playerService.getCurrentName(mockPlayers[2].id);
+			const publishedName = playerService.getPublishedName(mockPlayers[2].id);
 			expect(currentName).toEqual(mockPlayers[2].currentName);
 			expect(publishedName).toEqual(mockPlayers[2].publishedName);
 			expect(sendToNamesToVoteOnChannel).not.toHaveBeenCalled();
@@ -211,8 +256,8 @@ describe('PlayerService', () => {
 			await playerService.finalizeAllNames();
 			for (const player of mockPlayers) {
 				if (player.publishedName === null) continue;
-				const currentName = await playerService.getCurrentName(player.id);
-				const publishedName = await playerService.getPublishedName(player.id);
+				const currentName = playerService.getCurrentName(player.id);
+				const publishedName = playerService.getPublishedName(player.id);
 				expect(currentName).toEqual(publishedName);
 			}
 		});
@@ -220,12 +265,12 @@ describe('PlayerService', () => {
 
 	describe('.addNewPlayer()', () => {
 		it('should add a new player', async () => {
-			await playerService.addNewPlayer("new-player-id");
-			const players = await playerService.playerRepository.getPlayers();
+			await playerService.addNewPlayer("987654321");
+			const players = playerService.playerRepository.getPlayers();
 			expect(players.length).toBe(mockPlayers.length + 1);
 
 			const mockMember = {
-				id: "new-player-id",
+				id: "987654321",
 			}
 			expect(resetMemberToNewPlayer).toHaveBeenCalledWith(mockMember, expect.anything());
 		});
@@ -233,14 +278,14 @@ describe('PlayerService', () => {
 		it('should throw an error if the player already exists', async () => {
 			await expect(playerService.addNewPlayer(mockPlayers[0].id)).rejects.toThrow();
 			expect(resetMemberToNewPlayer).not.toHaveBeenCalled();
-			const players = await playerService.playerRepository.getPlayers();
+			const players = playerService.playerRepository.getPlayers();
 			expect(players.length).toBe(mockPlayers.length);
 		});
 
 		it('should throw an error if the ID is invalid', async () => {
 			await expect(playerService.addNewPlayer(1234567899)).rejects.toThrow();
 			expect(resetMemberToNewPlayer).not.toHaveBeenCalled();
-			const players = await playerService.playerRepository.getPlayers();
+			const players = playerService.playerRepository.getPlayers();
 			expect(players.length).toBe(mockPlayers.length);
 		});
 	});
@@ -281,11 +326,11 @@ describe('PlayerService', () => {
 	});
 
 	describe('.reset()', () => {
-		it('should reset the player repository', async () => {
-			await playerService.reset();
-			const players = await playerService.playerRepository.getPlayers();
+		it('should reset the player repository', () => {
+			playerService.reset();
+			const players = playerService.playerRepository.getPlayers();
 			expect(players.length).toBe(0);
-			await expect(playerService.getCurrentName(mockPlayers[0].id)).rejects.toThrow();
+			expect(() => playerService.getCurrentName(mockPlayers[0].id)).toThrow();
 		});
 	});
 });

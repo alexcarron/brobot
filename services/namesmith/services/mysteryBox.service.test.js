@@ -66,19 +66,19 @@ describe('VoteService', () => {
 			expect(Object.keys(resolvedMysteryBox.characterOdds).length).toBeGreaterThan(0);
 		});
 
-		it('should throw an error if the mystery box with the given ID does not exist', async () => {
+		it('should throw an error if the mystery box with the given ID does not exist', () => {
 			expect(() => mysteryBoxService.resolveMysteryBox(-999)).toThrow();
 		})
 
-		it('should throw an error if string given', async () => {
+		it('should throw an error if string given', () => {
 			expect(() => mysteryBoxService.resolveMysteryBox('string')).toThrow();
 		})
 
-		it('should throw an error if nothing given', async () => {
+		it('should throw an error if nothing given', () => {
 			expect(() => mysteryBoxService.resolveMysteryBox()).toThrow();
 		})
 
-		it('should throw an error if given mystery box without characterOdds and hasCharacterOdds is true', async () => {
+		it('should throw an error if given mystery box without characterOdds and hasCharacterOdds is true', () => {
 			const mysteryBox = mysteryBoxService.mysteryBoxRepository.getMysteryBoxes()[0];
 
 			delete mysteryBox.characterOdds;
