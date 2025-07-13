@@ -11,7 +11,6 @@ const { isPlayer } = require("../utilities/player.utility");
  */
 class PlayerService {
 	static MAX_NAME_LENGTH = 32;
-	static NO_NAME = "ˑ";
 
 	/**
 	 * Constructs a new PlayerService instance.
@@ -110,16 +109,8 @@ class PlayerService {
 		if (newName.length > PlayerService.MAX_NAME_LENGTH)
 			throw new TypeError(`changeCurrentName: newName must be less than or equal to ${PlayerService.MAX_NAME_LENGTH}.`);
 
-		if (newName.length === 0) {
-			this.playerRepository.changeCurrentName(playerID, "");
-			await changeDiscordNameOfPlayer(playerID, PlayerService.NO_NAME);
-		}
-		else {
-			this.playerRepository.changeCurrentName(playerID, newName);
-			console.log(`changeCurrentName: player ${playerID} has no name.`);
-			await changeDiscordNameOfPlayer(playerID, newName);
-			console.log(`changeCurrentName: player ${playerID} has name ${newName}.`);
-		}
+		this.playerRepository.changeCurrentName(playerID, newName);
+		await changeDiscordNameOfPlayer(playerID, newName);
 	}
 
 	/**
@@ -242,7 +233,7 @@ class PlayerService {
 
 		const guildMember = await fetchNamesmithGuildMember(playerID);
 
-		await resetMemberToNewPlayer(guildMember, PlayerService.NO_NAME);
+		await resetMemberToNewPlayer(guildMember);
 
 		this.playerRepository.addPlayer(playerID);
 	}

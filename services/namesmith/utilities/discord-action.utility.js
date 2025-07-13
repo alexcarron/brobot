@@ -128,10 +128,10 @@ const isNonPlayer = async (guildMember) => {
  * @param {string} nameIfNoName The name to set if the guild member has the No Name role.
  * @returns {Promise<void>} A promise that resolves once the guild member has been reset.
  */
-const resetMemberToNewPlayer = async (guildMember, nameIfNoName) => {
+const resetMemberToNewPlayer = async (guildMember) => {
 	await removeAllRolesFromMember(guildMember);
 	await addRoleToMember(guildMember, ids.namesmith.roles.noName);
-	await setNicknameOfMember(guildMember, nameIfNoName);
+	await setNicknameOfMember(guildMember, NO_NAME);
 }
 
 module.exports = { changeDiscordNameOfPlayer, sendToPublishedNamesChannel, sendToNamesToVoteOnChannel, openNamesToVoteOnChannel, closeNamesToVoteOnChannel, sendMessageToTheWinnerChannel, openTheWinnerChannel, closeTheWinnerChannel, isNonPlayer, resetMemberToNewPlayer };

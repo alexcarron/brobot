@@ -139,7 +139,7 @@ describe('PlayerService', () => {
 			expect(result).toEqual("");
 			expect(changeDiscordNameOfPlayer).toHaveBeenCalledWith(
 				mockPlayers[0].id,
-				"ˑ"
+				""
 			);
 		});
 
@@ -272,7 +272,7 @@ describe('PlayerService', () => {
 			const mockMember = {
 				id: "987654321",
 			}
-			expect(resetMemberToNewPlayer).toHaveBeenCalledWith(mockMember, expect.anything());
+			expect(resetMemberToNewPlayer).toHaveBeenCalledWith(mockMember);
 		});
 
 		it('should throw an error if the player already exists', async () => {
