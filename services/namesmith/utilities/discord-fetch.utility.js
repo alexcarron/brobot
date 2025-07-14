@@ -71,3 +71,4 @@ const fetchNamesmithGuildMembers = async () => {
 }
 
 module.exports = { fetchNamesmithServer, fetchPublishedNamesChannel, fetchNamesToVoteOnChannel, fetchNamesmithGuildMember, fetchTheWinnerChannel, fetchNamesmithGuildMembers };
+
