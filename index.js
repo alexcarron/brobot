@@ -1,8 +1,6 @@
 const { setupEventListeners } = require('./event-listeners/event-listener-setup.js');
 const { logInfo } = require('./utilities/logging-utils.js');
 const { Events } = require('discord.js');
-const { setupCommands, setupAndDeployCommands } = require('./bot-config/setup-commands.js');
-const { setupClient } = require('./bot-config/setup-client.js');
 const { onClientReady } = require('./bot-config/on-ready.js');
 const { botStatus } = require('./bot-config/bot-status.js');
 
@@ -44,6 +42,9 @@ const startBrobot = async () => {
 	if (isDevelopmentEnvironment) {
 		botStatus.isInDevelopmentMode = true;
 	}
+
+	const { setupCommands, setupAndDeployCommands } = require('./bot-config/setup-commands.js');
+	const { setupClient } = require('./bot-config/setup-client.js');
 
 	const client = await setupClient();
 

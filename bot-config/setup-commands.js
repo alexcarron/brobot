@@ -8,9 +8,9 @@ const ids = require('./discord-ids.js');
 
 const COMMANDS_DIR_NAME = 'commands';
 const COMMANDS_DIR_PATH = path.join(__dirname, '..', COMMANDS_DIR_NAME);
-const { DISCORD_TOKEN } = require('./token.js');
 const { botStatus } = require('./bot-status.js');
 const { fetchGuild } = require('../utilities/discord-fetch-utils.js');
+const { DISCORD_TOKEN } = require('./token.js');
 
 /**
  * Recursively finds all .js files in the given directory and all its subdirectories.
@@ -137,7 +137,7 @@ const mapGuildCommandsToGuildID = (commands) => {
  */
 const deployCommands = async ({globalCommands = [], guildIDtoGuildCommands}) => {
 	// Construct and prepare an instance of the REST module
-	const rest = new Discord.REST().setToken(DISCORD_TOKEN());
+	const rest = new Discord.REST().setToken(DISCORD_TOKEN);
 
 	logInfo(`Started deploying slash commands...`);
 
@@ -155,7 +155,7 @@ const deployCommands = async ({globalCommands = [], guildIDtoGuildCommands}) => 
 				},
 			);
     } catch (error) {
-			if (error.code === 50001) {
+			if (error.code === 50001 || error.code === 20012) {
 				logWarning(`Bot is not in guild ${requiredServerID} or lacks permission.`);
 			} else if (error.code === 10004) {
 				logWarning(`Guild ${requiredServerID} does not exist or bot is not in it.`);

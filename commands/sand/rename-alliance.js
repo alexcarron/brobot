@@ -16,7 +16,7 @@ const Parameters = {
 module.exports = new SlashCommand({
 	name: "rename-alliance",
 	description: "Reanme the alliance this command is sent in",
-	required_roles: [ids.sandSeason3.roles.contestant],
+	required_roles: [[ids.sandSeason3.roles.contestant, ids.sandSeason3.roles.eliminated]],
 	required_servers: [ids.sandSeason3.guild],
 	parameters: [
 		Parameters.Name,
