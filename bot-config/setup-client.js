@@ -1,6 +1,6 @@
 const Discord = require('discord.js');
 const {GatewayIntentBits, Partials} = require("discord.js");
-const { DISCORD_TOKEN } = require('./token.js');
+const { DISCORD_TOKEN } = require('./token');
 
 /**
  * Sets up the Discord client with the necessary intents and partials.

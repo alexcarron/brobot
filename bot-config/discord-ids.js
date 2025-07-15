@@ -194,6 +194,7 @@ const ids = {
 		roles: {
 			contestant: "1376029480606236812",
 			spectator: "1376690406087200848",
+			eliminated: "1378532839204589598",
 		}
 	},
 

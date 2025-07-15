@@ -1,6 +1,4 @@
 const { botStatus } = require("./bot-config/bot-status");
-const { setupClient } = require("./bot-config/setup-client");
-const { setupAndDeployCommands } = require("./bot-config/setup-commands");
 const { logInfo, logSuccess } = require("./utilities/logging-utils");
 
 const GUILD_COMMANDS_ONLY_OPTIONS = [
@@ -44,6 +42,9 @@ const buildBrobot = async () => {
 	if (isDevelopmentEnvironment) {
 		botStatus.isInDevelopmentMode = true;
 	}
+
+	const { setupClient } = require("./bot-config/setup-client");
+	const { setupAndDeployCommands } = require("./bot-config/setup-commands");
 
 	const client = await setupClient();
 	await setupAndDeployCommands({
