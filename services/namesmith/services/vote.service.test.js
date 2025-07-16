@@ -1,3 +1,4 @@
+const { makeSure } = require("../../../utilities/jest-utils");
 const { mockPlayers, mockVotes } = require("../repositories/mock-repositories");
 const VoteRepository = require("../repositories/vote.repository");
 const { createMockVoteService } = require("./mock-services");
@@ -24,9 +25,9 @@ describe('VoteService', () => {
 
 	describe('constructor', () => {
 		it('should create a new VoteService instance', () => {
-			expect(voteService).toBeInstanceOf(VoteService);
-			expect(voteService.voteRepository).toBeInstanceOf(VoteRepository);
-			expect(voteService.playerService).toBeInstanceOf(PlayerService);
+			makeSure(voteService).isAnInstanceOf(VoteService);
+			makeSure(voteService.voteRepository).isAnInstanceOf(VoteRepository);
+			makeSure(voteService.playerService).isAnInstanceOf(PlayerService);
 		});
 	});
 
@@ -36,7 +37,7 @@ describe('VoteService', () => {
 
 			const resolvedVote = voteService.resolveVote(vote);
 
-			expect(resolvedVote).toEqual(vote);
+			makeSure(resolvedVote).is(vote);
 		});
 
 		it('should resolve a vote ID to a vote object', () => {
@@ -45,14 +46,14 @@ describe('VoteService', () => {
 
 			const resolvedVote = voteService.resolveVote(voteID);
 
-			expect(resolvedVote).toEqual(vote);
+			makeSure(resolvedVote).is(vote);
 		});
 
 		it('should throw an error if the vote resolvable is invalid', () => {
-			expect(() => voteService.resolveVote(-999)).toThrow();
-			expect(() => voteService.resolveVote('invalid')).toThrow();
-			expect(() => voteService.resolveVote({})).toThrow();
-			expect(() => voteService.resolveVote()).toThrow();
+			makeSure(() => voteService.resolveVote(-999)).throwsAnError();
+			makeSure(() => voteService.resolveVote('invalid')).throwsAnError();
+			makeSure(() => voteService.resolveVote({})).throwsAnError();
+			makeSure(() => voteService.resolveVote()).throwsAnError();
 		});
 	});
 
@@ -63,14 +64,14 @@ describe('VoteService', () => {
 				playerVotedForID: mockPlayers[1].id
 			});
 
-			const votes = await voteService.voteRepository.getVotes();
+			const votes = voteService.voteRepository.getVotes();
 
-			expect(votes.length).toBe(mockVotes.length + 1);
-			expect(votes).toContainEqual({
+			makeSure(votes).hasLengthOf(mockVotes.length + 1);
+			makeSure(votes).contains({
 				voterID: mockPlayers[0].id,
 				playerVotedForID: mockPlayers[1].id
 			})
-			expect(message).toBe(`You have voted for ${mockPlayers[1].publishedName} as your favorite name!`);
+			makeSure(message).is(`You have voted for ${mockPlayers[1].publishedName} as your favorite name!`);
 		});
 
 		it('should not add a new vote when they have already voted that person', async () => {
@@ -79,10 +80,10 @@ describe('VoteService', () => {
 				playerVotedForID: mockVotes[0].playerVotedForID
 			});
 
-			const votes = await voteService.voteRepository.getVotes();
+			const votes = voteService.voteRepository.getVotes();
 
-			expect(votes.length).toBe(mockVotes.length);
-			expect(message).toBe(`You already voted for this name as your favorite!`);
+			makeSure(votes).hasLengthOf(mockVotes.length);
+			makeSure(message).is(`You already voted for this name as your favorite!`);
 		});
 
 		it('should change their vote when they have already voted a different person', async () => {
@@ -91,26 +92,32 @@ describe('VoteService', () => {
 				playerVotedForID: mockPlayers[3].id
 			});
 
-			const votes = await voteService.voteRepository.getVotes();
+			const votes = voteService.voteRepository.getVotes();
 
-			expect(votes.length).toBe(mockVotes.length);
-			expect(votes).toContainEqual({
+			makeSure(votes).hasLengthOf(mockVotes.length);
+			makeSure(votes).contains({
 				voterID: mockPlayers[0].id,
 				playerVotedForID: mockPlayers[3].id
 			});
-			expect(message).toBe(`You have changed your favorite name vote from ${mockPlayers[1].publishedName} to ${mockPlayers[3].publishedName}`);
+			makeSure(message).is(`You have changed your favorite name vote from ${mockPlayers[1].publishedName} to ${mockPlayers[3].publishedName}`);
 		});
 
 		it('should throw an error if voterID is not given', async () => {
-			await expect(voteService.addVote({
-				playerVotedForID: mockPlayers[3].id
-			})).rejects.toThrow("Missing voterID or playerVotedForID");
+			await makeSure(
+				voteService.addVote({
+					playerVotedForID: mockPlayers[3].id
+				})
+			).eventuallyThrowsAnErrorWith(
+				"Missing voterID or playerVotedForID"
+			);
 		});
 
 		it('should throw an error if playerVotedForID is not given', async () => {
-			await expect(voteService.addVote({
-				voterID: mockPlayers[3].id
-			})).rejects.toThrow("Missing voterID or playerVotedForID");
+			await makeSure(
+				voteService.addVote({
+					voterID: mockPlayers[3].id
+				})
+			).eventuallyThrowsAnErrorWith("Missing voterID or playerVotedForID");
 		});
 	});
 
@@ -118,7 +125,7 @@ describe('VoteService', () => {
 		it('should return the ID of the player with the most votes', async () => {
 			const winningPlayerID = await voteService.getWinningPlayerID();
 
-			expect(winningPlayerID).toBe(mockPlayers[1].id);
+			makeSure(winningPlayerID).is(mockPlayers[1].id);
 		});
 
 		it('should return the ID of the player with the most votes when votes change', async () => {
@@ -136,7 +143,7 @@ describe('VoteService', () => {
 			});
 
 			const winningPlayerID = await voteService.getWinningPlayerID();
-			expect(winningPlayerID).toBe(mockPlayers[3].id);
+			makeSure(winningPlayerID).is(mockPlayers[3].id);
 		});
 
 		it('should not return anything when there is a tie', async () => {
@@ -146,14 +153,14 @@ describe('VoteService', () => {
 			});
 
 			const winningPlayerID = await voteService.getWinningPlayerID();
-			expect(winningPlayerID).toBe(null);
+			makeSure(winningPlayerID).is(null);
 		});
 
 		it('should not return anything when there are no votes', async () => {
 			await voteService.reset();
 
 			const winningPlayerID = await voteService.getWinningPlayerID();
-			expect(winningPlayerID).toBe(null);
+			makeSure(winningPlayerID).is(null);
 		});
 	});
 
@@ -166,8 +173,8 @@ describe('VoteService', () => {
 
 			await voteService.reset();
 
-			const votes = await voteService.voteRepository.getVotes();
-			expect(votes.length).toBe(0);
+			const votes = voteService.voteRepository.getVotes();
+			makeSure(votes).isEmpty(0);
 		});
 	});
 });

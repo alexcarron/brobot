@@ -24,6 +24,11 @@ module.exports = {
     'plugin:jest/recommended',
 	],
   rules: {
+		// Jest rules
+		'jest/no-standalone-expect': 'off',
+		'jest/expect-expect': 'off',
+
+
     // Promise rules
     'require-await': 'error',
     'no-floating-promise/no-floating-promise': 'error',
