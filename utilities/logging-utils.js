@@ -79,13 +79,14 @@ const logWithColors = (strings, ...expressions) => {
 		throw new TypeError("Strings must be an array.");
 
 	// Ensure strings contains strings
+	const newStrings = [];
 	for (let index in strings) {
 		let string = strings[index];
 
 		if (typeof string !== "string")
 			string = stringifyNonString(string);
 
-		strings[index] = string;
+		newStrings[index] = string;
 	}
 
 	if (!Array.isArray(expressions))
@@ -119,8 +120,8 @@ const logWithColors = (strings, ...expressions) => {
 
 	// Construct the formatted string
 	const formattedStrings = [];
-	for (let index in strings) {
-		let string = strings[index];
+	for (let index in newStrings) {
+		let string = newStrings[index];
 		let expression = expressions[index];
 
 		if (expression === undefined)

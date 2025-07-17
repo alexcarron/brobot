@@ -3,6 +3,7 @@
 		"version": "1.0.0",
 		"description": "A discord bot used to enhance the experience of the LL Game Shows community",
 		"main": "index.js",
+		"type": "commonjs",
 		"scripts": {
 				"test": "jest --runInBand --silent",
 				"start": "npm run build && ts-node index.ts",
@@ -10,7 +11,7 @@
 				"build:guild": "ts-node build.js --guild-commands-only",
 				"build:dev": "ts-node build.js --development",
 				"build:dev:guild": "ts-node build.js --development --guild-commands-only",
-				"dev": "nodemon --ignore \"**/*.json\" index.ts --development",
+				"dev": "nodemon --ext ts,js index.ts --development",
 				"dev:deploy": "ts-node build.js --development --guild-commands-only && npm run dev",
 				"dev:deploy-all": "ts-node build.js --development && npm run dev"
 		},
