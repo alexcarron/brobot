@@ -1,10 +1,3 @@
-const { mockPlayers } = require("../repositories/mock-repositories");
-const PlayerRepository = require("../repositories/player.repository");
-const { changeDiscordNameOfPlayer, sendToPublishedNamesChannel, sendToNamesToVoteOnChannel, resetMemberToNewPlayer } = require("../utilities/discord-action.utility");
-const { fetchNamesmithGuildMembers } = require("../utilities/discord-fetch.utility");
-const { createMockPlayerService } = require("./mock-services");
-const PlayerService = require("./player.service");
-
 jest.mock("../utilities/discord-action.utility", () => ({
 	changeDiscordNameOfPlayer: jest.fn(),
 	sendToPublishedNamesChannel: jest.fn(),
@@ -29,6 +22,14 @@ jest.mock("../utilities/discord-fetch.utility", () => ({
 jest.mock("../../../utilities/discord-action-utils", () => ({
 	addButtonToMessageContents: jest.fn(),
 }));
+
+const { mockPlayers } = require("../repositories/mock-repositories");
+const PlayerRepository = require("../repositories/player.repository");
+const { changeDiscordNameOfPlayer, sendToPublishedNamesChannel, sendToNamesToVoteOnChannel, resetMemberToNewPlayer } = require("../utilities/discord-action.utility");
+const { fetchNamesmithGuildMembers } = require("../utilities/discord-fetch.utility");
+const { createMockPlayerService } = require("./mock-services");
+const PlayerService = require("./player.service");
+
 
 describe('PlayerService', () => {
 	/**

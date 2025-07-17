@@ -1,12 +1,3 @@
-const { CronJob } = require("cron");
-const GameStateRepository = require("../repositories/gameState.repository");
-const { mockPlayers } = require("../repositories/mock-repositories");
-const { sendToNamesToVoteOnChannel, openNamesToVoteOnChannel, sendMessageToTheWinnerChannel, closeNamesToVoteOnChannel, openTheWinnerChannel, closeTheWinnerChannel } = require("../utilities/discord-action.utility");
-const GameStateService = require("./gameState.service");
-const { createMockServices } = require("./mock-services");
-const PlayerService = require("./player.service");
-const VoteService = require("./vote.service");
-
 jest.mock('../utilities/discord-action.utility', () => ({
 	closeNamesToVoteOnChannel: jest.fn(),
 	openNamesToVoteOnChannel: jest.fn(),
@@ -41,6 +32,16 @@ jest.mock('cron', () => ({
 		stop: jest.fn(),
 	})),
 }));
+
+const { CronJob } = require("cron");
+const GameStateRepository = require("../repositories/gameState.repository");
+const { mockPlayers } = require("../repositories/mock-repositories");
+const { sendToNamesToVoteOnChannel, openNamesToVoteOnChannel, sendMessageToTheWinnerChannel, closeNamesToVoteOnChannel, openTheWinnerChannel, closeTheWinnerChannel } = require("../utilities/discord-action.utility");
+const GameStateService = require("./gameState.service");
+const { createMockServices } = require("./mock-services");
+const PlayerService = require("./player.service");
+const VoteService = require("./vote.service");
+
 
 describe('GameStateService', () => {
 	/**

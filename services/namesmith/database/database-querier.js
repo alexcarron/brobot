@@ -157,6 +157,17 @@ class DatabaseQuerier {
 		return this.db.prepare(...args);
 	}
 
+	/**
+	 * Calls the underlying database's PRAGMA function with the given arguments
+	 * @see https://github.com/JoshuaWise/better-sqlite3/blob/master/docs/api.md#dbpragma
+	 * @param {string} source - The PRAGMA command to run
+	 * @param {Object} [options] - Optional parameters to pass to the PRAGMA command
+	 * @returns {any} The result of the PRAGMA command
+	 */
+	pragma(source, options) {
+		return this.db.pragma(source, options);
+	}
+
 	close() {
 		return this.db.close();
 	}

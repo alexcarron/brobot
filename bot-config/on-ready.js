@@ -9,6 +9,7 @@ const DailyMessageHandler = require('../services/discussion-prompts/daily-messag
 const TextToSpeechHandler = require('../services/text-to-speech/text-to-speech-handler.js');
 const { setupNamesmith } = require('../services/namesmith/event-listeners/on-setup.js');
 const setupAnomolyService = require('../services/sand-season-3/anomoly/on-setup.js');
+const { Client } = require('discord.js');
 
 /**
  * Called when the client is ready to start running.

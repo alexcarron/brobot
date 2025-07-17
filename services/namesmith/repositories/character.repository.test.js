@@ -65,12 +65,12 @@ describe('CharacterRepository', () => {
 			expect(character).toBeUndefined();
 		});
 
-		it('SHOULD throw an error if no value is provided', async () => {
-			await expect(characterRepo.getCharacterByValue()).rejects.toThrow();
+		it('SHOULD throw an error if no value is provided', () => {
+			expect(() => characterRepo.getCharacterByValue()).toThrow();
 		});
 
-		it('SHOULD throw an error if more than one character is given', async () => {
-			await expect(characterRepo.getCharacterByValue('AB')).rejects.toThrow();
+		it('SHOULD throw an error if more than one character is given', () => {
+			expect(() => characterRepo.getCharacterByValue('AB')).toThrow();
 		});
 	});
 
