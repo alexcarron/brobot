@@ -1,5 +1,5 @@
 const { getRandomWeightedElement } = require("../../../utilities/data-structure-utils");
-const CharacterRepository = require("../repositories/character.repository");
+const { CharacterRepository } = require("../repositories/character.repository");
 const MysteryBoxRepository = require("../repositories/mysteryBox.repository");
 const { isMysteryBox } = require("../utilities/mysteryBox.utility");
 

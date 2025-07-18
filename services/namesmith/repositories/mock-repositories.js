@@ -1,6 +1,6 @@
 const DatabaseQuerier = require("../database/database-querier");
 const { createMockDB, addMockPlayer, addMockVote } = require("../database/mock-database");
-const CharacterRepository = require("./character.repository");
+const { CharacterRepository } = require("./character.repository");
 const GameStateRepository = require("./gameState.repository");
 const MysteryBoxRepository = require("./mysteryBox.repository");
 const PlayerRepository = require("./player.repository");

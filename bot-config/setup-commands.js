@@ -157,9 +157,8 @@ const deployCommands = async ({globalCommands = [], guildIDtoGuildCommands}) => 
     } catch (error) {
 			if (error.code === 50001 || error.code === 20012) {
 				logWarning(`Bot is not in guild ${requiredServerID} or lacks permission.`);
-			} else if (error.code === 10004) {
-				logWarning(`Guild ${requiredServerID} does not exist or bot is not in it.`);
-			} else {
+			}
+			else {
 				logError('Unexpected error during command registration:', error);
 				throw error;
 			}

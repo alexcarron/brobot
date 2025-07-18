@@ -1,4 +1,4 @@
-const CharacterRepository = require("../repositories/character.repository");
+const { CharacterRepository } = require("../repositories/character.repository");
 const MysteryBoxRepository = require("../repositories/mysteryBox.repository");
 const { createMockMysteryBoxService } = require("./mock-services");
 const MysteryBoxService = require("./mysteryBox.service");

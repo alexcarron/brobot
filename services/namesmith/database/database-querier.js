@@ -6,7 +6,7 @@ const Database = require("better-sqlite3");
  */
 class DatabaseQuerier {
   /**
-   * @param {Database} db - better-sqlite3 Database instance
+   * @param {import("better-sqlite3").Database} db - better-sqlite3 Database instance
    */
   constructor(db) {
 		if (!(db instanceof Database))
@@ -145,23 +145,42 @@ class DatabaseQuerier {
     return transactionFunction(...params);
   }
 
-	exec(...args) {
-		return this.db.exec(...args);
+
+	/**
+	 * Calls the underlying database's exec function with the given arguments
+	 * @see https://github.com/JoshuaWise/better-sqlite3/blob/master/docs/api.md#dbexec
+	 * @param {string} source - The SQL query to execute
+	 * @returns {any} The result of the query
+	 */
+	exec(source) {
+		return this.db.exec(source);
 	}
 
-	transaction(...args) {
-		return this.db.transaction(...args);
+	/**
+	 * Calls the underlying database's transaction function with the given arguments
+	 * @see https://github.com/JoshuaWise/better-sqlite3/blob/master/docs/api.md#dbtransaction
+	 * @param {((...args: any[]) => any)} transactionFunction - A function that takes no arguments and runs a series of queries
+	 * @returns {any} The result of the transaction
+	 */
+	transaction(transactionFunction) {
+		return this.db.transaction(transactionFunction);
 	}
 
-	prepare(...args) {
-		return this.db.prepare(...args);
+	/**
+	 * Calls the underlying database's prepare function with the given arguments
+	 * @see https://github.com/JoshuaWise/better-sqlite3/blob/master/docs/api.md#dbprepare
+	 * @param {string} source - The SQL query to prepare
+	 * @returns {import("better-sqlite3").Statement} The prepared statement
+	 */
+	prepare(source) {
+		return this.db.prepare(source);
 	}
 
 	/**
 	 * Calls the underlying database's PRAGMA function with the given arguments
 	 * @see https://github.com/JoshuaWise/better-sqlite3/blob/master/docs/api.md#dbpragma
 	 * @param {string} source - The PRAGMA command to run
-	 * @param {Object} [options] - Optional parameters to pass to the PRAGMA command
+	 * @param {object} [options] - Optional parameters to pass to the PRAGMA command
 	 * @returns {any} The result of the PRAGMA command
 	 */
 	pragma(source, options) {

@@ -1,4 +1,4 @@
-const CharacterRepository = require("./character.repository");
+const { CharacterRepository } = require("./character.repository");
 const { createMockCharacterRepo } = require("./mock-repositories");
 
 describe('CharacterRepository', () => {

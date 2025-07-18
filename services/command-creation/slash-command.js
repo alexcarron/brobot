@@ -6,54 +6,61 @@ const { Parameter } = require("./parameter");
  * @class
  */
 class SlashCommand {
+	/** @type {string} The name of the command */
 	name;
+
+	/** @type {string} The description of the command */
 	description;
 
-	/** @field {number = 0} Seconds a user must wait before running this command again */
+	/** @type {number} Seconds a user must wait before running this command again */
 	cooldown;
 
-	/** @field {boolean = false} If users should be able to run this command in DMs */
+	/** @type {boolean} If users should be able to run this command in DMs */
 	allowsDMs;
 
-	/** @field {string[]} IDs of servers this command can only be run in */
+	/** @type {string[]} IDs of servers this command can only be run in */
 	required_servers;
 
-	/** @field {string[]} IDs of channels this command can only be run in */
+	/** @type {string[]} IDs of channels this command can only be run in */
 	required_channels;
 
-	/** @field {string[]} IDs of channel categories this command can only be run in */
+	/** @type {string[]} IDs of channel categories this command can only be run in */
 	required_categories;
 
-	/** @field {string[]} Names of roles users must have to run this command */
+	/** @type {string[] | string[][]} Names of roles users must have to run this command */
 	required_roles;
 
-	/** @field {PermissionFlagsBits[]} Permissions that users must have to run this command */
+	/** @type {bigint[]} Permissions that users must have to run this command */
 	required_permissions;
 
-	/** @field {Parameter[]} Parameters that users can enter when running the command */
+	/** @type {Parameter[]} Parameters that users can enter when running the command */
 	parameters;
 
-	/** @field {boolean} If the command is currently in development */
+	/** @type {boolean} If the command is currently in development */
 	isInDevelopment;
 
 	/**
 	 * @type {(interaction: CommandInteraction) => any} A function which takes a discord.js Interaction that executes when the command is run
-	 * */
+	 */
 	execute;
 
-	/**
-	 * @param {string} name
-	 * @param {string} description
-	 * @param {number} [cooldown = 0] Seconds a user must wait before running this command again
-	 * @param {boolean} [allowsDMs = false] If users should be able to run this command in DMs
-	 * @param {string[]} [required_servers] IDs of servers this command can only be run in
-	 * @param {string[]} [required_channels] IDs of channels this command can only be run in
-	 * @param {string[]} [required_categories] IDs of channel categories this command can only be run in
-	 * @param {string[]} [required_roles] Names of roles users must have to run this command
-	 * @param {PermissionFlagsBits[]} [required_permissions] Permissions that users must have to run this command
-	 * @param {(Interaction) => any} A function which takes a discord.js Interaction that executes when the command is run
-	 * @param {Parameter[]} [parameters = []] Parameters that users can enter when running the command
-	 */
+/**
+ * Create a new SlashCommand.
+ * @param {object} options - The options to create the SlashCommand with
+ * @param {string} options.name - The name of the command
+ * @param {string} options.description - The description of the command
+ * @param {number} [options.cooldown] - The cooldown for the command in seconds
+ * @param {boolean} [options.allowsDMs] - If the command can be run in DMs
+ * @param {string[]} [options.required_servers] - The IDs of the servers the command can only be run in
+ * @param {string[]} [options.required_channels] - The IDs of the channels the command can only be run in
+ * @param {string[]} [options.required_categories] - The IDs of the channel categories the command can only be run in
+ * @param {string[] | string[][]} [options.required_roles] - The names of the roles users must have to run the command
+ * @param {bigint[]} [options.required_permissions] - The permissions users must have to run the command using PermissionFlagsBits
+ * @param {Parameter[]} [options.parameters] - The parameters for the command
+ * @param {(interaction: CommandInteraction) => Promise<void>} [options.execute] - The function to execute when the command is run
+ * @param {(interaction: CommandInteraction) => Promise<void>} [options.autocomplete] - The function to execute when the command is autocompleted
+ * @param {boolean} [options.isInDevelopment] - If the command is currently in development
+ */
 	constructor({
 		name,
 		description,
@@ -65,8 +72,8 @@ class SlashCommand {
 		required_roles,
 		required_permissions,
 		parameters = [],
-		execute = async (interaction) => {},
-		autocomplete = async (interaction) => {},
+		execute = async () => {},
+		autocomplete = async () => {},
 		isInDevelopment = false,
 	}) {
 		this.name = name;
@@ -87,7 +94,6 @@ class SlashCommand {
 	/**
 	 * Constructs and returns a SlashCommand object configured with its name, description,
 	 * parameters, required permissions, and DM permissions.
-	 *
 	 * @returns {SlashCommand} The configured SlashCommand instance.
 	 */
 	getCommand() {
@@ -96,14 +102,19 @@ class SlashCommand {
 			.setName(this.name)
 			.setDescription(this.description);
 
-		this.parameters.forEach(async parameter => {
+		this.parameters.forEach(parameter => {
 			parameter.addToCommand(data)
 		});
 
 		if (this.required_permissions && this.required_permissions.length > 0) {
 			const default_member_permissions =
-			this.required_permissions.reduce((accum_permissions, permission_bit) => accum_permissions | permission_bit, this.required_permissions[0]);
+			this.required_permissions.reduce((accum_permissions, permission_bit) =>
+				// @ts-ignore
+				accum_permissions | permission_bit,
+				this.required_permissions[0]
+			);
 
+			// @ts-ignore
 			data.setDefaultMemberPermissions(default_member_permissions)
 		}
 
@@ -115,8 +126,15 @@ class SlashCommand {
 		return command;
 	}
 
-	async getParamByName(name) {
-		return this.parameters.find(parameter => parameter.name.toLowerCase() === name.toLowerCase())
+	/**
+	 * Finds a parameter by its name from the command's parameters.
+	 * @param {string} name - The name of the parameter to search for.
+	 * @returns {Parameter | undefined} The found parameter, or undefined if not found.
+	 */
+	getParamByName(name) {
+		return this.parameters.find(parameter =>
+			parameter.name.toLowerCase() === name.toLowerCase()
+		);
 	}
 }
 

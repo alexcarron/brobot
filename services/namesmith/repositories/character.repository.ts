@@ -1,12 +1,11 @@
 import DatabaseQuerier from "../database/database-querier";
 import { Character, DBCharacter, DBCharacterWithTags, CharacterWithTags } from "../types/character";
-
-const { getIDfromCharacterValue } = require("../utilities/character.utility");
+import { getIDfromCharacterValue } from "../utilities/character.utility";
 
 /**
  * Provides access to all static character data.
  */
-class CharacterRepository {
+export class CharacterRepository {
 	db: DatabaseQuerier;
 
 	/**
@@ -98,5 +97,3 @@ class CharacterRepository {
 		};
 	}
 }
-
-module.exports = CharacterRepository;

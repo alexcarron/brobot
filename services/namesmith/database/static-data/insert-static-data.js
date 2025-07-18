@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { insertCharactersToDB, insertMysteryBoxesToDB } = require("../db-inserters");
+const DatabaseQuerier = require('../database-querier');
 
 const currDir = __dirname;
 const charactersPath = path.join(currDir, 'characters.json');

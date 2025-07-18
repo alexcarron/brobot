@@ -12,4 +12,4 @@ const getDatabase = () => {
 	return new DatabaseQuerier(new Database(dbPath));
 }
 
-module.exports = getDatabase
+module.exports = {getDatabase, dbPath};

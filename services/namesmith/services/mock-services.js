@@ -1,4 +1,4 @@
-const CharacterRepository = require("../repositories/character.repository");
+const { CharacterRepository } = require("../repositories/character.repository");
 const GameStateRepository = require("../repositories/gameState.repository");
 const { createMockPlayerRepo, createMockVoteRepo, createMockMysteryBoxRepo, createMockCharacterRepo, createMockGameStateRepo } = require("../repositories/mock-repositories");
 const MysteryBoxRepository = require("../repositories/mysteryBox.repository");

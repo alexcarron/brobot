@@ -7,10 +7,6 @@ const DatabaseQuerier = require("./database-querier");
  * If a character or tag already exists, it will be ignored to prevent duplication.
  * @param {DatabaseQuerier} db - The database querier instance used for executing SQL statements.
  * @param {Array<object>} characters - An array of character objects to be inserted.
- * @param {number} characters[].id - The unique identifier for the character.
- * @param {string} characters[].value - The string value representing the character.
- * @param {number} characters[].rarity - The rarity level of the character.
- * @param {Array<string>} characters[].tags - An array of tags associated with the character.
  */
 const insertCharactersToDB = (db, characters) => {
 	if (!Array.isArray(characters))
@@ -73,10 +69,6 @@ const insertCharactersToDB = (db, characters) => {
  * The function first clears existing mystery box data and resets the auto-increment counter.
  * @param {DatabaseQuerier} db - The database querier instance used for executing SQL statements.
  * @param {Array<object>} mysteryBoxes - An array of mystery box objects to be inserted.
- * @param {string} mysteryBoxes[].name - The name of the mystery box.
- * @param {number} mysteryBoxes[].tokenCost - The token cost required to open the mystery box.
- * @param {object} mysteryBoxes[].characterOdds - An object representing the odds of each character within the mystery box.
- * @returns {Promise<void>} A promise that resolves once all mystery boxes and their character odds have been inserted.
  */
 
 const insertMysteryBoxesToDB = (db, mysteryBoxes) => {
