@@ -1,3 +1,4 @@
+const { InvalidArgumentError } = require("../../../utilities/error-utils");
 const DatabaseQuerier = require("../database/database-querier");
 const { getCharacterValueFromID } = require("../utilities/character.utility");
 
@@ -15,7 +16,7 @@ class MysteryBoxRepository {
 	 */
 	constructor(db) {
 		if (!(db instanceof DatabaseQuerier))
-			throw new TypeError("CharacterRepository: db must be an instance of DatabaseQuerier.");
+			throw new InvalidArgumentError("CharacterRepository: db must be an instance of DatabaseQuerier.");
 
 		this.db = db;
 	}
@@ -73,10 +74,10 @@ class MysteryBoxRepository {
 	 */
 	getMysteryBoxByID(id) {
 		if (!id)
-			throw new Error('getMysteryBoxByID: Mystery box id must be provided.');
+			throw new InvalidArgumentError('getMysteryBoxByID: Mystery box id must be provided.');
 
 		if (typeof id !== 'number')
-			throw new Error('getMysteryBoxByID: Mystery box id must be a number.');
+			throw new InvalidArgumentError('getMysteryBoxByID: Mystery box id must be a number.');
 
 		const query = `SELECT * FROM mysteryBox WHERE id = @id`;
 		const getMysteryBoxById = this.db.prepare(query);

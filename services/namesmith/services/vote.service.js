@@ -1,3 +1,4 @@
+const { ResourceNotFoundError, InvalidArgumentError } = require("../../../utilities/error-utils");
 const { logInfo } = require("../../../utilities/logging-utils");
 const VoteRepository = require("../repositories/vote.repository");
 const { isVote } = require("../utilities/vote.utility");
@@ -36,12 +37,12 @@ class VoteService {
 			const vote = this.voteRepository.getVoteByVoterID(voterID);
 
 			if (vote === undefined)
-				throw new Error(`resolveVote: Vote with id ${voterID} does not exist.`);
+				throw new ResourceNotFoundError(`resolveVote: Vote with id ${voterID} does not exist.`);
 
 			return vote;
 		}
 
-		throw new Error(`resolveVote: Invalid vote resolvable`, voteResolvable);
+		throw new InvalidArgumentError(`resolveVote: Invalid vote resolvable: ${voteResolvable}`);
 	}
 
 	/**
@@ -51,7 +52,7 @@ class VoteService {
 	 */
 	async addVote({ voterID, playerVotedForID }) {
 		if (!voterID || !playerVotedForID)
-			throw new Error("Missing voterID or playerVotedForID");
+			throw new InvalidArgumentError("Missing voterID or playerVotedForID");
 
 		const vote = this.voteRepository.getVoteByVoterID(voterID);
 		const hasVotedBefore = vote !== undefined;

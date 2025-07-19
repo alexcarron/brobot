@@ -1,3 +1,4 @@
+const { InvalidArgumentError } = require("../../../utilities/error-utils");
 const DatabaseQuerier = require("../database/database-querier");
 const { createMockDB, addMockPlayer, addMockVote } = require("../database/mock-database");
 const { CharacterRepository } = require("./character.repository");
@@ -41,7 +42,7 @@ const createMockMysteryBoxRepo = (mockDB) => {
 
 const createMockPlayerObject = ({id, currentName, publishedName, tokens, role, inventory}) => {
 	if (id === undefined || typeof id !== "string")
-		throw new TypeError(`createMockPlayerObject: player id must be a string, but got ${id}.`);
+		throw new InvalidArgumentError(`createMockPlayerObject: player id must be a string, but got ${id}.`);
 
 	if (currentName === undefined)
 		currentName = "";

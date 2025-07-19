@@ -4,6 +4,7 @@ const GameStateRepository = require("../repositories/gameState.repository");
 const { closeNamesToVoteOnChannel, openNamesToVoteOnChannel, sendToNamesToVoteOnChannel, sendMessageToTheWinnerChannel, closeTheWinnerChannel, openTheWinnerChannel } = require("../utilities/discord-action.utility");
 const VoteService = require("./vote.service");
 const PlayerService = require("./player.service");
+const { InvalidArgumentError } = require("../../../utilities/error-utils");
 
 /**
  * Provides methods for interacting with the game state.
@@ -108,7 +109,7 @@ class GameStateService {
 		}
 
 		if (!(voteEndingDate instanceof Date))
-			throw new Error(`The vote ending date is not a Date object: ${voteEndingDate}`);
+			throw new InvalidArgumentError(`The vote ending date is not a Date object: ${voteEndingDate}`);
 
 		const now = new Date();
 		const gameStateService = this;

@@ -1,3 +1,4 @@
+const { InitializationError } = require("../../../utilities/error-utils");
 const GameStateService = require("./gameState.service");
 const MysteryBoxService = require("./mysteryBox.service");
 const PlayerService = require("./player.service");
@@ -15,19 +16,19 @@ const VoteService = require("./vote.service");
  */
 const getNamesmithServices = () => {
 	if (!global.namesmith)
-		throw new Error("getNamesmithServices: Namesmith is not set up yet.");
+		throw new InitializationError("getNamesmithServices: Namesmith is not set up yet.");
 
 	if (!global.namesmith.mysteryBoxService)
-		throw new Error("getNamesmithServices: MysteryBoxService is not set up yet.");
+		throw new InitializationError("getNamesmithServices: MysteryBoxService is not set up yet.");
 
 	if (!global.namesmith.playerService)
-		throw new Error("getNamesmithServices: PlayerService is not set up yet.");
+		throw new InitializationError("getNamesmithServices: PlayerService is not set up yet.");
 
 	if (!global.namesmith.gameStateService)
-		throw new Error("getNamesmithServices: GameStateService is not set up yet.");
+		throw new InitializationError("getNamesmithServices: GameStateService is not set up yet.");
 
 	if (!global.namesmith.voteService)
-		throw new Error("getNamesmithServices: VoteService is not set up yet.");
+		throw new InitializationError("getNamesmithServices: VoteService is not set up yet.");
 
 	return {
 		mysteryBoxService: global.namesmith.mysteryBoxService,

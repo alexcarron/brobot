@@ -1,4 +1,5 @@
 const { getRandomWeightedElement } = require("../../../utilities/data-structure-utils");
+const { ResourceNotFoundError } = require("../../../utilities/error-utils");
 const { CharacterRepository } = require("../repositories/character.repository");
 const MysteryBoxRepository = require("../repositories/mysteryBox.repository");
 const { isMysteryBox } = require("../utilities/mysteryBox.utility");
@@ -51,12 +52,12 @@ class MysteryBoxService {
 				mysteryBox = this.mysteryBoxRepository.getMysteryBoxByID(id);
 
 			if (mysteryBox === undefined)
-				throw new Error(`resolveMysteryBox: Mystery box with id ${mysteryBoxResolvable} does not exist.`);
+				throw new ResourceNotFoundError(`resolveMysteryBox: Mystery box with id ${mysteryBoxResolvable} does not exist.`);
 
 			return mysteryBox;
 		}
 
-		throw new Error(`resolveMysteryBox: Invalid mystery box resolvable`, mysteryBoxResolvable);
+		throw new ResourceNotFoundError(`resolveMysteryBox: Invalid mystery box resolvable ${mysteryBoxResolvable}.`);
 	}
 
 	/**

@@ -1,5 +1,6 @@
 const Database = require("better-sqlite3");
 const DatabaseQuerier = require("../database/database-querier");
+const { InvalidArgumentError } = require("../../../utilities/error-utils");
 
 /**
  * Provides access to the game state data.
@@ -15,7 +16,7 @@ class GameStateRepository {
 	 */
 	constructor(db) {
 		if (!(db instanceof DatabaseQuerier))
-			throw new TypeError("CharacterRepository: db must be an instance of DatabaseQuerier.");
+			throw new InvalidArgumentError("CharacterRepository: db must be an instance of DatabaseQuerier.");
 
 		this.db = db;
 	}
@@ -85,7 +86,7 @@ class GameStateRepository {
 		}
 
 		if (assignmentExpressions.length === 0)
-			throw new Error('setGameState: There are no fields provided to update.');
+			throw new InvalidArgumentError('setGameState: There are no fields provided to update.');
 
 		const query = `
 			UPDATE gameState

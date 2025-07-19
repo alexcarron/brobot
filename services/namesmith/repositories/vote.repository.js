@@ -1,3 +1,4 @@
+const { InvalidArgumentError, ResourceConflictError, ResourceNotFoundError } = require("../../../utilities/error-utils");
 const DatabaseQuerier = require("../database/database-querier");
 
 /**
@@ -14,7 +15,7 @@ class VoteRepository {
 	 */
 	constructor(db) {
 		if (!(db instanceof DatabaseQuerier))
-			throw new TypeError("CharacterRepository: db must be an instance of DatabaseQuerier.");
+			throw new InvalidArgumentError("CharacterRepository: db must be an instance of DatabaseQuerier.");
 
 		this.db = db;
 	}
@@ -67,7 +68,7 @@ class VoteRepository {
 	 */
 	doesVoteExist({ voterID, playerVotedForID }) {
 		if (voterID === undefined && playerVotedForID === undefined)
-			throw new TypeError(`doesVoteExist: Missing voterID and playerVotedForID`);
+			throw new InvalidArgumentError(`doesVoteExist: Missing voterID and playerVotedForID`);
 		else if (voterID === undefined) {
 			const query = `SELECT * FROM vote WHERE playerVotedForID = @playerVotedForID LIMIT 1`;
 			const vote = this.db.getRow(query, { playerVotedForID });
@@ -91,10 +92,10 @@ class VoteRepository {
 	 */
 	addVote({ voterID, playerVotedForID }) {
 		if (!voterID)
-			throw new Error("addVote: Missing voterID");
+			throw new InvalidArgumentError("addVote: Missing voterID");
 
 		if (!playerVotedForID)
-			throw new Error("addVote: Missing playerVotedForID");
+			throw new InvalidArgumentError("addVote: Missing playerVotedForID");
 
 		const query = `
 			INSERT INTO vote (voterID, playerVotedForID)
@@ -104,7 +105,7 @@ class VoteRepository {
 		const vote = addVote.run({ voterID, playerVotedForID });
 
 		if (vote.changes === 0)
-			throw new Error("addVote: Failed to add vote because the voterID already exists");
+			throw new ResourceConflictError("addVote: Failed to add vote because the voterID already exists");
 	}
 
 	/**
@@ -113,10 +114,10 @@ class VoteRepository {
 	 */
 	changeVote({ voterID, playerVotedForID }) {
 		if (!voterID)
-			throw new Error("changeVote: Missing voterID");
+			throw new InvalidArgumentError("changeVote: Missing voterID");
 
 		if (!playerVotedForID)
-			throw new Error("changeVote: Missing playerVotedForID");
+			throw new InvalidArgumentError("changeVote: Missing playerVotedForID");
 
 		console.log({
 			players: this.db.getRows(`SELECT * FROM player`),
@@ -134,7 +135,7 @@ class VoteRepository {
 		`;
 		const vote = this.db.run(query, { voterID, playerVotedForID });
 		if (vote.changes === 0)
-			throw new Error("changeVote: Failed to change vote because the voterID does not exist");
+			throw new ResourceNotFoundError("changeVote: Failed to change vote because the voterID does not exist");
 	}
 
 	/**
@@ -146,7 +147,7 @@ class VoteRepository {
 		const deleteVote = this.db.prepare(query);
 		const vote = deleteVote.run({ voterID });
 		if (vote.changes === 0)
-			throw new Error("deleteVote: Failed to delete vote because the voterID does not exist");
+			throw new ResourceNotFoundError("deleteVote: Failed to delete vote because the voterID does not exist");
 	}
 
 	/**

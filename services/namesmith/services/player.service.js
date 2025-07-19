@@ -5,6 +5,7 @@ const { ButtonStyle } = require("discord.js");
 const { addButtonToMessageContents } = require("../../../utilities/discord-action-utils");
 const { fetchNamesmithGuildMember, fetchNamesmithGuildMembers } = require("../utilities/discord-fetch.utility");
 const { isPlayer } = require("../utilities/player.utility");
+const { ResourceNotFoundError, InvalidArgumentError } = require("../../../utilities/error-utils");
 
 /**
  * Provides methods for interacting with players.
@@ -43,12 +44,12 @@ class PlayerService {
 			const player = this.playerRepository.getPlayerByID(playerID);
 
 			if (player === undefined)
-				throw new Error(`resolvePlayer: Player with id ${playerID} does not exist.`);
+				throw new ResourceNotFoundError(`resolvePlayer: Player with id ${playerID} does not exist.`);
 
 			return player;
 		}
 
-		throw new Error(`resolvePlayer: Invalid player resolvable`, playerResolvable);
+		throw new InvalidArgumentError(`resolvePlayer: Invalid player resolvable ${playerResolvable}`);
 	}
 
 	/**
@@ -67,10 +68,10 @@ class PlayerService {
 			if (/^\d+$/.test(playerID))
 				return playerID;
 
-			throw new Error(`resolvePlayerID: Player with id ${playerID} does not exist.`);
+			throw new ResourceNotFoundError(`resolvePlayerID: Player with id ${playerID} does not exist.`);
 		}
 
-		throw new Error(`resolvePlayerID: Invalid player resolvable`, playerResolvable);
+		throw new InvalidArgumentError(`resolvePlayerID: Invalid player resolvable ${playerResolvable}`);
 	}
 
 	/**
@@ -104,10 +105,10 @@ class PlayerService {
 		const playerID = this.resolvePlayerID(playerResolvable);
 
 		if (typeof newName !== "string")
-			throw new TypeError("changeCurrentName: newName must be a string.");
+			throw new InvalidArgumentError("changeCurrentName: newName must be a string.");
 
 		if (newName.length > PlayerService.MAX_NAME_LENGTH)
-			throw new TypeError(`changeCurrentName: newName must be less than or equal to ${PlayerService.MAX_NAME_LENGTH}.`);
+			throw new InvalidArgumentError(`changeCurrentName: newName must be less than or equal to ${PlayerService.MAX_NAME_LENGTH}.`);
 
 		this.playerRepository.changeCurrentName(playerID, newName);
 		await changeDiscordNameOfPlayer(playerID, newName);
@@ -226,10 +227,10 @@ class PlayerService {
 		const playerID = this.resolvePlayerID(playerResolvable);
 
 		if (typeof playerID !== "string")
-			throw new TypeError(`addNewPlayer: playerID must be a string, but got ${playerID}.`);
+			throw new InvalidArgumentError(`addNewPlayer: playerID must be a string, but got ${playerID}.`);
 
 		if (this.playerRepository.doesPlayerExist(playerID))
-			throw new Error(`addNewPlayer: player ${playerID} already exists in the game.`);
+			throw new ResourceNotFoundError(`addNewPlayer: player ${playerID} already exists in the game.`);
 
 		const guildMember = await fetchNamesmithGuildMember(playerID);
 

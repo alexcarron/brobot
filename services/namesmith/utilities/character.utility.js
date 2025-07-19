@@ -2,6 +2,8 @@
  * @file Utility functions for working with characters.
  */
 
+const { InvalidArgumentError } = require("../../../utilities/error-utils");
+
 /**
  * Retrieves the Unicode code point value of a given character.
  * @param {string} character - The character from which to retrieve the code point value. Must be a single character string.
@@ -10,11 +12,11 @@
  */
 const getIDfromCharacterValue = (character) => {
 	if (typeof character !== 'string') {
-		throw new Error('getIDofCharacter: character must be a string.');
+		throw new InvalidArgumentError('getIDofCharacter: character must be a string.');
 	}
 
 	if (character.length !== 1) {
-		throw new Error('getIDofCharacter: character must be a single character.');
+		throw new InvalidArgumentError('getIDofCharacter: character must be a single character.');
 	}
 
 	return character.codePointAt(0);
@@ -28,13 +30,13 @@ const getIDfromCharacterValue = (character) => {
  */
 const getCharacterValueFromID = (id) => {
 	if (typeof id !== 'number') {
-		throw new Error('getIDofCharacter: id must be a number.');
+		throw new InvalidArgumentError('getIDofCharacter: id must be a number.');
 	}
 	else if (id < 0) {
-		throw new Error(`getIDofCharacter: id must be a positive number. Got ${id}.`);
+		throw new InvalidArgumentError(`getIDofCharacter: id must be a positive number. Got ${id}.`);
 	}
 	else if (Number.isInteger(id) === false) {
-		throw new Error(`getIDofCharacter: id must be an integer. Got ${id}.`);
+		throw new InvalidArgumentError(`getIDofCharacter: id must be an integer. Got ${id}.`);
 	}
 
 	return String.fromCodePoint(id);

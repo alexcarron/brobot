@@ -1,3 +1,4 @@
+const { InvalidArgumentError, ResourceNotFoundError, ResourceConflictError } = require("../../../utilities/error-utils");
 const DatabaseQuerier = require("../database/database-querier");
 
 const MAX_NAME_LENGTH = 32;
@@ -11,7 +12,7 @@ class PlayerRepository {
 	 */
 	constructor(db) {
 		if (!(db instanceof DatabaseQuerier))
-			throw new TypeError("CharacterRepository: db must be an instance of DatabaseQuerier.");
+			throw new InvalidArgumentError("CharacterRepository: db must be an instance of DatabaseQuerier.");
 
 		/**
 		 * @type {DatabaseQuerier}
@@ -92,7 +93,7 @@ class PlayerRepository {
 	getInventory(playerID) {
 		const player = this.getPlayerByID(playerID);
 		if (!player)
-			throw new Error(`getInventory: Player with ID ${playerID} not found`);
+			throw new ResourceNotFoundError(`getInventory: Player with ID ${playerID} not found`);
 
 		return player.inventory;
 	}
@@ -105,7 +106,7 @@ class PlayerRepository {
 	getCurrentName(playerID) {
 		const player = this.getPlayerByID(playerID);
 		if (!player)
-			throw new Error(`getCurrentName: Player with ID ${playerID} not found`);
+			throw new ResourceNotFoundError(`getCurrentName: Player with ID ${playerID} not found`);
 
 		return player.currentName;
 	}
@@ -117,10 +118,10 @@ class PlayerRepository {
 	 */
 	changeCurrentName(playerID, newName) {
 		if (newName === undefined)
-			throw new Error("changeCurrentName: newName is undefined.");
+			throw new InvalidArgumentError("changeCurrentName: newName is undefined.");
 
 		if (newName.length > MAX_NAME_LENGTH)
-			throw new Error(`changeCurrentName: newName must be less than or equal to ${MAX_NAME_LENGTH}.`);
+			throw new InvalidArgumentError(`changeCurrentName: newName must be less than or equal to ${MAX_NAME_LENGTH}.`);
 
 		const query = `
 			UPDATE player
@@ -131,7 +132,7 @@ class PlayerRepository {
 		const changeCurrentName = this.db.prepare(query);
 		const result = changeCurrentName.run({ newName, id: playerID });
 		if (result.changes === 0)
-			throw new Error(`changeCurrentName: Player with ID ${playerID} not found.`);
+			throw new ResourceNotFoundError(`changeCurrentName: Player with ID ${playerID} not found.`);
 	}
 
 	/**
@@ -142,7 +143,7 @@ class PlayerRepository {
 	getPublishedName(playerID) {
 		const player = this.getPlayerByID(playerID);
 		if (!player)
-			throw new Error(`getPublishedName: Player with ID ${playerID} not found`);
+			throw new ResourceNotFoundError(`getPublishedName: Player with ID ${playerID} not found`);
 		return player.publishedName;
 	}
 
@@ -153,10 +154,10 @@ class PlayerRepository {
 	 */
 	publishName(playerID, name) {
 		if (name === undefined)
-			throw new Error("publishName: name is undefined.");
+			throw new InvalidArgumentError("publishName: name is undefined.");
 
 		if (name.length > MAX_NAME_LENGTH)
-			throw new Error(`publishName: name must be less than or equal to ${MAX_NAME_LENGTH}.`);
+			throw new InvalidArgumentError(`publishName: name must be less than or equal to ${MAX_NAME_LENGTH}.`);
 
 		const query = `
 			UPDATE player
@@ -167,7 +168,7 @@ class PlayerRepository {
 		const publishName = this.db.prepare(query);
 		const result = publishName.run({ name, id: playerID });
 		if (result.changes === 0)
-			throw new Error(`publishName: Player with ID ${playerID} not found.`);
+			throw new ResourceNotFoundError(`publishName: Player with ID ${playerID} not found.`);
 	}
 
 	/**
@@ -191,7 +192,7 @@ class PlayerRepository {
 		});
 
 		if (result.changes === 0)
-			throw new Error(`addPlayer: Player with ID ${playerID} already exists.`);
+			throw new ResourceConflictError(`addPlayer: Player with ID ${playerID} already exists.`);
 	}
 
 	/**
@@ -210,10 +211,10 @@ class PlayerRepository {
 	 */
 	addCharacterToInventory(playerID, characterValue) {
 		if (characterValue === undefined)
-			throw new Error("addCharacterToInventory: characterValue is undefined.");
+			throw new InvalidArgumentError("addCharacterToInventory: characterValue is undefined.");
 
 		if (characterValue.length !== 1)
-			throw new Error("addCharacterToInventory: characterValue must be a single character.");
+			throw new InvalidArgumentError("addCharacterToInventory: characterValue must be a single character.");
 
 		const query = `
 			UPDATE player
@@ -224,7 +225,7 @@ class PlayerRepository {
 		const addCharacterToInventory = this.db.prepare(query);
 		const result = addCharacterToInventory.run({ characterValue, playerID });
 		if (result.changes === 0)
-			throw new Error(`addCharacterToInventory: Player with ID ${playerID} not found.`);
+			throw new ResourceNotFoundError(`addCharacterToInventory: Player with ID ${playerID} not found.`);
 	}
 }
 

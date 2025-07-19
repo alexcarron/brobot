@@ -1,4 +1,6 @@
 const Database = require("better-sqlite3");
+const { InvalidArgumentError } = require("../../../utilities/error-utils");
+const { QueryUsageError } = require("../utilities/error.utility");
 
 /**
  * A utility class for preparing and executing SQL queries using a better-sqlite3 database instance.
@@ -10,7 +12,7 @@ class DatabaseQuerier {
    */
   constructor(db) {
 		if (!(db instanceof Database))
-			throw new TypeError("DatabaseQuerier: db must be an instance of Database.");
+			throw new InvalidArgumentError("DatabaseQuerier: db must be an instance of Database.");
 
     this.db = db;
   }
@@ -81,12 +83,12 @@ class DatabaseQuerier {
 				error.message.includes("The supplied SQL string contains more than one statement")
 			) {
 				if (params !== undefined) {
-					throw new Error("Parameters are not supported with multi-statement queries");
+					throw new QueryUsageError("Parameters are not supported with multi-statement queries");
 				}
 				this.db.exec(sqlQuery);
 				return { changes: -1, lastInsertRowid: -1 };
 			}
-			throw error;
+			throw new QueryUsageError(error.message);
 		}
   }
 

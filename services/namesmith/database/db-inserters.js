@@ -1,3 +1,4 @@
+const { InvalidArgumentError } = require("../../../utilities/error-utils");
 const { getIDfromCharacterValue, getCharacterValueFromID } = require("../utilities/character.utility");
 const DatabaseQuerier = require("./database-querier");
 
@@ -10,10 +11,10 @@ const DatabaseQuerier = require("./database-querier");
  */
 const insertCharactersToDB = (db, characters) => {
 	if (!Array.isArray(characters))
-		throw new TypeError("insertCharactersToDB: characters must be an array.");
+		throw new InvalidArgumentError("insertCharactersToDB: characters must be an array.");
 
 	if (!(db instanceof DatabaseQuerier))
-		throw new TypeError("insertCharactersToDB: db must be an instance of DatabaseQuerier.");
+		throw new InvalidArgumentError("insertCharactersToDB: db must be an instance of DatabaseQuerier.");
 
 	const insertCharacter = db.getQuery("INSERT OR IGNORE INTO character (id, value, rarity) VALUES (@id, @value, @rarity)");
 	const insertTag = db.getQuery("INSERT OR IGNORE INTO characterTag (characterID, tag) VALUES (@characterID, @tag)");
@@ -21,31 +22,31 @@ const insertCharactersToDB = (db, characters) => {
 	const insertCharacters = db.getTransaction((characters) => {
 		for (const character of characters) {
 			if (character.id === undefined)
-				throw new TypeError("insertCharactersToDB: character id is undefined.");
+				throw new InvalidArgumentError("insertCharactersToDB: character id is undefined.");
 
 			if (typeof character.id !== "number")
-				throw new TypeError(`insertCharactersToDB: character id must be a number, but got ${character.id}.`);
+				throw new InvalidArgumentError(`insertCharactersToDB: character id must be a nurmber, but got ${character.id}.`);
 
 			if (character.value === undefined)
-				throw new TypeError("insertCharactersToDB: character value is undefined.");
+				throw new InvalidArgumentError("insertCharactersToDB: character value is undefined.");
 
 			if (typeof character.value !== "string")
-				throw new TypeError(`insertCharactersToDB: character value must be a string, but got ${character.value}.`);
+				throw new InvalidArgumentError(`insertCharactersToDB: character value must be a string, but got ${character.value}.`);
 
 			if (character.value.length !== 1)
-				throw new TypeError("insertCharactersToDB: character value must be a single character.");
+				throw new InvalidArgumentError("insertCharactersToDB: character value must be a single character.");
 
 			if (getIDfromCharacterValue(character.value) !== character.id)
-				throw new TypeError(`insertCharactersToDB: character id ${character.id} does not match character value ${character.value}.`);
+				throw new InvalidArgumentError(`insertCharactersToDB: character id ${character.id} does not match character value ${character.value}.`);
 
 			if (getCharacterValueFromID(character.id) !== character.value)
-				throw new TypeError(`insertCharactersToDB: character value ${character.value} does not match character id ${character.id}.`);
+				throw new InvalidArgumentError(`insertCharactersToDB: character value ${character.value} does not match character id ${character.id}.`);
 
 			if (character.rarity === undefined)
-				throw new TypeError("insertCharactersToDB: character rarity is undefined.");
+				throw new InvalidArgumentError("insertCharactersToDB: character rarity is undefined.");
 
 			if (typeof character.rarity !== "number")
-				throw new TypeError(`insertCharactersToDB: character rarity must be a number, but got ${character.rarity}.`);
+				throw new InvalidArgumentError(`insertCharactersToDB: character rarity must be a number, but got ${character.rarity}.`);
 
 
 			insertCharacter.run({
@@ -73,10 +74,10 @@ const insertCharactersToDB = (db, characters) => {
 
 const insertMysteryBoxesToDB = (db, mysteryBoxes) => {
 	if (!Array.isArray(mysteryBoxes))
-		throw new TypeError("insertMysteryBoxesToDB: mysteryBoxes must be an array.");
+		throw new InvalidArgumentError("insertMysteryBoxesToDB: mysteryBoxes must be an array.");
 
 	if (!(db instanceof DatabaseQuerier))
-		throw new TypeError("insertMysteryBoxesToDB: db must be an instance of DatabaseQuerier.");
+		throw new InvalidArgumentError("insertMysteryBoxesToDB: db must be an instance of DatabaseQuerier.");
 
 	const insertMysteryBox = db.getQuery("INSERT OR IGNORE INTO mysteryBox (name, tokenCost) VALUES (@name, @tokenCost)");
 	const insertMysteryBoxCharacterOdds = db.getQuery("INSERT OR IGNORE INTO mysteryBoxCharacterOdds (mysteryBoxID, characterID, weight) VALUES (@mysteryBoxID, @characterID, @weight)");
@@ -90,22 +91,22 @@ const insertMysteryBoxesToDB = (db, mysteryBoxes) => {
 
 		for (const mysteryBox of mysteryBoxes) {
 			if (mysteryBox.name === undefined)
-				throw new TypeError("insertMysteryBoxesToDB: mystery box name is undefined.");
+				throw new InvalidArgumentError("insertMysteryBoxesToDB: mystery box name is undefined.");
 
 			if (typeof mysteryBox.name !== "string")
-				throw new TypeError(`insertMysteryBoxesToDB: mystery box name must be a string, but got ${mysteryBox.name}.`);
+				throw new InvalidArgumentError(`insertMysteryBoxesToDB: mystery box name must be a string, but got ${mysteryBox.name}.`);
 
 			if (mysteryBox.tokenCost === undefined)
-				throw new TypeError("insertMysteryBoxesToDB: mystery box token cost is undefined.");
+				throw new InvalidArgumentError("insertMysteryBoxesToDB: mystery box token cost is undefined.");
 
 			if (typeof mysteryBox.tokenCost !== "number")
-				throw new TypeError(`insertMysteryBoxesToDB: mystery box token cost must be a number, but got ${mysteryBox.tokenCost}.`);
+				throw new InvalidArgumentError(`insertMysteryBoxesToDB: mystery box token cost must be a number, but got ${mysteryBox.tokenCost}.`);
 
 			if (mysteryBox.characterOdds === undefined)
-				throw new TypeError("insertMysteryBoxesToDB: mystery box character odds is undefined.");
+				throw new InvalidArgumentError("insertMysteryBoxesToDB: mystery box character odds is undefined.");
 
 			if (typeof mysteryBox.characterOdds !== "object")
-				throw new TypeError(`insertMysteryBoxesToDB: mystery box character odds must be an object, but got ${mysteryBox.characterOdds}.`);
+				throw new InvalidArgumentError(`insertMysteryBoxesToDB: mystery box character odds must be an object, but got ${mysteryBox.characterOdds}.`);
 
 			const result = insertMysteryBox.run({
 				name: mysteryBox.name,
@@ -115,16 +116,16 @@ const insertMysteryBoxesToDB = (db, mysteryBoxes) => {
 
 			for (const [characterValue, weight] of Object.entries(mysteryBox.characterOdds)) {
 				if (characterValue === undefined)
-					throw new TypeError("insertMysteryBoxesToDB: character value is undefined.");
+					throw new InvalidArgumentError("insertMysteryBoxesToDB: character value is undefined.");
 
 				if (typeof characterValue !== "string")
-					throw new TypeError(`insertMysteryBoxesToDB: character value must be a string, but got ${characterValue}.`);
+					throw new InvalidArgumentError(`insertMysteryBoxesToDB: character value must be a string, but got ${characterValue}.`);
 
 				if (weight === undefined)
-					throw new TypeError("insertMysteryBoxesToDB: character weight is undefined.");
+					throw new InvalidArgumentError("insertMysteryBoxesToDB: character weight is undefined.");
 
 				if (typeof weight !== "number")
-					throw new TypeError(`insertMysteryBoxesToDB: character weight must be a number, but got ${weight}.`);
+					throw new InvalidArgumentError(`insertMysteryBoxesToDB: character weight must be a number, but got ${weight}.`);
 
 				const characterID = getIDfromCharacterValue(characterValue);
 				insertMysteryBoxCharacterOdds.run({

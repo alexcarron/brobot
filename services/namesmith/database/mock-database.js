@@ -2,6 +2,7 @@ const Database = require('better-sqlite3');
 const { applySchemaToDB } = require('./queries/apply-scheme');
 const { addInitialDataToDB } = require('./static-data/insert-static-data');
 const DatabaseQuerier = require('./database-querier');
+const { InvalidArgumentError } = require('../../../utilities/error-utils');
 
 /**
  * Creates an in-memory SQLite database with the schema and initial data for Namesmith already populated.
@@ -29,40 +30,40 @@ const createMockDB = () => {
  */
 const addMockPlayer = (db, { id, currentName, publishedName, tokens, role, inventory }) => {
 	if (id === undefined)
-		throw new TypeError("addMockPlayer: player id is undefined.");
+		throw new InvalidArgumentError("addMockPlayer: player id is undefined.");
 
 	if (typeof id !== "string")
-		throw new TypeError(`addMockPlayer: player id must be a string, but got ${id}.`);
+		throw new InvalidArgumentError(`addMockPlayer: player id must be a string, but got ${id}.`);
 
 	if (currentName === undefined)
-		throw new TypeError("addMockPlayer: player current name is undefined.");
+		throw new InvalidArgumentError("addMockPlayer: player current name is undefined.");
 
 	if (typeof currentName !== "string")
-		throw new TypeError(`addMockPlayer: player current name must be a string, but got ${currentName}.`);
+		throw new InvalidArgumentError(`addMockPlayer: player current name must be a string, but got ${currentName}.`);
 
 	if (tokens === undefined)
-		throw new TypeError("addMockPlayer: player tokens is undefined.");
+		throw new InvalidArgumentError("addMockPlayer: player tokens is undefined.");
 
 	if (typeof tokens !== "number")
-		throw new TypeError(`addMockPlayer: player tokens must be a number, but got ${tokens}.`);
+		throw new InvalidArgumentError(`addMockPlayer: player tokens must be a number, but got ${tokens}.`);
 
 	if (inventory === undefined)
-		throw new TypeError("addMockPlayer: player inventory is undefined.");
+		throw new InvalidArgumentError("addMockPlayer: player inventory is undefined.");
 
 	if (typeof inventory !== "string")
-		throw new TypeError(`addMockPlayer: player inventory must be a string, but got ${inventory}.`);
+		throw new InvalidArgumentError(`addMockPlayer: player inventory must be a string, but got ${inventory}.`);
 
 	if (publishedName === undefined)
-		throw new TypeError("addMockPlayer: player published name is undefined.");
+		throw new InvalidArgumentError("addMockPlayer: player published name is undefined.");
 
 	if (publishedName !== null && typeof publishedName !== "string")
-		throw new TypeError(`addMockPlayer: player published name must be a string or null, but got ${publishedName}.`);
+		throw new InvalidArgumentError(`addMockPlayer: player published name must be a string or null, but got ${publishedName}.`);
 
 	if (role === undefined)
-		throw new TypeError("addMockPlayer: player role is undefined.");
+		throw new InvalidArgumentError("addMockPlayer: player role is undefined.");
 
 	if (role !== null && typeof role !== "string")
-		throw new TypeError(`addMockPlayer: player role must be a string or null, but got ${role}.`);
+		throw new InvalidArgumentError(`addMockPlayer: player role must be a string or null, but got ${role}.`);
 
 	const existingPlayer = db.getRow(
 		"SELECT id FROM player WHERE id = ?",
@@ -89,16 +90,16 @@ const addMockPlayer = (db, { id, currentName, publishedName, tokens, role, inven
  */
 const addMockVote = (db, { voterID, playerVotedForID }) => {
 	if (voterID === undefined)
-		throw new TypeError("addMockVote: voterID is undefined.");
+		throw new InvalidArgumentError("addMockVote: voterID is undefined.");
 
 	if (typeof voterID !== "string")
-		throw new TypeError(`addMockVote: voterID must be a string, but got ${voterID}.`);
+		throw new InvalidArgumentError(`addMockVote: voterID must be a string, but got ${voterID}.`);
 
 	if (playerVotedForID === undefined)
-		throw new TypeError("addMockVote: playerVotedForID is undefined.");
+		throw new InvalidArgumentError("addMockVote: playerVotedForID is undefined.");
 
 	if (typeof playerVotedForID !== "string")
-		throw new TypeError(`addMockVote: playerVotedForID must be a string, but got ${playerVotedForID}.`);
+		throw new InvalidArgumentError(`addMockVote: playerVotedForID must be a string, but got ${playerVotedForID}.`);
 
 	const insertVote = db.prepare(`
 		INSERT INTO vote (voterID, playerVotedForID)

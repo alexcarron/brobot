@@ -1,3 +1,4 @@
+const { InvalidArgumentError } = require("../../../utilities/error-utils");
 const MysteryBoxService = require("../services/mysteryBox.service");
 const PlayerService = require("../services/player.service");
 
@@ -20,7 +21,7 @@ const openMysteryBox = async (
 	playerID, mysteryBoxID = 1
 ) => {
 	if (typeof playerID !== "string")
-		throw new TypeError(`openMysteryBox: playerID must be a string, but got ${playerID}.`);
+		throw new InvalidArgumentError(`openMysteryBox: playerID must be a string, but got ${playerID}.`);
 
 	if (
 		typeof mysteryBoxID !== "number" ||
@@ -28,7 +29,7 @@ const openMysteryBox = async (
 		mysteryBoxID < 1 ||
 		!Number.isInteger(mysteryBoxID)
 	)
-		throw new TypeError(`openMysteryBox: mysteryBoxID must be a positive integer, but got ${mysteryBoxID}.`);
+		throw new InvalidArgumentError(`openMysteryBox: mysteryBoxID must be a positive integer, but got ${mysteryBoxID}.`);
 
 	const recievedCharacter = await mysteryBoxService.openBoxByID(mysteryBoxID);
 

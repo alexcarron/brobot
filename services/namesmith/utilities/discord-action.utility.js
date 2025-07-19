@@ -5,6 +5,7 @@
 const { memberHasRole, setNicknameOfMember, removeRoleFromMember, addRoleToMember, closeChannel, openChannel, removeAllRolesFromMember } = require("../../../utilities/discord-action-utils");
 const ids = require("../../../bot-config/discord-ids");
 const { fetchPublishedNamesChannel, fetchNamesmithGuildMember, fetchNamesToVoteOnChannel, fetchTheWinnerChannel } = require("./discord-fetch.utility");
+const { InvalidArgumentError } = require("../../../utilities/error-utils");
 
 const MAX_NAME_LENGTH = 32;
 const NO_NAME = "ˑ";
@@ -19,7 +20,7 @@ const NO_NAME = "ˑ";
  */
 const changeDiscordNameOfPlayer = async (playerID, newName) => {
 	if (newName.length > MAX_NAME_LENGTH) {
-		throw new Error(`changeDiscordNameOfPlayer: newName must be less than or equal to ${MAX_NAME_LENGTH}.`);
+		throw new InvalidArgumentError(`changeDiscordNameOfPlayer: newName must be less than or equal to ${MAX_NAME_LENGTH}.`);
 	}
 	const guildMember = await fetchNamesmithGuildMember(playerID);
 
