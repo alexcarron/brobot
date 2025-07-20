@@ -6,6 +6,7 @@ const { addButtonToMessageContents } = require("../../../utilities/discord-actio
 const { fetchNamesmithGuildMember, fetchNamesmithGuildMembers } = require("../utilities/discord-fetch.utility");
 const { isPlayer } = require("../utilities/player.utility");
 const { ResourceNotFoundError, InvalidArgumentError } = require("../../../utilities/error-utils");
+const { PlayerNotFoundError, PlayerAlreadyExistsError } = require("../utilities/error.utility");
 
 /**
  * Provides methods for interacting with players.
@@ -44,7 +45,7 @@ class PlayerService {
 			const player = this.playerRepository.getPlayerByID(playerID);
 
 			if (player === undefined)
-				throw new ResourceNotFoundError(`resolvePlayer: Player with id ${playerID} does not exist.`);
+				throw new PlayerNotFoundError(playerID);
 
 			return player;
 		}
@@ -68,7 +69,7 @@ class PlayerService {
 			if (/^\d+$/.test(playerID))
 				return playerID;
 
-			throw new ResourceNotFoundError(`resolvePlayerID: Player with id ${playerID} does not exist.`);
+			throw new InvalidArgumentError(`resolvePlayerID: Invalid player ID ${playerID}. Expected a number as a string.`);
 		}
 
 		throw new InvalidArgumentError(`resolvePlayerID: Invalid player resolvable ${playerResolvable}`);
@@ -118,15 +119,16 @@ class PlayerService {
 	 * Adds a character to a player's name.
 	 * @param {string | object} playerResolvable - The player resolvable whose name is being modified.
 	 * @param {string} character - The character to add to the player's name.
+	 * @returns {Promise<void>} A promise that resolves once the character has been added to the player's name.
 	 * @throws {Error} - If the addition of the character to the player's name would result in a name longer than MAX_NAME_LENGTH.
 	 */
-	addCharacterToName(playerResolvable, character) {
+	async addCharacterToName(playerResolvable, character) {
 		const playerID = this.resolvePlayerID(playerResolvable);
 
 		const currentName = this.getCurrentName(playerResolvable);
 		const newName = currentName + character;
 
-		this.changeCurrentName(playerResolvable, newName);
+		await this.changeCurrentName(playerResolvable, newName);
 		this.playerRepository.addCharacterToInventory(playerID, character);
 	}
 
@@ -230,7 +232,7 @@ class PlayerService {
 			throw new InvalidArgumentError(`addNewPlayer: playerID must be a string, but got ${playerID}.`);
 
 		if (this.playerRepository.doesPlayerExist(playerID))
-			throw new ResourceNotFoundError(`addNewPlayer: player ${playerID} already exists in the game.`);
+			throw new PlayerAlreadyExistsError(playerID);
 
 		const guildMember = await fetchNamesmithGuildMember(playerID);
 

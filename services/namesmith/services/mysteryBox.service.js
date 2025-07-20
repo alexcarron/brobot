@@ -1,7 +1,8 @@
 const { getRandomWeightedElement } = require("../../../utilities/data-structure-utils");
-const { ResourceNotFoundError } = require("../../../utilities/error-utils");
+const { ResourceNotFoundError, InvalidArgumentError } = require("../../../utilities/error-utils");
 const { CharacterRepository } = require("../repositories/character.repository");
 const MysteryBoxRepository = require("../repositories/mysteryBox.repository");
+const { MysteryBoxNotFoundError } = require("../utilities/error.utility");
 const { isMysteryBox } = require("../utilities/mysteryBox.utility");
 
 /**
@@ -29,17 +30,21 @@ class MysteryBoxService {
 	 * }} mysteryBoxResolvable - The mystery box resolvable to resolve.
 	 * @param {object} [options] - Options for resolving the mystery box resolvable.
 	 * @param {boolean} [options.hasCharacterOdds] - Whether the resolved mystery box should have character odds.
-	 * @returns {Promise<{
+	 * @returns {{
 	 * 	id: number,
 	 * 	name: string,
 	 * 	tokenCost: number,
 	 * 	characterOdds?: Record<string, number>
-	 * }>} A promise that resolves with the resolved mystery box object.
+	 * }} A promise that resolves with the resolved mystery box object.
 	 * @throws {Error} If the mystery box resolvable is invalid.
 	 */
 	resolveMysteryBox(mysteryBoxResolvable, {hasCharacterOdds = false} = {}) {
 		if (isMysteryBox(mysteryBoxResolvable, {hasCharacterOdds})) {
 			const mysteryBox = mysteryBoxResolvable;
+
+			if (typeof mysteryBox === 'number')
+				throw new Error(`resolveMysteryBox: isMysteryBox should not return true for a number: ${mysteryBox}`);
+
 			return mysteryBox;
 		}
 		else if (typeof mysteryBoxResolvable === 'number') {
@@ -52,29 +57,29 @@ class MysteryBoxService {
 				mysteryBox = this.mysteryBoxRepository.getMysteryBoxByID(id);
 
 			if (mysteryBox === undefined)
-				throw new ResourceNotFoundError(`resolveMysteryBox: Mystery box with id ${mysteryBoxResolvable} does not exist.`);
+				throw new MysteryBoxNotFoundError(id.toString());
 
 			return mysteryBox;
 		}
 
-		throw new ResourceNotFoundError(`resolveMysteryBox: Invalid mystery box resolvable ${mysteryBoxResolvable}.`);
+		throw new InvalidArgumentError(`resolveMysteryBox: Invalid mystery box resolvable ${mysteryBoxResolvable}.`);
 	}
 
 	/**
 	 * Returns a character from the mystery box with the given ID. The character is chosen using the weighted random distribution of the mystery box.
 	 * @param {number} mysteryBoxResolvable - The ID of the mystery box from which to retrieve a character.
-	 * @returns {Promise<{
+	 * @returns {{
 	 * 	id: number,
 	 * 	value: string,
 	 * 	rarity: number,
-	 * }>} The character retrieved from the mystery box.
+	 * }} The character retrieved from the mystery box.
 	 */
-	async openBoxByID(mysteryBoxResolvable) {
+	openBoxByID(mysteryBoxResolvable) {
 		const mysteryBox = this.resolveMysteryBox(mysteryBoxResolvable, {hasCharacterOdds: true});
 		const characterOdds = mysteryBox.characterOdds;
 
 		const characterValue = getRandomWeightedElement(characterOdds);
-		return await this.characterRepository.getCharacterByValue(characterValue);
+		return this.characterRepository.getCharacterByValue(characterValue);
 	}
 }
 

@@ -158,8 +158,8 @@ describe('PlayerService', () => {
 	});
 
 	describe('.addCharacterToName()', () => {
-		it('should add a character to the current name of a player', () => {
-			playerService.addCharacterToName(mockPlayers[0].id, "a");
+		it('should add a character to the current name of a player', async () => {
+			await playerService.addCharacterToName(mockPlayers[0].id, "a");
 			const currentName = playerService.getCurrentName(mockPlayers[0].id);
 			const inventory = playerService.getInventory(mockPlayers[0].id);
 			expect(currentName).toEqual(mockPlayers[0].currentName + "a");
@@ -170,16 +170,16 @@ describe('PlayerService', () => {
 			);
 		});
 
-		it('should throw an error if the player is not found', () => {
-			expect(() => playerService.addCharacterToName("invalid-id", "a")).toThrow();
+		it('should throw an error if the player is not found', async () => {
+			await expect(playerService.addCharacterToName("invalid-id", "a")).rejects.toThrow();
 		});
 
-		it('should throw an error if the character is too long', () => {
-			expect(() => playerService.addCharacterToName(mockPlayers[1].id, "aa")).toThrow();
+		it('should throw an error if the character is too long', async () => {
+			await expect(playerService.addCharacterToName(mockPlayers[1].id, "aa")).rejects.toThrow();
 		});
 
-		it('should throw an error if the character does not exist', () => {
-			expect(() => playerService.addCharacterToName(mockPlayers[1].id)).toThrow();
+		it('should throw an error if the character does not exist', async () => {
+			await expect(playerService.addCharacterToName(mockPlayers[1].id)).rejects.toThrow();
 		});
 	});
 

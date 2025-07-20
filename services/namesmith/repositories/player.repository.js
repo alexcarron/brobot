@@ -1,5 +1,6 @@
 const { InvalidArgumentError, ResourceNotFoundError, ResourceConflictError } = require("../../../utilities/error-utils");
 const DatabaseQuerier = require("../database/database-querier");
+const { PlayerNotFoundError, PlayerAlreadyExistsError } = require("../utilities/error.utility");
 
 const MAX_NAME_LENGTH = 32;
 
@@ -93,7 +94,7 @@ class PlayerRepository {
 	getInventory(playerID) {
 		const player = this.getPlayerByID(playerID);
 		if (!player)
-			throw new ResourceNotFoundError(`getInventory: Player with ID ${playerID} not found`);
+			throw new PlayerNotFoundError(playerID);
 
 		return player.inventory;
 	}
@@ -106,7 +107,7 @@ class PlayerRepository {
 	getCurrentName(playerID) {
 		const player = this.getPlayerByID(playerID);
 		if (!player)
-			throw new ResourceNotFoundError(`getCurrentName: Player with ID ${playerID} not found`);
+			throw new PlayerNotFoundError(playerID);
 
 		return player.currentName;
 	}
@@ -132,7 +133,7 @@ class PlayerRepository {
 		const changeCurrentName = this.db.prepare(query);
 		const result = changeCurrentName.run({ newName, id: playerID });
 		if (result.changes === 0)
-			throw new ResourceNotFoundError(`changeCurrentName: Player with ID ${playerID} not found.`);
+			throw new PlayerNotFoundError(playerID);
 	}
 
 	/**
@@ -143,7 +144,7 @@ class PlayerRepository {
 	getPublishedName(playerID) {
 		const player = this.getPlayerByID(playerID);
 		if (!player)
-			throw new ResourceNotFoundError(`getPublishedName: Player with ID ${playerID} not found`);
+			throw new PlayerNotFoundError(playerID);
 		return player.publishedName;
 	}
 
@@ -168,7 +169,7 @@ class PlayerRepository {
 		const publishName = this.db.prepare(query);
 		const result = publishName.run({ name, id: playerID });
 		if (result.changes === 0)
-			throw new ResourceNotFoundError(`publishName: Player with ID ${playerID} not found.`);
+			throw new PlayerNotFoundError(playerID);
 	}
 
 	/**
@@ -192,7 +193,7 @@ class PlayerRepository {
 		});
 
 		if (result.changes === 0)
-			throw new ResourceConflictError(`addPlayer: Player with ID ${playerID} already exists.`);
+			throw new PlayerAlreadyExistsError(playerID);
 	}
 
 	/**
@@ -225,7 +226,7 @@ class PlayerRepository {
 		const addCharacterToInventory = this.db.prepare(query);
 		const result = addCharacterToInventory.run({ characterValue, playerID });
 		if (result.changes === 0)
-			throw new ResourceNotFoundError(`addCharacterToInventory: Player with ID ${playerID} not found.`);
+			throw new PlayerNotFoundError(playerID);
 	}
 }
 

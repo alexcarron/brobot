@@ -160,6 +160,8 @@ function runBeforeAllTests(functionToRun) {
  *   Asserts the actual value is an instance of the expected class.
  * @property {() => void} isNotANumber
  *   Asserts the actual value is not a number.
+ * @property {() => void} isUndefined
+ *   Asserts the actual value is undefined.
  * @property {() => void} isTrue
  *   Asserts the actual value is true.
  * @property {() => void} isFalse
@@ -174,10 +176,22 @@ function runBeforeAllTests(functionToRun) {
  *   Asserts the actual value throws an error.
  * @property {(substringInErrorMessage: string) => void} throwsAnErrorWith
  *   Asserts the actual value throws an error with the expected substring in the error message.
+ *
  * @property {() => Promise<void>} eventuallyThrowsAnError
- *   Asserts the actual value eventually throws an error.
+ * 	Asserts that a promise will eventually reject with an error.
+ * 	This is useful for testing asynchronous functions that are expected to throw errors.
+ * 	await makeSure(someAsyncFunction()).eventuallyThrowsAnError();
+ *
  * @property {(substringInErrorMessage: string) => Promise<void>} eventuallyThrowsAnErrorWith
  *   Asserts the actual value eventually throws an error with the expected substring in the error message.
+ * @property {(numTimesCalled?: number) => void} hasBeenCalled
+ *   Asserts the actual value has been called the expected number of times.
+ * @property {(numTimesCalled?: number) => void} hasNotBeenCalled
+ *   Asserts the actual value has not been called the expected number of times.
+ * @property {() => void} hasBeenCalledOnce
+ *   Asserts the actual value has been called once.
+ * @property {(...parameters: any[]) => void} hasBeenCalledWith
+ *   Asserts the actual value has been called with the expected parameters.
  * @property {jest.JestMatchers<any>} turnsOut
  *   Returns the original Jest expect matcher for this value (for advanced usage).
  */
@@ -254,6 +268,15 @@ function makeSure(actualValue) {
 		},
 
 		/**
+		 * Asserts that the actual value is undefined.
+		 * @example
+		 * makeSure(actualResultValue).isUndefined();
+		 */
+		isUndefined() {
+			baseExpect.toBe(undefined);
+		},
+
+		/**
 		 * Asserts that the actual value is true.
 		 * @example
 		 * makeSure(actualResultValue).isTrue();
@@ -325,13 +348,6 @@ function makeSure(actualValue) {
 			baseExpect.toThrow(substringInErrorMessage);
 		},
 
-		/**
-		 * Asserts that a promise will eventually reject with an error.
-		 * This is useful for testing asynchronous functions that are expected to throw errors.
-		 * @returns {Promise<void>} A promise that resolves when the error has been thrown.
-		 * @example
-		 * await makeSure(someAsyncFunction()).eventuallyThrowsAnError();
-		 */
 		async eventuallyThrowsAnError() {
 			await baseExpect.rejects.toThrow();
 		},
@@ -346,6 +362,59 @@ function makeSure(actualValue) {
 		 */
 		async eventuallyThrowsAnErrorWith(substringInErrorMessage) {
 			await baseExpect.rejects.toThrow(substringInErrorMessage);
+		},
+
+		/**
+		 * Asserts that a mock function has been called.
+		 * If a number is provided, it asserts that the function has been called that specific number of times.
+		 * @param {number} [numTimesCalled] - The number of times the function is expected to have been called. If not provided, asserts that the function has been called at least once.
+		 * @example
+		 * makeSure(mockFunction).hasBeenCalled();
+		 * makeSure(mockFunction).hasBeenCalled(3);
+		 */
+		hasBeenCalled(numTimesCalled) {
+			if (numTimesCalled === undefined) {
+				baseExpect.toHaveBeenCalled();
+			}
+			else {
+				baseExpect.toHaveBeenCalledTimes(numTimesCalled);
+			}
+		},
+
+		/**
+		 * Asserts that a mock function has not been called.
+		 * If a number is provided, it asserts that the function has not been called that specific number of times.
+		 * @param {number} [numTimesCalled] - The number of times the function is expected not to have been called. If not provided, asserts that the function has not been called at all.
+		 * @example
+		 * makeSure(mockFunction).hasNotBeenCalled();
+		 * makeSure(mockFunction).hasNotBeenCalled(3);
+		 */
+		hasNotBeenCalled(numTimesCalled) {
+			if (numTimesCalled === undefined) {
+				baseExpect.not.toHaveBeenCalled();
+			}
+			else {
+				baseExpect.not.toHaveBeenCalledTimes(numTimesCalled);
+			}
+		},
+
+		/**
+		 * Asserts that a mock function has been called once.
+		 * @example
+		 * makeSure(mockFunction).hasBeenCalledOnce();
+		 */
+		hasBeenCalledOnce() {
+			baseExpect.toHaveBeenCalledTimes(1);
+		},
+
+		/**
+		 * Asserts that a mock function has been called with the given arguments.
+		 * @param {...any} args - The arguments that the mock function should have been called with.
+		 * @example
+		 * makeSure(mockFunction).hasBeenCalledWith(expect.any(Number), 'arg2');
+		 */
+		hasBeenCalledWith(...args) {
+			baseExpect.toHaveBeenCalledWith(...args);
 		},
 
 		/**

@@ -1,4 +1,4 @@
-const { InvalidArgumentError } = require("../../../utilities/error-utils");
+const { validateArguments, InvalidArgumentTypeError } = require("../../../utilities/error-utils");
 const MysteryBoxService = require("../services/mysteryBox.service");
 const PlayerService = require("../services/player.service");
 
@@ -9,19 +9,17 @@ const PlayerService = require("../services/player.service");
  * @param {PlayerService} services.playerService - The service for adding a character to the player's name.
  * @param {string} playerID - The ID of the player.
  * @param {number} [mysteryBoxID] - The ID of the mystery box to open.
- * @returns {Promise<{character: {
- * 	id: number,
- * 	value: string,
- * 	rarity: number,
- * 	tags: string[]
- * }}>} A promise that resolves with the character object received from the mystery box.
+ * @returns {Promise<{character: import("../types/character").Character}>} A promise that resolves with the character object received from the mystery box.
  */
 const openMysteryBox = async (
 	{ mysteryBoxService, playerService },
 	playerID, mysteryBoxID = 1
 ) => {
-	if (typeof playerID !== "string")
-		throw new InvalidArgumentError(`openMysteryBox: playerID must be a string, but got ${playerID}.`);
+	validateArguments("openMysteryBox",
+		{mysteryBoxService, type: MysteryBoxService},
+		{playerService, type: PlayerService},
+		{playerID, type: "string"},
+	);
 
 	if (
 		typeof mysteryBoxID !== "number" ||
@@ -29,9 +27,14 @@ const openMysteryBox = async (
 		mysteryBoxID < 1 ||
 		!Number.isInteger(mysteryBoxID)
 	)
-		throw new InvalidArgumentError(`openMysteryBox: mysteryBoxID must be a positive integer, but got ${mysteryBoxID}.`);
+		throw new InvalidArgumentTypeError({
+			functionName: "openMysteryBox",
+			argumentName: "mysteryBoxID",
+			expectedType: "positive integer",
+			actualValue: mysteryBoxID
+		});
 
-	const recievedCharacter = await mysteryBoxService.openBoxByID(mysteryBoxID);
+	const recievedCharacter = mysteryBoxService.openBoxByID(mysteryBoxID);
 
 	const characterValue = recievedCharacter.value;
 

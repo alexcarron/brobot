@@ -88,15 +88,15 @@ describe('VoteService', () => {
 	});
 
 	describe('.openBoxByID()', () => {
-		it('should return a character from the mystery box with the given ID', async () => {
-			const result = await mysteryBoxService.openBoxByID(1);
+		it('should return a character from the mystery box with the given ID', () => {
+			const result = mysteryBoxService.openBoxByID(1);
 			expect(result).toHaveProperty('id', expect.any(Number));
 			expect(result).toHaveProperty('value', expect.any(String));
 			expect(result).toHaveProperty('rarity', expect.any(Number));
 		});
 
-		it('should throw an error if the mystery box with the given ID does not exist', async () => {
-			await expect(() => mysteryBoxService.openBoxByID(-999)).rejects.toThrow();
+		it('should throw an error if the mystery box with the given ID does not exist', () => {
+			expect(() => mysteryBoxService.openBoxByID(-999)).toThrow();
 		});
 	});
 });

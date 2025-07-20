@@ -1,6 +1,7 @@
 const { ResourceNotFoundError, InvalidArgumentError } = require("../../../utilities/error-utils");
 const { logInfo } = require("../../../utilities/logging-utils");
 const VoteRepository = require("../repositories/vote.repository");
+const { VoteNotFoundError } = require("../utilities/error.utility");
 const { isVote } = require("../utilities/vote.utility");
 const PlayerService = require("./player.service");
 
@@ -37,7 +38,7 @@ class VoteService {
 			const vote = this.voteRepository.getVoteByVoterID(voterID);
 
 			if (vote === undefined)
-				throw new ResourceNotFoundError(`resolveVote: Vote with id ${voterID} does not exist.`);
+				throw new VoteNotFoundError(voterID);
 
 			return vote;
 		}

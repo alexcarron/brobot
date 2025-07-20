@@ -1,5 +1,6 @@
 const { InvalidArgumentError, ResourceConflictError, ResourceNotFoundError } = require("../../../utilities/error-utils");
 const DatabaseQuerier = require("../database/database-querier");
+const { VoteAlreadyExistsError, VoteNotFoundError } = require("../utilities/error.utility");
 
 /**
  * Provides access to the dynamic votes data.
@@ -105,7 +106,7 @@ class VoteRepository {
 		const vote = addVote.run({ voterID, playerVotedForID });
 
 		if (vote.changes === 0)
-			throw new ResourceConflictError("addVote: Failed to add vote because the voterID already exists");
+			throw new VoteAlreadyExistsError(voterID);
 	}
 
 	/**
@@ -135,7 +136,7 @@ class VoteRepository {
 		`;
 		const vote = this.db.run(query, { voterID, playerVotedForID });
 		if (vote.changes === 0)
-			throw new ResourceNotFoundError("changeVote: Failed to change vote because the voterID does not exist");
+			throw new VoteNotFoundError(voterID);
 	}
 
 	/**
@@ -147,7 +148,7 @@ class VoteRepository {
 		const deleteVote = this.db.prepare(query);
 		const vote = deleteVote.run({ voterID });
 		if (vote.changes === 0)
-			throw new ResourceNotFoundError("deleteVote: Failed to delete vote because the voterID does not exist");
+			throw new VoteNotFoundError(voterID);
 	}
 
 	/**

@@ -3,6 +3,7 @@ const DatabaseQuerier = require("./database-querier");
 const { insertCharactersToDB, insertMysteryBoxesToDB } = require("./db-inserters");
 const { applySchemaToDB } = require("./queries/apply-scheme");
 const { getIDfromCharacterValue } = require("../utilities/character.utility");
+const { InvalidArgumentError } = require("../../../utilities/error-utils");
 
 const astrickID = getIDfromCharacterValue('*');
 const bracketID = getIDfromCharacterValue(']');
@@ -75,11 +76,11 @@ describe('db-inserters.js', () => {
     });
 
 		it('throws an error if given characters is not an array', () => {
-			expect(() => insertCharactersToDB(db, {})).toThrow(TypeError);
+			expect(() => insertCharactersToDB(db, {})).toThrow(InvalidArgumentError);
 		});
 
 		it('throws an error if given characters do not match the character schema', () => {
-			expect(() => insertCharactersToDB(db, [{}])).toThrow(TypeError);
+			expect(() => insertCharactersToDB(db, [{}])).toThrow(InvalidArgumentError);
 		});
   });
 
@@ -109,11 +110,11 @@ describe('db-inserters.js', () => {
     });
 
 		it('throws an error if given mystery boxes is not an array', () => {
-			expect(() => insertMysteryBoxesToDB(db, {})).toThrow(TypeError);
+			expect(() => insertMysteryBoxesToDB(db, {})).toThrow(InvalidArgumentError);
 		});
 
 		it('throws an error if given mystery boxes do not match the mystery box schema', () => {
-			expect(() => insertMysteryBoxesToDB(db, [{}])).toThrow(TypeError);
+			expect(() => insertMysteryBoxesToDB(db, [{}])).toThrow(InvalidArgumentError);
 		});
   });
 });

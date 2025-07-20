@@ -1,3 +1,4 @@
+const { InvalidArgumentError } = require("../../../utilities/error-utils");
 const DatabaseQuerier = require("./database-querier");
 const { createMockDB, addMockPlayer, addMockVote } = require("./mock-database");
 
@@ -74,7 +75,7 @@ describe("mock-database", () => {
         currentName: "John Doe",
       };
 
-      expect(() => addMockPlayer(db, playerData)).toThrow(TypeError);
+      expect(() => addMockPlayer(db, playerData)).toThrow(InvalidArgumentError);
     });
   });
 
@@ -118,7 +119,7 @@ describe("mock-database", () => {
         voterID: "player-1",
       };
 
-      expect(() => addMockVote(db, voteData)).toThrow(TypeError);
+      expect(() => addMockVote(db, voteData)).toThrow(InvalidArgumentError);
     });
   });
 });

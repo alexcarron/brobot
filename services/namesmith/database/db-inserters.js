@@ -1,4 +1,4 @@
-const { InvalidArgumentError } = require("../../../utilities/error-utils");
+const { InvalidArgumentError, InvalidArgumentTypeError, assertCorrectArgumentType, validateArguments } = require("../../../utilities/error-utils");
 const { getIDfromCharacterValue, getCharacterValueFromID } = require("../utilities/character.utility");
 const DatabaseQuerier = require("./database-querier");
 
@@ -10,11 +10,10 @@ const DatabaseQuerier = require("./database-querier");
  * @param {Array<object>} characters - An array of character objects to be inserted.
  */
 const insertCharactersToDB = (db, characters) => {
-	if (!Array.isArray(characters))
-		throw new InvalidArgumentError("insertCharactersToDB: characters must be an array.");
-
-	if (!(db instanceof DatabaseQuerier))
-		throw new InvalidArgumentError("insertCharactersToDB: db must be an instance of DatabaseQuerier.");
+	validateArguments("insertCharactersToDB",
+		{db, type: DatabaseQuerier},
+		{characters, type: "Array"},
+	);
 
 	const insertCharacter = db.getQuery("INSERT OR IGNORE INTO character (id, value, rarity) VALUES (@id, @value, @rarity)");
 	const insertTag = db.getQuery("INSERT OR IGNORE INTO characterTag (characterID, tag) VALUES (@characterID, @tag)");
