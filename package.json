@@ -6,6 +6,8 @@
 		"type": "commonjs",
 		"scripts": {
 				"test": "jest --runInBand --silent",
+				"lint": "eslint .",
+				"typecheck": "tsc --noEmit",
 				"start": "npm run build && ts-node index.ts",
 				"build": "ts-node build.js",
 				"build:guild": "ts-node build.js --guild-commands-only",
