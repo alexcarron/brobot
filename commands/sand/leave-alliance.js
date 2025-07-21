@@ -1,16 +1,17 @@
+const { ChatInputCommandInteraction } = require("discord.js");
 const ids = require("../../bot-config/discord-ids");
 const SlashCommand = require("../../services/command-creation/slash-command");
 const { deferInteraction, editReplyToInteraction, removePermissionFromChannel } = require("../../utilities/discord-action-utils");
-const { fetchGuild, fetchChannel, fetchGuildMember } = require("../../utilities/discord-fetch-utils");
+const { fetchGuild, fetchChannel } = require("../../utilities/discord-fetch-utils");
 
 module.exports = new SlashCommand({
 	name: "leave-alliance",
 	description: "Leave the alliance this command is sent in",
-	required_roles: [[ids.sandSeason3.roles.contestant, ids.sandSeason3.roles.eliminated]],
+	required_roles: [ids.sandSeason3.roles.contestant],
 	required_servers: [ids.sandSeason3.guild],
 
 	/**
-	 * @param {CommandInteraction} interaction
+	 * @param {ChatInputCommandInteraction} interaction
 	 */
 	execute: async function execute(interaction) {
 		await deferInteraction(interaction);

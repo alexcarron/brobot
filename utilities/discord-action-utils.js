@@ -1,4 +1,4 @@
-const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionOverwrites, PermissionFlagsBits, CategoryChannel, ChatInputCommandInteraction, Message, GuildChannel } = require('discord.js');
+const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionOverwrites, PermissionFlagsBits, CategoryChannel, ChatInputCommandInteraction, Message, GuildChannel, GuildTextBasedChannel } = require('discord.js');
 const { Role } = require('../services/rapid-discord-mafia/role');
 const { fetchChannel, fetchChannelsInCategory, getEveryoneRole, fetchRole } = require('./discord-fetch-utils');
 const { incrementEndNumber } = require('./text-formatting-utils');
@@ -434,7 +434,7 @@ const addPermissionToChannel = async ({channel, userOrRoleID, allowedPermissions
  * Removes all permission overwrites from a Discord channel for a specific user or role.
  *
  * @param {Object} options - Options for removing permissions.
- * @param {TextChannel} options.channel - The channel from which the permissions are removed.
+ * @param {GuildTextBasedChannel} options.channel - The channel from which the permissions are removed.
  * @param {string} options.userOrRoleID - The ID of the user or role for which the permissions are removed.
  * @returns {Promise<void>} A promise that resolves when the permissions have been removed.
  */
