@@ -1,6 +1,6 @@
 {
 	"name": "brobot",
-	"version": "1.0.0",
+	"version": "2.0.0",
 	"description": "A discord bot used to enhance the experience of the LL Game Shows community",
 	"main": "index.js",
 	"type": "commonjs",

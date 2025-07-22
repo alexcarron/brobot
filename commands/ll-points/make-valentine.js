@@ -1,7 +1,7 @@
 
 const { deferInteraction } = require('../../utilities/discord-action-utils.js');
-const { Parameter } = require("../../services/command-creation/parameter.js");
-const { SlashCommand } = require("../../services/command-creation/slash-command.js");
+const { Parameter } = require("../../services/command-creation/parameter");
+const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { PermissionFlagsBits } = require('discord.js');
 const { LLPointManager } = require('../../services/ll-points/ll-point-manager.js');
 const { findStringStartingWith } = require('../../utilities/text-formatting-utils.js');

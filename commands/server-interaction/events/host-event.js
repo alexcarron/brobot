@@ -1,5 +1,5 @@
 const cron = require("cron");
-const { SlashCommand } = require('../../../services/command-creation/slash-command.js');
+const { SlashCommand } = require('../../../services/command-creation/slash-command');
 const ids = require("../../../bot-config/discord-ids.js")
 const { ChannelType, ButtonBuilder, ActionRowBuilder, ModalBuilder, ButtonStyle, TextInputBuilder, TextInputStyle, StringSelectMenuOptionBuilder, StringSelectMenuBuilder, TextChannel, } = require('discord.js');
 const { toTitleCase } = require("../../../utilities/text-formatting-utils.js");
