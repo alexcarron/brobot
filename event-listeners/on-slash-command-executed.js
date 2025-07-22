@@ -110,7 +110,7 @@ const onSlashCommandExecuted = async (interaction) => {
 	}
 
 	// Does the command have a cooldown?
-	const { cooldowns } = client;
+	const cooldowns = global.cooldowns;
 	if (!cooldowns.has(command.data.name)) {
 		cooldowns.set(command.data.name, new Collection());
 	}

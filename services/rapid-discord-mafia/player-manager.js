@@ -1,14 +1,17 @@
 const { getRandomElement } = require("../../utilities/data-structure-utils");
 const Logger = require("./logger");
 const Player = require("./player");
-const { Faction, RoleName } = require("./role");
+const { Faction, RoleName, Role } = require("./role");
 const { AbilityType, AbilityName } = require("./ability");
 const { Feedback, Announcement } = require("./constants/possible-messages");
 
+/**
+ * Handles the creation and storage of players
+ */
 class PlayerManager {
 	/**
 	 * A map of player names to their player object
-	 * @type {[player_name: string]: Player}
+	 * @type {{[player_name: string]: Player}}
 	 */
 	players;
 
@@ -49,9 +52,9 @@ class PlayerManager {
 	}
 
 	/**
-	 * @param {Player} Player object
+	 * @param {Player} player - The player to add
 	 */
-	async addPlayer(player) {
+	addPlayer(player) {
 		this.players[player.name] = player;
 	}
 
@@ -136,7 +139,7 @@ class PlayerManager {
 		return alive_players;
 	}
 
-	async removePlayer(player_name) {
+	removePlayer(player_name) {
 		delete this.players[player_name];
 	}
 
@@ -157,7 +160,7 @@ class PlayerManager {
 					.replace(' ', '-')
 					.replace(/[^a-zA-Z0-9 -]/g, "");
 
-			const player_channel = await player.getPlayerChannel();
+			const player_channel = await this.game_manager.discord_service.fetchPlayerChannel(player);
 			player_channel.setName(new_channel_name);
 		}
 	}
@@ -178,7 +181,7 @@ class PlayerManager {
 
 	/**
 	 * Smites a player, killing them and removing them from the game
-	 * @param {Player} player
+	 * @param {Player} player - The player to smite
 	 */
 	async smitePlayer(player) {
 		await player.sendFeedback(Feedback.SMITTEN(player));
@@ -205,11 +208,11 @@ class PlayerManager {
 
 	/**
 	 * Makes a player attack another player
-	 * @param {Object} parameters
+	 * @param {object} parameters - The parameters for the attack
 	 * @param {Player} parameters.attacker_player - The player attacking the other player.
 	 * @param {Player} parameters.target_player - The player being attacked by the other player
 	 */
-	async attackPlayer({attacker_player, target_player}) {
+	attackPlayer({attacker_player, target_player}) {
 		target_player.logger.log(`${attacker_player.name} attacks ${target_player.name} with ${attacker_player.attack} attack level against ${target_player.defense} defense level.`);
 
 		// Attack Success
@@ -261,7 +264,7 @@ class PlayerManager {
 
 	/**
 	 * Makes a player leave the game
-	 * @param {Player} player
+	 * @param {Player} player - The player leaving
 	 */
 	havePlayerLeave(player) {
 		this.logger.log(`**${player.name}** left the game.`);
@@ -271,7 +274,7 @@ class PlayerManager {
 
 	/**
 	 * Makes a player leave the game during sign ups
-	 * @param {Player} player
+	 * @param {Player} player - The player leaving
 	 */
 	havePlayerLeaveSignUps(player) {
 		this.logger.log(`**${player.name}** left the game.`);
@@ -286,8 +289,8 @@ class PlayerManager {
 
 	/**
 	 * Converts a player to a different role
-	 * @param {Player} player
-	 * @param {Role} role
+	 * @param {Player} player - The player to convert
+	 * @param {Role} role - The role to convert the player to
 	 */
 	async convertPlayerToRole(player, role) {
 		const current_role_name = player.role;
@@ -307,7 +310,7 @@ class PlayerManager {
 				player.setExeTarget(rand_town_player);
 			else {
 				const fool_role = this.game_manager.role_manager.getRole(RoleName.FOOL);
-				this.convertToRole(player, fool_role);
+				this.convertPlayerToRole(player, fool_role);
 			}
 		}
 
@@ -315,7 +318,7 @@ class PlayerManager {
 
 	/**
 	 * Removes effects and abilities used on player
-	 * @param {Player} player
+	 * @param {Player} player - The player to remove affects from
 	 */
 	async removeAffectsFromPlayer(player) {
 		for (const [affect_num, affect] of player.affected_by.entries()) {
@@ -368,7 +371,7 @@ class PlayerManager {
 
 	/**
 	 * Removes manipulation effects from player
-	 * @param {Player} player
+	 * @param {Player} player - The player to remove affects from
 	 */
 	removeManipulationEffectsFromPlayer(player) {
 		if (player.affected_by) {

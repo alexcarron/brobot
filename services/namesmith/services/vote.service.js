@@ -1,4 +1,4 @@
-const { ResourceNotFoundError, InvalidArgumentError } = require("../../../utilities/error-utils");
+const { InvalidArgumentError } = require("../../../utilities/error-utils");
 const { logInfo } = require("../../../utilities/logging-utils");
 const VoteRepository = require("../repositories/vote.repository");
 const { VoteNotFoundError } = require("../utilities/error.utility");
@@ -21,7 +21,7 @@ class VoteService {
 
 	/**
 	 * Resolves a vote from the given resolvable.
-	 * @param {string | Vote} voteResolvable - The vote resolvable to resolve.
+	 * @param {string | { voterID: string, playerVotedForID: string }} voteResolvable - The vote resolvable to resolve.
 	 * @returns {{
 	 * 	voterID: string,
 	 *  playerVotedForID: string
@@ -31,6 +31,7 @@ class VoteService {
 	resolveVote(voteResolvable) {
 		if (isVote(voteResolvable)) {
 			const vote = voteResolvable;
+			// @ts-ignore
 			return vote;
 		}
 		else if (typeof voteResolvable === "string") {

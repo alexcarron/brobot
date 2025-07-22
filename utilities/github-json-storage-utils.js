@@ -29,6 +29,7 @@ const saveObjectToJsonInGitHub = async (object, jsonFileName) => {
 	// https://docs.github.com/en/rest/reference/repos#update-a-file
 	try {
 		const {data: currentFile} =
+			// @ts-ignore
 			await axios.get(
 				githubJsonFileURL,
 				{ headers: {
@@ -63,6 +64,7 @@ const saveObjectToJsonInGitHub = async (object, jsonFileName) => {
 	// The `put` endpoint will update the file if it already exists or create a new file if it doesn't
 	// https://docs.github.com/en/rest/reference/repos#create-or-update-file-contents
 	try {
+		// @ts-ignore
 		await axios.put(
 			githubJsonFileURL,
 			requestBody,
@@ -82,7 +84,7 @@ const saveObjectToJsonInGitHub = async (object, jsonFileName) => {
  * Loads an object from a specified json file path in the GitHub repository
  * If the file does not exist, it will be created and an empty object will be returned
  * @param {string} jsonFileName - The name of the json file to load from
- * @returns {object} The object loaded from the file
+ * @returns {Promise<object>} The object loaded from the file
  */
 const loadObjectFromJsonInGitHub = async (jsonFileName) => {
 	const path = `${jsonFileName}.json`;
@@ -91,6 +93,7 @@ const loadObjectFromJsonInGitHub = async (jsonFileName) => {
 	// Get the file data from GitHub, or create it if it doesn't exist
 	try {
 		const response =
+			// @ts-ignore
 			await axios.get(
 				`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`,
 				{

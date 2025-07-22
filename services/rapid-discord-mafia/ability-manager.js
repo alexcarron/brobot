@@ -1,9 +1,12 @@
 const {Ability, AbilityUseCount, AbilityType, AbilityPriority, AbilityDuration, AbilityName} = require("./ability.js")
-const { EffectName } = require("./effect-manager.js")
 const {Arg, AbilityArgType, ArgumentSubtype, AbilityArgName} = require("./arg.js");
 const { Phase } = require("./game-state-manager.js");
 const { Announcement, Feedback } = require("./constants/possible-messages.js");
+const EffectManager = require("./effect-manager.js");
 
+/**
+ * Used to handle ability effects and apply them
+ */
 class AbilityManager {
 	constructor(game_manager) {
 		this.game_manager = game_manager;
@@ -19,7 +22,7 @@ class AbilityManager {
 			duration: AbilityDuration.DAY_AND_NIGHT,
 			phases_can_use: [Phase.NIGHT],
 			effects: [
-				EffectName.Heal
+				EffectManager.EffectName.Heal
 			],
 			feedback: function(player_healing, player_name="You", isYou=true) {
 				return `**${isYou ? "You" : player_name}** will attempt to heal **${player_healing}** tonight`
@@ -32,7 +35,7 @@ class AbilityManager {
 					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NOT_SELF],
 				})
 			],
-			reverseEffects: async (player, game_manager) => {
+			reverseEffects: (player) => {
 				player.restoreOldDefense();
 			},
 		}),
@@ -46,12 +49,12 @@ class AbilityManager {
 			duration: AbilityDuration.DAY_AND_NIGHT,
 			phases_can_use: [Phase.NIGHT],
 			effects: [
-				EffectName.SelfHeal
+				EffectManager.EffectName.SelfHeal
 			],
 			feedback: function(player_name="You", isYou=true) {
 				return `**${isYou ? "You" : player_name}** will attempt to heal ${player_name==="You" ? "yourself" : "themself"} tonight`
 			},
-			reverseEffects: async (player, game_manager) => {
+			reverseEffects: (player) => {
 				player.restoreOldDefense();
 			},
 		}),
@@ -64,7 +67,7 @@ class AbilityManager {
 			uses: AbilityUseCount.UNLIMITED,
 			phases_can_use: [Phase.NIGHT],
 			effects: [
-				EffectName.Evaluate
+				EffectManager.EffectName.Evaluate
 			],
 			feedback: function(player_evaluating, player_name="You", isYou=true) {
 				return `**${isYou ? "You" : player_name}** will attempt to evaluate **${player_evaluating}** tonight`
@@ -87,7 +90,7 @@ class AbilityManager {
 			uses: AbilityUseCount.UNLIMITED,
 			phases_can_use: [Phase.NIGHT],
 			effects: [
-				EffectName.Track
+				EffectManager.EffectName.Track
 			],
 			feedback: function(player_tracking, player_name="You", isYou=true) {
 				return `**${isYou ? "You" : player_name}** will attempt to track the visit of **${player_tracking}** tonight`
@@ -110,7 +113,7 @@ class AbilityManager {
 			uses: AbilityUseCount.UNLIMITED,
 			phases_can_use: [Phase.NIGHT],
 			effects: [
-				EffectName.Lookout
+				EffectManager.EffectName.Lookout
 			],
 			feedback: function(player_tracking, player_name="You", isYou=true) {
 				return `**${isYou ? "You" : player_name}** will watch **${player_tracking}**'s house tonight to see who visits them.`
@@ -134,7 +137,7 @@ class AbilityManager {
 			duration: AbilityDuration.DAY_AND_NIGHT,
 			phases_can_use: [Phase.NIGHT],
 			effects: [
-				EffectName.Roleblock
+				EffectManager.EffectName.Roleblock
 			],
 			feedback: function(player_roleblocking, player_name="You", isYou=true) {
 				return `**${isYou ? "You" : player_name}** will attempt to roleblock **${player_roleblocking}** tonight`
@@ -147,7 +150,7 @@ class AbilityManager {
 					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NOT_SELF]
 				})
 			],
-			reverseEffects: async (player, game_manager) => {
+			reverseEffects: (player) => {
 				player.isRoleblocked = false;
 			},
 		}),
@@ -161,7 +164,7 @@ class AbilityManager {
 			duration: AbilityDuration.ONE_NIGHT,
 			phases_can_use: [Phase.NIGHT],
 			effects: [
-				EffectName.Attack
+				EffectManager.EffectName.Attack
 			],
 			feedback: function(player_shooting, player_name="You", isYou=true) {
 				return `**${isYou ? "You" : player_name}** will attempt to shoot **${player_shooting}** tonight`
@@ -209,7 +212,7 @@ class AbilityManager {
 			duration: AbilityDuration.ONE_NIGHT,
 			phases_can_use: [Phase.NIGHT],
 			effects: [
-				EffectName.Attack
+				EffectManager.EffectName.Attack
 			],
 			feedback: function(player_murdering, player_name="You", isYou=true) {
 				return `**${isYou ? "You" : player_name}** will attempt to murder **${player_murdering}** tonight`
@@ -233,7 +236,7 @@ class AbilityManager {
 			duration: AbilityDuration.DAY_AND_NIGHT,
 			phases_can_use: [Phase.NIGHT],
 			effects: [
-				EffectName.Frame
+				EffectManager.EffectName.Frame
 			],
 			feedback: function(player_frame, player_name="You", isYou=true) {
 				return `**${isYou ? "You" : player_name}** will attempt to frame **${player_frame}** as the Mafioso tonight`
@@ -246,7 +249,7 @@ class AbilityManager {
 					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NON_MAFIA]
 				})
 			],
-			reverseEffects: async (player, game_manager) => {
+			reverseEffects: (player) => {
 				player.resetPercieved();
 			},
 		}),
@@ -260,7 +263,7 @@ class AbilityManager {
 			duration: AbilityDuration.DAY_AND_NIGHT,
 			phases_can_use: [Phase.NIGHT],
 			effects: [
-				EffectName.Roleblock
+				EffectManager.EffectName.Roleblock
 			],
 			feedback: function(player_roleblocking, player_name="You", isYou=true) {
 				return `**${isYou ? "You" : player_name}** will attempt to roleblock **${player_roleblocking}** tonight`
@@ -273,7 +276,7 @@ class AbilityManager {
 					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NOT_SELF]
 				})
 			],
-			reverseEffects: async (player, game_manager) => {
+			reverseEffects: (player) => {
 				player.isRoleblocked = false;
 			},
 		}),
@@ -286,7 +289,7 @@ class AbilityManager {
 			uses: AbilityUseCount.UNLIMITED,
 			phases_can_use: [Phase.NIGHT],
 			effects: [
-				EffectName.Investigate
+				EffectManager.EffectName.Investigate
 			],
 			feedback: function(player_investigating, player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to investigate the role of **${player_investigating}** tonight`},
 			args: [
@@ -308,10 +311,10 @@ class AbilityManager {
 			duration: AbilityDuration.INDEFINITE,
 			phases_can_use: [Phase.NIGHT],
 			effects: [
-				EffectName.SelfFrame
+				EffectManager.EffectName.SelfFrame
 			],
 			feedback: function(player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to frame ${isYou ? "yourself" : "themself"} as the mafioso tonight`},
-			reverseEffects: async (player, game_manager) => {
+			reverseEffects: (player) => {
 				player.resetPercieved();
 			},
 		}),
@@ -325,7 +328,7 @@ class AbilityManager {
 			duration: AbilityDuration.ONE_NIGHT,
 			phases_can_use: [Phase.LIMBO],
 			effects: [
-				EffectName.Attack
+				EffectManager.EffectName.Attack
 			],
 			feedback: function(player_cursing, player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to curse **${player_cursing}** with death tonight`},
 			args: [
@@ -347,10 +350,10 @@ class AbilityManager {
 			duration: AbilityDuration.INDEFINITE,
 			phases_can_use: [Phase.NIGHT],
 			effects: [
-				EffectName.FrameTarget
+				EffectManager.EffectName.FrameTarget
 			],
 			feedback: function(player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to frame ${isYou ? "your" : "their"} target as the Mafioso tonight`},
-			reverseEffects: async (player, game_manager) => {
+			reverseEffects: (player) => {
 				player.resetPercieved();
 			},
 		}),
@@ -364,10 +367,10 @@ class AbilityManager {
 			duration: AbilityDuration.DAY_AND_NIGHT,
 			phases_can_use: [Phase.NIGHT],
 			effects: [
-				EffectName.SelfHeal
+				EffectManager.EffectName.SelfHeal
 			],
 			feedback: function(player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to put on a vest tonight`},
-			reverseEffects: async (player, game_manager) => {
+			reverseEffects: (player) => {
 				player.restoreOldDefense();
 			},
 		}),
@@ -381,7 +384,7 @@ class AbilityManager {
 			duration: AbilityDuration.ONE_NIGHT,
 			phases_can_use: [Phase.NIGHT],
 			effects: [
-				EffectName.Attack
+				EffectManager.EffectName.Attack
 			],
 			feedback(player_knifing, player_name="You", isYou=true) {
 				return `**${isYou ? "You" : player_name}** will attempt to knife **${player_knifing}** to death tonight`
@@ -405,7 +408,7 @@ class AbilityManager {
 			duration: AbilityDuration.ONE_NIGHT,
 			phases_can_use: [Phase.NIGHT],
 			effects: [
-				EffectName.Cautious
+				EffectManager.EffectName.Cautious
 			],
 			feedback: function(player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to be cautious of roleblockers tonight`},
 		}),
@@ -419,7 +422,7 @@ class AbilityManager {
 			duration: AbilityDuration.DAY_AND_NIGHT,
 			phases_can_use: [Phase.NIGHT],
 			effects: [
-				EffectName.Smith
+				EffectManager.EffectName.Smith
 			],
 			feedback: function(player_smithing_for, player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to smith a bulletproof vest for **${player_smithing_for}** tonight`},
 			args: [
@@ -430,7 +433,7 @@ class AbilityManager {
 					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NOT_SELF]
 				})
 			],
-			reverseEffects: async (player, game_manager) => {
+			reverseEffects: (player) => {
 				player.restoreOldDefense();
 			},
 		}),
@@ -444,10 +447,10 @@ class AbilityManager {
 			duration: AbilityDuration.DAY_AND_NIGHT,
 			phases_can_use: [Phase.NIGHT],
 			effects: [
-				EffectName.SelfSmith
+				EffectManager.EffectName.SelfSmith
 			],
 			feedback: function(player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to smith a bulletproof vest for ${isYou ? "yourself" : "themself"} tonight`},
-			reverseEffects: async (player, game_manager) => {
+			reverseEffects: (player) => {
 				player.restoreOldDefense();
 			},
 		}),
@@ -461,9 +464,9 @@ class AbilityManager {
 			duration: AbilityDuration.ONE_NIGHT,
 			phases_can_use: [],
 			effects: [
-				EffectName.Attack
+				EffectManager.EffectName.Attack
 			],
-			reverseEffects: async (player, game_manager) => {
+			reverseEffects: (player, game_manager) => {
 				game_manager.addDeath(player, player, Announcement.VIGILANTE_SUICIDE);
 
 				player.sendFeedback(Feedback.COMITTING_SUICIDE);
@@ -480,7 +483,7 @@ class AbilityManager {
 			duration: AbilityDuration.ONE_NIGHT,
 			phases_can_use: [Phase.NIGHT],
 			effects: [
-				EffectName.Control
+				EffectManager.EffectName.Control
 			],
 			feedback: function(player_controlling, player_controlled_into, player_name="You", isYou=true) {return `**${isYou ? "You" : player_name}** will attempt to control **${player_controlling}** into using their ability on **${player_controlled_into}** tonight`},
 			args: [
@@ -507,7 +510,7 @@ class AbilityManager {
 			uses: AbilityUseCount.UNLIMITED,
 			phases_can_use: [Phase.NIGHT],
 			effects: [
-				EffectName.Observe
+				EffectManager.EffectName.Observe
 			],
 			feedback: function(player_observing, player_name="You", isYou=true) {
 				return `**${isYou ? "You" : player_name}** will attempt to observe **${player_observing}** tonight to see if they're working with the last player ${isYou ? "you" : player_name} observed.`;
@@ -530,8 +533,8 @@ class AbilityManager {
 			uses: AbilityUseCount.UNLIMITED,
 			phases_can_use: [Phase.NIGHT],
 			effects: [
-				EffectName.Attack,
-				EffectName.Replace,
+				EffectManager.EffectName.Attack,
+				EffectManager.EffectName.Replace,
 			],
 			feedback: function(player_replacing_name, player_name="You", isYou=true) {
 				return `**${isYou ? "You" : player_name}** will attempt to replace **${player_replacing_name}** tonight`
@@ -554,7 +557,7 @@ class AbilityManager {
 			uses: AbilityUseCount.UNLIMITED,
 			phases_can_use: [Phase.NIGHT],
 			effects: [
-				EffectName.Kidnap,
+				EffectManager.EffectName.Kidnap,
 			],
 			feedback: function(player_kidnapping_name, player_name="You", isYou=true) {
 				return `**${isYou ? "You" : player_name}** will attempt to kidnap **${player_kidnapping_name}** tonight`
@@ -567,7 +570,7 @@ class AbilityManager {
 					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NON_MAFIA, ArgumentSubtype.NOT_SELF]
 				}),
 			],
-			reverseEffects: async (player, game_manager) => {
+			reverseEffects: (player) => {
 				player.unmute();
 				player.regainVotingAbility();
 				player.isRoleblocked = false;
@@ -579,7 +582,7 @@ class AbilityManager {
 
 	/**
 	 * Get an ability from an ability name
-	 * @param {string} ability_name
+	 * @param {string} ability_name - The name of the ability
 	 * @returns {Ability | undefined} ability if ability name exists, otherwise undefined
 	 */
 	getAbility(ability_name) {
@@ -588,13 +591,13 @@ class AbilityManager {
 
 	/**
 	 * Determines if a certain ability a player uses with specific arguments can be used by that player
-	 * @param {Object} parameters
-	 * @param {Player} parameters.player Player attempting to use ability
-	 * @param {Ability} parameters.ability Ability using
-	 * @param {{[arg_name: string]: [arg_value: string]}} parameters.arg_values
-	 * @returns {true | String} true if you can use the ability. Otherwise, feedback for why you can't use the ability
+	 * @param {object} parameters - Object containing player, ability, and arg_values
+	 * @param {object} parameters.player - Player attempting to use ability
+	 * @param {Ability} parameters.ability - Ability using
+	 * @param {{[arg_name: string]: string}} parameters.arg_values - An object map from the argument name to it's passed value
+	 * @returns {true | string} true if you can use the ability. Otherwise, feedback for why you can't use the ability
 	 */
-	async canPlayerUseAbility({player, ability, arg_values}) {
+	canPlayerUseAbility({player, ability, arg_values}) {
 		const player_role = this.game_manager.role_manager.getRole(player.role);
 
 		// Check if role has ability

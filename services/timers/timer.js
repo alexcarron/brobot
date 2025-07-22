@@ -1,6 +1,6 @@
 const { TextChannel } = require("discord.js");
 const cron = require("cron");
-const { fetchGuild, fetchChannel } = require("../../utilities/discord-fetch-utils");
+const { fetchGuild, fetchTextChannel } = require("../../utilities/discord-fetch-utils");
 const { saveObjectToJsonInGitHub } = require("../../utilities/github-json-storage-utils");
 
 /**
@@ -8,29 +8,39 @@ const { saveObjectToJsonInGitHub } = require("../../utilities/github-json-storag
  * @class
  */
 class Timer {
-  /**
-   * Create an event.
-   */
+	/**
+	 * Constructs a new Timer instance.
+	 * @param {object} [options] - The options for the timer.
+	 * @param {string} [options.reason] - The reason for setting the timer.
+	 * @param {number} [options.days] - The number of days for the timer.
+	 * @param {number} [options.hours] - The number of hours for the timer.
+	 * @param {number} [options.minutes] - The number of minutes for the timer.
+	 * @param {number} [options.seconds] - The number of seconds for the timer.
+	 * @param {number} [options.end_time] - The end time of the timer in milliseconds since the epoch.
+	 * @param {string} [options.channel_id] - The Discord channel ID where the timer will be announced.
+	 * @param {string} [options.guild_id] - The Discord guild ID associated with the timer.
+	 * @param {string} [options.user_id] - The Discord user ID of the person who set the timer.
+	 */
   constructor({
-		_reason,
-		_days,
-		_hours,
-		_minutes,
-		_seconds,
-		_end_time,
-		_channel_id,
-		_guild_id,
-		_user_id,
-	}) {
-		this.reason = _reason;
-		this.days = _days;
-		this.hours = _hours;
-		this.minutes = _minutes;
-		this.seconds = _seconds;
-		this.end_time = _end_time;
-		this.channel_id = _channel_id;
-		this.guild_id = _guild_id;
-		this.user_id = _user_id;
+		reason = "",
+		days = 0,
+		hours = 0,
+		minutes = 0,
+		seconds = 0,
+		end_time = 0,
+		channel_id = "",
+		guild_id = "",
+		user_id = "",
+	} = {}) {
+		this.reason = reason;
+		this.days = days;
+		this.hours = hours;
+		this.minutes = minutes;
+		this.seconds = seconds;
+		this.end_time = end_time;
+		this.channel_id = channel_id;
+		this.guild_id = guild_id;
+		this.user_id = user_id;
 	}
 
 	/**
@@ -134,11 +144,11 @@ class Timer {
 
 	/**
 	 * Gets the channel that Brobot will announce the timer.
-	 * @returns {Promise<TextChannel>}
+	 * @returns {Promise<TextChannel>} The channel that Brobot will announce the timer.
 	 */
 	async fetchChannel() {
 		const guild = await fetchGuild(this._guild_id);
-		const channel = await fetchChannel(guild, this._channel_id);
+		const channel = await fetchTextChannel(guild, this._channel_id);
 		return channel;
 	}
 
@@ -180,7 +190,7 @@ class Timer {
 	/**
 	 * Starts the cron job so that the timer ends when it's supposed to
 	 */
-	async startCronJob() {
+	startCronJob() {
 		const now = new Date();
 		const end_date = new Date(this._end_time);
 		const timer = this;

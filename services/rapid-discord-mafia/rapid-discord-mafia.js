@@ -5,10 +5,13 @@ const RoleManager = require("./role-manager.js");
 const DiscordLogger = require("./discord-logger.js");
 const ids = require("../../bot-config/discord-ids.js");
 const { GameManager } = require("./game-manager.js");
-const { fetchChannel, fetchRDMGuild } = require("../../utilities/discord-fetch-utils.js");
+const { fetchRDMGuild, fetchTextChannel } = require("../../utilities/discord-fetch-utils.js");
 const { loadObjectFromJsonInGitHub } = require("../../utilities/github-json-storage-utils.js");
 const { logSuccess } = require("../../utilities/logging-utils.js");
 
+/**
+ * Class representing the rapid discord mafia game
+ */
 class RapidDiscordMafia {
 	constructor() {
 		this.contestants = {};
@@ -19,7 +22,7 @@ class RapidDiscordMafia {
 
 		if (!isMockObject) {
 			const rdm_guild = await fetchRDMGuild();
-			const staff_chnl = await fetchChannel(rdm_guild, ids.rapid_discord_mafia.channels.staff);
+			const staff_chnl = await fetchTextChannel(rdm_guild, ids.rapid_discord_mafia.channels.staff);
 			logger = new DiscordLogger(staff_chnl);
 		}
 
@@ -43,7 +46,7 @@ class RapidDiscordMafia {
 
 		if (!isMockGame) {
 			const rdm_guild = await fetchRDMGuild();
-			const staff_chnl = await fetchChannel(rdm_guild, ids.rapid_discord_mafia.channels.staff);
+			const staff_chnl = await fetchTextChannel(rdm_guild, ids.rapid_discord_mafia.channels.staff);
 			logger = new DiscordLogger(staff_chnl);
 		}
 
@@ -51,7 +54,7 @@ class RapidDiscordMafia {
 	}
 
 	/**
-	 * @param {Game} mock_game
+	 * @param {GameManager} mock_game - The game's current instance
 	 * @param {string[]} roles_in_game - An array of all role names in the game
 	 */
 	static async startMockGameWithRoles(mock_game, roles_in_game) {
@@ -71,7 +74,7 @@ class RapidDiscordMafia {
 		const role_identifiers = RoleIdentifier.convertIdentifierStrings(roles_in_game);
 		await mock_game.start(role_identifiers);
 
-		[...new Set(roles_in_game)].forEach(async role_name => {
+		[...new Set(roles_in_game)].forEach(role_name => {
 			const role = RoleManager.roles[role_name];
 
 			const players_with_role = mock_game.player_manager.getPlayerList().filter(player => {

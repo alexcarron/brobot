@@ -1,6 +1,6 @@
 const { TextChannel, Message, Guild, PermissionFlagsBits, Role } = require("discord.js");
 const ids = require("../../bot-config/discord-ids.js");
-const { fetchGuild, fetchChannel, fetchGuildMember, fetchRole } = require("../../utilities/discord-fetch-utils.js");
+const { fetchGuild, fetchChannel, fetchGuildMember, fetchRole, fetchTextChannel } = require("../../utilities/discord-fetch-utils.js");
 
 /**
  * Enum of names of all Discord roles for Rapid Discord Mafia
@@ -12,6 +12,9 @@ const RDMDiscordRole = Object.freeze({
 	ON_TRIAL: "On Trial"
 });
 
+/**
+ * The Discord service for Rapid Discord Mafia
+ */
 class DiscordService {
 	/**
 	 * The guild that Rapid Discord Mafia is hosted on
@@ -85,14 +88,14 @@ class DiscordService {
 	}
 
 	async setupAnnounceChannel() {
-		this.announce_channel = await fetchChannel(
+		this.announce_channel = await fetchTextChannel(
 			this.rdm_guild,
 			ids.rapid_discord_mafia.channels.game_announce
 		);
 	}
 
 	async setupMafiaChannel() {
-		this.mafia_channel = await fetchChannel(
+		this.mafia_channel = await fetchTextChannel(
 			this.rdm_guild,
 			ids.rapid_discord_mafia.channels.mafia_chat
 		);
@@ -120,7 +123,7 @@ class DiscordService {
 	}
 
 	async setupTownDiscussionChannel() {
-		this.town_discussion_channel = await fetchChannel(
+		this.town_discussion_channel = await fetchTextChannel(
 			this.rdm_guild,
 			ids.rapid_discord_mafia.channels.town_discussion
 		);
@@ -164,7 +167,7 @@ class DiscordService {
 
 	/**
 	 * Creates a discord channel with a name in a specific category that's private to a specific user
-	 * @param {Object} parameters
+	 * @param {object} parameters - The parameters for creating the channel
 	 * @param {string} parameters.name - The name of the channel.
 	 * @param {string} parameters.category_id - The id of the cateogry the channel will be in
 	 * @param {string} parameters.guild_member_id - The id of the guild member this channel will be private for
@@ -196,14 +199,14 @@ class DiscordService {
 
 	/**
 	 * Send a message to a channel and pin it
-	 * @param {Object} parameters
-	 * @param {string} parameters.channel - The id of the text channel the message is being sent in
+	 * @param {object} parameters - The parameters
+	 * @param {string} parameters.channel_id - The id of the text channel the message is being sent in
 	 * @param {string} parameters.contents - The contents of the message being sent
 	 * @returns {Promise<Message>} The message that was sent
 	 */
 	async sendAndPinMessage({channel_id, contents}) {
 		if (!this.isMockService) {
-			const text_channel = await fetchChannel(this.rdm_guild, channel_id);
+			const text_channel = await fetchTextChannel(this.rdm_guild, channel_id);
 			const message = await text_channel.send(contents);
 			await message.pin();
 
@@ -216,14 +219,14 @@ class DiscordService {
 
 	/**
 	 * Send a message to a channel
-	 * @param {Object} parameters
-	 * @param {string} parameters.channel - The id of the text channel the message is being sent in
+	 * @param {object} parameters - The parameters
+	 * @param {string} parameters.channel_id - The id of the text channel the message is being sent in
 	 * @param {string} parameters.contents - The contents of the message being sent
 	 * @returns {Promise<Message>} The message that was sent
 	 */
 	async sendMessage({channel_id, contents}) {
 		if (!this.isMockService) {
-			const text_channel = await fetchChannel(this.rdm_guild, channel_id);
+			const text_channel = await fetchTextChannel(this.rdm_guild, channel_id);
 			const message = await text_channel.send(contents);
 
 			return message
@@ -246,13 +249,13 @@ class DiscordService {
 
 	/**
 	 * Adds a view channel permission to a guild member on a channel
-	 * @param {Object} parameters
-	 * @param {string} channel_id - The id of the channel you want to add a viewer to
-	 * @param {string} guild_member_id - The id of the guild member you want to be able to see the channel
+	 * @param {object} parameters - The parameters
+	 * @param {string} parameters.channel_id - The id of the channel you want to add a viewer to
+	 * @param {string} parameters.guild_member_id - The id of the guild member you want to be able to see the channel
 	 */
 	async addViewerToChannel({channel_id, guild_member_id}) {
 		if (!this.isMockService) {
-			const text_channel = await fetchChannel(this.rdm_guild, channel_id);
+			const text_channel = await fetchTextChannel(this.rdm_guild, channel_id);
 			const guild_member = await fetchGuildMember(this.rdm_guild, guild_member_id);
 
 			await text_channel.permissionOverwrites.edit(
@@ -277,19 +280,19 @@ class DiscordService {
 
 	/**
 	 * Removes send messages permission from a guild member on a channel
-	 * @param {Object} parameters
-	 * @param {string} channel_id - The id of the channel you want to remove send message permissions from
-	 * @param {string} guild_member_id - The id of the guild member you do not want to be able to send messages in the channel
+	 * @param {object} parameters - The parameters
+	 * @param {string} parameters.channel_id - The id of the channel you want to remove send message permissions from
+	 * @param {string} parameters.guild_member_id - The id of the guild member you do not want to be able to send messages in the channel
 	 */
 	async removeSenderFromChannel({channel_id, guild_member_id}) {
 		if (!this.isMockService) {
-			const text_channel = await fetchChannel(this.rdm_guild, channel_id);
+			const text_channel = await fetchTextChannel(this.rdm_guild, channel_id);
 			const guild_member = await fetchGuildMember(this.rdm_guild, guild_member_id);
 
 			await text_channel.permissionOverwrites.edit(
 				guild_member.user,
 				{
-					SendMesages: false,
+					SendMessages: false,
 					AddReactions: false,
 				}
 			);
@@ -337,19 +340,19 @@ class DiscordService {
 
 	/**
 	 * Adds send messages permission to a guild member on a channel
-	 * @param {Object} parameters
-	 * @param {string} channel_id - The id of the channel you want to add send message permissions to
-	 * @param {string} guild_member_id - The id of the guild member you want to be able to send messages in the channel
+	 * @param {object} parameters - The parameters
+	 * @param {string} parameters.channel_id - The id of the channel you want to add send message permissions to
+	 * @param {string} parameters.guild_member_id - The id of the guild member you want to be able to send messages in the channel
 	 */
 	async addSenderToChannel({channel_id, guild_member_id}) {
 		if (!this.isMockService) {
-			const text_channel = await fetchChannel(this.rdm_guild, channel_id);
+			const text_channel = await fetchTextChannel(this.rdm_guild, channel_id);
 			const guild_member = await fetchGuildMember(this.rdm_guild, guild_member_id);
 
 			await text_channel.permissionOverwrites.edit(
 				guild_member.user,
 				{
-					SendMesages: null,
+					SendMessages: null,
 					AddReactions: null,
 				}
 			);
@@ -434,6 +437,15 @@ class DiscordService {
 	async removeGhostRoleFromMember(guild_member_id) {
 		const guild_member = await fetchGuildMember(this.rdm_guild, guild_member_id);
 		guild_member.roles.remove(this.ghost_role);
+	}
+
+	/**
+	 * Fetches the channel of a given player
+	 * @param {object} player - The player object that the channel is being fetched for
+	 * @returns {Promise<TextChannel>} A Promise that resolves with the TextChannel object if the channel was successfully fetched, or rejects with an Error if not.
+	 */
+	async fetchPlayerChannel(player) {
+		return await fetchTextChannel(this.rdm_guild, player.channel_id);
 	}
 }
 

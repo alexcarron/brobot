@@ -1,9 +1,8 @@
-const SlashCommand = require('../../../services/command-creation/slash-command.js');
+const { SlashCommand } = require('../../../services/command-creation/slash-command.js');
 const { Parameter } = require('../../../services/command-creation/parameter.js');
-const { joinVoiceChannel, createAudioResource, createAudioPlayer } = require('@discordjs/voice');
-const { PermissionsBitField, Interaction } = require('discord.js');
+const { joinVoiceChannel } = require('@discordjs/voice');
+const { PermissionsBitField } = require('discord.js');
 const { deferInteraction } = require('../../../utilities/discord-action-utils.js');
-const { logInfo } = require('../../../utilities/logging-utils.js');
 
 const Subparameters = {
 	Message: new Parameter({
@@ -63,106 +62,105 @@ const Parameters = {
 		]
 	}),
 }
-const command = new SlashCommand({
+module.exports = new SlashCommand({
 	name: "tts",
 	description: "Say something in VC using text",
-});
-command.parameters = [
-	Parameters.Say,
-	Parameters.ReadMyMessages,
-	Parameters.DontReadMyMessages,
-	Parameters.SetName,
-]
-command.execute = async function(interaction) {
-	await deferInteraction(interaction);
+	parameters: [
+		Parameters.Say,
+		Parameters.ReadMyMessages,
+		Parameters.DontReadMyMessages,
+		Parameters.SetName,
+	],
+	execute: async function(interaction) {
+		await deferInteraction(interaction);
 
-	let message = "Nothing";
-	let name = undefined;
-	let speaker_name = "Someone";
+		let message = "Nothing";
+		let name = undefined;
+		let speaker_name = "Someone";
 
-	const voice_channel = interaction.member.voice.channel;
-	if (!voice_channel) {
-		return await interaction.editReply("You need to be in a VC!");
-	}
-
-	const brobot_perms = voice_channel.permissionsFor(interaction.client.user);
-
-	if (
-		!brobot_perms.has(PermissionsBitField.Flags.Connect) ||
-		!brobot_perms.has(PermissionsBitField.Flags.Speak)
-	) {
-		return await interaction.editReply("I can't connect or speak in that VC!");
-	}
-
-	const subcommand_name = interaction.options.getSubcommand();
-
-	console.log({subcommand_name});
-	if (subcommand_name === Parameters.Say.name) {
-		message = interaction.options.getString(Subparameters.Message.name);
-		name = interaction.options.getString(Subparameters.Name.name);
-
-		if (name)
-			message = `${name} says ${message}`;
-
-		const voice_connection = joinVoiceChannel({
-			channelId: voice_channel.id,
-			guildId: interaction.guild.id,
-			adapterCreator: interaction.guild.voiceAdapterCreator
-		});
-
-		speaker_name = name;
-		if (!speaker_name)
-			speaker_name = interaction.member.nickname;
-
-		if (speaker_name == null)
-			speaker_name = interaction.user.globalName;
-
-		if (speaker_name == null)
-			speaker_name = interaction.user.username;
-
-		if (message === null)
-			message = "Nothing";
-
-		global.tts.addMessage(
-			voice_connection,
-			message,
-			interaction.user.id,
-			speaker_name
-		);
-
-		await interaction.editReply("Text to speech sent");
-	}
-
-	else if (subcommand_name === Parameters.ReadMyMessages.name) {
-		name = interaction.options.getString(Subparameters.Name.name);
-
-		global.tts.removeToggledUser(interaction.user.id);
-
-		global.tts.addToggledUser(
-			interaction.user.id,
-			interaction.channel.id,
-			name
-		);
-
-		return await interaction.editReply("I will now read all of your messages");
-	}
-
-	else if (subcommand_name === Parameters.DontReadMyMessages.name) {
-		global.tts.removeToggledUser(interaction.user.id);
-
-		return await interaction.editReply("I will no longer read all your messages");
-	}
-
-	else if (subcommand_name === Parameters.SetName.name) {
-		name = interaction.options.getString(Subparameters.Name.name);
-
-		if (!name) {
-			name = "";
+		const voice_channel = interaction.member.voice.channel;
+		if (!voice_channel) {
+			return await interaction.editReply("You need to be in a VC!");
 		}
 
-		global.tts.updateToggledUserName(interaction.user.id, name);
+		const brobot_perms = voice_channel.permissionsFor(interaction.client.user);
 
-		return await interaction.editReply("Your name has been set to **" + name + "**");
+		if (
+			!brobot_perms.has(PermissionsBitField.Flags.Connect) ||
+			!brobot_perms.has(PermissionsBitField.Flags.Speak)
+		) {
+			return await interaction.editReply("I can't connect or speak in that VC!");
+		}
+
+		const subcommand_name = interaction.options.getSubcommand();
+
+		console.log({subcommand_name});
+		if (subcommand_name === Parameters.Say.name) {
+			message = interaction.options.getString(Subparameters.Message.name);
+			name = interaction.options.getString(Subparameters.Name.name);
+
+			if (name)
+				message = `${name} says ${message}`;
+
+			const voice_connection = joinVoiceChannel({
+				channelId: voice_channel.id,
+				guildId: interaction.guild.id,
+				adapterCreator: interaction.guild.voiceAdapterCreator
+			});
+
+			speaker_name = name;
+			if (!speaker_name)
+				speaker_name = interaction.member.nickname;
+
+			if (speaker_name == null)
+				speaker_name = interaction.user.globalName;
+
+			if (speaker_name == null)
+				speaker_name = interaction.user.username;
+
+			if (message === null)
+				message = "Nothing";
+
+			global.tts.addMessage(
+				voice_connection,
+				message,
+				interaction.user.id,
+				speaker_name
+			);
+
+			await interaction.editReply("Text to speech sent");
+		}
+
+		else if (subcommand_name === Parameters.ReadMyMessages.name) {
+			name = interaction.options.getString(Subparameters.Name.name);
+
+			global.tts.removeToggledUser(interaction.user.id);
+
+			global.tts.addToggledUser(
+				interaction.user.id,
+				interaction.channel.id,
+				name
+			);
+
+			return await interaction.editReply("I will now read all of your messages");
+		}
+
+		else if (subcommand_name === Parameters.DontReadMyMessages.name) {
+			global.tts.removeToggledUser(interaction.user.id);
+
+			return await interaction.editReply("I will no longer read all your messages");
+		}
+
+		else if (subcommand_name === Parameters.SetName.name) {
+			name = interaction.options.getString(Subparameters.Name.name);
+
+			if (!name) {
+				name = "";
+			}
+
+			global.tts.updateToggledUserName(interaction.user.id, name);
+
+			return await interaction.editReply("Your name has been set to **" + name + "**");
+		}
 	}
-}
-module.exports = command;
+});

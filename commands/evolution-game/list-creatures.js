@@ -1,85 +1,80 @@
 const ids = require("../../bot-config/discord-ids");
-const SlashCommand = require("../../services/command-creation/slash-command");
-const { getCreatureText, getCreaturesText, getChildCreaturesText } = require("../../services/evolution-game/creature-formatting-utils");
+const { SlashCommand } = require("../../services/command-creation/slash-command");
+const { getCreaturesText, getChildCreaturesText } = require("../../services/evolution-game/creature-formatting-utils");
 const { parseCreaturesFromMessages } = require("../../services/evolution-game/creature-parser");
 const { getEvolutionRoots, getCreatureWithName, getChildCreaturesOf, } = require("../../services/evolution-game/creature-utils");
 const { deferInteraction, editReplyToInteraction } = require("../../utilities/discord-action-utils");
 const { fetchChannel, fetchMessagesInChannel } = require("../../utilities/discord-fetch-utils");
 
-const command = new SlashCommand({
+module.exports = new SlashCommand({
 	name: "list-creatures",
 	description: "Have Brobot send a list of all creatures in the evolution game with links to their messages",
-});
-command.required_servers = [ids.servers.evolutionGame];
+	required_servers: [ids.servers.evolutionGame],
+	isInDevelopment: true,
+	execute: async function execute(interaction) {
+		await deferInteraction(interaction);
 
-// Indicate that this command is in development
-command.isInDevelopment = true;
-
-command.execute = async function execute(interaction) {
-	await deferInteraction(interaction);
-
-	const evolutionsChannel = await fetchChannel(interaction.guild,
-		ids.evolutionGame.channels.evolutions
-	);
-
-	const allMessages = await fetchMessagesInChannel(evolutionsChannel);
-
-	const creatures = parseCreaturesFromMessages(allMessages);
-	console.log(creatures);
-
-	const evolutionRoots = getEvolutionRoots(creatures);
-
-	let fullMessage = '';
-	for (const headingCreatureNames of evolutionRoots) {
-		console.log({headingCreatureNames});
-		const headingCreatures = headingCreatureNames.map(name =>
-			getCreatureWithName(name, creatures)
+		const evolutionsChannel = await fetchChannel(interaction.guild,
+			ids.evolutionGame.channels.evolutions
 		);
-		console.log({headingCreatures});
-		const rootMessage = `## ${getCreaturesText(headingCreatures)}\n`;
 
-		const children = getChildCreaturesOf(headingCreatureNames, creatures);
-		if (children.length === 0) continue;
+		const allMessages = await fetchMessagesInChannel(evolutionsChannel);
 
-		const childrenMessage = getChildCreaturesText(children, creatures);
+		const creatures = parseCreaturesFromMessages(allMessages);
+		console.log(creatures);
 
-		fullMessage += rootMessage + childrenMessage;
-	}
+		const evolutionRoots = getEvolutionRoots(creatures);
 
-	// Seperate fullMessage into multiple messages that start with ##
-	const sections = fullMessage.split('##').map(message => '##' + message);
+		let fullMessage = '';
+		for (const headingCreatureNames of evolutionRoots) {
+			console.log({headingCreatureNames});
+			const headingCreatures = headingCreatureNames.map(name =>
+				getCreatureWithName(name, creatures)
+			);
+			console.log({headingCreatures});
+			const rootMessage = `## ${getCreaturesText(headingCreatures)}\n`;
 
-	// Remove first empty section
-	sections.shift();
+			const children = getChildCreaturesOf(headingCreatureNames, creatures);
+			if (children.length === 0) continue;
 
-	for (const section of sections) {
-		// If fullMessage > 2000 characters split into multiple messages
-		const lines = section.split('\n');
-		if (section.length > 2000) {
-			let numCharacters = 0;
-			let linesToSend = [];
+			const childrenMessage = getChildCreaturesText(children, creatures);
 
-			while (lines.length > 0) {
-				const line = lines.shift();
-				numCharacters += line.length;
-				if (numCharacters > 2000) {
-					interaction.channel.send(linesToSend.join('\n'));
-					linesToSend = [];
-					numCharacters = line.length;
+			fullMessage += rootMessage + childrenMessage;
+		}
+
+		// Seperate fullMessage into multiple messages that start with ##
+		const sections = fullMessage.split('##').map(message => '##' + message);
+
+		// Remove first empty section
+		sections.shift();
+
+		for (const section of sections) {
+			// If fullMessage > 2000 characters split into multiple messages
+			const lines = section.split('\n');
+			if (section.length > 2000) {
+				let numCharacters = 0;
+				let linesToSend = [];
+
+				while (lines.length > 0) {
+					const line = lines.shift();
+					numCharacters += line.length;
+					if (numCharacters > 2000) {
+						interaction.channel.send(linesToSend.join('\n'));
+						linesToSend = [];
+						numCharacters = line.length;
+					}
+					linesToSend.push(line);
 				}
-				linesToSend.push(line);
+
+				interaction.channel.send(linesToSend.join('\n'));
 			}
+			else {
+				interaction.channel.send(section);
+			}
+		}
 
-			interaction.channel.send(linesToSend.join('\n'));
-		}
-		else {
-			interaction.channel.send(section);
-		}
+		await editReplyToInteraction(interaction,
+			'Done'
+		)
 	}
-
-	await editReplyToInteraction(interaction,
-		'Done'
-	)
-}
-
-module.exports = command;
+});

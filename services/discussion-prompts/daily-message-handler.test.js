@@ -1,14 +1,3 @@
-const { TextChannel } = require("discord.js");
-const DailyMessageHandler = require("./daily-message-handler");
-const { fetchChannel } = require("../../utilities/discord-fetch-utils");
-
-jest.mock('discord.js', () => ({
-  TextChannel: class {
-    send(message) {
-      return Promise.resolve(`Message sent: ${message}`);
-    }
-  }
-}));
 jest.mock('../../utilities/discord-fetch-utils', () => ({
 	fetchChannel: jest.fn(() => Promise.resolve({ id: 'mockChannelId' })),
 	fetchGuild: jest.fn(() => Promise.resolve({ id: 'mockGuildId' })),
@@ -28,6 +17,9 @@ jest.mock('../../bot-config/discord-ids.js', () => ({
   },
 }));
 
+const DailyMessageHandler = require("./daily-message-handler");
+const { fetchChannel } = require("../../utilities/discord-fetch-utils");
+const { TextChannel } = require("discord.js");
 
 describe('DailyMessageHandler', () => {
 	/**
@@ -41,6 +33,8 @@ describe('DailyMessageHandler', () => {
 	let channelsToMessages;
 
 	beforeEach(() => {
+		jest.clearAllMocks();
+
 		channelsToMessages = {
 			general: ['Hello, world!', 'Good morning!'],
 			random: ['Random message 1', 'Random message 2'],
@@ -79,7 +73,15 @@ describe('DailyMessageHandler', () => {
 	it('sendDailyMessage should send a random message and remove it from the map', async () => {
 		const channelsToMessagesBefore = JSON.parse(JSON.stringify(dailyMessageHandler.channelsToMessages));
 
-		const mockChannel = new TextChannel();
+		const mockChannel = {
+			send: jest.fn().mockResolvedValue('Message sent'),
+			id: '123',
+			name: 'general',
+			type: 'GUILD_TEXT',
+		};
+		Object.setPrototypeOf(mockChannel, TextChannel.prototype);
+
+		jest.spyOn(dailyMessageHandler, 'convertChannelNameToChannel').mockImplementation(() => Promise.resolve(mockChannel));
     jest.spyOn(mockChannel, 'send').mockResolvedValue('Message sent');
 
     fetchChannel.mockResolvedValue(mockChannel);
@@ -89,7 +91,7 @@ describe('DailyMessageHandler', () => {
     expect(mockChannel.send).toHaveBeenCalled();
 
 		const channelsToMessagesAfter = { ...dailyMessageHandler.channelsToMessages };
-		
+
     expect(channelsToMessagesBefore).not.toEqual(channelsToMessagesAfter);
 	});
 });

@@ -1,9 +1,9 @@
 const { PermissionFlagsBits } = require("discord.js");
 const ids = require("../../bot-config/discord-ids");
 const { Parameter, ParameterType } = require("../../services/command-creation/parameter");
-const SlashCommand = require("../../services/command-creation/slash-command");
+const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { deferInteraction, addPermissionToChannel, editReplyToInteraction, memberHasRole } = require("../../utilities/discord-action-utils");
-const { getUserParamValue, fetchGuild, fetchChannel, fetchGuildMember } = require("../../utilities/discord-fetch-utils");
+const { getUserParamValue, fetchGuild, fetchGuildMember, fetchTextChannel } = require("../../utilities/discord-fetch-utils");
 
 const Parameters = {
 	Contestant: new Parameter({
@@ -22,10 +22,6 @@ module.exports = new SlashCommand({
 	parameters: [
 		Parameters.Contestant,
 	],
-
-	/**
-	 * @param {CommandInteraction} interaction
-	 */
 	execute: async function execute(interaction) {
 		await deferInteraction(interaction);
 
@@ -68,7 +64,7 @@ module.exports = new SlashCommand({
 
 		allianceChannel.send(`${commandUser} added ${contestantAdded} to the alliance`);
 
-		const logChannel = await fetchChannel(sandSeason3Guild, ids.sandSeason3.channels.log);
+		const logChannel = await fetchTextChannel(sandSeason3Guild, ids.sandSeason3.channels.log);
 		logChannel.send(`${commandUser} added ${contestantAdded} to ${allianceChannel}`);
 
 		await editReplyToInteraction(interaction,

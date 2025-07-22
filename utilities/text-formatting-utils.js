@@ -279,7 +279,7 @@ const findStringStartingWith = (startingString, possibleStrings) => {
 /**
  * Increments the number at the end of a given string by a given amount.
  * @param {string} string - The string to increment
- * @param {number} [incrementAmount=1] - The amount to increment the number by
+ * @param {number} [incrementAmount] - The amount to increment the number by
  * @returns {string} The string with the number at the end incremented by the given amount
  */
 const incrementEndNumber = (string, incrementAmount = 1) => {

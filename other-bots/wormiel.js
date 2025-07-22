@@ -9,7 +9,7 @@ const DISCORD_TOKEN = process.argv[2];
 // Second argument is the server ID. Otherwise, it defaults to the Sand S3 server
 const SAND_S3_SERVER_ID = process.argv[3] || '1386513912383672340';
 // Third argument is the target user ID. Otherwise, it defaults to the bot's ID
-const TARGETED_USER_ID = process.argv[4] || '795951920883695626';;
+const TARGETED_USER_ID = process.argv[4] || '795951920883695626';
 const PLAYER_NAMES = [
 	"Adrian",
 	"adrian",
@@ -246,12 +246,28 @@ const originalMessages = [
 ];
 
 let unusedMessages = [...originalMessages];
-// Helper to get a random element from an array
+
+/**
+ * Returns a random element from the given array
+ * @param {Array} arr The array to get a random element from
+ * @returns {*} The randomly selected element
+ */
 function getRandom(arr) {
 	return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// Returns the next message with replacements, or resets if empty
+/**
+ * Returns a random message from the given array of messages, replacing
+ * [RANDOM PLAYER] with a random player's name, [TARGET PLAYER] with the
+ * target player's name, [TARGET PLAYER MENTION] with a mention of the target
+ * player by id, and [RANDOM NUMBER] with a random number between 1 and 20.
+ * If the array of unused messages is empty, it resets the array to the
+ * original messages.
+ * @param {Array<string>} playerNames The names of all players in the game
+ * @param {string} targetPlayerName The name of the target player
+ * @param {string} targetPlayerID The id of the target player
+ * @returns {string} A random message with the replacements applied
+ */
 function getRandomMessage(playerNames, targetPlayerName, targetPlayerID) {
 	if (unusedMessages.length === 0) {
 		unusedMessages = [...originalMessages];
@@ -281,7 +297,7 @@ function getRandomMessage(playerNames, targetPlayerName, targetPlayerID) {
 
 	if (message.includes("[RANDOM NUMBER]")) {
 		const randomNumber = Math.floor(Math.random() * 20) + 1;
-		message = message.replace(/\[RANDOM NUMBER\]/g, randomNumber);
+		message = message.replace(/\[RANDOM NUMBER\]/g, randomNumber.toString());
 	}
 
 	return message;
@@ -314,10 +330,9 @@ const startBot = async () => {
 
 	console.log('Bot logged in.');
 
-	client.on(Events.MessageCreate, async (message) => {
+	client.on(Events.MessageCreate, (message) => {
 		if (
 			message.channel.type === ChannelType.DM ||
-			message.channel.type === ChannelType.GroupDM ||
 			message.guild.id !== SAND_S3_SERVER_ID ||
 			message.author.id !== TARGETED_USER_ID
 		) {

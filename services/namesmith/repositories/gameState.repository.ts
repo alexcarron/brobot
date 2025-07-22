@@ -1,15 +1,12 @@
-const Database = require("better-sqlite3");
-const DatabaseQuerier = require("../database/database-querier");
-const { InvalidArgumentError } = require("../../../utilities/error-utils");
+import DatabaseQuerier from "../database/database-querier";
+import { InvalidArgumentError } from "../../../utilities/error-utils";
+import { DBGameState } from "../types/gameState.types";
 
 /**
  * Provides access to the game state data.
  */
-class GameStateRepository {
-	/**
-	 * @type {DatabaseQuerier}
-	 */
-	db;
+export class GameStateRepository {
+	db: DatabaseQuerier;
 
 	/**
 	 * @param {DatabaseQuerier} db - The database querier instance used for executing SQL statements.
@@ -23,13 +20,13 @@ class GameStateRepository {
 
 	/**
 	 * Retrieves the current game state.
-	 * @returns {Promise<{
+	 * @returns {{
 	 * 	timeStarted: Date | undefined,
 	 * 	timeEnding: Date | undefined,
 	 * 	timeVoteIsEnding: Date | undefined,
-	 * }>} The current game state.
+	 * }} The current game state.
 	 */
-	async getGameState() {
+	getGameState() {
 		const query = `
 			SELECT timeStarted, timeEnding, timeVoteIsEnding
 			FROM gameState
@@ -37,7 +34,7 @@ class GameStateRepository {
 		`;
 
 		const getGameState = this.db.prepare(query);
-		const dbGameState = getGameState.get();
+		const dbGameState = getGameState.get() as DBGameState;
 
 		const timeStarted = dbGameState.timeStarted ?
 			new Date(parseInt(dbGameState.timeStarted)) :
@@ -60,17 +57,17 @@ class GameStateRepository {
 
 	/**
 	 * Sets the current game state.
-	 * @param {{
-	 * 	timeStarted?: Date,
-	 * 	timeEnding?: Date,
-	 *  timeVoteIsEnding?: Date,
-	 * }} gameState - The new game state.
+	 * @param gameState - The new game state.
 	 * @throws If there are no fields provided to update.
 	 * @returns {Promise<void>} A promise that resolves once the change has been saved.
 	 */
-	async setGameState({ timeStarted, timeEnding, timeVoteIsEnding }) {
+	async setGameState({ timeStarted, timeEnding, timeVoteIsEnding }: {
+		timeStarted?: Date;
+		timeEnding?: Date;
+		timeVoteIsEnding?: Date;
+	}) {
 		const assignmentExpressions = [];
-		const fieldToValue = {};
+		const fieldToValue: Record<string, string> = {};
 
 		if (timeStarted !== undefined) {
 			assignmentExpressions.push('timeStarted = @timeStarted');
@@ -112,7 +109,7 @@ class GameStateRepository {
 	 * @param {Date} timeStarted The time when the game started.
 	 * @returns {Promise<void>} A promise that resolves once the change has been saved.
 	 */
-	async setTimeStarted(timeStarted) {
+	async setTimeStarted(timeStarted: Date) {
 		await this.setGameState({ timeStarted });
 	}
 
@@ -152,5 +149,3 @@ class GameStateRepository {
 		await this.setGameState({ timeVoteIsEnding });
 	}
 }
-
-module.exports = GameStateRepository;

@@ -1,11 +1,10 @@
-const { SlashCommandBuilder, CommandInteraction } = require("discord.js");
-const { Parameter } = require("./parameter");
+import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 
 /**
  * Represents a Discord command.
  * @class
  */
-class SlashCommand {
+export class SlashCommand {
 	/** @type {string} The name of the command */
 	name;
 
@@ -40,9 +39,16 @@ class SlashCommand {
 	isInDevelopment;
 
 	/**
-	 * @type {(interaction: CommandInteraction) => any} A function which takes a discord.js Interaction that executes when the command is run
+	 * An function which takes a discord.js Interaction that executes when the command is autocompleted
 	 */
-	execute;
+	autocomplete: (interaction: AutocompleteInteraction) => Promise<any>;
+
+	/**
+	 * A function which takes a discord.js Interaction that executes when the command is run
+	 */
+	execute: (interaction: ChatInputCommandInteraction, isTestOrContext?: boolean | object, isTest?: boolean) => Promise<any>;
+
+	data: any;
 
 /**
  * Create a new SlashCommand.
@@ -57,7 +63,7 @@ class SlashCommand {
  * @param {string[] | string[][]} [options.required_roles] - The names of the roles users must have to run the command
  * @param {bigint[]} [options.required_permissions] - The permissions users must have to run the command using PermissionFlagsBits
  * @param {Parameter[]} [options.parameters] - The parameters for the command
- * @param {(interaction: CommandInteraction) => Promise<void>} [options.execute] - The function to execute when the command is run
+ * @param {(interaction: CommandInteraction, isTest?: boolean) => Promise<any>} options.execute - The function to execute when the command is run
  * @param {(interaction: CommandInteraction) => Promise<void>} [options.autocomplete] - The function to execute when the command is autocompleted
  * @param {boolean} [options.isInDevelopment] - If the command is currently in development
  */
@@ -66,14 +72,14 @@ class SlashCommand {
 		description,
 		cooldown = 0,
 		allowsDMs = false,
-		required_servers,
-		required_channels,
-		required_categories,
-		required_roles,
-		required_permissions,
+		required_servers = [],
+		required_channels = [],
+		required_categories = [],
+		required_roles = [],
+		required_permissions = [],
 		parameters = [],
-		execute = async () => {},
-		autocomplete = async () => {},
+		execute,
+		autocomplete = async (interaction: AutocompleteInteraction) => {},
 		isInDevelopment = false,
 	}) {
 		this.name = name;
@@ -138,4 +144,3 @@ class SlashCommand {
 	}
 }
 
-module.exports = SlashCommand;

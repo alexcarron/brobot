@@ -60,7 +60,7 @@ const Announcement = Object.freeze({
 		`# Role List` + "\n" +
 		">>> " + role_identifiers.map(identifier => `**${identifier.name}**\n`).join(""),
 
-	GAME_STARTED: (living_role_id, role_list_chnl_id) => [
+	GAME_STARTED: (living_role_id) => [
 		`<@&${living_role_id}> Good morning! The game will now begin!`,
 		`_ _\n## Helpful Reminders`,
 		`- Type a \`/\` to get a list of all the commands you can use.`,

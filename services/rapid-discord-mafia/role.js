@@ -75,6 +75,9 @@ const Immunity = Object.freeze({
 	CONTROL: "control",
 });
 
+/**
+ * Represents a Mafia role
+ */
 class Role {
 	constructor({name, faction, alignment, attack, defense, goal, isUnique = false, immunities = [], abilities = [], notes = ""}) {
 		this.name = name;

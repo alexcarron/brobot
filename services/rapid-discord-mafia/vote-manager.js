@@ -1,4 +1,5 @@
 const { toTitleCase } = require("../../utilities/text-formatting-utils");
+const Player = require("./player");
 
 /**
  * Enum of possible votes before the trial vote
@@ -38,6 +39,9 @@ const TrialOutcome = Object.freeze({
 	NO_VOTES: "none",
 })
 
+/**
+ * Handles all the voting and trial voting
+ */
 class VoteManager {
 	constructor(game_manager) {
 		this.game_manager = game_manager;
@@ -60,9 +64,9 @@ class VoteManager {
 
 	/**
 	 * Determines if a player can vote a certain player
-	 * @param {Player} player_voting
-	 * @param {Player} player_voting_for
-	 * @returns {true | String} true if you can vote that player. Otherwise, feedback for why you can't
+	 * @param {Player} player_voting - The player voting
+	 * @param {string} player_voting_for - The player being voted for
+	 * @returns {true | string} true if you can vote that player. Otherwise, feedback for why you can't
 	 */
 	canPlayerVotePlayer(player_voting, player_voting_for) {
 		if (!this.game_manager.state_manager.isInVotingPhase()) {
@@ -73,7 +77,7 @@ class VoteManager {
 			return `You can't vote for yourself!`;
 		}
 
-		if (!player_voting_for.canVote) {
+		if (!player_voting.canVote) {
 			return `Sorry, you have been prevented from voting.`;
 		}
 
@@ -82,8 +86,8 @@ class VoteManager {
 
 	/**
 	 * Adds a player vote for a player to the game votes
-	 * @param {Player} player_voting
-	 * @param {Player} player_voting_for
+	 * @param {Player} player_voting - The player voting
+	 * @param {Player} player_voting_for - The player being voted for
 	 * @returns {string} The feedback the player recieves for that vote
 	 */
 	addVoteForPlayer(player_voting, player_voting_for) {
@@ -98,17 +102,17 @@ class VoteManager {
 
 			this.game_manager.announceMessages(`**${player_voting.name}** changed their vote to **${player_voting_for.name}**`);
 
-			feedback = `You are replacing your previous vote, **${curr_votes[this.name]}**, with **${player_voting_for.name}**`;
+			feedback = `You are replacing your previous vote, **${curr_votes[player_voting.name]}**, with **${player_voting_for.name}**`;
 		}
 		else {
-			this.game_manager.logger.log(`**${this.name}** voted **${player_voting_for.name}**.`);
+			this.game_manager.logger.log(`**${player_voting.name}** voted **${player_voting_for.name}**.`);
 
-			this.game_manager.announceMessages(`**${this.name}** voted **${player_voting_for.name}**.`);
+			this.game_manager.announceMessages(`**${player_voting.name}** voted **${player_voting_for.name}**.`);
 
 			feedback = `You voted **${player_voting_for.name}**.`;
 		}
 
-		curr_votes[this.name] = player_voting_for.name;
+		curr_votes[player_voting.name] = player_voting_for.name;
 		this.votes = curr_votes;
 
 		if (!this.game_manager.isMockGame) {
@@ -125,11 +129,10 @@ class VoteManager {
 
 	/**
 	 * Determines if a player can vote for a certain trial outcome
-	 * @param {Player} player_voting
-	 * @param {String} trial_outcome
-	 * @returns {true | String} true if you can vote. Otherwise, feedback for why you can't
+	 * @param {Player} player_voting - The player voting
+	 * @returns {true | string} true if you can vote. Otherwise, feedback for why you can't
 	 */
-	canVoteForTrialOutcome(player_voting, trial_outcome) {
+	canVoteForTrialOutcome(player_voting) {
 		if (!this.game_manager.state_manager.isInTrialPhase()) {
 			return `We're not in the trial phase yet.`;
 		}
@@ -138,7 +141,7 @@ class VoteManager {
 			return `You can't vote for your own trial.`;
 		}
 
-		if (!this.canVote) {
+		if (!player_voting.canVote) {
 			return `Sorry, you have been prevented from voting.`;
 		}
 
@@ -147,8 +150,9 @@ class VoteManager {
 
 	/**
 	 * Votes for a trial outcome for the current trial, updating votes, announcing it, and returning feedback
-	 * @param {TrialVotes} trial_outcome
-	 * @returns {String} feedback for vote
+	 * @param {Player} player_voting - The player voting
+	 * @param {string} trial_outcome - The trial outcome
+	 * @returns {string} feedback for vote
 	 */
 	addVoteForTrialOutcome(player_voting, trial_outcome) {
 		let curr_votes = this.game_manager.trial_votes;
@@ -193,8 +197,9 @@ class VoteManager {
 
 	/**
 	 * Determines if a majority vote has been reached for a specific vote
-	 * @param {{[player_name: string]: [vote: string]}} player_votes an object which maps a player name to their vote
-	 * @param {Number} num_max_voters the maximum number of possible voters
+	 * @param {{[player_name: string]: string}} player_votes an object which maps a player name to their vote
+	 * @param {number} num_max_voters the maximum number of possible voters
+	 * @returns {boolean} whether or not a majority vote has been reached
 	 */
 	static isMajorityVote(player_votes, num_max_voters) {
 		let isMajorityVote = false;
@@ -211,7 +216,7 @@ class VoteManager {
 				let vote = player_votes[voter];
 
 				if (
-					vote.toLowerCase() == TrialVote.Abstain.toLowerCase() ||
+					vote.toLowerCase() == TrialVote.ABSTAIN.toLowerCase() ||
 					vote.toLowerCase() == Vote.ABSTAIN.toLowerCase()
 				)
 					continue;

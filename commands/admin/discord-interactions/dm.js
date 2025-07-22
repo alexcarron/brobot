@@ -1,6 +1,6 @@
 const { PermissionFlagsBits } = require("discord.js")
 const { Parameter } = require("../../../services/command-creation/parameter")
-const SlashCommand = require("../../../services/command-creation/slash-command");
+const { SlashCommand } = require("../../../services/command-creation/slash-command");
 const { deferInteraction } = require("../../../utilities/discord-action-utils");
 
 const Parameters = {
@@ -16,23 +16,21 @@ const Parameters = {
 	}),
 }
 
-const command = new SlashCommand({
+module.exports = new SlashCommand({
 	name: "dm",
 	description: "DM a user a message",
+	required_permissions: [PermissionFlagsBits.Administrator],
+	parameters: [
+		Parameters.UserDMing,
+		Parameters.Message,
+	],
+	execute: async function(interaction) {
+		await deferInteraction(interaction);
+
+		const user_dming = interaction.options.getUser(Parameters.UserDMing.name);
+		const message_dming = interaction.options.getString(Parameters.Message.name);
+		user_dming.send(message_dming);
+
+		interaction.editReply(`DMed <@${user_dming.id}>: ${message_dming}`);
+	}
 });
-command.required_permissions = [PermissionFlagsBits.Administrator]
-command.parameters = [
-	Parameters.UserDMing,
-	Parameters.Message,
-];
-command.execute = async function(interaction) {
-	await deferInteraction(interaction);
-
-	const user_dming = interaction.options.getUser(Parameters.UserDMing.name);
-	const message_dming = interaction.options.getString(Parameters.Message.name);
-	user_dming.send(message_dming);
-
-	interaction.editReply(`DMed <@${user_dming.id}>: ${message_dming}`);
-}
-
-module.exports = command;

@@ -1,4 +1,4 @@
-const { InvalidArgumentError, ResourceConflictError, ResourceNotFoundError } = require("../../../utilities/error-utils");
+const { InvalidArgumentError } = require("../../../utilities/error-utils");
 const DatabaseQuerier = require("../database/database-querier");
 const { VoteAlreadyExistsError, VoteNotFoundError } = require("../utilities/error.utility");
 
@@ -31,6 +31,7 @@ class VoteRepository {
 	getVotes() {
 		const query = `SELECT * FROM vote`;
 		const getAllVotes = this.db.prepare(query);
+		// @ts-ignore
 		return getAllVotes.all();
 	}
 
@@ -45,6 +46,7 @@ class VoteRepository {
 	getVoteByVoterID(voterID) {
 		const query = `SELECT * FROM vote WHERE voterID = @voterID`;
 		const getVoteByVoterID = this.db.prepare(query);
+		// @ts-ignore
 		return getVoteByVoterID.get({ voterID });
 	}
 
@@ -59,6 +61,7 @@ class VoteRepository {
 	getVotesByVotedForID(playerVotedForID) {
 		const query = `SELECT * FROM vote WHERE playerVotedForID = @playerVotedForID`;
 		const getVotesByVotedForID = this.db.prepare(query);
+		// @ts-ignore
 		return getVotesByVotedForID.all({ playerVotedForID });
 	}
 

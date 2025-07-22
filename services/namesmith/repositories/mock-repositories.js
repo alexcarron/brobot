@@ -2,14 +2,14 @@ const { InvalidArgumentError } = require("../../../utilities/error-utils");
 const DatabaseQuerier = require("../database/database-querier");
 const { createMockDB, addMockPlayer, addMockVote } = require("../database/mock-database");
 const { CharacterRepository } = require("./character.repository");
-const GameStateRepository = require("./gameState.repository");
+const { GameStateRepository } = require("./gameState.repository");
 const MysteryBoxRepository = require("./mysteryBox.repository");
 const PlayerRepository = require("./player.repository");
 const VoteRepository = require("./vote.repository");
 
 /**
  * Creates a mock character repository instance with an in-memory database for testing purposes.
- * @param {DatabaseQuerier | undefined} mockDB - An optional mock database instance.
+ * @param {DatabaseQuerier | undefined} [mockDB] - An optional mock database instance.
  * @returns {CharacterRepository} A mock instance of the CharacterRepository.
  */
 const createMockCharacterRepo = (mockDB) => {
@@ -20,10 +20,10 @@ const createMockCharacterRepo = (mockDB) => {
 
 /**
  * Creates a mock game state repository instance with an in-memory database for testing purposes.
- * @param {DatabaseQuerier | undefined} mockDB - An optional mock database instance.
+ * @param {DatabaseQuerier | undefined} [mockDB] - An optional mock database instance.
  * @returns {GameStateRepository} A mock instance of the GameStateRepository.
  */
-const createMockGameStateRepo = (mockDB) => {
+const createMockGameStateRepo = (mockDB = undefined) => {
 	if (mockDB === undefined || !(mockDB instanceof DatabaseQuerier))
 		mockDB = createMockDB();
 	return new GameStateRepository(mockDB);
@@ -31,7 +31,7 @@ const createMockGameStateRepo = (mockDB) => {
 
 /**
  * Creates a mock mystery box repository instance with an in-memory database for testing purposes.
- * @param {DatabaseQuerier | undefined} mockDB - An optional mock database instance.
+ * @param {DatabaseQuerier | undefined} [mockDB] - An optional mock database instance.
  * @returns {MysteryBoxRepository} A mock instance of the MysteryBoxRepository.
  */
 const createMockMysteryBoxRepo = (mockDB) => {
@@ -40,24 +40,16 @@ const createMockMysteryBoxRepo = (mockDB) => {
 	return new MysteryBoxRepository(mockDB);
 }
 
-const createMockPlayerObject = ({id, currentName, publishedName, tokens, role, inventory}) => {
+const createMockPlayerObject = ({
+	id,
+	currentName = "",
+	publishedName = null,
+	tokens = 0,
+	role = null,
+	inventory = "",
+}) => {
 	if (id === undefined || typeof id !== "string")
 		throw new InvalidArgumentError(`createMockPlayerObject: player id must be a string, but got ${id}.`);
-
-	if (currentName === undefined)
-		currentName = "";
-
-	if (publishedName === undefined)
-		publishedName = null;
-
-	if (tokens === undefined)
-		tokens = 0;
-
-	if (role === undefined)
-		role = null;
-
-	if (inventory === undefined)
-		inventory = "";
 
 	return {id, currentName, publishedName, tokens, role, inventory};
 }
@@ -112,8 +104,8 @@ const mockPlayers = [
  * Creates a mock player repository instance with an in-memory database for testing purposes.
  *
  * The mock repository is populated with mock player data from the mockPlayers array.
- * @param {DatabaseQuerier | undefined} mockDB - An optional mock database instance.
- * @param {Array<{id: string, currentName: string, publishedName: string, tokens: number, role: string, inventory: string}> | undefined} players - An optional array of mock player data.
+ * @param {DatabaseQuerier | undefined} [mockDB] - An optional mock database instance.
+ * @param {Array<{id: string, currentName: string, publishedName: string, tokens: number, role: string, inventory: string}> | undefined} [players] - An optional array of mock player data.
  * @returns {PlayerRepository} A mock instance of the PlayerRepository.
  */
 const createMockPlayerRepo = (mockDB, players) => {
@@ -152,9 +144,19 @@ const mockVotes = [
  * Creates a mock vote repository instance with an in-memory database for testing purposes.
  *
  * The mock repository is populated with mock vote data from the mockVotes array.
- * @param {DatabaseQuerier | undefined} mockDB - An optional mock database instance.
- * @param {Array<{id: string, currentName: string, publishedName: string, tokens: number, role: string, inventory: string}> | undefined} players - An optional array of mock player data.
- * @param {Array<{voterID: string, playerVotedForID: string}> | undefined} votes - An optional array of mock vote data.
+ * @param {DatabaseQuerier | undefined} [mockDB] - An optional mock database instance.
+ * @param {Array<{
+ * 	id: string,
+ * 	currentName: string,
+ * 	publishedName: string,
+ * 	tokens: number,
+ * 	role: string,
+ * 	inventory: string
+ * }> | undefined} [players] - An optional array of mock player data.
+ * @param {Array<{
+ * 	voterID: string,
+ * 	playerVotedForID: string
+ * }> | undefined} [votes] - An optional array of mock vote data.
  * @returns {VoteRepository} A mock instance of the VoteRepository.
  */
 const createMockVoteRepo = (mockDB, players, votes) => {
@@ -200,10 +202,12 @@ const createMockVoteRepo = (mockDB, players, votes) => {
  * - playerRepository: A mock instance of the PlayerRepository.
  * - voteRepository: A mock instance of the VoteRepository.
  * @param {DatabaseQuerier | undefined} mockDB - An optional mock database instance.
- * @param {{players: Array<{id: string, currentName: string, publishedName: string, tokens: number, role: string, inventory: string}> | undefined, votes: Array<{voterID: string, playerVotedForID: string}> | undefined}} [options] - An optional object with properties for players and votes to be added to the mock repositories.
+ * @param {object} [options] - An optional object with properties for players and votes to be added to the mock repositories.
+ * @param {Array<{id: string, currentName: string, publishedName: string, tokens: number, role: string, inventory: string}> | undefined} [options.players] - An optional array of mock player data.
+ * @param {Array<{voterID: string, playerVotedForID: string}> | undefined} [options.votes] - An optional array of mock vote data.
  * @returns {{db: DatabaseQuerier, characterRepository: CharacterRepository, gameStateRepository: GameStateRepository, mysteryBoxRepository: MysteryBoxRepository, playerRepository: PlayerRepository, voteRepository: VoteRepository}} A mock instance of the repositories and the in-memory database.
  */
-const createMockRepositories = (mockDB, {players, votes}) => {
+const createMockRepositories = (mockDB, {players, votes} = {}) => {
 	if (mockDB === undefined || !(mockDB instanceof DatabaseQuerier))
 		mockDB = createMockDB();
 
@@ -213,7 +217,7 @@ const createMockRepositories = (mockDB, {players, votes}) => {
 		gameStateRepository: createMockGameStateRepo(mockDB),
 		mysteryBoxRepository: createMockMysteryBoxRepo(mockDB),
 		playerRepository: createMockPlayerRepo(mockDB, players),
-		voteRepository: createMockVoteRepo(mockDB, votes),
+		voteRepository: createMockVoteRepo(mockDB, players, votes),
 	}
 };
 

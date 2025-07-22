@@ -1,21 +1,19 @@
-const SlashCommand = require('../../services/command-creation/slash-command.js');
+const { SlashCommand } = require('../../services/command-creation/slash-command.js');
 const ids = require(`../../bot-config/discord-ids.js`);
 const { PermissionFlagsBits } = require('discord.js');
 const { editReplyToInteraction, deferInteraction } = require('../../utilities/discord-action-utils.js');
 const { GameManager } = require('../../services/rapid-discord-mafia/game-manager.js');
 
-const command = new SlashCommand({
+module.exports = new SlashCommand({
 	name: "reset-game",
 	description: "Resets the current Rapid Discord Mafia game",
+	required_servers: [ids.servers.rapid_discord_mafia],
+	required_permissions: [PermissionFlagsBits.Administrator],
+	execute: async function execute(interaction) {
+		await deferInteraction(interaction);
+
+		await GameManager.reset();
+
+		await editReplyToInteraction(interaction, "Reset everything.");
+	},
 });
-command.required_servers = [ids.servers.rapid_discord_mafia];
-command.required_permissions = [PermissionFlagsBits.Administrator];
-command.execute = async function execute(interaction) {
-	await deferInteraction(interaction);
-
-	await GameManager.reset();
-
-	await editReplyToInteraction(interaction, "Reset everything.");
-}
-
-module.exports = command;

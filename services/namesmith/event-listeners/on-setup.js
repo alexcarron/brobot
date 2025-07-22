@@ -1,7 +1,7 @@
 const { logInfo, logSuccess } = require("../../../utilities/logging-utils");
 const { setupDatabase } = require("../database/setup-database");
 const {CharacterRepository} = require("../repositories/character.repository");
-const GameStateRepository = require("../repositories/gameState.repository");
+const { GameStateRepository } = require("../repositories/gameState.repository");
 const MysteryBoxRepository = require("../repositories/mysteryBox.repository");
 const PlayerRepository = require("../repositories/player.repository");
 const VoteRepository = require("../repositories/vote.repository");

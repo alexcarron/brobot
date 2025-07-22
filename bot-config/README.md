@@ -9,5 +9,5 @@ Contains configuration files related to setting up and using Brobot.
  admin IDs, allowed role IDs)
 * **`on-ready.js`** Handles setting up services and global variables when the client is ready to start running
 * **`setup-client.js`** Sets up the Discord client in the global scope with necessary intents and partials
-* **`setup-commands.js`** Handles storing all commands from the `/commands` directory in memory and registering them through Discord's API.
+* **`setup-commands.ts`** Handles storing all commands from the `/commands` directory in memory and registering them through Discord's API.
 * **`token.js`** *(hidden)* Stores sensitive data like bot tokens and API keys

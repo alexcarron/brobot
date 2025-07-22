@@ -1,4 +1,5 @@
 const { Arg } = require("./arg.js");
+const { Phase } = require("./game-state-manager.js");
 
 /**
  * Enum of possible names of an Ability
@@ -140,7 +141,7 @@ class Ability {
 
 	/**
 	 * A function that gets the feedback the player using this ability recieves
-	 * @type {() => string}
+	 * @type {(...args: any[]) => string}
 	 */
 	feedback;
 
@@ -152,19 +153,31 @@ class Ability {
 
 	/**
 	 * A function that reverses the effects of the ability
-	 * @type {(player: Player, game_manager: GameManager) => Promise<void>}
+	 * @type {(player: object, game_manager?: object) => Promise<void> | void}
 	 */
 	reverseEffects;
 
-	/**
-	 *
-	 * @param {Duration} OneDay by default
-	 */
+/**
+ * Constructs an instance of Ability with the specified properties.
+ * @param {object} options - An object with the following properties:
+ * @param {string} options.name - The name of the ability.
+ * @param {string} options.type - The type of the ability.
+ * @param {number} options.uses - The number of times the ability can be used.
+ * @param {(...args: any[]) => string} [options.feedback] - A function that gets the feedback the player using this ability recieves.
+ * @param {string[]} [options.phases_can_use] - A list of the phases the ability can be used.
+ * @param {string} options.description - A description of the ability.
+ * @param {number} options.priority - The priority of the ability.
+ * @param {number} [options.duration] - The duration of the ability.
+ * @param {Arg[]} [options.args] - A list of arguments a player must enter when performing the ability.
+ * @param {string[]} [options.effects] - A list of the effects this ability applies.
+ * @param {(player: object, game_manager?: object) => Promise<void> | void} [options.reverseEffects] - A function that reverses the effects of the ability
+ */
+
 	constructor({
 		name,
 		type,
 		uses,
-		feedback,
+		feedback = () => "",
 		phases_can_use=[Phase.NIGHT],
 		description,
 		priority,

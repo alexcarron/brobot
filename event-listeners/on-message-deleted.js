@@ -5,7 +5,7 @@ const { logInfo } = require("../utilities/logging-utils");
  * Handles when a message is deleted
  * @param {Message} message - the deleted message
  */
-const onMessageDeleted = async (message) => {
+const onMessageDeleted = (message) => {
 	if (message.partial)
 		logInfo(`Message deleted (partial)`);
 

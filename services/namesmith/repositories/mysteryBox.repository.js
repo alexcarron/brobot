@@ -23,15 +23,16 @@ class MysteryBoxRepository {
 
 	/**
 	 * Returns a list of all mystery box objects in the game.
-	 * @returns {Promise<Array<{
+	 * @returns {Array<{
 	 * 	id: number,
 	 * 	name: string,
 	 *  tokenCost: number,
-	 * }>>} An array of mystery box objects.
+	 * }>} An array of mystery box objects.
 	 */
 	getMysteryBoxes() {
 		const query = `SELECT DISTINCT * FROM mysteryBox`;
 		const getAllMysteryBoxes = this.db.prepare(query);
+		// @ts-ignore
 		return getAllMysteryBoxes.all();
 	}
 
@@ -49,10 +50,13 @@ class MysteryBoxRepository {
 		const mysteryBoxes = this.getMysteryBoxes();
 		const characterOddsRows = this.db.prepare(`SELECT mysteryBoxID, characterID, weight FROM mysteryBoxCharacterOdds`).all();
 
+		// @ts-ignore
 		return mysteryBoxes.map(mysteryBox => {
 			const characterOdds = characterOddsRows
+				// @ts-ignore
 				.filter(row => row.mysteryBoxID === mysteryBox.id)
 				.reduce((characterOdds, oddsRow) => {
+					// @ts-ignore
 					characterOdds[getCharacterValueFromID(oddsRow.characterID)] = oddsRow.weight;
 					return characterOdds;
 				}, {});
@@ -81,6 +85,7 @@ class MysteryBoxRepository {
 
 		const query = `SELECT * FROM mysteryBox WHERE id = @id`;
 		const getMysteryBoxById = this.db.prepare(query);
+		// @ts-ignore
 		return getMysteryBoxById.get({ id });
 	}
 
@@ -102,12 +107,14 @@ class MysteryBoxRepository {
 		`).all({ id });
 
 		const characterOdds = characterOddsRows.reduce((characterOdds, oddsRow) => {
+			// @ts-ignore
 			characterOdds[getCharacterValueFromID(oddsRow.characterID)] = oddsRow.weight;
 			return characterOdds;
 		}, {});
 
 		return {
 			...mysteryBox,
+			// @ts-ignore
 			characterOdds
 		};
 	}
@@ -122,7 +129,9 @@ class MysteryBoxRepository {
 		const getCharacterOdds = this.db.prepare(query);
 		const characterOddsRows = getCharacterOdds.all({ mysteryBoxID });
 
+		// @ts-ignore
 		return characterOddsRows.reduce((characterOdds, oddsRow) => {
+			// @ts-ignore
 			characterOdds[oddsRow.characterID] = oddsRow.weight;
 			return characterOdds;
 		}, {});

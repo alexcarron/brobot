@@ -57,9 +57,9 @@ describe('createTextProgressBar', () => {
 	});
 
 	it('should throw an error for non-numeric input', () => {
-		expect(() => createTextProgressBar('a', 100, 20)).toThrowError();
-		expect(() => createTextProgressBar(100, 'b', 20)).toThrowError();
-		expect(() => createTextProgressBar(100, 100, 'c')).toThrowError();
+		expect(() => createTextProgressBar('a', 100, 20)).toThrow();
+		expect(() => createTextProgressBar(100, 'b', 20)).toThrow();
+		expect(() => createTextProgressBar(100, 100, 'c')).toThrow();
 	});
 
 	it('should return an empty progress bar for edge cases', () => {
@@ -106,13 +106,13 @@ describe('toNumericOrdinal()', () => {
 	});
 
 	it('should throw an error for non-numeric inputs', () => {
-		expect(() => toNumericOrdinal('a')).toThrowError('Input is not a valid number');
-		expect(() => toNumericOrdinal(null)).toThrowError('Input is not a valid number');
-		expect(() => toNumericOrdinal(undefined)).toThrowError('Input is not a valid number');
+		expect(() => toNumericOrdinal('a')).toThrow('Input is not a valid number');
+		expect(() => toNumericOrdinal(null)).toThrow('Input is not a valid number');
+		expect(() => toNumericOrdinal(undefined)).toThrow('Input is not a valid number');
 	});
 
 	it('should throw an error for NaN inputs', () => {
-		expect(() => toNumericOrdinal(NaN)).toThrowError('Input is not a valid number');
+		expect(() => toNumericOrdinal(NaN)).toThrow('Input is not a valid number');
 	});
 
 	it('should handle edge cases (0, negative numbers, etc.)', () => {
@@ -143,17 +143,17 @@ describe('toWordOrdinal()', () => {
 	});
 
 	it('should throw an error for non-numeric input', () => {
-		expect(() => toWordOrdinal('a')).toThrowError('Input is not a valid number');
-		expect(() => toWordOrdinal(null)).toThrowError('Input is not a valid number');
-		expect(() => toWordOrdinal(undefined)).toThrowError('Input is not a valid number');
+		expect(() => toWordOrdinal('a')).toThrow('Input is not a valid number');
+		expect(() => toWordOrdinal(null)).toThrow('Input is not a valid number');
+		expect(() => toWordOrdinal(undefined)).toThrow('Input is not a valid number');
 	});
 
 	it('should throw an error for NaN input', () => {
-		expect(() => toWordOrdinal(NaN)).toThrowError('Input is not a valid number');
+		expect(() => toWordOrdinal(NaN)).toThrow('Input is not a valid number');
 	});
 
 	it('should throw an error for too large input', () => {
-		expect(() => toWordOrdinal(1000)).toThrowError('Number too large');
+		expect(() => toWordOrdinal(1000)).toThrow('Number too large');
 	});
 
 	it('should handle 0', () => {
@@ -161,8 +161,8 @@ describe('toWordOrdinal()', () => {
 	});
 
 	it('should throw an error for negative numbers', () => {
-		expect(() => toWordOrdinal(-1)).toThrowError('Number should be non-negative');
-		expect(() => toWordOrdinal(-10)).toThrowError('Number should be non-negative');
+		expect(() => toWordOrdinal(-1)).toThrow('Number should be non-negative');
+		expect(() => toWordOrdinal(-10)).toThrow('Number should be non-negative');
 	});
 });
 
@@ -236,16 +236,16 @@ describe('wrapTextByLineWidth()', () => {
 	});
 
 	it('should throw an error for invalid text input', () => {
-		expect(() => wrapTextByLineWidth(123, 10)).toThrowError('text must be a string.');
-		expect(() => wrapTextByLineWidth(null, 10)).toThrowError('text must be a string.');
-		expect(() => wrapTextByLineWidth(undefined, 10)).toThrowError('text must be a string.');
+		expect(() => wrapTextByLineWidth(123, 10)).toThrow('text must be a string.');
+		expect(() => wrapTextByLineWidth(null, 10)).toThrow('text must be a string.');
+		expect(() => wrapTextByLineWidth(undefined, 10)).toThrow('text must be a string.');
 	});
 
 	it('should throw an error for invalid line width', () => {
 		const text = 'hello world';
-		expect(() => wrapTextByLineWidth(text, -10)).toThrowError('lineWidth must be a positive number.');
-		expect(() => wrapTextByLineWidth(text, 0)).toThrowError('lineWidth must be a positive number.');
-		expect(() => wrapTextByLineWidth(text, 'invalid')).toThrowError('lineWidth must be a positive number.');
+		expect(() => wrapTextByLineWidth(text, -10)).toThrow('lineWidth must be a positive number.');
+		expect(() => wrapTextByLineWidth(text, 0)).toThrow('lineWidth must be a positive number.');
+		expect(() => wrapTextByLineWidth(text, 'invalid')).toThrow('lineWidth must be a positive number.');
 	});
 });
 
@@ -281,11 +281,11 @@ describe('removeLinks()', () => {
 	});
 
 	it('should throw an error for a null input', () => {
-		expect(() => removeLinks(null)).toThrowError();
+		expect(() => removeLinks(null)).toThrow();
 	});
 
 	it('should throw an error for an undefined input', () => {
-		expect(() => removeLinks(undefined)).toThrowError();
+		expect(() => removeLinks(undefined)).toThrow();
 	});
 });
 
@@ -310,17 +310,17 @@ describe('removeEmojis()', () => {
 
 	it('should throw an error if the input is null', () => {
 		const input = null;
-		expect(() => removeEmojis(input)).toThrowError();
+		expect(() => removeEmojis(input)).toThrow();
 	});
 
 	it('should throw an error if the input is undefined', () => {
 		const input = undefined;
-		expect(() => removeEmojis(input)).toThrowError();
+		expect(() => removeEmojis(input)).toThrow();
 	});
 
 	it('should throw an error if the input is not a string', () => {
 		const input = 123;
-		expect(() => removeEmojis(input)).toThrowError();
+		expect(() => removeEmojis(input)).toThrow();
 	});
 });
 
@@ -366,25 +366,25 @@ describe('findStringStartingWith()', () => {
 	it('should throw error with null possible strings array', () => {
 		const startingString = 'hello';
 		const possibleStrings = null;
-		expect(() => findStringStartingWith(startingString, possibleStrings)).toThrowError();
+		expect(() => findStringStartingWith(startingString, possibleStrings)).toThrow();
 	});
 
 	it('should throw error with undefined possible strings array', () => {
 		const startingString = 'hello';
 		const possibleStrings = undefined;
-		expect(() => findStringStartingWith(startingString, possibleStrings)).toThrowError();
+		expect(() => findStringStartingWith(startingString, possibleStrings)).toThrow();
 	});
 
 	it('should throw error with non-string starting string', () => {
 		const startingString = 123;
 		const possibleStrings = ['hello', 'world', 'foo'];
-		expect(() => findStringStartingWith(startingString, possibleStrings)).toThrowError();
+		expect(() => findStringStartingWith(startingString, possibleStrings)).toThrow();
 	});
 
 	it('should throw error with non-array possible strings', () => {
 		const startingString = 'hello';
 		const possibleStrings = 'not an array';
-		expect(() => findStringStartingWith(startingString, possibleStrings)).toThrowError();
+		expect(() => findStringStartingWith(startingString, possibleStrings)).toThrow();
 	});
 });
 
@@ -422,11 +422,11 @@ describe('incrementEndNumber()', () => {
 	});
 
 	it('should throw an error with a non-string input', () => {
-		expect(() => incrementEndNumber(123)).toThrowError();
+		expect(() => incrementEndNumber(123)).toThrow();
   });
 
 	it('should throw an error with a non-number increment amount', () => {
-    expect(() => incrementEndNumber('hello', 'two')).toThrowError();
+    expect(() => incrementEndNumber('hello', 'two')).toThrow();
   });
 
 	it('should handle negative end number outputs', () => {

@@ -7,7 +7,7 @@ const { RoleName } = require("./role");
 
 describe('Player', () => {
 	/**
-	 * @type Game
+	 * @type {GameManager}
 	 */
 	let mock_game;
 
@@ -53,7 +53,7 @@ describe('Player', () => {
 
 			await mock_game.startNight(mock_game.days_passed);
 
-			const feedback = kidnapper_player.useAbility(
+			kidnapper_player.useAbility(
 				mock_game.ability_manager.getAbility(AbilityName.KIDNAP),
 				{ [AbilityArgName.PLAYER_KIDNAPPING]: doctor_name },
 			);

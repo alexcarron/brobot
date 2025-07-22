@@ -1,6 +1,6 @@
 import { InvalidArgumentError } from "../../../utilities/error-utils";
 import DatabaseQuerier from "../database/database-querier";
-import { Character, DBCharacter, DBCharacterWithTags, CharacterWithTags } from "../types/character";
+import { Character, DBCharacter, DBCharacterWithTags, CharacterWithTags } from "../types/character.types";
 import { getIDfromCharacterValue } from "../utilities/character.utility";
 
 /**

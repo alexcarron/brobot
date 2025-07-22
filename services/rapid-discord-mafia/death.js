@@ -1,5 +1,8 @@
 const { Faction } = require("./role");
 
+/**
+ * Represents a death
+ */
 class Death {
 	/**
 	 * The name of the player who has died

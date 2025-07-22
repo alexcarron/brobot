@@ -1,6 +1,6 @@
 const AnomolyService = require("./anomoly.service");
 
-const setupAnomolyService = async () => {
+const setupAnomolyService = () => {
 	global.anomolyService = new AnomolyService();
 }
 

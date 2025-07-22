@@ -3,14 +3,16 @@ const ids = require("../../bot-config/discord-ids.js");
 const { Role, Faction, RoleName } = require("./role.js");
 const Logger = require("./logger.js");
 const { DiscordService, RDMDiscordRole } = require("./discord-service.js");
-const { fetchRDMGuild, fetchRoleByName } = require("../../utilities/discord-fetch-utils.js");
+const { fetchRDMGuild, fetchRoleByName, fetchGuildMember } = require("../../utilities/discord-fetch-utils.js");
 const { addRoleToMember, removeRoleFromMember } = require("../../utilities/discord-action-utils.js");
-const { ArgumentSubtype, AbilityArgName } = require("./arg.js");
+const { ArgumentSubtype } = require("./arg.js");
 const { Announcement, Feedback } = require("./constants/possible-messages.js");
-const { AbilityName } = require("./ability.js");
 
 const rdm_ids = require("../../bot-config/discord-ids.js").rapid_discord_mafia;
 
+/**
+ * Represents a player in the game
+ */
 class Player {
 	/**
 	 * The name of the player.
@@ -20,29 +22,29 @@ class Player {
 
 	/**
 	 * The defense level of the player.
-	 * @type {Number}
+	 * @type {number}
 	 */
 	defense;
 
 	/**
 	 * The attack level of the player.
-	 * @type {Number}
+	 * @type {number}
 	 */
 	attack;
 
 	/**
-	 * @type {{name: AbilityName, args: {[arg_name: AbilityArgName]: string}}}
-	*/
+	 * @type {{name: string, args: {[arg_name: string]: string}} | null}
+	 */
 	ability_doing;
 
 	/**
-	 * @type {{name: AbilityName, by: string, during_phase: Number}[]}
+	 * @type {{name: string, by: string, during_phase: number}[]}
 	 */
 	affected_by;
 
 	/**
 	 * Player name of executioner player's target.
-	 * @type {String}
+	 * @type {string}
 	 */
 	exe_target;
 
@@ -57,7 +59,7 @@ class Player {
 	canVote;
 
 	/**
-	 * @type {{role: string, visiting: string}}
+	 * @type {{role?: string, visiting?: string}}
 	 */
 	percieved;
 
@@ -74,7 +76,7 @@ class Player {
 
 	constructor({
 		id = ids.users.LL,
-		name,
+		name = "Mock Player Name",
 		channel_id = "",
 		isAlive = true,
 		isInLimbo = false,
@@ -88,7 +90,7 @@ class Player {
 		exe_target = "",
 		num_phases_inactive = 0,
 		feedback = [],
-		ability_doing = {},
+		ability_doing = null,
 		used = {},
 		percieved = {},
 		affected_by = [],
@@ -101,7 +103,7 @@ class Player {
 		canVote = true,
 		isMockPlayer = false,
 		role_log = "",
-	},
+	} = {},
 		logger = new Logger()
 	) {
 		this.id = id;
@@ -154,7 +156,7 @@ class Player {
 		this.death_note = "";
 		this.exe_target = "";
 		this.feedback = [];
-		this.ability_doing = {};
+		this.ability_doing = null;
 		this.used = {};
 		this.percieved = {};
 		this.affected_by = [];
@@ -190,11 +192,11 @@ class Player {
 		this.logger.log(`Unmuted **${this.name}**.`);
 	}
 
-	async removeVotingAbility() {
+	removeVotingAbility() {
 		this.canVote = false;
 	}
 
-	async regainVotingAbility() {
+	regainVotingAbility() {
 		this.canVote = true;
 	}
 
@@ -207,7 +209,7 @@ class Player {
 
 	async fetchGuildMember() {
 		const rdm_guild = await fetchRDMGuild();
-		const player_guild_member = await this.fetchGuildMember(rdm_guild, this.id);
+		const player_guild_member = await fetchGuildMember(rdm_guild, this.id);
 		return player_guild_member;
 	}
 
@@ -256,6 +258,7 @@ class Player {
 
 	isDoingNothing() {
 		return (
+			this.ability_doing === null ||
 			Object.keys(this.ability_doing).length === 0 ||
 			!this.ability_doing.name ||
 			this.ability_doing.name.toLowerCase() === "nothing"
@@ -267,7 +270,7 @@ class Player {
 	}
 
 	resetAbilityDoing() {
-		this.ability_doing = {};
+		this.ability_doing = null;
 	}
 
 	resetVisiting() {
@@ -308,7 +311,7 @@ class Player {
 	}
 
 	/**
-	 * @param {AbilityName} ability_name
+	 * @param {string} ability_name - The name of the ability
 	 */
 	addAbilityUse(ability_name) {
 		if (!this.used[ability_name]) {
@@ -320,9 +323,9 @@ class Player {
 
 	/**
 	 * Adds an ability used on a player to their affected_by array
-	 * @param {Player} player_using_ability
-	 * @param {AbilityName} ability_name
-	 * @param {number} The day number the ability was used
+	 * @param {Player} player_using_ability - The player using the ability
+	 * @param {string} ability_name - The name of the ability
+	 * @param {number} day_used - The day number the ability was used
 	 */
 	addAbilityAffectedBy(player_using_ability, ability_name, day_used) {
 		player_using_ability.addAbilityUse(ability_name);
@@ -336,16 +339,7 @@ class Player {
 		)
 	}
 
-	/**
-		 * {
-				"victim": Player.name,
-				"kills": {
-						killer_name: Player.name,
-						flavor_text: string
-					}[]
-				}
-		 */
-	async kill(death) {
+	async kill() {
 		this.isAlive = false;
 
 		try {
@@ -392,14 +386,10 @@ class Player {
 			return this.visiting
 	}
 
-	resetPercieved() {
-		this.percieved = {};
-	}
-
 	/**
 	 * Sets what ability th p layer is doing in the current phase
-	 * @param {string} name Name of the ability
-	 * @param {{[arg_name: string]: [arg_value: string]}} arg_values An obect with an entry for each argument with the key being the name and the value being the value of the arg
+	 * @param {string} ability_name - Name of the ability
+	 * @param {{[arg_name: string]: string}} arg_values - An obect with an entry for each argument with the key being the name and the value being the value of the arg
 	 */
 	setAbilityDoing(ability_name, arg_values) {
 		this.ability_doing = {
@@ -416,8 +406,8 @@ class Player {
 	}
 
 	/**
- * @param {Ability | undefined} ability_using
-	 * @param {{[arg_name: string]: [arg_value: string]}} arg_values - An object map from the argument name to it's passed value. Empty object by default.
+	 * @param {object | undefined} ability_using - The ability the player is using
+	 * @param {{[arg_name: string]: string}} arg_values - An object map from the argument name to it's passed value. Empty object by default.
 	 * @returns {string} confirmation feedback for using ability
 	 */
 	useAbility(ability_using, arg_values={}) {
@@ -469,14 +459,14 @@ class Player {
 		}
 	}
 
-	async giveAccessToMafiaChat() {
+	giveAccessToMafiaChat() {
 		this.logger.log(`Let **${this.name}** see mafia chat.`);
 
 		this.discord_service.addViewerToMafiaChannel(this.id);
 		this.discord_service.sendToMafia(`**${this.name}** - ${this.role}`);
 	}
 
-	async removeAccessFromMafiaChat() {
+	removeAccessFromMafiaChat() {
 		this.discord_service.removeSenderFromMafiaChannel(this.id);
 		this.logger.log(`Let **${this.name}** not see mafia chat.`);
 	}
@@ -530,13 +520,13 @@ class Player {
 
 	/**
 	 * Checks if player has attempted to use any ability or nothing
-	 * @returns {boolean}
+	 * @returns {boolean} True if player has done an ability, false otherwise
 	 */
 	hasDoneAbility() {
 		return (
-			this.ability_doing &&
-			this.ability_doing.name
-		)
+			!!this.ability_doing &&
+			!!this.ability_doing.name
+		);
 	}
 
 	updateDeathNote(death_note) {
@@ -548,7 +538,7 @@ class Player {
 	updateLastWill(last_will) {
 		this.last_will = last_will;
 
-		this.logger.log(`**${player.name}** updated their last will to be \n\`\`\`\n${player.last_will}\n\`\`\``);
+		this.logger.log(`**${this.name}** updated their last will to be \n\`\`\`\n${this.last_will}\n\`\`\``);
 	}
 }
 

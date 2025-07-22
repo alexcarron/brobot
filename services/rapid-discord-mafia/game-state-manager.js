@@ -47,7 +47,7 @@ const GameState = Object.freeze({
  */
 class GameStateManager {
 	/**
-	 * @param {Game} game - The game's current instance
+	 * @param {object} game - The game's current instance
 	 */
 	constructor(game) {
 		this.game = game;
@@ -59,7 +59,7 @@ class GameStateManager {
 
 	/**
 	 * The current phase the game is in
-	 * @type {Phases}
+	 * @type {object}
 	 */
 	get phase() {
 		return this.game.phase;
@@ -70,7 +70,7 @@ class GameStateManager {
 
 	/**
 	 * The current subphase the game is in
-	 * @type {Subphases}
+	 * @type {object}
 	 */
 	get subphase() {
 		return this.game.subphase;
@@ -81,7 +81,7 @@ class GameStateManager {
 
 	/**
 	 * The current state the game is in
-	 * @type {GameStates}
+	 * @type {object}
 	 */
 	get state() {
 		return this.game.state;
@@ -269,7 +269,7 @@ class GameStateManager {
 
 	/**
 	 * Get whether or not the game is in the announcements phase
-	 * @returns {boolean}
+	 * @returns {boolean} Whether or not the game is in the announcements phase
 	 */
 	isInAnnouncementsPhase() {
 		return (
@@ -281,7 +281,7 @@ class GameStateManager {
 
 	/**
 	 * Get whether or not the game is in the voting phase
-	 * @returns {boolean}
+	 * @returns {boolean} Whether or not the game is in the voting phase
 	 */
 	isInVotingPhase() {
 		return (
@@ -293,7 +293,7 @@ class GameStateManager {
 
 	/**
 	 * Get whether or not the game is in the trial phase
-	 * @returns {boolean}
+	 * @returns {boolean} Whether or not the game is in the trial phase
 	 */
 	isInTrialPhase() {
 		return (
@@ -305,7 +305,7 @@ class GameStateManager {
 
 	/**
 	 * Get whether or not the game is in the trial results phase
-	 * @returns {boolean}
+	 * @returns {boolean} Whether or not the game is in the trial results phase
 	 */
 	isInTrialResultsPhase() {
 		return (
@@ -317,7 +317,7 @@ class GameStateManager {
 
 	/**
 	 * Get whether or not the game is in the night phase
-	 * @returns {boolean}
+	 * @returns {boolean} Whether or not the game is in the night phase
 	 */
 	isInNightPhase() {
 		return (
@@ -329,7 +329,7 @@ class GameStateManager {
 
 	/**
 	 * Get whether or not it's currently the first day of the game
-	 * @returns {boolean}
+	 * @returns {boolean} Whether or not it's currently the first day of the game
 	 */
 	isFirstDay() {
 		return (
@@ -342,7 +342,7 @@ class GameStateManager {
 
 	/**
 	 * Get whether or not the game is in sign ups
-	 * @returns {boolean}
+	 * @returns {boolean} Whether or not the game is in sign ups
 	 */
 	isInSignUps() {
 		return (
@@ -354,7 +354,7 @@ class GameStateManager {
 
 	/**
 	 * Get whether or not the game is ready to start
-	 * @returns {boolean}
+	 * @returns {boolean} Whether or not the game is ready to start
 	 */
 	isReadyToStart() {
 		return (
@@ -366,7 +366,7 @@ class GameStateManager {
 
 	/**
 	 * Get whether or not the game ended
-	 * @returns {boolean}
+	 * @returns {boolean} Whether or not the game ended
 	 */
 	isEnded() {
 		return (

@@ -2,9 +2,9 @@
  * @file Utility functions for working with Discord entities related to the Namesmith server.
  */
 
-const { GuildMember } = require("discord.js");
+const { GuildMember, Guild, TextChannel } = require("discord.js");
 const ids = require("../../../bot-config/discord-ids");
-const { fetchGuild, fetchChannel, fetchGuildMember, fetchAllGuildMembers } = require("../../../utilities/discord-fetch-utils");
+const { fetchGuild, fetchGuildMember, fetchAllGuildMembers, fetchTextChannel } = require("../../../utilities/discord-fetch-utils");
 
 /**
  * Fetches the Namesmith server from Discord.
@@ -20,7 +20,7 @@ const fetchNamesmithServer = async () => {
  * @returns {Promise<TextChannel>} A promise that resolves to the TextChannel object for the 'published names' channel.
  */
 const fetchPublishedNamesChannel = async () => {
-	return await fetchChannel(
+	return await fetchTextChannel(
 		await fetchNamesmithServer(),
 		ids.namesmith.channels.publishedNames
 	);
@@ -31,7 +31,7 @@ const fetchPublishedNamesChannel = async () => {
  * @returns {Promise<TextChannel>} A promise that resolves to the TextChannel object for the 'names to vote on' channel.
  */
 const fetchNamesToVoteOnChannel = async () => {
-	return await fetchChannel(
+	return await fetchTextChannel(
 		await fetchNamesmithServer(),
 		ids.namesmith.channels.namesToVoteOn
 	);
@@ -42,7 +42,7 @@ const fetchNamesToVoteOnChannel = async () => {
  * @returns {Promise<TextChannel>} A promise that resolves to the TextChannel object for the 'the winner' channel.
  */
 const fetchTheWinnerChannel = async () => {
-	return await fetchChannel(
+	return await fetchTextChannel(
 		await fetchNamesmithServer(),
 		ids.namesmith.channels.theWinner
 	);

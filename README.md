@@ -207,6 +207,18 @@ Contains the main entry point and all project-level configuration files.
 * **`package.json`** Contains project metadata and dependencies
 * **`README.md`** Provides documentation and a description of the project
 
+### 📂 `.github/`
+
+Contains GitHub-specific configuration files and workflows
+
+### 📂 `.husky/`
+
+Contains Git hooks run at specific points in the Git workflow
+
+### 📂 `assets/`
+
+Contains static media used in Brobot services (videos, images, audio, etc.)
+
 ### 📂 `bot-config/`
 
 Contains configuration files related to Brobot.
@@ -218,7 +230,7 @@ Contains configuration files related to Brobot.
  admin IDs, allowed role IDs)
 * **`on-ready.js`** Handles setting up services and global variables when the client is ready to start running
 * **`setup-client.js`** Sets up the Discord client in the global scope with necessary intents and partials
-* **`setup-commands.js`** Handles storing all commands from the `/commands` directory in memory and registering them through Discord's API.
+* **`setup-commands.ts`** Handles storing all commands from the `/commands` directory in memory and registering them through Discord's API.
 * **`token.js`** *(hidden)* Stores sensitive data like bot tokens and API keys
 
 ### 📂 `commands/`

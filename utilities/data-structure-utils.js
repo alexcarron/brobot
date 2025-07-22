@@ -2,7 +2,7 @@ const { Collection } = require("discord.js");
 
 /**
  * Sets a nested property in an object.
- * @param {Object} object - The object that contains the property to be set.
+ * @param {object} object - The object that contains the property to be set.
  * @param {Array<string>} propertyPath - The path to the property to be set, as an array of strings.
  * @param {*} value - The value to be set for the property.
  */
@@ -21,7 +21,7 @@ const setNestedProperty = (object, propertyPath, value) => {
 	// If the property path only has one element, we can set the property directly.
 	if (propertyPath.length <= 1) {
 		object[topLevelProperty] = value;
-		return object;
+		return;
 	}
 
 	// If the highest property does not exist, create it.
@@ -39,7 +39,7 @@ const setNestedProperty = (object, propertyPath, value) => {
 
 /**
  * Appends a value to a nested property in an object. If the property does not exist, it is created.
- * @param {Object} object - The object that contains the property to be set.
+ * @param {object} object - The object that contains the property to be set.
  * @param {Array<string>} propertyPath - The path to the property to be set, as an array of strings.
  * @param {*} value - The value to be appended to the property.
  */
@@ -62,7 +62,7 @@ const appendToNestedProperty = (object, propertyPath, value) => {
 			object[topLevelProperty] = [value];
 		}
 
-		return object;
+		return;
 	}
 
 	// If the highest property does not exist, create it.
@@ -186,10 +186,9 @@ const getRandomElement = (array) => {
 /**
  * Identifies the differences between two strings by comparing their characters.
  * It determines which characters are extra or missing in the modified string compared to the original string.
- *
  * @param {string} originalString - The original string for comparison.
  * @param {string} modifiedString - The modified string to compare against the original.
- * @returns {Object} An object containing two arrays: `missingCharacters` (characters present in the original but missing in the modified) and `extraCharacters` (characters present in the modified but not in the original).
+ * @returns {object} An object containing two arrays: `missingCharacters` (characters present in the original but missing in the modified) and `extraCharacters` (characters present in the modified but not in the original).
  */
 const getCharacterDifferencesInStrings = (originalString, modifiedString) => {
 	if (typeof originalString !== 'string' || typeof modifiedString !== 'string') {
@@ -204,39 +203,40 @@ const getCharacterDifferencesInStrings = (originalString, modifiedString) => {
 	const missingCharacters = [];
 	const extraCharacters = [];
 
-	// Find specific missing or extra characters
-	while (true) {
+	let charactersLeftToCompare = true;
+	while (charactersLeftToCompare) {
 		if (originalCharacterIndex >= sortedOriginalString.length) {
 			const restOfNewCharacters = sortedModifiedString.slice(newCharacterIndex);
 			extraCharacters.push(
 				...restOfNewCharacters
 			);
-			break;
+			charactersLeftToCompare = false;
 		}
 		else if (newCharacterIndex >= sortedModifiedString.length) {
 			const restOfOriginalCharacters = sortedOriginalString.slice(originalCharacterIndex);
 			missingCharacters.push(
 				...restOfOriginalCharacters
 			);
-			break;
+			charactersLeftToCompare = false;
 		}
+		else {
+			const originalCharacter = sortedOriginalString[originalCharacterIndex];
+			const newCharacter = sortedModifiedString[newCharacterIndex];
+			// ab efjjklllmnop
+			// abcefj  lll
 
-		const originalCharacter = sortedOriginalString[originalCharacterIndex];
-		const newCharacter = sortedModifiedString[newCharacterIndex];
-		// ab efjjklllmnop
-		// abcefj  lll
-
-		if (originalCharacter === newCharacter) {
-			originalCharacterIndex += 1;
-			newCharacterIndex += 1;
-		}
-		else if (newCharacter < originalCharacter) {
-			newCharacterIndex += 1;
-			extraCharacters.push(newCharacter);
-		}
-		else if (newCharacter > originalCharacter) {
-			originalCharacterIndex += 1;
-			missingCharacters.push(originalCharacter);
+			if (originalCharacter === newCharacter) {
+				originalCharacterIndex += 1;
+				newCharacterIndex += 1;
+			}
+			else if (newCharacter < originalCharacter) {
+				newCharacterIndex += 1;
+				extraCharacters.push(newCharacter);
+			}
+			else if (newCharacter > originalCharacter) {
+				originalCharacterIndex += 1;
+				missingCharacters.push(originalCharacter);
+			}
 		}
 	}
 
@@ -254,7 +254,7 @@ const discordCollectionToArray = (collection) => {
 
 /**
  * Returns a random element from a given object where the property values are used as weights.
- * @param {Object} elementToWeight An object where the property values are used as weights.
+ * @param {object} elementToWeight An object where the property values are used as weights.
  * @returns {any} The selected element.
  * @throws {Error} If the elementToWeight is not an object.
  * @throws {Error} If any of the weights is not a positive number.
@@ -266,7 +266,7 @@ const getRandomWeightedElement = (elementToWeight) => {
 	}
 
 	const elementToWeightEntries = Object.entries(elementToWeight);
-	const totalWeight = elementToWeightEntries.reduce((accumulatedWeight, [_, weight]) => {
+	const totalWeight = elementToWeightEntries.reduce((accumulatedWeight, [, weight]) => {
     if (typeof weight !== 'number' || weight < 0) {
       throw new Error(`getRandomWeightedElement: Invalid weight: ${weight}`);
     }

@@ -1,14 +1,17 @@
 const { GITHUB_TOKEN } = require("../../bot-config/token.js");
-const { GitHubJsonURL } = require("../../utilities/github-json-storage-utils.js");
+const { GitHubJsonURL, saveObjectToJsonInGitHub } = require("../../utilities/github-json-storage-utils.js");
 const Viewer = require("./viewer.js");
 
+/**
+ * A class to handle the game data that persists across mulitple sessions on github
+ */
 class LLPointManager {
 	constructor() {
 		this.viewers = new Map();
 		this.sha = "";
 	}
 
-	async updateViewersFromDatabase() {
+	updateViewersFromDatabase() {
 		const { promisify } = require('util');
 		const request = promisify(require("request"));
 
@@ -37,46 +40,8 @@ class LLPointManager {
 	}
 
 	async updateDatabase() {
-		const
-			axios = require('axios'),
-			viewers = Object.fromEntries(this.viewers),
-			viewers_str = JSON.stringify(viewers),
-			owner = "alexcarron",
-			repo = "brobot-database",
-			path = "viewers.json";
-
-
-		try {
-			// Get the current file data
-			const {data: file} =
-				await axios.get(
-					`https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
-					{
-						headers: {
-							'Authorization': `Token ${GITHUB_TOKEN}`
-						}
-					}
-				);
-
-			// Update the file content
-
-			const {data: updated_file} =
-				await axios.put(
-					`https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
-					{
-						message: 'Update file',
-						content: new Buffer.from(viewers_str).toString(`base64`),
-						sha: file.sha
-					},
-					{
-						headers: {
-							'Authorization': `Token ${GITHUB_TOKEN}`
-						}
-					}
-				);
-		} catch (error) {
-			console.error(error);
-		}
+		const viewers = Object.fromEntries(this.viewers);
+		await saveObjectToJsonInGitHub(viewers, "viewers");
 	}
 
 

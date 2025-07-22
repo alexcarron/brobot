@@ -45,26 +45,26 @@ describe('setNestedProperty', () => {
 		const object = {};
 		const propertyPath = [];
 		const value = 'value';
-		expect(() => setNestedProperty(object, propertyPath, value)).toThrowError();
+		expect(() => setNestedProperty(object, propertyPath, value)).toThrow();
 	});
 
 	it('throws an error when setting a property with a null or undefined object', () => {
 		const object = null;
 		const propertyPath = ['property1'];
 		const value = 'value';
-		expect(() => setNestedProperty(object, propertyPath, value)).toThrowError();
+		expect(() => setNestedProperty(object, propertyPath, value)).toThrow();
 	});
 
 	it('throws an error when setting a property with a non-array property path', () => {
 		const object = {};
 		const propertyPath = 'property1';
 		const value = 'value';
-		expect(() => setNestedProperty(object, propertyPath, value)).toThrowError();
+		expect(() => setNestedProperty(object, propertyPath, value)).toThrow();
 	});
 });
 
 describe('appendToNestedProperty', () => {
-	it('appends a value to an existing property with existing ele	', () => {
+	it('appends a value to an existing property with existing elements', () => {
 		const object = { property1: ['value1', 'value2'] };
 		const propertyPath = ['property1'];
 		const value = 'value3';
@@ -100,21 +100,21 @@ describe('appendToNestedProperty', () => {
 		const object = 'not an object';
 		const propertyPath = ['property1'];
 		const value = 'value';
-		expect(() => appendToNestedProperty(object, propertyPath, value)).toThrowError('Object must be an object.');
+		expect(() => appendToNestedProperty(object, propertyPath, value)).toThrow('Object must be an object.');
 	});
 
 	it('throws an error if the property path is not an array', () => {
 		const object = {};
 		const propertyPath = 'not an array';
 		const value = 'value';
-		expect(() => appendToNestedProperty(object, propertyPath, value)).toThrowError('Property path must be an array.');
+		expect(() => appendToNestedProperty(object, propertyPath, value)).toThrow('Property path must be an array.');
 	});
 
 	it('throws an error if the property path is empty', () => {
 		const object = {};
 		const propertyPath = [];
 		const value = 'value';
-		expect(() => appendToNestedProperty(object, propertyPath, value)).toThrowError('Property path must have at least one property.');
+		expect(() => appendToNestedProperty(object, propertyPath, value)).toThrow('Property path must have at least one property.');
 	});
 
 	it('handles multiple levels of nesting', () => {
@@ -145,7 +145,7 @@ describe('getShuffledArray()', () => {
 
 
 	it('should throw an error when given a non-array input', () => {
-		expect(() => getShuffledArray('not an array')).toThrowError();
+		expect(() => getShuffledArray('not an array')).toThrow();
 	});
 
 	it('should return an empty array when given an empty array input', () => {
@@ -157,11 +157,11 @@ describe('getShuffledArray()', () => {
 
 describe('arraysHaveSameElements()', () => {
 	it('should throw an error if less than two arrays are passed', () => {
-		expect(() => arraysHaveSameElements([1, 2, 3])).toThrowError('At least two arrays must be passed.');
+		expect(() => arraysHaveSameElements([1, 2, 3])).toThrow('At least two arrays must be passed.');
 	});
 
 	it('should throw an error if not all arguments are arrays', () => {
-		expect(() => arraysHaveSameElements([1, 2, 3], 'hello')).toThrowError('All arguments must be arrays.');
+		expect(() => arraysHaveSameElements([1, 2, 3], 'hello')).toThrow('All arguments must be arrays.');
 	});
 
 	it('should return false if arrays have different lengths', () => {
@@ -202,11 +202,11 @@ describe('getRandomElement()', () => {
 	});
 
 	it('should throw an error when the input is not an array', () => {
-		expect(() => getRandomElement('hello')).toThrowError('Given value must be an array. Received: string');
+		expect(() => getRandomElement('hello')).toThrow('Given value must be an array. Received: string');
 	});
 
 	it('should throw an error when the array is empty', () => {
-		expect(() => getRandomElement([])).toThrowError('Array must have at least one element.');
+		expect(() => getRandomElement([])).toThrow('Array must have at least one element.');
 	});
 
 	it('should not modify the original array', () => {
@@ -335,17 +335,17 @@ describe('getRandomWeightedElement()', () => {
   });
 
   it('should throw an error when the input is not an object', () => {
-    expect(() => getRandomWeightedElement('hello')).toThrowError('getRandomWeightedElement: elementToWeight must be an object.');
+    expect(() => getRandomWeightedElement('hello')).toThrow('getRandomWeightedElement: elementToWeight must be an object.');
   });
 
   it('should throw an error when any of the weights is not a positive number', () => {
     const elementToWeight = { a: -1, b: 2, c: 3 };
-    expect(() => getRandomWeightedElement(elementToWeight)).toThrowError('getRandomWeightedElement: Invalid weight: -1');
+    expect(() => getRandomWeightedElement(elementToWeight)).toThrow('getRandomWeightedElement: Invalid weight: -1');
   });
 
   it('should throw an error when the total weight is not greater than 0', () => {
     const elementToWeight = { a: 0, b: 0, c: 0 };
-    expect(() => getRandomWeightedElement(elementToWeight)).toThrowError('getRandomWeightedElement: total weight must be > 0');
+    expect(() => getRandomWeightedElement(elementToWeight)).toThrow('getRandomWeightedElement: total weight must be > 0');
   });
 
   it('should return a random element from the object with multiple elements', () => {

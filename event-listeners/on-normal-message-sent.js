@@ -1,10 +1,13 @@
-const { Message, MessageType, PermissionsBitField } = require("discord.js");
+const { Message, MessageType, PermissionsBitField, ChannelType } = require("discord.js");
 const TextToSpeechHandler = require("../services/text-to-speech/text-to-speech-handler");
 const { joinVoiceChannel } = require("@discordjs/voice");
 const ids = require("../bot-config/discord-ids");
 const { fetchGuildMember } = require("../utilities/discord-fetch-utils");
 const { GameState } = require("../services/rapid-discord-mafia/game-state-manager");
 const { logInfo } = require("../utilities/logging-utils");
+const { AbilityName } = require("../services/rapid-discord-mafia/ability");
+const Player = require("../services/rapid-discord-mafia/player");
+const { Feedback } = require("../services/rapid-discord-mafia/constants/possible-messages");
 
 const onTTSMessageSent = async (message) => {
 	logInfo(`TTS Message Sent: ${message.content}`);
@@ -36,19 +39,20 @@ const onTTSMessageSent = async (message) => {
 	TextToSpeechHandler.addUsersMessageToQueue(message, voiceConnection);
 }
 
-const onRDMKidnapperMessageSent = async (message) => {
+const onRDMKidnapperMessageSent = (message) => {
 	// TODO: Encapsulate logic in rapid discord mafia service
 	const kidnapped_players = global.game_manager.player_manager.getPlayerList()
 	.filter(
 		/**
-		 * @param {Player} player
+		 * @param {Player} player - The player to check
+		 * @returns {boolean} - True if the player is kidnapped
 		 */
 		(player) => {
 			const affected_by = player.affected_by;
 
 			const isKidnapped = affected_by
 				.some(affect => {
-					return affect.name === AbilityName.Kidnap
+					return affect.name === AbilityName.KIDNAP
 				});
 
 			return isKidnapped;
@@ -57,18 +61,18 @@ const onRDMKidnapperMessageSent = async (message) => {
 
 	kidnapped_players.forEach(
 		/**
-		 * @param {Player} kidnapped_player
+		 * @param {Player} kidnapped_player - The kidnapped player
 		 */
 		(kidnapped_player) => {
 			if (
-				kidnapped_player.channel_id === msg.channel.id &&
-				kidnapped_player.id === msg.author.id
+				kidnapped_player.channel_id === message.channel.id &&
+				kidnapped_player.id === message.author.id
 			) {
 				const affected_by = kidnapped_player.affected_by;
 
 				const kidnapper_player_names = affected_by
 				.filter(affect => {
-					return affect.name === AbilityName.Kidnap
+					return affect.name === AbilityName.KIDNAP
 				})
 				.map(affect => affect.by);
 
@@ -78,7 +82,7 @@ const onRDMKidnapperMessageSent = async (message) => {
 					});
 
 				kidnapper_players.forEach(player => {
-					player.sendFeedback(Feedback.KidnapperYells(player, kidnapped_player, msg.content));
+					player.sendFeedback(Feedback.KIDNAPPER_YELLS(player, kidnapped_player, message.content));
 				})
 			}
 
@@ -87,18 +91,20 @@ const onRDMKidnapperMessageSent = async (message) => {
 }
 
 /**
- * @param {Message} message
+ * @param {Message} message - The message
  */
 const onNormalMessageSent = async (message) => {
 	if (TextToSpeechHandler.shouldMessageTriggerTTS(message)) {
 		await onTTSMessageSent(message);
 	}
 
+
 	if (
 		// TODO: Encapsulate logic in rapid discord mafia service
 		global.game_manager &&
 		global.game_manager.player_manager &&
 		global.game_manager.state === GameState.IN_PROGRESS &&
+		message.channel.type !== ChannelType.DM &&
 		message.channel.parentId === ids.rapid_discord_mafia.category.player_action &&
 		message.type === MessageType.Default
 	) {

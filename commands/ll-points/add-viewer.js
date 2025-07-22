@@ -1,7 +1,7 @@
 
 const Viewer = require('../../services/ll-points/viewer.js');
 const { Parameter } = require('../../services/command-creation/parameter.js');
-const SlashCommand = require('../../services/command-creation/slash-command.js');
+const { SlashCommand } = require('../../services/command-creation/slash-command.js');
 const { PermissionFlagsBits } = require('discord.js');
 const { deferInteraction } = require('../../utilities/discord-action-utils.js');
 
@@ -13,45 +13,48 @@ const Parameters = {
 	}),
 }
 
-const command = new SlashCommand({
+module.exports = new SlashCommand({
 	name: "add-viewer",
 	description: "Add a new viewer to the LL Point Manager",
+	required_permissions: [PermissionFlagsBits.Administrator],
+	parameters: [
+		Parameters.ViewerAdding,
+	],
+	allowsDMs: true,
+	execute: async function(interaction) {
+		await deferInteraction(interaction);
+
+		const viewer_user = await interaction.options.getUser(Parameters.ViewerAdding.name);
+		const viewer_name = viewer_user.username
+		const viewer_id = viewer_user.id;
+
+		let existing_new_viewer = await global.LLPointManager.getViewerByName(viewer_name);
+		let existing_new_viewer_by_id = await global.LLPointManager.getViewerById(viewer_id);
+
+		if (!existing_new_viewer && !existing_new_viewer_by_id) {
+			let new_viewer_obj = {
+				name: viewer_name,
+				ll_points: 0,
+			};
+
+			new_viewer_obj.user_id = viewer_id;
+
+			const new_viewer = new Viewer({
+				name: viewer_name,
+				ll_points: 0,
+				user_id: viewer_id,
+			});
+			await global.LLPointManager.addViewer(new_viewer);
+			await global.LLPointManager.updateDatabase();
+			return interaction.editReply(`The viewer, **${viewer_name}**, is being added to the database.`);
+		}
+		else {
+			let message_txt = `The viewer name, **${viewer_name}**, is already in the database.`
+
+			if (!existing_new_viewer)
+				message_txt = `The viewer id, \`${viewer_id}\`, is already in the database and it belongs to **${existing_new_viewer_by_id.name}**`
+
+			return interaction.editReply(message_txt);
+		}
+	}
 });
-command.required_permissions = [PermissionFlagsBits.Administrator]
-command.parameters = [
-	Parameters.ViewerAdding,
-]
-command.allowsDMs = true;
-command.execute = async function(interaction) {
-	await deferInteraction(interaction);
-
-	const viewer_user = await interaction.options.getUser(Parameters.ViewerAdding.name);
-	const viewer_name = viewer_user.username
-	const viewer_id = viewer_user.id;
-
-	let existing_new_viewer = await global.LLPointManager.getViewerByName(viewer_name);
-	let existing_new_viewer_by_id = await global.LLPointManager.getViewerById(viewer_id);
-
-	if (!existing_new_viewer && !existing_new_viewer_by_id) {
-		let new_viewer_obj = {
-			name: viewer_name,
-			ll_points: 0,
-		};
-
-		new_viewer_obj.user_id = viewer_id;
-
-		const new_viewer = new Viewer(new_viewer_obj);
-		await global.LLPointManager.addViewer(new_viewer);
-		await global.LLPointManager.updateDatabase();
-		return interaction.editReply(`The viewer, **${viewer_name}**, is being added to the database.`);
-	}
-	else {
-		let message_txt = `The viewer name, **${viewer_name}**, is already in the database.`
-
-		if (!existing_new_viewer)
-			message_txt = `The viewer id, \`${viewer_id}\`, is already in the database and it belongs to **${existing_new_viewer_by_id.name}**`
-
-		return interaction.editReply(message_txt);
-	}
-}
-module.exports = command;

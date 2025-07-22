@@ -1,5 +1,5 @@
 const { getRandomWeightedElement } = require("../../../utilities/data-structure-utils");
-const { ResourceNotFoundError, InvalidArgumentError } = require("../../../utilities/error-utils");
+const { InvalidArgumentError } = require("../../../utilities/error-utils");
 const { CharacterRepository } = require("../repositories/character.repository");
 const MysteryBoxRepository = require("../repositories/mysteryBox.repository");
 const { MysteryBoxNotFoundError } = require("../utilities/error.utility");

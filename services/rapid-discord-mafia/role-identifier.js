@@ -29,6 +29,9 @@ const RoleIdentifierPriority = Object.freeze({
 	ANY_ROLE: 4
 });
 
+/**
+ * Represents a role identifier used in a role list
+ */
 class RoleIdentifier {
 	name;
 	type;
@@ -104,12 +107,16 @@ class RoleIdentifier {
 			}
 		});
 
-		return RoleIdentifierPriority[role_identifier_priority_key];
+		if (role_identifier_priority_key === undefined)
+			return undefined;
+		else
+			// @ts-ignore
+			return RoleIdentifierPriority[role_identifier_priority_key];
 	}
 
 	/**
 	 *
-	 * @param {String[]} role_identifier_strings The list of role identifier strings you want to convert
+	 * @param {string[]} role_identifier_strings The list of role identifier strings you want to convert
 	 * @returns {RoleIdentifier[]} The converted role identifiers
 	 */
 	static convertIdentifierStrings(role_identifier_strings) {
@@ -123,6 +130,7 @@ class RoleIdentifier {
 	}
 
 	getFaction() {
+		// @ts-ignore
 		if ([RoleIdentifierType.ANY_ROLE, RoleIdentifierType.SPECIFIC_ROLE].includes(this.type)) {
 			return undefined
 		}
@@ -136,6 +144,7 @@ class RoleIdentifier {
 	}
 
 	getAlignment() {
+		// @ts-ignore
 		if ([RoleIdentifierType.ANY_ROLE, RoleIdentifierType.SPECIFIC_ROLE, RoleIdentifierType.RANDOM_ROLE_IN_FACTION].includes(this.type)) {
 			return undefined
 		}

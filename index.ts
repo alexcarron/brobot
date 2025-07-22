@@ -43,8 +43,8 @@ const startBrobot = async () => {
 		botStatus.isInDevelopmentMode = true;
 	}
 
-	const { setupCommands, setupAndDeployCommands } = require('./bot-config/setup-commands.js');
-	const { setupClient } = require('./bot-config/setup-client.js');
+	const { setupCommands, setupAndDeployCommands } = require('./bot-config/setup-commands');
+	const { setupClient } = require('./bot-config/setup-client');
 
 	const client = await setupClient();
 
@@ -60,7 +60,7 @@ const startBrobot = async () => {
 	// when the client is ready, run this code
 	// this event will only trigger one time after Brobot has successfully fully connected to the Discord API
 	global.client.once(Events.ClientReady, async () => {
-		await onClientReady(client);
+		await onClientReady();
 	});
 }
 

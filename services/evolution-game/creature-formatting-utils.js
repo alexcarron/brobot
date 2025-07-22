@@ -18,9 +18,9 @@ const getCreaturesText = creatures => {
 /**
  * Recursively generate a string of all child creatures of each creature in the
  * childCreatures array, indented by numParents levels.
- * @param {Creature[]} childCreatures - An array of creature objects
- * @param {Creature[]} creatures - An array of all creature objects
- * @param {number} [numParents=1] - The number of levels of indentation to use
+ * @param {object[]} childCreatures - An array of creature objects
+ * @param {object[]} creatures - An array of all creature objects
+ * @param {number} [numParents] - The number of levels of indentation to use
  * @returns {string} - A string of all child creatures indented by numParents levels
  */
 const getChildCreaturesText = (childCreatures, creatures, numParents = 1) => {

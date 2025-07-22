@@ -176,12 +176,10 @@ function runBeforeAllTests(functionToRun) {
  *   Asserts the actual value throws an error.
  * @property {(substringInErrorMessage: string) => void} throwsAnErrorWith
  *   Asserts the actual value throws an error with the expected substring in the error message.
- *
  * @property {() => Promise<void>} eventuallyThrowsAnError
  * 	Asserts that a promise will eventually reject with an error.
  * 	This is useful for testing asynchronous functions that are expected to throw errors.
  * 	await makeSure(someAsyncFunction()).eventuallyThrowsAnError();
- *
  * @property {(substringInErrorMessage: string) => Promise<void>} eventuallyThrowsAnErrorWith
  *   Asserts the actual value eventually throws an error with the expected substring in the error message.
  * @property {(numTimesCalled?: number) => void} hasBeenCalled

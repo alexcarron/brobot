@@ -1,20 +1,21 @@
-const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionOverwrites, PermissionFlagsBits, CategoryChannel, ChatInputCommandInteraction, Message, GuildChannel } = require('discord.js');
+const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionOverwrites, PermissionFlagsBits, CategoryChannel, ChatInputCommandInteraction, Message, GuildChannel, ButtonInteraction } = require('discord.js');
 const { Role } = require('../services/rapid-discord-mafia/role');
-const { fetchChannel, fetchChannelsInCategory, getEveryoneRole, fetchRole } = require('./discord-fetch-utils');
+const { fetchChannel, fetchChannelsInCategory, getEveryoneRole } = require('./discord-fetch-utils');
 const { incrementEndNumber } = require('./text-formatting-utils');
 const { logInfo, logError, logWarning } = require('./logging-utils');
 const { getShuffledArray } = require('./data-structure-utils');
 
+
+
 /**
  * Prompt the user to confirm or cancel an action by adding buttons to the deffered reply to an existing command interaction.
- *
- * @param {Interaction} interaction - The command interaction whose reply is being updated.
- * @param {string} message - The message to include in the confirmation prompt.
- * @param {string} confirmText - The label for the confirm button.
- * @param {string} cancelText - The label for the cancel button.
- * @param {string} confirmUpdateText - The message to send if the user confirms.
- * @param {string} cancelUpdateText - The message to send if the user cancels.
- *
+ * @param {object} options - Options for the confirmation prompt.
+ * @param {ChatInputCommandInteraction} options.interaction - The command interaction whose reply is being updated.
+ * @param {string} options.message - The message to include in the confirmation prompt.
+ * @param {string} options.confirmText - The label for the confirm button.
+ * @param {string} options.cancelText - The label for the cancel button.
+ * @param {string} options.confirmUpdateText - The message to send if the user confirms.
+ * @param {string} options.cancelUpdateText - The message to send if the user cancels.
  * @returns {Promise<boolean>} `true` if the user confirms, `false` if the user cancels.
  */
 const confirmInteractionWithButtons = async ({
@@ -40,6 +41,7 @@ const confirmInteractionWithButtons = async ({
 
 	const confirmationMessage = await interaction.editReply({
 		content: message,
+		// @ts-ignore
 		components: [actionRow],
 	});
 
@@ -77,7 +79,7 @@ const confirmInteractionWithButtons = async ({
 /**
  * Adds a role to a guild member.
  * @param {GuildMember} guildMember The guild member we want to add the role to.
- * @param {Role} role The role we want to add to the guild member.
+ * @param {import('discord.js').RoleResolvable} role The role we want to add to the guild member.
  * @returns {Promise<void>}
  */
 const addRoleToMember = async (guildMember, role) => {
@@ -87,7 +89,7 @@ const addRoleToMember = async (guildMember, role) => {
 /**
  * Removes a role from a guild member.
  * @param {GuildMember} guildMember The guild member we want to remove the role from.
- * @param {Role | string} role The role or role ID we want to remove from the guild member.
+ * @param {import('discord.js').RoleResolvable} role The role or role ID we want to remove from the guild member.
  * @returns {Promise<void>}
  */
 const removeRoleFromMember = async (guildMember, role) => {
@@ -108,8 +110,8 @@ const removeAllRolesFromMember = async (guildMember) => {
 
 /**
  * Defers an interaction, editing or replying to the interaction with the provided message content.
- * @param {Interaction} interaction The interaction to defer.
- * @param {string} [messageContent="Running command..."] The content of the message to edit or reply with.
+ * @param {ChatInputCommandInteraction} interaction The interaction to defer.
+ * @param {string} [messageContent] The content of the message to edit or reply with.
  * @returns {Promise<void>}
  */
 const deferInteraction = async (
@@ -129,7 +131,7 @@ const deferInteraction = async (
 		}
 		else {
 			try {
-				await interaction.deferReply(replyContent);
+				await interaction.deferReply();
 			}
 			catch (error) {
 				logWarning("Interaction already expired: unable to reply/follow-up");
@@ -138,17 +140,16 @@ const deferInteraction = async (
 		}
 	}
 	catch (error) {
-    if (error.code === 10062) {
-      logWarning("Interaction already expired: unable to reply/follow-up");
-    } else {
-      logError("Error responding to interaction:", error);
-    }
+		if (error.code === 10062) {
+			logWarning("Interaction already expired: unable to reply/follow-up");
+		} else {
+			logError("Error responding to interaction:", error);
+		}
 	}
 };
 
 /**
  * Edits the reply to an interaction with new message contents.
- *
  * @param {ChatInputCommandInteraction} interaction - The interaction whose reply is being updated.
  * @param {string | object} newMessageContents - The new contents for the message.
  * @returns {Promise<Message<boolean>>} A promise that resolves when the message is edited.
@@ -163,13 +164,12 @@ const editReplyToInteraction = async (interaction, newMessageContents) => {
 
 /**
  * Shows a modal to a user, prompting them for text input. Returns the text entered by the user.
- *
- * @param {Object} options
- * @param {ChatInputCommandInteraction} options.interaction The interaction that triggered the modal.
- * @param {string} [options.modalTitle=""] The title of the modal.
- * @param {string} [options.showModalButtonText=""] The text of the button which shows the modal.
- * @param {string} [options.initialMessageText=""] The text to send to the user when prompting them to press the button.
- * @param {string} [options.placeholder=""] The placeholder text for the text input field in the modal.
+ * @param {object} options - Options for showing the modal.
+ * @param {ChatInputCommandInteraction | ButtonInteraction} options.interaction The interaction that triggered the modal.
+ * @param {string} [options.modalTitle] The title of the modal.
+ * @param {string} [options.showModalButtonText] The text of the button which shows the modal.
+ * @param {string} [options.initialMessageText] The text to send to the user when prompting them to press the button.
+ * @param {string} [options.placeholder] The placeholder text for the text input field in the modal.
  * @returns {Promise<string>} The text entered by the user.
  */
 const getInputFromCreatedTextModal = async ({
@@ -201,6 +201,7 @@ const getInputFromCreatedTextModal = async ({
 	const textInputActionRow = new ActionRowBuilder().addComponents(textInput);
 
 	// Add the action row to the modal
+	// @ts-ignore
 	modal.addComponents(textInputActionRow);
 
 	let submittedInteraction;
@@ -231,20 +232,21 @@ const getInputFromCreatedTextModal = async ({
 /**
  * Creates a Discord channel in a guild.
  * If the parent category has reached its maximum number of channels, it will create a new category and place the channel within it.
- * @param {Object} options - Options for creating the channel.
+ * @param {object} options - Options for creating the channel.
  * @param {Guild} options.guild - The guild in which the channel is to be created.
  * @param {string} options.name - The name of the channel.
  * @param {PermissionOverwrites[]} [options.permissions] - Permission overwrites for the channel. If not provided, the default permissions will be used.
- * @param {CategoryChannelResolvable} [options.parentCategory] - The parent category of the channel. If not provided, the channel will not have a parent category.
+ * @param {import('discord.js').CategoryChannelResolvable | null} [options.parentCategory] - The parent category of the channel. If not provided, the channel will not have a parent category.
  * @returns {Promise<TextChannel>} The created channel.
  */
-const createChannel = async ({guild, name, permissions = null, parentCategory = null}) => {
+const createChannel = async ({guild, name, permissions = null, parentCategory: parentCategoryResolvable = null}) => {
 	const MAX_CHANNELS_PER_CATEGORY = 50;
 
 	if (!guild)
 		throw new Error("Guild is required");
 
-	if (!guild instanceof Guild)
+	// @ts-ignore
+	if (!(guild instanceof Guild))
 		throw new Error("Guild object must be an instance of Guild");
 
 	if (!name)
@@ -256,31 +258,51 @@ const createChannel = async ({guild, name, permissions = null, parentCategory = 
 	if (permissions && !Array.isArray(permissions))
 		throw new Error("Permissions must be an array");
 
-	if (parentCategory) {
-		if (!(parentCategory instanceof CategoryChannel))
-			parentCategory = await fetchChannel(guild, parentCategory);
+	if (parentCategoryResolvable !== null) {
+		if (!(parentCategoryResolvable instanceof CategoryChannel)) {
+			const fetchedChannel = await fetchChannel(guild, parentCategoryResolvable);
 
-	  if (!parentCategory)
-			throw new Error("Parent category must exist");
+			if (!fetchedChannel) {
+				throw new Error('Parent category must exist');
+			}
 
-		if (parentCategory.type !== ChannelType.GuildCategory)
-			throw new Error("Parent category must be a GuildCategory");
+			if (!(fetchedChannel instanceof CategoryChannel)) {
+				throw new Error('Parent category must be an instance of CategoryChannel');
+			}
+
+			if (fetchedChannel.type !== ChannelType.GuildCategory) {
+				throw new Error('Parent category must be a GuildCategory');
+			}
+
+			parentCategoryResolvable = fetchedChannel;
+		}
 	}
+	else {
+		parentCategoryResolvable = null;
+	}
+
+	/**
+	 * @type {CategoryChannel | null}
+	 */
+	// @ts-ignore
+	const parentCategory = parentCategoryResolvable;
 
 	let haveSpaceForNewChannel = false;
 
 	while (parentCategory && !haveSpaceForNewChannel) {
 		const childChannelCount = parentCategory.children.cache.size;
 		if (childChannelCount >= MAX_CHANNELS_PER_CATEGORY) {
-			const newCategoryName = incrementEndNumber(parentCategory.name);
+			// @ts-ignore
+			const newCategoryName = incrementEndNumber(parentCategoryResolvable.name);
 			const existingNewCategory = guild.channels.cache.find((channel) => channel.name === newCategoryName);
 
 			if (existingNewCategory) {
-        parentCategory = existingNewCategory;
-        continue;
-      }
+				// @ts-ignore
+				parentCategoryResolvable = existingNewCategory;
+				continue;
+			}
 
-			parentCategory = await createCategory({
+			parentCategoryResolvable = await createCategory({
 				guild,
 				name: newCategoryName,
 				permissions: [createEveryoneDenyViewPermission(guild)],
@@ -297,32 +319,34 @@ const createChannel = async ({guild, name, permissions = null, parentCategory = 
 		type: ChannelType.GuildText,
 	};
 
-	if (parentCategory) {
-		options.parent = parentCategory;
+	if (parentCategoryResolvable) {
+		options.parent = parentCategoryResolvable;
 	}
 
 	if (permissions) {
-    options.permissionOverwrites = permissions;
-  }
+		options.permissionOverwrites = permissions;
+	}
 
+	// @ts-ignore
 	const channel = await guild.channels.create(options);
 
+	// @ts-ignore
 	return channel;
 };
 
 /**
  * Creates a category in a guild.
- * @param {Object} options - Options for creating the category.
+ * @param {object} options - Options for creating the category.
  * @param {Guild} options.guild - The guild in which the category is to be created.
  * @param {string} options.name - The name of the category.
- * @param {PermissionOverwrite[]} [options.permissions] - Permission overwrites for the category. If not provided, the default permissions will be used.
+ * @param {PermissionOverwrites[]} [options.permissions] - Permission overwrites for the category. If not provided, the default permissions will be used.
  * @returns {Promise<CategoryChannel>} The created category.
  */
 const createCategory = async ({guild, name, permissions = null}) => {
 	if (!guild)
 		throw new Error("Guild is required");
 
-	if (!guild instanceof Guild)
+	if (!(guild instanceof Guild))
 		throw new Error("Guild object must be an instance of Guild");
 
 	if (!name)
@@ -336,21 +360,23 @@ const createCategory = async ({guild, name, permissions = null}) => {
 		type: ChannelType.GuildCategory,
 	};
 	if (permissions) {
-    options.permissionOverwrites = permissions;
-  }
+		options.permissionOverwrites = permissions;
+	}
 
+	// @ts-ignore
 	const category = await guild.channels.create(options);
 
+	// @ts-ignore
 	return category;
 };
 
 /**
  * Creates a permission overwrite object for a Discord channel.
- * @param {Object} options - Options for creating the permission overwrite.
+ * @param {object} options - Options for creating the permission overwrite.
  * @param {string} options.userOrRoleID - The ID of the user or role for which the permissions are being set.
  * @param {PermissionFlagsBits[]} [options.allowedPermissions] - An array of permissions that are allowed for the user or role.
  * @param {PermissionFlagsBits[]} [options.deniedPermissions] - An array of permissions that are denied for the user or role.array.
- * @returns {Object} The permission overwrite object.
+ * @returns {object} The permission overwrite object.
  */
 const createPermission = ({userOrRoleID, allowedPermissions, deniedPermissions}) => {
 	if (!userOrRoleID)
@@ -366,8 +392,8 @@ const createPermission = ({userOrRoleID, allowedPermissions, deniedPermissions})
 		throw new Error("Denied permissions must be an array");
 
 	const overwrite = {
-    id: userOrRoleID,
-  };
+		id: userOrRoleID,
+	};
 
 	if (allowedPermissions)
 		overwrite.allow = allowedPermissions;
@@ -381,22 +407,23 @@ const createPermission = ({userOrRoleID, allowedPermissions, deniedPermissions})
 /**
  * Creates a permission overwrite that denies everyone the ability to view a channel.
  * @param {Guild} guild - The guild in which the permission overwrite is to be created.
- * @returns {Object} The permission overwrite object.
+ * @returns {object} The permission overwrite object.
  */
 const createEveryoneDenyViewPermission = (guild) =>
 	createPermission({
+		// @ts-ignore
 		userOrRoleID: guild.roles.everyone,
+		// @ts-ignore
 		deniedPermissions: [PermissionFlagsBits.ViewChannel],
 	});
 
 /**
  * Adds permission overwrites to a Discord channel for a specific user or role.
- *
- * @param {Object} options - Options for setting permissions.
+ * @param {object} options - Options for setting permissions.
  * @param {TextChannel} options.channel - The channel to which the permissions are applied.
  * @param {string} options.userOrRoleID - The ID of the user or role for which the permissions are set.
- * @param {PermissionFlagsBits[]} [options.allowedPermissions] - An array of permissions to allow.
- * @param {PermissionFlagsBits[]} [options.deniedPermissions] - An array of permissions to deny.
+ * @param {bigint[]} [options.allowedPermissions] - An array of permissions to allow.
+ * @param {bigint[]} [options.deniedPermissions] - An array of permissions to deny.
  * @throws {Error} If neither allowedPermissions nor deniedPermissions are provided, or if they are not arrays.
  * @returns {Promise<void>} A promise that resolves when the permissions have been set.
  */
@@ -415,14 +442,14 @@ const addPermissionToChannel = async ({channel, userOrRoleID, allowedPermissions
 	if (allowedPermissions) {
 		for (const permission of allowedPermissions) {
 			permissions[permission] = true;
-    }
+		}
 	}
 
 	if (deniedPermissions) {
-    for (const permission of deniedPermissions) {
-      permissions[permission] = false;
-    }
-  }
+		for (const permission of deniedPermissions) {
+			permissions[permission] = false;
+		}
+	}
 
 	await channel.permissionOverwrites.create(
 		userOrRoleID,
@@ -432,8 +459,7 @@ const addPermissionToChannel = async ({channel, userOrRoleID, allowedPermissions
 
 /**
  * Removes all permission overwrites from a Discord channel for a specific user or role.
- *
- * @param {Object} options - Options for removing permissions.
+ * @param {object} options - Options for removing permissions.
  * @param {TextChannel} options.channel - The channel from which the permissions are removed.
  * @param {string} options.userOrRoleID - The ID of the user or role for which the permissions are removed.
  * @returns {Promise<void>} A promise that resolves when the permissions have been removed.
@@ -444,17 +470,15 @@ const removePermissionFromChannel = async ({channel, userOrRoleID}) => {
 
 /**
  * Updates the permission overwrites for a Discord channel for a specific user or role.
- *
- * @param {Object} options - Options for updating the permissions.
+ * @param {object} options - Options for updating the permissions.
  * @param {TextChannel} options.channel - The channel for which the permissions are being updated.
  * @param {string} options.userOrRoleID - The ID of the user or role for which the permissions are being updated.
  * @param {PermissionFlagsBits[]} [options.allowedPermissions] - An array of permissions that should be allowed for the user or role.
  * @param {PermissionFlagsBits[]} [options.unsetPermissions] - An array of permissions that should be unset for the user or role.
  * @param {PermissionFlagsBits[]} [options.deniedPermissions] - An array of permissions that should be denied for the user or role.
  * @throws Will throw an error if none of allowedPermissions, deniedPermissions, or unsetPermissions are provided, or if any of them are not arrays.
- * @returns {Promise<void>} A promise that resolves when the permissions have been updated.
  */
-const changePermissionOnChannel = async ({channel, userOrRoleID, allowedPermissions, unsetPermissions, deniedPermissions}) => {
+const changePermissionOnChannel = ({channel, userOrRoleID, allowedPermissions, unsetPermissions, deniedPermissions}) => {
 	const permissions = {}
 
 	if (!allowedPermissions && !deniedPermissions && !unsetPermissions)
@@ -472,7 +496,7 @@ const changePermissionOnChannel = async ({channel, userOrRoleID, allowedPermissi
 	if (allowedPermissions) {
 		for (const permission of allowedPermissions) {
 			permissions[permission] = true;
-    }
+		}
 	}
 
 	if (unsetPermissions) {
@@ -482,10 +506,10 @@ const changePermissionOnChannel = async ({channel, userOrRoleID, allowedPermissi
 	}
 
 	if (deniedPermissions) {
-    for (const permission of deniedPermissions) {
-      permissions[permission] = false;
-    }
-  }
+		for (const permission of deniedPermissions) {
+			permissions[permission] = false;
+		}
+	}
 
 	channel.permissionOverwrites.edit(
 		userOrRoleID,
@@ -495,34 +519,34 @@ const changePermissionOnChannel = async ({channel, userOrRoleID, allowedPermissi
 
 /**
  * Opens a Discord channel to allow everyone to view it but not send messages.
- *
  * @param {TextChannel} channel - The channel to be opened for viewing.
- * @returns {Promise<void>} A promise that resolves once the channel permissions have been updated.
  */
-const openChannel = async (channel) => {
+const openChannel = (channel) => {
 	const everyoneRole = getEveryoneRole(channel.guild);
 
-	await changePermissionOnChannel({
+	changePermissionOnChannel({
 		channel: channel,
 		userOrRoleID: everyoneRole.id,
+		// @ts-ignore
 		unsetPermissions: [PermissionFlagsBits.ViewChannel],
+		// @ts-ignore
 		deniedPermissions: [PermissionFlagsBits.SendMessages],
 	});
 }
 
 /**
  * Closes a Discord channel to deny everyone the ability to view it.
- *
  * @param {TextChannel} channel - The channel to be closed from viewing.
- * @returns {Promise<void>} A promise that resolves once the channel permissions have been updated.
  */
-const closeChannel = async (channel) => {
+const closeChannel = (channel) => {
 	const everyoneRole = getEveryoneRole(channel.guild);
 
-	await changePermissionOnChannel({
+	changePermissionOnChannel({
 		channel: channel,
 		userOrRoleID: everyoneRole.id,
+		// @ts-ignore
 		unsetPermissions: [PermissionFlagsBits.SendMessages],
+		// @ts-ignore
 		deniedPermissions: [PermissionFlagsBits.ViewChannel],
 	});
 }
@@ -531,7 +555,8 @@ const closeChannel = async (channel) => {
 /**
  * Checks if a guild member has a given role.
  * @param {GuildMember} guildMember - The guild member to check.
- * @param {Role} roleID - The role to check for.
+ * @param {Role | string} roleID - The role to check for.
+ * @param {boolean} useCache - Whether to use the guild member's cache.
  * @returns {Promise<boolean>} True if the guild member has the given role, false otherwise.
  */
 const memberHasRole = async (guildMember, roleID, useCache = false) => {
@@ -539,6 +564,7 @@ const memberHasRole = async (guildMember, roleID, useCache = false) => {
 		throw new Error("Guild member object must be an instance of GuildMember");
 
 	if (roleID instanceof Role)
+		// @ts-ignore
 		roleID = roleID.id;
 
 	if (typeof roleID !== "string")
@@ -552,7 +578,6 @@ const memberHasRole = async (guildMember, roleID, useCache = false) => {
 
 /**
  * Renames a Discord channel.
- *
  * @param {TextChannel} channel - The channel to rename.
  * @param {string} newName - The new name for the channel.
  * @returns {Promise<void>} A promise that resolves when the channel has been renamed.
@@ -574,13 +599,13 @@ const setNicknameOfMember = async (guildMember, newNickname) => {
 /**
  * Shuffles all the channels in a category in a random order, keeping the other channels in the same position.
  * @param {Guild} guild - The guild whose category's channels are to be shuffled.
- * @param {GuildChannel|string} category - The category whose channels are to be shuffled, or the ID of the category as a string.
- * @param {Array<GuildChannel|string>} channelsToShuffle - The channels to shuffle. If a string is provided, it is treated as the ID of the channel to shuffle.
+ * @param {CategoryChannel|string} category - The category whose channels are to be shuffled, or the ID of the category as a string.
  * @returns {Promise<void>} A promise that resolves when the channels have been shuffled.
  */
 async function shuffleCategoryChannels(guild, category) {
 	// Resolve category
 	if (typeof category === "string") {
+		// @ts-ignore
 		category = await fetchChannel(guild, category);
 	}
 
@@ -592,38 +617,37 @@ async function shuffleCategoryChannels(guild, category) {
 		throw new Error("shuffleCategoryChannels: Category must be an instance of GuildCategoryChannel");
 
 	let channelsToShuffle = await fetchChannelsInCategory(guild, category.id);
-  const shuffledChannels = getShuffledArray(channelsToShuffle);
+	const shuffledChannels = getShuffledArray(channelsToShuffle);
 	logInfo(`Shuffled Order: ${shuffledChannels.map(channel => channel.name).join(", ")}`);
 
-  for (let i = 0; i < shuffledChannels.length; i++) {
-    try {
-      await shuffledChannels[i].setPosition(category.position + i + 1);
-      // The +1 is arbitrary: sometimes Discord expects category itself to be position 0
-    } catch (error) {
-      console.error(`Failed to set position for ${shuffledChannels[i].name}`, error);
-    }
-  }
-  await guild.channels.setPositions(
-    shuffledChannels.map((channel, position) => ({
+	for (let i = 0; i < shuffledChannels.length; i++) {
+		try {
+			await shuffledChannels[i].setPosition(category.position + i + 1);
+			// The +1 is arbitrary: sometimes Discord expects category itself to be position 0
+		} catch (error) {
+			console.error(`Failed to set position for ${shuffledChannels[i].name}`, error);
+		}
+	}
+	await guild.channels.setPositions(
+		shuffledChannels.map((channel, position) => ({
 			channel: channel.id,
 			position: category.position + position + 1
 		}))
-  );
+	);
 
-  console.log("Channels reordered inside category.");
+	console.log("Channels reordered inside category.");
 }
 
 /**
  * Adds a button to the components array of an object representing the contents of a Discord message.
- *
- * @param {Object} options - Options for adding the button.
- * @param {string | Object} options.contents - The contents of the message. Can be a string or an object with a "content" property.
+ * @param {object} options - Options for adding the button.
+ * @param {string | object} options.contents - The contents of the message. Can be a string or an object with a "content" property.
  * @param {string} options.buttonID - The custom ID of the button.
  * @param {string} options.buttonLabel - The label of the button.
- * @param {ButtonStyle} [options.buttonStyle=ButtonStyle.Primary] - The style of the button.
- * @returns {Promise<Object>} The modified contents object with the button added.
+ * @param {ButtonStyle} [options.buttonStyle] - The style of the button. Optional, defaults to ButtonStyle.Primary.
+ * @returns {object} The modified contents object with the button added.
  */
-const addButtonToMessageContents = async ({
+const addButtonToMessageContents = ({
 	contents,
 	buttonID,
 	buttonLabel,
@@ -679,6 +703,7 @@ const doWhenButtonPressed = async (messsageWithButton, buttonID, onButtonPressed
 		const buttonInteraction = await messsageWithButton.awaitMessageComponent({ time: 10_000_000 });
 
 		if (buttonInteraction.customId === buttonID) {
+			// @ts-ignore
 			await onButtonPressed(buttonInteraction);
 		}
 	}

@@ -3,10 +3,9 @@ const { Message } = require("discord.js");
 /**
  * Parse creature entry from raw biological text data.
  * @param {string} text - Raw text to parse
- * @param {Array<string>} knownCreatureNames - Array of known creature names
- * @returns {Array<{ name: string, evolvedFrom: string[] }> | undefined} Array of creature entries, or undefined if the text is invalid
+ * @returns {{ name: string, evolvedFrom: string[] } | undefined} Array of creature entries, or undefined if the text is invalid
  */
-const parseCreature = (text, knownCreatureNames = []) => {
+const parseCreature = (text) => {
 	// Remove markdown (backticks, astricks, etc.)
 	text = text
 		.replace(/`/g, '') // Remove backticks
@@ -57,9 +56,8 @@ const parseCreature = (text, knownCreatureNames = []) => {
  * creature names, returns an array of parsed creature objects. Each creature
  * object has a name and an evolvedFrom property, which is an array of other
  * creature names that the creature evolved from.
- *
- * @param {Message[]} [messages=[]] - An array of Discord messages to parse.
- * @param {string[]} [knownCreatureNames=[]] - An array of known creature names.
+ * @param {Message[]} [messages] - An array of Discord messages to parse.
+ * @param {string[]} [knownCreatureNames] - An array of known creature names.
  * @returns {{name: string, evolvedFrom: string[], link: string}[]} - An array of parsed creature objects.
  */
 const parseCreaturesFromMessages = (messages = [], knownCreatureNames = []) => {
@@ -67,10 +65,11 @@ const parseCreaturesFromMessages = (messages = [], knownCreatureNames = []) => {
 
 	for (const message of messages) {
 		const creatureText = message.content;
-		const creature = parseCreature(creatureText, knownCreatureNames);
+		const creature = parseCreature(creatureText);
 		if (creature === undefined) continue;
 
 		const linkToMessage = `https://discord.com/channels/${message.guild.id}/${message.channel.id}/${message.id}`;
+		// @ts-ignore
 		creature.link = linkToMessage;
 
 		knownCreatureNames.push(creature.name);
@@ -78,6 +77,7 @@ const parseCreaturesFromMessages = (messages = [], knownCreatureNames = []) => {
 		creatures.push(creature);
 	}
 
+	// @ts-ignore
 	return creatures;
 }
 

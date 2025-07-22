@@ -1,7 +1,7 @@
 const ids = require("../../bot-config/discord-ids.js");
 const { GuildScheduledEventManager, Message, GuildScheduledEventPrivacyLevel, GuildScheduledEventEntityType } = require("discord.js");
 const cron = require("cron");
-const { fetchGuild, fetchChannel, fetchUser } = require("../../utilities/discord-fetch-utils.js");
+const { fetchGuild, fetchUser, fetchTextChannel } = require("../../utilities/discord-fetch-utils.js");
 const { saveObjectToJsonInGitHub } = require("../../utilities/github-json-storage-utils.js");
 const Viewer = require("../ll-points/viewer.js");
 
@@ -10,17 +10,26 @@ const Viewer = require("../ll-points/viewer.js");
  * @class
  */
 class Event {
-  /**
-   * Create an event.
-   */
+
+	/**
+	 * Constructor for an Event object
+	 * @param {object} options - The options to create the Event with
+	 * @param {string} [options._name] - The name of the event
+	 * @param {string} [options._host] - The host of the event
+	 * @param {string} [options._plan] - The plan for the event
+	 * @param {string} [options._instructions] - The instructions for the event
+	 * @param {string} [options._summary] - The summary for the event
+	 * @param {number} [options._time] - The time for the event
+	 * @param {string[]} [options._ping_role_ids] - The IDs of the roles to ping when the event starts
+	 */
   constructor({
-		_name,
-		_host,
-		_plan,
-		_instructions,
-		_summary,
-		_time,
-		_ping_role_ids
+		_name = "",
+		_host = null,
+		_plan = "",
+		_instructions = "",
+		_summary = "",
+		_time = 0,
+		_ping_role_ids = []
 	}) {
 		this.name = _name;
 		this.setHost(_host);
@@ -124,13 +133,14 @@ class Event {
 
 	/**
 	 * Announces event for the first time in announcements channel to give time for it
-	 * @return {Promise<Message>} Message sent
+	 * @returns {Promise<Message>} Message sent
 	 */
 	async announceEvent() {
 		const ll_game_shows_guild = await fetchGuild(ids.ll_game_shows.server_id);
-		const announce_channel = await fetchChannel(ll_game_shows_guild, ids.ll_game_shows.channels.game_show_announcements);
-		const upcoming_games_channel = await fetchChannel(ll_game_shows_guild, ids.ll_game_shows.channels.upcoming_games);
+		const announce_channel = await fetchTextChannel(ll_game_shows_guild, ids.ll_game_shows.channels.game_show_announcements);
+		const upcoming_games_channel = await fetchTextChannel(ll_game_shows_guild, ids.ll_game_shows.channels.upcoming_games);
 
+		// @ts-ignore
 		const event_manager = new GuildScheduledEventManager(ll_game_shows_guild)
 
 		const guild_scheduled_event = await event_manager.create({
@@ -168,11 +178,11 @@ class Event {
 
 	/**
 	 * Announces event 10 minutes before it begins and warns the host
-	 * @return {Promise<Message>} Message sent
+	 * @returns {Promise<Message>} Message sent
 	 */
 	async announceEventWarning() {
 		const ll_game_shows_guild = await fetchGuild(ids.ll_game_shows.server_id);
-		const event_channel = await fetchChannel(ll_game_shows_guild, ids.ll_game_shows.channels.events_text_chat);
+		const event_channel = await fetchTextChannel(ll_game_shows_guild, ids.ll_game_shows.channels.events_text_chat);
 
 		const message =
 			`# ${this._name} (Starting <t:${this._time + 60*5}:R>)` + "\n" +
@@ -193,11 +203,11 @@ class Event {
 
 	/**
 	 * Announces event when it starts
-	 * @return {Promise<Message>} Message sent
+	 * @returns {Promise<Message>} Message sent
 	 */
 	async announceEventStarting() {
 		const ll_game_shows_guild = await fetchGuild(ids.ll_game_shows.server_id);
-		const event_channel = await fetchChannel(ll_game_shows_guild, ids.ll_game_shows.channels.events_text_chat);
+		const event_channel = await fetchTextChannel(ll_game_shows_guild, ids.ll_game_shows.channels.events_text_chat);
 
 		const message =
 			`# ❗ STARTING NOW: ${this._name}` + "\n" +
@@ -218,7 +228,7 @@ class Event {
 		return await event_channel.send(message);
 	}
 
-	async restartCronJobs() {
+	restartCronJobs() {
 		const now = new Date();
 		const warning_date = new Date((this._time - 60*10) * 1000);
 		const start_date = new Date((this._time + 60*5) * 1000);

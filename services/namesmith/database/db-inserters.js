@@ -1,4 +1,4 @@
-const { InvalidArgumentError, InvalidArgumentTypeError, assertCorrectArgumentType, validateArguments } = require("../../../utilities/error-utils");
+const { InvalidArgumentError, validateArguments } = require("../../../utilities/error-utils");
 const { getIDfromCharacterValue, getCharacterValueFromID } = require("../utilities/character.utility");
 const DatabaseQuerier = require("./database-querier");
 

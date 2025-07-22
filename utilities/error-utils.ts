@@ -60,6 +60,7 @@ export class CustomError extends Error {
 		const message = isParameterString ? messageOrOptions : messageOrOptions.message;
 
 		super(message);
+		this.message = message;
 		this.name = this.constructor.name;
 
     if (!isParameterString) {
@@ -287,7 +288,7 @@ class Attempt<ReturnType> {
           return;
         }
       }
-			
+
 			throw error;
     }
   }

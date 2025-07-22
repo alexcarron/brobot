@@ -1,5 +1,5 @@
 const ids = require("../../bot-config/discord-ids.js");
-const { PermissionFlagsBits, Role, Interaction } = require("discord.js");
+const { PermissionFlagsBits, Role, ChatInputCommandInteraction, TextChannel } = require("discord.js");
 const Death = require("./death.js");
 const PlayerManager = require("./player-manager.js");
 const Player = require("./player.js");
@@ -13,7 +13,7 @@ const { DiscordService, RDMDiscordRole } = require("./discord-service.js");
 const { VoteManager, TrialVote, VotingOutcome, TrialOutcome } = require("./vote-manager.js");
 const { toTitleCase } = require("../../utilities/text-formatting-utils.js");
 const { getShuffledArray, getRandomElement } = require("../../utilities/data-structure-utils.js");
-const { fetchChannel, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchRoleByName } = require("../../utilities/discord-fetch-utils.js");
+const { fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchRoleByName, fetchTextChannel } = require("../../utilities/discord-fetch-utils.js");
 const { addRoleToMember, removeRoleFromMember } = require("../../utilities/discord-action-utils.js");
 const { wait } = require("../../utilities/realtime-utils.js");
 const { Goal, Faction, RoleName } = require("./role.js");
@@ -21,6 +21,8 @@ const { Goal, Faction, RoleName } = require("./role.js");
 const { Phase } = require("./game-state-manager.js");
 const { Announcement, Feedback } = require("./constants/possible-messages.js");
 const { RoleIdentifierType } = require("./role-identifier.js");
+const Logger = require("./logger.js");
+const { createNowUnixTimestamp } = require("../../utilities/date-time-utils.js");
 
 /**
  * Enum of possible amount of seconds to wait to allow a message to be read
@@ -39,6 +41,9 @@ const CoinReward = Object.freeze({
 	PARTICIPATION: 1,
 });
 
+/**
+ * The game manager for Rapid Discord Mafia
+ */
 class GameManager {
 	/**
 	 * The current phase the game is in
@@ -66,12 +71,13 @@ class GameManager {
 
 	/**
 	 * An object map of players to the ability they performed
-	 * @ type {{[player_name: string]: {by: PlayerName, name: AbilityName, args: {[ability_arg_name: string]: [ability_arg_value: string]}}}}
-	*/
+	 * @type {{[player_name: string]: {by: string, name: string, args: {[ability_arg_name: string]: string}}}}
+	 */
 	abilities_performed;
 
 	/**
 	 * Whether this is a mock game used for testing or not
+	 * @type {boolean}
 	 */
 	isMockGame;
 
@@ -134,9 +140,9 @@ class GameManager {
 	next_deaths;
 
 	/**
-	 * @param {Object} players
+	 * @param {object} players - An object map of player names to player objects
 	 * @param {Logger} logger - An instance of a logger
-	 * @param {boolean} isMockGame
+	 * @param {boolean} isMockGame - Whether this is a mock game
 	 */
 	constructor(players, logger, isMockGame=false) {
 		this.player_manager = new PlayerManager(players, this, logger, isMockGame);
@@ -220,7 +226,7 @@ class GameManager {
 	/**
 	 * Sorts all abilities performed in the game in order of priority
 	 */
-	async sortAbilitiesPerformed() {
+	sortAbilitiesPerformed() {
 		this.abilities_performed = Object.values(this.abilities_performed)
 		.sort(
 			(ability_done1, ability_done2) => {
@@ -247,13 +253,12 @@ class GameManager {
 	/**
 	 * Starts the game
 	 * @requires this.Players defined
-	 * @param {RoleIdentifier[]} role_identifiers The unshuffled role identifier strings for the game
+	 * @param {object[]} role_identifiers The unshuffled role identifier strings for the game
 	 */
 	async start(role_identifiers) {
 		const
 			unshuffled_role_identifiers = [...role_identifiers],
-			shuffled_role_identifiers = getShuffledArray(role_identifiers),
-			days_passed_at_sign_ups = 0;
+			shuffled_role_identifiers = getShuffledArray(role_identifiers);
 
 		this.state_manager.changeToStarted();
 		this.unshuffled_role_identifiers = unshuffled_role_identifiers;
@@ -287,34 +292,29 @@ class GameManager {
 			player.role_log = player.role;
 		})
 
-		await this.startDay1(days_passed_at_sign_ups);
+		await this.startDay1();
 	}
 
 	/**
 	 * Sends a message with all the role identifiers for the game to the announcements and role list channel
-	 * @param {RoleIdentifier[]} role_identifiers The unshuffled role identifiers for the game
+	 * @param {object[]} role_identifiers The unshuffled role identifiers for the game
 	 */
 	async announceRoleList(role_identifiers) {
 		const rdm_guild = await fetchRDMGuild();
-		const role_list_chnl = await fetchChannel(rdm_guild, ids.rapid_discord_mafia.channels.role_list);
-		const announce_chnl = await fetchChannel(rdm_guild, ids.rapid_discord_mafia.channels.game_announce);
+		const role_list_chnl = await fetchTextChannel(rdm_guild, ids.rapid_discord_mafia.channels.role_list);
+		const announce_chnl = await fetchTextChannel(rdm_guild, ids.rapid_discord_mafia.channels.game_announce);
 		const role_list_txt =
 			`_ _` + "\n" +
 			Announcement.SHOW_ROLE_LIST(role_identifiers)
 
-		await announce_chnl.messages
-			.fetchPinned()
-			.then((pinned_msgs) => {
-				pinned_msgs.each((msg) => msg.unpin().catch(console.error));
-			})
-			.catch(console.error);
+		const pinnedMessages =await announce_chnl.messages
+			.fetchPinned();
 
-		await role_list_chnl.messages
-			.fetchPinned()
-			.then((pinned_msgs) => {
-				pinned_msgs.each((msg) => msg.edit(role_list_txt).catch(console.error));
-			})
-			.catch(console.error);
+		pinnedMessages.each((msg) => msg.unpin().catch(console.error));
+
+		const pinned_msgs = await role_list_chnl.messages.fetchPinned();
+
+		pinned_msgs.each((msg) => msg.edit(role_list_txt).catch(console.error));
 
 		const role_list_msg = await this.discord_service.announce(role_list_txt);
 		role_list_msg.pin();
@@ -342,7 +342,7 @@ class GameManager {
 	/**
 	 * Sets and sends a target for all executioner players
 	 */
-	async giveAllExesTargets() {
+	giveAllExesTargets() {
 		for (const player of this.player_manager.getPlayerList()) {
 
 			if (player.role === RoleName.EXECUTIONER) {
@@ -360,8 +360,8 @@ class GameManager {
 
 	/**
 	 * Gets a list of possible roles a role identifier could be
-	 * @param {RoleIdentifier} role_identifier
-	 * @param {{[faction_name: String]: Number}} num_roles_in_faction A dictionary which keeps track of the number of roles that exist for each faction
+	 * @param {object} role_identifier - The role identifier
+	 * @param {{[faction_name: string]: number}} num_roles_in_faction - A dictionary which keeps track of the number of roles that exist for each faction
 	 * @returns {Role[]} An array of all possible roles a role identifier could roll as
 	 */
 	getPossibleRolesFromIdentifier(role_identifier, num_roles_in_faction) {
@@ -456,8 +456,8 @@ class GameManager {
 
 	/**
 	 * Gets a random role from a role identifier
-	 * @param {RoleIdentifier} role_identifier
-	 * @param {{[faction_name: String]: Number}} num_roles_in_faction A dictionary which keeps track of the number of roles that exist for each faction
+	 * @param {object} role_identifier - The role identifier
+	 * @param {{[faction_name: string]: number} | {}} num_roles_in_faction - A dictionary which keeps track of the number of roles that exist for each faction
 	 * @returns {Role} The random role the role identifier rolled
 	 */
 	getRoleFromRoleIdentifier(role_identifier, num_roles_in_faction) {
@@ -483,7 +483,7 @@ class GameManager {
 	 * Creates and sets the role list based off the current role identifiers
 	 * @requires this.role_identifiers defined
 	 */
-	async createRoleList() {
+	createRoleList() {
 		let num_roles_in_faction = {}
 
 		const sorted_role_identifiers =
@@ -503,7 +503,7 @@ class GameManager {
 	/**
 	 * Switches the current phase to the next one
 	 */
-	async setPhaseToNextPhase() {
+	setPhaseToNextPhase() {
 		this.state_manager.changeToNextSubphase();
 	}
 
@@ -524,7 +524,7 @@ class GameManager {
 		 */
 		for (let death of this.next_deaths) {
 			const victim_player = this.player_manager.get(death.victim);
-			await victim_player.kill(death);
+			await victim_player.kill();
 		}
 
 
@@ -595,7 +595,7 @@ class GameManager {
 		});
 		death.setToLynch();
 
-		await player_on_trial.kill(death);
+		await player_on_trial.kill();
 
 		if (player_on_trial.role === RoleName.FOOL) {
 			await player_on_trial.sendFeedback(Feedback.WON_AS_FOOL);
@@ -612,7 +612,7 @@ class GameManager {
 			player_on_trial.hasWon = true;
 
 			this.winning_factions.push("Fool");
-			this.winning_players.push(this.name);
+			this.winning_players.push(player_on_trial.name);
 
 		}
 
@@ -634,7 +634,7 @@ class GameManager {
 		this.resetTimeout();
 	}
 
-	async announceRevealedVotes() {
+	announceRevealedVotes() {
 		let messages = [
 			`_ _\n## Revealed Votes`
 		];
@@ -723,19 +723,6 @@ class GameManager {
 				player = this.player_manager.get(player_name),
 				ability_performed = this.abilities_performed[player_name],
 				ability = this.ability_manager.getAbility(ability_performed.name);
-
-			let arg_values_txt = "";
-			if (Object.values(ability_performed.args) > 0) {
-
-				arg_values_txt =
-					" with the arguments " +
-					Object.entries(arg_values).map((entry) => {
-						let name = entry[0];
-						let value = entry[1];
-
-						return `**${name}**: **${value}**`
-					}).join(", ");
-			}
 
 			this.logger.log(
 				ability.feedback(
@@ -881,6 +868,7 @@ class GameManager {
 				majority_vote = vote;
 			}
 			else if (vote_counts[vote] == max_vote_count) {
+				// @ts-ignore
 				majority_vote = VotingOutcome.TIE;
 			}
 		}
@@ -969,7 +957,7 @@ class GameManager {
 		}
 	}
 
-	async startDay1(days_passed_at_sign_ups) {
+	async startDay1() {
 		if (!this.state_manager.canStartFirstDay()) {
 			return false;
 		}
@@ -985,7 +973,7 @@ class GameManager {
 			await GameManager.closePreGameChannels();
 
 		await this.announceMessages(
-			...Announcement.GAME_STARTED(ids.rapid_discord_mafia.roles.living, ids.rapid_discord_mafia.channels.role_list)
+			...Announcement.GAME_STARTED(ids.rapid_discord_mafia.roles.living)
 		)
 
 		this.announceMessages(
@@ -1033,7 +1021,9 @@ class GameManager {
 
 		if (!this.isMockGame) {
 			await GameManager.openDayChat();
-			await this.discord_service.announce(Announcement.OPEN_DAY_CHAT(day_chat_chnl.id));
+			await this.discord_service.announce(
+				Announcement.OPEN_DAY_CHAT(ids.rapid_discord_mafia.channels.town_discussion)
+			);
 		}
 
 		await this.startVoting(days_passed_last_day);
@@ -1221,10 +1211,11 @@ class GameManager {
 	 * Adds a player to the game, giving them roles and their own channel
 	 * @param {string} player_name Unique name for player
 	 * @param {string} player_id Discord id of player
-	 * @param {Interaction} interaction Interaction to reply on invalid name
+	 * @param {ChatInputCommandInteraction} interaction Interaction to reply on invalid name
 	 * @param {boolean} isMockUser Whether this is a mock player
+	 * @returns {Promise<Player>} The player that was added
 	 */
-	async addPlayerToGame(player_name, player_id, interaction, isMockUser=false) {
+	async addPlayerToGame(player_name, player_id=undefined, interaction=undefined, isMockUser=false) {
 		let player_member;
 
 		if ( this.player_manager && this.player_manager.get(player_name) ) {
@@ -1264,9 +1255,9 @@ class GameManager {
 				living_role = await fetchRoleByName(rdm_guild, RDMDiscordRole.LIVING);
 
 			// Adds & Removes Roles and Sets Nickname to name
-			await player_member.roles.add(living_role).catch(console.error());
-			await player_member.roles.remove(spectator_role).catch(console.error());
-			await player_member.setNickname(player_name).catch(console.error());
+			await player_member.roles.add(living_role);
+			await player_member.roles.remove(spectator_role);
+			await player_member.setNickname(player_name);
 		}
 
 		let player_obj = {id: player_id, name: player_name};
@@ -1322,6 +1313,7 @@ class GameManager {
 		}
 
 		if (alive_players.length <= 0)
+			// @ts-ignore
 			winning_faction = "Nobody";
 
 		for (let faction_checking of living_factions) {
@@ -1410,6 +1402,7 @@ class GameManager {
 		}
 
 		for (let role_checking of living_survival_roles) {
+			// @ts-ignore
 			if (winning_faction === Faction.TOWN) break;
 			winning_players = [
 				...winning_players,
@@ -1446,9 +1439,9 @@ class GameManager {
 
 	/**
 	 * Gets death messages to announce from a death
-	 * @param {Death} death
-	 * @param {string} type the type of death
-	 * @returns {String[]} the death messages to announce
+	 * @param {Death} death - the death
+	 * @param {string} type - The type of death
+	 * @returns {string[]} The death messages to announce
 	 */
 	getDeathMessages(death, type="attack") {
 		let victim_name = death.victim,
@@ -1521,7 +1514,7 @@ class GameManager {
 		return death_announcement_msgs;
 	}
 
-	async promoteMafia() {
+	promoteMafia() {
 		if (this.player_manager.isFactionAlive(Faction.MAFIA)) {
 			if (
 				!this.player_manager.isRoleAlive(RoleName.MAFIOSO) &&
@@ -1551,7 +1544,7 @@ class GameManager {
 			);
 		}
 
-		this.player_manager.getPlayerList().forEach(async player => {
+		this.player_manager.getPlayerList().forEach(player => {
 			const contestant = global.rapid_discord_mafia.getContestantFromPlayer(player);
 			contestant.giveCoins(CoinReward.PARTICIPATION);
 		});
@@ -1622,10 +1615,9 @@ class GameManager {
 	static async deletePlayerChannels() {
 		const
 			rdm_guild = await fetchRDMGuild(),
-			player_action_chnls = await fetchChannelsInCategory(rdm_guild, ids.rapid_discord_mafia.category.player_action),
-			archive_category = await fetchChannel(rdm_guild, ids.rapid_discord_mafia.category.archive);
+			player_action_chnls = await fetchChannelsInCategory(rdm_guild, ids.rapid_discord_mafia.category.player_action);
 
-		await player_action_chnls.forEach(
+		player_action_chnls.forEach(
 			async (channel) => {
 				// await channel.setParent(archive_category);
 				await channel.delete();
@@ -1638,8 +1630,8 @@ class GameManager {
 		const night_channels = await fetchChannelsInCategory(rdm_guild, ids.rapid_discord_mafia.category.night);
 		const living_role = await fetchRoleByName(rdm_guild, RDMDiscordRole.LIVING);
 
-		await night_channels.forEach(
-			async (night_chnl) => {
+		night_channels.forEach(
+			(night_chnl) => {
 				night_chnl.permissionOverwrites.set([
 					{
 						id: living_role,
@@ -1661,7 +1653,7 @@ class GameManager {
 		const
 			rdm_guild = await fetchRDMGuild(),
 			living_role = await fetchRoleByName(rdm_guild, RDMDiscordRole.LIVING),
-			day_chat_chnl = await fetchChannel(rdm_guild, ids.rapid_discord_mafia.channels.town_discussion);
+			day_chat_chnl = await fetchTextChannel(rdm_guild, ids.rapid_discord_mafia.channels.town_discussion);
 
 		await day_chat_chnl.permissionOverwrites.create(
 			living_role,
@@ -1687,7 +1679,7 @@ class GameManager {
 		const
 			rdm_guild = await fetchRDMGuild(),
 			living_role = await fetchRoleByName(rdm_guild, RDMDiscordRole.LIVING),
-			day_chat_chnl = await fetchChannel(rdm_guild, ids.rapid_discord_mafia.channels.town_discussion);
+			day_chat_chnl = await fetchTextChannel(rdm_guild, ids.rapid_discord_mafia.channels.town_discussion);
 
 		await day_chat_chnl.permissionOverwrites.edit(living_role, { SendMessages: false });
 
@@ -1711,8 +1703,8 @@ class GameManager {
 		const night_channels = await fetchChannelsInCategory(rdm_guild, ids.rapid_discord_mafia.category.night);
 		const living_role = await fetchRoleByName(rdm_guild, RDMDiscordRole.LIVING);
 
-		await night_channels.forEach(
-			async (night_chnl) => {
+		night_channels.forEach(
+			(night_chnl) => {
 				night_chnl.permissionOverwrites.edit(
 					living_role,
 					{
@@ -1720,7 +1712,9 @@ class GameManager {
 					}
 				);
 
-				night_chnl.send(`> Closed.`);
+				if (night_chnl instanceof TextChannel) {
+					night_chnl.send(`> Closed.`);
+				}
 			}
 		);
 	}
@@ -1730,8 +1724,8 @@ class GameManager {
 		const night_channels = await fetchChannelsInCategory(rdm_guild, ids.rapid_discord_mafia.category.night);
 		const living_role = await fetchRoleByName(rdm_guild, RDMDiscordRole.LIVING);
 
-		await night_channels.forEach(
-			async (night_chnl) => {
+		night_channels.forEach(
+			(night_chnl) => {
 
 				night_chnl.permissionOverwrites.edit(
 					living_role,
@@ -1740,7 +1734,9 @@ class GameManager {
 					}
 				);
 
-				night_chnl.send(`> Opened.`);
+				if (night_chnl instanceof TextChannel) {
+					night_chnl.send(`> Opened.`);
+				}
 			}
 		);
 	}
@@ -1751,8 +1747,8 @@ class GameManager {
 		const living_role = await fetchRoleByName(rdm_guild, RDMDiscordRole.LIVING);
 		const ghost_role = await fetchRoleByName(rdm_guild, RDMDiscordRole.GHOSTS);
 
-		await pre_game_channels.forEach(
-			async (pre_game_chnl) => {
+		pre_game_channels.forEach(
+			(pre_game_chnl) => {
 				pre_game_chnl.permissionOverwrites.set([
 					{
 						id: living_role,
@@ -1795,7 +1791,7 @@ class GameManager {
 			rdm_guild = await fetchRDMGuild(),
 			living_role = await fetchRoleByName(rdm_guild, RDMDiscordRole.LIVING),
 			ghosts_role = await fetchRoleByName(rdm_guild, RDMDiscordRole.GHOSTS),
-			ghost_chat_chnl = await fetchChannel(rdm_guild, ids.rapid_discord_mafia.channels.ghost_chat);
+			ghost_chat_chnl = await fetchTextChannel(rdm_guild, ids.rapid_discord_mafia.channels.ghost_chat);
 
 		await ghost_chat_chnl.permissionOverwrites.set([
 			{
@@ -1818,7 +1814,7 @@ class GameManager {
 			rdm_guild = await fetchRDMGuild(),
 			living_role = await fetchRoleByName(rdm_guild, RDMDiscordRole.LIVING),
 			ghosts_role = await fetchRoleByName(rdm_guild, RDMDiscordRole.GHOSTS),
-			ghost_chat_chnl = await fetchChannel(rdm_guild, ids.rapid_discord_mafia.channels.ghost_chat);
+			ghost_chat_chnl = await fetchTextChannel(rdm_guild, ids.rapid_discord_mafia.channels.ghost_chat);
 
 		await ghost_chat_chnl.permissionOverwrites.set([
 			{
@@ -1840,7 +1836,7 @@ class GameManager {
 		const
 			rdm_guild = await fetchRDMGuild(),
 			living_role = await fetchRoleByName(rdm_guild, RDMDiscordRole.LIVING),
-			town_discussion_chnl = await fetchChannel(rdm_guild, ids.rapid_discord_mafia.channels.town_discussion);
+			town_discussion_chnl = await fetchTextChannel(rdm_guild, ids.rapid_discord_mafia.channels.town_discussion);
 
 		await town_discussion_chnl.permissionOverwrites.set([
 			{
@@ -1891,7 +1887,7 @@ class GameManager {
 	static async setAnnounceChannelPerms() {
 		const
 			rdm_guild = await fetchRDMGuild(),
-			game_announce_chnl = await fetchChannel(rdm_guild, ids.rapid_discord_mafia.channels.game_announce),
+			game_announce_chnl = await fetchTextChannel(rdm_guild, ids.rapid_discord_mafia.channels.game_announce),
 			on_trial_role = await fetchRoleByName(rdm_guild, RDMDiscordRole.ON_TRIAL);
 
 		if (GameManager.IS_TESTING) {
@@ -1925,7 +1921,7 @@ class GameManager {
 		const
 			rdm_guild = await fetchRDMGuild(),
 			living_role = await fetchRoleByName(rdm_guild, RDMDiscordRole.LIVING),
-			join_chat_chnl = await fetchChannel(rdm_guild, ids.rapid_discord_mafia.channels.join_chat);
+			join_chat_chnl = await fetchTextChannel(rdm_guild, ids.rapid_discord_mafia.channels.join_chat);
 
 		await join_chat_chnl.permissionOverwrites.set([
 			{
@@ -1943,7 +1939,7 @@ class GameManager {
 		const
 			rdm_guild = await fetchRDMGuild(),
 			living_role = await fetchRoleByName(rdm_guild, RDMDiscordRole.LIVING),
-			join_chat_chnl = await fetchChannel(rdm_guild, ids.rapid_discord_mafia.channels.join_chat);
+			join_chat_chnl = await fetchTextChannel(rdm_guild, ids.rapid_discord_mafia.channels.join_chat);
 
 		if (GameManager.IS_TESTING) {
 			join_chat_chnl.permissionOverwrites.set([{
@@ -2068,10 +2064,10 @@ class GameManager {
 
 	/**
 	 *
-	 * @param {Player} player_using_ability
-	 * @param {Arg} ability_arg argument validating
-	 * @param {string} arg_value
-	 * @returns {true | String} true if valid. Otherwise, string containing reason if invalid
+	 * @param {Player} player_using_ability - player who is using the ability
+	 * @param {Arg} ability_arg - argument validating
+	 * @param {string} arg_value - argument value
+	 * @returns {true | string} true if valid. Otherwise, string containing reason if invalid
 	 */
 	isValidArgValue(player_using_ability, ability_arg, arg_value) {
 		if (ability_arg.type === AbilityArgType.PLAYER) {
@@ -2113,7 +2109,7 @@ class GameManager {
 
 	/**
 	 * Adds player to winners
-	 * @param {Player} player
+	 * @param {Player} player - player to add
 	 */
 	makePlayerAWinner(player) {
 		player.hasWon = true;
@@ -2128,5 +2124,7 @@ class GameManager {
 			this.winning_players.push(player.name);
 	}
 }
+
+GameManager.isMockGame = undefined;
 
 module.exports = {GameManager, MessageReadTime};

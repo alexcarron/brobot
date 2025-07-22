@@ -5,7 +5,7 @@ const { ButtonStyle } = require("discord.js");
 const { addButtonToMessageContents } = require("../../../utilities/discord-action-utils");
 const { fetchNamesmithGuildMember, fetchNamesmithGuildMembers } = require("../utilities/discord-fetch.utility");
 const { isPlayer } = require("../utilities/player.utility");
-const { ResourceNotFoundError, InvalidArgumentError } = require("../../../utilities/error-utils");
+const { InvalidArgumentError } = require("../../../utilities/error-utils");
 const { PlayerNotFoundError, PlayerAlreadyExistsError } = require("../utilities/error.utility");
 
 /**

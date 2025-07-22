@@ -1,4 +1,4 @@
-const { InvalidArgumentError, ResourceNotFoundError, ResourceConflictError } = require("../../../utilities/error-utils");
+const { InvalidArgumentError } = require("../../../utilities/error-utils");
 const DatabaseQuerier = require("../database/database-querier");
 const { PlayerNotFoundError, PlayerAlreadyExistsError } = require("../utilities/error.utility");
 
@@ -35,6 +35,7 @@ class PlayerRepository {
 	getPlayers() {
 		const query = `SELECT * FROM player`;
 		const getAllPlayers = this.db.prepare(query);
+		// @ts-ignore
 		return getAllPlayers.all();
 	}
 
@@ -53,6 +54,7 @@ class PlayerRepository {
 	getPlayerByID(playerID) {
 		const query = `SELECT * FROM player WHERE id = @id`;
 		const getPlayerById = this.db.prepare(query);
+		// @ts-ignore
 		return getPlayerById.get({ id: playerID });
 	}
 
@@ -83,6 +85,7 @@ class PlayerRepository {
 	getPlayersWithoutPublishedNames() {
 		const query = `SELECT * FROM player WHERE publishedName IS NULL`;
 		const getPlayersWithoutPublishedNames = this.db.prepare(query);
+		// @ts-ignore
 		return getPlayersWithoutPublishedNames.all();
 	}
 

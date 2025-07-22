@@ -2,7 +2,6 @@ const AnomolyService = require("./anomoly.service");
 
 /**
  * Retrieves the Anomoly service. If the service is not setup yet, throw an error.
- *
  * @returns {AnomolyService} The Anomoly service.
  * @throws {Error} If the service is not setup yet.
  */

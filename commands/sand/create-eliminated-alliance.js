@@ -1,9 +1,9 @@
-const { CommandInteraction, ChannelType, PermissionFlagsBits } = require("discord.js");
+const { PermissionFlagsBits } = require("discord.js");
 const ids = require("../../bot-config/discord-ids");
 const { ParameterType, Parameter } = require("../../services/command-creation/parameter");
-const SlashCommand = require("../../services/command-creation/slash-command");
-const { deferInteraction, createChannel, createPermission: createPermissionOverwrites, editReplyToInteraction, createEveryoneDenyViewPermission, addPermissionToChannel, memberHasRole } = require("../../utilities/discord-action-utils");
-const { fetchChannel, fetchGuild, fetchUser, getUserParamValue, getEveryoneRole, fetchGuildMember, fetchRole, fetchRoleByName, getStringParamValue } = require("../../utilities/discord-fetch-utils");
+const { SlashCommand } = require("../../services/command-creation/slash-command");
+const { deferInteraction, createChannel, createEveryoneDenyViewPermission, addPermissionToChannel, memberHasRole, editReplyToInteraction } = require("../../utilities/discord-action-utils");
+const { fetchGuild, getUserParamValue, fetchGuildMember, getStringParamValue, fetchTextChannel } = require("../../utilities/discord-fetch-utils");
 const { createListFromWords } = require("../../utilities/text-formatting-utils");
 
 const Parameters = {
@@ -30,10 +30,6 @@ module.exports = new SlashCommand({
 		Parameters.Name,
 		Parameters.Contestant,
 	],
-
-	/**
-	 * @param {CommandInteraction} interaction
-	 */
 	execute: async function execute(interaction) {
 		await deferInteraction(interaction);
 
@@ -94,7 +90,7 @@ module.exports = new SlashCommand({
 			})
 		}
 
-		const logChannel = await fetchChannel(sandSeason3Guild, ids.sandSeason3.channels.log);
+		const logChannel = await fetchTextChannel(sandSeason3Guild, ids.sandSeason3.channels.log);
 		logChannel.send(`${commandUser} made an alliance ${newChannel} with: ${
 			createListFromWords(contestantIDs.map(id => `<@${id}>`))
 		}`);

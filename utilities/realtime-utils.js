@@ -10,7 +10,7 @@
  *   - days: number of days
  * @returns {Promise} A promise that resolves after the specified duration.
  */
-const wait = async (duration) => {
+const wait = (duration) => {
 	let totalMilliseconds;
 
 	// If a number, interpret as milliseconds
@@ -32,7 +32,7 @@ const wait = async (duration) => {
 		const getValueFromAliases = (duration, aliases) => {
 			let value = 0;
 			aliases.forEach(alias => {
-				if (duration.hasOwnProperty(alias)) {
+				if (Object.prototype.hasOwnProperty.call(duration, alias)) {
 					value = duration[alias];
 				}
 			});
@@ -69,7 +69,7 @@ const wait = async (duration) => {
 /**
  * Logs how many milliseconds have elapse  with a custom message.
  * @param {string} message The message to be logged.
- * @param {function} asyncFunction The function to be called.
+ * @param {Function} asyncFunction The function to be called.
  * @param {...*} args The arguments to be passed to the function.
  * @returns {Promise<void>} A promise that resolves after the function has been called.
  */

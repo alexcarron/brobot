@@ -1,6 +1,5 @@
 /**
  * Converts a given Date object to its corresponding Unix timestamp.
- *
  * @param {Date} date - The Date object to convert.
  * @returns {number} The Unix timestamp corresponding to the given date.
  */
@@ -9,7 +8,6 @@ const toUnixTimestamp = (date) =>
 
 /**
  * Creates a Unix timestamp for the current time.
- *
  * @returns {number} A Unix timestamp for the current time.
  */
 const createNowUnixTimestamp = () =>
@@ -17,7 +15,6 @@ const createNowUnixTimestamp = () =>
 
 /**
  * Converts a given Date object to a CRON expression.
- *
  * @param {Date} date - The Date object to convert.
  * @returns {string} The CRON expression corresponding to the given date.
  */

@@ -27,7 +27,7 @@ const isButtonPress = (interaction) =>
  * Sets up an event listener for when a message is sent (either in a DM or in a server channel)
  * If the message is in a DM, the onDmRecieved function is called
  * If the message is in a server channel, the onNormalMessageSent function is called
- * @param {Client} client
+ * @param {Client} client - The Discord client instance
  */
 const setupMessageSentListener =
 	(client) => {
@@ -64,7 +64,7 @@ const setupInteractionCreateListener =
 const setupGuildMemberAddListener =
 	(client) => {
 		client.on(Events.GuildMemberAdd,
-			async (guildMember) => {
+			(guildMember) => {
 				onUserJoinsServer(guildMember);
 			}
 		);
@@ -78,8 +78,11 @@ const setupGuildMemberAddListener =
 const setupMessageDeleteListener =
 	(client) => {
 		client.on(Events.MessageDelete,
-			async (message) => {
-				await onMessageDeleted(message);
+			(message) => {
+				if (message.partial) return;
+
+				// @ts-ignore
+				onMessageDeleted(message);
 			}
 		);
 	};

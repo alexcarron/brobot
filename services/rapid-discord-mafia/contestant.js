@@ -1,3 +1,7 @@
+
+/**
+ * Represents a contestant in the game
+ */
 class Contestant {
 	constructor({
 		coins = 0,

@@ -1,13 +1,10 @@
-
-const fs = require('fs');
 const { Parameter } = require("../../services/command-creation/parameter.js");
-const SlashCommand = require("../../services/command-creation/slash-command.js");
+const { SlashCommand } = require("../../services/command-creation/slash-command.js");
 const { PermissionFlagsBits } = require('discord.js');
 const { LLPointManager } = require('../../services/ll-points/ll-point-manager.js');
 const { findStringStartingWith } = require('../../utilities/text-formatting-utils.js');
 const { deferInteraction } = require('../../utilities/discord-action-utils.js');
 
-//
 const Parameters = {
 	ViewerName: new Parameter({
 		type: "string",
@@ -22,48 +19,46 @@ const Parameters = {
 	}),
 }
 
-const command = new SlashCommand({
+module.exports = new SlashCommand({
 	name: "add-ll-points",
 	description: "Give a certain amount of LL Points to a viewer",
-});
-command.required_permissions = [PermissionFlagsBits.Administrator]
-command.parameters = [
-	Parameters.ViewerName,
-	Parameters.LLPointAmount,
-]
-command.allowsDMs = true;
-command.execute = async function(interaction) {
-	deferInteraction(interaction, "Adding LL Points...");
+	required_permissions: [PermissionFlagsBits.Administrator],
+	parameters: [
+		Parameters.ViewerName,
+		Parameters.LLPointAmount,
+	],
+	allowsDMs: true,
+	execute: async function(interaction) {
+		deferInteraction(interaction, "Adding LL Points...");
 
-	const
-		viewer_name_arg = interaction.options.getString(Parameters.ViewerName.name),
-		added_points = interaction.options.getNumber(Parameters.LLPointAmount.name);
+		const
+			viewer_name_arg = interaction.options.getString(Parameters.ViewerName.name),
+			added_points = interaction.options.getNumber(Parameters.LLPointAmount.name);
 
-	let viewer = await global.LLPointManager.getViewerByName(viewer_name_arg);
-	let viewer_name = viewer_name_arg;
-
-	if (!viewer) {
-		const autocomplete_viewer_name = findStringStartingWith(viewer_name, global.LLPointManager.getViewerNames());
-
-		if (autocomplete_viewer_name) {
-			viewer_name = autocomplete_viewer_name;
-			viewer = await global.LLPointManager.getViewerByName(viewer_name);
-		}
+		let viewer = await global.LLPointManager.getViewerByName(viewer_name_arg);
+		let viewer_name = viewer_name_arg;
 
 		if (!viewer) {
-			return interaction.editReply(`The viewer, **${viewer_name}**, doesn't exist.`);
+			const autocomplete_viewer_name = findStringStartingWith(viewer_name, global.LLPointManager.getViewerNames());
+
+			if (autocomplete_viewer_name) {
+				viewer_name = autocomplete_viewer_name;
+				viewer = await global.LLPointManager.getViewerByName(viewer_name);
+			}
+
+			if (!viewer) {
+				return interaction.editReply(`The viewer, **${viewer_name}**, doesn't exist.`);
+			}
 		}
-	}
 
-	await global.LLPointManager.viewers.get(viewer_name).addLLPoints(added_points);
-	await global.LLPointManager.updateDatabase();
-	let current_ll_points = await global.LLPointManager.viewers.get(viewer_name).ll_points;
+		await global.LLPointManager.viewers.get(viewer_name).addLLPoints(added_points);
+		await global.LLPointManager.updateDatabase();
+		let current_ll_points = await global.LLPointManager.viewers.get(viewer_name).ll_points;
 
-	await interaction.editReply(
-		`Giving **${viewer_name}** \`${added_points}\` LL Point(s)...\n` +
-		`They now have \`${current_ll_points}\` LL Point(s).`
-	);
-}
-command.autocomplete = LLPointManager.getViewersAutocompleteValues;
-
-module.exports = command;
+		await interaction.editReply(
+			`Giving **${viewer_name}** \`${added_points}\` LL Point(s)...\n` +
+			`They now have \`${current_ll_points}\` LL Point(s).`
+		);
+	},
+	autocomplete: LLPointManager.getViewersAutocompleteValues,
+});

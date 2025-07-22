@@ -39,6 +39,9 @@ const ArgumentSubtype = Object.freeze({
 	NONE: "",
 })
 
+/**
+ * Class representing an Arg for an Ability
+ */
 class Arg {
 	constructor( { name, description, type, subtypes, value="" } ) {
 		this.name = name;

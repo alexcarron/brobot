@@ -3,9 +3,10 @@ const RapidDiscordMafia = require("./rapid-discord-mafia");
 
 describe('GameStateManager', () => {
 	/**
-	 * @type Game
+	 * @type {GameManager}
 	 */
 	let mock_game;
+	let day_last_subphase_ended
 
   const setupMockGame = async () => {
 		await RapidDiscordMafia.setUpRapidDiscordMafia(true);
@@ -143,7 +144,6 @@ describe('GameStateManager', () => {
 
 	describe('canStartDay', () => {
 		it('SHOULD return yes only WHEN just before that day and called on the same day', () => {
-			day_wanting_to_start = 1.5;
 			day_last_subphase_ended = 1;
 
 			mock_game.state_manager.changeToStarted();
@@ -168,7 +168,6 @@ describe('GameStateManager', () => {
 
 	describe('canStartVoting', () => {
 		it('SHOULD return yes only WHEN just before that subphase and called on the same day', () => {
-			day_wanting_to_start = 1.5;
 			day_last_subphase_ended = 1.5;
 
 			mock_game.state_manager.changeToStarted();
@@ -193,7 +192,6 @@ describe('GameStateManager', () => {
 
 	describe('canStartTrial', () => {
 		it('SHOULD return yes only WHEN just before that subphase and called on the same day', () => {
-			day_wanting_to_start = 1.5;
 			day_last_subphase_ended = 1.5;
 
 			mock_game.state_manager.changeToStarted();
@@ -218,7 +216,6 @@ describe('GameStateManager', () => {
 
 	describe('canStartTrialResults', () => {
 		it('SHOULD return yes only WHEN just before that subphase and called on the same day', () => {
-			day_wanting_to_start = 1.5;
 			day_last_subphase_ended = 1.5;
 
 			mock_game.state_manager.changeToStarted();
@@ -243,7 +240,6 @@ describe('GameStateManager', () => {
 
 	describe('canStartNight', () => {
 		it('SHOULD return yes only WHEN just before that subphase and called on the same day', () => {
-			day_wanting_to_start = 1.5;
 			day_last_subphase_ended = 1.5;
 
 			mock_game.state_manager.changeToStarted();

@@ -1,17 +1,13 @@
 const ids = require("../../bot-config/discord-ids");
-const SlashCommand = require("../../services/command-creation/slash-command");
+const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { deferInteraction, editReplyToInteraction, removePermissionFromChannel } = require("../../utilities/discord-action-utils");
-const { fetchGuild, fetchChannel, fetchGuildMember } = require("../../utilities/discord-fetch-utils");
+const { fetchGuild, fetchTextChannel } = require("../../utilities/discord-fetch-utils");
 
 module.exports = new SlashCommand({
 	name: "leave-alliance",
 	description: "Leave the alliance this command is sent in",
 	required_roles: [[ids.sandSeason3.roles.contestant, ids.sandSeason3.roles.eliminated]],
 	required_servers: [ids.sandSeason3.guild],
-
-	/**
-	 * @param {CommandInteraction} interaction
-	 */
 	execute: async function execute(interaction) {
 		await deferInteraction(interaction);
 
@@ -39,7 +35,7 @@ module.exports = new SlashCommand({
 			await allianceChannel.send(`This alliance is now empty and is marked for archiving <@276119804182659072>`);
 		}
 
-		const logChannel = await fetchChannel(sandSeason3Guild, ids.sandSeason3.channels.log);
+		const logChannel = await fetchTextChannel(sandSeason3Guild, ids.sandSeason3.channels.log);
 		logChannel.send(`${commandUser} left ${allianceChannel}`);
 
 		await editReplyToInteraction(interaction,

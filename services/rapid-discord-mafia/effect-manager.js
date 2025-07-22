@@ -1,5 +1,4 @@
 const Effect = require("./effect");
-const Logger = require("./logger");
 const { AbilityUseCount, AbilityName } = require("./ability");
 const { Faction, Alignment, Immunity, RoleName } = require("./role");
 const { AbilityArgType, ArgumentSubtype, AbilityArgName } = require("./arg");
@@ -10,8 +9,7 @@ const { Feedback } = require("./constants/possible-messages");
  */
 class EffectManager {
 	/**
-	 * @param {Game} game - Current game instnace
-	 * @param {Logger} logger
+	 * @param {object} game - Current game instnace
 	 */
 	constructor(game) {
 		this.game = game;
@@ -45,7 +43,7 @@ class EffectManager {
 	static effects = {
 		[this.EffectName.Roleblock]: new Effect({
 			name: this.EffectName.Roleblock,
-			applyEffect: async function(game, player_using_ability, ability, arg_values) {
+			applyEffect: function(game, player_using_ability, ability) {
 				const
 					roleblocked_player_name = player_using_ability.visiting,
 					roleblocked_player = game.player_manager.get(roleblocked_player_name),
@@ -91,7 +89,7 @@ class EffectManager {
 
 		[this.EffectName.Cautious]: new Effect({
 			name: this.EffectName.Cautious,
-			applyEffect: async function(game, player_using_ability, ability, arg_values) {
+			applyEffect: function(game, player_using_ability, ability) {
 				player_using_ability.addFeedback(Feedback.DID_CAUTIOUS);
 				player_using_ability.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5);
 			}
@@ -99,7 +97,7 @@ class EffectManager {
 
 		[this.EffectName.Heal]: new Effect({
 			name: this.EffectName.SelfHeal,
-			applyEffect: async function(game, player_using_ability, ability, arg_values) {
+			applyEffect: function(game, player_using_ability, ability,) {
 				const
 					player_healing_name = player_using_ability.visiting,
 					player_healing = game.player_manager.get(player_healing_name);
@@ -112,7 +110,7 @@ class EffectManager {
 
 		[this.EffectName.SelfHeal]: new Effect({
 			name: this.EffectName.SelfHeal,
-			applyEffect: async function(game, player_using_ability, ability, arg_values) {
+			applyEffect: function(game, player_using_ability, ability) {
 				player_using_ability.giveDefenseLevel(2);
 				player_using_ability.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5);
 			}
@@ -153,7 +151,7 @@ class EffectManager {
 
 		[this.EffectName.Attack]: new Effect({
 			name: this.EffectName.Attack,
-			applyEffect: async function(game, player_using_ability, ability, arg_values) {
+			applyEffect: function(game, player_using_ability, ability) {
 				const
 					attacked_player_name = player_using_ability.visiting,
 					attacked_player = game.player_manager.get(attacked_player_name);
@@ -169,7 +167,7 @@ class EffectManager {
 
 		[this.EffectName.Frame]: new Effect({
 			name: this.EffectName.Frame,
-			applyEffect: async function(game, player_using_ability, ability, arg_values) {
+			applyEffect: function(game, player_using_ability, ability) {
 				const
 					framed_player_name = player_using_ability.visiting,
 					framed_player = game.player_manager.get(framed_player_name);
@@ -182,7 +180,7 @@ class EffectManager {
 
 		[this.EffectName.SelfFrame]: new Effect({
 			name: this.EffectName.SelfFrame,
-			applyEffect: async function(game, player_using_ability, ability, arg_values) {
+			applyEffect: function(game, player_using_ability, ability) {
 				player_using_ability.frame();
 
 				player_using_ability.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5);
@@ -191,7 +189,7 @@ class EffectManager {
 
 		[this.EffectName.FrameTarget]: new Effect({
 			name: this.EffectName.FrameTarget,
-			applyEffect: async function(game, player_using_ability, ability, arg_values) {
+			applyEffect: function(game, player_using_ability, ability) {
 				const
 					exe_target_name = player_using_ability.exe_target,
 					exe_target_player = game.player_manager.get(exe_target_name);
@@ -204,7 +202,7 @@ class EffectManager {
 
 		[this.EffectName.Evaluate]: new Effect({
 			name: this.EffectName.Evaluate,
-			applyEffect: async function(game, player_using_ability, ability, arg_values) {
+			applyEffect: function(game, player_using_ability, ability) {
 				const
 					player_evaluating_name = player_using_ability.visiting,
 					player_evaluating = game.player_manager.get(player_evaluating_name),
@@ -243,7 +241,7 @@ class EffectManager {
 
 		[this.EffectName.Track]: new Effect({
 			name: this.EffectName.Track,
-			applyEffect: async function(game, player_using_ability, ability, arg_values) {
+			applyEffect: function(game, player_using_ability, ability) {
 				const
 					tracked_player_name = player_using_ability.visiting,
 					tracked_player = game.player_manager.get(tracked_player_name),
@@ -269,7 +267,7 @@ class EffectManager {
 
 		[this.EffectName.Lookout]: new Effect({
 			name: this.EffectName.Lookout,
-			applyEffect: async function(game, player_using_ability, ability, arg_values) {
+			applyEffect: function(game, player_using_ability, ability) {
 
 				const
 					target_player_name = player_using_ability.visiting,
@@ -306,7 +304,7 @@ class EffectManager {
 
 		[this.EffectName.Investigate]: new Effect({
 			name: this.EffectName.Investigate,
-			applyEffect: async function(game, player_using_ability, ability, arg_values) {
+			applyEffect: function(game, player_using_ability, ability) {
 				const
 					investigated_player_name = player_using_ability.visiting,
 					investigated_player = game.player_manager.get(investigated_player_name),
@@ -320,7 +318,7 @@ class EffectManager {
 
 		[this.EffectName.Smith]: new Effect({
 			name: this.EffectName.Smith,
-			applyEffect: async function(game, player_using_ability, ability, arg_values) {
+			applyEffect: function(game, player_using_ability, ability) {
 				const
 					smithed_player_name = player_using_ability.visiting,
 					smithed_player = game.player_manager.get(smithed_player_name);
@@ -335,7 +333,7 @@ class EffectManager {
 
 		[this.EffectName.SelfSmith]: new Effect({
 			name: this.EffectName.SelfSmith,
-			applyEffect: async function(game, player_using_ability, ability, arg_values) {
+			applyEffect: function(game, player_using_ability, ability) {
 				player_using_ability.giveDefenseLevel(1);
 				player_using_ability.addAbilityAffectedBy(player_using_ability, ability.name, game.days_passed - 0.5);
 			}
@@ -343,7 +341,7 @@ class EffectManager {
 
 		[this.EffectName.Control]: new Effect({
 			name: this.EffectName.Control,
-			applyEffect: async function(game, player_using_ability, ability, arg_values) {
+			applyEffect: function(game, player_using_ability, ability, arg_values) {
 				const
 					player_controlling_name = arg_values[AbilityArgName.PLAYER_CONTROLLING],
 					player_controlling_into_name = arg_values[AbilityArgName.PLAYER_CONTROLLED_INTO],
@@ -432,7 +430,7 @@ class EffectManager {
 
 		[this.EffectName.Observe]: new Effect({
 			name: this.EffectName.Observe,
-			applyEffect: async function(game, player_using_ability, ability, arg_values) {
+			applyEffect: function(game, player_using_ability, ability) {
 				const
 					player_observing = game.player_manager.get(player_using_ability.visiting),
 					percieved_role_of_target = game.role_manager.getRole( player_observing.getPercievedRole() ),
@@ -476,7 +474,7 @@ class EffectManager {
 
 		[this.EffectName.Replace]: new Effect({
 			name: this.EffectName.Replace,
-			applyEffect: async function(game, player_using_ability, ability, arg_values) {
+			applyEffect: async function(game, player_using_ability, ability) {
 				const
 					player_replacing_name = player_using_ability.visiting,
 					player_replacing = game.player_manager.get(player_replacing_name);
@@ -502,7 +500,7 @@ class EffectManager {
 
 		[this.EffectName.Kidnap]: new Effect({
 			name: this.EffectName.Kidnap,
-			applyEffect: async function(game, player_using_ability, ability, arg_values) {
+			applyEffect: async function(game, player_using_ability, ability) {
 				const
 					kidnapped_player_name = player_using_ability.visiting,
 					kidnapped_player = game.player_manager.get(kidnapped_player_name),
@@ -549,7 +547,7 @@ class EffectManager {
 
 	/**
 	 * Get an effect object from an effect name
-	 * @param {string} effect_name
+	 * @param {string} effect_name - The name of the effect
 	 * @returns {Effect | undefined} undefined if effect name doesn't exist
 	 */
 	getEffect(effect_name) {
@@ -557,12 +555,11 @@ class EffectManager {
 	}
 
 	/**
-	 *
-	 * @param {Object} parameters
-	 * @param {EffectManager.EffectName} parameters.effect_name - The name of the effect.
-	 * @param {Player} parameters.player_using_ability - The player using the ability which causes this effect
-	 * @param {Ability} parameters.ability - The ability which causes this effect
-	 * @param {{[arg_name: string]: [arg_value: string]}} parameters.arg_values - The argument names and values passed by the player for the ability which causes this effect
+	 * @param {object} parameters - The parameters
+	 * @param {string} parameters.effect_name - The name of the effect.
+	 * @param {object} parameters.player_using_ability - The player using the ability which causes this effect
+	 * @param {object} parameters.ability - The ability which causes this effect
+	 * @param {{[arg_name: string]: string}} parameters.arg_values - The argument names and values passed by the player for the ability which causes this effect
 	 * @returns {Promise<void>}
 	 */
 	async useEffect({effect_name, player_using_ability, ability, arg_values={}}) {

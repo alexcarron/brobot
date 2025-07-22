@@ -1,4 +1,4 @@
-const { TextChannel } = require("discord.js");
+const { Message, TextChannel } = require("discord.js");
 const ids = require("../../bot-config/discord-ids.js");
 const cron = require("cron"); // Used to have scheduled functions execute
 const { getRandomElement } = require("../../utilities/data-structure-utils.js");
@@ -6,6 +6,9 @@ const { fetchGuild, fetchChannel } = require("../../utilities/discord-fetch-util
 const { saveObjectToJsonInGitHub } = require("../../utilities/github-json-storage-utils.js");
 const { logWarning, logInfo } = require("../../utilities/logging-utils.js");
 
+/**
+ * Handles the sending of daily messages
+ */
 class DailyMessageHandler {
 	/**
 	 * A map of channels to the list of possible messages to send to them
@@ -28,7 +31,7 @@ class DailyMessageHandler {
 	/**
 	 * Saves the currently stored channelsToMessages map to the brobot persistance database
 	 */
-	async saveMessagesDatabase() {
+	saveMessagesDatabase() {
 		saveObjectToJsonInGitHub(this.channelsToMessages, "messages");
 	}
 
@@ -62,8 +65,8 @@ class DailyMessageHandler {
 
 	/**
 	 * Get the TextChannel object from a channel name
-	 *@param {string} channelName Name of a channel
-	 * @retuns {TextChannel}
+	 * @param {string} channelName Name of a channel
+	 * @returns {Promise<import("discord.js").GuildBasedChannel>} The TextChannel object
 	 */
 	async convertChannelNameToChannel(channelName) {
 		const channelId = ids.ll_game_shows.channels[channelName];
@@ -79,7 +82,7 @@ class DailyMessageHandler {
 
 	/**
 	 * Returns a random channel name out the available ones in the map
-	 * @returns {TextChannel | null} The randomly selected text channel name, null if no channels left
+	 * @returns {string | null} The randomly selected text channel name, null if no channels left
 	 */
 	getRandomChannel() {
 		const channelNames = Object.keys(this.channelsToMessages);
@@ -91,7 +94,7 @@ class DailyMessageHandler {
 	/**
 	 * Returns a random message associated with the passed channel
 	 * @param {string} channelName The name of a text channel in the map
-	 * @returns A random message associated with that channel
+	 * @returns {string} A random message associated with that channel
 	 */
 	getRandomMessage(channelName) {
 		const possibleMessages = this.channelsToMessages[channelName];
@@ -102,7 +105,7 @@ class DailyMessageHandler {
 
 	/**
 	 * Sends a random message to a random channel
-	 * @returns {Message} The message sent
+	 * @returns {Promise<Message>} The message sent
 	 */
 	async sendDailyMessage() {
 		const channelName = this.getRandomChannel();
@@ -116,6 +119,9 @@ class DailyMessageHandler {
 		const channel = await this.convertChannelNameToChannel(channelName);
 
 		this.removeMessage(channelName, messageContents);
+
+		if (!(channel instanceof TextChannel))
+			throw new Error("Channel is not a TextChannel");
 
 		return await channel.send(`<@&${ids.ll_game_shows.roles.daily_questions}>\n${messageContents}`);
 	}

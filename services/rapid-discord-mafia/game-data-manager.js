@@ -1,13 +1,13 @@
-const axios = require('axios');
 const PlayerManager = require('./player-manager.js');
-const { GITHUB_TOKEN } = require('../../bot-config/token.js');
+const Death = require('./death.js');
+const { saveObjectToJsonInGitHub, loadObjectFromJsonInGitHub } = require('../../utilities/github-json-storage-utils.js');
 
 /**
  * A class to handle the game data that persists across mulitple sessions on github
  */
 class GameDataManager {
 	/**
-	 * @param {Game} game_manager - The game's current instance
+	 * @param {object} game_manager - The game's current instance
 	 */
 	constructor(game_manager) {
 		this.game_manager = game_manager;
@@ -64,37 +64,7 @@ class GameDataManager {
 	async saveToGithub() {
 		if (!this.game_manager.isMockGame) {
 			const rdm_game_obj = this.getSimpleCopyOfGame();
-			const rdm_game_str = JSON.stringify(rdm_game_obj);
-
-			try {
-				// Get the current file data
-				const {data: file} =
-					await axios.get(
-						`https://api.github.com/repos/${GameDataManager.REPO_OWNER}/${GameDataManager.REPO_NAME}/contents/${GameDataManager.JSON_FILE_NAME}`,
-						{
-							headers: {
-								'Authorization': `Token ${GITHUB_TOKEN}`
-							}
-						}
-					);
-
-				// Update the file content
-				await axios.put(
-					`https://api.github.com/repos/${GameDataManager.REPO_OWNER}/${GameDataManager.REPO_NAME}/contents/${GameDataManager.JSON_FILE_NAME}`,
-					{
-						message: 'Update file',
-						content: new Buffer.from(rdm_game_str).toString(`base64`),
-						sha: file.sha
-					},
-					{
-						headers: {
-							'Authorization': `Token ${GITHUB_TOKEN}`
-						}
-					}
-				);
-			} catch (error) {
-				console.error(error);
-			}
+			await saveObjectToJsonInGitHub(rdm_game_obj, GameDataManager.JSON_FILE_NAME);
 		}
 	}
 
@@ -103,25 +73,7 @@ class GameDataManager {
 	 */
 	async loadFromGithub() {
 		if (!this.game_manager.isMockGame) {
-
-			// Get the current file data
-			const {data: file} =
-				await axios.get(
-					`https://api.github.com/repos/${GameDataManager.REPO_OWNER}/${GameDataManager.REPO_NAME}/contents/${GameDataManager.JSON_FILE_NAME}`,
-					{
-						headers: {
-							'Authorization': `Token ${GITHUB_TOKEN}`
-						}
-					}
-				)
-				.catch(err => {
-					console.error(err);
-				});
-
-
-			let rdm_game_str = Buffer.from(file.content, 'base64').toString();
-			let rdm_game_obj = JSON.parse(rdm_game_str);
-
+			const rdm_game_obj = await loadObjectFromJsonInGitHub(GameDataManager.JSON_FILE_NAME);
 			this.setGameFromGameObj(rdm_game_obj);
 		}
 	}

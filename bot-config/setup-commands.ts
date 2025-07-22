@@ -1,16 +1,15 @@
-const Discord = require('discord.js');
-const { Routes } = require('discord.js');
-const SlashCommand = require("../services/command-creation/slash-command");
-const path = require('path');
-const fs = require('fs');
-const { logInfo, logSuccess, logWarning, logError } = require('../utilities/logging-utils');
-const ids = require('./discord-ids.js');
+import Discord from 'discord.js';
+import { Routes } from 'discord.js';
+import { SlashCommand } from '../services/command-creation/slash-command';
+import path from 'path';
+import fs from 'fs';
+import { logInfo, logSuccess, logWarning, logError } from '../utilities/logging-utils';
+import ids from './discord-ids.js';
 
 const COMMANDS_DIR_NAME = 'commands';
 const COMMANDS_DIR_PATH = path.join(__dirname, '..', COMMANDS_DIR_NAME);
-const { botStatus } = require('./bot-status.js');
-const { fetchGuild } = require('../utilities/discord-fetch-utils.js');
-const { DISCORD_TOKEN } = require('./token.js');
+import { botStatus } from './bot-status.js';
+import { DISCORD_TOKEN } from './token.js';
 
 /**
  * Recursively finds all .js files in the given directory and all its subdirectories.
@@ -20,6 +19,10 @@ const { DISCORD_TOKEN } = require('./token.js');
 const getAllJSFilesIn = (directoryPath) => {
 	const jsFiles = [];
 
+	/**
+	 * Recursively traverses the given directory path, adding all .js file paths to the jsFiles array.
+	 * @param {string} currentPath - The current directory path to search within.
+	 */
 	function recurse(currentPath) {
 		const fileEntries = fs.readdirSync(currentPath, { withFileTypes: true });
 
@@ -100,6 +103,11 @@ const storeCommandsInMemory = (client, commands) => {
 	);
 }
 
+/**
+ * Filters an array of slash commands to only include the ones that are not restricted to any particular server.
+ * @param {Array<SlashCommand>} commands The array of slash commands to filter.
+ * @returns {Array<SlashCommand>} The filtered array of slash commands that are not restricted to any particular server.
+ */
 const getGlobalCommands = (commands) => {
 	return commands.filter(command => !command.required_servers);
 }
@@ -207,24 +215,23 @@ const deployCommands = async ({globalCommands = [], guildIDtoGuildCommands}) => 
  * @param {Discord.Client} client The bot client.
  * @returns {Promise<void>}
  */
-const setupAndDeployCommands = async ({client, skipGlobalCommands = false}) => {
+export const setupAndDeployCommands = async ({client, skipGlobalCommands = false}) => {
 	const commands = getCommands();
 	commands.forEach(command =>
 		command.requir
 	)
 	storeCommandsInMemory(client, commands);
 
-	const globalCommands = getGlobalCommands(commands);
+	let globalCommands = undefined;
 	const guildIDtoGuildCommands = mapGuildCommandsToGuildID(commands);
 
-	const commandsToDeploy = {
-		guildIDtoGuildCommands,
-	};
-
 	if (!skipGlobalCommands)
-		commandsToDeploy.globalCommands = globalCommands;
+		globalCommands = getGlobalCommands(commands);
 
-	await deployCommands(commandsToDeploy);
+	await deployCommands({
+		guildIDtoGuildCommands,
+		globalCommands
+	});
 }
 
 /**
@@ -232,9 +239,7 @@ const setupAndDeployCommands = async ({client, skipGlobalCommands = false}) => {
  * @param {Discord.Client} client The bot client.
  * @returns {void}
  */
-const setupCommands = (client, isDevelopmentEnvironment = false) => {
-	const commands = getCommands({isDevelopmentEnvironment});
+export const setupCommands = (client) => {
+	const commands = getCommands();
 	storeCommandsInMemory(client, commands);
 }
-
-module.exports = {setupAndDeployCommands, setupCommands};

@@ -9,7 +9,7 @@ const PlayerService = require("../services/player.service");
  * @param {PlayerService} services.playerService - The service for adding a character to the player's name.
  * @param {string} playerID - The ID of the player.
  * @param {number} [mysteryBoxID] - The ID of the mystery box to open.
- * @returns {Promise<{character: import("../types/character").Character}>} A promise that resolves with the character object received from the mystery box.
+ * @returns {Promise<{character: import("../types/character.types").Character}>} A promise that resolves with the character object received from the mystery box.
  */
 const openMysteryBox = async (
 	{ mysteryBoxService, playerService },

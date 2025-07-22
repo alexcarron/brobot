@@ -1,6 +1,6 @@
-const { toTitleCase } = require('../../utilities/text-formatting-utils.js');
+import { toTitleCase } from '../../utilities/text-formatting-utils.js';
 
-const ParameterType = Object.freeze({
+export const ParameterType = Object.freeze({
 	SUBCOMMAND: "subcommand",
 	STRING: "string",
 	CHANNEL: "channel",
@@ -17,7 +17,7 @@ const ParameterType = Object.freeze({
  * Represents a Discord command parameter.
  * @class
  */
-class Parameter {
+export class Parameter {
 	/** @field {"subcommand" | "string" | "channel" | "attachment" | "boolean" | "mentionable" | "number" | "integer" | "role" | "user"}*/
 	type;
 
@@ -49,16 +49,18 @@ class Parameter {
 	subcommands;
 
 	/**
-	 * @param {"subcommand" | "string" | "channel" | "attachment" | "boolean" | "mentionable" | "number" | "integer" | "role" | "user"} type "subcommand" | "string" | "channel" | "attachment" | "boolean" | "mentionable" | "number" | "integer" | "role" | "user"
-	 * @param {string} name
-	 * @param {string} description
-	 * @param {boolean} [isRequired = true]
-	 * @param {boolean} [isAutocomplete = true]
-	 * @param {{[autocomplete_entry: string]: string}} [autocomplete]
-	 * @param {number} [min_value]
-	 * @param {number} [max_value]
-	 * @param {Parameter[]} [subparameters = []]
-	 * @param {SubcommandParameter[]} [subcommands = []]
+	 * Creates a new Parameter.
+	 * @param {object} options - The options to create the Parameter with
+	 * @param {"subcommand" | "string" | "channel" | "attachment" | "boolean" | "mentionable" | "number" | "integer" | "role" | "user"} options.type - The type of the parameter
+	 * @param {string} options.name
+	 * @param {string} options.description
+	 * @param {boolean} options.isRequired
+	 * @param {boolean} options.isAutocomplete
+	 * @param {{[autocomplete_entry: string]: string}} options.autocomplete
+	 * @param {number} options.min_value
+	 * @param {number} options.max_value
+	 * @param {Parameter[]} options.subparameters
+	 * @param {Parameter[]} options.subcommands
 	 */
 	constructor({
 		type,
@@ -66,9 +68,9 @@ class Parameter {
 		description,
 		isRequired = true,
 		isAutocomplete = false,
-		min_value,
-		max_value,
-		autocomplete,
+		min_value = undefined,
+		max_value = undefined,
+		autocomplete = undefined,
 		subparameters = [],
 		subcommands = [],
 	}) {
@@ -166,5 +168,3 @@ class Parameter {
 		return command;
 	}
 }
-
-module.exports = {Parameter, ParameterType};

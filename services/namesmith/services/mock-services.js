@@ -1,5 +1,5 @@
 const { CharacterRepository } = require("../repositories/character.repository");
-const GameStateRepository = require("../repositories/gameState.repository");
+const { GameStateRepository } = require("../repositories/gameState.repository");
 const { createMockPlayerRepo, createMockVoteRepo, createMockMysteryBoxRepo, createMockCharacterRepo, createMockGameStateRepo } = require("../repositories/mock-repositories");
 const MysteryBoxRepository = require("../repositories/mysteryBox.repository");
 const PlayerRepository = require("../repositories/player.repository");
@@ -43,8 +43,8 @@ const createMockPlayerService = (mockPlayerRepo) => {
 
 /**
  * Creates a mock VoteService instance for testing purposes.
- * @param {VoteRepository} mockVoteRepo - The mock vote repository to use.
- * @param {PlayerService} mockPlayerService - The mock player service to use.
+ * @param {VoteRepository} [mockVoteRepo] - The mock vote repository to use.
+ * @param {PlayerService} [mockPlayerService] - The mock player service to use.
  * @returns {VoteService} A mock instance of the VoteService.
  */
 const createMockVoteService = (mockVoteRepo, mockPlayerService) => {
@@ -84,7 +84,12 @@ const createMockMysteryBoxService = (mockMysteryBoxRepository, mockCharacterRepo
  *
  * If any of the mock repository parameters are undefined, a default mock repository
  * instance is created for the respective service.
- * @param {{mockPlayerRepo: PlayerRepository, mockVoteRepo: VoteRepository, mockMysteryBoxRepo: MysteryBoxRepository, mockCharacterRepo: CharacterRepository, gameStateRepository: GameStateRepository}} options - An object with the mock repository instances to use.
+ * @param {object} [options] - An object with the mock repository instances to use.
+ * @param {PlayerRepository} [options.mockPlayerRepo] - The mock player repository to use.
+ * @param {VoteRepository} [options.mockVoteRepo] - The mock vote repository to use.
+ * @param {MysteryBoxRepository} [options.mockMysteryBoxRepo] - The mock mystery box repository to use.
+ * @param {CharacterRepository} [options.mockCharacterRepo] - The mock character repository to use.
+ * @param {GameStateRepository} [options.gameStateRepository] - The mock game state repository to use.
  * @returns {{playerService: PlayerService, voteService: VoteService, mysteryBoxService: MysteryBoxService, gameStateService: GameStateService}} An object with the created mock service instances.
  */
 const createMockServices = ({mockPlayerRepo, mockVoteRepo, mockMysteryBoxRepo, mockCharacterRepo, gameStateRepository} = {}) => {

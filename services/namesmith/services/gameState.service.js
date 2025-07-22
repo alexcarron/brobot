@@ -1,6 +1,6 @@
 const { CronJob } = require("cron");
 const { logWarning } = require("../../../utilities/logging-utils");
-const GameStateRepository = require("../repositories/gameState.repository");
+const { GameStateRepository } = require("../repositories/gameState.repository");
 const { closeNamesToVoteOnChannel, openNamesToVoteOnChannel, sendToNamesToVoteOnChannel, sendMessageToTheWinnerChannel, closeTheWinnerChannel, openTheWinnerChannel } = require("../utilities/discord-action.utility");
 const VoteService = require("./vote.service");
 const PlayerService = require("./player.service");

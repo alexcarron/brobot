@@ -1,6 +1,6 @@
-const { CommandInteraction, ChannelType, PermissionFlagsBits } = require("discord.js");
+const { ChannelType, PermissionFlagsBits, ChatInputCommandInteraction, AutocompleteInteraction } = require("discord.js");
 const { ParameterType, Parameter } = require("../../../services/command-creation/parameter");
-const SlashCommand = require("../../../services/command-creation/slash-command");
+const { SlashCommand } = require("../../../services/command-creation/slash-command");
 const { deferInteraction, createChannel, editReplyToInteraction } = require("../../../utilities/discord-action-utils");
 const { getStringParamValue, getIntegerParamValue } = require("../../../utilities/discord-fetch-utils");
 const { incrementEndNumber } = require("../../../utilities/text-formatting-utils");
@@ -45,7 +45,7 @@ module.exports = new SlashCommand({
 	],
 
 	/**
-	 * @param {CommandInteraction} interaction
+	 * @param {ChatInputCommandInteraction} interaction - The interaction whose reply is being updated.
 	 */
 	execute: async function execute(interaction) {
 		await deferInteraction(interaction);
@@ -90,7 +90,7 @@ module.exports = new SlashCommand({
 	},
 
 	/**
-	 * @param {CommandInteraction} interaction
+	 * @param {AutocompleteInteraction} interaction - The interaction whose reply is being updated.
 	 */
 	autocomplete: async function autocomplete(interaction) {
 		let autocompleteValues;
@@ -101,7 +101,7 @@ module.exports = new SlashCommand({
 
 		const allChannels = await interaction.guild.channels.fetch();
 
-		const allCategories = await allChannels.filter(channel => channel.type === ChannelType.GuildCategory);
+		const allCategories = allChannels.filter(channel => channel.type === ChannelType.GuildCategory);
 
 		autocompleteValues = allCategories
 			.map((category) => {

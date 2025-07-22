@@ -1,8 +1,8 @@
 const ids = require("../../bot-config/discord-ids");
 const { ParameterType, Parameter } = require("../../services/command-creation/parameter");
-const SlashCommand = require("../../services/command-creation/slash-command");
-const { deferInteraction, editReplyToInteraction, removePermissionFromChannel, renameChannel } = require("../../utilities/discord-action-utils");
-const { fetchGuild, fetchChannel, fetchGuildMember, getStringParamValue } = require("../../utilities/discord-fetch-utils");
+const { SlashCommand } = require("../../services/command-creation/slash-command");
+const { deferInteraction, editReplyToInteraction, renameChannel } = require("../../utilities/discord-action-utils");
+const { getStringParamValue } = require("../../utilities/discord-fetch-utils");
 
 const Parameters = {
 	Name: new Parameter({
@@ -21,10 +21,6 @@ module.exports = new SlashCommand({
 	parameters: [
 		Parameters.Name,
 	],
-
-	/**
-	 * @param {CommandInteraction} interaction
-	 */
 	execute: async function execute(interaction) {
 		await deferInteraction(interaction);
 

@@ -8,15 +8,15 @@ describe('toUnixTimestamp()', () => {
 	});
 
 	it('should throw an error for an invalid Date object (null)', () => {
-		expect(() => toUnixTimestamp(null)).toThrowError();
+		expect(() => toUnixTimestamp(null)).toThrow();
 	});
 
 	it('should throw an error for an invalid Date object (undefined)', () => {
-		expect(() => toUnixTimestamp(undefined)).toThrowError();
+		expect(() => toUnixTimestamp(undefined)).toThrow();
 	});
 
 	it('should throw an error for an invalid Date object (string)', () => {
-		expect(() => toUnixTimestamp('not a date')).toThrowError();
+		expect(() => toUnixTimestamp('not a date')).toThrow();
 	});
 
 	it('should return the correct Unix timestamp for a Date object in a different timezone', () => {
@@ -46,11 +46,11 @@ describe('toCronExpression()', () => {
 	});
 
 	it('should throw an error for an invalid Date object (null)', () => {
-		expect(() => toCronExpression(null)).toThrowError();
+		expect(() => toCronExpression(null)).toThrow();
 	});
 
 	it('should throw an error for an invalid Date object (undefined)', () => {
-		expect(() => toCronExpression(undefined)).toThrowError();
+		expect(() => toCronExpression(undefined)).toThrow();
 	});
 
 	it('should return a CRON expression with specific values', () => {

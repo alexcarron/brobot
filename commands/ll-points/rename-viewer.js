@@ -1,6 +1,6 @@
-const { ChatInputCommandInteraction, PermissionFlagsBits } = require("discord.js");
+const { PermissionFlagsBits } = require("discord.js");
 const { Parameter } = require("../../services/command-creation/parameter");
-const SlashCommand = require("../../services/command-creation/slash-command");
+const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { deferInteraction, editReplyToInteraction } = require("../../utilities/discord-action-utils");
 const { getStringParamValue } = require("../../utilities/discord-fetch-utils");
 const { LLPointManager } = require("../../services/ll-points/ll-point-manager");
@@ -21,33 +21,24 @@ const Parameters = {
 	}),
 }
 
-const command = new SlashCommand({
+module.exports = new SlashCommand({
 	name: "rename-viewer",
 	description: "Rename a viewer in the LL Point Manager",
+	parameters: [
+		Parameters.ViewerName,
+		Parameters.NewViewerName,
+	],
+	allowsDMs: true,
+	required_permissions: [PermissionFlagsBits.Administrator],
+	execute: async function(interaction) {
+		await deferInteraction(interaction);
+		const viewerName = getStringParamValue(interaction, Parameters.ViewerName.name);
+		const newViewerName = getStringParamValue(interaction, Parameters.NewViewerName.name);
+
+		const llPointManager = global.LLPointManager;
+		llPointManager.changeNameOfViewer(viewerName, newViewerName);
+
+		await editReplyToInteraction(interaction, `Successfully renamed ${viewerName} to ${newViewerName}`);
+	},
+	autocomplete: LLPointManager.getViewersAutocompleteValues,
 });
-command.parameters = [
-	Parameters.ViewerName,
-	Parameters.NewViewerName,
-]
-command.allowsDMs = true;
-command.required_permissions = [PermissionFlagsBits.Administrator];
-
-/**
- * @param {ChatInputCommandInteraction} interaction
- * @description Rename a viewer in the LL Point Manager
- * @returns {Promise<void>}
- */
-command.execute = async function(interaction) {
-	await deferInteraction(interaction);
-	const viewerName = getStringParamValue(interaction, Parameters.ViewerName.name);
-	const newViewerName = getStringParamValue(interaction, Parameters.NewViewerName.name);
-
-	const llPointManager = global.LLPointManager;
-	llPointManager.changeNameOfViewer(viewerName, newViewerName);
-
-	await editReplyToInteraction(interaction, `Successfully renamed ${viewerName} to ${newViewerName}`);
-};
-
-command.autocomplete = LLPointManager.getViewersAutocompleteValues;
-
-module.exports = command;

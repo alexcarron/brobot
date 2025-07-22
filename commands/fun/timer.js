@@ -1,4 +1,4 @@
-const SlashCommand = require('../../services/command-creation/slash-command.js');
+const { SlashCommand } = require('../../services/command-creation/slash-command.js');
 const { Parameter } = require('../../services/command-creation/parameter.js');
 const { createNowUnixTimestamp } = require('../../utilities/date-time-utils.js');
 const Timer = require('../../services/timers/timer.js');
@@ -42,66 +42,66 @@ const Parameters = {
 		isRequired: false,
 	}),
 }
-const command = new SlashCommand({
+
+module.exports = new SlashCommand({
 	name: "timer",
 	description: "Create a timer to for yourself",
+	allowsDMs: true,
+	parameters: [
+		Parameters.ReasonForTimer,
+		Parameters.Days,
+		Parameters.Hours,
+		Parameters.Minutes,
+		Parameters.Seconds,
+	],
+	execute: async function(interaction) {
+		await interaction.deferReply({ ephemeral: true });
+		await interaction.editReply("Loading...");
+
+		const reason_for_timer = interaction.options.getString(Parameters.ReasonForTimer.name);
+		const days = interaction.options.getInteger(Parameters.Days.name);
+		const hours = interaction.options.getInteger(Parameters.Hours.name);
+		const minutes = interaction.options.getInteger(Parameters.Minutes.name);
+		const seconds = interaction.options.getInteger(Parameters.Seconds.name);
+
+		if (
+			days === null &&
+			hours === null &&
+			minutes === null &&
+			seconds === null
+		) {
+			await interaction.editReply("You must specify a duration for the timer.");
+			return;
+		}
+
+		let now_unix_timestamp = createNowUnixTimestamp();
+
+		if (days !== undefined && days !== null) {
+			now_unix_timestamp += days*60*60*24;
+		}
+		else if (hours !== undefined && hours !== null) {
+			now_unix_timestamp += hours*60*60;
+		}
+		else if (minutes !== undefined && minutes !== null) {
+			now_unix_timestamp += minutes*60;
+		}
+		else if (seconds !== undefined && seconds !== null) {
+			now_unix_timestamp += seconds;
+		}
+
+		const timer = new Timer({});
+		timer.reason = reason_for_timer;
+		timer.days = days ?? 0;
+		timer.hours = hours ?? 0;
+		timer.minutes = minutes ?? 0;
+		timer.seconds = seconds ?? 0;
+		timer.end_time = now_unix_timestamp*1000;
+		timer.channel_id = interaction.channel.id;
+		timer.guild_id = interaction.guild.id;
+		timer.user_id = interaction.user.id;
+
+		await timer.startTimer();
+
+		await interaction.editReply("`Timer created.`");
+	}
 });
-command.allowsDMs = true;
-command.parameters = [
-	Parameters.ReasonForTimer,
-	Parameters.Days,
-	Parameters.Hours,
-	Parameters.Minutes,
-	Parameters.Seconds,
-]
-command.execute = async function(interaction) {
-	await interaction.deferReply({ ephemeral: true });
-	await interaction.editReply("Loading...");
-
-	const reason_for_timer = interaction.options.getString(Parameters.ReasonForTimer.name);
-	const days = interaction.options.getInteger(Parameters.Days.name);
-	const hours = interaction.options.getInteger(Parameters.Hours.name);
-	const minutes = interaction.options.getInteger(Parameters.Minutes.name);
-	const seconds = interaction.options.getInteger(Parameters.Seconds.name);
-
-	if (
-		days === null &&
-		hours === null &&
-		minutes === null &&
-		seconds === null
-	) {
-		await interaction.editReply("You must specify a duration for the timer.");
-		return;
-	}
-
-	let now_unix_timestamp = createNowUnixTimestamp();
-
-	if (days !== undefined && days !== null) {
-		now_unix_timestamp += days*60*60*24;
-	}
-	else if (hours !== undefined && hours !== null) {
-		now_unix_timestamp += hours*60*60;
-	}
-	else if (minutes !== undefined && minutes !== null) {
-		now_unix_timestamp += minutes*60;
-	}
-	else if (seconds !== undefined && seconds !== null) {
-		now_unix_timestamp += seconds;
-	}
-
-	const timer = new Timer({});
-	timer.reason = reason_for_timer;
-	timer.days = days ?? 0;
-	timer.hours = hours ?? 0;
-	timer.minutes = minutes ?? 0;
-	timer.seconds = seconds ?? 0;
-	timer.end_time = now_unix_timestamp*1000;
-	timer.channel_id = interaction.channel.id;
-	timer.guild_id = interaction.guild.id;
-	timer.user_id = interaction.user.id;
-
-	await timer.startTimer();
-
-	await interaction.editReply("\`Timer created.\`");
-}
-module.exports = command;

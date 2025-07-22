@@ -42,6 +42,9 @@ module.exports = {
     'jsdoc/require-jsdoc': ['warn', {
       require: { FunctionDeclaration: true, ClassDeclaration: true }
     }],
+    "jsdoc/check-param-names": ["error", {
+      "checkDestructured": false
+    }]
   },
   settings: {
     jsdoc: {

@@ -1,6 +1,7 @@
+const DatabaseQuerier = require("../database/database-querier");
 const { createMockDB } = require("../database/mock-database");
 const { CharacterRepository } = require("../repositories/character.repository");
-const GameStateRepository = require("../repositories/gameState.repository");
+const { GameStateRepository } = require("../repositories/gameState.repository");
 const { createMockMysteryBoxRepo, createMockCharacterRepo, createMockPlayerRepo, createMockGameStateRepo, createMockVoteRepo } = require("../repositories/mock-repositories");
 const MysteryBoxRepository = require("../repositories/mysteryBox.repository");
 const PlayerRepository = require("../repositories/player.repository");
@@ -30,7 +31,7 @@ const createAllMocks = () => {
 
 	const voteService = createMockVoteService(voteRepository, playerService);
 
-	const gameStateService = createMockGameStateService(gameStateRepository, playerService, voteService, mysteryBoxService);
+	const gameStateService = createMockGameStateService(gameStateRepository, playerService, voteService);
 
 	return {
 		mockDB,

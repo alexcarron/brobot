@@ -42,7 +42,6 @@ const stringifyNonString = (value) => {
 
 /**
  * Logs a message to the console with the specified color.
- *
  * @param {string} message - The message to log.
  * @param {number} color - The ANSI color code for the text.
  */
@@ -53,6 +52,7 @@ const logWithColor = (message, color) => {
 	if (typeof color !== "number")
 		throw new TypeError("Color must be a number.");
 
+	// @ts-ignore - color can be any type without causing an error
 	if (!Object.values(LogColor).includes(color))
 		throw new TypeError("Color must be a valid LogColor.");
 
@@ -65,10 +65,8 @@ const logWithColor = (message, color) => {
  * Logs a formatted string to the console with the specified colors.
  *
  * Use Format: logWithColors`A normal message with ${['green', LogColor.GREEN]} and ${['blue', LogColor.BLUE]}.`;
- *
- * @param {Array<string>} strings - The strings to log, with placeholders for expressions.
- * @param {...Array<string | number, number>} expressions - The expressions to fill in the placeholders, with the first element of each expression being the value and the second element being the color.
- *
+ * @param {TemplateStringsArray} strings - The strings to log, with placeholders for expressions.
+ * @param {...[string | number, number]} expressions - The expressions to fill in the placeholders, with the first element of each expression being the value and the second element being the color.
  * @throws {TypeError} If strings or expressions are not arrays.
  * @throws {TypeError} If strings contains non-string elements.
  * @throws {TypeError} If expressions contains non-tuple elements or tuple elements with incorrect length.
@@ -102,6 +100,7 @@ const logWithColors = (strings, ...expressions) => {
 		if (expression.length > 2)
 			return [expression[0], expression[1]];
 
+		// @ts-ignore - expression[1] can be any type without causing a type error
 		if (!Object.values(LogColor).includes(expression[1]))
 			throw new TypeError("Expression color must be a valid LogColor.");
 
@@ -139,7 +138,6 @@ const logWithColors = (strings, ...expressions) => {
 /**
  * Logs an error message to the console with the specified timestamp and
  * optional error stack trace.
- *
  * @param {string} message - The error message to log.
  * @param {Error} [error] - The optional error object to log the stack trace of.
  */
@@ -177,7 +175,6 @@ const logCategory = (category, color, message) => {
 
 /**
  * Logs a warning message to the console with a yellow color.
- *
  * @param {string} message - The warning message to log.
  */
 const logWarning = (message) => {
@@ -186,7 +183,6 @@ const logWarning = (message) => {
 
 /**
  * Logs an information message to the console with the specified message.
- *
  * @param {string} message - The information message to log.
  */
 const logInfo = (message) => {
@@ -195,7 +191,6 @@ const logInfo = (message) => {
 
 /**
  * Logs a success message to the console with a green color.
- *
  * @param {string} message - The success message to log.
  */
 const logSuccess = (message) => {
@@ -204,8 +199,8 @@ const logSuccess = (message) => {
 
 /**
  * Logs a debug message to the console with a magenta color. This is used for debugging purposes and should not be used in production code.
- *
  * @param {string} message - The debug message to log.
+ * @param {boolean} includeTrace - Whether to include the stack trace of the debug message.
  */
 const logDebug = (message, includeTrace = false) => {
 	logCategory("DEBUG", LogColor.MAGENTA, message);

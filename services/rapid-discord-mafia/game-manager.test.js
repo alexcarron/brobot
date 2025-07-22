@@ -195,9 +195,6 @@ describe('GameManager', () => {
 				num_mafia = ratio
 			}
 
-			if (isMafia) {
-			}
-
 			if (!isMafia) {
 				[num_mafia, num_town] = [num_town, num_mafia]
 			}
@@ -663,7 +660,7 @@ describe('GameManager', () => {
 	});
 
 	/**
-	 * @type GameManager
+	 * @type {GameManager}
 	 */
 	let mock_game;
 

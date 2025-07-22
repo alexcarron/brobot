@@ -26,7 +26,6 @@ const createMockDB = () => {
  * 	role: string | null,
  * 	inventory: string
  * }} playerData - The player data to add.
- * @returns {{ changes: number, lastInsertRowid: number }} The result of the insert operation.
  */
 const addMockPlayer = (db, { id, currentName, publishedName, tokens, role, inventory }) => {
 	if (id === undefined)
@@ -71,22 +70,22 @@ const addMockPlayer = (db, { id, currentName, publishedName, tokens, role, inven
 	);
 
 	if (existingPlayer !== undefined) {
-		return existingPlayer;
+		// Ignore player if it already exists
+		return;
 	}
 
 	const insertPlayer = db.prepare(`
 		INSERT INTO player (id, currentName, publishedName, tokens, role, inventory)
 		VALUES (@id, @currentName, @publishedName, @tokens, @role, @inventory)
 	`);
-	const player = insertPlayer.run({ id, currentName, publishedName, tokens, role, inventory });
-	return player;
+	insertPlayer.run({ id, currentName, publishedName, tokens, role, inventory });
 };
 
 /**
  * Adds a vote to the database with the given properties.
- * @param {Database | DatabaseQuerier} db - The in-memory database.
+ * @param {import('better-sqlite3').Database | DatabaseQuerier} db - The in-memory database.
  * @param {{ voterID: string, playerVotedForID: string }} voteData - The vote data to add.
- * @returns {{ changes: number, lastInsertRowid: number }} The result of the insert operation.
+ * @returns {import('better-sqlite3').RunResult} The result of the insert operation.
  */
 const addMockVote = (db, { voterID, playerVotedForID }) => {
 	if (voterID === undefined)

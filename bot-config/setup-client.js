@@ -5,7 +5,6 @@ const { DISCORD_TOKEN } = require('./token');
 /**
  * Sets up the Discord client with the necessary intents and partials.
  * Stores the client in the global scope.
- *
  * @returns {Promise<Discord.Client>} The client that was set up.
  */
 const setupClient = async () => {
@@ -31,8 +30,7 @@ const setupClient = async () => {
 
 	await client.login(token);
 
-	client.cooldowns = new Discord.Collection();
-
+	global.cooldowns = new Discord.Collection();
 	global.client = client;
 
 	return client;

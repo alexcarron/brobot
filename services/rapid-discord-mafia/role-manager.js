@@ -1,7 +1,12 @@
+const AbilityManager = require("./ability-manager.js");
 const { AbilityName } = require("./ability.js");
-const { abilities } = require("./ability-manager.js");
 const {Role, Goal, Faction, Alignment, Immunity, RoleName} = require("./role.js");
 
+const abilities = AbilityManager.abilities;
+
+/**
+ * Handles the creation and storage of roles
+ */
 class RoleManager {
 	constructor() {}
 
@@ -255,7 +260,7 @@ class RoleManager {
 
 	/**
 	 * Get a role from a role name
-	 * @param {string} role_name
+	 * @param {string} role_name - the name of the role
 	 * @returns {Role | undefined} role if role name exists, otherwise undefined
 	 */
 	getRole(role_name) {
@@ -296,8 +301,8 @@ class RoleManager {
 
 	/**
 	 * Determines if a role is in one of the possible factions
-	 * @param {Role} role
-	 * @returns {boolean}
+	 * @param {Role} role - The role to check
+	 * @returns {boolean} True if the role is in one of the possible factions, false otherwise
 	 */
 	static isRoleInPossibleFaction(role) {
 		return RoleManager.getPossibleFactions().some(faction =>
@@ -314,9 +319,9 @@ class RoleManager {
 
 	/**
 	 * Determines if a role is apart of a faction
-	 * @param {Role} role
+	 * @param {Role} role - The role to check
 	 * @param {string} faction The name of the faction.
-	 * @returns {boolean}
+	 * @returns {boolean} True if the role is apart of the faction, false otherwise
 	 */
 	static isRoleInFaction(role, faction) {
 		if (RoleManager.getListOfFactions().includes(faction))

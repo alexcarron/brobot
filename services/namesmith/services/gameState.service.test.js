@@ -34,7 +34,7 @@ jest.mock('cron', () => ({
 }));
 
 const { CronJob } = require("cron");
-const GameStateRepository = require("../repositories/gameState.repository");
+const { GameStateRepository } = require("../repositories/gameState.repository");
 const { mockPlayers } = require("../repositories/mock-repositories");
 const { sendToNamesToVoteOnChannel, openNamesToVoteOnChannel, sendMessageToTheWinnerChannel, closeNamesToVoteOnChannel, openTheWinnerChannel, closeTheWinnerChannel } = require("../utilities/discord-action.utility");
 const GameStateService = require("./gameState.service");

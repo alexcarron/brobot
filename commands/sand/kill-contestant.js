@@ -1,8 +1,8 @@
-const { PermissionFlagsBits, ChannelType } = require("discord.js");
+const { PermissionFlagsBits } = require("discord.js");
 const ids = require("../../bot-config/discord-ids");
-const SlashCommand = require("../../services/command-creation/slash-command");
+const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { deferInteraction, editReplyToInteraction, removePermissionFromChannel } = require("../../utilities/discord-action-utils");
-const { fetchGuild, fetchChannel, fetchGuildMember, fetchAllChannels, fetchChannelsInCategory, getUserParamValue, fetchAllCategoryChannels, fetchCategoriesOfGuild } = require("../../utilities/discord-fetch-utils");
+const { getUserParamValue, fetchCategoriesOfGuild, fetchTextChannelsInCategory } = require("../../utilities/discord-fetch-utils");
 const { Parameter, ParameterType } = require("../../services/command-creation/parameter");
 
 
@@ -23,10 +23,6 @@ const command = new SlashCommand({
 	parameters: [
 		Parameters.Contestant,
 	],
-
-	/**
-	 * @param {CommandInteraction} interaction
-	 */
 	execute: async function execute(interaction) {
 		await deferInteraction(interaction);
 
@@ -45,7 +41,7 @@ const command = new SlashCommand({
 		const allAllianceChannels = [];
 
 		for (const category of allianceCategories) {
-			const categoryChannels = await fetchChannelsInCategory(
+			const categoryChannels = await fetchTextChannelsInCategory(
 				sandSeason3Guild,
 				category.id
 			);
@@ -77,6 +73,6 @@ const command = new SlashCommand({
 		);
 	},
 });
-command.isInDevelopment = true;
+
 
 module.exports = command;

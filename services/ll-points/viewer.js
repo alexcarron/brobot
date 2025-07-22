@@ -4,8 +4,11 @@ const { addRoleToMember, removeRoleFromMember } = require("../../utilities/disco
 const { LLPointTier, LLPointThreshold, LLPointReward, LLPointAccomplishment } = require("./ll-point-enums.js");
 const { logInfo, logError, logSuccess, logWarning } = require("../../utilities/logging-utils.js");
 
+/**
+ *
+ */
 class Viewer {
-	constructor({name, aliases=[], user_id, ll_points=0, isSubscribed=false, didUndertaleQuiz=false, didDeltaruneQuiz=false, games_participated_in=[], valentine}) {
+	constructor({name, aliases=[], user_id, ll_points=0, isSubscribed=false, didUndertaleQuiz=false, didDeltaruneQuiz=false, games_participated_in=[], valentine=null}) {
 		this.user_id = user_id;
 		this.name = name;
 		this.ll_points = ll_points;

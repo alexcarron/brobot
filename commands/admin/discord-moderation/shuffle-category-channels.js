@@ -1,9 +1,8 @@
-const { CommandInteraction, ChannelType, PermissionFlagsBits, ChatInputCommandInteraction } = require("discord.js");
+const { ChannelType, PermissionFlagsBits } = require("discord.js");
 const { ParameterType, Parameter } = require("../../../services/command-creation/parameter");
-const SlashCommand = require("../../../services/command-creation/slash-command");
+const { SlashCommand } = require("../../../services/command-creation/slash-command");
 const { deferInteraction, editReplyToInteraction, shuffleCategoryChannels } = require("../../../utilities/discord-action-utils");
-const { getStringParamValue, fetchChannel, fetchChannelsInCategory } = require("../../../utilities/discord-fetch-utils");
-const { wait } = require("../../../utilities/realtime-utils");
+const { getStringParamValue, fetchCategory } = require("../../../utilities/discord-fetch-utils");
 
 const Parameters = {
 	Category: new Parameter({
@@ -23,16 +22,13 @@ module.exports = new SlashCommand({
 		Parameters.Category,
 	],
 
-	/**
-	 * @param {ChatInputCommandInteraction} interaction
-	 */
 	execute: async function execute(interaction) {
 		await deferInteraction(interaction);
 
 		const guild = interaction.guild;
 
 		const categoryID = getStringParamValue(interaction, Parameters.Category.name);
-		const category = await fetchChannel(guild, categoryID);
+		const category = await fetchCategory(guild, categoryID);
 
 		await shuffleCategoryChannels(guild, category);
 
@@ -42,13 +38,10 @@ module.exports = new SlashCommand({
 		);
 	},
 
-	/**
-	 * @param {CommandInteraction} interaction
-	 */
 	autocomplete: async function autocomplete(interaction) {
 		let autocompleteValues;
 
-		const focusedParameter = await interaction.options.getFocused(true);
+		const focusedParameter = interaction.options.getFocused(true);
 		if (!focusedParameter) return;
 		const enteredValue = focusedParameter.value;
 

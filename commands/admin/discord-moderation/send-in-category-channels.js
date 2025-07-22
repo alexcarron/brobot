@@ -1,6 +1,6 @@
-const { CommandInteraction, ChannelType, PermissionFlagsBits } = require("discord.js");
+const { ChannelType, PermissionFlagsBits, TextChannel } = require("discord.js");
 const { ParameterType, Parameter } = require("../../../services/command-creation/parameter");
-const SlashCommand = require("../../../services/command-creation/slash-command");
+const { SlashCommand } = require("../../../services/command-creation/slash-command");
 const { deferInteraction, editReplyToInteraction } = require("../../../utilities/discord-action-utils");
 const { getStringParamValue, fetchChannel, fetchChannelsInCategory } = require("../../../utilities/discord-fetch-utils");
 const { wait } = require("../../../utilities/realtime-utils");
@@ -30,9 +30,6 @@ module.exports = new SlashCommand({
 		Parameters.Message,
 	],
 
-	/**
-	 * @param {CommandInteraction} interaction
-	 */
 	execute: async function execute(interaction) {
 		await deferInteraction(interaction);
 
@@ -48,6 +45,8 @@ module.exports = new SlashCommand({
 		let numMessagesSent = 0;
 
 		channels.forEach(async (channel) => {
+			if (!(channel instanceof TextChannel)) return;
+			
 			await channel.send(message);
 			numMessagesSent++;
 
@@ -58,17 +57,14 @@ module.exports = new SlashCommand({
 		});
 
 		await editReplyToInteraction(interaction,
-			`Sent message in \`${channels.size}\` channels in **${category.name}**`
+			`Sent message in \`${channels.length}\` channels in **${category.name}**`
 		);
 	},
 
-	/**
-	 * @param {CommandInteraction} interaction
-	 */
 	autocomplete: async function autocomplete(interaction) {
 		let autocompleteValues;
 
-		const focusedParameter = await interaction.options.getFocused(true);
+		const focusedParameter = interaction.options.getFocused(true);
 		if (!focusedParameter) return;
 		const enteredValue = focusedParameter.value;
 

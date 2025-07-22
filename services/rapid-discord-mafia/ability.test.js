@@ -14,7 +14,7 @@ describe('Ability', () => {
 			const duration = AbilityDuration.DAY_AND_NIGHT;
 			const phases_can_use = [Phase.DAY, Phase.TRIAL];
 			const effects = [EffectName.Control];
-			const feedback = (player_healing, player_name="You", isYou=true) => {return "feedback"}
+			const feedback = () => {return "feedback"}
 			const args = [
 				new Arg({
 					name: AbilityArgName.PLAYER_CONSORTING,
@@ -62,7 +62,7 @@ describe('Ability', () => {
 			const duration = AbilityDuration.DAY_AND_NIGHT;
 			const phases_can_use = [Phase.DAY, Phase.TRIAL];
 			const effects = [EffectName.Control];
-			const feedback = (player_healing, player_name="You", isYou=true) => {return "feedback"}
+			const feedback = () => {return "feedback"}
 			const args = [
 				{
 					name: AbilityArgName.PLAYER_CONSORTING,

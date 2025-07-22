@@ -6,6 +6,7 @@ const { memberHasRole, setNicknameOfMember, removeRoleFromMember, addRoleToMembe
 const ids = require("../../../bot-config/discord-ids");
 const { fetchPublishedNamesChannel, fetchNamesmithGuildMember, fetchNamesToVoteOnChannel, fetchTheWinnerChannel } = require("./discord-fetch.utility");
 const { InvalidArgumentError } = require("../../../utilities/error-utils");
+const { GuildMember } = require("discord.js");
 
 const MAX_NAME_LENGTH = 32;
 const NO_NAME = "ˑ";
@@ -126,7 +127,6 @@ const isNonPlayer = async (guildMember) => {
 /**
  * Resets a guild member to a new player by removing all roles, giving them the No Name role, and setting their nickname to the default No Name.
  * @param {GuildMember} guildMember The guild member to reset.
- * @param {string} nameIfNoName The name to set if the guild member has the No Name role.
  * @returns {Promise<void>} A promise that resolves once the guild member has been reset.
  */
 const resetMemberToNewPlayer = async (guildMember) => {

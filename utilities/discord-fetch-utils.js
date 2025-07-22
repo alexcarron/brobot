@@ -1,6 +1,7 @@
-const { Client, Guild, TextChannel, VoiceChannel, Message, ChannelType, GuildMember, User, Role, ChatInputCommandInteraction } = require("discord.js");
+const { Client, Guild, TextChannel, Message, ChannelType, GuildMember, User, Role, ChatInputCommandInteraction, GuildChannel, CategoryChannel } = require("discord.js");
 const ids = require("../bot-config/discord-ids");
 const { discordCollectionToArray } = require("./data-structure-utils");
+const { InvalidArgumentError } = require("./error-utils");
 
 /**
  * Asserts that the Discord client is setup and ready.
@@ -57,15 +58,47 @@ const fetchUser = async (userID) => {
  * Fetches a channel from Discord using the given guild.
  * @param {Guild} guild The guild that the channel belongs to.
  * @param {string} channelID The ID of the channel to fetch.
- * @returns {Promise<TextChannel|VoiceChannel>} A Promise that resolves with the Channel object if successful, or rejects with an Error if not.
+ * @returns {Promise<import("discord.js").GuildBasedChannel>} A Promise that resolves with the Channel object if successful, or rejects with an Error if not.
  */
 const fetchChannel = async (guild, channelID) => {
 	return await guild.channels.fetch(channelID);
 }
 
 /**
+ * Fetches a category from Discord using the given guild.
+ * @param {Guild} guild The guild that the category belongs to.
+ * @param {string} categoryID The ID of the category to fetch.
+ * @returns {Promise<CategoryChannel>} A Promise that resolves with the CategoryChannel object if successful, or rejects with an Error if not.
+ * @throws {Error} If the client is not setup or not ready.
+ */
+const fetchCategory = async (guild, categoryID) => {
+	const channel = await fetchChannel(guild, categoryID);
+
+	if (channel.type !== ChannelType.GuildCategory)
+		throw new Error(`fetchCategory: channel is not a category, got ${channel}`);
+
+	return channel;
+}
+
+/**
+ * Fetches a TextChannel from Discord using the given guild.
+ * @param {Guild} guild The guild that the channel belongs to.
+ * @param {string} channelID The ID of the channel to fetch.
+ * @returns {Promise<TextChannel>} A Promise that resolves with the TextChannel object if successful, or rejects with an Error if not.
+ * @throws {Error} If the client is not setup or not ready.
+ */
+const fetchTextChannel = async (guild, channelID) => {
+	const channel = await fetchChannel(guild, channelID);
+
+	if (!(channel instanceof TextChannel))
+		throw new Error(`fetchTextChannel: channel is not an instance of TextChannel, got ${channel}`);
+
+	return channel;
+}
+
+/**
  * Fetches a message from Discord using the given channel.
- * @param {TextChannel|VoiceChannel} channel The channel that the message belongs to.
+ * @param {TextChannel} channel The channel that the message belongs to.
  * @param {string} messageID The ID of the message to fetch.
  * @returns {Promise<Message>} A Promise that resolves with the Message object if successful, or rejects with an Error if not.
  */
@@ -152,6 +185,25 @@ const fetchChannelsInCategory = async (guild, categoryID) => {
 }
 
 /**
+ * Fetches all the text channels in a category.
+ * @param {Guild} guild The guild whose category you want to fetch the text channels of.
+ * @param {string} categoryID The ID of the category whose text channels you want to fetch.
+ * @returns {Promise<TextChannel[]>} A Promise that resolves with an array of the text channels in the category.
+ */
+const fetchTextChannelsInCategory = async (guild, categoryID) => {
+	const allChannelsInGuild = await guild.channels.fetch();
+
+	// @ts-ignore
+	return Array.from(
+		allChannelsInGuild.filter((channel) =>
+			channel.parentId === categoryID &&
+			channel.type === ChannelType.GuildText &&
+			channel instanceof TextChannel
+		).values()
+	);
+}
+
+/**
  * Fetches the Rapid Discord Mafia guild.
  * @returns {Promise<Guild>} A Promise that resolves with the Rapid Discord Mafia guild.
  */
@@ -190,6 +242,25 @@ const getUserParamValue = (interaction, name) => {
 }
 
 /**
+ * Gets a channel parameter value of a slash command by name.
+ * @param {ChatInputCommandInteraction} interaction - The interaction whose reply is being updated.
+ * @param {string} name - The name of the channel parameter
+ * @returns {import("discord.js").TextBasedChannel | undefined} The value of the channel parameter. If the parameter is not provided, or if the channel is not a valid channel, then null is returned.
+ */
+const getChannelParamValue = (interaction, name) => {
+	const channel = interaction.options.getChannel(name);
+
+  if (
+		channel && 'send' in channel &&
+		typeof channel.send === 'function'
+	) {
+    return channel;
+  }
+
+  return undefined;
+}
+
+/**
  * Gets the everyone role of a given guild.
  * @param {Guild} guild The guild whose everyone role you want to fetch.
  * @returns {Role} The everyone role of the guild.
@@ -197,23 +268,37 @@ const getUserParamValue = (interaction, name) => {
 const getEveryoneRole = (guild) => guild.roles.everyone;
 
 /**
+ * Retrieves the guild member object from a slash command interaction.
+ * @param {ChatInputCommandInteraction} interaction - The interaction object from which to get the guild member.
+ * @returns {GuildMember} The guild member who initiated the interaction.
+ * @throws {Error} If the member object is not an instance of GuildMember.
+ */
+
+const getMemberOfInteraction = (interaction) => {
+	if (!(interaction.member instanceof GuildMember))
+		throw new Error("Guild member object must be an instance of GuildMember");
+
+	return interaction.member
+};
+
+/**
  * Gets the nickname of the user who invoked a slash command.
  * @param {ChatInputCommandInteraction} interaction The interaction object of the slash command.
  * @returns {string} A Promise that resolves with the nickname of the user who invoked the slash command.
  */
 const getNicknameOfInteractionUser = (interaction) => {
-	return interaction.member.nickname
+	const member = getMemberOfInteraction(interaction);
+	return member.nickname;
 }
 
 /**
  * Fetches all messages in a channel
- * @param {TextChannel} channel The channel whose messages you want to fetch
+ * @param {import("discord.js").Channel} channel The channel whose messages you want to fetch
  * @returns {Promise<Message[]>} A Promise that resolves with an array of all messages in the channel
  */
 const fetchMessagesInChannel = async (channel) => {
   if (!channel || !(channel instanceof TextChannel)) {
-    console.error('Channel is not a text channel or not found.');
-    return;
+		throw new InvalidArgumentError("Channel is required and must be an instance of TextChannel");
   }
 
   const allMessages = [];
@@ -238,4 +323,17 @@ const fetchMessagesInChannel = async (channel) => {
 	return allMessages;
 }
 
-module.exports = { assertClientSetup, fetchGuild, fetchChannel, fetchChannelsOfGuild, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchAllGuildMembers, fetchUser, fetchRole, fetchRoleByName, getStringParamValue, getUserParamValue, getEveryoneRole, getIntegerParamValue, getNicknameOfInteractionUser, fetchMessagesInChannel };
+/**
+ * Fetches the voice channel that a guild member is currently in.
+ * @param {GuildMember | import("discord.js").APIInteractionGuildMember} guildMember The guild member whose voice channel you want to fetch.
+ * @returns {import("discord.js").VoiceBasedChannel | null} The VoiceChannel object the member is in, or null if the member is not in a voice channel or if an error occurs.
+ */
+const fetchVoiceChannelMemberIsIn = (guildMember) => {
+	if (!(guildMember instanceof GuildMember)) {
+		return null;
+	}
+
+	return guildMember.voice.channel
+}
+
+module.exports = { assertClientSetup, fetchGuild, fetchChannel, fetchCategory, fetchTextChannel, fetchChannelsOfGuild, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchAllGuildMembers, fetchUser, fetchRole, fetchRoleByName, getStringParamValue, getUserParamValue, getEveryoneRole, getIntegerParamValue, getNicknameOfInteractionUser, fetchMessagesInChannel, getChannelParamValue, fetchVoiceChannelMemberIsIn, fetchTextChannelsInCategory };

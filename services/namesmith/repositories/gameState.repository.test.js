@@ -1,4 +1,4 @@
-const GameStateRepository = require('./gameState.repository');
+const { GameStateRepository } = require('./gameState.repository');
 const { createMockGameStateRepo } = require('./mock-repositories');
 
 describe('GameStateRepository', () => {

@@ -1,7 +1,8 @@
 const { PermissionFlagsBits } = require("discord.js");
 const { Parameter } = require("../../../services/command-creation/parameter");
-const SlashCommand = require("../../../services/command-creation/slash-command");
+const { SlashCommand } = require("../../../services/command-creation/slash-command");
 const { deferInteraction } = require("../../../utilities/discord-action-utils");
+const { getChannelParamValue } = require("../../../utilities/discord-fetch-utils");
 
 const Parameters = {
 	Channel: new Parameter({
@@ -16,23 +17,22 @@ const Parameters = {
 	}),
 }
 
-const command = new SlashCommand({
+module.exports = new SlashCommand({
 	name: "send",
 	description: "Sends a message to a certain channel",
+	required_permissions: [PermissionFlagsBits.Administrator],
+	parameters: [
+		Parameters.Channel,
+		Parameters.Message,
+	],
+	execute: async function(interaction) {
+		await deferInteraction(interaction);
+
+		const channel = getChannelParamValue(interaction,Parameters.Channel.name);
+		const message = interaction.options.getString(Parameters.Message.name);
+
+		await channel.send(message);
+
+		await interaction.editReply(`Sent \`${message}\` to **${channel}**`)
+	}
 });
-command.required_permissions = [PermissionFlagsBits.Administrator]
-command.parameters = [
-	Parameters.Channel,
-	Parameters.Message,
-]
-command.execute = async function(interaction) {
-	await deferInteraction(interaction);
-
-	const channel = interaction.options.getChannel(Parameters.Channel.name);
-	const message = interaction.options.getString(Parameters.Message.name);
-	channel.send(message);
-
-	await interaction.editReply(`Sent \`${message}\` to **${channel}**`)
-}
-
-module.exports = command;

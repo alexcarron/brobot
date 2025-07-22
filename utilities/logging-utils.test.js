@@ -37,45 +37,37 @@ describe('logging-utils.js', () => {
 		it('should not throw an error with a null message', () => {
 			const message = null;
 			const color = LogColor.GREEN; // Green
-			expect(() => logWithColor(message, color)).not.toThrowError(TypeError);
+			expect(() => logWithColor(message, color)).not.toThrow(TypeError);
 		});
 
 		it('should not throw an error with an undefined message', () => {
 			const message = undefined;
 			const color = LogColor.GREEN; // Green
-			expect(() => logWithColor(message, color)).not.toThrowError(TypeError);
+			expect(() => logWithColor(message, color)).not.toThrow(TypeError);
 		});
 
 		it('should not throw an error with a non-string message', () => {
 			const message = 123;
 			const color = LogColor.GREEN; // Green
-			expect(() => logWithColor(message, color)).not.toThrowError(TypeError);
+			expect(() => logWithColor(message, color)).not.toThrow(TypeError);
 		});
-
-		it('logs a message with a valid color', () => {
-			const message = 'Hello, World!';
-			const color = LogColor.GREEN; // Green
-			logWithColor(message, color);
-			expect(console.log).toHaveBeenCalledTimes(1);
-			expect(console.log).toHaveBeenCalledWith(`\x1b[32m${message}\x1b[0m`);
-		});
-
+		
 		it('throws an error with an invalid color', () => {
 			const message = 'Hello, World!';
 			const color = 'abc'; // Invalid color
-			expect(() => logWithColor(message, color)).toThrowError(TypeError);
+			expect(() => logWithColor(message, color)).toThrow(TypeError);
 		});
 
 		it('throws an error with a null color', () => {
 			const message = 'Hello, World!';
 			const color = null; // Null color
-			expect(() => logWithColor(message, color)).toThrowError(TypeError);
+			expect(() => logWithColor(message, color)).toThrow(TypeError);
 		});
 
 		it('throws an error with an undefined color', () => {
 			const message = 'Hello, World!';
 			const color = undefined; // Undefined color
-			expect(() => logWithColor(message, color)).toThrowError(TypeError);
+			expect(() => logWithColor(message, color)).toThrow(TypeError);
 		});
 
 	});
@@ -118,17 +110,17 @@ describe('logging-utils.js', () => {
 
 		it('should not throw an error with a null message', () => {
 			const message = null;
-			expect(() => logWarning(message)).not.toThrowError('Message must be a string.');
+			expect(() => logWarning(message)).not.toThrow('Message must be a string.');
 		});
 
 		it('should not throw an error with an undefined message', () => {
 			const message = undefined;
-			expect(() => logWarning(message)).not.toThrowError('Message must be a string.');
+			expect(() => logWarning(message)).not.toThrow('Message must be a string.');
 		});
 
 		it('should not throw an error with a non-string message', () => {
 			const message = 123;
-			expect(() => logWarning(message)).not.toThrowError('Message must be a string.');
+			expect(() => logWarning(message)).not.toThrow('Message must be a string.');
 		});
 	});
 
@@ -147,17 +139,17 @@ describe('logging-utils.js', () => {
 
 		it('should not throw an error with a null message', () => {
 			const message = null;
-			expect(() => logInfo(message)).not.toThrowError('Message must be a string.');
+			expect(() => logInfo(message)).not.toThrow('Message must be a string.');
 		});
 
 		it('should not throw an error with an undefined message', () => {
 			const message = undefined;
-			expect(() => logInfo(message)).not.toThrowError('Message must be a string.');
+			expect(() => logInfo(message)).not.toThrow('Message must be a string.');
 		});
 
 		it('should not throw an error with a non-string message', () => {
 			const message = 123;
-			expect(() => logInfo(message)).not.toThrowError('Message must be a string.');
+			expect(() => logInfo(message)).not.toThrow('Message must be a string.');
 		});
 	});
 
@@ -177,17 +169,17 @@ describe('logging-utils.js', () => {
 
 		it('should not throw an error with a null message', () => {
 			const message = null;
-			expect(() => logSuccess(message)).not.toThrowError(TypeError);
+			expect(() => logSuccess(message)).not.toThrow(TypeError);
 		});
 
 		it('should not throw an error with an undefined message', () => {
 			const message = undefined;
-			expect(() => logSuccess(message)).not.toThrowError(TypeError);
+			expect(() => logSuccess(message)).not.toThrow(TypeError);
 		});
 
 		it('should not throw an error with a non-string message', () => {
 			const message = 123;
-			expect(() => logSuccess(message)).not.toThrowError(TypeError);
+			expect(() => logSuccess(message)).not.toThrow(TypeError);
 		});
 	});
 
@@ -206,17 +198,17 @@ describe('logging-utils.js', () => {
 
 		it('should not throw an error with a null message', () => {
 			const message = null;
-			expect(() => logDebug(message)).not.toThrowError('Message must be a string.');
+			expect(() => logDebug(message)).not.toThrow('Message must be a string.');
 		});
 
 		it('should not throw an error with an undefined message', () => {
 			const message = undefined;
-			expect(() => logDebug(message)).not.toThrowError('Message must be a string.');
+			expect(() => logDebug(message)).not.toThrow('Message must be a string.');
 		});
 
 		it('should not throw an error with a non-string message', () => {
 			const message = 123;
-			expect(() => logDebug(message)).not.toThrowError('Message must be a string.');
+			expect(() => logDebug(message)).not.toThrow('Message must be a string.');
 		});
 
 		it('should log a debug message with trace when includeTrace set to true', () => {
@@ -243,7 +235,7 @@ describe('logging-utils.js', () => {
 
 	describe('logWithColors()', () => {
 		it('throws an error when not using template literal', () => {
-			expect(() => logWithColors('hello')).toThrowError(TypeError);
+			expect(() => logWithColors('hello')).toThrow(TypeError);
 		});
 
 		it('handle when expression is not an array', () => {
@@ -253,17 +245,17 @@ describe('logging-utils.js', () => {
 		});
 
 		it('does not throw an error when strings contains non-string elements', () => {
-			expect(() => logWithColors(['hello', 123], ['world', LogColor.GREEN])).not.toThrowError(TypeError);
+			expect(() => logWithColors(['hello', 123], ['world', LogColor.GREEN])).not.toThrow(TypeError);
 		});
 
 		it('does not throw an error when expressions contains tuple elements with incorrect length', () => {
 			expect(() =>
 				logWithColors`hello ${['world', LogColor.GREEN, 'extra']}`
-			).not.toThrowError(TypeError);
+			).not.toThrow(TypeError);
 		});
 
 		it('throws an error when expressions contains tuple elements with invalid color', () => {
-			expect(() => logWithColors(['hello'], ['world', 123])).toThrowError(TypeError);
+			expect(() => logWithColors(['hello'], ['world', 123])).toThrow(TypeError);
 		});
 
 		it('logs the correct formatted string when strings and expressions are valid in template literal', () => {

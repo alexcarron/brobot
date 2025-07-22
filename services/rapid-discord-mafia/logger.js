@@ -1,5 +1,8 @@
 const { logWithColor, LogColor, logDebug, logInfo } = require("../../utilities/logging-utils");
 
+/**
+ * A logger for the rapid-discord-mafia bot
+ */
 class Logger {
 	logDebug(message) {
 		logDebug(message);

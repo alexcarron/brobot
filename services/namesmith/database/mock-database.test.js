@@ -60,9 +60,7 @@ describe("mock-database", () => {
         inventory: "{}",
       };
 
-      const result = addMockPlayer(db, playerData);
-      expect(result).toHaveProperty("changes", expect.any(Number));
-			expect(result).toHaveProperty("lastInsertRowid", expect.any(Number));
+      addMockPlayer(db, playerData);
 
       const players = db.prepare("SELECT * FROM player").all();
       expect(players).toHaveLength(1);
