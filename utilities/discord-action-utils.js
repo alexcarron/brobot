@@ -115,37 +115,57 @@ const removeAllRolesFromMember = async (guildMember) => {
  * @returns {Promise<void>}
  */
 const deferInteraction = async (
-	interaction,
-	messageContent = "Running command..."
+  interaction,
+  messageContent = "Running command..."
 ) => {
-	if (!interaction || typeof interaction.reply !== 'function') return;
+  if (!interaction || typeof interaction.reply !== 'function') return;
 
-	const replyContent = { content: messageContent };
+  const replyContent = { content: messageContent };
 
-	try {
-		if (interaction.replied) {
-			await interaction.followUp(replyContent);
-		}
+  try {
+		// Already replied, just follow up
+    if (interaction.replied) {
+      await interaction.followUp(replyContent);
+    }
+		// Deferred but no reply content yet, edit reply
 		else if (interaction.deferred) {
-			await interaction.editReply(replyContent);
-		}
+      await interaction.editReply(replyContent);
+    }
+		// Not replied or deferred yet — try to defer ephemerally first
 		else {
-			try {
-				await interaction.deferReply();
-			}
-			catch (error) {
-				logWarning("Interaction already expired: unable to reply/follow-up");
-				await interaction.reply(replyContent);
-			}
-		}
-	}
-	catch (error) {
-		if (error.code === 10062) {
-			logWarning("Interaction already expired: unable to reply/follow-up");
-		} else {
-			logError("Error responding to interaction:", error);
-		}
-	}
+      try {
+        await interaction.deferReply({ ephemeral: true });
+      }
+			catch (ephemeralErr) {
+        // Failed to defer ephemerally, try to defer normally
+        try {
+          await interaction.deferReply();
+        }
+				catch (deferErr) {
+          // Both defer attempts failed — try immediate reply as fallback
+          try {
+            await interaction.reply({ ...replyContent, ephemeral: true });
+          }
+					catch (replyErr) {
+            // If ephemeral reply failed, try non-ephemeral reply as last resort
+            try {
+              await interaction.reply(replyContent);
+            }
+						catch (finalErr) {
+              logWarning("Interaction already expired: unable to reply/follow-up");
+            }
+          }
+        }
+      }
+    }
+  } catch (error) {
+    if (error.code === 10062) {
+      logWarning("Interaction already expired: unable to reply/follow-up");
+    }
+		else {
+      logError("Error responding to interaction:", error);
+    }
+  }
 };
 
 /**

@@ -55,12 +55,6 @@ const getCommands = () => {
 		let command = require(commandFilePath);
 
 		if (command instanceof SlashCommand) {
-			if (
-				botStatus.isInDevelopmentMode &&
-				!command.isInDevelopment
-			) {
-				command.required_permissions = [Discord.PermissionFlagsBits.Administrator];
-			}
 			command = command.getCommand();
 		}
 
