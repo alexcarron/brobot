@@ -1,0 +1,31 @@
+{
+
+  "ts-node": {
+    "transpileOnly": true,
+		"swc": true,
+		"esm": true
+  },
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "checkJs": true,
+    "allowJs": true,
+    "noEmit": true, // Prevents tsc from outputting .js files
+    "strict": false,
+    "esModuleInterop": true, // Allow importing CommonJS modules
+    "moduleResolution": "node",
+    "isolatedModules": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true, // Skip type checking of library files
+		"resolveJsonModule": true // Allow importing .json files
+  },
+  "include": ["**/*.js", "**/*.ts"],
+  "exclude": [
+		"node_modules",
+		"**/*.test.js",
+		"**/__tests__/**",
+		"unused/**",
+	],
+	"module": "ESNext",
+	"type": "module"
+}

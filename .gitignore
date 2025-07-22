@@ -4,11 +4,6 @@ node_modules/
 # Stored Unused Files
 unused/
 
-# Configuration
-.eslintrc.js*
-tsconfig.json
-nodemon.json
-
 # Local Only
 *token.json
 .vscode
