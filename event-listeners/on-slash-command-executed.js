@@ -28,7 +28,11 @@ const onSlashCommandExecuted = async (interaction) => {
 
 	// Is the command server-only?
 	if (
-		(command.isServerOnly || command.required_servers) && interaction.channel.type === ChannelType.DM
+		(
+			command.isServerOnly ||
+			command.required_servers && command.required_servers.length > 0
+		) &&
+		interaction.channel.type === ChannelType.DM
 	)
 		return interaction.reply({
 			content: `You aren't allowed to use this command in DMs.`,
@@ -36,7 +40,10 @@ const onSlashCommandExecuted = async (interaction) => {
 		});
 
 	// Does the user have the required permissions?
-	if (command.required_permission) {
+	if (
+		command.required_permission &&
+		command.required_permission > 0
+	) {
 		const userPermissions = interaction.channel.permissionsFor(interaction.author);
 
 		if (
@@ -53,6 +60,7 @@ const onSlashCommandExecuted = async (interaction) => {
 	// Is the command being executed in the required server?
 	if (
 		command.required_servers &&
+		command.required_servers.length > 0 &&
 		!command.required_servers.includes(interaction.guild.id)
 	)
 		return interaction.reply({
@@ -63,6 +71,7 @@ const onSlashCommandExecuted = async (interaction) => {
 	// Is the command being executed in the required channel?
 	if (
 		command.required_channels &&
+		command.required_channels.length > 0 &&
 		!command.required_channels.includes(interaction.channel.id)
 	) {
 		return interaction.reply({
@@ -74,6 +83,7 @@ const onSlashCommandExecuted = async (interaction) => {
 	// Is the command being executed in the required channel category?
 	if (
 		command.required_categories &&
+		command.required_categories.length > 0 &&
 		!command.required_categories.includes(interaction.channel.parent.id)
 	)
 		return interaction.reply({
@@ -82,7 +92,10 @@ const onSlashCommandExecuted = async (interaction) => {
 		});
 
 	// Does the user have the required role(s) to execute the command?
-	if (command.required_roles) {
+	if (
+		command.required_roles &&
+		command.required_roles.length > 0
+	) {
 		const userRoleNames = interaction.member.roles.cache.map(role => role.name);
 		const userRoleIDs = interaction.member.roles.cache.map(role => role.id);
 
