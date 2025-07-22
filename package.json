@@ -9,14 +9,14 @@
 		"test": "jest --runInBand --silent",
 		"lint": "eslint . --ignore-path .gitignore",
 		"typecheck": "tsc --noEmit",
-		"start": "npm run build && ts-node index.ts",
-		"build": "ts-node build.js",
-		"build:guild": "ts-node build.js --guild-commands-only",
-		"build:dev": "ts-node build.js --development",
-		"build:dev:guild": "ts-node build.js --development --guild-commands-only",
+		"start": "npm run build && node -r ts-node/register index.ts",
+		"build": "node -r ts-node/register build.js",
+		"build:guild": "npm run build -- --guild-commands-only",
+		"build:dev": "npm run build -- --development",
+		"build:dev:guild": "npm run build -- --development --guild-commands-only",
 		"dev": "nodemon --ext ts,js index.ts --development",
-		"dev:deploy": "ts-node build.js --development --guild-commands-only && npm run dev",
-		"dev:deploy-all": "ts-node build.js --development && npm run dev"
+		"dev:deploy": "npm run build -- --development --guild-commands-only && npm run dev",
+		"dev:deploy-all": "npm run build -- --development && npm run dev"
 	},
 	"dependencies": {
 		"@discordjs/builders": "^1.6.5",
@@ -66,7 +66,7 @@
 		"jest-jasmine2": "^29.7.0",
 		"nodemon": "^3.1.10",
 		"ts-jest": "^29.4.0",
-		"ts-node": "^10.9.2",
+		"node -r ts-node/register": "^10.9.2",
 		"typescript": "^5.8.3",
 		"why-so-loud-jest": "^1.1.0"
 	},
