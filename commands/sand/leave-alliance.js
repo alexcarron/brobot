@@ -6,7 +6,7 @@ const { fetchGuild, fetchTextChannel } = require("../../utilities/discord-fetch-
 module.exports = new SlashCommand({
 	name: "leave-alliance",
 	description: "Leave the alliance this command is sent in",
-	required_roles: [[ids.sandSeason3.roles.contestant, ids.sandSeason3.roles.eliminated]],
+	required_roles: [ids.sandSeason3.roles.contestant],
 	required_servers: [ids.sandSeason3.guild],
 	execute: async function execute(interaction) {
 		await deferInteraction(interaction);
