@@ -7,8 +7,8 @@ const Event = require('../services/discord-events/event.js');
 const Timer = require('../services/timers/timer.js');
 const DailyMessageHandler = require('../services/discussion-prompts/daily-message-handler.js');
 const TextToSpeechHandler = require('../services/text-to-speech/text-to-speech-handler.js');
-const { setupNamesmith } = require('../services/namesmith/event-listeners/on-setup.js');
-const setupAnomolyService = require('../services/sand-season-3/anomoly/on-setup.js');
+const { setupNamesmith } = require('../services/namesmith/event-listeners/on-setup');
+const setupAnomolyService = require('../services/sand-season-3/anomoly/on-setup');
 
 /**
  * Called when the client is ready to start running.

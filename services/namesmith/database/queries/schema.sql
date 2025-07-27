@@ -58,6 +58,13 @@ CREATE TABLE IF NOT EXISTS vote (
 	playerVotedForID TEXT NOT NULL REFERENCES player(id) ON DELETE CASCADE
 );
 
+-- Recipes table
+CREATE TABLE IF NOT EXISTS recipe (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	inputCharacters TEXT NOT NULL,
+	outputCharacters TEXT NOT NULL
+);
+
 -- Optional index for performance
 CREATE INDEX IF NOT EXISTS characterIDIndex ON character (id);
 CREATE INDEX IF NOT EXISTS characterValueIndex ON character (value);
@@ -67,3 +74,6 @@ CREATE INDEX IF NOT EXISTS mysteryBoxIDIndex ON mysteryBoxCharacterOdds (mystery
 CREATE INDEX IF NOT EXISTS mysteryBoxCharacterIDIndex ON mysteryBoxCharacterOdds (characterID);
 CREATE INDEX IF NOT EXISTS playerIDIndex ON vote (playerVotedForID);
 CREATE INDEX IF NOT EXISTS voterIDIndex ON vote (voterID);
+CREATE INDEX IF NOT EXISTS recipeIDIndex ON recipe (id);
+CREATE INDEX IF NOT EXISTS recipeOutputIndex ON recipe (outputCharacters);
+CREATE INDEX IF NOT EXISTS recipeInputIndex ON recipe (inputCharacters);

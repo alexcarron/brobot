@@ -18,12 +18,13 @@ import { DISCORD_TOKEN } from './token.js';
  */
 const getAllJSFilesIn = (directoryPath) => {
 	const jsFiles: string[] = [];
+	const jsFileExtensions = ['.js', '.ts'];
 
 	/**
 	 * Recursively traverses the given directory path, adding all .js file paths to the jsFiles array.
-	 * @param {string} currentPath - The current directory path to search within.
+	 * @param currentPath - The current directory path to search within.
 	 */
-	function recurse(currentPath) {
+	function recurse(currentPath: string): void {
 		const fileEntries = fs.readdirSync(currentPath, { withFileTypes: true });
 
 		for (const fileEntry of fileEntries) {
@@ -31,7 +32,10 @@ const getAllJSFilesIn = (directoryPath) => {
 			if (fileEntry.isDirectory()) {
 				recurse(fullPath);
 			}
-			else if (fileEntry.isFile() && fileEntry.name.endsWith('.js')) {
+			else if (
+				fileEntry.isFile()
+				&& jsFileExtensions.includes(path.extname(fileEntry.name))
+			) {
 				jsFiles.push(fullPath);
 			}
 		}
@@ -52,7 +56,15 @@ const getCommands = () => {
 	const commandFilePaths = getAllJSFilesIn(COMMANDS_DIR_PATH);
 
 	for (const commandFilePath of commandFilePaths) {
-		let command = require(commandFilePath);
+    let commandModule = require(commandFilePath);
+
+    // command might be default export or named export
+    // Possible patterns: default export, named export
+    let command =
+			commandModule.default ??
+			commandModule.command ??
+			commandModule;
+
 
 		if (command instanceof SlashCommand) {
 			command = command.getCommand();

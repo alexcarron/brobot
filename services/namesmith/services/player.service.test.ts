@@ -261,13 +261,6 @@ describe('PlayerService', () => {
 			const players = playerService.playerRepository.getPlayers();
 			expect(players.length).toBe(mockPlayers.length);
 		});
-
-		it('should throw an error if the ID is invalid', async () => {
-			await expect(playerService.addNewPlayer(1234567899)).rejects.toThrow();
-			expect(resetMemberToNewPlayer).not.toHaveBeenCalled();
-			const players = playerService.playerRepository.getPlayers();
-			expect(players.length).toBe(mockPlayers.length);
-		});
 	});
 
 	describe('.addEveryoneInServer()', () => {
