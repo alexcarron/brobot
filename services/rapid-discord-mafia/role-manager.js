@@ -261,10 +261,15 @@ class RoleManager {
 	/**
 	 * Get a role from a role name
 	 * @param {string} role_name - the name of the role
-	 * @returns {Role | undefined} role if role name exists, otherwise undefined
+	 * @returns {Role} The role
 	 */
 	getRole(role_name) {
-		return RoleManager.roles[role_name];
+		const role = RoleManager.roles[role_name];
+
+		if (role === undefined)
+			throw new Error(`Role ${role_name} does not exist.`);
+
+		return role;
 	}
 
 	/**

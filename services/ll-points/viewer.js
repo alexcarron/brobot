@@ -102,6 +102,10 @@ class Viewer {
 			return `Error: No accomplishment called ${accomplishment}`;
 		}
 		let accomplishment_key = Object.keys(LLPointAccomplishment).find(key => LLPointAccomplishment[key] === accomplishment);
+		if (accomplishment_key === undefined) {
+			logWarning(`No accomplishment called ${accomplishment}. Choose between: ${accomplishments.join(", ")}`);
+			return `Error: No accomplishment called ${accomplishment}`;
+		}
 
 		switch (accomplishment) {
 			case LLPointAccomplishment.SUBSCRIBE:

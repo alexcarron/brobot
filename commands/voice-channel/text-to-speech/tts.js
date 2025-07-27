@@ -3,6 +3,7 @@ const { Parameter } = require('../../../services/command-creation/parameter');
 const { joinVoiceChannel } = require('@discordjs/voice');
 const { PermissionsBitField } = require('discord.js');
 const { deferInteraction } = require('../../../utilities/discord-action-utils.js');
+const { getVoiceChannelOfInteraction, getStringParamValue, getMemberOfInteraction } = require('../../../utilities/discord-fetch-utils');
 
 const Subparameters = {
 	Message: new Parameter({
@@ -74,16 +75,26 @@ module.exports = new SlashCommand({
 	execute: async function(interaction) {
 		await deferInteraction(interaction);
 
+		if (interaction.guild === null || interaction.channel === null) {
+			return await interaction.editReply("You need to be in a server!");
+		}
+
+		const member = getMemberOfInteraction(interaction);
+
 		let message = "Nothing";
 		let name = undefined;
+		/** @type {string | null} */
 		let speaker_name = "Someone";
 
-		const voice_channel = interaction.member.voice.channel;
+		const voice_channel = getVoiceChannelOfInteraction(interaction);
 		if (!voice_channel) {
 			return await interaction.editReply("You need to be in a VC!");
 		}
 
 		const brobot_perms = voice_channel.permissionsFor(interaction.client.user);
+
+		if (brobot_perms === null)
+			return await interaction.editReply("I don't have permissions in that VC!");
 
 		if (
 			!brobot_perms.has(PermissionsBitField.Flags.Connect) ||
@@ -96,8 +107,8 @@ module.exports = new SlashCommand({
 
 		console.log({subcommand_name});
 		if (subcommand_name === Parameters.Say.name) {
-			message = interaction.options.getString(Subparameters.Message.name);
-			name = interaction.options.getString(Subparameters.Name.name);
+			message = getStringParamValue(interaction, Subparameters.Message.name) || "Nothing";
+			name = getStringParamValue(interaction, Subparameters.Name.name);
 
 			if (name)
 				message = `${name} says ${message}`;
@@ -110,7 +121,7 @@ module.exports = new SlashCommand({
 
 			speaker_name = name;
 			if (!speaker_name)
-				speaker_name = interaction.member.nickname;
+				speaker_name = member.nickname;
 
 			if (speaker_name == null)
 				speaker_name = interaction.user.globalName;
@@ -132,7 +143,7 @@ module.exports = new SlashCommand({
 		}
 
 		else if (subcommand_name === Parameters.ReadMyMessages.name) {
-			name = interaction.options.getString(Subparameters.Name.name);
+			name = getStringParamValue(interaction, Subparameters.Name.name);
 
 			global.tts.removeToggledUser(interaction.user.id);
 
@@ -152,7 +163,7 @@ module.exports = new SlashCommand({
 		}
 
 		else if (subcommand_name === Parameters.SetName.name) {
-			name = interaction.options.getString(Subparameters.Name.name);
+			name = getStringParamValue(interaction, Subparameters.Name.name);
 
 			if (!name) {
 				name = "";

@@ -3,6 +3,7 @@ const { SlashCommand } = require("../../services/command-creation/slash-command"
 const ids = require("../../bot-config/discord-ids.js");
 const { Vote, TrialVote } = require("../../services/rapid-discord-mafia/vote-manager.js");
 const { deferInteraction } = require("../../utilities/discord-action-utils.js");
+const { getStringParamValue } = require("../../utilities/discord-fetch-utils");
 
 const Subparameters = {
 	PlayerVotingFor: new Parameter({
@@ -52,7 +53,7 @@ module.exports = new SlashCommand({
 		let voter_player;
 
 		if (isTest) {
-			voter_player = global.game_manager.player_manager.getPlayerFromName(interaction.options.getString("player-voting"));
+			voter_player = global.game_manager.player_manager.getPlayerFromName(getStringParamValue(interaction, "player-voting"));
 		}
 		else {
 			voter_player = global.game_manager.player_manager.getPlayerFromId(interaction.user.id);
@@ -63,7 +64,7 @@ module.exports = new SlashCommand({
 
 		// Vote For Player
 		if (subcommand_name === Parameters.ForPlayer.name) {
-			nameOfVoter = interaction.options.getString(Subparameters.PlayerVotingFor.name);
+			nameOfVoter = getStringParamValue(interaction, Subparameters.PlayerVotingFor.name);
 
 			const can_vote_player_feedback = global.game_manager.vote_manager.canPlayerVotePlayer(voter_player, nameOfVoter);
 			if (can_vote_player_feedback !== true)
@@ -75,7 +76,7 @@ module.exports = new SlashCommand({
 		}
 		// Vote For Trial Outcome
 		else if (subcommand_name === Parameters.ForTrialOutcome.name) {
-			nameOfVoter = interaction.options.getString(Subparameters.TrialOutcome.name);
+			nameOfVoter = getStringParamValue(interaction, Subparameters.TrialOutcome.name);
 
 
 			const can_vote_feedback = global.game_manager.vote_manager.canVoteForTrialOutcome(voter_player, nameOfVoter);

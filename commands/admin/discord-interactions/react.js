@@ -1,7 +1,7 @@
 const { PermissionFlagsBits } = require("discord.js");
 const { Parameter } = require("../../../services/command-creation/parameter");
 const { SlashCommand } = require("../../../services/command-creation/slash-command");
-const { fetchGuild, fetchMessage, fetchTextChannel } = require("../../../utilities/discord-fetch-utils");
+const { fetchGuild, fetchMessage, fetchTextChannel, getRequiredStringParam } = require("../../../utilities/discord-fetch-utils");
 const { deferInteraction } = require("../../../utilities/discord-action-utils");
 
 const Parameters = {
@@ -28,13 +28,18 @@ module.exports = new SlashCommand({
 	execute: async function(interaction) {
 		await deferInteraction(interaction);
 
-		const message_link = interaction.options.getString(Parameters.MessageLink.name);
-		const reaction_str = interaction.options.getString(Parameters.Reaction.name);
+		const message_link = getRequiredStringParam(interaction, Parameters.MessageLink.name);
+		const reaction_str = getRequiredStringParam(interaction, Parameters.Reaction.name);
 
 		const guild_id = message_link.split('/').at(-3); // @ TODO Finish v
 		const channel_id = message_link.split('/').at(-2); // @ TODO Finish v
 		const message_id = message_link.split('/').at(-1); // @ TODO Finish v
 		// https://discord.com/channels/GUILD_ID/CHANNEL_ID/MESSAGE_ID
+
+		if (!guild_id || !channel_id || !message_id) {
+			interaction.editReply(`We could not parse the message link: ${message_link}. Please try again.`);
+			return;
+		}
 
 		const guild = await fetchGuild(guild_id);
 		const channel = await fetchTextChannel(guild, channel_id);

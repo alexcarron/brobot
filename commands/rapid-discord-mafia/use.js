@@ -4,7 +4,7 @@ const { deferInteraction } = require("../../utilities/discord-action-utils");
 const ids = require("../../bot-config/discord-ids.js");
 const AbilityManager = require("../../services/rapid-discord-mafia/ability-manager.js");
 const { toTitleCase } = require("../../utilities/text-formatting-utils.js");
-const { fetchRDMGuild, fetchTextChannel } = require("../../utilities/discord-fetch-utils.js");
+const { fetchRDMGuild, fetchTextChannel, getStringParamValue, getRequiredStringParam } = require("../../utilities/discord-fetch-utils.js");
 const { AbilityUseCount, AbilityName } = require("../../services/rapid-discord-mafia/ability.js");
 const { Faction } = require("../../services/rapid-discord-mafia/role.js");
 const { AbilityArgType, ArgumentSubtype } = require("../../services/rapid-discord-mafia/arg.js");
@@ -85,7 +85,7 @@ module.exports = new SlashCommand({
 
 		// Get player from user or player name argument
 		if (isTest) {
-			const player_name = interaction.options.getString("player-name");
+			const player_name = getStringParamValue(interaction, "player-name");
 			console.log({player_name});
 			player = global.game_manager.player_manager.get(player_name);
 			console.log(player);
@@ -101,7 +101,7 @@ module.exports = new SlashCommand({
 		// Parse ability name from command use
 		if (isTest) {
 			ability_name =
-				interaction.options.getString("ability-name")
+				getRequiredStringParam(interaction, "ability-name")
 					.split("-")
 					.map(name => toTitleCase(name))
 					.join(" ");
@@ -119,8 +119,9 @@ module.exports = new SlashCommand({
 				ability.name === ability_name
 			);
 
-			if (!ability_using) {
-				return await interaction.editReply(`**${ability_name}** is not a valid ability`);
+			if (ability_using === undefined) {
+				await interaction.editReply(`**${ability_name}** is not a valid ability`);
+				return;
 			}
 
 			for (const ability_arg of ability_using.args) {
@@ -128,7 +129,7 @@ module.exports = new SlashCommand({
 				let arg_param_value;
 
 				if (isTest) {
-					const ability_arguments_str = interaction.options.getString("ability-arguments");
+					const ability_arguments_str = getRequiredStringParam(interaction, "ability-arguments");
 
 					const ability_arguments = ability_arguments_str.split(", ").map(str => str.split(": "));
 
@@ -145,12 +146,13 @@ module.exports = new SlashCommand({
 					arg_param_value = ability_argument[1];
 				}
 				else {
-					arg_param_value = interaction.options.getString(arg_param_name);
+					arg_param_value = getStringParamValue(interaction, arg_param_name);
 				}
 				arg_values[ability_arg.name] = arg_param_value;
 			}
 		}
 
+		/** @type {string | boolean} */
 		let can_use_ability_feedback = true;
 		if (ability_name !== AbilityName.NOTHING) {
 			const ability = AbilityManager.abilities[ability_name];
@@ -167,7 +169,7 @@ module.exports = new SlashCommand({
 				can_use_ability_feedback = `**${ability_name}** is not a valid ability`;
 		}
 
-		if (can_use_ability_feedback !== true)
+		if (typeof can_use_ability_feedback === "string")
 			return await interaction.editReply(can_use_ability_feedback);
 
 		const ability = global.game_manager.ability_manager.getAbility(ability_name);
@@ -182,9 +184,11 @@ module.exports = new SlashCommand({
 			const rdm_guild = await fetchRDMGuild();
 			const mafia_channel = await fetchTextChannel(rdm_guild, ids.rapid_discord_mafia.channels.mafia_chat);
 
-			mafia_channel.send(
-				ability_using.feedback(...Object.values(arg_values), player.name, false)
-			);
+			if (ability_using !== undefined) {
+				mafia_channel.send(
+					ability_using.feedback(...Object.values(arg_values), player.name, false)
+				);
+			}
 		}
 
 		global.game_manager.startDayIfAllPlayersActed();
@@ -208,8 +212,24 @@ module.exports = new SlashCommand({
 
 		const arg_name = focused_param.name.split("-").map(name => toTitleCase(name)).join(" ");
 
-		const ability = Object.values(AbilityManager.abilities).find(ability => ability.name === ability_name);
+		const ability = Object.values(AbilityManager.abilities)
+			.find(ability => ability.name === ability_name);
+
+		if (ability === undefined) {
+			await interaction.respond(
+				[{name: "Sorry, you're not allowed to use this command", value: "N/A"}]
+			)
+			return;
+		}
+
 		const ability_arg = ability.args.find(arg => arg.name === arg_name);
+
+		if (ability_arg === undefined) {
+			await interaction.respond(
+				[{name: "Sorry, you're not allowed to use this command", value: "N/A"}]
+			)
+			return;
+		}
 
 		const player_role = global.game_manager.role_manager.getRole(player_using_command.role);
 

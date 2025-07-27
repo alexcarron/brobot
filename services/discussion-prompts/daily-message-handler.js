@@ -2,7 +2,7 @@ const { Message, TextChannel } = require("discord.js");
 const ids = require("../../bot-config/discord-ids.js");
 const cron = require("cron"); // Used to have scheduled functions execute
 const { getRandomElement } = require("../../utilities/data-structure-utils.js");
-const { fetchGuild, fetchChannel } = require("../../utilities/discord-fetch-utils.js");
+const { fetchGuild, fetchTextChannel } = require("../../utilities/discord-fetch-utils.js");
 const { saveObjectToJsonInGitHub } = require("../../utilities/github-json-storage-utils.js");
 const { logWarning, logInfo } = require("../../utilities/logging-utils.js");
 
@@ -75,7 +75,7 @@ class DailyMessageHandler {
 			throw new Error("Channel identifier not found: Property, channelName, nount found on object './bot-config/discord-ids.js/ll_game_shows/channels");
 
 		const guild = await fetchGuild(DailyMessageHandler.GUILD_ID);
-		const channel = await fetchChannel(guild, channelId);
+		const channel = await fetchTextChannel(guild, channelId);
 
 		return channel;
 	}
@@ -105,14 +105,14 @@ class DailyMessageHandler {
 
 	/**
 	 * Sends a random message to a random channel
-	 * @returns {Promise<Message>} The message sent
+	 * @returns {Promise<Message | undefined>} The message sent
 	 */
 	async sendDailyMessage() {
 		const channelName = this.getRandomChannel();
 
 		if (channelName === null || channelName === undefined) {
 			logWarning("No channels with messages left to send");
-			return;
+			return undefined;
 		}
 
 		const messageContents = this.getRandomMessage(channelName);

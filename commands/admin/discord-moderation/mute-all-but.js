@@ -1,6 +1,6 @@
 const { Parameter } = require('../../../services/command-creation/parameter');
 const { SlashCommand } = require('../../../services/command-creation/slash-command');
-const { fetchVoiceChannelMemberIsIn } = require('../../../utilities/discord-fetch-utils');
+const {  getVoiceChannelOfInteraction, getRequiredUserParam } = require('../../../utilities/discord-fetch-utils');
 
 const Parameters = {
 	UnmutedMember: new Parameter({
@@ -22,9 +22,9 @@ module.exports = new SlashCommand({
 			ephemeral: true
 		});
 
-		const unmutedMember = interaction.options.getUser(Parameters.UnmutedMember.name);
+		const unmutedMember = getRequiredUserParam(interaction, Parameters.UnmutedMember.name);
 
-		const voiceChannel = fetchVoiceChannelMemberIsIn(interaction.member);
+		const voiceChannel = getVoiceChannelOfInteraction(interaction);
 
 		if (voiceChannel === null) {
 			await interaction.editReply('You are not in a voice channel.');

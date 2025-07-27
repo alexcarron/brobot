@@ -10,12 +10,32 @@ const Viewer = require("../ll-points/viewer.js");
  * @class
  */
 class Event {
+	/** @type {string} The name of the event */
+	_name;
+
+	/** @type {Viewer | null} The host of the event */
+	_host;
+
+	/** @type {string} The plan for the event */
+	_plan;
+
+	/** @type {string} The instructions for the event */
+	_instructions;
+
+	/** @type {string} The summary for the event */
+	_summary;
+
+	/** @type {number} The time for the event */
+	_time;
+
+	/** @type {string[]} The IDs of the roles to ping when the event starts */
+	_ping_role_ids;
 
 	/**
 	 * Constructor for an Event object
 	 * @param {object} options - The options to create the Event with
 	 * @param {string} [options._name] - The name of the event
-	 * @param {string} [options._host] - The host of the event
+	 * @param {Viewer | null} [options._host] - The host of the event
 	 * @param {string} [options._plan] - The plan for the event
 	 * @param {string} [options._instructions] - The instructions for the event
 	 * @param {string} [options._summary] - The summary for the event
@@ -53,14 +73,12 @@ class Event {
 
 	/**
 	 * The viewer who is hosting the event.
-	 * @type {Viewer}
+	 * @type {Viewer | null}
 	 */
   get host() {
     return this._host;
   }
-  set host(host) {
-    this._host = host;
-  }
+
 	async setHost(host) {
 		if (!(host instanceof Viewer) && host) {
 			host = await global.LLPointManager.getViewerById(host.user_id);

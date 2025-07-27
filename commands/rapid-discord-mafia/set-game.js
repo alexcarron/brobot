@@ -2,6 +2,7 @@ const { SlashCommand } = require('../../services/command-creation/slash-command'
 const ids = require(`../../bot-config/discord-ids.js`);
 const { Parameter } = require('../../services/command-creation/parameter');
 const { PermissionFlagsBits } = require('discord.js');
+const { getRequiredStringParam } = require('../../utilities/discord-fetch-utils');
 
 const Parameters = {
 	Property: new Parameter({
@@ -28,8 +29,8 @@ module.exports = new SlashCommand({
 	execute: async function execute(interaction) {
 		await interaction.deferReply({ephemeral: true});
 
-		const property = interaction.options.getString(Parameters.Property.name);
-		const value = interaction.options.getString(Parameters.Value.name);
+		const property = getRequiredStringParam(interaction, Parameters.Property.name);
+		const value = getRequiredStringParam(interaction, Parameters.Value.name);
 
 		global.game_manager[property] = value;
 

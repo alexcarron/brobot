@@ -1,7 +1,8 @@
-const { PermissionFlagsBits } = require("discord.js");
+const { PermissionFlagsBits, ChannelType } = require("discord.js");
 const { Parameter } = require("../../../services/command-creation/parameter");
 const { SlashCommand } = require("../../../services/command-creation/slash-command");
 const { deferInteraction, editReplyToInteraction } = require("../../../utilities/discord-action-utils");
+const { getRequiredIntegerParam } = require("../../../utilities/discord-fetch-utils");
 
 const Parameters = {
 	NumMessagesDeleting: new Parameter({
@@ -21,7 +22,14 @@ const command = new SlashCommand({
 	execute: async function(interaction) {
 		await deferInteraction(interaction);
 
-		const numMessagesDeleting = interaction.options.getInteger(Parameters.NumMessagesDeleting.name);
+		if (interaction.channel === null || interaction.channel.type !== ChannelType.GuildText) {
+			await editReplyToInteraction(interaction,
+				"This command can only be used in a server channel."
+			);
+			return;
+		}
+
+		const numMessagesDeleting = getRequiredIntegerParam(interaction, Parameters.NumMessagesDeleting.name);
 		const times_purging = Math.floor(numMessagesDeleting / 100)
 		const lastNumMessagesDeleting = numMessagesDeleting % 100;
 

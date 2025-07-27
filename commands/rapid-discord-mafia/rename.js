@@ -4,6 +4,7 @@ const { SlashCommand } = require('../../services/command-creation/slash-command'
 const { Parameter } = require('../../services/command-creation/parameter');
 const { GameState } = require("../../services/rapid-discord-mafia/game-state-manager.js");
 const { RDMDiscordRole } = require("../../services/rapid-discord-mafia/discord-service.js");
+const { getRequiredStringParam } = require("../../utilities/discord-fetch-utils.js");
 
 module.exports = new SlashCommand({
 	name: "rename",
@@ -22,7 +23,7 @@ module.exports = new SlashCommand({
 
 		let player_id = interaction.user.id,
 			old_player_name = global.game_manager.player_manager.getPlayerFromId(player_id).name,
-			new_player_name = interaction.options.getString("name");
+			new_player_name = getRequiredStringParam(interaction, "name");
 
 
 		if ( global.game_manager.state !== GameState.SIGN_UP ) {

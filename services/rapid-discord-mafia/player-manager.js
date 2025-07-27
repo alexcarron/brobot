@@ -114,17 +114,27 @@ class PlayerManager {
 
 	getPlayersInFaction(faction) {
 		return this.getPlayerList().filter(
-			player =>
-				player.getRole() &&
-				player.getRole().faction === faction
+			player => {
+				const role = player.getRole();
+
+				return (
+					role !== undefined &&
+					role.faction === faction
+				);
+			}
 		);
 	}
 
 	getAlivePlayersInFaction(faction) {
 		return this.getAlivePlayers().filter(
-			player =>
-				player.getRole() &&
-				player.getRole().faction === faction
+			player => {
+				const role = player.getRole();
+
+				return (
+					role !== undefined &&
+					role.faction === faction
+				);
+			}
 		);
 
 	}
@@ -167,9 +177,14 @@ class PlayerManager {
 
 	isFactionAlive(faction) {
 		return this.getAlivePlayers().some(
-			player =>
-				player.getRole() &&
-				player.getRole().faction === faction
+			player => {
+				const role = player.getRole();
+
+				return (
+					role !== undefined &&
+					role.faction === faction
+				)
+			}
 		)
 	}
 

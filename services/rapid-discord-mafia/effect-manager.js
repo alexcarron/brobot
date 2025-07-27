@@ -342,6 +342,9 @@ class EffectManager {
 		[this.EffectName.Control]: new Effect({
 			name: this.EffectName.Control,
 			applyEffect: function(game, player_using_ability, ability, arg_values) {
+				if (arg_values === undefined)
+					throw new Error("Control.applyEffect: arg_values is undefined");
+				
 				const
 					player_controlling_name = arg_values[AbilityArgName.PLAYER_CONTROLLING],
 					player_controlling_into_name = arg_values[AbilityArgName.PLAYER_CONTROLLED_INTO],

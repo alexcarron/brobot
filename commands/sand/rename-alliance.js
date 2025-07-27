@@ -1,8 +1,9 @@
+const { ChannelType } = require("discord.js");
 const ids = require("../../bot-config/discord-ids");
 const { ParameterType, Parameter } = require("../../services/command-creation/parameter");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { deferInteraction, editReplyToInteraction, renameChannel } = require("../../utilities/discord-action-utils");
-const { getStringParamValue } = require("../../utilities/discord-fetch-utils");
+const { getRequiredStringParam } = require("../../utilities/discord-fetch-utils");
 
 const Parameters = {
 	Name: new Parameter({
@@ -24,6 +25,18 @@ module.exports = new SlashCommand({
 	execute: async function execute(interaction) {
 		await deferInteraction(interaction);
 
+		if (
+			interaction.channel === null ||
+			interaction.channel.type !== ChannelType.GuildText ||
+			"parent" in interaction.channel === false ||
+			interaction.channel.parent === null
+		) {
+			await editReplyToInteraction(interaction,
+				"This command can only be used in an alliance category"
+			);
+			return
+		}
+
 		const category = interaction.channel.parent;
 		if (!category || category.name.toLowerCase().includes("alliance") === false) {
       await editReplyToInteraction(interaction,
@@ -33,7 +46,7 @@ module.exports = new SlashCommand({
     }
 
 		const commandUser = interaction.user;
-		const newName = getStringParamValue(interaction, Parameters.Name.name);
+		const newName = getRequiredStringParam(interaction, Parameters.Name.name);
 		const allianceChannel = interaction.channel;
 		const oldName = allianceChannel.name;
 		await renameChannel(allianceChannel, newName);

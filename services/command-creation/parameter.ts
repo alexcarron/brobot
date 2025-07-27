@@ -73,6 +73,17 @@ export class Parameter {
 		autocomplete = undefined,
 		subparameters = [],
 		subcommands = [],
+	}: {
+		type: "subcommand" | "string" | "channel" | "attachment" | "boolean" | "mentionable" | "number" | "integer" | "role" | "user";
+		name: string;
+		description: string;
+		isRequired?: boolean;
+		isAutocomplete?: boolean;
+		min_value?: number;
+		max_value?: number;
+		autocomplete?: {[autocomplete_entry: string]: string};
+		subparameters?: Parameter[];
+		subcommands?: Parameter[];
 	}) {
 		this.type = type;
 		this.name = name;

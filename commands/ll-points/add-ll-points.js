@@ -4,6 +4,7 @@ const { PermissionFlagsBits } = require('discord.js');
 const { LLPointManager } = require('../../services/ll-points/ll-point-manager.js');
 const { findStringStartingWith } = require('../../utilities/text-formatting-utils.js');
 const { deferInteraction } = require('../../utilities/discord-action-utils.js');
+const { getRequiredStringParam, getRequiredNumberParam } = require("../../utilities/discord-fetch-utils");
 
 const Parameters = {
 	ViewerName: new Parameter({
@@ -31,9 +32,8 @@ module.exports = new SlashCommand({
 	execute: async function(interaction) {
 		deferInteraction(interaction, "Adding LL Points...");
 
-		const
-			viewer_name_arg = interaction.options.getString(Parameters.ViewerName.name),
-			added_points = interaction.options.getNumber(Parameters.LLPointAmount.name);
+		const viewer_name_arg = getRequiredStringParam(interaction, Parameters.ViewerName.name);
+		const added_points = getRequiredNumberParam(interaction, Parameters.LLPointAmount.name);
 
 		let viewer = await global.LLPointManager.getViewerByName(viewer_name_arg);
 		let viewer_name = viewer_name_arg;

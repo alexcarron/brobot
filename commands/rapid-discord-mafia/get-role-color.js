@@ -2,7 +2,7 @@ const { Parameter } = require("../../services/command-creation/parameter");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
 const ids = require("../../bot-config/discord-ids.js");
 const { deferInteraction } = require("../../utilities/discord-action-utils");
-const { fetchGuildMember, fetchRoleByName } = require("../../utilities/discord-fetch-utils.js");
+const { fetchGuildMember, fetchRoleByName, getRequiredStringParam, getGuildOfInteraction } = require("../../utilities/discord-fetch-utils.js");
 const { addRoleToMember } = require("../../utilities/discord-action-utils.js");
 
 const Parameters = {
@@ -24,7 +24,9 @@ module.exports = new SlashCommand({
 	execute: async function execute(interaction) {
 		await deferInteraction(interaction);
 
-		const role_color = interaction.options.getString(Parameters.Color.name);
+		const guild = getGuildOfInteraction(interaction);
+
+		const role_color = getRequiredStringParam(interaction, Parameters.Color.name);
 
 		if (
 			!role_color.startsWith("#")
@@ -41,22 +43,22 @@ module.exports = new SlashCommand({
 
 		const color_num = parseInt(role_color.replace(/^#/, ''), 16);
 		const user = interaction.user;
-		const user_guild_member = await fetchGuildMember(interaction.guild, user.id);
+		const user_guild_member = await fetchGuildMember(guild, user.id);
 		const user_name = user.username;
 		const role_name = user_name + "'s Role Color";
-		let role = await fetchRoleByName(interaction.guild, role_name);
+		let role = await fetchRoleByName(guild, role_name);
 
 		if (role) {
 			role.setColor(color_num);
 		}
 		else {
-			role = await interaction.guild.roles.create(
+			role = await guild.roles.create(
 				{
 					name: role_name,
 					color: color_num,
 				}
 			)
-			role = await fetchRoleByName(interaction.guild, role_name);
+			role = await fetchRoleByName(guild, role_name);
 
 			addRoleToMember(user_guild_member, role);
 		}

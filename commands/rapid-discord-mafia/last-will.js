@@ -47,6 +47,10 @@ module.exports = new SlashCommand({
 				placeholder: player.last_will,
 			});
 
+			if (contents === undefined) {
+				return await interaction.editReply("Last will not changed.");
+			}
+
 			if (contents.includes("`")) {
 				return await interaction.editReply(`Your last will includes a backtick (\`) which is illegal.`)
 			}

@@ -195,6 +195,7 @@ const originalMessages = [
 	"I'm begging for a way out",
 	"I'm screaming but no one listens",
 	"That's not what you said last night, [TARGET PLAYER]",
+	"[TARGET PLAYER] stop yapping, we all know youre chopped cheese",
 	"No one said you could talk 🤷",
 	"Did I ask?",
 	"Wow, you again?",
@@ -333,6 +334,7 @@ const startBot = async () => {
 	client.on(Events.MessageCreate, (message) => {
 		if (
 			message.channel.type === ChannelType.DM ||
+			message.guild === null ||
 			message.guild.id !== SAND_S3_SERVER_ID ||
 			message.author.id !== TARGETED_USER_ID
 		) {

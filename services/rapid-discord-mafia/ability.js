@@ -184,7 +184,7 @@ class Ability {
 		duration=0.5,
 		args=[],
 		effects=[],
-		reverseEffects,
+		reverseEffects = () => {},
 	}) {
 		this.name = name;
 		this.type = type;

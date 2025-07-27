@@ -4,6 +4,7 @@ const { deferInteraction } = require("../../utilities/discord-action-utils");
 const
 	ids = require(`../../bot-config/discord-ids.js`);
 const { GameState } = require("../../services/rapid-discord-mafia/game-state-manager.js");
+const { getRequiredStringParam, getStringParamValue } = require("../../utilities/discord-fetch-utils");
 
 module.exports = new SlashCommand({
 	name: "join",
@@ -24,12 +25,12 @@ module.exports = new SlashCommand({
 
 		if (!isTest) {
 			player_id = interaction.user.id;
-			player_name = interaction.options.getString("name");
+			player_name = getRequiredStringParam(interaction, "name");
 			isFakeUser = false;
 		}
 		else {
-			player_id = interaction.options.getString("player-id") ?? args[0];
-			player_name = interaction.options.getString("player-name") ?? args[1];
+			player_id = getStringParamValue(interaction, "player-id") ?? args[0];
+			player_name = getStringParamValue(interaction, "player-name") ?? args[1];
 			isFakeUser = interaction.options.getBoolean("fake-user") ?? args[2];
 
 			if (isFakeUser) {

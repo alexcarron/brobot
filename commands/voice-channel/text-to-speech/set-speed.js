@@ -1,6 +1,7 @@
 const { Parameter } = require('../../../services/command-creation/parameter');
 const { SlashCommand } = require('../../../services/command-creation/slash-command');
 const { deferInteraction } = require('../../../utilities/discord-action-utils');
+const { getRequiredNumberParam } = require('../../../utilities/discord-fetch-utils');
 
 const Parameters = {
 	Speed: new Parameter({
@@ -19,7 +20,7 @@ module.exports = new SlashCommand({
 	allowsDMs: true,
 	execute: async function (interaction) {
 		await deferInteraction(interaction);
-		const volume = interaction.options.getNumber(Parameters.Speed.name);
+		const volume = getRequiredNumberParam(interaction, Parameters.Speed.name);
 		global.tts.setSpeedMultiplier(volume);
 		await interaction.editReply('Set speed to ' + volume);
 	}

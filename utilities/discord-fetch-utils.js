@@ -1,4 +1,4 @@
-const { Client, Guild, TextChannel, Message, ChannelType, GuildMember, User, Role, ChatInputCommandInteraction, GuildChannel, CategoryChannel } = require("discord.js");
+const { Client, Guild, TextChannel, Message, ChannelType, GuildMember, User, Role, ChatInputCommandInteraction, GuildChannel, CategoryChannel, AutocompleteInteraction } = require("discord.js");
 const ids = require("../bot-config/discord-ids");
 const { discordCollectionToArray } = require("./data-structure-utils");
 const { InvalidArgumentError } = require("./error-utils");
@@ -33,6 +33,22 @@ const fetchGuild = async (guildID) => {
 }
 
 /**
+ * Gets the guild of the interaction.
+ * @param {ChatInputCommandInteraction | AutocompleteInteraction} interaction The interaction object of the slash command.
+ * @returns {Guild} A Promise that resolves with the Guild object if successful, or rejects with an Error if not.
+ * @throws {Error} If the interaction is not in a guild.
+ */
+const getGuildOfInteraction = (interaction) => {
+	const guild = interaction.guild;
+
+	if (guild === null) {
+		throw new Error(`getGuildOfInteraction: Interaction is not in a guild, got ${guild}`);
+	}
+
+	return guild;
+}
+
+/**
  * Fetches all channels in a given guild.
  * @param {Guild} guild The guild whose channels to fetch.
  * @returns {Promise<GuildChannel[]>} A Promise that resolves with an array of all channels in the guild.
@@ -40,6 +56,7 @@ const fetchGuild = async (guildID) => {
  */
 const fetchChannelsOfGuild = async (guild) => {
 	const channels = await guild.channels.fetch();
+	// @ts-ignore
 	return discordCollectionToArray(channels);
 }
 
@@ -58,7 +75,7 @@ const fetchUser = async (userID) => {
  * Fetches a channel from Discord using the given guild.
  * @param {Guild} guild The guild that the channel belongs to.
  * @param {string} channelID The ID of the channel to fetch.
- * @returns {Promise<import("discord.js").GuildBasedChannel>} A Promise that resolves with the Channel object if successful, or rejects with an Error if not.
+ * @returns {Promise<import("discord.js").GuildBasedChannel | null>} A Promise that resolves with the Channel object if successful, or rejects with an Error if not.
  */
 const fetchChannel = async (guild, channelID) => {
 	return await guild.channels.fetch(channelID);
@@ -74,10 +91,31 @@ const fetchChannel = async (guild, channelID) => {
 const fetchCategory = async (guild, categoryID) => {
 	const channel = await fetchChannel(guild, categoryID);
 
+	if (!channel)
+		throw new Error(`fetchCategory: channel is null, got ${channel}`);
+
 	if (channel.type !== ChannelType.GuildCategory)
 		throw new Error(`fetchCategory: channel is not a category, got ${channel}`);
 
 	return channel;
+}
+
+/**
+ * Gets the category channel of the interaction.
+ * @param {ChatInputCommandInteraction} interaction - The interaction whose category channel is to be retrieved.
+ * @returns {CategoryChannel} The parent category channel of the interaction's channel, or null if there is no parent.
+ */
+const getCategoryOfInteraction = (interaction) => {
+	if (!interaction.channel)
+		throw new Error(`getCategoryOfInteraction: The channel of the interaction does not exist, got ${interaction.channel}`);
+
+	if (!("parent" in interaction.channel) || !interaction.channel.parent)
+		throw new Error(`getCategoryOfInteraction: The parent of the interaction's channel does not exist`);
+
+	if (interaction.channel.parent.type !== ChannelType.GuildCategory)
+		throw new Error(`getCategoryOfInteraction: The parent of the interaction's channel is not a category`);
+
+	return interaction.channel.parent;
 }
 
 /**
@@ -94,6 +132,22 @@ const fetchTextChannel = async (guild, channelID) => {
 		throw new Error(`fetchTextChannel: channel is not an instance of TextChannel, got ${channel}`);
 
 	return channel;
+}
+
+/**
+ * Gets the text channel of the interaction.
+ * @param {ChatInputCommandInteraction} interaction - The interaction whose text channel is to be retrieved.
+ * @returns {TextChannel} The text channel of the interaction.
+ * @throws {Error} If the client is not setup or not ready, or if the interaction does not have a channel, or if the channel of the interaction is not a text channel.
+ */
+const getTextChannelOfInteraction = (interaction) => {
+	if (!interaction.channel)
+		throw new Error(`getTextChannelOfInteraction: The channel of the interaction does not exist, got ${interaction.channel}`);
+
+	if (interaction.channel.type !== ChannelType.GuildText)
+		throw new Error(`getTextChannelOfInteraction: The channel of the interaction is not a text channel, got ${interaction.channel}`);
+
+	return interaction.channel;
 }
 
 /**
@@ -134,7 +188,12 @@ const fetchAllGuildMembers = async (guild) => {
  * @returns {Promise<Role>} A Promise that resolves with the Role object if successful, or rejects with an Error if not.
  */
 const fetchRole = async (guild, roleID) => {
-	return await guild.roles.fetch(roleID);
+	const role = await guild.roles.fetch(roleID);
+
+	if (!role)
+		throw new Error(`fetchRole: role is null, got ${role}`);
+
+	return role;
 }
 
 /**
@@ -155,7 +214,12 @@ const fetchRolesInGuild = async (guild) => {
  */
 const fetchRoleByName = async (guild, roleName) => {
 	const rolesInGuild = await fetchRolesInGuild(guild);
-	return rolesInGuild.find((role) => role.name === roleName);
+	const role = rolesInGuild.find((role) => role.name === roleName);
+
+	if (!role)
+		throw new Error(`fetchRoleByName: Could not find role with name ${roleName}, got ${role}`);
+
+	return role;
 }
 
 /**
@@ -179,9 +243,15 @@ const fetchCategoriesOfGuild = async (guild) => {
 const fetchChannelsInCategory = async (guild, categoryID) => {
 	const allChannelsInGuild = await guild.channels.fetch();
 
-	return Array.from(allChannelsInGuild.filter((channel) =>
-		channel.parentId === categoryID
-	).values());
+	const channels = allChannelsInGuild.filter((channel) => {
+		if (channel === null)
+			return false;
+
+		return channel.parentId === categoryID
+	});
+
+	// @ts-ignore
+	return discordCollectionToArray(channels);
 }
 
 /**
@@ -196,7 +266,9 @@ const fetchTextChannelsInCategory = async (guild, categoryID) => {
 	// @ts-ignore
 	return Array.from(
 		allChannelsInGuild.filter((channel) =>
+			// @ts-ignore
 			channel.parentId === categoryID &&
+			// @ts-ignore
 			channel.type === ChannelType.GuildText &&
 			channel instanceof TextChannel
 		).values()
@@ -212,6 +284,30 @@ const fetchRDMGuild = async () => {
 }
 
 /**
+ * Gets a number parameter value of a slash command by name.
+ * @param {ChatInputCommandInteraction} interaction - The interaction whose reply is being updated.
+ * @param {string} name - The name of the number parameter
+ * @returns {number | null} The value of the number parameter
+ */
+const getNumberParamValue = (interaction, name) => {
+	return interaction.options.getNumber(name);
+}
+
+/**
+ * Gets a number parameter value of a slash command by name, and throws an error if the parameter is not provided.
+ * @param {ChatInputCommandInteraction} interaction - The interaction whose reply is being updated.
+ * @param {string} name - The name of the number parameter
+ * @returns {number} The value of the number parameter
+ * @throws {Error} If the parameter is not provided
+ */
+const getRequiredNumberParam = (interaction, name) => {
+	const value = getNumberParamValue(interaction, name);
+	if (value === null || value === undefined)
+		throw new Error(`getRequiredNumberParamValue: ${name} is required`);
+	return value;
+}
+
+/**
  * Gets an integer parameter value of a slash command by name.
  * @param {ChatInputCommandInteraction} interaction - The interaction whose reply is being updated.
  * @param {string} name - The name of the integer parameter
@@ -219,6 +315,20 @@ const fetchRDMGuild = async () => {
  */
 const getIntegerParamValue = (interaction, name) => {
 	return interaction.options.getInteger(name);
+}
+
+/**
+ * Gets an integer parameter value of a slash command by name, and throws an error if the parameter is not provided.
+ * @param {ChatInputCommandInteraction} interaction - The interaction whose reply is being updated.
+ * @param {string} name - The name of the integer parameter
+ * @returns {number} The value of the integer parameter
+ * @throws {Error} If the parameter is not provided
+ */
+const getRequiredIntegerParam = (interaction, name) => {
+	const value = getIntegerParamValue(interaction, name);
+	if (value === null || value === undefined)
+		throw new Error(`getRequiredIntegerParamValue: ${name} is required`);
+	return value;
 }
 
 /**
@@ -232,13 +342,41 @@ const getStringParamValue = (interaction, name) => {
 }
 
 /**
+ * Gets a string parameter value of a slash command by name, and throws an error if the parameter is not provided.
+ * @param {ChatInputCommandInteraction} interaction - The interaction whose reply is being updated.
+ * @param {string} name - The name of the string parameter
+ * @returns {string} The value of the string parameter
+ * @throws {Error} If the parameter is not provided
+ */
+const getRequiredStringParam = (interaction, name) => {
+	const value = getStringParamValue(interaction, name);
+	if (value === null || value === undefined)
+		throw new Error(`getRequiredStringParamValue: ${name} is required`);
+	return value;
+}
+
+/**
  * Gets a user parameter value of a slash command by name.
  * @param {ChatInputCommandInteraction} interaction - The interaction whose reply is being updated.
  * @param {string} name - The name of the parameter
  * @returns {User | null} The value of the user parameter
  */
 const getUserParamValue = (interaction, name) => {
-	return interaction.options.getUser(name);
+	return getUserParamValue(interaction, name);
+}
+
+/**
+ * Gets a user parameter value of a slash command by name, and throws an error if the parameter is not provided.
+ * @param {ChatInputCommandInteraction} interaction - The interaction whose reply is being updated.
+ * @param {string} name - The name of the parameter
+ * @returns {User} The value of the user parameter
+ * @throws {Error} If the parameter is not provided
+ */
+const getRequiredUserParam = (interaction, name) => {
+	const value = getUserParamValue(interaction, name);
+	if (value === null || value === undefined)
+		throw new Error(`getRequiredUserParamValue: ${name} is required`);
+	return value;
 }
 
 /**
@@ -258,6 +396,35 @@ const getChannelParamValue = (interaction, name) => {
   }
 
   return undefined;
+}
+
+/**
+ * Gets a channel parameter value of a slash command by name, and throws an error if the parameter is not provided.
+ * @param {ChatInputCommandInteraction} interaction - The interaction whose reply is being updated.
+ * @param {string} name - The name of the channel parameter
+ * @returns {import("discord.js").TextBasedChannel} The value of the channel parameter
+ * @throws {Error} If the parameter is not provided
+ */
+const getRequiredChannelParam = (interaction, name) => {
+	const value = getChannelParamValue(interaction, name);
+	if (value === null || value === undefined)
+		throw new Error(`getRequiredChannelParamValue: ${name} is required`);
+	return value;
+}
+
+/**
+ * Retrieves the subcommand or subcommand group used in a slash command interaction.
+ * @param {ChatInputCommandInteraction} interaction - The interaction object from which to get the subcommand.
+ * @returns {string} The name of the subcommand or subcommand group used.
+ * @throws {Error} If neither a subcommand nor a subcommand group is provided.
+ */
+const getSubcommandUsed = (interaction) => {
+	const subcommand = interaction.options.getSubcommandGroup() || interaction.options.getSubcommand();
+
+	if (subcommand === null || subcommand === undefined)
+		throw new Error("getSubcommandUsed: subcommand is required");
+
+	return subcommand;
 }
 
 /**
@@ -288,6 +455,7 @@ const getMemberOfInteraction = (interaction) => {
  */
 const getNicknameOfInteractionUser = (interaction) => {
 	const member = getMemberOfInteraction(interaction);
+	// @ts-ignore
 	return member.nickname;
 }
 
@@ -336,4 +504,17 @@ const fetchVoiceChannelMemberIsIn = (guildMember) => {
 	return guildMember.voice.channel
 }
 
-module.exports = { assertClientSetup, fetchGuild, fetchChannel, fetchCategory, fetchTextChannel, fetchChannelsOfGuild, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchAllGuildMembers, fetchUser, fetchRole, fetchRoleByName, getStringParamValue, getUserParamValue, getEveryoneRole, getIntegerParamValue, getNicknameOfInteractionUser, fetchMessagesInChannel, getChannelParamValue, fetchVoiceChannelMemberIsIn, fetchTextChannelsInCategory };
+
+/**
+ * Gets the voice channel that the user who invoked the interaction is currently in.
+ * @param {ChatInputCommandInteraction} interaction The interaction object of the slash command.
+ * @returns {import("discord.js").VoiceBasedChannel | null} The VoiceChannel object of the channel the user is in, or null if the user is not in a voice channel.
+ * @throws {Error} If the member object is not an instance of GuildMember.
+ */
+const getVoiceChannelOfInteraction = (interaction) => {
+	return fetchVoiceChannelMemberIsIn(
+		getMemberOfInteraction(interaction)
+	);
+}
+
+module.exports = { assertClientSetup, fetchGuild, getGuildOfInteraction, fetchChannel, fetchCategory, getCategoryOfInteraction, fetchTextChannel, getTextChannelOfInteraction, fetchChannelsOfGuild, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchAllGuildMembers, fetchUser, fetchRole, fetchRoleByName, getStringParamValue, getUserParamValue, getEveryoneRole, getNumberParamValue, getRequiredNumberParam, getIntegerParamValue, getNicknameOfInteractionUser, fetchMessagesInChannel, getChannelParamValue, getRequiredIntegerParam, getRequiredStringParam, getRequiredUserParam, getRequiredChannelParam, getSubcommandUsed, fetchVoiceChannelMemberIsIn, fetchTextChannelsInCategory, getVoiceChannelOfInteraction, getMemberOfInteraction };

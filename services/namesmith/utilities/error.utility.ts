@@ -56,6 +56,15 @@ export class MysteryBoxNotFoundError extends ResourceNotFoundError {
 	}
 }
 
+export class CharacterNotFoundError extends ResourceNotFoundError {
+	constructor(characterID: number) {
+		super({
+			message: `Character with ID ${characterID} not found.`,
+			relevantData: { characterID }
+		})
+	}
+}
+
 /**
  * Error thrown when a requested namesmith resource already exists.
  */
@@ -81,6 +90,23 @@ export class VoteAlreadyExistsError extends ResourceAlreadyExistsError {
 		super({
 			message: `Cannot add vote. Vote with ID ${voteID} already exists.`,
 			relevantData: { voteID }
+		})
+	}
+}
+
+/**
+ * Error thrown when the state of an entity is not initialized before it is used.
+ */
+export class StateInitializationError extends NamesmithError {}
+
+/**
+ * Error thrown when the state of the game is not initialized before it is used.
+ */
+export class GameStateInitializationError extends StateInitializationError {
+	constructor() {
+		super({
+			message: "The Namesmith game state has not initialized before it was used.",
+			relevantData: {}
 		})
 	}
 }

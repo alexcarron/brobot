@@ -3,6 +3,7 @@ const { SlashCommand } = require('../../services/command-creation/slash-command'
 const { PermissionFlagsBits } = require('discord.js');
 const { LLPointManager } = require('../../services/ll-points/ll-point-manager.js');
 const { deferInteraction } = require('../../utilities/discord-action-utils.js');
+const { getRequiredStringParam } = require('../../utilities/discord-fetch-utils');
 
 const Parameters = {
 	ViewerDeleting: new Parameter({
@@ -24,7 +25,7 @@ module.exports = new SlashCommand({
 	execute: async function(interaction) {
 		await deferInteraction(interaction);
 
-		const viewer_name = interaction.options.getString(Parameters.ViewerDeleting.name);
+		const viewer_name = getRequiredStringParam(interaction, Parameters.ViewerDeleting.name);
 
 		let existing_viewer = await global.LLPointManager.getViewerByName(viewer_name);
 

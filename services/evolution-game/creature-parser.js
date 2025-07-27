@@ -15,8 +15,8 @@ const parseCreature = (text) => {
 	// Remove link markdown (i.e. [text](link))
 	text = text.replace(/\[(.*?)\]\(.*?\)/g, '$1');
 
-	const nameMatch = text.match(/Name:\s*([^\n]+)/);
-	let evolvedMatch = text.match(/(?:Evolved|Evolution|Evol\w*)(?:\s+(?:from|of|into|\w+)?)?:\s*([^\n]+)/i);
+	const nameMatch = text.match(/Name:\s*([^\n(]+)/);
+	let evolvedMatch = text.match(/(?:Evolved|Evolution|Evol\w*)(?:\s+(?:from|of|into|\w+)?)?:?\s*([^\n]+)/i);
 
 	if (!nameMatch) return undefined; // skip invalid entries
 
@@ -67,6 +67,9 @@ const parseCreaturesFromMessages = (messages = [], knownCreatureNames = []) => {
 		const creatureText = message.content;
 		const creature = parseCreature(creatureText);
 		if (creature === undefined) continue;
+
+		if (message.guild === null) continue;
+		if (message.channel === null) continue;
 
 		const linkToMessage = `https://discord.com/channels/${message.guild.id}/${message.channel.id}/${message.id}`;
 		// @ts-ignore

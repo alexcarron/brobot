@@ -3,7 +3,7 @@ const ids = require("../../bot-config/discord-ids");
 const { Parameter, ParameterType } = require("../../services/command-creation/parameter");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { deferInteraction, addPermissionToChannel, editReplyToInteraction, memberHasRole } = require("../../utilities/discord-action-utils");
-const { getUserParamValue, fetchGuild, fetchGuildMember, fetchTextChannel } = require("../../utilities/discord-fetch-utils");
+const { fetchGuild, fetchGuildMember, fetchTextChannel, getCategoryOfInteraction, getRequiredUserParam, getTextChannelOfInteraction } = require("../../utilities/discord-fetch-utils");
 
 const Parameters = {
 	Contestant: new Parameter({
@@ -25,7 +25,8 @@ module.exports = new SlashCommand({
 	execute: async function execute(interaction) {
 		await deferInteraction(interaction);
 
-		const category = interaction.channel.parent;
+		const category = getCategoryOfInteraction(interaction);
+
 		if (!category || category.name.toLowerCase().includes("alliance") === false) {
       await editReplyToInteraction(interaction,
         "This command can only be used in an alliance category"
@@ -35,8 +36,8 @@ module.exports = new SlashCommand({
 
 		const sandSeason3Guild = await fetchGuild(ids.sandSeason3.guild);
 		const commandUser = interaction.user;
-		const allianceChannel = interaction.channel;
-		const contestantAdded = getUserParamValue(interaction, Parameters.Contestant.name);
+		const allianceChannel = getTextChannelOfInteraction(interaction);
+		const contestantAdded = getRequiredUserParam(interaction, Parameters.Contestant.name);
 
 		const contestantMember = await fetchGuildMember(sandSeason3Guild, contestantAdded.id);
 		if (

@@ -245,8 +245,9 @@ const getCharacterDifferencesInStrings = (originalString, modifiedString) => {
 
 /**
  * Converts a Discord.js Collection into an array
- * @param {Collection} collection Discord.js Collection
- * @returns {Array} Array of values from the Collection
+ * @template ElementType
+ * @param {Collection<string, ElementType>} collection Discord.js Collection
+ * @returns {Array<ElementType>} Array of values from the Collection
  */
 const discordCollectionToArray = (collection) => {
 	return Array.from(collection.values());

@@ -3,6 +3,7 @@ const ids = require("../../bot-config/discord-ids.js");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { deferInteraction } = require('../../utilities/discord-action-utils.js');
 const { GameState } = require("../../services/rapid-discord-mafia/game-state-manager.js");
+const { getRequiredStringParam } = require("../../utilities/discord-fetch-utils");
 
 const Parameters = {
 	PlayerWhisperingTo: new Parameter({
@@ -34,8 +35,8 @@ module.exports = new SlashCommand({
 			return await interaction.editReply("Wait for the game to start!");
 
 		const player_whispering = global.game_manager.player_manager.getPlayerFromId(interaction.user.id);
-		const player_whispering_to_name = interaction.options.getString(Parameters.PlayerWhisperingTo.name);
-		const whisper_contents = interaction.options.getString(Parameters.WhisperContents.name);
+		const player_whispering_to_name = getRequiredStringParam(interaction, Parameters.PlayerWhisperingTo.name);
+		const whisper_contents = getRequiredStringParam(interaction, Parameters.WhisperContents.name);
 		const player_whispering_to = global.game_manager.player_manager.getPlayerFromName(player_whispering_to_name);
 
 		if (player_whispering.name === player_whispering_to.name) {

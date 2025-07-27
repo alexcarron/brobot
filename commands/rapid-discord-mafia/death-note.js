@@ -47,6 +47,10 @@ module.exports = new SlashCommand({
 				placeholder: player.death_note,
 			});
 
+			if (contents === undefined) {
+				return await interaction.editReply("Death note not changed.");
+			}
+
 			if (contents.includes("`")) {
 				return await interaction.editReply(`Your death note includes a backtick (\`) which is illegal.`)
 			}

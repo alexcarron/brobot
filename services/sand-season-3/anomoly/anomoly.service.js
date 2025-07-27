@@ -9,7 +9,7 @@ const { TextChannel } = require("discord.js");
 const GAME_DURATION_IN_HOURS = 24;
 const ANOMOLY_INTERVAL_IN_HOURS = 1;
 
-const projectRoot = path.dirname(require.main.filename);
+const projectRoot = path.dirname(require.main ? require.main.filename : __filename);
 const ASSET_DIR_PATH = path.join(projectRoot, "assets", "anomoly");
 
 /**
@@ -104,6 +104,10 @@ class AnomolyService {
 		const kitchenChannels = channels[RoomIdentifier.KITCHEN];
 		const firstChannelCategory = kitchenChannels[0].parent;
 		const secondChannelCategory = kitchenChannels[1].parent;
+
+		if (!firstChannelCategory || !secondChannelCategory)
+			throw new Error("Could not find channel parent categories for kitchen");
+
 		await shuffleCategoryChannels(
 			firstChannelCategory.guild,
 			firstChannelCategory

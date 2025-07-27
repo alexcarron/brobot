@@ -1,4 +1,4 @@
-import { TypedNamedValue } from "../services/namesmith/types/generic-types";
+import { TypedNamedValue } from "./types/generic-types";
 
 /**
  * Base class for all custom errors defined in this project
@@ -299,7 +299,7 @@ class Attempt<ReturnType> {
    */
   async getReturnValue(): Promise<ReturnType> {
     if (!this.isExecuted) await this.execute();
-    return this.returnValue;
+    return this.returnValue as ReturnType;
   }
 }
 

@@ -1,7 +1,7 @@
 const { Parameter } = require('../../services/command-creation/parameter');
 const { SlashCommand } = require('../../services/command-creation/slash-command');
 const ids = require(`../../bot-config/discord-ids.js`);
-const { fetchUser } = require('../../utilities/discord-fetch-utils.js');
+const { fetchUser, getRequiredStringParam } = require('../../utilities/discord-fetch-utils.js');
 const { confirmInteractionWithButtons, deferInteraction } = require('../../utilities/discord-action-utils.js');
 const { LLPointAccomplishment } = require('../../services/ll-points/ll-point-enums.js');
 
@@ -24,12 +24,10 @@ module.exports = new SlashCommand({
 	execute: async function(interaction) {
 		await deferInteraction(interaction);
 
-		let
-			viewer_id = interaction.user.id,
-			viewer = await global.LLPointManager.getViewerById(viewer_id);
+		let viewer_id = interaction.user.id;
+		let viewer = await global.LLPointManager.getViewerById(viewer_id);
 
-		let
-			accomplishment = interaction.options.getString(Parameters.Accomplishment.name);
+		let accomplishment = getRequiredStringParam(interaction, Parameters.Accomplishment.name);
 
 		if (!viewer) {
 			if (
@@ -51,6 +49,7 @@ module.exports = new SlashCommand({
 			}
 		}
 
+		// @ts-ignore
 		if (!Object.values(LLPointAccomplishment).includes(accomplishment)) {
 			return await interaction.editReply(
 				`The accomplishment, **${accomplishment}**, doesn't exist.\n` + Object.values(LLPointAccomplishment).join(", ")

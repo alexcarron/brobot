@@ -13,7 +13,7 @@ const rdm_ids = require("../../bot-config/discord-ids.js").rapid_discord_mafia;
 /**
  * Represents a player in the game
  */
-class Player {
+class RDMPlayer {
 	/**
 	 * The name of the player.
 	 * @type {string}
@@ -323,7 +323,7 @@ class Player {
 
 	/**
 	 * Adds an ability used on a player to their affected_by array
-	 * @param {Player} player_using_ability - The player using the ability
+	 * @param {RDMPlayer} player_using_ability - The player using the ability
 	 * @param {string} ability_name - The name of the ability
 	 * @param {number} day_used - The day number the ability was used
 	 */
@@ -354,7 +354,7 @@ class Player {
 
 				const role = RoleManager.getListOfRoles().find(role => role.name === this.role);
 
-				if (role.faction == Faction.MAFIA) {
+				if (role && role.faction == Faction.MAFIA) {
 					this.removeAccessFromMafiaChat();
 				}
 			}
@@ -542,4 +542,4 @@ class Player {
 	}
 }
 
-module.exports = Player;
+module.exports = RDMPlayer;

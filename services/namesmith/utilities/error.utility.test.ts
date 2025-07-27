@@ -106,8 +106,9 @@
 			});
 
 			describe('handles most complex use case', () => {
-				const getResults = async (callbackFunction: (...args: any[]) => void | number) => {
-					let results = { result: undefined, message: undefined };
+				const getResults = async (callbackFunction: (...args: any[]) => undefined | number) => {
+					let results: Partial<{ result: number, message: string }> =
+						{ result: undefined, message: undefined };
 
 					try {
 						results.message = "Not Executed";

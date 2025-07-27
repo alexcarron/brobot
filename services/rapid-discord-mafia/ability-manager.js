@@ -583,10 +583,15 @@ class AbilityManager {
 	/**
 	 * Get an ability from an ability name
 	 * @param {string} ability_name - The name of the ability
-	 * @returns {Ability | undefined} ability if ability name exists, otherwise undefined
+	 * @returns {Ability} The ability
 	 */
 	getAbility(ability_name) {
-		return AbilityManager.abilities[ability_name];
+		const ability = AbilityManager.abilities[ability_name];
+
+		if (ability === undefined)
+			throw new Error(`getAbility: ${ability_name} is not a valid ability name`);
+
+		return ability;
 	}
 
 	/**

@@ -1,6 +1,6 @@
 const { TextChannel, Message, Guild, PermissionFlagsBits, Role } = require("discord.js");
 const ids = require("../../bot-config/discord-ids.js");
-const { fetchGuild, fetchChannel, fetchGuildMember, fetchRole, fetchTextChannel } = require("../../utilities/discord-fetch-utils.js");
+const { fetchGuild, fetchGuildMember, fetchRole, fetchTextChannel } = require("../../utilities/discord-fetch-utils.js");
 
 /**
  * Enum of names of all Discord roles for Rapid Discord Mafia
@@ -202,7 +202,7 @@ class DiscordService {
 	 * @param {object} parameters - The parameters
 	 * @param {string} parameters.channel_id - The id of the text channel the message is being sent in
 	 * @param {string} parameters.contents - The contents of the message being sent
-	 * @returns {Promise<Message>} The message that was sent
+	 * @returns {Promise<Message | undefined>} The message that was sent. undefined if mock service
 	 */
 	async sendAndPinMessage({channel_id, contents}) {
 		if (!this.isMockService) {
@@ -222,7 +222,7 @@ class DiscordService {
 	 * @param {object} parameters - The parameters
 	 * @param {string} parameters.channel_id - The id of the text channel the message is being sent in
 	 * @param {string} parameters.contents - The contents of the message being sent
-	 * @returns {Promise<Message>} The message that was sent
+	 * @returns {Promise<Message | undefined>} The message that was sent. undefined if mock service
 	 */
 	async sendMessage({channel_id, contents}) {
 		if (!this.isMockService) {
@@ -242,7 +242,7 @@ class DiscordService {
 	 */
 	async deleteChannel(channel_id) {
 		if (!this.isMockService) {
-			const text_channel = await fetchChannel(this.rdm_guild, channel_id);
+			const text_channel = await fetchTextChannel(this.rdm_guild, channel_id);
 			text_channel.delete();
 		}
 	}

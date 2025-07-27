@@ -3,7 +3,7 @@ const ids = require("../../bot-config/discord-ids");
 const { ParameterType, Parameter } = require("../../services/command-creation/parameter");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { deferInteraction, createChannel, editReplyToInteraction, createEveryoneDenyViewPermission, addPermissionToChannel, memberHasRole } = require("../../utilities/discord-action-utils");
-const { fetchGuild, getUserParamValue, fetchGuildMember, getStringParamValue, fetchTextChannel } = require("../../utilities/discord-fetch-utils");
+const { fetchGuild, getUserParamValue, fetchGuildMember, fetchTextChannel, getRequiredStringParam } = require("../../utilities/discord-fetch-utils");
 const { createListFromWords } = require("../../utilities/text-formatting-utils");
 
 const Parameters = {
@@ -57,7 +57,7 @@ module.exports = new SlashCommand({
 		const sandSeason3Guild = await fetchGuild(ids.sandSeason3.guild);
 		const commandUser = interaction.user;
 		let contestantIDs = [commandUser.id];
-		const allianceName = getStringParamValue(interaction, Parameters.Name.name);
+		const allianceName = getRequiredStringParam(interaction, Parameters.Name.name);
 
 		const userParameters = Object.values(Parameters).filter(parameter => parameter.type === ParameterType.USER);
 		for (const parameter of userParameters) {

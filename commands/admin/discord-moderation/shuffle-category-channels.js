@@ -2,7 +2,7 @@ const { ChannelType, PermissionFlagsBits } = require("discord.js");
 const { ParameterType, Parameter } = require("../../../services/command-creation/parameter");
 const { SlashCommand } = require("../../../services/command-creation/slash-command");
 const { deferInteraction, editReplyToInteraction, shuffleCategoryChannels } = require("../../../utilities/discord-action-utils");
-const { getStringParamValue, fetchCategory } = require("../../../utilities/discord-fetch-utils");
+const { fetchCategory, getGuildOfInteraction, getRequiredStringParam, fetchChannelsOfGuild } = require("../../../utilities/discord-fetch-utils");
 
 const Parameters = {
 	Category: new Parameter({
@@ -25,9 +25,8 @@ module.exports = new SlashCommand({
 	execute: async function execute(interaction) {
 		await deferInteraction(interaction);
 
-		const guild = interaction.guild;
-
-		const categoryID = getStringParamValue(interaction, Parameters.Category.name);
+		const guild = getGuildOfInteraction(interaction);
+		const categoryID = getRequiredStringParam(interaction, Parameters.Category.name);
 		const category = await fetchCategory(guild, categoryID);
 
 		await shuffleCategoryChannels(guild, category);
@@ -45,7 +44,8 @@ module.exports = new SlashCommand({
 		if (!focusedParameter) return;
 		const enteredValue = focusedParameter.value;
 
-		const allChannels = await interaction.guild.channels.fetch();
+		const guild = getGuildOfInteraction(interaction);
+		const allChannels = await fetchChannelsOfGuild(guild);
 
 		const allCategories = allChannels.filter(channel => channel.type === ChannelType.GuildCategory);
 

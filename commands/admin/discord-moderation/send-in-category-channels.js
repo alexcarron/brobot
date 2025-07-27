@@ -2,7 +2,7 @@ const { ChannelType, PermissionFlagsBits, TextChannel } = require("discord.js");
 const { ParameterType, Parameter } = require("../../../services/command-creation/parameter");
 const { SlashCommand } = require("../../../services/command-creation/slash-command");
 const { deferInteraction, editReplyToInteraction } = require("../../../utilities/discord-action-utils");
-const { getStringParamValue, fetchChannel, fetchChannelsInCategory } = require("../../../utilities/discord-fetch-utils");
+const { fetchChannelsInCategory, getGuildOfInteraction, getRequiredStringParam, fetchCategory, fetchChannelsOfGuild } = require("../../../utilities/discord-fetch-utils");
 const { wait } = require("../../../utilities/realtime-utils");
 
 const Parameters = {
@@ -33,11 +33,11 @@ module.exports = new SlashCommand({
 	execute: async function execute(interaction) {
 		await deferInteraction(interaction);
 
-		const guild = interaction.guild;
+		const guild = getGuildOfInteraction(interaction);
 
-		const categoryID = getStringParamValue(interaction, Parameters.Category.name);
-		const category = await fetchChannel(guild, categoryID);
-		const message = getStringParamValue(interaction, Parameters.Message.name);
+		const categoryID = getRequiredStringParam(interaction, Parameters.Category.name);
+		const category = await fetchCategory(guild, categoryID);
+		const message = getRequiredStringParam(interaction, Parameters.Message.name);
 
 		// All channels in the category
 		const channels = await fetchChannelsInCategory(guild, categoryID)
@@ -46,7 +46,7 @@ module.exports = new SlashCommand({
 
 		channels.forEach(async (channel) => {
 			if (!(channel instanceof TextChannel)) return;
-			
+
 			await channel.send(message);
 			numMessagesSent++;
 
@@ -68,7 +68,8 @@ module.exports = new SlashCommand({
 		if (!focusedParameter) return;
 		const enteredValue = focusedParameter.value;
 
-		const allChannels = await interaction.guild.channels.fetch();
+		const guild = getGuildOfInteraction(interaction);
+		const allChannels = await fetchChannelsOfGuild(guild);
 
 		const allCategories = allChannels.filter(channel => channel.type === ChannelType.GuildCategory);
 

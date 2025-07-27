@@ -85,6 +85,9 @@ class RoleIdentifier {
 	getPriority() {
 		let priority = RoleIdentifier.getPriorityFromType(this.type);
 
+		if (priority === undefined)
+			return undefined;
+
 		const possible_roles = this.getPossibleRoles();
 		const canIncludeRoleInFaction = possible_roles.some(role =>{
 			return RoleManager.isRoleInPossibleFaction(role)
@@ -96,6 +99,11 @@ class RoleIdentifier {
 		return priority;
 	}
 
+	/**
+	 * Gets the priority of a role identifier given its type
+	 * @param {string | undefined} type The type of the role identifier
+	 * @returns {number | undefined} The priority of the role identifier
+	 */
 	static getPriorityFromType(type) {
 		let role_identifier_priority_key;
 

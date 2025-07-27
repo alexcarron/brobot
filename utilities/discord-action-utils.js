@@ -74,6 +74,7 @@ const confirmInteractionWithButtons = async ({
 			components: [],
 		});
 	}
+	return false;
 };
 
 /**
@@ -190,7 +191,7 @@ const editReplyToInteraction = async (interaction, newMessageContents) => {
  * @param {string} [options.showModalButtonText] The text of the button which shows the modal.
  * @param {string} [options.initialMessageText] The text to send to the user when prompting them to press the button.
  * @param {string} [options.placeholder] The placeholder text for the text input field in the modal.
- * @returns {Promise<string>} The text entered by the user.
+ * @returns {Promise<string | undefined>} The text entered by the user.
  */
 const getInputFromCreatedTextModal = async ({
 		interaction,
@@ -259,7 +260,7 @@ const getInputFromCreatedTextModal = async ({
  * @param {import('discord.js').CategoryChannelResolvable | null} [options.parentCategory] - The parent category of the channel. If not provided, the channel will not have a parent category.
  * @returns {Promise<TextChannel>} The created channel.
  */
-const createChannel = async ({guild, name, permissions = null, parentCategory: parentCategoryResolvable = null}) => {
+const createChannel = async ({guild, name, permissions = [], parentCategory: parentCategoryResolvable = null}) => {
 	const MAX_CHANNELS_PER_CATEGORY = 50;
 
 	if (!guild)
@@ -362,7 +363,7 @@ const createChannel = async ({guild, name, permissions = null, parentCategory: p
  * @param {PermissionOverwrites[]} [options.permissions] - Permission overwrites for the category. If not provided, the default permissions will be used.
  * @returns {Promise<CategoryChannel>} The created category.
  */
-const createCategory = async ({guild, name, permissions = null}) => {
+const createCategory = async ({guild, name, permissions = []}) => {
 	if (!guild)
 		throw new Error("Guild is required");
 
@@ -498,7 +499,7 @@ const removePermissionFromChannel = async ({channel, userOrRoleID}) => {
  * @param {PermissionFlagsBits[]} [options.deniedPermissions] - An array of permissions that should be denied for the user or role.
  * @throws Will throw an error if none of allowedPermissions, deniedPermissions, or unsetPermissions are provided, or if any of them are not arrays.
  */
-const changePermissionOnChannel = ({channel, userOrRoleID, allowedPermissions, unsetPermissions, deniedPermissions}) => {
+const changePermissionOnChannel = async ({channel, userOrRoleID, allowedPermissions, unsetPermissions, deniedPermissions}) => {
 	const permissions = {}
 
 	if (!allowedPermissions && !deniedPermissions && !unsetPermissions)
@@ -531,7 +532,7 @@ const changePermissionOnChannel = ({channel, userOrRoleID, allowedPermissions, u
 		}
 	}
 
-	channel.permissionOverwrites.edit(
+	await channel.permissionOverwrites.edit(
 		userOrRoleID,
 		permissions,
 	);
@@ -541,10 +542,10 @@ const changePermissionOnChannel = ({channel, userOrRoleID, allowedPermissions, u
  * Opens a Discord channel to allow everyone to view it but not send messages.
  * @param {TextChannel} channel - The channel to be opened for viewing.
  */
-const openChannel = (channel) => {
+const openChannel = async (channel) => {
 	const everyoneRole = getEveryoneRole(channel.guild);
 
-	changePermissionOnChannel({
+	await changePermissionOnChannel({
 		channel: channel,
 		userOrRoleID: everyoneRole.id,
 		// @ts-ignore
@@ -558,10 +559,10 @@ const openChannel = (channel) => {
  * Closes a Discord channel to deny everyone the ability to view it.
  * @param {TextChannel} channel - The channel to be closed from viewing.
  */
-const closeChannel = (channel) => {
+const closeChannel = async (channel) => {
 	const everyoneRole = getEveryoneRole(channel.guild);
 
-	changePermissionOnChannel({
+	await changePermissionOnChannel({
 		channel: channel,
 		userOrRoleID: everyoneRole.id,
 		// @ts-ignore

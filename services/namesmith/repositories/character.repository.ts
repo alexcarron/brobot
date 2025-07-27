@@ -1,7 +1,8 @@
 import { InvalidArgumentError } from "../../../utilities/error-utils";
-import DatabaseQuerier from "../database/database-querier";
+import { DatabaseQuerier } from "../database/database-querier";
 import { Character, DBCharacter, DBCharacterWithTags, CharacterWithTags } from "../types/character.types";
 import { getIDfromCharacterValue } from "../utilities/character.utility";
+import { CharacterNotFoundError } from "../utilities/error.utility";
 
 /**
  * Provides access to all static character data.
@@ -66,9 +67,13 @@ export class CharacterRepository {
 	 * @param value - The value of the character to retrieve.
 	 * @returns The character with the given value, or undefined if no such character exists.
 	 */
-	getCharacterByValue(value: string): Character | undefined {
+	getCharacterByValue(value: string): Character {
 		const id = getIDfromCharacterValue(value);
-		return this.getCharacterByID(id);
+		const character = this.getCharacterByID(id);
+		if (character === undefined)
+			throw new CharacterNotFoundError(id);
+
+		return character;
 	}
 
 	/**

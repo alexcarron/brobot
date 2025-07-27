@@ -1,72 +1,78 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { Parameter } from "./parameter";
 
 /**
  * Represents a Discord command.
  * @class
  */
 export class SlashCommand {
-	/** @type {string} The name of the command */
-	name;
-
-	/** @type {string} The description of the command */
-	description;
-
-	/** @type {number} Seconds a user must wait before running this command again */
-	cooldown;
-
-	/** @type {boolean} If users should be able to run this command in DMs */
-	allowsDMs;
-
-	/** @type {string[]} IDs of servers this command can only be run in */
-	required_servers;
-
-	/** @type {string[]} IDs of channels this command can only be run in */
-	required_channels;
-
-	/** @type {string[]} IDs of channel categories this command can only be run in */
-	required_categories;
-
-	/** @type {string[] | string[][]} Names of roles users must have to run this command */
-	required_roles;
-
-	/** @type {bigint[]} Permissions that users must have to run this command */
-	required_permissions;
-
-	/** @type {Parameter[]} Parameters that users can enter when running the command */
-	parameters;
-
-	/** @type {boolean} If the command is currently in development */
-	isInDevelopment;
+	/**
+	 * The name of the command
+	 */
+	public readonly name: string;
 
 	/**
-	 * An function which takes a discord.js Interaction that executes when the command is autocompleted
+	 * The description of the command
 	 */
-	autocomplete: (interaction: AutocompleteInteraction) => Promise<any>;
+	public readonly description: string;
+
+	/**
+	 * Seconds a user must wait before running this command again
+	 */
+	public readonly cooldown: number;
+
+	/**
+	 * If users should be able to run this command in DMs
+	 */
+	public readonly allowsDMs: boolean;
+
+	/**
+	 * IDs of servers this command can only be run in
+	 */
+	public readonly required_servers: string[];
+
+	/**
+	 * IDs of channels this command can only be run in
+	 */
+	public readonly required_channels: string[];
+
+	/**
+	 * IDs of channel categories this command can only be run in
+	 */
+	public readonly required_categories: string[];
+
+	/**
+	 * Names of roles users must have to run this command
+	 */
+	public readonly required_roles: string[] | string[][];
+
+	/**
+	 * Permissions that users must have to run this command
+	 */
+	public readonly required_permissions: bigint[];
+
+	/**
+	 * Parameters that users can enter when running the command
+	 */
+	public readonly parameters: Parameter[];
+
+	/**
+	 * If the command is currently in development
+	 */
+	public readonly isInDevelopment: boolean;
+
+	/**
+	 * A function which takes a discord.js Interaction that executes when the command is autocompleted
+	 */
+	public readonly autocomplete: (interaction: AutocompleteInteraction) => Promise<any>;
 
 	/**
 	 * A function which takes a discord.js Interaction that executes when the command is run
 	 */
-	execute: (interaction: ChatInputCommandInteraction, isTestOrContext?: boolean | object, isTest?: boolean) => Promise<any>;
+	public readonly execute: (interaction: ChatInputCommandInteraction, isTestOrContext?: any, isTest?: any) => Promise<any>;
 
-	data: any;
+	public data: any;
 
-/**
- * Create a new SlashCommand.
- * @param {object} options - The options to create the SlashCommand with
- * @param {string} options.name - The name of the command
- * @param {string} options.description - The description of the command
- * @param {number} [options.cooldown] - The cooldown for the command in seconds
- * @param {boolean} [options.allowsDMs] - If the command can be run in DMs
- * @param {string[]} [options.required_servers] - The IDs of the servers the command can only be run in
- * @param {string[]} [options.required_channels] - The IDs of the channels the command can only be run in
- * @param {string[]} [options.required_categories] - The IDs of the channel categories the command can only be run in
- * @param {string[] | string[][]} [options.required_roles] - The names of the roles users must have to run the command
- * @param {bigint[]} [options.required_permissions] - The permissions users must have to run the command using PermissionFlagsBits
- * @param {Parameter[]} [options.parameters] - The parameters for the command
- * @param {(interaction: CommandInteraction, isTest?: boolean) => Promise<any>} options.execute - The function to execute when the command is run
- * @param {(interaction: CommandInteraction) => Promise<void>} [options.autocomplete] - The function to execute when the command is autocompleted
- * @param {boolean} [options.isInDevelopment] - If the command is currently in development
- */
 	constructor({
 		name,
 		description,
@@ -81,6 +87,20 @@ export class SlashCommand {
 		execute,
 		autocomplete = async (interaction: AutocompleteInteraction) => {},
 		isInDevelopment = false,
+	}: {
+		name: string;
+		description: string;
+		execute: (interaction: ChatInputCommandInteraction, isTestOrContext?: any, isTest?: any) => Promise<any>;
+		cooldown?: number;
+		allowsDMs?: boolean;
+		required_servers?: string[];
+		required_channels?: string[];
+		required_categories?: string[];
+		required_roles?: string[] | string[][];
+		required_permissions?: bigint[];
+		parameters?: Parameter[];
+		autocomplete?: (interaction: AutocompleteInteraction) => Promise<any>;
+		isInDevelopment?: boolean;
 	}) {
 		this.name = name;
 		this.description = description;

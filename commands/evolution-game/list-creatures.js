@@ -4,7 +4,7 @@ const { getCreaturesText, getChildCreaturesText } = require("../../services/evol
 const { parseCreaturesFromMessages } = require("../../services/evolution-game/creature-parser");
 const { getEvolutionRoots, getCreatureWithName, getChildCreaturesOf, } = require("../../services/evolution-game/creature-utils");
 const { deferInteraction, editReplyToInteraction } = require("../../utilities/discord-action-utils");
-const { fetchChannel, fetchMessagesInChannel } = require("../../utilities/discord-fetch-utils");
+const { fetchMessagesInChannel, getGuildOfInteraction, fetchTextChannel, getTextChannelOfInteraction } = require("../../utilities/discord-fetch-utils");
 
 module.exports = new SlashCommand({
 	name: "list-creatures",
@@ -14,7 +14,9 @@ module.exports = new SlashCommand({
 	execute: async function execute(interaction) {
 		await deferInteraction(interaction);
 
-		const evolutionsChannel = await fetchChannel(interaction.guild,
+		const guild = getGuildOfInteraction(interaction);
+		const channel = getTextChannelOfInteraction(interaction);
+		const evolutionsChannel = await fetchTextChannel(guild,
 			ids.evolutionGame.channels.evolutions
 		);
 
@@ -57,19 +59,22 @@ module.exports = new SlashCommand({
 
 				while (lines.length > 0) {
 					const line = lines.shift();
+
+					if (line === undefined) break;
+
 					numCharacters += line.length;
 					if (numCharacters > 2000) {
-						interaction.channel.send(linesToSend.join('\n'));
+						channel.send(linesToSend.join('\n'));
 						linesToSend = [];
 						numCharacters = line.length;
 					}
 					linesToSend.push(line);
 				}
 
-				interaction.channel.send(linesToSend.join('\n'));
+				channel.send(linesToSend.join('\n'));
 			}
 			else {
-				interaction.channel.send(section);
+				channel.send(section);
 			}
 		}
 

@@ -1,10 +1,10 @@
 import { logError, logInfo, logSuccess } from "../../../utilities/logging-utils";
 
-import fs from 'fs-extra';
-import path from 'path';
+import * as fs from 'fs-extra';
+import * as path from 'path';
 import Database from 'better-sqlite3';
 import { dbPath } from './get-database';
-import cron from 'node-cron';
+import * as cron from 'node-cron';
 
 const backupDirectory = path.join(__dirname, 'backups');
 const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -59,4 +59,4 @@ export function startBackupCronJob() {
   task.start();
 
   return task;
-}
+};

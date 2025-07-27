@@ -2,7 +2,7 @@ const { ChannelType, PermissionFlagsBits, ChatInputCommandInteraction, Autocompl
 const { ParameterType, Parameter } = require("../../../services/command-creation/parameter");
 const { SlashCommand } = require("../../../services/command-creation/slash-command");
 const { deferInteraction, createChannel, editReplyToInteraction } = require("../../../utilities/discord-action-utils");
-const { getStringParamValue, getIntegerParamValue } = require("../../../utilities/discord-fetch-utils");
+const { getStringParamValue, getRequiredIntegerParam, getRequiredStringParam, fetchChannelsOfGuild } = require("../../../utilities/discord-fetch-utils");
 const { incrementEndNumber } = require("../../../utilities/text-formatting-utils");
 
 const Parameters = {
@@ -51,9 +51,15 @@ module.exports = new SlashCommand({
 		await deferInteraction(interaction);
 
 		const guild = interaction.guild;
+		if (guild === null) {
+			await editReplyToInteraction(interaction,
+				"This command can only be used in a server."
+			);
+			return;
+		}
 
-		let channelName = getStringParamValue(interaction, Parameters.Name.name);
-		const amount = getIntegerParamValue(interaction, Parameters.Amount.name);
+		let channelName = getRequiredStringParam(interaction, Parameters.Name.name);
+		const amount = getRequiredIntegerParam(interaction, Parameters.Amount.name);
 		const categoryID = getStringParamValue(interaction, Parameters.Category.name);
 		const message = getStringParamValue(interaction, Parameters.Message.name);
 
@@ -99,7 +105,11 @@ module.exports = new SlashCommand({
 		if (!focusedParameter) return;
 		const enteredValue = focusedParameter.value;
 
-		const allChannels = await interaction.guild.channels.fetch();
+		if (interaction.guild === null)
+			return;
+
+		const allChannels = await fetchChannelsOfGuild(interaction.guild);
+
 
 		const allCategories = allChannels.filter(channel => channel.type === ChannelType.GuildCategory);
 

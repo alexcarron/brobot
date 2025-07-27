@@ -66,7 +66,7 @@ const logWithColor = (message, color) => {
  *
  * Use Format: logWithColors`A normal message with ${['green', LogColor.GREEN]} and ${['blue', LogColor.BLUE]}.`;
  * @param {TemplateStringsArray} strings - The strings to log, with placeholders for expressions.
- * @param {...[string | number, number]} expressions - The expressions to fill in the placeholders, with the first element of each expression being the value and the second element being the color.
+ * @param {...[(string | number), number | undefined]} expressions - The expressions to fill in the placeholders, with the first element of each expression being the value and the second element being the color.
  * @throws {TypeError} If strings or expressions are not arrays.
  * @throws {TypeError} If strings contains non-string elements.
  * @throws {TypeError} If expressions contains non-tuple elements or tuple elements with incorrect length.
@@ -141,7 +141,7 @@ const logWithColors = (strings, ...expressions) => {
  * @param {string} message - The error message to log.
  * @param {Error} [error] - The optional error object to log the stack trace of.
  */
-const logError = (message, error = null) => {
+const logError = (message, error = undefined) => {
 	const timestamp = new Date().toISOString();
 	const errorPrefix = `[ERROR] ${timestamp}:`;
 

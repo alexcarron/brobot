@@ -1,7 +1,7 @@
 const { PermissionFlagsBits, ChannelType } = require("discord.js");
 const { Parameter } = require("../../../services/command-creation/parameter");
 const { SlashCommand } = require("../../../services/command-creation/slash-command");
-const { fetchChannelsInCategory, fetchChannel } = require("../../../utilities/discord-fetch-utils");
+const { fetchChannelsInCategory, getRequiredStringParam, getGuildOfInteraction, fetchCategory, fetchChannelsOfGuild } = require("../../../utilities/discord-fetch-utils");
 const { deferInteraction, editReplyToInteraction } = require("../../../utilities/discord-action-utils");
 const { logInfo, logError } = require("../../../utilities/logging-utils");
 
@@ -25,11 +25,11 @@ module.exports = new SlashCommand({
 		await deferInteraction(interaction);
 
 		// Delete Channels
-		const
-			categoryID = interaction.options.getString(Parameters.CategoryChannelId.name),
-			categoryChannels = await fetchChannelsInCategory(interaction.guild, categoryID);
+		const categoryID = getRequiredStringParam(interaction, Parameters.CategoryChannelId.name);
+		const guild = getGuildOfInteraction(interaction);
+		const categoryChannels = await fetchChannelsInCategory(guild, categoryID);
 
-		const category = await fetchChannel(interaction.guild, categoryID);
+		const category = await fetchCategory(guild, categoryID);
 		const numChannels = categoryChannels.length;
 
 		for (const channel of categoryChannels) {
@@ -53,9 +53,10 @@ module.exports = new SlashCommand({
 		if (!focused_param) return;
 		const entered_value = focused_param.value;
 
-		const all_channels = await interaction.guild.channels.fetch();
+		const guild = getGuildOfInteraction(interaction);
+		const all_channels = await fetchChannelsOfGuild(guild);
 
-		const all_categories = await all_channels.filter(channel => channel.type === ChannelType.GuildCategory);
+		const all_categories = all_channels.filter(channel => channel.type === ChannelType.GuildCategory);
 
 		autocomplete_values = all_categories
 			.map((chnl_category) => {

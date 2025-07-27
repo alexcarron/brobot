@@ -2,7 +2,7 @@ const { PermissionFlagsBits } = require("discord.js");
 const ids = require("../../bot-config/discord-ids");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { deferInteraction, editReplyToInteraction, removePermissionFromChannel } = require("../../utilities/discord-action-utils");
-const { getUserParamValue, fetchCategoriesOfGuild, fetchTextChannelsInCategory } = require("../../utilities/discord-fetch-utils");
+const { fetchCategoriesOfGuild, fetchTextChannelsInCategory, getRequiredUserParam } = require("../../utilities/discord-fetch-utils");
 const { Parameter, ParameterType } = require("../../services/command-creation/parameter");
 
 
@@ -26,9 +26,13 @@ const command = new SlashCommand({
 	execute: async function execute(interaction) {
 		await deferInteraction(interaction);
 
-		const contestantUser = getUserParamValue(interaction, Parameters.Contestant.name);
+		const contestantUser = getRequiredUserParam(interaction, Parameters.Contestant.name);
 
 		const sandSeason3Guild = interaction.guild;
+		if (sandSeason3Guild === null) {
+			await editReplyToInteraction(interaction, "This command can only be used in Sand Season 3.");
+			return;
+		}
 
 		const allCategoryChannels = await fetchCategoriesOfGuild(sandSeason3Guild);
 

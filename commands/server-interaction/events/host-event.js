@@ -1,7 +1,7 @@
 const cron = require("cron");
 const { SlashCommand } = require('../../../services/command-creation/slash-command');
 const ids = require("../../../bot-config/discord-ids.js")
-const { ChannelType, ButtonBuilder, ActionRowBuilder, ModalBuilder, ButtonStyle, TextInputBuilder, TextInputStyle, StringSelectMenuOptionBuilder, StringSelectMenuBuilder, TextChannel, } = require('discord.js');
+const { ButtonBuilder, ActionRowBuilder, ModalBuilder, ButtonStyle, TextInputBuilder, TextInputStyle, StringSelectMenuOptionBuilder, StringSelectMenuBuilder, TextChannel, DMChannel, } = require('discord.js');
 const { toTitleCase } = require("../../../utilities/text-formatting-utils.js");
 const { toUnixTimestamp } = require("../../../utilities/date-time-utils.js");
 const { confirmInteractionWithButtons } = require("../../../utilities/discord-action-utils.js");
@@ -19,7 +19,10 @@ module.exports = new SlashCommand({
 
 		await interaction.editReply("Loading...");
 
-		if (interaction.channel.type !== ChannelType.DM)
+		if (
+			interaction.channel === null ||
+			!(interaction.channel instanceof DMChannel)
+		)
 			return await interaction.editReply("You may only use this command in my DMs.");
 
 		const viewer = await global.LLPointManager.getViewerOrCreateViewer(interaction);
@@ -47,12 +50,12 @@ module.exports = new SlashCommand({
 		}
 
 		/**
-		 * @param {TextChannel} channel_sending_in - The channel the user is in
+		 * @param {TextChannel | DMChannel} channel_sending_in - The channel the user is in
 		 * @param {string} title Noun describing what your entering
 		 * @param {string} short_question <45 character question to remind the user what to enter
-		 * @param {string} long_question The prompt or question you want answered
+		 * @param {string | undefined} long_question The prompt or question you want answered
 		 * @param {string} placeholder The placeholder text for the answer
-		 * @returns {Promise<string>} The user's answer
+		 * @returns {Promise<string | undefined>} The user's answer
 		 */
 		const getModalTextFieldInput = async function(channel_sending_in, title, short_question, long_question=undefined, placeholder="") {
 			if (!long_question)
@@ -106,6 +109,9 @@ module.exports = new SlashCommand({
 							hasPressedButton = true;
 					}
 
+					if (confirmation_interaction === undefined)
+						return undefined;
+
 					await confirmation_interaction.showModal(modal);
 
 					// Wait for button press
@@ -122,6 +128,10 @@ module.exports = new SlashCommand({
 			// Get the data entered by the user
 			// @ts-ignore
 			const text_response = confirmation_interaction.fields.getTextInputValue(`${title_id}TextInput`);
+
+			if (confirmation_interaction === undefined)
+				return undefined;
+
 			await confirmation_interaction.reply(
 				`# ✅ Confirmed ${title} ` + "\n" +
 				">>> " + text_response
@@ -237,6 +247,7 @@ module.exports = new SlashCommand({
 
 		const date_time_message_sent = await interaction.channel.send({
 			content: '_ _\nSelect the date and time for your event in EST. (WARNING: The date and time you pick will be forced to be at least 24 hours after today. So if today is Tuesday 3PM and you choose Wednesday 2PM, the event will be 8 days from now)',
+			// @ts-ignore
 			components: [week_day_action_row, time_action_row],
 		});
 
@@ -250,6 +261,7 @@ module.exports = new SlashCommand({
 				date_time_confirmation_interaction = await date_time_message_sent.awaitMessageComponent({ time: 120_000 });
 
 				if (date_time_confirmation_interaction.customId === "WeekDaySelectMenu") {
+					// @ts-ignore
 					chosen_week_day = date_time_confirmation_interaction.values[0];
 					choseDay = true;
 
@@ -260,6 +272,7 @@ module.exports = new SlashCommand({
 				}
 
 				if (date_time_confirmation_interaction.customId === "TimeSelectMenu") {
+					// @ts-ignore
 					chosen_time = parseInt(date_time_confirmation_interaction.values[0]);
 					choseTime = true;
 
@@ -281,6 +294,9 @@ module.exports = new SlashCommand({
 				return undefined;
 			}
 		}
+
+		if (chosen_time === undefined)
+			return undefined;
 
 		const event_date = new Date();
 		const current_hour = event_date.getHours();
@@ -360,6 +376,7 @@ module.exports = new SlashCommand({
 
 		const ping_role_message_sent = await interaction.channel.send({
 			content: "_ _\nSelect all of the things you're event involves in order to determine which ping roles are used. You can choose multiple, but do NOT choose any options that aren't true.",
+			// @ts-ignore
 			components: [ping_role_select_action_row, ping_role_confirm_action_row],
 		});
 
@@ -373,6 +390,7 @@ module.exports = new SlashCommand({
 				if (ping_role_confirmation_interaction.customId === "PingRoleSelectMenu") {
 					chosen_ping_roles = [];
 					chosen_ping_names = [];
+					// @ts-ignore
 					for (const ping_role of ping_role_confirmation_interaction.values) {
 						chosen_ping_roles.push(ping_role_ids[ping_role]);
 						chosen_ping_names.push(ping_role_names[ping_role]);
@@ -412,7 +430,7 @@ module.exports = new SlashCommand({
 		event.summary = enticing_summary_text;
 		event.name = event_title_text;
 		event.time = event_unix_timestamp;
-		event.host = viewer;
+		event.setHost(viewer);
 		event._ping_role_ids = chosen_ping_roles;
 
 		global.events.push(event);

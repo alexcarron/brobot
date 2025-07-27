@@ -24,7 +24,7 @@ module.exports = new SlashCommand({
 			interaction,
 			modalTitle: `Rearrange The Characters In Your Name`,
 			placeholder: currentName,
-		});
+		}) || "";
 
 		while (!correctlyRearrangedName) {
 			const { extraCharacters } = getCharacterDifferencesInStrings(inventory, newName);
@@ -65,7 +65,7 @@ module.exports = new SlashCommand({
 					interaction: buttonInteraction,
 					modalTitle: `Rearrange The Characters In Your Name`,
 					placeholder: currentName,
-				});
+				}) || "";
 			});
 		}
 

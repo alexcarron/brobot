@@ -2,6 +2,7 @@ const { SlashCommand } = require('../../services/command-creation/slash-command'
 const { Parameter } = require('../../services/command-creation/parameter');
 const { createNowUnixTimestamp } = require('../../utilities/date-time-utils.js');
 const Timer = require('../../services/timers/timer.js');
+const { getRequiredStringParam, getIntegerParamValue, getTextChannelOfInteraction } = require('../../utilities/discord-fetch-utils');
 
 const Parameters = {
 	ReasonForTimer: new Parameter({
@@ -58,11 +59,13 @@ module.exports = new SlashCommand({
 		await interaction.deferReply({ ephemeral: true });
 		await interaction.editReply("Loading...");
 
-		const reason_for_timer = interaction.options.getString(Parameters.ReasonForTimer.name);
-		const days = interaction.options.getInteger(Parameters.Days.name);
-		const hours = interaction.options.getInteger(Parameters.Hours.name);
-		const minutes = interaction.options.getInteger(Parameters.Minutes.name);
-		const seconds = interaction.options.getInteger(Parameters.Seconds.name);
+		const reason_for_timer = getRequiredStringParam(interaction, Parameters.ReasonForTimer.name);
+		const days = getIntegerParamValue(interaction, Parameters.Days.name);
+		const hours = getIntegerParamValue(interaction, Parameters.Hours.name);
+		const minutes = getIntegerParamValue(interaction, Parameters.Minutes.name);
+		const seconds = getIntegerParamValue(interaction, Parameters.Seconds.name);
+
+		const channel = getTextChannelOfInteraction(interaction);
 
 		if (
 			days === null &&
@@ -96,8 +99,8 @@ module.exports = new SlashCommand({
 		timer.minutes = minutes ?? 0;
 		timer.seconds = seconds ?? 0;
 		timer.end_time = now_unix_timestamp*1000;
-		timer.channel_id = interaction.channel.id;
-		timer.guild_id = interaction.guild.id;
+		timer.channel_id = channel.id;
+		timer.guild_id = channel.id;
 		timer.user_id = interaction.user.id;
 
 		await timer.startTimer();

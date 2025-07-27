@@ -168,7 +168,7 @@ class TextToSpeechHandler {
 	/**
 	 * Plays audio from a message
 	 * @param {VoiceConnection} voice_connection - The voice connection
-	 * @param {string} speaker_name - The name of the person speaking
+	 * @param {string} [speaker_name] - The name of the person speaking
 	 */
 	async playAudio(voice_connection, speaker_name=undefined) {
 		this._isPlaying = true;
@@ -186,6 +186,7 @@ class TextToSpeechHandler {
 		await new Promise(resolve => {
 				// @ts-ignore
 				player.once('idle', () => {
+						// @ts-ignore
 						resolve();
 				});
 		});
@@ -226,6 +227,7 @@ class TextToSpeechHandler {
 			response.data.pipe(writer);
 			return new Promise((resolve, reject) => {
 				const finish = () => {
+					// @ts-ignore
 					resolve();
 				}
 				writer.on('finish', finish);

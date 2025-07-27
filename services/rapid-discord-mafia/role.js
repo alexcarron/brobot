@@ -79,6 +79,80 @@ const Immunity = Object.freeze({
  * Represents a Mafia role
  */
 class Role {
+	/**
+	 * The name of the role
+	 * @type {string}
+	 */
+	name = "";
+
+	/**
+	 * The faction the role belongs to
+	 * @type {string}
+	 */
+	faction = Faction.NEUTRAL;
+
+	/**
+	 * The alignment of the role
+	 * @type {string}
+	 */
+	alignment = Alignment.CROWD;
+
+	/**
+	 * The attack level of the role
+	 * @type {number}
+	 */
+	attack = 0;
+
+	/**
+	 * The defense level of the role
+	 * @type {number}
+	 */
+	defense = 0;
+
+	/**
+	 * The win condition of the role
+	 * @type {string}
+	 */
+	goal = Goal.ELIMINATE_OTHER_FACTIONS;
+
+	/**
+	 * Whether or not the role is unique
+	 * @type {boolean}
+	 */
+	isUnique = false;
+
+	/**
+	 * The immunities the role has
+	 * @type {string[]}
+	 */
+	immunities = [];
+
+	/**
+	 * The abilities the role has
+	 * @type {object[]}
+	 */
+	abilities = [];
+
+	/**
+	 * Any special notes about the role
+	 * @type {string}
+	 */
+	notes = "";
+
+	/**
+	 * Initializes a new Role instance with the provided parameters.
+	 * @param {object} params - The parameters for initializing the role.
+	 * @param {string} params.name - The name of the role.
+	 * @param {string} params.faction - The faction the role belongs to.
+	 * @param {string} params.alignment - The alignment of the role.
+	 * @param {number} params.attack - The attack level of the role.
+	 * @param {number} params.defense - The defense level of the role.
+	 * @param {string} params.goal - The win condition of the role.
+	 * @param {boolean} [params.isUnique] - Whether the role is unique.
+	 * @param {string[]} [params.immunities] - The immunities the role has.
+	 * @param {object[]} [params.abilities] - The abilities the role has.
+	 * @param {string} [params.notes] - Any special notes about the role.
+	 */
 	constructor({name, faction, alignment, attack, defense, goal, isUnique = false, immunities = [], abilities = [], notes = ""}) {
 		this.name = name;
 		this.faction = faction;
@@ -88,6 +162,7 @@ class Role {
 		this.goal = goal;
 		this.isUnique = isUnique;
 		this.immunities = immunities;
+		this.abilities = abilities;
 		this.abilities = abilities
 		this.notes = notes;
 	}
@@ -128,6 +203,7 @@ class Role {
 	}
 
 	getFaction() {
+		// @ts-ignore
 		if ([Faction.MAFIA, Faction.TOWN].includes(this.faction)) {
 			return this.faction;
 		}

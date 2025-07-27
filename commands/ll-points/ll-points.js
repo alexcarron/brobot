@@ -6,6 +6,7 @@ const { LLPointManager } = require("../../services/ll-points/ll-point-manager.js
 const { deferInteraction } = require("../../utilities/discord-action-utils.js");
 const { LLPointTier } = require('../../services/ll-points/ll-point-enums.js');
 const { logInfo } = require('../../utilities/logging-utils.js');
+const { getStringParamValue } = require('../../utilities/discord-fetch-utils');
 
 
 const Parameters = {
@@ -29,7 +30,7 @@ const command = new SlashCommand({
 		await deferInteraction(interaction);
 
 		const
-			specified_viewer_name = interaction.options.getString(Parameters.ViewerName.name),
+			specified_viewer_name = getStringParamValue(interaction, Parameters.ViewerName.name),
 			noSpecifiedUser = !specified_viewer_name,
 			num_total_viewers = global.LLPointManager.getNumViewers(),
 			getViewer = async function(viewer_name) {

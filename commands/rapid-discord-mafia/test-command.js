@@ -7,6 +7,7 @@ const ids = require(`../../bot-config/discord-ids.js`);
 const { TrialVote } = require("../../services/rapid-discord-mafia/vote-manager.js");
 const { GameState } = require("../../services/rapid-discord-mafia/game-state-manager.js");
 const { deferInteraction } = require("../../utilities/discord-action-utils.js");
+const { getRequiredStringParam, getSubcommandUsed } = require("../../utilities/discord-fetch-utils");
 
 const Subparameters = {
 	PlayerVotingFor: new Parameter({
@@ -103,7 +104,7 @@ module.exports = new SlashCommand({
 			]
 		}),
 		new Parameter({
-			type: "Subcommandgroup",
+			type: "subcommand",
 			name: "vote",
 			description: "Test the /vote command",
 			subcommands : [
@@ -145,9 +146,7 @@ module.exports = new SlashCommand({
 
 			global.game_manager.startSignUps();
 
-			const player_names_str = await interaction.options.getString(
-				"player-names"
-			);
+			const player_names_str = getRequiredStringParam(interaction, "player-names");
 
 
 			const player_names = player_names_str.split(" ");
@@ -165,11 +164,7 @@ module.exports = new SlashCommand({
 		}
 		else {
 			let command;
-			let command_name = subcommand
-
-			if (interaction.options.getSubcommandGroup()) {
-				command_name = interaction.options.getSubcommandGroup();
-			}
+			let command_name = getSubcommandUsed(interaction);
 
 			try {
 				command = require(`./${command_name}.js`);

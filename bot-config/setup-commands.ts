@@ -17,7 +17,7 @@ import { DISCORD_TOKEN } from './token.js';
  * @returns {string[]} An array of paths of all .js files found.
  */
 const getAllJSFilesIn = (directoryPath) => {
-	const jsFiles = [];
+	const jsFiles: string[] = [];
 
 	/**
 	 * Recursively traverses the given directory path, adding all .js file paths to the jsFiles array.
@@ -47,7 +47,7 @@ const getAllJSFilesIn = (directoryPath) => {
  * @warns If a command is missing a required property, it will not be registered.
  */
 const getCommands = () => {
-	let commands = [];
+	let commands: SlashCommand[] = [];
 
 	const commandFilePaths = getAllJSFilesIn(COMMANDS_DIR_PATH);
 
@@ -132,12 +132,15 @@ const mapGuildCommandsToGuildID = (commands) => {
 
 /**
  * Deploys all slash commands for the bot. This function is called by the {@link setupAndDeployCommands} function.
- * @param {{globalCommands: SlashCommand[], guildIDtoGuildCommands: Map<string, SlashCommand[]>}} parameters
- * @param {SlashCommand[]} parameters.globalCommands - An array of all global slash commands that should be deployed.
- * @param {Map<string, SlashCommand[]>} parameters.guildIDtoGuildCommands - An object mapping each guild ID to an array of private slash commands that should be deployed in that guild.
- * @returns {Promise<void>}
+ * @param globalCommands - An array of all global slash commands that should be deployed.
+ * @param guildIDtoGuildCommands - An object mapping each guild ID to an array of private slash commands that should be deployed in that guild.
  */
-const deployCommands = async ({globalCommands = [], guildIDtoGuildCommands}) => {
+const deployCommands = async (
+	{globalCommands = [], guildIDtoGuildCommands}: {
+		globalCommands: SlashCommand[],
+		guildIDtoGuildCommands: Map<string, SlashCommand[]>
+	}
+) => {
 	// Construct and prepare an instance of the REST module
 	const rest = new Discord.REST().setToken(DISCORD_TOKEN);
 
@@ -146,6 +149,11 @@ const deployCommands = async ({globalCommands = [], guildIDtoGuildCommands}) => 
 	// The put method is used to fully refresh all commands in the guild with the current set
 	for (const requiredServerID of guildIDtoGuildCommands.keys()) {
 		const slashCommands = guildIDtoGuildCommands.get(requiredServerID);
+
+		if (slashCommands === undefined) {
+			logWarning(`No slash commands found for guild ${requiredServerID}.`);
+			continue;
+		}
 
 		logInfo(`Deploying ${slashCommands.length} private slash commands from guild ${requiredServerID}...`);
 
@@ -211,12 +219,9 @@ const deployCommands = async ({globalCommands = [], guildIDtoGuildCommands}) => 
  */
 export const setupAndDeployCommands = async ({client, skipGlobalCommands = false}) => {
 	const commands = getCommands();
-	commands.forEach(command =>
-		command.requir
-	)
 	storeCommandsInMemory(client, commands);
 
-	let globalCommands = undefined;
+	let globalCommands = [];
 	const guildIDtoGuildCommands = mapGuildCommandsToGuildID(commands);
 
 	if (!skipGlobalCommands)

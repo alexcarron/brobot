@@ -7,6 +7,7 @@ const { LLPointManager } = require('../../services/ll-points/ll-point-manager.js
 const { findStringStartingWith } = require('../../utilities/text-formatting-utils.js');
 const { confirmInteractionWithButtons } = require('../../utilities/discord-action-utils.js');
 const { logInfo } = require('../../utilities/logging-utils.js');
+const { getRequiredStringParam, getRequiredNumberParam } = require('../../utilities/discord-fetch-utils.js');
 
 
 const Parameters = {
@@ -80,9 +81,9 @@ module.exports = new SlashCommand({
 		}
 
 		const
-			viewer_name_arg = interaction.options.getString(Parameters.ViewerName.name),
-			num_gifted_points = interaction.options.getNumber(Parameters.LLPointAmount.name),
-			personal_message = interaction.options.getString(Parameters.PersonalMessage.name);
+			viewer_name_arg = getRequiredStringParam(interaction, Parameters.ViewerName.name),
+			num_gifted_points = getRequiredNumberParam(interaction, Parameters.LLPointAmount.name),
+			personal_message = getRequiredStringParam(interaction, Parameters.PersonalMessage.name);
 			// isAnonymous = interaction.options.getBoolean(Parameters.Anonymous.name);
 
 		const isAnonymous = false;

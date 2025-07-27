@@ -8,6 +8,7 @@ const
 	{ PermissionFlagsBits } = require("discord.js"),
 	ids = require("../../bot-config/discord-ids.js");
 const { deferInteraction } = require("../../utilities/discord-action-utils.js");
+const { getRequiredStringParam } = require("../../utilities/discord-fetch-utils");
 
 module.exports = new SlashCommand({
 	name: "start-game",
@@ -24,7 +25,7 @@ module.exports = new SlashCommand({
 	execute: async function execute(interaction, role_identifiers_str) {
 		await deferInteraction(interaction);
 
-		role_identifiers_str = interaction.options.getString("role-identifiers");
+		role_identifiers_str = getRequiredStringParam(interaction, "role-identifiers");
 		const role_identifier_strings = role_identifiers_str.split(', ');
 
 		const player_count = global.game_manager.player_manager.getPlayerCount();

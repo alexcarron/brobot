@@ -2,6 +2,7 @@ const { Parameter } = require("../../services/command-creation/parameter");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
 const ids = require("../../bot-config/discord-ids.js");
 const { deferInteraction } = require("../../utilities/discord-action-utils");
+const { getRequiredStringParam } = require("../../utilities/discord-fetch-utils");
 
 const Parameters = {
 	PlayerSmiting: new Parameter({
@@ -22,7 +23,7 @@ module.exports = new SlashCommand({
 	execute: async function execute(interaction) {
 		await deferInteraction(interaction);
 
-		const player_name = interaction.options.getString(Parameters.PlayerSmiting.name);
+		const player_name = getRequiredStringParam(interaction, Parameters.PlayerSmiting.name);
 		const player = global.game_manager.player_manager.getPlayerFromName(player_name);
 		await global.game_manager.player_manager.smitePlayer(player);
 		await interaction.editReply(`You have smited **${player.name}**`);

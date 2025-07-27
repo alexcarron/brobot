@@ -2,6 +2,7 @@ const { PermissionFlagsBits } = require("discord.js")
 const { Parameter } = require("../../../services/command-creation/parameter")
 const { SlashCommand } = require("../../../services/command-creation/slash-command");
 const { deferInteraction } = require("../../../utilities/discord-action-utils");
+const { getRequiredUserParam, getRequiredStringParam } = require("../../../utilities/discord-fetch-utils");
 
 const Parameters = {
 	UserDMing: new Parameter({
@@ -27,8 +28,8 @@ module.exports = new SlashCommand({
 	execute: async function(interaction) {
 		await deferInteraction(interaction);
 
-		const user_dming = interaction.options.getUser(Parameters.UserDMing.name);
-		const message_dming = interaction.options.getString(Parameters.Message.name);
+		const user_dming = getRequiredUserParam(interaction, Parameters.UserDMing.name);
+		const message_dming = getRequiredStringParam(interaction, Parameters.Message.name);
 		user_dming.send(message_dming);
 
 		interaction.editReply(`DMed <@${user_dming.id}>: ${message_dming}`);

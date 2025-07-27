@@ -3,6 +3,7 @@ const ids = require("../../bot-config/discord-ids.js");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { deferInteraction } = require("../../utilities/discord-action-utils");
 const { GameManager } = require("../../services/rapid-discord-mafia/game-manager");
+const { getRequiredStringParam } = require("../../utilities/discord-fetch-utils");
 
 const Parameters = {
 	BugReporting: new Parameter({
@@ -22,7 +23,7 @@ module.exports = new SlashCommand({
 	execute: async function(interaction) {
 		await deferInteraction(interaction);
 
-		const bug_reporting = interaction.options.getString(Parameters.BugReporting.name);
+		const bug_reporting = getRequiredStringParam(interaction, Parameters.BugReporting.name);
 
 		if (global.game_manager && global.game_manager instanceof GameManager) {
 			global.game_manager.logger.log(`<@${ids.users.LL}> **${interaction.user.username}** has reported:\n>>> ${bug_reporting}`);

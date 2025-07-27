@@ -233,6 +233,10 @@ class GameManager {
 				const ability1 = this.ability_manager.getAbility(ability_done1.name);
 				const ability2 = this.ability_manager.getAbility(ability_done2.name);
 
+				if (!ability1 || !ability2) {
+					return 0;
+				}
+
 				let ability1_priority = ability1.priority,
 					ability2_priority = ability2.priority;
 
@@ -317,7 +321,8 @@ class GameManager {
 		pinned_msgs.each((msg) => msg.edit(role_list_txt).catch(console.error));
 
 		const role_list_msg = await this.discord_service.announce(role_list_txt);
-		role_list_msg.pin();
+		if (role_list_msg !== undefined)
+			role_list_msg.pin();
 	}
 
 	/**
@@ -1210,16 +1215,16 @@ class GameManager {
 	/**
 	 * Adds a player to the game, giving them roles and their own channel
 	 * @param {string} player_name Unique name for player
-	 * @param {string} player_id Discord id of player
-	 * @param {ChatInputCommandInteraction} interaction Interaction to reply on invalid name
-	 * @param {boolean} isMockUser Whether this is a mock player
+	 * @param {string} [player_id] Discord id of player
+	 * @param {ChatInputCommandInteraction} [interaction] Interaction to reply on invalid name
+	 * @param {boolean} [isMockUser] Whether this is a mock player
 	 * @returns {Promise<Player>} The player that was added
 	 */
 	async addPlayerToGame(player_name, player_id=undefined, interaction=undefined, isMockUser=false) {
 		let player_member;
 
 		if ( this.player_manager && this.player_manager.get(player_name) ) {
-			if (!this.isMockGame)
+			if (!this.isMockGame && interaction)
 				await interaction.editReply(`The name, **${player_name}**, already exists.`);
 			return new Player({}, this.logger);
 		}
@@ -1241,12 +1246,12 @@ class GameManager {
 
 		const validator_result = validateName(player_name);
 		if (validator_result !== true) {
-			if (!this.isMockGame)
+			if (!this.isMockGame && interaction)
 				await interaction.editReply(validator_result);
 			return new Player({}, this.logger);
 		}
 
-		if (!isMockUser && !this.isMockGame) {
+		if (!isMockUser && !this.isMockGame && player_id !== undefined) {
 			const rdm_guild = await fetchRDMGuild();
 
 			player_member = await fetchGuildMember(rdm_guild, player_id);
@@ -1335,6 +1340,7 @@ class GameManager {
 			}
 
 			if (hasFactionWon) {
+				// @ts-ignore
 				winning_faction = faction_checking;
 				winning_players = [
 					...winning_players,
@@ -1370,6 +1376,7 @@ class GameManager {
 			}
 
 			if (hasFactionWon) {
+				// @ts-ignore
 				winning_faction = role_checking;
 				winning_players = [
 					...winning_players,
@@ -1396,6 +1403,7 @@ class GameManager {
 				let hasFactionWon = !alive_players.some(player => this.role_manager.getRole(player.role).name != role_checking);
 
 				if (hasFactionWon) {
+					// @ts-ignore
 					winning_faction = role_checking;
 				}
 			}
@@ -1415,6 +1423,7 @@ class GameManager {
 				let hasFactionWon = !alive_players.some(player => this.role_manager.getRole(player.role).name != role_checking);
 
 				if (hasFactionWon) {
+					// @ts-ignore
 					winning_faction = role_checking;
 				}
 			}

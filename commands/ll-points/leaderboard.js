@@ -82,6 +82,7 @@ module.exports = new SlashCommand({
 
 		const message_options = await createLeaderboardMessage(current_page);
 
+		// @ts-ignore
 		const leaderboard_msg = await interaction.editReply(message_options);
 
 		const readButtonInteractions = async function(message, current_page) {

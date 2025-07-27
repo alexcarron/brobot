@@ -1,3 +1,4 @@
+const { ChannelType } = require("discord.js");
 const ids = require("../../bot-config/discord-ids");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { deferInteraction, editReplyToInteraction, removePermissionFromChannel } = require("../../utilities/discord-action-utils");
@@ -10,6 +11,18 @@ module.exports = new SlashCommand({
 	required_servers: [ids.sandSeason3.guild],
 	execute: async function execute(interaction) {
 		await deferInteraction(interaction);
+
+		if (
+			interaction.channel === null ||
+			interaction.channel.type !== ChannelType.GuildText ||
+			"parent" in interaction.channel === false ||
+			interaction.channel.parent === null
+		) {
+			await editReplyToInteraction(interaction,
+				"This command can only be used in an alliance category"
+			);
+			return
+		}
 
 		const category = interaction.channel.parent;
 		if (!category || category.name.toLowerCase().includes("alliance") === false) {

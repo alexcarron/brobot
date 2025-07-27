@@ -12,6 +12,7 @@
     "allowJs": true,
     "noEmit": true, // Prevents tsc from outputting .js files
     "strict": false,
+		"strictNullChecks": true,
     "esModuleInterop": true, // Allow importing CommonJS modules
     "moduleResolution": "node",
     "isolatedModules": true,

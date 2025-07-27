@@ -4,6 +4,7 @@ const { Parameter } = require('../../services/command-creation/parameter');
 const { SlashCommand } = require('../../services/command-creation/slash-command');
 const { PermissionFlagsBits } = require('discord.js');
 const { deferInteraction } = require('../../utilities/discord-action-utils.js');
+const { getRequiredUserParam } = require('../../utilities/discord-fetch-utils.js');
 
 const Parameters = {
 	ViewerAdding: new Parameter({
@@ -24,7 +25,7 @@ module.exports = new SlashCommand({
 	execute: async function(interaction) {
 		await deferInteraction(interaction);
 
-		const viewer_user = await interaction.options.getUser(Parameters.ViewerAdding.name);
+		const viewer_user = getRequiredUserParam(interaction, Parameters.ViewerAdding.name);
 		const viewer_name = viewer_user.username
 		const viewer_id = viewer_user.id;
 

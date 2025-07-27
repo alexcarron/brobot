@@ -4,6 +4,7 @@ const { SlashCommand } = require('../../services/command-creation/slash-command'
 const { LLPointAccomplishment, LLPointReward } = require('../../services/ll-points/ll-point-enums.js');
 const { deferInteraction } = require('../../utilities/discord-action-utils.js');
 const { LLPointManager } = require('../../services/ll-points/ll-point-manager.js');
+const { getRequiredStringParam, getStringParamValue } = require('../../utilities/discord-fetch-utils');
 
 const Parameters = {
 	ViewerName: new Parameter({
@@ -39,17 +40,18 @@ module.exports = new SlashCommand({
 	execute: async function(interaction) {
 		await deferInteraction(interaction);
 
-		let viewer_name = interaction.options.getString(Parameters.ViewerName.name);
+		let viewer_name = getRequiredStringParam(interaction, Parameters.ViewerName.name);
 		let viewer = global.LLPointManager.getViewerByName(viewer_name);
 
 		let
-			accomplishment = interaction.options.getString(Parameters.Accomplishment.name),
-			game_name = interaction.options.getString(Parameters.ThingParticipatedIn.name) || undefined;
+			accomplishment = getRequiredStringParam(interaction, Parameters.Accomplishment.name),
+			game_name = getStringParamValue(interaction, Parameters.ThingParticipatedIn.name) || undefined;
 
 		if (!viewer) {
 			return await interaction.editReply(`The viewer, **${viewer_name}**, doesn't exist.`);
 		}
 
+		// @ts-ignore
 		if (!Object.values(LLPointAccomplishment).includes(accomplishment)) {
 			return await interaction.editReply(
 				`The accomplishment, **${accomplishment}**, doesn't exist.\n` + Object.values(LLPointAccomplishment).join(", ")
@@ -63,6 +65,9 @@ module.exports = new SlashCommand({
 
 		let current_ll_points = global.LLPointManager.viewers.get(viewer_name).ll_points;
 		let accomplishment_key = Object.keys(LLPointAccomplishment).find(key => LLPointAccomplishment[key] === accomplishment);
+
+		if (accomplishment_key === undefined)
+			return await interaction.editReply(`The accomplishment, **${accomplishment}**, doesn't exist.`);
 
 		await interaction.editReply(
 			`Giving **${viewer_name}** \`${LLPointReward[accomplishment_key]}\` LL Point(s) for "*${accomplishment}*"\n` +
