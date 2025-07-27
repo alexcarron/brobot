@@ -5,4 +5,6 @@ export interface Vote {
 
 export interface DBVote extends Vote {}
 
-export type VoteResolvable = Vote | Vote["voterID"];
+export type VoteID = Vote["voterID"];
+
+export type VoteResolvable = Vote | VoteID;

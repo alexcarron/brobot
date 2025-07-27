@@ -4,9 +4,9 @@ import { deferInteraction } from "../../utilities/discord-action-utils";
 import { createBackup } from "../../services/namesmith/database/backup-database";
 import { SlashCommand } from "../../services/command-creation/slash-command";
 
-module.exports = new SlashCommand({
+export const command = new SlashCommand({
 	name: "backup-database",
-	description: "Backs up the namesmith database",
+	description: "Backs up the naesmith database",
 	required_servers: [ids.servers.namesmith],
 	required_permissions: [PermissionFlagsBits.Administrator],
 	isInDevelopment: true,

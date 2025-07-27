@@ -13,5 +13,3 @@ export const isVote = (value: unknown): value is Vote => (
 	'playerVotedForID' in value &&
 	typeof value.playerVotedForID === 'string'
 )
-
-module.exports = { isVote }

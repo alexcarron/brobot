@@ -12,3 +12,7 @@ export interface DBCharacter extends Character {}
 export interface DBCharacterWithTags extends DBCharacter {
 	tags: string;
 }
+
+export type CharacterID = Character["id"];
+
+export type CharacterResolvable = Character | CharacterWithTags | CharacterID;

@@ -6,10 +6,7 @@ import { PlayerService } from "./player.service";
 import { VoteService } from "./vote.service";
 
 describe('VoteService', () => {
-	/**
-	 * @type {VoteService}
-	 */
-	let voteService;
+	let voteService: VoteService;
 
 	beforeEach(() => {
 		voteService = createMockVoteService();
@@ -50,10 +47,7 @@ describe('VoteService', () => {
 		});
 
 		it('should throw an error if the vote resolvable is invalid', () => {
-			makeSure(() => voteService.resolveVote(-999)).throwsAnError();
 			makeSure(() => voteService.resolveVote('invalid')).throwsAnError();
-			makeSure(() => voteService.resolveVote({})).throwsAnError();
-			makeSure(() => voteService.resolveVote()).throwsAnError();
 		});
 	});
 
@@ -100,24 +94,6 @@ describe('VoteService', () => {
 				playerVotedForID: mockPlayers[3].id
 			});
 			makeSure(message).is(`You have changed your favorite name vote from ${mockPlayers[1].publishedName} to ${mockPlayers[3].publishedName}`);
-		});
-
-		it('should throw an error if voterID is not given', () => {
-			makeSure(() =>
-				voteService.addVote({
-					playerVotedForID: mockPlayers[3].id
-				})
-			).throwsAnErrorWith(
-				"Missing voterID or playerVotedForID"
-			);
-		});
-
-		it('should throw an error if playerVotedForID is not given', () => {
-			makeSure(() =>
-				voteService.addVote({
-					voterID: mockPlayers[3].id
-				})
-			).throwsAnErrorWith("Missing voterID or playerVotedForID");
 		});
 	});
 

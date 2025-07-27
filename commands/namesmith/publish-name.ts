@@ -1,9 +1,9 @@
-const ids = require("../../bot-config/discord-ids");
-const { SlashCommand } = require("../../services/command-creation/slash-command");
-const { getNamesmithServices } = require("../../services/namesmith/services/get-namesmith-services");
-const { confirmInteractionWithButtons, deferInteraction } = require("../../utilities/discord-action-utils");
+import ids from "../../bot-config/discord-ids";
+import { SlashCommand } from "../../services/command-creation/slash-command";
+import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
+import { confirmInteractionWithButtons, deferInteraction } from "../../utilities/discord-action-utils";
 
-module.exports = new SlashCommand({
+export const command = new SlashCommand({
 	name: "publish-name",
 	description: "Publishes your current name to eventually be automatically submitted for voting",
 	required_servers: [ids.servers.namesmith],

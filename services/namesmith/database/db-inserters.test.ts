@@ -11,9 +11,6 @@ const astrickID = getIDfromCharacterValue('*');
 const bracketID = getIDfromCharacterValue(']');
 
 describe('db-inserters.js', () => {
-	/**
-	 * @type {DatabaseQuerier}
-	 */
 	let db: DatabaseQuerier;
   let characters: CharacterWithTags[];
   let mysteryBoxes: MysteryBoxWithOdds[];

@@ -116,7 +116,6 @@ export class PlayerService {
 	 * Adds a character to a player's name.
 	 * @param playerResolvable - The player resolvable whose name is being modified.
 	 * @param character - The character to add to the player's name.
-	 * @returns {Promise<void>} A promise that resolves once the character has been added to the player's name.
 	 * @throws {Error} - If the addition of the character to the player's name would result in a name longer than MAX_NAME_LENGTH.
 	 */
 	async addCharacterToName(
@@ -145,10 +144,10 @@ export class PlayerService {
 	/**
 	 * Publishes a player's current name to the 'Names to Vote On' channel.
 	 * If the player has no current name, logs a warning and does nothing.
-	 * @param {string | object} playerResolvable - The player resolvable whose name is being published.
-	 * @returns {Promise<void>} A promise that resolves once the name has been published.
+	 * @param playerResolvable - The player resolvable whose name is being published.
+	 * @returns A promise that resolves once the name has been published.
 	 */
-	async publishName(playerResolvable) {
+	async publishName(playerResolvable: PlayerResolvable): Promise<void> {
 		const playerID = this.resolvePlayerID(playerResolvable);
 		const currentName = this.getCurrentName(playerResolvable);
 
@@ -170,9 +169,8 @@ export class PlayerService {
 
 	/**
 	 * Publishes names of players who have not yet published their names.
-	 * @returns {Promise<void>} A promise that resolves once all unpublished names have been published.
 	 */
-	async publishUnpublishedNames() {
+	async publishUnpublishedNames(): Promise<void> {
 		const players = this.playerRepository.getPlayersWithoutPublishedNames();
 		for (const player of players) {
 			await this.publishName(player.id);
@@ -183,10 +181,10 @@ export class PlayerService {
 	 * Finalizes a player's name by setting their current name to their published name.
 	 * If the player has no published name, logs a warning and does nothing.
 	 * Also sends a message to the 'Names to Vote On' channel announcing the final name.
-	 * @param {string | object} playerResolvable - The player resolvable whose name is being finalized.
-	 * @returns {Promise<void>} A promise that resolves once the name has been finalized.
+	 * @param playerResolvable - The player resolvable whose name is being finalized.
+	 * @returns A promise that resolves once the name has been finalized.
 	 */
-	async finalizeName(playerResolvable) {
+	async finalizeName(playerResolvable: PlayerResolvable): Promise<void> {
 		const playerID = this.resolvePlayerID(playerResolvable);
 		const publishedName = this.getPublishedName(playerResolvable);
 
@@ -221,11 +219,10 @@ export class PlayerService {
 
 	/**
 	 * Adds a new player to the game.
-	 * @param {string | object} playerResolvable - The player resolvable to add to the game.
+	 * @param playerResolvable - The player resolvable to add to the game.
 	 * @throws {Error} - If the player already exists in the game.
-	 * @returns {Promise<void>} A promise that resolves once the player has been added.
 	 */
-	async addNewPlayer(playerResolvable) {
+	async addNewPlayer(playerResolvable: PlayerResolvable): Promise<void> {
 		const playerID = this.resolvePlayerID(playerResolvable);
 
 		if (typeof playerID !== "string")
@@ -244,7 +241,6 @@ export class PlayerService {
 	/**
 	 * Adds all members in the Namesmith server to the game.
 	 * Excludes players with the Spectator or Staff roles.
-	 * @returns {Promise<void>} A promise that resolves once all players have been added.
 	 */
 	async addEveryoneInServer() {
 		const guildMembers = await fetchNamesmithGuildMembers();

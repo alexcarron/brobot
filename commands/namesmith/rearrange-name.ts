@@ -1,10 +1,10 @@
-const ids = require("../../bot-config/discord-ids");
-const { SlashCommand } = require("../../services/command-creation/slash-command");
-const { getInputFromCreatedTextModal, addButtonToMessageContents, doWhenButtonPressed } = require("../../utilities/discord-action-utils");
-const { getCharacterDifferencesInStrings } = require("../../utilities/data-structure-utils");
-const { getNamesmithServices } = require("../../services/namesmith/services/get-namesmith-services");
+import ids from "../../bot-config/discord-ids";
+import { SlashCommand } from "../../services/command-creation/slash-command";
+import { getInputFromCreatedTextModal, addButtonToMessageContents, doWhenButtonPressed } from "../../utilities/discord-action-utils";
+import { getCharacterDifferencesInStrings } from "../../utilities/data-structure-utils";
+import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 
-module.exports = new SlashCommand({
+export const command = new SlashCommand({
 	name: "rearrange-name",
 	description: "Rearrange the order of the characters you have in your name",
 	required_servers: [ids.servers.namesmith],
