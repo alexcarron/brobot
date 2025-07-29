@@ -1,11 +1,13 @@
 import Database from "better-sqlite3";
 import { DatabaseQuerier } from "./database-querier";
-import { insertCharactersToDB, insertMysteryBoxesToDB } from "./db-inserters";
+import { insertCharactersToDB, insertMysteryBoxesToDB, insertRecipesToDB } from "./db-inserters";
 import { applySchemaToDB } from "./queries/apply-schema";
 import { getIDfromCharacterValue } from "../utilities/character.utility";
 import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { Character, CharacterWithTags } from "../types/character.types";
 import { MysteryBox, MysteryBoxWithOdds } from "../types/mystery-box.types";
+import { Recipe } from "../types/recipe.types";
+import { WithOptional } from '../../../utilities/types/generic-types';
 
 const astrickID = getIDfromCharacterValue('*');
 const bracketID = getIDfromCharacterValue(']');
@@ -14,6 +16,7 @@ describe('db-inserters.js', () => {
 	let db: DatabaseQuerier;
   let characters: CharacterWithTags[];
   let mysteryBoxes: MysteryBoxWithOdds[];
+	let recipes: WithOptional<Recipe, "id">[];
 
   beforeEach(() => {
 		db = new DatabaseQuerier(new Database(':memory:'));
@@ -53,6 +56,17 @@ describe('db-inserters.js', () => {
         }
       }
     ];
+		recipes = [
+			{
+				inputCharacters: 'oo',
+				outputCharacters: '∞'
+			},
+			{
+				id: 1234567890,
+				inputCharacters: 'x',
+				outputCharacters: '×'
+			}
+		]
   });
 
   describe('insertCharactersToDB()', () => {
@@ -102,4 +116,15 @@ describe('db-inserters.js', () => {
       ]);
     });
   });
+
+	describe('insertRecipesToDB()', () => {
+		it('inserts recipes with and without IDs into the database', () => {
+			insertRecipesToDB(db, recipes);
+			const result = db.getRows('SELECT * FROM recipe');
+			expect(result).toEqual([
+				{ id: 1, inputCharacters: 'oo', outputCharacters: '∞' },
+				{ id: 1234567890, inputCharacters: 'x', outputCharacters: '×' }
+			]);
+		});
+	});
 });

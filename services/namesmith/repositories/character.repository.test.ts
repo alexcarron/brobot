@@ -10,8 +10,8 @@ describe('CharacterRepository', () => {
 	})
 
 	describe('getCharacters()', () => {
-		it('SHOULD return an array of characters objects', async () => {
-			const characters = await characterRepo.getCharacters();
+		it('returns an array of characters objects', () => {
+			const characters = characterRepo.getCharacters();
 			expect(Array.isArray(characters)).toBe(true);
 			expect(characters.length).toBeGreaterThan(0);
 			expect(characters[0]).toHaveProperty('id', expect.any(Number));
@@ -22,7 +22,7 @@ describe('CharacterRepository', () => {
 	});
 
 	describe('getCharactersWithTags()', () => {
-		it('SHOULD return an array of characters objects with tags', async () => {
+		it('returns an array of characters objects with tags', async () => {
 			const characters = await characterRepo.getCharactersWithTags();
 			expect(Array.isArray(characters)).toBe(true);
 			expect(characters.length).toBeGreaterThan(0);
@@ -37,21 +37,21 @@ describe('CharacterRepository', () => {
 	});
 
 	describe('getCharacterByID()', () => {
-		it('SHOULD return a character object', async () => {
+		it('returns a character object', async () => {
 			const character = await characterRepo.getCharacterByID(65);
 			expect(character).toHaveProperty('id', 65);
 			expect(character).toHaveProperty('value', 'A');
 			expect(character).toHaveProperty('rarity', expect.any(Number));
 		});
 
-		it('SHOULD return undefined if no character is found', async () => {
+		it('returns undefined if no character is found', async () => {
 			const character = await characterRepo.getCharacterByID(0);
 			expect(character).toBeUndefined();
 		});
 	});
 
 	describe('getCharacterByValue()', () => {
-		it('SHOULD return a character object', async () => {
+		it('returns a character object', async () => {
 			const character = await characterRepo.getCharacterByValue('A');
 			expect(character).toHaveProperty('id', 65);
 			expect(character).toHaveProperty('value', 'A');
@@ -68,7 +68,7 @@ describe('CharacterRepository', () => {
 	});
 
 	describe('getCharacterWithTags()', () => {
-		it('SHOULD return a character object with tags', async () => {
+		it('returns a character object with tags', async () => {
 			const character = characterRepo.getCharacterWithTags(65);
 
 			expect(character).toBeDefined();

@@ -8,7 +8,43 @@ export class NamesmithError extends CustomError {}
 /**
  * Error thrown when an SQL query is used incorrectly
  */
-export class QueryUsageError extends NamesmithError {}
+export class QueryUsageError extends NamesmithError {
+	constructor(message: string, sqlQuery: string, params?: object | unknown[]) {
+		super({
+			message,
+			relevantData: {
+				sqlQuery,
+				params
+			}
+		})
+	}}
+
+/**
+ * Error thrown when an SQL query unexpectedly contains more than one statement
+ */
+export class MultiStatementQueryError extends QueryUsageError {
+	constructor(sqlQuery: string, params?: object | unknown[]) {
+		super(
+			 `SQL query contains more than one statement and parameters are not supported with multi-statement queries: ${sqlQuery}`,
+			sqlQuery,
+			params
+		)
+	}
+}
+
+/**
+ * Error thrown when an executed SQL query doesn't meet a foreign key constraint
+ */
+export class ForeignKeyConstraintError extends QueryUsageError {
+	constructor(sqlQuery: string, params?: object | unknown[]) {
+		let message = `SQL query failed a foreign key constraint: ${sqlQuery}`
+
+		if (params !== undefined)
+			message += ` with parameters: ${JSON.stringify(params)}`
+
+		super(message, sqlQuery, params)
+	}
+}
 
 /**
  * Base class for errors related to namesmith resource operations.

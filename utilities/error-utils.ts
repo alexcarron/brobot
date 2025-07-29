@@ -1,4 +1,4 @@
-import { TypedNamedValue } from "./types/generic-types";
+import { BooleanIfKnown, TypedNamedValue } from "./types/generic-types";
 
 /**
  * Base class for all custom errors defined in this project
@@ -224,38 +224,51 @@ type MaybeAsyncFunction<ReturnType> =
 /**
  * A class that represents an attempt to run a function and handle errors that occur.
  */
-class Attempt<ReturnType> {
-  private func: MaybeAsyncFunction<ReturnType>;
+abstract class BaseAttempt<ReturnType> {
   private errorHandlers: {
-		errorType: new (...args: any[]) => any;
-		handleError: (error: any) => void | any
-	}[] = [];
-  private isExecuted = false;
-  private returnValue?: ReturnType;
+    errorType: new (...args: any[]) => any;
+    handleError: (error: any) => void | any | Promise<any>;
+  }[] = [];
+  protected isExecuted = false;
+  protected returnValue?: ReturnType;
 
-  /**
-   * Constructs a new Attempt object.
-   * @param func - The function to run. May return a value synchronously or asynchronously.
-   */
-  constructor(func: MaybeAsyncFunction<ReturnType>) {
-    this.func = func;
-  }
+	onError<ErrorType extends Error = Error>(
+		handleError: (error: Error) => any | Promise<any>
+	): this;
+	onError<ErrorType extends Error>(
+		errorType: new (...args: any[]) => ErrorType,
+		handleError: (error: ErrorType) => any | Promise<any>
+	): this;
 
 	/**
 	 * Attaches an error handler for a specific error type to the current attempt chain.
 	 * This handler will be executed if the function throws an error of the specified type.
 	 *
-	 * @param errorType - The constructor of the error type to handle.
-	 * @param handleError - A function that handles the error. It receives the error as an argument.
+	 * @param errorTypeOrHandleError - The constructor of the error type to handle.
+	 * @param maybeHandleError - A function that handles the error. It receives the error as an argument.
 	 * @returns The current instance of the attempt chain to allow for method chaining.
 	 * @throws When attempting to attach an error handler after the function has been executed.
 	 */
-  onError<E extends Error>(
-    errorType: new (...args: any[]) => E,
-    handleError: (err: E) => any
+  onError<ErrorType extends Error>(
+    errorTypeOrHandleError:
+			| (new (...args: any[]) => ErrorType)
+			| ((error: Error) => any | Promise<any>),
+    maybeHandleError?: (error: ErrorType) => any | Promise<any>
   ): this {
     if (this.isExecuted)
 			throw new Error("Cannot attach onError after function has been executed.");
+
+		let errorType: new (...args: any[]) => ErrorType;
+    let handleError: (error: ErrorType) => any | Promise<any>;
+
+		if (maybeHandleError !== undefined) {
+			errorType = errorTypeOrHandleError as new (...args: any[]) => ErrorType;
+			handleError = maybeHandleError;
+		}
+		else {
+			errorType = Error as any;
+			handleError = errorTypeOrHandleError as (error: Error) => any | Promise<any>;
+		}
 
     this.errorHandlers.push({
 			errorType,
@@ -265,37 +278,127 @@ class Attempt<ReturnType> {
     return this;
   }
 
+  protected dispatchError(error: unknown, awaitErrorHandlers: true): Promise<void>;
+  protected dispatchError(error: unknown, awaitErrorHandlers?: false): void;
+
+  /**
+   * Dispatches an error to the appropriate error handler in the current attempt chain.
+   * If the error matches a specified error type, its corresponding handler is executed.
+   * If `awaitErrorHandlers` is true, the handler is awaited.
+   *
+   * @param error - The error object that may be dispatched to a handler.
+   * @param awaitErrorHandlers - Boolean indicating if the error handler should be awaited.
+   * @throws If no matching error handler is found, the error is re-thrown.
+   */
+  protected dispatchError(
+    error: unknown,
+    awaitErrorHandlers = false
+  ): void | Promise<void> {
+		let wasHandled = false;
+
+    for (const { errorType, handleError } of this.errorHandlers) {
+      if (
+				error instanceof errorType ||
+				errorType === Error
+			) {
+				wasHandled = true;
+
+        if (awaitErrorHandlers) {
+          return Promise.resolve(handleError(error))
+            .then(possibleError => {
+              if (possibleError instanceof Error)
+								throw possibleError;
+            });
+        }
+				else {
+          const possibleError = handleError(error);
+          if (possibleError instanceof Error)
+						throw possibleError;
+        }
+
+				return;
+      }
+    }
+
+		if (!wasHandled) {
+			throw error;
+		}
+  }
+}
+
+/**
+ * A class that represents an attempt to run a synchronous function and handle errors that occur.
+ */
+class Attempt<ReturnType> extends BaseAttempt<ReturnType> {
+  private func: (...args: any[]) => ReturnType;
+
+  /**
+   * Constructs a new Attempt object.
+   * @param func - The function to run.
+   */
+  constructor(func: (...args: any[]) => ReturnType) {
+		super();
+    this.func = func;
+  }
+
   /**
    * Executes the function and executes the correct error handlers if an error is thrown.
    * If no error handlers are attached, the error is re-thrown.
    * If the function has already been executed, this does nothing.
-   * @returns {Promise<void>}
    */
-  async execute(): Promise<void> {
+  execute(): void {
     this.isExecuted = true;
 
     try {
-      this.returnValue = await this.func();
+			this.returnValue = this.func();
     }
 		catch (error: any) {
-      for (const { errorType, handleError } of this.errorHandlers) {
-        if (error instanceof errorType) {
-          const possibleError = handleError(error);
-
-          if (possibleError instanceof Error)
-						throw possibleError;
-
-          return;
-        }
-      }
-
-			throw error;
+			this.dispatchError(error, false);
     }
   }
 
   /**
    * Executes the function and returns the result if it hasn't been executed before, or just returns the result if it has been executed before.
-   * @returns {Promise<ReturnType>}
+   */
+  getReturnValue(): ReturnType {
+    if (!this.isExecuted) this.execute();
+    return this.returnValue as ReturnType;
+  }
+}
+
+/**
+ * A class that represents an attempt to run an asynchronous function and handle errors that occur.
+ */
+class AsyncAttempt<ReturnType> extends BaseAttempt<ReturnType> {
+  private func: (...args: any[]) => Promise<ReturnType>;
+
+  /**
+   * Constructs a new Attempt object.
+   * @param func - The function to run.
+   */
+  constructor(func: (...args: any[]) => Promise<ReturnType>) {
+		super();
+    this.func = func;
+  }
+
+  /**
+   * Executes the function and executes the correct error handlers if an error is thrown.
+   * If no error handlers are attached, the error is re-thrown.
+   * If the function has already been executed, this does nothing.
+   */
+  async execute(): Promise<void> {
+    this.isExecuted = true;
+
+    try {
+			this.returnValue = await this.func();
+    }
+		catch (error: any) {
+			await this.dispatchError(error, true);
+    }
+  }
+
+  /**
+   * Executes the function and returns the result if it hasn't been executed before, or just returns the result if it has been executed before.
    */
   async getReturnValue(): Promise<ReturnType> {
     if (!this.isExecuted) await this.execute();
@@ -303,24 +406,62 @@ class Attempt<ReturnType> {
   }
 }
 
+
+export function attempt<ReturnType>(
+	promise: Promise<ReturnType>
+): AsyncAttempt<ReturnType>;
+export function attempt<ReturnType>(
+	func: (...args: any[]) => ReturnType,
+	...args: any[]
+): Attempt<ReturnType>;
+
 /**
- * Creates an Attempt object from a function that may throw an error or return a value.
+ * Creates an Attempt object from a synchronous or asynchronous function that may throw an error or return a value.
  * The created Attempt object allows you to handle errors that may be thrown by the function.
  * @example
- * const returnedValue = attempt(someFunction)
- * 	.onError(CustomError, (error) => {
- * 		// handle CustomError
- * 	})
- * 	.onError(QueryUsageError, (error) => {
- * 		// handle QueryUsageError
- * 	});
- * .getReturnValue();
+ * // Synchronous function
+ * const sum = attempt(addNumbers, 1, 2)
+ *   .onError(RangeError, (error) => {
+ *     console.warn("The result is out of range.");
+ *   })
+ *   .onError(TypeError, (error) => {
+ *     console.warn("The result is not a number.");
+ *   })
+ *   .getReturnValue();
+ *
+ * @example
+ * // Asynchronous function
+ * await attempt(waitSeconds(10))
+ *   .onError((error) => {
+ *     console.warn("The result is out of range.");
+ *   })
+ *   .execute();
+ *
+ * @example
+ * // ❌ Invalid usage ❌
+ * await attempt(asyncFunction)
+ *   .onError(() => console.warn("There was an error"))
+ *   .execute();
  */
-export function attempt<ReturnType>(func: MaybeAsyncFunction<ReturnType>, ...args: any[]): Attempt<ReturnType> {
-	if (args.length > 0) {
-		const originalFunc = func;
-    func = () => originalFunc(...args);
+export function attempt<ReturnType>(
+	functionOrPromise:
+		| Promise<ReturnType>
+		| ((...args: any[]) => ReturnType),
+	...args: any[]
+): Attempt<ReturnType> | AsyncAttempt<ReturnType> {
+	const isPromise = functionOrPromise instanceof Promise;
+
+	if (isPromise) {
+		const promise = functionOrPromise as Promise<ReturnType>;
+		if (args.length !== 0)
+			throw new InvalidArgumentError("attempt: asynchronous functions cannot have arguments.");
+
+		return new AsyncAttempt(async () => await promise);
 	}
 
-  return new Attempt(func);
+	const func = functionOrPromise as (...args: any[]) => ReturnType;
+	function noArgsFunction() {
+		return func(...args)
+	}
+	return new Attempt(noArgsFunction);
 }

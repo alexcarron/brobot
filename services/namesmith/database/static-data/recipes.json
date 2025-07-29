@@ -1,0 +1,122 @@
+[
+	{
+		"inputCharacters": "cI",
+		"outputCharacters": "d"
+	},
+	{
+		"inputCharacters": "nn",
+		"outputCharacters": "m"
+	},
+	{
+		"inputCharacters": "vv",
+		"outputCharacters": "w"
+	},
+	{
+		"inputCharacters": "VV",
+		"outputCharacters": "W"
+	},
+	{
+		"inputCharacters": "\\/\\/",
+		"outputCharacters": "W"
+	},
+	{
+		"inputCharacters": "/\\/\\",
+		"outputCharacters": "M"
+	},
+	{
+		"inputCharacters": "O,",
+		"outputCharacters": "Q"
+	},
+	{
+		"inputCharacters": "I_I",
+		"outputCharacters": "U"
+	},
+	{
+		"inputCharacters": "()",
+		"outputCharacters": "O"
+	},
+	{
+		"inputCharacters": "/-\\",
+		"outputCharacters": "A"
+	},
+	{
+		"inputCharacters": "I-I",
+		"outputCharacters": "H"
+	},
+	{
+		"inputCharacters": "I<",
+		"outputCharacters": "K"
+	},
+	{
+		"inputCharacters": "I_",
+		"outputCharacters": "L"
+	},
+	{
+		"inputCharacters": "I3",
+		"outputCharacters": "B"
+	},
+	{
+		"inputCharacters": "I\\I",
+		"outputCharacters": "N"
+	},
+	{
+		"inputCharacters": "1/2",
+		"outputCharacters": "½"
+	},
+	{
+		"inputCharacters": "1/4",
+		"outputCharacters": "¼"
+	},
+	{
+		"inputCharacters": "3/4",
+		"outputCharacters": "¾"
+	},
+	{
+		"inputCharacters": "3.14",
+		"outputCharacters": "π"
+	},
+	{
+		"inputCharacters": "(a)",
+		"outputCharacters": "@"
+	},
+	{
+		"inputCharacters": "(C)",
+		"outputCharacters": "©"
+	},
+	{
+		"inputCharacters": "(R)",
+		"outputCharacters": "®"
+	},
+	{
+		"inputCharacters": "[]",
+		"outputCharacters": "▢"
+	},
+	{
+		"inputCharacters": "oo",
+		"outputCharacters": "∞"
+	},
+	{
+		"inputCharacters": "x",
+		"outputCharacters": "×"
+	},
+	{
+		"inputCharacters": "--",
+		"outputCharacters": "—"
+	},
+	{
+		"inputCharacters": "---",
+		"outputCharacters": "—"
+	},
+	{
+		"inputCharacters": "...",
+		"outputCharacters": "…"
+	},
+	{
+		"inputCharacters": "<-",
+		"outputCharacters": "←"
+	},
+	{
+		"inputCharacters": "->",
+		"outputCharacters": "→"
+	}
+]

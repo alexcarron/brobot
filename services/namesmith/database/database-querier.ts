@@ -1,6 +1,7 @@
 import { Database, PragmaOptions, RunResult, Statement, Transaction } from "better-sqlite3";
-import { QueryUsageError } from "../utilities/error.utility";
+import { ForeignKeyConstraintError, MultiStatementQueryError, QueryUsageError } from "../utilities/error.utility";
 import { AnyFunction } from "../../../utilities/types/generic-types";
+import { attempt } from '../../../utilities/error-utils';
 
 /**
  * A utility class for preparing and executing SQL queries using a better-sqlite3 database instance.
@@ -16,6 +17,36 @@ export class DatabaseQuerier {
     this.db = db;
   }
 
+	/**
+	 * Handles errors that occur while running a query.
+	 * @param error - The error that occurred
+	 * @param sqlQuery - The SQL query that was run
+	 * @param params - The parameters that were passed to the query, if any
+	 * @returns A RunResult with changes and lastInsertRowid set to -1
+	 * @throws If the error is not a multi-statement query error or a foreign key constraint error
+	 */
+	private handleError(error: unknown, sqlQuery: string, params?: object | unknown[]): RunResult {
+		if (
+			error === null ||
+			typeof error !== "object" ||
+			("message" in error) === false ||
+			typeof error.message !== "string"
+		) {
+			throw error;
+		}
+
+		if (error.message.includes(
+			"The supplied SQL string contains more than one statement"
+		)) {
+			throw new MultiStatementQueryError(sqlQuery, params);
+		}
+		else if (error.message.includes("FOREIGN KEY constraint failed")) {
+			throw new ForeignKeyConstraintError(sqlQuery, params);
+		}
+
+		throw new QueryUsageError(error.message, sqlQuery, params);
+	}
+
   /**
    * Prepare a SQL query and return a wrapper object with helpful methods:
    * - `run(params)`: Execute the query with the given parameters and return the result of `Database.RunResult`.
@@ -27,35 +58,65 @@ export class DatabaseQuerier {
    * @returns Wrapper object with the above methods
    */
   getQuery(sqlQuery: string) {
-    const queryStatement = this.db.prepare(sqlQuery);
+    const queryStatement =
+			attempt(() => this.db.prepare(sqlQuery))
+				.onError((error) =>
+					this.handleError(error, sqlQuery)
+				)
+				.getReturnValue();
+
+		const executeMethod = <ReturnType>(
+			method: (...args: unknown[]) => ReturnType,
+			queryStatement: Statement,
+			params: unknown[]
+		) => {
+			try {
+				if (params.length === 0)
+					return method.call(queryStatement);
+				return method.apply(queryStatement, params);
+			}
+			catch (error) {
+				this.handleError(error, sqlQuery, params);
+				throw error;
+			}
+		}
+
     return {
-      run: (...params: unknown[]) => {
-				if (params.length === 0)
-					return queryStatement.run();
-				return queryStatement.run(...params);
+      run: (...params: unknown[]): RunResult => {
+				return executeMethod(
+					queryStatement.run,
+					queryStatement,
+					params
+				);
 			},
-      getRow: (...params: unknown[]) => {
-				if (params.length === 0)
-					return queryStatement.get();
-				return queryStatement.get(...params);
+      getRow: (...params: unknown[]): unknown => {
+				return executeMethod(
+					queryStatement.get,
+					queryStatement,
+					params
+				);
 			},
-      getRows: (...params: unknown[]) => {
-				if (params.length === 0)
-					return queryStatement.all();
-				return queryStatement.all(...params);
+      getRows: (...params: unknown[]): unknown[] => {
+				return executeMethod(
+					queryStatement.all,
+					queryStatement,
+					params
+				);
 			},
-      getIterator: (...params: unknown[]) => {
-				if (params.length === 0)
-					return queryStatement.iterate();
-				return queryStatement.iterate(...params);
+      getIterator: (...params: unknown[]): IterableIterator<unknown> => {
+				return executeMethod(
+					queryStatement.iterate,
+					queryStatement,
+					params
+				);
 			},
-      getFirstColumnValues: (...params: unknown[]) => {
+      getFirstColumnValues: (...params: unknown[]): unknown[] => {
         queryStatement.pluck();
-
-				if (params.length === 0)
-					return queryStatement.all();
-
-				return queryStatement.all(params);
+				return executeMethod(
+					queryStatement.all,
+					queryStatement,
+					params
+				);
       }
     };
   }
@@ -78,16 +139,17 @@ export class DatabaseQuerier {
 			return queryStatement.run(params);
 		}
 		catch (error) {
-			if (
-				error.message.includes("The supplied SQL string contains more than one statement")
-			) {
-				if (params !== undefined) {
-					throw new QueryUsageError("Parameters are not supported with multi-statement queries");
-				}
-				this.db.exec(sqlQuery);
-				return { changes: -1, lastInsertRowid: -1 };
+			if (!(error instanceof MultiStatementQueryError))
+				throw error;
+
+			if (params !== undefined)
+				throw error;
+
+			this.db.exec(sqlQuery);
+			return {
+				changes: -1,
+				lastInsertRowid: -1
 			}
-			throw new QueryUsageError(error.message);
 		}
   }
 
@@ -98,7 +160,7 @@ export class DatabaseQuerier {
    * @param params - The parameters to pass to the query
    * @returns The first row of the result set or undefined if no row is found
    */
-  getRow(sqlQuery: string, params?: object | unknown[]): unknown {
+  getRow(sqlQuery: string, params?: object | unknown[]): unknown | undefined {
     const queryStatement = this.getQuery(sqlQuery);
 
 		if (params === undefined)

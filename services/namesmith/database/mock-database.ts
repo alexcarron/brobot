@@ -3,6 +3,8 @@ import { applySchemaToDB } from './queries/apply-schema';
 import { addInitialDataToDB } from './static-data/insert-static-data';
 import { InvalidArgumentError } from '../../../utilities/error-utils';
 import { DatabaseQuerier } from './database-querier';
+import { Recipe } from '../types/recipe.types';
+import { insertRecipesToDB } from './db-inserters';
 
 /**
  * Creates an in-memory SQLite database with the schema and initial data for Namesmith already populated.

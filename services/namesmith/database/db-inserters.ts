@@ -1,7 +1,10 @@
-import { InvalidArgumentError, validateArguments } from "../../../utilities/error-utils";
-import { Character } from "../types/character.types";
+import { attempt, InvalidArgumentError, validateArguments } from "../../../utilities/error-utils";
+import { WithOptional } from "../../../utilities/types/generic-types";
+import { Character, CharacterWithTags } from "../types/character.types";
 import { MysteryBox } from "../types/mystery-box.types";
+import { Recipe } from "../types/recipe.types";
 import { getIDfromCharacterValue, getCharacterValueFromID } from "../utilities/character.utility";
+import { ForeignKeyConstraintError } from "../utilities/error.utility";
 import { DatabaseQuerier } from "./database-querier";
 
 /**
@@ -11,7 +14,7 @@ import { DatabaseQuerier } from "./database-querier";
  * @param db - The database querier instance used for executing SQL statements.
  * @param characters - An array of character objects to be inserted.
  */
-export const insertCharactersToDB = (db: DatabaseQuerier, characters: Character[]) => {
+export const insertCharactersToDB = (db: DatabaseQuerier, characters: CharacterWithTags[]) => {
 	validateArguments("insertCharactersToDB",
 		{db, type: DatabaseQuerier},
 		{characters, type: "Array"},
@@ -20,7 +23,7 @@ export const insertCharactersToDB = (db: DatabaseQuerier, characters: Character[
 	const insertCharacter = db.getQuery("INSERT OR IGNORE INTO character (id, value, rarity) VALUES (@id, @value, @rarity)");
 	const insertTag = db.getQuery("INSERT OR IGNORE INTO characterTag (characterID, tag) VALUES (@characterID, @tag)");
 
-	const insertCharacters = db.getTransaction((characters) => {
+	const insertCharacters = db.getTransaction((characters: CharacterWithTags[]) => {
 		for (const character of characters) {
 			if (character.id === undefined)
 				throw new InvalidArgumentError("insertCharactersToDB: character id is undefined.");
@@ -128,14 +131,71 @@ export const insertMysteryBoxesToDB = (db: DatabaseQuerier, mysteryBoxes: Myster
 					throw new InvalidArgumentError(`insertMysteryBoxesToDB: character weight must be a number, but got ${weight}.`);
 
 				const characterID = getIDfromCharacterValue(characterValue);
-				insertMysteryBoxCharacterOdds.run({
-					mysteryBoxID: newId,
-					characterID,
-					weight
-				});
+				const insertCharacterOdds = () =>
+					insertMysteryBoxCharacterOdds.run({
+						mysteryBoxID: newId,
+						characterID,
+						weight
+					});
+
+				try {
+					insertCharacterOdds();
+				}
+				catch (error) {
+					if (!(error instanceof ForeignKeyConstraintError))
+						throw error;
+
+					const character: CharacterWithTags = {
+						id: characterID,
+						value: characterValue,
+						rarity: weight,
+						tags: []
+					};
+
+					insertCharactersToDB(db, [character]);
+					insertCharacterOdds();
+				}
 			}
 		}
 	});
 
 	insertMysteryBoxes(mysteryBoxes);
+}
+
+/**
+ * Inserts a list of recipes into the database.
+ *
+ * @param db - The database querier used to execute queries.
+ * @param recipes - An array of recipe objects to be inserted. Each recipe can optionally include an 'id'. If 'id' is not provided, it will be auto-generated.
+ */
+export const insertRecipesToDB = (
+	db: DatabaseQuerier,
+	recipes: WithOptional<Recipe, "id">[]
+) => {
+	const insertRecipeIntoDB = db.getQuery("INSERT INTO recipe (inputCharacters, outputCharacters) VALUES (@inputCharacters, @outputCharacters)");
+
+	const insertRecipeIntoDBWithID = db.getQuery("INSERT INTO recipe (id, inputCharacters, outputCharacters) VALUES (@id, @inputCharacters, @outputCharacters)");
+
+	const insertRecipes = db.getTransaction((recipes) => {
+		db.run("DELETE FROM recipe");
+
+		// SET AUTO INCREMENT TO 1
+		db.run("UPDATE sqlite_sequence SET seq = 0 WHERE name = 'recipe'");
+
+		for (const recipe of recipes) {
+			if (recipe.id === undefined)
+				insertRecipeIntoDB.run({
+					inputCharacters: recipe.inputCharacters,
+					outputCharacters: recipe.outputCharacters
+				});
+			else
+				insertRecipeIntoDBWithID.run({
+					id: recipe.id,
+					inputCharacters: recipe.inputCharacters,
+					outputCharacters: recipe.outputCharacters
+				});
+		}
+	});
+
+	insertRecipes(recipes);
 }

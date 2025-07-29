@@ -9,6 +9,9 @@ import { MysteryBoxRepository } from "./mystery-box.repository";
 import { PlayerRepository } from "./player.repository";
 import { VoteRepository } from "./vote.repository";
 import { AtLeast } from '../../../utilities/types/generic-types';
+import { Recipe } from "../types/recipe.types";
+import { RecipeRepository } from "./recipe.repository";
+import { insertRecipesToDB } from "../database/db-inserters";
 
 /**
  * Creates a mock character repository instance with an in-memory database for testing purposes.
@@ -191,6 +194,44 @@ export const createMockVoteRepo = (
 		addMockVote(mockDB, vote);
 	}
 	return new VoteRepository(mockDB);
+}
+
+export const mockRecipes: Recipe[] = [
+	{
+		id: 1,
+		inputCharacters: "nn",
+		outputCharacters: "m",
+	},
+	{
+		id: 2,
+		inputCharacters: "vv",
+		outputCharacters: "w",
+	},
+	{
+		id: 3,
+		inputCharacters: "abc",
+		outputCharacters: "def",
+	},
+	{
+		id: 4,
+		inputCharacters: "nn",
+		outputCharacters: "N",
+	},
+];
+
+export const createMockRecipeRepo = (
+	mockDB?: DatabaseQuerier,
+	recipes?: Recipe[]
+): RecipeRepository => {
+	if (mockDB === undefined)
+		mockDB = createMockDB();
+
+	if (recipes === undefined)
+		recipes = mockRecipes;
+
+	insertRecipesToDB(mockDB, recipes);
+
+	return new RecipeRepository(mockDB);
 }
 
 /**

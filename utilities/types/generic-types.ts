@@ -3,6 +3,16 @@ import { Player } from "../../services/namesmith/types/player.types";
 export type Class<ClassType = any> = new (...args: any[]) => ClassType;
 
 /**
+ * Represents a value that is either true or false if known, otherwise null meaning unknown
+ * @example
+ * let isPublic: BooleanIfKnown = null;
+ *
+ * if (player.location === 'town')
+ *   isPublic = true;
+ */
+export type BooleanIfKnown = boolean | null;
+
+/**
  * Represents a typed and named value.
  * The type of the value is specified by a type property (primitive type or class).
  * The name of the value is specified by the name of the other property
@@ -68,7 +78,7 @@ export type AtLeast<
 	{ [Key in Exclude<keyof ObjectType, RequiredKeys>]?: ObjectType[Key] };
 
 /**
- * Overrides a property of a given object type with a new type
+ * Overrides one or more properties of a given object type with a new type
  * @example
  * type PlayerWithoutName = Override<Player, "currentName", null>
  */
@@ -79,5 +89,17 @@ export type Override<
 > =
 	Omit<ObjectType, PropertyName> &
 	{ [Property in PropertyName]: PropertyType; };
+
+/**
+ * Makes one or more properties of a given object type optional
+ * @example
+ * type Player = WithOptional<DBPlayer, "id" | "index">
+ */
+export type WithOptional<
+	ObjectType extends object,
+	PropertyName extends keyof ObjectType
+> =
+	Omit<ObjectType, PropertyName> &
+	Partial<Pick<ObjectType, PropertyName>>;
 
 export type AnyFunction = (...args: any[]) => any;

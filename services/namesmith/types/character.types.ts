@@ -10,7 +10,7 @@ export interface CharacterWithTags extends Character {
 
 export interface DBCharacter extends Character {}
 export interface DBCharacterWithTags extends DBCharacter {
-	tags: string;
+	tags: string | null;
 }
 
 export type CharacterID = Character["id"];

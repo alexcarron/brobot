@@ -8,17 +8,10 @@ import { CharacterNotFoundError } from "../utilities/error.utility";
  * Provides access to all static character data.
  */
 export class CharacterRepository {
-	db: DatabaseQuerier;
 
-	/**
-	 * @param db - The database querier instance used for executing SQL statements.
-	 */
-	constructor(db: DatabaseQuerier) {
-		if (!(db instanceof DatabaseQuerier))
-			throw new InvalidArgumentError("CharacterRepository: db must be an instance of DatabaseQuerier.");
-
-		this.db = db;
-	}
+	constructor(
+		private db: DatabaseQuerier,
+	) {}
 
 	/**
 	 * Returns an array of all character objects.
@@ -46,10 +39,14 @@ export class CharacterRepository {
 		const getAllCharactersWithTags = this.db.prepare(query);
 		const dbCharacters = getAllCharactersWithTags.all() as DBCharacterWithTags[];
 
-		return dbCharacters.map(character => ({
-			...character,
-			tags: character.tags.split(', ')
-		}));
+		return dbCharacters.map(character => {
+			const tags = character.tags ?? '';
+
+			return {
+				...character,
+				tags: tags.split(', ')
+			}
+		});
 	}
 
 	/**
@@ -97,9 +94,11 @@ export class CharacterRepository {
 		if (character === undefined)
 			return undefined;
 
+		const tags = character.tags ?? '';
+
 		return {
 			...character,
-			tags: character.tags.split(', ')
+			tags: tags.split(', ')
 		};
 	}
 }
