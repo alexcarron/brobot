@@ -1,6 +1,6 @@
 const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionFlagsBits, CategoryChannel, ChatInputCommandInteraction, Message, GuildChannel, ButtonInteraction, InteractionResponse, CommandInteraction, MessageComponentInteraction, ModalSubmitInteraction, Attachment } = require('discord.js');
 const { Role } = require('../services/rapid-discord-mafia/role');
-const { fetchChannel, fetchChannelsInCategory, getEveryoneRole, fetchAllMessagesInChannel } = require('./discord-fetch-utils');
+const { fetchChannel, fetchChannelsInCategory, getEveryoneRole, fetchAllMessagesInChannel, fetchCategory } = require('./discord-fetch-utils');
 const { incrementEndNumber } = require('./string-manipulation-utils');
 const { logInfo, logError, logWarning } = require('./logging-utils');
 const { getShuffledArray } = require('./data-structure-utils');
@@ -307,7 +307,12 @@ const getInputFromCreatedTextModal = async ({
  * @param {import('discord.js').CategoryChannelResolvable | null} [options.parentCategory] - The parent category of the channel. If not provided, the channel will not have a parent category.
  * @returns {Promise<TextChannel>} The created channel.
  */
-const createChannel = async ({guild, name, permissions = [], parentCategory: parentCategoryResolvable = null}) => {
+const createChannel = async ({
+	guild,
+	name,
+	permissions = [],
+	parentCategory: parentCategoryResolvable = null
+}) => {
 	const MAX_CHANNELS_PER_CATEGORY = 50;
 
 	if (!guild)
@@ -326,59 +331,46 @@ const createChannel = async ({guild, name, permissions = [], parentCategory: par
 	if (permissions && !Array.isArray(permissions))
 		throw new Error("Permissions must be an array");
 
-	if (parentCategoryResolvable !== null) {
-		if (!(parentCategoryResolvable instanceof CategoryChannel)) {
-			const fetchedChannel = await fetchChannel(guild, parentCategoryResolvable);
-
-			if (!fetchedChannel) {
-				throw new Error('Parent category must exist');
-			}
-
-			if (!(fetchedChannel instanceof CategoryChannel)) {
-				throw new Error('Parent category must be an instance of CategoryChannel');
-			}
-
-			if (fetchedChannel.type !== ChannelType.GuildCategory) {
-				throw new Error('Parent category must be a GuildCategory');
-			}
-
-			parentCategoryResolvable = fetchedChannel;
-		}
-	}
-	else {
-		parentCategoryResolvable = null;
-	}
-
 	/**
 	 * @type {CategoryChannel | null}
 	 */
-	// @ts-ignore
-	const parentCategory = parentCategoryResolvable;
+	let parentCategory = null;
+	if (parentCategoryResolvable !== null) {
+		if (!(parentCategoryResolvable instanceof CategoryChannel)) {
+			parentCategory = await fetchCategory(guild, parentCategoryResolvable);
+		}
+	}
 
-	let haveSpaceForNewChannel = false;
+	let categoryHasSpaceForChannel = false;
 
-	while (parentCategory && !haveSpaceForNewChannel) {
+	while (
+		parentCategory !== null &&
+		!categoryHasSpaceForChannel
+	) {
 		const childChannelCount = parentCategory.children.cache.size;
 		if (childChannelCount >= MAX_CHANNELS_PER_CATEGORY) {
-			// @ts-ignore
-			const newCategoryName = incrementEndNumber(parentCategoryResolvable.name);
-			const existingNewCategory = guild.channels.cache.find((channel) => channel.name === newCategoryName);
+			const newCategoryName = incrementEndNumber(parentCategory.name);
 
-			if (existingNewCategory) {
+			const newCategory =
+				guild.channels.cache.find((channel) =>
+					channel.name === newCategoryName &&
+					channel.type === ChannelType.GuildCategory
+				);
+
+			if (newCategory !== undefined) {
 				// @ts-ignore
-				parentCategoryResolvable = existingNewCategory;
-				continue;
+				parentCategory = newCategory;
 			}
-
-			parentCategoryResolvable = await createCategory({
-				guild,
-				name: newCategoryName,
-				// @ts-ignore
-				permissions: [createEveryoneDenyViewPermission(guild)],
-			});
+			else {
+				parentCategory = await createCategory({
+					guild,
+					name: newCategoryName,
+					permissions: [createEveryoneDenyViewPermission(guild)],
+				});
+			}
 		}
 		else {
-			haveSpaceForNewChannel = true;
+			categoryHasSpaceForChannel = true;
 			break;
 		}
 	}
@@ -391,8 +383,8 @@ const createChannel = async ({guild, name, permissions = [], parentCategory: par
 		type: ChannelType.GuildText,
 	};
 
-	if (parentCategoryResolvable) {
-		options.parent = parentCategoryResolvable;
+	if (parentCategory !== null) {
+		options.parent = parentCategory;
 	}
 
 	if (permissions) {
