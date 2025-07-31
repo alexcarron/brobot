@@ -362,7 +362,7 @@ const getRequiredStringParam = (interaction, name) => {
  * @returns {User | null} The value of the user parameter
  */
 const getUserParamValue = (interaction, name) => {
-	return getUserParamValue(interaction, name);
+	return interaction.options.getUser(name);
 }
 
 /**
