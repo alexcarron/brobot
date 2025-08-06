@@ -1,4 +1,4 @@
-const { createListFromWords } = require("../../utilities/text-formatting-utils");
+const { createListFromWords } = require("../../utilities/string-manipulation-utils");
 const { getChildCreaturesOf, assertAreCreatures, assertIsCreature } = require("./creature-utils");
 
 const getCreatureText = creature => {

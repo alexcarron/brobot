@@ -1,4 +1,4 @@
-const { toTitleCase } = require("../../utilities/text-formatting-utils");
+const { toTitleCase } = require("../../utilities/string-manipulation-utils");
 const Player = require("./player");
 
 /**

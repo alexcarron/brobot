@@ -7,8 +7,9 @@ import { fetchNamesmithGuildMember, fetchNamesmithGuildMembers } from "../utilit
 import { isPlayer } from "../utilities/player.utility";
 import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { PlayerNotFoundError, PlayerAlreadyExistsError } from "../utilities/error.utility";
-import { Inventory, Player, PlayerID, PlayerResolvable } from "../types/player.types";
+import { Inventory, Player, PlayerID, PlayerResolvable } from '../types/player.types';
 import { IfPresent } from "../../../utilities/types/generic-types";
+import { removeCharactersAsGivenFromEnd } from "../../../utilities/string-manipulation-utils";
 
 /**
  * Provides methods for interacting with players.
@@ -28,7 +29,7 @@ export class PlayerService {
 	 * Resolves a player from the given resolvable.
 	 * @param playerResolvable - The player resolvable to resolve.
 	 * @returns The resolved player object.
-	 * @throws {Error} If the player resolvable is invalid or the player is not found.
+	* @throws {Error} If the player resolvable is invalid or the player is not found.
 	 */
 	resolvePlayer(playerResolvable: PlayerResolvable): Player {
 		if (isPlayer(playerResolvable)) {
@@ -54,7 +55,7 @@ export class PlayerService {
 	 * @returns The resolved player ID.
 	 * @throws {Error} If the player resolvable is invalid or the player is not found.
 	 */
-	resolvePlayerID(playerResolvable: PlayerResolvable): PlayerID {
+	resolveID(playerResolvable: PlayerResolvable): PlayerID {
 		if (isPlayer(playerResolvable)) {
 			const player = playerResolvable;
 			return player.id;
@@ -76,7 +77,7 @@ export class PlayerService {
 	 * @returns The inventory of the player.
 	 */
 	getInventory(playerResolvable: PlayerResolvable): Inventory {
-		const playerID = this.resolvePlayerID(playerResolvable);
+		const playerID = this.resolveID(playerResolvable);
 		return this.playerRepository.getInventory(playerID);
 	}
 
@@ -86,7 +87,7 @@ export class PlayerService {
 	 * @returns The current name of the player.
 	 */
 	getCurrentName(playerResolvable: PlayerResolvable): string {
-		const playerID = this.resolvePlayerID(playerResolvable);
+		const playerID = this.resolveID(playerResolvable);
 		return this.playerRepository.getCurrentName(playerID);
 	}
 
@@ -100,7 +101,7 @@ export class PlayerService {
 		playerResolvable: PlayerResolvable,
 		newName: string
 	) {
-		const playerID = this.resolvePlayerID(playerResolvable);
+		const playerID = this.resolveID(playerResolvable);
 
 		if (typeof newName !== "string")
 			throw new InvalidArgumentError("changeCurrentName: newName must be a string.");
@@ -122,7 +123,7 @@ export class PlayerService {
 		playerResolvable: PlayerResolvable,
 		character: string
 	): Promise<void> {
-		const playerID = this.resolvePlayerID(playerResolvable);
+		const playerID = this.resolveID(playerResolvable);
 
 		const currentName = this.getCurrentName(playerResolvable);
 		const newName = currentName + character;
@@ -137,7 +138,7 @@ export class PlayerService {
 	 * @returns The published name of the player, or null if no published name exists.
 	 */
 	getPublishedName(playerResolvable: PlayerResolvable): IfPresent<string> {
-		const playerID = this.resolvePlayerID(playerResolvable);
+		const playerID = this.resolveID(playerResolvable);
 		return this.playerRepository.getPublishedName(playerID);
 	}
 
@@ -148,7 +149,7 @@ export class PlayerService {
 	 * @returns A promise that resolves once the name has been published.
 	 */
 	async publishName(playerResolvable: PlayerResolvable): Promise<void> {
-		const playerID = this.resolvePlayerID(playerResolvable);
+		const playerID = this.resolveID(playerResolvable);
 		const currentName = this.getCurrentName(playerResolvable);
 
 		if (
@@ -185,7 +186,7 @@ export class PlayerService {
 	 * @returns A promise that resolves once the name has been finalized.
 	 */
 	async finalizeName(playerResolvable: PlayerResolvable): Promise<void> {
-		const playerID = this.resolvePlayerID(playerResolvable);
+		const playerID = this.resolveID(playerResolvable);
 		const publishedName = this.getPublishedName(playerResolvable);
 
 		if (
@@ -223,7 +224,7 @@ export class PlayerService {
 	 * @throws {Error} - If the player already exists in the game.
 	 */
 	async addNewPlayer(playerResolvable: PlayerResolvable): Promise<void> {
-		const playerID = this.resolvePlayerID(playerResolvable);
+		const playerID = this.resolveID(playerResolvable);
 
 		if (typeof playerID !== "string")
 			throw new InvalidArgumentError(`addNewPlayer: playerID must be a string, but got ${playerID}.`);
@@ -254,6 +255,55 @@ export class PlayerService {
 
 			await this.addNewPlayer(guildMember.id);
 		}
+	}
+
+	hasCharacters(
+		playerResolvable: PlayerResolvable,
+		characters: string
+	): boolean {
+		const inventory = this.getInventory(playerResolvable);
+		return inventory.includes(characters);
+	}
+
+	/**
+	 * Removes characters from the inventory of a player, from the end of the string.
+	 * If the characters to remove exceed the length of the inventory, the inventory is cleared.
+	 * @param playerResolvable - The player resolvable whose inventory to remove characters from.
+	 * @param characters - The characters to remove from the inventory.
+	 * @returns The new inventory of the player.
+	 */
+	removeCharactersFromInventory(
+		playerResolvable: PlayerResolvable,
+		characters: string | string[]
+	): string {
+		const inventory = this.getInventory(playerResolvable);
+		const newInventory = removeCharactersAsGivenFromEnd(inventory, characters);
+		const playerID = this.resolveID(playerResolvable);
+		this.playerRepository.setInventory(playerID, newInventory);
+		return newInventory;
+	}
+
+	/**
+	 * Adds characters to the inventory of a player.
+	 * @param playerResolvable - The player resolvable whose inventory to add characters to.
+	 * @param characters - The characters to add to the inventory.
+	 * If `characters` is an array, it is joined together with no separator.
+	 * @returns The new inventory of the player.
+	 */
+	addCharactersToInventory(
+		playerResolvable: PlayerResolvable,
+		characters: string | string[]
+	): string {
+		characters = typeof characters === "string" ?
+			characters :
+			characters.join("");
+
+		const currentInventory = this.getInventory(playerResolvable);
+		const newInventory = currentInventory + characters;
+
+		const playerID = this.resolveID(playerResolvable);
+		this.playerRepository.setInventory(playerID, newInventory);
+		return newInventory;
 	}
 
 	/**

@@ -8,7 +8,7 @@ import { DBRecipe, Recipe, RecipeID } from "../types/recipe.types";
  */
 export class RecipeRepository {
 	constructor(
-		private db: DatabaseQuerier,
+		public db: DatabaseQuerier,
 	) {}
 
 	/**
@@ -43,7 +43,7 @@ export class RecipeRepository {
 	getRecipesWithInputs(inputCharacters: string): Recipe[] {
 		if (inputCharacters === '')
 			throw new InvalidArgumentError('getRecipesWithInputs: inputCharacters cannot be empty.');
-		
+
 		const query = "SELECT * FROM recipe WHERE inputCharacters = @inputCharacters";
 		return this.db.getRows(query, { inputCharacters }) as DBRecipe[];
 	}

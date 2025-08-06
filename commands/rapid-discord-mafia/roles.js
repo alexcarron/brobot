@@ -1,7 +1,7 @@
 const ids = require("../../bot-config/discord-ids.js");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { deferInteraction } = require("../../utilities/discord-action-utils");
-const { toTitleCase } = require("../../utilities/text-formatting-utils.js");
+const { toTitleCase } = require("../../utilities/string-manipulation-utils");
 const { appendToNestedProperty } = require("../../utilities/data-structure-utils.js");
 
 module.exports = new SlashCommand({

@@ -23,20 +23,24 @@ jest.mock("../../../utilities/discord-action-utils", () => ({
 	addButtonToMessageContents: jest.fn(),
 }));
 
+import { DatabaseQuerier } from "../database/database-querier";
+import { addMockPlayer } from "../database/mock-database";
 import { mockPlayers } from "../repositories/mock-repositories";
 import { PlayerRepository } from "../repositories/player.repository";
 import { changeDiscordNameOfPlayer, sendToPublishedNamesChannel, sendToNamesToVoteOnChannel, resetMemberToNewPlayer } from "../utilities/discord-action.utility";
 import { fetchNamesmithGuildMembers } from "../utilities/discord-fetch.utility";
+import { PlayerNotFoundError } from "../utilities/error.utility";
 import { createMockPlayerService } from "./mock-services";
 import { PlayerService } from "./player.service";
 
 
-
 describe('PlayerService', () => {
 	let playerService: PlayerService;
+	let db: DatabaseQuerier;
 
 	beforeEach(() => {
 		playerService = createMockPlayerService();
+		db = playerService.playerRepository.db;
 	});
 
 	afterEach(() => {
@@ -54,7 +58,7 @@ describe('PlayerService', () => {
 		});
 	});
 
-	describe('.resolvePlayer()', () => {
+	describe('resolvePlayer()', () => {
 		it('should resolve a player object to a player object', () => {
 			const player = playerService.playerRepository.getPlayers()[0];
 			const resolvedPlayer = playerService.resolvePlayer(player);
@@ -73,22 +77,22 @@ describe('PlayerService', () => {
 		});
 	});
 
-	describe('.resolvePlayerID()', () => {
+	describe('resolvePlayerID()', () => {
 		it('should resolve a player object to a player ID', () => {
 			const player = playerService.playerRepository.getPlayers()[0];
-			const resolvedPlayerID = playerService.resolvePlayerID(player);
+			const resolvedPlayerID = playerService.resolveID(player);
 			expect(resolvedPlayerID).toEqual(player.id);
 		});
 
 		it('should resolve a player ID to a player ID', () => {
 			const player = playerService.playerRepository.getPlayers()[0];
 			const playerID = player.id;
-			const resolvedPlayerID = playerService.resolvePlayerID(playerID);
+			const resolvedPlayerID = playerService.resolveID(playerID);
 			expect(resolvedPlayerID).toEqual(playerID);
 		});
 	});
 
-	describe('.getInventory()', () => {
+	describe('getInventory()', () => {
 		it('should return the inventory of a player', () => {
 			const result = playerService.getInventory(mockPlayers[0].id);
 			expect(result).toEqual(mockPlayers[0].inventory);
@@ -99,7 +103,7 @@ describe('PlayerService', () => {
 		});
 	});
 
-	describe('.getCurrentName()', () => {
+	describe('getCurrentName()', () => {
 		it('should return the current name of a player', () => {
 			const result = playerService.getCurrentName(mockPlayers[0].id);
 			expect(result).toEqual(mockPlayers[0].currentName);
@@ -110,7 +114,7 @@ describe('PlayerService', () => {
 		});
 	});
 
-	describe('.changeCurrentName()', () => {
+	describe('changeCurrentName()', () => {
 		it('should change the current name of a player', async () => {
 			await playerService.changeCurrentName(mockPlayers[0].id, "new name");
 			const result = playerService.getCurrentName(mockPlayers[0].id);
@@ -140,7 +144,7 @@ describe('PlayerService', () => {
 		});
 	});
 
-	describe('.addCharacterToName()', () => {
+	describe('addCharacterToName()', () => {
 		it('should add a character to the current name of a player', async () => {
 			await playerService.addCharacterToName(mockPlayers[0].id, "a");
 			const currentName = playerService.getCurrentName(mockPlayers[0].id);
@@ -196,7 +200,7 @@ describe('PlayerService', () => {
 		});
 	});
 
-	describe('.publishUnpublishedNames()', () => {
+	describe('publishUnpublishedNames()', () => {
 		it('should publish all unpublished names', async () => {
 			await playerService.publishUnpublishedNames();
 
@@ -209,7 +213,7 @@ describe('PlayerService', () => {
 		});
 	});
 
-	describe('.finalizeName()', () => {
+	describe('finalizeName()', () => {
 		it('should change current name of player to their published name when they have one', async () => {
 			await playerService.finalizeName(mockPlayers[1].id);
 			const currentName = playerService.getCurrentName(mockPlayers[1].id);
@@ -231,7 +235,7 @@ describe('PlayerService', () => {
 		});
 	});
 
-	describe('.finalizeAllNames()', () => {
+	describe('finalizeAllNames()', () => {
 		it('should finalize all names', async () => {
 			await playerService.finalizeAllNames();
 			for (const player of mockPlayers) {
@@ -243,7 +247,7 @@ describe('PlayerService', () => {
 		});
 	});
 
-	describe('.addNewPlayer()', () => {
+	describe('addNewPlayer()', () => {
 		it('should add a new player', async () => {
 			await playerService.addNewPlayer("987654321");
 			const players = playerService.playerRepository.getPlayers();
@@ -263,7 +267,7 @@ describe('PlayerService', () => {
 		});
 	});
 
-	describe('.addEveryoneInServer()', () => {
+	describe('addEveryoneInServer()', () => {
 		it('should add all players in the server', async () => {
 			jest.spyOn(playerService, 'addNewPlayer');
 			(fetchNamesmithGuildMembers as jest.Mock).mockResolvedValue([
@@ -298,7 +302,64 @@ describe('PlayerService', () => {
 		});
 	});
 
-	describe('.reset()', () => {
+	describe('removeCharactersFromInventory()', () => {
+		it('should remove characters from the inventory', () => {
+			const player = addMockPlayer(db, {
+				inventory: 'aabbcdaebfcchhhaghcbhh',
+			});
+			const toRemove = 'hbbaaa';
+			const expectedNewInventory = 'abbcdefcchhhghch';
+
+			const returnedNewInventory = playerService.removeCharactersFromInventory(
+				player,
+				toRemove
+			);
+			const inventory = playerService.getInventory(player.id);
+
+			expect(inventory).toBe(expectedNewInventory);
+			expect(returnedNewInventory).toBe(expectedNewInventory);
+		});
+
+		it('should throw an error if the player is not found', () => {
+			expect(() => playerService.removeCharactersFromInventory('invalid-id', 'a')).toThrow();
+		});
+
+		it('should throw an error if the characters don\'t exist in the inventory', () => {
+			expect(() => playerService.removeCharactersFromInventory(mockPlayers[0].id, 'χ•∩∫')).toThrow();
+		});
+
+		it('should throw an error if there\'s too many of the same character to remove', () => {
+			const playerID = mockPlayers[0].id;
+			const firstLetterInInventory = mockPlayers[0].inventory[0];
+			const toRemove = firstLetterInInventory.repeat(100);
+			expect(() => playerService.removeCharactersFromInventory(
+				playerID,
+				toRemove
+			)).toThrow();
+		});
+	});
+
+	describe('addCharactersToInventory()', () => {
+		it('should add characters to the inventory', () => {
+			const player = addMockPlayer(db, {
+				inventory: 'aabbcdaebfcchhhaghcbhh',
+			});
+			const toAdd = 'χ•∩∫';
+			const expectedNewInventory = 'aabbcdaebfcchhhaghcbhhχ•∩∫';
+
+			const returnedNewInventory = playerService.addCharactersToInventory(player, toAdd);
+			const inventory = playerService.getInventory(player.id);
+
+			expect(inventory).toBe(expectedNewInventory);
+			expect(returnedNewInventory).toBe(expectedNewInventory);
+		});
+
+		it('should throw an error if the player is not found', () => {
+			expect(() => playerService.addCharactersToInventory('0000000000000000000000000', 'a')).toThrow(PlayerNotFoundError);
+		});
+	});
+
+	describe('reset()', () => {
 		it('should reset the player repository', () => {
 			playerService.reset();
 			const players = playerService.playerRepository.getPlayers();

@@ -1,7 +1,7 @@
 import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { Override, IfDefined, IfPresent } from "../../../utilities/types/generic-types";
 import { DatabaseQuerier } from "../database/database-querier";
-import { DBPlayer, Player } from "../types/player.types";
+import { DBPlayer, Player, PlayerID } from "../types/player.types";
 import { PlayerNotFoundError, PlayerAlreadyExistsError } from "../utilities/error.utility";
 
 const MAX_NAME_LENGTH = 32;
@@ -68,12 +68,28 @@ export class PlayerRepository {
 	 * @param playerID - The ID of the player whose inventory is being retrieved.
 	 * @returns The inventory of the player.
 	 */
-	getInventory(playerID: string): string {
+	getInventory(playerID: PlayerID): string {
 		const player = this.getPlayerByID(playerID);
 		if (!player)
 			throw new PlayerNotFoundError(playerID);
 
 		return player.inventory;
+	}
+
+	/**
+	 * Sets the inventory of a player.
+	 * @param playerID - The ID of the player whose inventory is being set.
+	 * @param inventory - The new inventory string to assign to the player.
+	 * @throws {PlayerNotFoundError} - If the player with the specified ID is not found.
+	 */
+	setInventory(playerID: PlayerID, inventory: string): void {
+		const runResult = this.db.run(
+			`UPDATE player SET inventory = @inventory WHERE id = @id`,
+			{ inventory, id: playerID }
+		);
+
+		if (runResult.changes === 0)
+			throw new PlayerNotFoundError(playerID);
 	}
 
 	/**

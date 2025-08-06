@@ -1,4 +1,4 @@
-const { toTitleCase } = require("../../utilities/text-formatting-utils.js");
+const { toTitleCase } = require("../../utilities/string-manipulation-utils");
 
 /**
  * Enum of possible names of a Role

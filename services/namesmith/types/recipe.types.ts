@@ -7,3 +7,5 @@ export interface Recipe {
 export interface DBRecipe extends Recipe {}
 
 export type RecipeID = Recipe["id"];
+
+export type RecipeResolvable = Recipe | RecipeID;

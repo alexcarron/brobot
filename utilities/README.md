@@ -2,11 +2,17 @@
 
 Contains helper functions and reusable utilities for general functionality across Brobot.
 
+* **`types/`** Contains file to store types used throughout the entire codebase
+  * **`generic-types.js`** Types that could be used in any situation ever
 * **`data-structure-utils.js`** Functions for working with JavaScript objects and arrays
 * **`date-time-utils.js`** Functions for time and date formatting, parsing, and calculations
-* **`discord-fetch-utils.js`** Functions for fetching Discord.js objects
 * **`discord-action-utils.js`** Functions for performing actions in Discord
+* **`discord-fetch-utils.js`** Functions for fetching Discord.js objects
+* **`error-utils.js`** Error classes and functions for better managing and handling errors
 * **`github-json-storage-utils.js`** Functions for managing persistant JSON data storage on GitHub
+* **`jest-utils.js`** Functions for improving jest unit tests and increasing discoverability of jest features
 * **`logging-utils.js`** Functions for custom logging and error reporting
+* **`random-utils.js`** Functions for generating random values and other randomness-related operations
 * **`realtime-utils.js`** Functions for handling real-time timing operations (e.g. waiting, scheduling)
-* **`text-formatting-utils.js`** Functions for manipulating and formatting text
+* **`string-checks-utils.js`** Functions for validating and checking properties of strings
+* **`string-manipulation-utils.js`** Functions for manipulating and formatting strings

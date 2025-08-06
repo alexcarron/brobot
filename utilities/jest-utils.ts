@@ -15,7 +15,7 @@
  *   });
  })
  */
-function groupTests(groupName, defineTestsOrSubgroups) {
+export function groupTests(groupName, defineTestsOrSubgroups) {
 	// eslint-disable-next-line jest/valid-describe-callback, jest/valid-title
 	describe(groupName, defineTestsOrSubgroups);
 }
@@ -32,7 +32,7 @@ function groupTests(groupName, defineTestsOrSubgroups) {
  *   });
  * })
  */
-function the(entityTesting, defineTestsOrSubgroups) {
+export function the(entityTesting, defineTestsOrSubgroups) {
 	// eslint-disable-next-line jest/valid-describe-callback, jest/valid-title
 	describe(`the ${entityTesting}`, defineTestsOrSubgroups);
 }
@@ -51,7 +51,7 @@ function the(entityTesting, defineTestsOrSubgroups) {
  *   });
  * })
  */
-function inThe(containerEntity, defineEntitiesTesting) {
+export function inThe(containerEntity, defineEntitiesTesting) {
 	// eslint-disable-next-line jest/valid-describe-callback, jest/valid-title
 	describe(`in the ${containerEntity}`, defineEntitiesTesting);
 }
@@ -70,7 +70,7 @@ function inThe(containerEntity, defineEntitiesTesting) {
  *   });
  * })
  */
-function inside(containerEntity, defineEntitiesTesting) {
+export function inside(containerEntity, defineEntitiesTesting) {
 	// eslint-disable-next-line jest/valid-describe-callback, jest/valid-title
 	describe(`inside ${containerEntity}`, defineEntitiesTesting);
 }
@@ -81,7 +81,7 @@ function inside(containerEntity, defineEntitiesTesting) {
  * @param {string} expectedBehaviorDescription - A description of the expected behavior of the test. (e.g. "should return correct sum")
  * @param {() => void} runTestScenario - A function that runs the test scenario.
  */
-function defineTest(expectedBehaviorDescription, runTestScenario) {
+export function defineTest(expectedBehaviorDescription, runTestScenario) {
 	// eslint-disable-next-line jest/expect-expect, jest/valid-title
 	test(expectedBehaviorDescription, runTestScenario);
 }
@@ -92,7 +92,7 @@ function defineTest(expectedBehaviorDescription, runTestScenario) {
  * @param {string} expectedBehaviorDescription - A description of the expected behavior of the test. (e.g. "should return correct sum")
  * @param {() => void} runTestScenario - A function that runs the test scenario.
  */
-function should(expectedBehaviorDescription, runTestScenario) {
+export function should(expectedBehaviorDescription, runTestScenario) {
 	// eslint-disable-next-line jest/expect-expect, jest/valid-title
 	test(`should ${expectedBehaviorDescription}`, runTestScenario);
 }
@@ -106,7 +106,7 @@ function should(expectedBehaviorDescription, runTestScenario) {
  *   initializeTestState();
  * })
  */
-function runBeforeEachTest(functionToRun) {
+export function runBeforeEachTest(functionToRun) {
 	beforeEach(functionToRun);
 }
 
@@ -118,7 +118,7 @@ function runBeforeEachTest(functionToRun) {
  *   cleanupTestState();
  * })
  */
-function runAfterEachTest(functionToRun) {
+export function runAfterEachTest(functionToRun) {
 	afterEach(functionToRun);
 }
 
@@ -130,7 +130,7 @@ function runAfterEachTest(functionToRun) {
  *   cleanUpResources();
  * })
  */
-function runAfterAllTests(functionToRun) {
+export function runAfterAllTests(functionToRun) {
 	afterAll(functionToRun);
 }
 
@@ -143,66 +143,20 @@ function runAfterAllTests(functionToRun) {
  *   setupResources();
  * })
  */
-function runBeforeAllTests(functionToRun) {
+export function runBeforeAllTests(functionToRun) {
 	beforeAll(functionToRun);
 }
 
 
 /**
- * @typedef {object} MakeSure
- * @property {(expectedValue: any) => void} isSameInstanceAs
- *   Asserts the actual value is the same instance as the expected value (shallow comparison).
- * @property {(expectedValue: any) => void} is
- *   Asserts the actual value is the expected value (deep comparison).
- * @property {(expectedValue: any) => void} isEqualTo
- *   Asserts the actual value is equal to the expected value (Deep comparison).
- * @property {(expectedClass: Function) => void} isAnInstanceOf
- *   Asserts the actual value is an instance of the expected class.
- * @property {() => void} isNotANumber
- *   Asserts the actual value is not a number.
- * @property {() => void} isUndefined
- *   Asserts the actual value is undefined.
- * @property {() => void} isTrue
- *   Asserts the actual value is true.
- * @property {() => void} isFalse
- *   Asserts the actual value is false.
- * @property {(expectedLength: number) => void} hasLengthOf
- *   Asserts the actual value has the expected number of elements.
- * @property {() => void} isEmpty
- *   Asserts the actual value has no elements.
- * @property {(expectedValue: any) => void} contains
- *   Asserts the actual array or string contains the expected value.
- * @property {() => void} throwsAnError
- *   Asserts the actual value throws an error.
- * @property {(substringInErrorMessage: string) => void} throwsAnErrorWith
- *   Asserts the actual value throws an error with the expected substring in the error message.
- * @property {() => Promise<void>} eventuallyThrowsAnError
- * 	Asserts that a promise will eventually reject with an error.
- * 	This is useful for testing asynchronous functions that are expected to throw errors.
- * 	await makeSure(someAsyncFunction()).eventuallyThrowsAnError();
- * @property {(substringInErrorMessage: string) => Promise<void>} eventuallyThrowsAnErrorWith
- *   Asserts the actual value eventually throws an error with the expected substring in the error message.
- * @property {(numTimesCalled?: number) => void} hasBeenCalled
- *   Asserts the actual value has been called the expected number of times.
- * @property {(numTimesCalled?: number) => void} hasNotBeenCalled
- *   Asserts the actual value has not been called the expected number of times.
- * @property {() => void} hasBeenCalledOnce
- *   Asserts the actual value has been called once.
- * @property {(...parameters: any[]) => void} hasBeenCalledWith
- *   Asserts the actual value has been called with the expected parameters.
- * @property {jest.JestMatchers<any>} turnsOut
- *   Returns the original Jest expect matcher for this value (for advanced usage).
- */
-
-/**
  * Wraps an actual result value, letting you check if it matches the expected value by attaching methods that describe the expected outcome
  * Wraps Jest's `expect()`
  * @param {any} actualValue - The actual value you want to check matches an expected condition.
- * @returns {MakeSure} A set of methods that let you check if the actual result value matches an expected condition
+ * @returns A set of methods that let you check if the actual result value matches an expected condition
  * @example
  * makeSure(actualResultValue).is(expectedValue);
  */
-function makeSure(actualValue) {
+export function makeSure(actualValue) {
 	// eslint-disable-next-line jest/valid-expect
 	const baseExpect = expect(actualValue);
 
@@ -228,6 +182,16 @@ function makeSure(actualValue) {
 		 */
 		is(expectedValue) {
 			baseExpect.toEqual(expectedValue);
+		},
+
+		/**
+		 * Asserts that the actual value is not the expected value (Deep comparison).
+		 * @param {*} expectedValue - The expected value to check against.
+		 * @example
+		 * makeSure(actualResultValue).isNot(expectedValue);
+		 */
+		isNot(expectedValue) {
+			baseExpect.not.toEqual(expectedValue);
 		},
 
 		/**
@@ -427,14 +391,3 @@ function makeSure(actualValue) {
 		},
 	};
 }
-
-// eslint-disable-next-line jest/no-export
-module.exports = {
-	groupTests, the, inThe, inside,
-	defineTest, should,
-	runBeforeEachTest,
-	runAfterEachTest,
-	runBeforeAllTests,
-	runAfterAllTests,
-	makeSure,
-};

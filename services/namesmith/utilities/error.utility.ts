@@ -101,6 +101,15 @@ export class CharacterNotFoundError extends ResourceNotFoundError {
 	}
 }
 
+export class RecipeNotFoundError extends ResourceNotFoundError {
+	constructor(recipeID: number) {
+		super({
+			message: `Recipe with ID ${recipeID} not found.`,
+			relevantData: { recipeID }
+		})
+	}
+}
+
 /**
  * Error thrown when a requested namesmith resource already exists.
  */

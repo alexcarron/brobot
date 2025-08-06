@@ -35,7 +35,7 @@ describe('PlayerRepository', () => {
 		});
   });
 
-  describe('.doesPlayerExist()', () => {
+  describe('doesPlayerExist()', () => {
 		it('returns true if the player is found', () => {
 			const result = playerRepository.doesPlayerExist(mockPlayers[0].id);
 			expect(result).toBe(true);
@@ -65,6 +65,18 @@ describe('PlayerRepository', () => {
 
 		it('throws an error if the player is not found', () => {
 			expect(() => playerRepository.getInventory("invalid-id")).toThrow();
+		});
+	});
+
+	describe('setInventory()', () => {
+		it('sets the inventory of a player', () => {
+			playerRepository.setInventory(mockPlayers[0].id, "new inventory");
+			const result = playerRepository.getInventory(mockPlayers[0].id);
+			expect(result).toEqual("new inventory");
+		});
+
+		it('throws an error if the player is not found', () => {
+			expect(() => playerRepository.setInventory("invalid-id", "new inventory")).toThrow();
 		});
 	});
 

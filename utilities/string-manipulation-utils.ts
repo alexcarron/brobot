@@ -1,9 +1,12 @@
+import { InvalidArgumentError } from "./error-utils";
+import { getCharacterCounts } from "./string-checks-utils";
+
 /**
  * Converts a given string to title case.
- * @param {string} string - The string to convert.
- * @returns {string} The string in title case.
+ * @param string - The string to convert.
+ * @returns The string in title case.
  */
-const toTitleCase = (string) => {
+export const toTitleCase = (string: string): string => {
 // Matches words in a string
 	const wordRegex = /\w\S*/g;
 
@@ -24,7 +27,7 @@ const toTitleCase = (string) => {
  * @param {number} characterSize - The total number of characters used to represent the progress bar.
  * @returns {string} A string representation of the progress bar.
  */
-const createTextProgressBar = (currentValue, totalValue, characterSize) => {
+export const createTextProgressBar = (currentValue, totalValue, characterSize) => {
 		if (typeof currentValue !== 'number')
 			throw new Error('currentValue must be a number.');
 		else if (typeof totalValue !== 'number')
@@ -40,8 +43,6 @@ const createTextProgressBar = (currentValue, totalValue, characterSize) => {
 
 		if (totalValue <= 0)
 			totalValue = 1;
-
-		// 0.33 *
 
     const percentage = currentValue / totalValue;
 
@@ -71,7 +72,7 @@ const createTextProgressBar = (currentValue, totalValue, characterSize) => {
  * @returns {string} The ordinal representation of the number.
  * @throws {Error} Throws an error if the input is not a valid number.
  */
-const toNumericOrdinal = (number) => {
+export const toNumericOrdinal = (number) => {
 	// Check if the input is a valid number
 	if (typeof number !== 'number' || isNaN(number)) {
 		throw new Error('Input is not a valid number');
@@ -106,7 +107,7 @@ const toNumericOrdinal = (number) => {
  * @returns {string} The word ordinal representation of the number.
  * @throws {Error} Throws an error if the input is not a valid number or too large.
  */
-const toWordOrdinal = (number) => {
+export const toWordOrdinal = (number) => {
   // Check if the input is a valid number
   if (typeof number !== 'number' || isNaN(number))
     throw new Error('Input is not a valid number');
@@ -162,7 +163,7 @@ const toWordOrdinal = (number) => {
  * @param {string[]} words - An array of words to form into a sentence.
  * @returns {string} A sentence formed by the words, separated by commas and an 'and' before the last word.
  */
-const createListFromWords = (words) => {
+export const createListFromWords = (words) => {
 	if (!words || words.length <= 0) {
 		return "";
 	}
@@ -187,14 +188,14 @@ const createListFromWords = (words) => {
  * @param {number} lineWidth - The width of each line
  * @returns {string[]} An array of strings, where each string is a line of the wrapped text
  */
-const wrapTextByLineWidth = (text, lineWidth) => {
+export const wrapTextByLineWidth = (text, lineWidth) => {
 	if (typeof text !== 'string')
 		throw new Error('text must be a string.');
 
 	if (typeof lineWidth !== 'number' || lineWidth <= 0)
 		throw new Error('lineWidth must be a positive number.');
 
-	let lines = [];
+	let lines: string[] = [];
 	let currentText = text.replace(/\s+/g, ' ');
 	currentText = currentText.trim();
 	if (currentText.length === 0) return [];
@@ -238,7 +239,7 @@ const wrapTextByLineWidth = (text, lineWidth) => {
  * @param {string} string - The string to remove URLs from
  * @returns {string} The string with all URLs removed
  */
-const removeLinks = (string) => {
+export const removeLinks = (string) => {
 	const urlRegex = /(https?:\/\/[^\s]+)/g;
 	return string.replace(urlRegex, '');
 }
@@ -248,7 +249,7 @@ const removeLinks = (string) => {
  * @param {string} string - The string to remove emojis from
  * @returns {string} The string with all emojis removed
  */
-const removeEmojis = (string) => {
+export const removeEmojis = (string) => {
 	return string.replace(/(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/g, '');
 }
 
@@ -258,7 +259,7 @@ const removeEmojis = (string) => {
  * @param {string[]} possibleStrings - The list of strings to search in
  * @returns {string|undefined} The first string that starts with the given string, or undefined if no string is found
  */
-const findStringStartingWith = (startingString, possibleStrings) => {
+export const findStringStartingWith = (startingString, possibleStrings) => {
 	if (typeof startingString !== 'string')
 		throw new Error('startingString must be a string.');
 
@@ -282,7 +283,7 @@ const findStringStartingWith = (startingString, possibleStrings) => {
  * @param {number} [incrementAmount] - The amount to increment the number by
  * @returns {string} The string with the number at the end incremented by the given amount
  */
-const incrementEndNumber = (string, incrementAmount = 1) => {
+export const incrementEndNumber = (string, incrementAmount = 1) => {
 	if (typeof string !== 'string')
 		throw new Error('string must be a string.');
 
@@ -303,4 +304,71 @@ const incrementEndNumber = (string, incrementAmount = 1) => {
 	return `${stringWithoutEndNumber}${newNumber}`;
 }
 
-module.exports = { toTitleCase, createTextProgressBar, toNumericOrdinal, toWordOrdinal, createListFromWords, wrapTextByLineWidth, removeLinks, removeEmojis, findStringStartingWith, incrementEndNumber };
+/**
+ * Removes a character from a string at the specified index.
+ * @param string - The string from which to remove the character
+ * @param index - The index of the character to remove
+ * @returns The string with the character removed at the specified index
+ */
+export const removeCharacterAt = (string: string, index: number): string => {
+	if (Number.isInteger(index) === false)
+		throw new InvalidArgumentError(
+			`index must be an integer, but got ${index}.`
+		);
+
+	if (index < 0 || index >= string.length)
+		throw new InvalidArgumentError(
+			`index must be between 0 and ${string.length - 1}, but got ${index}.`
+		);
+
+	return string.slice(0, index) + string.slice(index + 1);
+}
+
+/**
+ * Removes a specific collection of characters from the end of a string until all characters in the given collection are removed.
+ * @param charactersToRemove - The characters to remove from the string
+ * @param string - The string to remove characters from
+ * @returns The string with all characters removed from the end
+ */
+export const removeCharactersAsGivenFromEnd = (
+	string: string,
+	charactersToRemove: string | string[]
+): string => {
+	let characters: string;
+	if (typeof charactersToRemove !== 'string')
+		characters = charactersToRemove.join('');
+	else
+		characters = charactersToRemove;
+
+	const characterToCounts = getCharacterCounts(characters);
+
+	for (let index = string.length - 1; index >= 0; index--) {
+		const character = string.charAt(index);
+		console.log({
+			characters,
+			string,
+			index,
+			character,
+			characterToCounts: Object.fromEntries(characterToCounts)
+		});
+
+		if (characterToCounts.has(character)) {
+			string = removeCharacterAt(string, index);
+
+			characterToCounts.set(character,
+				characterToCounts.get(character)! - 1
+			);
+
+			if (characterToCounts.get(character) === 0) {
+				characterToCounts.delete(character);
+			}
+		}
+	}
+
+	if (characterToCounts.size > 0)
+		throw new InvalidArgumentError(
+			`charactersToRemove contains characters that are not in string: ${Array.from(characterToCounts.keys()).join(', ')}.`
+		);
+
+	return string;
+}

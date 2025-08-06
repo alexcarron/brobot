@@ -4,7 +4,7 @@ const { ParameterType, Parameter } = require("../../services/command-creation/pa
 const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { deferInteraction, createChannel, editReplyToInteraction, createEveryoneDenyViewPermission, addPermissionToChannel, memberHasRole } = require("../../utilities/discord-action-utils");
 const { fetchGuild, getUserParamValue, fetchGuildMember, fetchTextChannel, getRequiredStringParam } = require("../../utilities/discord-fetch-utils");
-const { createListFromWords } = require("../../utilities/text-formatting-utils");
+const { createListFromWords } = require("../../utilities/string-manipulation-utils");
 
 const Parameters = {
 	Name: new Parameter({

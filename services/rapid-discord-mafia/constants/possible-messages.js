@@ -1,5 +1,5 @@
 const ids = require("../../../bot-config/discord-ids.js");
-const { createListFromWords } = require("../../../utilities/text-formatting-utils.js");
+const { createListFromWords } = require("../../../utilities/string-manipulation-utils");
 const { createNowUnixTimestamp } = require("../../../utilities/date-time-utils.js");
 const { RoleName } = require("../role.js");
 const { PhaseLength } = require("../game-state-manager.js");

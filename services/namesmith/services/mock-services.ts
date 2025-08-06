@@ -1,36 +1,57 @@
+import { createMockDB } from "../database/mock-database";
 import { CharacterRepository } from "../repositories/character.repository";
 import { GameStateRepository } from "../repositories/game-state.repository";
-import { createMockPlayerRepo, createMockVoteRepo, createMockMysteryBoxRepo, createMockCharacterRepo, createMockGameStateRepo } from "../repositories/mock-repositories";
+import { createMockPlayerRepo, createMockVoteRepo, createMockMysteryBoxRepo, createMockCharacterRepo, createMockGameStateRepo, createMockRecipeRepo } from "../repositories/mock-repositories";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
 import { PlayerRepository } from "../repositories/player.repository";
+import { RecipeRepository } from "../repositories/recipe.repository";
 import { VoteRepository } from "../repositories/vote.repository";
 import { GameStateService } from "./game-state.service";
 import { MysteryBoxService } from "./mystery-box.service";
 import { PlayerService } from "./player.service";
+import { RecipeService } from "./recipe.service";
 import { VoteService } from "./vote.service";
+import { IfDefined } from '../../../utilities/types/generic-types';
+import { DatabaseQuerier } from "../database/database-querier";
 
 /**
  * Creates a mock GameStateService instance for testing purposes.
- * @param gameStateRepository - The mock game state repository to use.
- * @param playerService - The mock player service to use.
- * @param voteService - The mock vote service to use.
+ * @param mockGameStateRepository - The mock game state repository to use.
+ * @param mockPlayerService - The mock player service to use.
+ * @param mockVoteService - The mock vote service to use.
  * @returns A mock instance of the GameStateService.
  */
 export const createMockGameStateService = (
-	gameStateRepository?: GameStateRepository,
-	playerService?: PlayerService,
-	voteService?: VoteService
+	mockGameStateRepository?: GameStateRepository,
+	mockPlayerService?: PlayerService,
+	mockVoteService?: VoteService
 ): GameStateService => {
-	if (gameStateRepository === undefined || !(gameStateRepository instanceof GameStateRepository))
-		gameStateRepository = createMockGameStateRepo();
+	const sharedDB =
+		mockGameStateRepository?.db ??
+		mockPlayerService?.playerRepository.db ??
+		mockVoteService?.voteRepository.db ??
+		createMockDB();
 
-	if (playerService === undefined || !(playerService instanceof PlayerService))
-		playerService = createMockPlayerService();
+	const gameStateRepository =
+		mockGameStateRepository ??
+		createMockGameStateRepo(sharedDB);
 
-	if (voteService === undefined || !(voteService instanceof VoteService))
-		voteService = createMockVoteService();
+	const playerService =
+		mockPlayerService ??
+		createMockPlayerService(createMockPlayerRepo(sharedDB));
 
-	return new GameStateService(gameStateRepository, playerService, voteService);
+	const voteService =
+		mockVoteService ??
+		createMockVoteService(
+			createMockVoteRepo(sharedDB),
+			playerService
+		);
+
+	return new GameStateService(
+		gameStateRepository,
+		playerService,
+		voteService
+	);
 }
 
 /**
@@ -38,12 +59,14 @@ export const createMockGameStateService = (
  * @param mockPlayerRepo - The mock player repository to use.
  * @returns A mock instance of the PlayerService.
  */
-export const createMockPlayerService =
-(mockPlayerRepo?: PlayerRepository): PlayerService => {
-	if (mockPlayerRepo === undefined || !(mockPlayerRepo instanceof PlayerRepository))
-		mockPlayerRepo = createMockPlayerRepo();
+export const createMockPlayerService = (
+	mockPlayerRepo?: PlayerRepository
+): PlayerService => {
+	const playerRepo =
+		mockPlayerRepo ??
+		createMockPlayerRepo();
 
-	return new PlayerService(mockPlayerRepo);
+	return new PlayerService(playerRepo);
 }
 
 /**
@@ -52,15 +75,24 @@ export const createMockPlayerService =
  * @param mockPlayerService - The mock player service to use.
  * @returns A mock instance of the VoteService.
  */
-export const createMockVoteService =
-(mockVoteRepo?: VoteRepository, mockPlayerService?: PlayerService): VoteService => {
-	if (mockVoteRepo === undefined || !(mockVoteRepo instanceof VoteRepository))
-		mockVoteRepo = createMockVoteRepo();
+export const createMockVoteService = (
+	mockVoteRepo?: VoteRepository,
+	mockPlayerService?: PlayerService
+): VoteService => {
+	const sharedDB =
+		mockVoteRepo?.db ??
+		mockPlayerService?.playerRepository.db ??
+		createMockDB();
 
-	if (mockPlayerService === undefined || !(mockPlayerService instanceof PlayerService))
-		mockPlayerService = createMockPlayerService();
+	const voteRepo =
+		mockVoteRepo ??
+		createMockVoteRepo(sharedDB);
 
-	return new VoteService(mockVoteRepo, mockPlayerService);
+	const playerService =
+		mockPlayerService ??
+		createMockPlayerService(createMockPlayerRepo(sharedDB));
+
+	return new VoteService(voteRepo, playerService);
 };
 
 /**
@@ -73,23 +105,52 @@ export const createMockMysteryBoxService = (
 	mockMysteryBoxRepository?: MysteryBoxRepository,
 	mockCharacterRepository?: CharacterRepository
 ): MysteryBoxService => {
-	if (mockMysteryBoxRepository === undefined || !(mockMysteryBoxRepository instanceof MysteryBoxRepository))
-		mockMysteryBoxRepository = createMockMysteryBoxRepo();
+	const sharedDB =
+		mockMysteryBoxRepository?.db ??
+		mockCharacterRepository?.db ??
+		createMockDB();
 
-	if (mockCharacterRepository === undefined || !(mockCharacterRepository instanceof CharacterRepository))
-		mockCharacterRepository = createMockCharacterRepo();
+	const mysteryBoxRepo =
+		mockMysteryBoxRepository ??
+		createMockMysteryBoxRepo(sharedDB);
 
-	return new MysteryBoxService(mockMysteryBoxRepository, mockCharacterRepository);
+	const characterRepo =
+		mockCharacterRepository ??
+		createMockCharacterRepo(sharedDB);
+
+	return new MysteryBoxService(mysteryBoxRepo, characterRepo);
+}
+
+/**
+ * Creates a mock RecipeService instance for testing purposes.
+ * If any of the mock repository parameters are undefined, a default mock repository
+ * instance is created for the respective service.
+ * @param mockRecipeRepository - The mock recipe repository to use.
+ * @param mockPlayerService - The mock player service to use.
+ * @returns A mock instance of the RecipeService.
+ */
+export const createMockRecipeService = (
+	mockRecipeRepository?: RecipeRepository,
+	mockPlayerService?: PlayerService,
+) => {
+  const sharedDB =
+    mockRecipeRepository?.db ??
+    mockPlayerService?.playerRepository.db ??
+    createMockDB();
+
+  const recipeRepository =
+		mockRecipeRepository ??
+		createMockRecipeRepo(sharedDB);
+
+  const playerService =
+    mockPlayerService ??
+    createMockPlayerService(createMockPlayerRepo(sharedDB));
+
+  return new RecipeService(recipeRepository, playerService);
 }
 
 /**
  * Creates mock service instances for testing purposes.
- *
- * The following services are created with the given mock repositories:
- * - PlayerService
- * - VoteService
- * - MysteryBoxService
- * - GameStateService
  *
  * If any of the mock repository parameters are undefined, a default mock repository
  * instance is created for the respective service.
@@ -106,43 +167,74 @@ export const createMockServices = ({
 	mockVoteRepo,
 	mockMysteryBoxRepo,
 	mockCharacterRepo,
-	gameStateRepository
+	mockRecipeRepo,
+	mockGameStateRepository
 }: {
 	mockPlayerRepo?: PlayerRepository,
 	mockVoteRepo?: VoteRepository,
 	mockMysteryBoxRepo?: MysteryBoxRepository,
 	mockCharacterRepo?: CharacterRepository,
-	gameStateRepository?: GameStateRepository
+	mockRecipeRepo?: RecipeRepository,
+	mockGameStateRepository?: GameStateRepository
 } = {}): {
 	playerService: PlayerService,
 	voteService: VoteService,
 	mysteryBoxService: MysteryBoxService,
+	recipeService: RecipeService,
 	gameStateService: GameStateService
 } => {
-	if (mockPlayerRepo === undefined || !(mockPlayerRepo instanceof PlayerRepository))
-		mockPlayerRepo = createMockPlayerRepo();
+	const sharedDB =
+		mockPlayerRepo?.db ??
+		mockVoteRepo?.db ??
+		mockMysteryBoxRepo?.db ??
+		mockCharacterRepo?.db ??
+		mockRecipeRepo?.db ??
+		mockGameStateRepository?.db ??
+		createMockDB();
 
-	if (mockVoteRepo === undefined || !(mockVoteRepo instanceof VoteRepository))
-		mockVoteRepo = createMockVoteRepo();
+	const playerRepo =
+		mockPlayerRepo ??
+		createMockPlayerRepo(sharedDB);
 
-	if (mockMysteryBoxRepo === undefined || !(mockMysteryBoxRepo instanceof MysteryBoxRepository))
-		mockMysteryBoxRepo = createMockMysteryBoxRepo();
+	const voteRepo =
+		mockVoteRepo ??
+		createMockVoteRepo(sharedDB);
 
-	if (mockCharacterRepo === undefined || !(mockCharacterRepo instanceof CharacterRepository))
-		mockCharacterRepo = createMockCharacterRepo();
+	const mysteryBoxRepo =
+		mockMysteryBoxRepo ??
+		createMockMysteryBoxRepo(sharedDB);
 
-	if (gameStateRepository === undefined || !(gameStateRepository instanceof GameStateRepository))
-		gameStateRepository = createMockGameStateRepo();
+	const characterRepo =
+		mockCharacterRepo ??
+		createMockCharacterRepo(sharedDB);
 
-	const playerService = createMockPlayerService(mockPlayerRepo);
-	const voteService = createMockVoteService(mockVoteRepo, playerService);
-	const mysteryBoxService = createMockMysteryBoxService(mockMysteryBoxRepo, mockCharacterRepo);
-	const gameStateService = createMockGameStateService(gameStateRepository, playerService, voteService);
+	const recipeRepo =
+		mockRecipeRepo ??
+		createMockRecipeRepo(sharedDB);
+
+	const gameStateRepository =
+		mockGameStateRepository ??
+		createMockGameStateRepo(sharedDB);
+
+	const playerService = createMockPlayerService(playerRepo);
+	const voteService = createMockVoteService(
+		voteRepo, playerService
+	);
+	const mysteryBoxService = createMockMysteryBoxService(
+		mysteryBoxRepo, characterRepo
+	);
+	const recipeService = createMockRecipeService(
+		recipeRepo, playerService
+	);
+	const gameStateService = createMockGameStateService(
+		gameStateRepository, playerService, voteService
+	);
 
 	return {
 		playerService: playerService,
 		voteService: voteService,
 		mysteryBoxService: mysteryBoxService,
+		recipeService: recipeService,
 		gameStateService: gameStateService
 	}
 };

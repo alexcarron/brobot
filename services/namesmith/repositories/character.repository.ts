@@ -10,7 +10,7 @@ import { CharacterNotFoundError } from "../utilities/error.utility";
 export class CharacterRepository {
 
 	constructor(
-		private db: DatabaseQuerier,
+		public db: DatabaseQuerier,
 	) {}
 
 	/**

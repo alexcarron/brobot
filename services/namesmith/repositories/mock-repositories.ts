@@ -1,4 +1,4 @@
-import { InvalidArgumentError } from "../../../utilities/error-utils";
+import { InvalidArgumentError, attempt } from '../../../utilities/error-utils';
 import { DatabaseQuerier } from "../database/database-querier";
 import { createMockDB, addMockPlayer, addMockVote } from "../database/mock-database";
 import { Player } from "../types/player.types";
@@ -12,6 +12,7 @@ import { AtLeast } from '../../../utilities/types/generic-types';
 import { Recipe } from "../types/recipe.types";
 import { RecipeRepository } from "./recipe.repository";
 import { insertRecipesToDB } from "../database/db-inserters";
+import { PlayerAlreadyExistsError, PlayerNotFoundError } from '../utilities/error.utility';
 
 /**
  * Creates a mock character repository instance with an in-memory database for testing purposes.
@@ -128,7 +129,9 @@ export const createMockPlayerRepo =
 		players = mockPlayers;
 
 	for (const player of players) {
-		addMockPlayer(mockDB, player);
+		attempt(() => addMockPlayer(mockDB, player))
+			.ignoreError(PlayerAlreadyExistsError)
+			.execute();
 	}
 	return new PlayerRepository(mockDB);
 }
@@ -180,14 +183,18 @@ export const createMockVoteRepo = (
 	];
 
 	for (const player of players) {
-		addMockPlayer(mockDB, player);
+		attempt(() => addMockPlayer(mockDB, player))
+			.ignoreError(PlayerAlreadyExistsError)
+			.execute();
 	}
 
 	// Insert dummy players if they don't exist yet
 	for (const playerID of requiredPlayerIDs) {
-		addMockPlayer(mockDB,
+		attempt(addMockPlayer, mockDB,
 			createMockPlayerObject({id: playerID})
-		);
+		)
+			.ignoreError(PlayerAlreadyExistsError)
+			.execute();
 	}
 
 	for (const vote of votes) {

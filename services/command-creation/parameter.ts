@@ -1,4 +1,4 @@
-import { toTitleCase } from '../../utilities/text-formatting-utils.js';
+import { toTitleCase } from '../../utilities/string-manipulation-utils';
 
 export const ParameterType = Object.freeze({
 	SUBCOMMAND: "subcommand",

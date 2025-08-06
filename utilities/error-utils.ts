@@ -278,6 +278,17 @@ abstract class BaseAttempt<ReturnType> {
     return this;
   }
 
+	/**
+	 * Ignores a given error type if the function throws it.
+	 * @param errorType The error type to ignore.
+	 * @returns The current instance of the attempt chain to allow for method chaining.
+	 */
+	ignoreError<ErrorType extends Error>(
+		errorType: new (...args: any[]) => ErrorType
+	) {
+		return this.onError(errorType, () => {});
+	}
+
   protected dispatchError(error: unknown, awaitErrorHandlers: true): Promise<void>;
   protected dispatchError(error: unknown, awaitErrorHandlers?: false): void;
 

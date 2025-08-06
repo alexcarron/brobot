@@ -3,7 +3,7 @@ const { ParameterType, Parameter } = require("../../../services/command-creation
 const { SlashCommand } = require("../../../services/command-creation/slash-command");
 const { deferInteraction, createChannel, editReplyToInteraction } = require("../../../utilities/discord-action-utils");
 const { getStringParamValue, getRequiredIntegerParam, getRequiredStringParam, fetchChannelsOfGuild } = require("../../../utilities/discord-fetch-utils");
-const { incrementEndNumber } = require("../../../utilities/text-formatting-utils");
+const { incrementEndNumber } = require("../../../utilities/string-manipulation-utils");
 
 const Parameters = {
 	Name: new Parameter({
