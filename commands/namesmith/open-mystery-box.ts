@@ -20,8 +20,12 @@ export const command = new SlashCommand({
 		const mysteryBoxID = 1;
 		const { mysteryBoxService, playerService } = getNamesmithServices();
 		const { character } = await openMysteryBox(
-			{ mysteryBoxService, playerService },
-			playerID, mysteryBoxID
+			{
+				mysteryBoxService,
+				playerService,
+				player: playerID,
+				mysteryBox: mysteryBoxID
+			},
 		);
 		const characterValue = character.value;
 

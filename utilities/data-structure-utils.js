@@ -187,16 +187,19 @@ const getRandomElement = (array) => {
  * Identifies the differences between two strings by comparing their characters.
  * It determines which characters are extra or missing in the modified string compared to the original string.
  * @param {string} originalString - The original string for comparison.
- * @param {string} modifiedString - The modified string to compare against the original.
- * @returns {object} An object containing two arrays: `missingCharacters` (characters present in the original but missing in the modified) and `extraCharacters` (characters present in the modified but not in the original).
+ * @param {string} differentString - The other string to compare against the original.
+ * @returns {{
+ * 	missingCharacters: Array<string>,
+ * 	extraCharacters: Array<string>
+ * }} An object containing two arrays: `missingCharacters` (characters present in the original but missing in the modified) and `extraCharacters` (characters present in the modified but not in the original).
  */
-const getCharacterDifferencesInStrings = (originalString, modifiedString) => {
-	if (typeof originalString !== 'string' || typeof modifiedString !== 'string') {
+const getCharacterDifferencesInStrings = (originalString, differentString) => {
+	if (typeof originalString !== 'string' || typeof differentString !== 'string') {
 		throw new TypeError('Both the original and modified strings arguments must be strings.');
 	}
 	// Check if extra or missing characters
 	const sortedOriginalString = [...originalString].sort();
-	const sortedModifiedString = [...modifiedString].sort();
+	const sortedModifiedString = [...differentString].sort();
 
 	let originalCharacterIndex = 0;
 	let newCharacterIndex = 0;

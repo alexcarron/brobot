@@ -4,10 +4,12 @@ import { CharacterRepository } from "../repositories/character.repository";
 import { GameStateRepository } from "../repositories/game-state.repository";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
 import { PlayerRepository } from "../repositories/player.repository";
+import { RecipeRepository } from "../repositories/recipe.repository";
 import { VoteRepository } from "../repositories/vote.repository";
 import { GameStateService } from "../services/game-state.service";
 import { MysteryBoxService } from "../services/mystery-box.service";
 import { PlayerService } from "../services/player.service";
+import { RecipeService } from "../services/recipe.service";
 import { VoteService } from "../services/vote.service";
 
 /**
@@ -34,6 +36,9 @@ export const setupNamesmith = () => {
 	global.namesmith.voteRepository =
 		new VoteRepository(db);
 
+	global.namesmith.recipeRepository =
+		new RecipeRepository(db);
+
 	global.namesmith.mysteryBoxService = new MysteryBoxService(
 		global.namesmith.mysteryBoxRepository,
 		global.namesmith.characterRepository,
@@ -45,6 +50,11 @@ export const setupNamesmith = () => {
 
 	global.namesmith.voteService = new VoteService(
 		global.namesmith.voteRepository,
+		global.namesmith.playerService,
+	);
+
+	global.namesmith.recipeService = new RecipeService(
+		global.namesmith.recipeRepository,
 		global.namesmith.playerService,
 	);
 

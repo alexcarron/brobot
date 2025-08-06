@@ -3,6 +3,8 @@
  * @description Centralized test utility functions to make writing Jest unit tests easier, more consistent, and discoverable—especially for new developers.
  */
 
+import { ErrorClass } from "./types/generic-types";
+
 /**
  * Defines a group of related tests to be run.
  * Wraps Jest's `describe()`
@@ -151,12 +153,12 @@ export function runBeforeAllTests(functionToRun) {
 /**
  * Wraps an actual result value, letting you check if it matches the expected value by attaching methods that describe the expected outcome
  * Wraps Jest's `expect()`
- * @param {any} actualValue - The actual value you want to check matches an expected condition.
+ * @param actualValue - The actual value you want to check matches an expected condition.
  * @returns A set of methods that let you check if the actual result value matches an expected condition
  * @example
  * makeSure(actualResultValue).is(expectedValue);
  */
-export function makeSure(actualValue) {
+export function makeSure(actualValue: unknown) {
 	// eslint-disable-next-line jest/valid-expect
 	const baseExpect = expect(actualValue);
 
@@ -256,13 +258,35 @@ export function makeSure(actualValue) {
 			baseExpect.toBe(false);
 		},
 
+
+		/**
+		 * Asserts that the actual string has the same characters as the expected string, regardless of order.
+		 * @param {string} expectedValue - The string that the actual string should have the same characters as.
+		 * @throws Will throw an error if the actual value is not a string.
+		 * @example
+		 * makeSure('abc').hasSameCharactersAs('cab'); // Passes
+		 * makeSure('abc').hasSameCharactersAs('abcd'); // Fails
+		 */
+		hasSameCharactersAs(expectedValue: string) {
+			if (typeof actualValue !== "string") {
+				expect(actualValue).toBeInstanceOf(String);
+				throw new Error(`Expected actual value to be a string, but got: ${actualValue}`);
+			}
+
+			const sortedActualValue = [...actualValue].sort().join("");
+			const sortedExpectedValue = [...expectedValue].sort().join("");
+
+			expect(sortedActualValue)
+				.toEqual(sortedExpectedValue);
+		},
+
 		/**
 		 * Asserts that the actual array or string has the expected length.
 		 * @param {number} expectedLength - The expected length of the actual array or string.
 		 * @example
 		 * makeSure([1, 2, 3]).hasLengthOf(3);
 		 */
-		hasLengthOf(expectedLength) {
+		hasLengthOf(expectedLength: number) {
 			baseExpect.toHaveLength(expectedLength);
 		},
 
@@ -301,28 +325,54 @@ export function makeSure(actualValue) {
 		},
 
 		/**
+		 * Asserts that the actual function throws an error that is an instance of the given error type.
+		 * @param errorType - The error type that the actual function should throw.
+		 * @example
+		 * makeSure(() => { throw new TypeError('Error!'); }).throws(TypeError);
+		 */
+		throws(errorType: ErrorClass) {
+			baseExpect.toThrow(errorType);
+		},
+
+		/**
 		 * Asserts that the actual function throws an error with a message containing the given substring.
-		 * @param {string} substringInErrorMessage - The substring that the error message thrown by the actual function should contain.
+		 * @param substringInErrorMessage - The substring that the error message thrown by the actual function should contain.
 		 * @example
 		 * makeSure(() => { throw new Error('Error!'); }).throwsAnErrorWith('Error');
 		 */
-		throwsAnErrorWith(substringInErrorMessage) {
+		throwsAnErrorWith(substringInErrorMessage: string) {
 			baseExpect.toThrow(substringInErrorMessage);
 		},
 
+		/**
+		 * Asserts that a promise will eventually reject with an error.
+		 * This is useful for testing asynchronous functions that are expected to throw errors.
+		 * @example
+		 * await makeSure(someAsyncFunction()).eventuallyThrowsAnError();
+		 */
 		async eventuallyThrowsAnError() {
 			await baseExpect.rejects.toThrow();
 		},
 
 		/**
+		 * Asserts that a promise will eventually reject with an error that is an instance of the given error type.
+		 * This is useful for testing asynchronous functions that are expected to throw errors.
+		 * @param errorType - The error type that the actual function should throw.
+		 * @example
+		 * await makeSure(someAsyncFunction()).eventuallyThrows(TypeError);
+		 */
+		async eventuallyThrows(errorType: ErrorClass) {
+			await baseExpect.rejects.toThrow(errorType);
+		},
+
+		/**
 		 * Asserts that a promise will eventually reject with an error with a message containing the given substring.
 		 * This is useful for testing asynchronous functions that are expected to throw errors.
-		 * @param {string} substringInErrorMessage - The substring that the error message thrown by the actual function should contain.
-		 * @returns {Promise<void>} A promise that resolves when the error has been thrown.
+		 * @param substringInErrorMessage - The substring that the error message thrown by the actual function should contain.
 		 * @example
 		 * await makeSure(someAsyncFunction()).eventuallyThrowsAnErrorWith('Error');
 		 */
-		async eventuallyThrowsAnErrorWith(substringInErrorMessage) {
+		async eventuallyThrowsAnErrorWith(substringInErrorMessage: string) {
 			await baseExpect.rejects.toThrow(substringInErrorMessage);
 		},
 
@@ -346,12 +396,12 @@ export function makeSure(actualValue) {
 		/**
 		 * Asserts that a mock function has not been called.
 		 * If a number is provided, it asserts that the function has not been called that specific number of times.
-		 * @param {number} [numTimesCalled] - The number of times the function is expected not to have been called. If not provided, asserts that the function has not been called at all.
+		 * @param numTimesCalled - The number of times the function is expected not to have been called. If not provided, asserts that the function has not been called at all.
 		 * @example
 		 * makeSure(mockFunction).hasNotBeenCalled();
 		 * makeSure(mockFunction).hasNotBeenCalled(3);
 		 */
-		hasNotBeenCalled(numTimesCalled) {
+		hasNotBeenCalled(numTimesCalled?: number) {
 			if (numTimesCalled === undefined) {
 				baseExpect.not.toHaveBeenCalled();
 			}

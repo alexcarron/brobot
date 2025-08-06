@@ -34,6 +34,16 @@ export class RecipeService {
 	}
 
 	/**
+	 * Retrieves the output characters for a given recipe.
+	 * @param recipeResolvable - The recipe resolvable for which the output characters are being retrieved.
+	 * @returns The output characters string for the recipe.
+	 */
+	getOutputCharacters(recipeResolvable: RecipeResolvable): string {
+		const recipe = this.resolveRecipe(recipeResolvable);
+		return recipe.outputCharacters;
+	}
+
+	/**
 	 * Determines if a recipe is unlocked for a given player.
 	 * @param recipeResolvable - The recipe resolvable to check for unlocking.
 	 * @param playerResolvable - The player resolvable for whom the recipe unlock status is being checked.
@@ -53,7 +63,7 @@ export class RecipeService {
 	 * @param playerResolvable - The player to check if they have the needed characters for the recipe.
 	 * @returns Whether the player has the needed characters for the recipe.
 	 */
-	doesPlayerHaveRequiredCharacters(
+	playerHasInputCharacters(
 		recipeResolvable: RecipeResolvable,
 		playerResolvable: PlayerResolvable
 	): boolean {
@@ -73,7 +83,7 @@ export class RecipeService {
 	 * @param recipeResolvable - The recipe to take the input characters for.
 	 * @param playerResolvable - The player from whom the input characters are being taken.
 	 */
-	takeRequiredCharactersFromPlayer(
+	takeInputCharactersFromPlayer(
 		recipeResolvable: RecipeResolvable,
 		playerResolvable: PlayerResolvable
 	): void {
@@ -87,7 +97,7 @@ export class RecipeService {
 	 * @param recipeResolvable - The recipe whose output characters are being given to the player.
 	 * @param playerResolvable - The player who is receiving the output characters.
 	 */
-	giveCraftedCharacterToPlayer(
+	giveOutputCharacterToPlayer(
 		recipeResolvable: RecipeResolvable,
 		playerResolvable: PlayerResolvable
 	): void {

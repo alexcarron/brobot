@@ -1,4 +1,8 @@
+import { getCharacterDifferencesInStrings } from '../../../utilities/data-structure-utils';
 import { CustomError } from '../../../utilities/error-utils';
+import { createListFromWords } from '../../../utilities/string-manipulation-utils';
+import { Player } from '../types/player.types';
+import { Recipe } from '../types/recipe.types';
 
 /**
  * Base class for all errors thrown by the namesmith service
@@ -152,6 +156,65 @@ export class GameStateInitializationError extends StateInitializationError {
 		super({
 			message: "The Namesmith game state has not initialized before it was used.",
 			relevantData: {}
+		})
+	}
+}
+
+/**
+ * Error thrown when a user action is blocked, prevented, or used incorrectly and must be handled by the interface.
+ */
+export class UserActionError extends NamesmithError {
+	constructor({
+		message,
+		userFriendlyMessage,
+		relevantData,
+		errorCausedBy = undefined,
+	}: {
+		message: string,
+		userFriendlyMessage: string,
+		relevantData: Record<string, unknown>,
+		errorCausedBy?: Error,
+
+	}) {
+		super({
+			message,
+			userFriendlyMessage,
+			errorCausedBy,
+			relevantData
+		});
+	}
+}
+
+/**
+ * Error thrown when a player is missing required characters for a recipe
+ */
+export class MissingRequiredCharactersError extends UserActionError {
+	constructor(player: Player, recipe: Recipe) {
+		const { missingCharacters } =
+			getCharacterDifferencesInStrings(recipe.inputCharacters, player.inventory);
+
+		super({
+			message: `Player is missing required characters for recipe`,
+			userFriendlyMessage:
+				`You are missing ${missingCharacters.length} required characters for this recipe: ${createListFromWords(missingCharacters)}.`,
+			relevantData: {
+				player,
+				recipe,
+			}
+		})
+	}
+}
+
+export class RecipeNotUnlockedError extends UserActionError {
+	constructor(player: Player, recipe: Recipe) {
+		super({
+			message: `Recipe is not unlocked for player`,
+			userFriendlyMessage:
+				`You must unlock this recipe before you can use it.`,
+			relevantData: {
+				player,
+				recipe,
+			}
 		})
 	}
 }

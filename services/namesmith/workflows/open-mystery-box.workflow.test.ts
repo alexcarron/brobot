@@ -9,6 +9,7 @@ import { changeDiscordNameOfPlayer } from "../utilities/discord-action.utility";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { MysteryBoxService } from "../services/mystery-box.service";
 import { PlayerService } from "../services/player.service";
+import { MysteryBoxNotFoundError, PlayerNotFoundError } from "../utilities/error.utility";
 
 describe('open-mystery-box.workflow', () => {
 	/**
@@ -38,18 +39,22 @@ describe('open-mystery-box.workflow', () => {
 
 	describe('openMysteryBox()', () => {
 		it('should return the recieved character', async () => {
-			const { character } = await openMysteryBox(services,
-				mockPlayers[0].id, 1
-			);
+			const { character } = await openMysteryBox({
+				...services,
+				player: mockPlayers[0].id,
+				mysteryBox: 1
+			});
 			expect(character).toHaveProperty('id', expect.any(Number));
 			expect(character).toHaveProperty('value', expect.any(String));
 			expect(character).toHaveProperty('rarity', expect.any(Number));
 		});
 
 		it('should change the player\'s Discord name to their current name plus that recieved character', async () => {
-			const { character } = await openMysteryBox(services,
-				mockPlayers[0].id, 1
-			);
+			const { character } = await openMysteryBox({
+				...services,
+				player: mockPlayers[0].id,
+				mysteryBox: 1
+			});
 
 			expect(changeDiscordNameOfPlayer).toHaveBeenCalledTimes(1);
 			expect(changeDiscordNameOfPlayer).toHaveBeenCalledWith(
@@ -59,20 +64,30 @@ describe('open-mystery-box.workflow', () => {
 		});
 
 		it('should change the player\'s name to their current name plus that recieved character', async () => {
-			const { character } = await openMysteryBox(services,
-				mockPlayers[0].id, 1
-			);
+			const { character } = await openMysteryBox({
+				...services,
+				player: mockPlayers[0].id,
+				mysteryBox: 1
+			});
 
 			const newCurrentName = await services.playerService.getCurrentName(mockPlayers[0].id);
 			expect(newCurrentName).toEqual(mockPlayers[0].currentName + character.value);
 		});
 
 		it('should throw an error if the player is not found', async () => {
-			await expect(openMysteryBox(services, "invalid-id", 1)).rejects.toThrow();
+			await expect(openMysteryBox({
+				...services,
+				player: "0000009000000",
+				mysteryBox: 1
+			})).rejects.toThrow(PlayerNotFoundError);
 		});
 
 		it('should throw an error if no mystery box is found', async () => {
-			await expect(openMysteryBox(services, mockPlayers[0].id, -23)).rejects.toThrow();
+			await expect(openMysteryBox({
+				...services,
+				player: mockPlayers[0].id,
+				mysteryBox: -999
+			})).rejects.toThrow(MysteryBoxNotFoundError);
 		});
 	})
 })

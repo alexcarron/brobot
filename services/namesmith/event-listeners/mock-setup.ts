@@ -5,11 +5,13 @@ import { GameStateRepository } from "../repositories/game-state.repository";
 import { createMockMysteryBoxRepo, createMockCharacterRepo, createMockPlayerRepo, createMockGameStateRepo, createMockVoteRepo } from "../repositories/mock-repositories";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
 import { PlayerRepository } from "../repositories/player.repository";
+import { RecipeRepository } from "../repositories/recipe.repository";
 import { VoteRepository } from "../repositories/vote.repository";
 import { GameStateService } from "../services/game-state.service";
 import { createMockMysteryBoxService, createMockPlayerService, createMockVoteService, createMockGameStateService } from "../services/mock-services";
 import { MysteryBoxService } from "../services/mystery-box.service";
 import { PlayerService } from "../services/player.service";
+import { RecipeService } from "../services/recipe.service";
 import { VoteService } from "../services/vote.service";
 
 /**
@@ -21,26 +23,31 @@ export const createAllMocks = (): {
 	mysteryBoxRepository: MysteryBoxRepository,
 	characterRepository: CharacterRepository,
 	playerRepository: PlayerRepository,
-	gameStateRepository: GameStateRepository,
 	voteRepository: VoteRepository,
+	gameStateRepository: GameStateRepository,
+	recipeRepository: RecipeRepository,
 	mysteryBoxService: MysteryBoxService,
 	playerService: PlayerService,
 	voteService: VoteService,
-	gameStateService: GameStateService
+	gameStateService: GameStateService,
+	recipeService: RecipeService,
 } => {
 	const mockDB = createMockDB();
 
 	const mysteryBoxRepository = createMockMysteryBoxRepo(mockDB);
 	const characterRepository = createMockCharacterRepo(mockDB);
 	const playerRepository = createMockPlayerRepo(mockDB);
-	const gameStateRepository = createMockGameStateRepo(mockDB);
 	const voteRepository = createMockVoteRepo(mockDB);
+	const gameStateRepository = createMockGameStateRepo(mockDB);
+	const recipeRepository = new RecipeRepository(mockDB);
 
 	const mysteryBoxService = createMockMysteryBoxService(mysteryBoxRepository, characterRepository);
 
 	const playerService = createMockPlayerService(playerRepository);
 
 	const voteService = createMockVoteService(voteRepository, playerService);
+
+	const recipeService = new RecipeService(recipeRepository, playerService);
 
 	const gameStateService = createMockGameStateService(gameStateRepository, playerService, voteService);
 
@@ -50,13 +57,15 @@ export const createAllMocks = (): {
 		mysteryBoxRepository,
 		characterRepository,
 		playerRepository,
-		gameStateRepository,
 		voteRepository,
+		gameStateRepository,
+		recipeRepository,
 
 		mysteryBoxService,
 		playerService,
 		voteService,
-		gameStateService
+		gameStateService,
+		recipeService
 	};
 }
 
@@ -87,6 +96,9 @@ export const setupMockNamesmith = () => {
 	global.namesmith.voteRepository =
 		createMockVoteRepo(mockDB);
 
+	global.namesmith.recipeRepository =
+		new RecipeRepository(mockDB);
+
 	global.namesmith.mysteryBoxService = createMockMysteryBoxService(
 		global.namesmith.mysteryBoxRepository,
 		global.namesmith.characterRepository,
@@ -98,6 +110,11 @@ export const setupMockNamesmith = () => {
 
 	global.namesmith.voteService = createMockVoteService(
 		global.namesmith.voteRepository,
+		global.namesmith.playerService,
+	);
+
+	global.namesmith.recipeService = new RecipeService(
+		global.namesmith.recipeRepository,
 		global.namesmith.playerService,
 	);
 

@@ -2,6 +2,7 @@ import { InitializationError } from "../../../utilities/error-utils";
 import { GameStateService } from "./game-state.service";
 import { MysteryBoxService } from "./mystery-box.service";
 import { PlayerService } from "./player.service";
+import { RecipeService } from "./recipe.service";
 import { VoteService } from "./vote.service";
 
 /**
@@ -13,7 +14,8 @@ export const getNamesmithServices = (): {
 	mysteryBoxService: MysteryBoxService,
 	playerService: PlayerService,
 	gameStateService: GameStateService,
-	voteService: VoteService
+	voteService: VoteService,
+	recipeService: RecipeService,
 } => {
 	if (!global.namesmith)
 		throw new InitializationError("getNamesmithServices: Namesmith is not set up yet.");
@@ -30,10 +32,14 @@ export const getNamesmithServices = (): {
 	if (!global.namesmith.voteService)
 		throw new InitializationError("getNamesmithServices: VoteService is not set up yet.");
 
+	if (!global.namesmith.recipeService)
+		throw new InitializationError("getNamesmithServices: RecipeService is not set up yet.");
+
 	return {
 		mysteryBoxService: global.namesmith.mysteryBoxService,
 		playerService: global.namesmith.playerService,
 		gameStateService: global.namesmith.gameStateService,
-		voteService: global.namesmith.voteService
+		voteService: global.namesmith.voteService,
+		recipeService: global.namesmith.recipeService
 	}
 }

@@ -1,0 +1,87 @@
+import { makeSure } from "../../../utilities/jest-utils";
+import { DatabaseQuerier } from "../database/database-querier";
+import { addMockPlayer, addMockRecipe } from "../database/mock-database";
+import { setupMockNamesmith } from "../event-listeners/mock-setup";
+import { mockPlayers, mockRecipes } from "../repositories/mock-repositories";
+import { getNamesmithServices } from "../services/get-namesmith-services";
+import { MysteryBoxService } from "../services/mystery-box.service";
+import { PlayerService } from "../services/player.service";
+import { RecipeService } from "../services/recipe.service";
+import { MissingRequiredCharactersError, RecipeNotUnlockedError } from "../utilities/error.utility";
+import { craftCharacter } from "./craft-character.workflow";
+
+describe('craft-character.workflow', () => {
+	let recipeService: RecipeService;
+	let playerService: PlayerService;
+	let db: DatabaseQuerier;
+
+	beforeEach(() => {
+		setupMockNamesmith();
+		const services = getNamesmithServices();
+		recipeService = services.recipeService;
+		playerService = services.playerService;
+		db = playerService.playerRepository.db;
+	});
+
+	afterEach(() => {
+		jest.clearAllMocks();
+	});
+
+	afterAll(() => {
+		jest.restoreAllMocks();
+	});
+
+	describe('craftCharacter()', () => {
+		it('should craft a character using a given recipe and player.', async () => {
+			const player = addMockPlayer(db, {
+				inventory: 'aabbccdd'
+			});
+			const recipe = addMockRecipe(db, {
+				inputCharacters: 'abb',
+				outputCharacters: 'c'
+			});
+
+			const result = await craftCharacter({
+				playerService, recipeService, player, recipe
+			});
+
+			const inventoryAfter = playerService.getInventory(player);
+
+			makeSure(inventoryAfter).is('accddc');
+			makeSure(result).is({
+				newInventory: 'accddc',
+				craftedCharacter: 'c',
+			});
+		});
+
+		it('should throw MissingRequiredCharactersError if the player does not have all the required characters to craft the character.', async () => {
+			const player = addMockPlayer(db, {
+				inventory: 'abc'
+			});
+			const recipe = addMockRecipe(db, {
+				inputCharacters: 'def'
+			});
+
+			await makeSure(craftCharacter({
+				playerService, recipeService, player, recipe
+			})).eventuallyThrows(MissingRequiredCharactersError);
+		});
+
+		it('should throw RecipeNotUnlockedError if the recipe is not unlocked for the player.', async () => {
+			const isUnlockedForPlayer = jest.spyOn(recipeService, 'isUnlockedForPlayer');
+			isUnlockedForPlayer.mockReturnValue(false);
+
+			const player = addMockPlayer(db, {
+				inventory: 'aabbccdd'
+			});
+			const recipe = addMockRecipe(db, {
+				inputCharacters: 'abb',
+				outputCharacters: 'c'
+			});
+
+			await makeSure(craftCharacter({
+				playerService, recipeService, player, recipe
+			})).eventuallyThrows(RecipeNotUnlockedError);
+		});
+	});
+});

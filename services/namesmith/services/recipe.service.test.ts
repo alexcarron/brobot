@@ -49,7 +49,7 @@ describe('RecipeService', () => {
 				inputCharacters: 'abc',
 			});
 
-			const result = recipeService.doesPlayerHaveRequiredCharacters(recipe.id, player.id);
+			const result = recipeService.playerHasInputCharacters(recipe.id, player.id);
 
 			makeSure(result).is(true);
 		});
@@ -62,7 +62,7 @@ describe('RecipeService', () => {
 				inputCharacters: 'abc',
 			});
 
-			const result = recipeService.doesPlayerHaveRequiredCharacters(recipe.id, player.id);
+			const result = recipeService.playerHasInputCharacters(recipe.id, player.id);
 
 			makeSure(result).is(true);
 		});
@@ -75,7 +75,7 @@ describe('RecipeService', () => {
 				inputCharacters: 'abc',
 			});
 
-			const result = recipeService.doesPlayerHaveRequiredCharacters(recipe.id, player.id);
+			const result = recipeService.playerHasInputCharacters(recipe.id, player.id);
 
 			makeSure(result).is(false);
 		});
@@ -88,7 +88,7 @@ describe('RecipeService', () => {
 				inputCharacters: 'abc',
 			});
 
-			const result = recipeService.doesPlayerHaveRequiredCharacters(recipe.id, player.id);
+			const result = recipeService.playerHasInputCharacters(recipe.id, player.id);
 
 			makeSure(result).is(false);
 		});
@@ -101,7 +101,7 @@ describe('RecipeService', () => {
 				inputCharacters: 'abc',
 			});
 
-			const result = recipeService.doesPlayerHaveRequiredCharacters(recipe.id, player.id);
+			const result = recipeService.playerHasInputCharacters(recipe.id, player.id);
 
 			makeSure(result).is(false);
 		});
@@ -114,7 +114,7 @@ describe('RecipeService', () => {
 				inputCharacters: 'abc',
 			});
 
-			const result = recipeService.doesPlayerHaveRequiredCharacters(recipe.id, player.id);
+			const result = recipeService.playerHasInputCharacters(recipe.id, player.id);
 
 			makeSure(result).is(true);
 		});
@@ -134,17 +134,17 @@ describe('RecipeService', () => {
 				'removeCharactersFromInventory'
 			);
 
-			recipeService.takeRequiredCharactersFromPlayer(recipe.id, player.id);
+			recipeService.takeInputCharactersFromPlayer(recipe.id, player.id);
 
 			expect(removeCharactersFromInventory).toHaveBeenCalledWith(player.id, 'abc');
 		});
 
 		it('should throw an error if the player is not found', () => {
-			expect(() => recipeService.takeRequiredCharactersFromPlayer(MOCK_RECIPE.id, "000000000000000000000")).toThrow(PlayerNotFoundError);
+			expect(() => recipeService.takeInputCharactersFromPlayer(MOCK_RECIPE.id, "000000000000000000000")).toThrow(PlayerNotFoundError);
 		});
 
 		it('should throw an error if the recipe is not found', () => {
-			expect(() => recipeService.takeRequiredCharactersFromPlayer(-999, mockPlayers[0].id)).toThrow(RecipeNotFoundError);
+			expect(() => recipeService.takeInputCharactersFromPlayer(-999, mockPlayers[0].id)).toThrow(RecipeNotFoundError);
 		});
 	});
 
@@ -162,17 +162,17 @@ describe('RecipeService', () => {
 				'addCharactersToInventory'
 			);
 
-			recipeService.giveCraftedCharacterToPlayer(recipe.id, player.id);
+			recipeService.giveOutputCharacterToPlayer(recipe.id, player.id);
 
 			expect(addCharactersToInventory).toHaveBeenCalledWith(player.id, 'abc');
 		});
 
 		it('should throw an error if the player is not found', () => {
-			expect(() => recipeService.giveCraftedCharacterToPlayer(MOCK_RECIPE.id, "000000000000000000000")).toThrow(PlayerNotFoundError);
+			expect(() => recipeService.giveOutputCharacterToPlayer(MOCK_RECIPE.id, "000000000000000000000")).toThrow(PlayerNotFoundError);
 		});
 
 		it('should throw an error if the recipe is not found', () => {
-			expect(() => recipeService.giveCraftedCharacterToPlayer(-999, mockPlayers[0].id)).toThrow(RecipeNotFoundError);
+			expect(() => recipeService.giveOutputCharacterToPlayer(-999, mockPlayers[0].id)).toThrow(RecipeNotFoundError);
 		});
 	});
 });

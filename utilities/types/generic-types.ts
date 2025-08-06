@@ -3,6 +3,13 @@ import { Player } from "../../services/namesmith/types/player.types";
 export type Class<ClassType = any> = new (...args: any[]) => ClassType;
 
 /**
+ * Represents a error class that extends the Error class
+ * @example
+ * const errorType: ErrorClass = RangeError;
+ */
+export type ErrorClass<ErrorType extends Error = Error> = Class<ErrorType>;
+
+/**
  * Represents a value that is either true or false if known, otherwise null meaning unknown
  * @example
  * let isPublic: BooleanIfKnown = null;
