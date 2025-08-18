@@ -8,6 +8,7 @@ Contains helper functions and reusable utilities for general functionality acros
 * **`date-time-utils.js`** Functions for time and date formatting, parsing, and calculations
 * **`discord-action-utils.js`** Functions for performing actions in Discord
 * **`discord-fetch-utils.js`** Functions for fetching Discord.js objects
+* **`discord-interface-utils.js`** Functions for creating and sending Discord components and interfaces users interact with
 * **`error-utils.js`** Error classes and functions for better managing and handling errors
 * **`github-json-storage-utils.js`** Functions for managing persistant JSON data storage on GitHub
 * **`jest-utils.js`** Functions for improving jest unit tests and increasing discoverability of jest features

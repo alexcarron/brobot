@@ -1,5 +1,5 @@
 import { RecipeRepository } from "../repositories/recipe.repository";
-import { Recipe, RecipeResolvable } from "../types/recipe.types";
+import { Recipe, RecipeID, RecipeResolvable } from "../types/recipe.types";
 import { RecipeNotFoundError } from "../utilities/error.utility";
 import { isRecipe } from "../utilities/recipe.utility";
 import { PlayerResolvable } from '../types/player.types';
@@ -31,6 +31,39 @@ export class RecipeService {
 			throw new RecipeNotFoundError(recipeResolvable);
 
 		return recipe;
+	}
+
+	/**
+	 * Retrieves all recipes in the game.
+	 * @returns An array of all recipes in the game.
+	 */
+	getRecipes(): Recipe[] {
+		return this.recipeRepository.getRecipes();
+	}
+
+
+	/**
+	 * Returns a string representation of a recipe's input characters followed by
+	 * an arrow (➔) and the recipe's output characters.
+	 *
+	 * @param recipeResolvable - The recipe resolvable for which to get the display name.
+	 * @returns The display name of the recipe.
+	 */
+	getDisplayName(recipeResolvable: RecipeResolvable): string {
+		const recipe = this.resolveRecipe(recipeResolvable);
+		const ARROW = '➔';
+		return `${recipe.inputCharacters} ${ARROW} ${recipe.outputCharacters}`;
+	}
+
+	/**
+	 * Retrieves the ID of a recipe.
+	 *
+	 * @param recipeResolvable - The recipe resolvable for which the ID is being retrieved.
+	 * @returns The ID of the recipe.
+	 */
+	getID(recipeResolvable: RecipeResolvable): RecipeID {
+		const recipe = this.resolveRecipe(recipeResolvable);
+		return recipe.id;
 	}
 
 	/**
@@ -69,11 +102,8 @@ export class RecipeService {
 	): boolean {
 		const recipe = this.resolveRecipe(recipeResolvable);
 		const inputCharacters = recipe.inputCharacters;
-		const player = this.playerService.resolvePlayer(playerResolvable);
 
-		const hasNeededCharacters = areCharactersInString(
-			inputCharacters, player.inventory
-		);
+		const hasNeededCharacters = this.playerService.hasCharacters(playerResolvable, inputCharacters);
 
 		return hasNeededCharacters;
 	}
@@ -83,13 +113,13 @@ export class RecipeService {
 	 * @param recipeResolvable - The recipe to take the input characters for.
 	 * @param playerResolvable - The player from whom the input characters are being taken.
 	 */
-	takeInputCharactersFromPlayer(
+	async takeInputCharactersFromPlayer(
 		recipeResolvable: RecipeResolvable,
 		playerResolvable: PlayerResolvable
-	): void {
+	): Promise<void> {
 		const recipe = this.resolveRecipe(recipeResolvable);
 		const inputCharacters = recipe.inputCharacters;
-		this.playerService.removeCharactersFromInventory(playerResolvable, inputCharacters);
+		await this.playerService.removeCharacters(playerResolvable, inputCharacters);
 	}
 
 	/**
@@ -97,12 +127,12 @@ export class RecipeService {
 	 * @param recipeResolvable - The recipe whose output characters are being given to the player.
 	 * @param playerResolvable - The player who is receiving the output characters.
 	 */
-	giveOutputCharacterToPlayer(
+	async giveOutputCharacterToPlayer(
 		recipeResolvable: RecipeResolvable,
 		playerResolvable: PlayerResolvable
-	): void {
+	): Promise<void> {
 		const recipe = this.resolveRecipe(recipeResolvable);
 		const outputCharacters = recipe.outputCharacters;
-		this.playerService.addCharactersToInventory(playerResolvable, outputCharacters);
+		await this.playerService.giveCharacters(playerResolvable, outputCharacters);
 	}
 }

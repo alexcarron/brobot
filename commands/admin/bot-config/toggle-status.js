@@ -1,6 +1,5 @@
 const { PermissionFlagsBits } = require('discord.js');
 const { deferInteraction } = require('../../../utilities/discord-action-utils');
-const { botStatus } = require('../../../bot-config/bot-status');
 const { SlashCommand } = require('../../../services/command-creation/slash-command');
 
 module.exports = new SlashCommand({
@@ -10,11 +9,11 @@ module.exports = new SlashCommand({
 	execute: async function(interaction) {
 		await deferInteraction(interaction);
 
-		if (botStatus.isSleep) {
-			botStatus.isSleep = false
+		if (global.botStatus.isSleep) {
+			global.botStatus.isSleep = false
 		}
 		else {
-			botStatus.isSleep = true
+			global.botStatus.isSleep = true
 		}
 
 		interaction.editReply(`Done.`)

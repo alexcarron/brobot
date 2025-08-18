@@ -1,6 +1,6 @@
 const cron = require("cron");
 const { SlashCommand } = require('../../../services/command-creation/slash-command');
-const ids = require("../../../bot-config/discord-ids.js")
+const { ids } = require("../../../bot-config/discord-ids")
 const { ButtonBuilder, ActionRowBuilder, ModalBuilder, ButtonStyle, TextInputBuilder, TextInputStyle, StringSelectMenuOptionBuilder, StringSelectMenuBuilder, TextChannel, DMChannel, } = require('discord.js');
 const { toTitleCase } = require("../../../utilities/string-manipulation-utils");
 const { toUnixTimestamp } = require("../../../utilities/date-time-utils.js");

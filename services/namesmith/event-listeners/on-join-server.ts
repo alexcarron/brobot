@@ -1,5 +1,5 @@
 import { GuildMember } from "discord.js";
-import ids from "../../../bot-config/discord-ids";
+import { ids } from "../../../bot-config/discord-ids";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 
 /**
@@ -8,7 +8,7 @@ import { getNamesmithServices } from "../services/get-namesmith-services";
  * @returns True if the guild member is in the Namesmith server, false otherwise.
  */
 export const isMemberInNamesmith = function(guildMember: GuildMember): boolean {
-	return guildMember.guild.id === ids.servers.namesmith;
+	return guildMember.guild.id === ids.servers.NAMESMITH;
 }
 
 

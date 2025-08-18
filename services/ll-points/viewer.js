@@ -1,4 +1,4 @@
-const ids = require("../../bot-config/discord-ids.js");
+const { ids } = require("../../bot-config/discord-ids");
 const { fetchGuild, fetchGuildMember, fetchUser, fetchRole } = require("../../utilities/discord-fetch-utils.js");
 const { addRoleToMember, removeRoleFromMember } = require("../../utilities/discord-action-utils.js");
 const { LLPointTier, LLPointThreshold, LLPointReward, LLPointAccomplishment } = require("./ll-point-enums.js");

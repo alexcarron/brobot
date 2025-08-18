@@ -4,12 +4,11 @@ import { SlashCommand } from '../services/command-creation/slash-command';
 import path from 'path';
 import fs from 'fs';
 import { logInfo, logSuccess, logWarning, logError } from '../utilities/logging-utils';
-import ids from './discord-ids.js';
+import { ids } from './discord-ids';
+import { DISCORD_TOKEN } from './token.js';
 
 const COMMANDS_DIR_NAME = 'commands';
 const COMMANDS_DIR_PATH = path.join(__dirname, '..', COMMANDS_DIR_NAME);
-import { botStatus } from './bot-status.js';
-import { DISCORD_TOKEN } from './token.js';
 
 /**
  * Recursively finds all .js files in the given directory and all its subdirectories.
@@ -115,7 +114,7 @@ const storeCommandsInMemory = (client, commands) => {
  * @returns {Array<SlashCommand>} The filtered array of slash commands that are not restricted to any particular server.
  */
 const getGlobalCommands = (commands) => {
-	return commands.filter(command => !command.required_servers);
+	return commands.filter(command => command.isGlobalCommand());
 }
 
 /**
@@ -194,7 +193,7 @@ const deployCommands = async (
 		Routes.applicationCommands(ids.client),
 		{ body: globalCommands.map(command => command.data.toJSON()) },
 	);
-	logSuccess(`Deployed ${globalCommands.length} public slash commands`);
+	logSuccess(`Deployed ${globalCommands.length} global slash commands`);
 
 	logSuccess(`Successfully deployed all slash commands.`);
 
@@ -240,8 +239,8 @@ export const setupAndDeployCommands = async ({client, skipGlobalCommands = false
 		globalCommands = getGlobalCommands(commands);
 
 	await deployCommands({
+		globalCommands,
 		guildIDtoGuildCommands,
-		globalCommands
 	});
 }
 

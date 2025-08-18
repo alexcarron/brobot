@@ -1,4 +1,3 @@
-const { botStatus } = require('./bot-status.js');
 const RapidDiscordMafia = require('../services/rapid-discord-mafia/rapid-discord-mafia.js');
 const { LLPointManager } = require('../services/ll-points/ll-point-manager.js');
 const { logSuccess, logInfo } = require('../utilities/logging-utils.js');
@@ -21,7 +20,7 @@ const setupAnomolyService = require('../services/sand-season-3/anomoly/on-setup'
  * - TextToSpeechHandler
  */
 const onClientReady = async () => {
-	botStatus.isOn = true;
+	global.botStatus.isOn = true;
 
 	setupNamesmith();
 	setupAnomolyService();

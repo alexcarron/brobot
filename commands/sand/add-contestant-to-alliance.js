@@ -1,5 +1,5 @@
 const { PermissionFlagsBits } = require("discord.js");
-const ids = require("../../bot-config/discord-ids");
+const { ids } = require("../../bot-config/discord-ids");
 const { Parameter, ParameterType } = require("../../services/command-creation/parameter");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { deferInteraction, addPermissionToChannel, editReplyToInteraction, memberHasRole } = require("../../utilities/discord-action-utils");

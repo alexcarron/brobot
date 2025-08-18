@@ -23,13 +23,14 @@ jest.mock("../../../utilities/discord-action-utils", () => ({
 	addButtonToMessageContents: jest.fn(),
 }));
 
+import { makeSure } from "../../../utilities/jest-utils";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer } from "../database/mock-database";
-import { mockPlayers } from "../repositories/mock-repositories";
+import { createMockPlayerObject, mockPlayers } from "../repositories/mock-repositories";
 import { PlayerRepository } from "../repositories/player.repository";
 import { changeDiscordNameOfPlayer, sendToPublishedNamesChannel, sendToNamesToVoteOnChannel, resetMemberToNewPlayer } from "../utilities/discord-action.utility";
 import { fetchNamesmithGuildMembers } from "../utilities/discord-fetch.utility";
-import { PlayerNotFoundError } from "../utilities/error.utility";
+import { PlayerNotFoundError, NotAPlayerError } from "../utilities/error.utility";
 import { createMockPlayerService } from "./mock-services";
 import { PlayerService } from "./player.service";
 
@@ -77,7 +78,7 @@ describe('PlayerService', () => {
 		});
 	});
 
-	describe('resolvePlayerID()', () => {
+	describe('resolveID()', () => {
 		it('should resolve a player object to a player ID', () => {
 			const player = playerService.playerRepository.getPlayers()[0];
 			const resolvedPlayerID = playerService.resolveID(player);
@@ -90,6 +91,25 @@ describe('PlayerService', () => {
 			const resolvedPlayerID = playerService.resolveID(playerID);
 			expect(resolvedPlayerID).toEqual(playerID);
 		});
+	});
+
+	describe('isPlayer()', () => {
+		it('should return false if the player ID is not found', () => {
+			makeSure(playerService.isPlayer("00000000000000000")).isFalse();
+		});
+
+		it('should return true if the player ID is found', () => {
+			makeSure(playerService.isPlayer(mockPlayers[0].id)).isTrue();
+		});
+
+		it('should return false if the player object\'s ID is not found', () => {
+			const fakePlayer = createMockPlayerObject({ id: "invalid-id" });
+			makeSure(playerService.isPlayer(fakePlayer)).isFalse();
+		});
+
+		it('should return true if the player object\'s ID is found', () => {
+			makeSure(playerService.isPlayer(mockPlayers[0])).isTrue();
+		})
 	});
 
 	describe('getInventory()', () => {
@@ -144,9 +164,9 @@ describe('PlayerService', () => {
 		});
 	});
 
-	describe('addCharacterToName()', () => {
+	describe('giveCharacter()', () => {
 		it('should add a character to the current name of a player', async () => {
-			await playerService.addCharacterToName(mockPlayers[0].id, "a");
+			await playerService.giveCharacter(mockPlayers[0].id, "a");
 			const currentName = playerService.getCurrentName(mockPlayers[0].id);
 			const inventory = playerService.getInventory(mockPlayers[0].id);
 			expect(currentName).toEqual(mockPlayers[0].currentName + "a");
@@ -158,13 +178,133 @@ describe('PlayerService', () => {
 		});
 
 		it('should throw an error if the player is not found', async () => {
-			await expect(playerService.addCharacterToName("invalid-id", "a")).rejects.toThrow();
+			await expect(playerService.giveCharacter("invalid-id", "a")).rejects.toThrow();
 		});
 
 		it('should throw an error if the character is too long', async () => {
-			await expect(playerService.addCharacterToName(mockPlayers[1].id, "aa")).rejects.toThrow();
+			await expect(playerService.giveCharacter(mockPlayers[1].id, "aa")).rejects.toThrow();
 		});
 	});
+
+	describe('giveCharacters()', () => {
+		it('should add characters to the current name of a player', async () => {
+			const player = addMockPlayer(db, {
+				inventory: "abdegHJlmo",
+				currentName: "Joe",
+			});
+
+			await playerService.giveCharacters(player.id, " Smith");
+
+			const currentName = playerService.getCurrentName(player.id);
+			const inventory = playerService.getInventory(player.id);
+
+			expect(currentName).toEqual(player.currentName + " Smith");
+			expect(inventory).toEqual(player.inventory + " Smith");
+			expect(changeDiscordNameOfPlayer).toHaveBeenCalledWith(
+				player.id,
+				player.currentName + " Smith"
+			);
+		});
+
+		it('should throw an error if the player is not found', async () => {
+			await expect(playerService.giveCharacters("000000000000000", "a")).rejects.toThrow();
+		});
+	})
+
+	describe('hasCharacters()', () => {
+		it('should return true if the player has all the characters in their inventory', () => {
+			const result = playerService.hasCharacters(
+				mockPlayers[0].id, mockPlayers[0].inventory
+			);
+			makeSure(result).isTrue();
+		});
+
+		it('should return false if the player does not have all the characters in their inventory', () => {
+			const result = playerService.hasCharacters(
+				mockPlayers[0].id, mockPlayers[0].inventory + "a"
+			);
+			makeSure(result).isFalse();
+		});
+
+		it('should return true if their inventory has some characters but not all', () => {
+			const player = addMockPlayer(db, {
+				inventory: "abcdefgh",
+			})
+			const result = playerService.hasCharacters(
+				player.id, "afh"
+			);
+			makeSure(result).isTrue();
+		});
+
+		it('should return false if at least one character is missing', () => {
+			const player = addMockPlayer(db, {
+				inventory: "abcdefgh",
+			})
+			const result = playerService.hasCharacters(
+				player.id, "efghi"
+			);
+			makeSure(result).isFalse();
+		});
+
+		it('should throw an error if the player is not found', () => {
+			expect(() => playerService.hasCharacters("0000000000", "a")).toThrow();
+		})
+	});
+
+	describe('removeCharacters()', () => {
+		it('should remove characters from the inventory and current name of a player', async () => {
+			const player = addMockPlayer(db, {
+				inventory: "abcdefgh",
+				currentName: "abcdefgh",
+			})
+			await playerService.removeCharacters(player.id, "a");
+			const currentName = playerService.getCurrentName(player.id);
+			const inventory = playerService.getInventory(player.id);
+
+			makeSure(currentName).is('bcdefgh');
+			makeSure(inventory).is('bcdefgh');
+		});
+
+		it('should remove characters from the inventory but not current name of a player if the character is not in the current name', async () => {
+			const player = addMockPlayer(db, {
+				inventory: "abcdefgh",
+				currentName: "bcdefg",
+			})
+			await playerService.removeCharacters(player.id, "a");
+			const currentName = playerService.getCurrentName(player.id);
+			const inventory = playerService.getInventory(player.id);
+
+			makeSure(inventory).is('bcdefgh');
+			makeSure(currentName).is('bcdefg');
+		});
+
+		it('should throw an error if the player is not found', async () => {
+			await makeSure(playerService.removeCharacters("00000000", "a")).eventuallyThrowsAnError();
+		});
+
+		it('should throw an error if the characters are not in their inventory', async () => {
+			const player = addMockPlayer(db, {
+				inventory: "abcdefgh",
+			});
+
+			await makeSure(playerService.removeCharacters(player.id, "z")).eventuallyThrowsAnError();
+		});
+
+		it('should remove multiple characters', async () => {
+			const player = addMockPlayer(db, {
+				inventory: "abcdefgh",
+				currentName: "abcgh",
+			});
+
+			await playerService.removeCharacters(player.id, "adg");
+
+			const currentName = playerService.getCurrentName(player.id);
+			const inventory = playerService.getInventory(player.id);
+
+			makeSure(inventory).is('bcefh');
+			makeSure(currentName).is('bch');
+		})
+	})
 
 	describe(".getPublishedName()", () => {
 		it("should return the published name of a player", () => {

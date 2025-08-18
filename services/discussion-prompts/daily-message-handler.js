@@ -1,10 +1,10 @@
 const { Message, TextChannel } = require("discord.js");
-const ids = require("../../bot-config/discord-ids.js");
 const cron = require("cron"); // Used to have scheduled functions execute
 const { getRandomElement } = require("../../utilities/data-structure-utils.js");
 const { fetchGuild, fetchTextChannel } = require("../../utilities/discord-fetch-utils.js");
 const { saveObjectToJsonInGitHub } = require("../../utilities/github-json-storage-utils.js");
 const { logWarning, logInfo } = require("../../utilities/logging-utils.js");
+const { ids } = require("../../bot-config/discord-ids");
 
 /**
  * Handles the sending of daily messages
@@ -14,9 +14,11 @@ class DailyMessageHandler {
 	 * A map of channels to the list of possible messages to send to them
 	 * @type {{[channelName: string]: string[]}}
 	 */
-	channelsToMessages;
+channelsToMessages
 
-	static GUILD_ID = ids.ll_game_shows.server_id;
+	static get GUILD_ID() {
+		return ids.servers.LL_GAME_SHOW_CENTER;
+	}
 	static HOUR = "12";
 	static MINUTE = "00";
 
@@ -72,7 +74,7 @@ class DailyMessageHandler {
 		const channelId = ids.ll_game_shows.channels[channelName];
 
 		if (channelId === undefined)
-			throw new Error("Channel identifier not found: Property, channelName, nount found on object './bot-config/discord-ids.js/ll_game_shows/channels");
+			throw new Error("Channel identifier not found: Property, channelName, nount found on object './bot-config/discord-ids/ll_game_shows/channels");
 
 		const guild = await fetchGuild(DailyMessageHandler.GUILD_ID);
 		const channel = await fetchTextChannel(guild, channelId);

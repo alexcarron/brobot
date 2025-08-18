@@ -3,7 +3,7 @@ const { SlashCommand } = require("../../services/command-creation/slash-command"
 const { Parameter } = require("../../services/command-creation/parameter");
 const { GameManager } = require("../../services/rapid-discord-mafia/game-manager.js");
 
-const ids = require(`../../bot-config/discord-ids.js`);
+const { ids } = require(`../../bot-config/discord-ids`);
 const { TrialVote } = require("../../services/rapid-discord-mafia/vote-manager.js");
 const { GameState } = require("../../services/rapid-discord-mafia/game-state-manager.js");
 const { deferInteraction } = require("../../utilities/discord-action-utils.js");

@@ -1,3 +1,4 @@
+import { getCharacterDifferencesInStrings } from "./data-structure-utils";
 import { InvalidArgumentError } from "./error-utils";
 import { getCharacterCounts } from "./string-checks-utils";
 
@@ -344,13 +345,6 @@ export const removeCharactersAsGivenFromEnd = (
 
 	for (let index = string.length - 1; index >= 0; index--) {
 		const character = string.charAt(index);
-		console.log({
-			characters,
-			string,
-			index,
-			character,
-			characterToCounts: Object.fromEntries(characterToCounts)
-		});
 
 		if (characterToCounts.has(character)) {
 			string = removeCharacterAt(string, index);
@@ -367,8 +361,33 @@ export const removeCharactersAsGivenFromEnd = (
 
 	if (characterToCounts.size > 0)
 		throw new InvalidArgumentError(
-			`charactersToRemove contains characters that are not in string: ${Array.from(characterToCounts.keys()).join(', ')}.`
+			`charactersToRemove argument, ${charactersToRemove}, contains the following characters that are not in the given string, ${string}: ${Array.from(characterToCounts.keys()).join(', ')}.`
 		);
 
 	return string;
+}
+
+/**
+ * Removes characters from a given string that are not present in a specified set of available characters.
+ * @param {string} string - The string to remove characters from.
+ * @param {string} availableCharacters - The set of available characters.
+ * @returns {string} The string with missing characters removed.
+ *
+ * @example
+ * removeMissingCharacters('hello', 'elope'); // 'elo'
+ */
+export const removeMissingCharacters = (
+	string: string, availableCharacters: string
+): string => {
+	const { missingCharacters } = getCharacterDifferencesInStrings(string, availableCharacters);
+	return removeCharactersAsGivenFromEnd(string, missingCharacters);
+}
+
+/**
+ * Escapes Discord markdown characters in a string.
+ * @param text - The string to escape.
+ * @returns The string with Discord markdown characters escaped.
+ */
+export const escapeDiscordMarkdown = (text: string): string => {
+	return text.replace(/([_*~`>|()[\]{}#+\-=.!\\])/g, "\\$1");
 }

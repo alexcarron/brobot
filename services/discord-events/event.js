@@ -1,4 +1,4 @@
-const ids = require("../../bot-config/discord-ids.js");
+const { ids } = require("../../bot-config/discord-ids");
 const { GuildScheduledEventManager, Message, GuildScheduledEventPrivacyLevel, GuildScheduledEventEntityType } = require("discord.js");
 const cron = require("cron");
 const { fetchGuild, fetchUser, fetchTextChannel } = require("../../utilities/discord-fetch-utils.js");

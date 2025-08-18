@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { insertCharactersToDB, insertMysteryBoxesToDB } from "../db-inserters";
+import { insertCharactersToDB, insertMysteryBoxesToDB, insertRecipesToDB } from "../db-inserters";
 import { DatabaseQuerier } from '../database-querier';
 
 const currDir = __dirname;
@@ -10,6 +10,8 @@ const characters = JSON.parse(fs.readFileSync(charactersPath, 'utf8'));
 const mysteryBoxesPath = path.join(currDir, 'mystery-boxes.json');
 const mysteryBoxes = JSON.parse(fs.readFileSync(mysteryBoxesPath, 'utf8'));
 
+const recipesPath = path.join(currDir, 'recipes.json');
+const recipes = JSON.parse(fs.readFileSync(recipesPath, 'utf8'));
 
 /**
  * Adds the initial data to the database.
@@ -21,4 +23,5 @@ export const addInitialDataToDB = (db: DatabaseQuerier) => {
 
 	insertCharactersToDB(db, characters);
 	insertMysteryBoxesToDB(db, mysteryBoxes);
+	insertRecipesToDB(db, recipes);
 }

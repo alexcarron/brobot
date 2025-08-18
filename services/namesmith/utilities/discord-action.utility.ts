@@ -7,18 +7,19 @@ import {
 	openChannel,
 	removeAllRolesFromMember
 } from "../../../utilities/discord-action-utils";
-import ids from "../../../bot-config/discord-ids";
+import { ids } from "../../../bot-config/discord-ids";
 import {
 	fetchPublishedNamesChannel,
 	fetchNamesmithGuildMember,
 	fetchNamesToVoteOnChannel,
-	fetchTheWinnerChannel
+	fetchTheWinnerChannel,
+	fetchNamesmithChannel
 } from "./discord-fetch.utility";
 import { InvalidArgumentError } from "../../../utilities/error-utils";
-import { GuildMember } from "discord.js";
+import { GuildMember, TextChannel } from "discord.js";
 
 const MAX_NAME_LENGTH = 32;
-const NO_NAME = " ";
+const NO_NAME = "˙";
 
 
 /**
@@ -46,6 +47,14 @@ export const changeDiscordNameOfPlayer = async (playerID: string, newName: strin
 	}
 
 	await setNicknameOfMember(guildMember, newName);
+}
+
+export const sendToChannel = async (
+	channelId: string,
+	message: Parameters<TextChannel["send"]>[0]
+): Promise<void> => {
+	const channel = await fetchNamesmithChannel(channelId);
+	await channel.send(message);
 }
 
 /**

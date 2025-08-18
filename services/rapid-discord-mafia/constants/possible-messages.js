@@ -1,4 +1,4 @@
-const ids = require("../../../bot-config/discord-ids.js");
+const { ids } = require("../../../bot-config/discord-ids");
 const { createListFromWords } = require("../../../utilities/string-manipulation-utils");
 const { createNowUnixTimestamp } = require("../../../utilities/date-time-utils.js");
 const { RoleName } = require("../role.js");

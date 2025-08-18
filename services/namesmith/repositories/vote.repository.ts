@@ -108,15 +108,6 @@ export class VoteRepository {
 		if (!playerVotedForID)
 			throw new InvalidArgumentError("changeVote: Missing playerVotedForID");
 
-		console.log({
-			players: this.db.getRows(`SELECT * FROM player`),
-			votesFromVoter: this.db.getRows(
-				`SELECT * FROM vote WHERE voterID = @voterID`,
-				{ voterID },
-			),
-			allVotes: this.db.getRows(`SELECT * FROM vote`),
-		});
-
 		const query = `
 			UPDATE vote
 			SET playerVotedForID = @playerVotedForID

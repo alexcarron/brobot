@@ -2,7 +2,7 @@ const { SlashCommand } = require("../../services/command-creation/slash-command"
 const { GameManager } = require("../../services/rapid-discord-mafia/game-manager");
 const
 	{ PermissionFlagsBits } = require('discord.js'),
-	ids = require(`../../bot-config/discord-ids.js`);
+	{ ids } = require(`../../bot-config/discord-ids`);
 const { deferInteraction } = require("../../utilities/discord-action-utils.js");
 const { GameState } = require("../../services/rapid-discord-mafia/game-state-manager.js");
 

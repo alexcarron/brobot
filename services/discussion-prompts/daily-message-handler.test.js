@@ -3,17 +3,19 @@ jest.mock('../../utilities/discord-fetch-utils', () => ({
 	fetchGuild: jest.fn(() => Promise.resolve({ id: 'mockGuildId' })),
 	saveObjectToJsonInGitHub: jest.fn(() => Promise.resolve('Saved')),
 }))
-jest.mock('../../bot-config/discord-ids.js', () => ({
-  ll_game_shows: {
-    server_id: 'mockServerId',
-    channels: {
-      general: 'mockGeneralChannelId',
-      random: 'mockRandomChannelId',
-      empty: 'mockEmptyChannelId',
+jest.mock('../../bot-config/discord-ids', () => ({
+  ids: {
+    ll_game_shows: {
+      server_id: 'mockServerId',
+      channels: {
+        general: 'mockGeneralChannelId',
+        random: 'mockRandomChannelId',
+        empty: 'mockEmptyChannelId',
+      },
+      roles: {
+        daily_questions: 'mockDailyQuestionsRoleId',
+      },
     },
-		roles: {
-			daily_questions: 'mockDailyQuestionsRoleId',
-		},
   },
 }));
 

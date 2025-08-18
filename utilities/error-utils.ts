@@ -77,6 +77,7 @@ export class CustomError extends Error {
 		Object.setPrototypeOf(this, new.target.prototype);
 	}
 
+
 	toJSON() {
 		return {
 			name: this.name,
@@ -229,6 +230,7 @@ abstract class BaseAttempt<ReturnType> {
     errorType: new (...args: any[]) => any;
     handleError: (error: any) => void | any | Promise<any>;
   }[] = [];
+	private successHandler?: (returnValue: ReturnType) => any | Promise<any>;
   protected isExecuted = false;
   protected returnValue?: ReturnType;
 
@@ -289,6 +291,20 @@ abstract class BaseAttempt<ReturnType> {
 		return this.onError(errorType, () => {});
 	}
 
+	/**
+	 * Attaches a success handler to the current attempt chain.
+	 * This handler will be executed if the function does not throw an error.
+	 *
+	 * @param successHandler - A function that handles the return value of the function. It receives the return value as an argument.
+	 * @returns The current instance of the attempt chain to allow for method chaining.
+	 */
+	onSuccess(
+		successHandler: (returnValue: ReturnType) => any | Promise<any>
+	): this {
+		this.successHandler = successHandler;
+		return this;
+	}
+
   protected dispatchError(error: unknown, awaitErrorHandlers: true): Promise<void>;
   protected dispatchError(error: unknown, awaitErrorHandlers?: false): void;
 
@@ -335,6 +351,17 @@ abstract class BaseAttempt<ReturnType> {
 			throw error;
 		}
   }
+
+  /**
+   * Dispatches a successful return value to any registered success handler.
+   *
+   * @param returnedValue - The value returned by the function.
+   */
+	protected dispatchSuccess(returnedValue: ReturnType): void {
+		if (this.successHandler) {
+			this.successHandler(returnedValue);
+		}
+	}
 }
 
 /**
@@ -362,6 +389,7 @@ class Attempt<ReturnType> extends BaseAttempt<ReturnType> {
 
     try {
 			this.returnValue = this.func();
+			this.dispatchSuccess(this.returnValue);
     }
 		catch (error: any) {
 			this.dispatchError(error, false);
@@ -402,6 +430,7 @@ class AsyncAttempt<ReturnType> extends BaseAttempt<ReturnType> {
 
     try {
 			this.returnValue = await this.func();
+			this.dispatchSuccess(this.returnValue);
     }
 		catch (error: any) {
 			await this.dispatchError(error, true);

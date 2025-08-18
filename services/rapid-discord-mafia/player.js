@@ -1,5 +1,5 @@
 const RoleManager = require("./role-manager.js");
-const ids = require("../../bot-config/discord-ids.js");
+const { ids } = require("../../bot-config/discord-ids");
 const { Role, Faction, RoleName } = require("./role.js");
 const Logger = require("./logger.js");
 const { DiscordService, RDMDiscordRole } = require("./discord-service.js");
@@ -7,8 +7,7 @@ const { fetchRDMGuild, fetchRoleByName, fetchGuildMember } = require("../../util
 const { addRoleToMember, removeRoleFromMember } = require("../../utilities/discord-action-utils.js");
 const { ArgumentSubtype } = require("./arg.js");
 const { Announcement, Feedback } = require("./constants/possible-messages.js");
-
-const rdm_ids = require("../../bot-config/discord-ids.js").rapid_discord_mafia;
+const RDM_IDS = ids.rapid_discord_mafia;
 
 /**
  * Represents a player in the game
@@ -223,7 +222,7 @@ class RDMPlayer {
 		// Create a private channel for the player
 		const player_channel = await this.discord_service.createPrivateChannel({
 			name: channel_name,
-			category_id: rdm_ids.category.player_action,
+			category_id: RDM_IDS.category.player_action,
 			guild_member_id: this.id
 		});
 

@@ -153,6 +153,24 @@ export class SlashCommand {
 	}
 
 	/**
+	 * Determines if the command is a global command that can be run in any server.
+	 *
+	 * @return Whether the command is a global command.
+	 */
+	isGlobalCommand(): boolean {
+		return this.required_servers.length <= 0;
+	}
+
+	/**
+	 * Determines if the command is a server-based command that can only be run in specific servers.
+	 *
+	 * @return Whether the command is a server-based command.
+	 */
+	isServerBasedCommand(): boolean {
+		return !this.isGlobalCommand();
+	}
+
+	/**
 	 * Finds a parameter by its name from the command's parameters.
 	 * @param {string} name - The name of the parameter to search for.
 	 * @returns {Parameter | undefined} The found parameter, or undefined if not found.

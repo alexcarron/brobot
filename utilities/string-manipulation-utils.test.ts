@@ -11,8 +11,10 @@ import {
   incrementEndNumber,
 	removeCharactersAsGivenFromEnd,
 	removeCharacterAt,
+	removeMissingCharacters,
 } from "./string-manipulation-utils";
 import { createNowUnixTimestamp } from "./date-time-utils";
+import { makeSure } from "./jest-utils";
 
 describe('string-manipulation-utils', () => {
 	describe('toTitleCase()', () => {
@@ -526,6 +528,40 @@ describe('string-manipulation-utils', () => {
 
 		it('should throw an error if the given set of characters is more characters than the string', () => {
 			expect(() => removeCharactersAsGivenFromEnd('AABBBAA', 'AAAAA')).toThrow();
+		});
+	});
+
+	describe('removeMissingCharacters()', () => {
+		it('should remove characters not in given string', () => {
+			makeSure(removeMissingCharacters('abcd', 'ab')).is('ab');
+		});
+
+		it('should remove all characters if given string is empty', () => {
+			makeSure(removeMissingCharacters('abcd', '')).is('');
+		});
+
+		it('should remove no characters if given string is the same as the string', () => {
+			makeSure(removeMissingCharacters('abcd', 'abcd')).is('abcd');
+		});
+
+		it('should remove no characters if given string has more characters than the string', () => {
+			makeSure(removeMissingCharacters('abcd', 'abcdefghijklmnop')).is('abcd');
+		});
+
+		it('should remove only some characters if given string has some but not all characters of the string', () => {
+			makeSure(removeMissingCharacters('aaaaa', 'aa')).is('aa');
+		});
+
+		it('should handle extra characters and missing characters at the same time', () => {
+			makeSure(removeMissingCharacters('Jenna', 'Jeam')).is('Jea');
+		});
+
+		it('should return an empty string if the first given string is empty', () => {
+			makeSure(removeMissingCharacters('', 'abcdefghijklmnop')).is('');
+		});
+
+		it('should handle unique unicode characters', () => {
+			makeSure(removeMissingCharacters(' ❌•╹≠∪', '❌λ ∪∩')).is(' ❌∪');
 		});
 	});
 });

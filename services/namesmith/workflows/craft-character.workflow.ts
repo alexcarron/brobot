@@ -2,7 +2,7 @@ import { PlayerService } from "../services/player.service";
 import { RecipeService } from "../services/recipe.service";
 import { PlayerResolvable } from "../types/player.types";
 import { RecipeResolvable } from "../types/recipe.types";
-import { MissingRequiredCharactersError, RecipeNotUnlockedError } from "../utilities/error.utility";
+import { MissingRequiredCharactersError, NonPlayerCraftedError, RecipeNotUnlockedError } from "../utilities/error.utility";
 
 /**
  * Crafts a character using a given recipe and player.
@@ -18,6 +18,10 @@ export const craftCharacter = async (
 		recipe: RecipeResolvable;
 	}
 ) => {
+	if (!playerService.isPlayer(player)) {
+		throw new NonPlayerCraftedError(playerService.resolveID(player));
+	}
+
 	const hasRequiredCharacters = recipeService.playerHasInputCharacters(recipe, player);
 	if (!hasRequiredCharacters) {
 		throw new MissingRequiredCharactersError(
@@ -34,11 +38,18 @@ export const craftCharacter = async (
 		);
 	}
 
-	recipeService.takeInputCharactersFromPlayer(recipe, player);
-	recipeService.giveOutputCharacterToPlayer(recipe, player);
+	await recipeService.takeInputCharactersFromPlayer(recipe, player);
+	await recipeService.giveOutputCharacterToPlayer(recipe, player);
+
+	const newInventory = playerService.getInventory(player);
+	const craftedCharacter = recipeService.getOutputCharacters(recipe);
+	const recipeUsed = recipeService.resolveRecipe(recipe);
+	const playerCrafting = playerService.resolvePlayer(player);
 
 	return {
-		newInventory: playerService.getInventory(player),
-		craftedCharacter: recipeService.getOutputCharacters(recipe),
+		newInventory,
+		craftedCharacter,
+		recipeUsed,
+		playerCrafting,
 	};
 };

@@ -1,5 +1,5 @@
 const { CronJob } = require("cron");
-const ids = require("../../../bot-config/discord-ids");
+const { ids } = require("../../../bot-config/discord-ids");
 const { fetchGuild, fetchTextChannel } = require("../../../utilities/discord-fetch-utils");
 const { logError, logInfo } = require("../../../utilities/logging-utils");
 const path = require("path");

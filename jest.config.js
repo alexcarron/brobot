@@ -1,11 +1,9 @@
 module.exports = {
 	preset: 'ts-jest',
 	testEnvironment: 'node',
-	transform: {
-		// Transform .ts/.tsx files with ts-jest
-    '^.+\\.tsx?$': 'ts-jest',
+  transform: {
+    '^.+\\.(t|j)s$': 'ts-jest', // <-- include both .ts and .js files
   },
-
   testRunner: 'jest-jasmine2',
   setupFilesAfterEnv: ['why-so-loud-jest'],
   verbose: false,

@@ -20,7 +20,7 @@
     "skipLibCheck": true, // Skip type checking of library files
 		"resolveJsonModule": true // Allow importing .json files
   },
-  "include": ["**/*.js", "**/*.ts"],
+  "include": ["**/*.js", "**/*.ts", "event-listeners/on-option-selectedTjs"],
   "exclude": [
 		"node_modules",
 		"**/*.test.js",

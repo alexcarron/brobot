@@ -1,4 +1,4 @@
-const onSlashCommandAutocomplete = function(interaction) {
+const onSlashCommandAutocomplete = async function(interaction) {
 	const command = interaction.client.commands.get(interaction.commandName);
 
 	if (!command) {
@@ -7,7 +7,7 @@ const onSlashCommandAutocomplete = function(interaction) {
 	}
 
 	try {
-		command.autocomplete(interaction);
+		await command.autocomplete(interaction);
 	} catch (error) {
 		console.error(error);
 	}

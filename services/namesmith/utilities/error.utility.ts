@@ -1,8 +1,10 @@
+import { User } from 'discord.js';
 import { getCharacterDifferencesInStrings } from '../../../utilities/data-structure-utils';
 import { CustomError } from '../../../utilities/error-utils';
-import { createListFromWords } from '../../../utilities/string-manipulation-utils';
+import { createListFromWords, escapeDiscordMarkdown } from '../../../utilities/string-manipulation-utils';
 import { Player } from '../types/player.types';
 import { Recipe } from '../types/recipe.types';
+import { escape } from 'querystring';
 
 /**
  * Base class for all errors thrown by the namesmith service
@@ -164,6 +166,9 @@ export class GameStateInitializationError extends StateInitializationError {
  * Error thrown when a user action is blocked, prevented, or used incorrectly and must be handled by the interface.
  */
 export class UserActionError extends NamesmithError {
+	override userFriendlyMessage: string;
+	override relevantData: Record<string, unknown>;
+
 	constructor({
 		message,
 		userFriendlyMessage,
@@ -182,6 +187,9 @@ export class UserActionError extends NamesmithError {
 			errorCausedBy,
 			relevantData
 		});
+
+		this.userFriendlyMessage = userFriendlyMessage;
+		this.relevantData = relevantData;
 	}
 }
 
@@ -193,10 +201,13 @@ export class MissingRequiredCharactersError extends UserActionError {
 		const { missingCharacters } =
 			getCharacterDifferencesInStrings(recipe.inputCharacters, player.inventory);
 
+		const missingCharactersDisplay =
+			escapeDiscordMarkdown(missingCharacters.join(''))
+
 		super({
 			message: `Player is missing required characters for recipe`,
 			userFriendlyMessage:
-				`You are missing ${missingCharacters.length} required characters for this recipe: ${createListFromWords(missingCharacters)}.`,
+				`You are missing ${missingCharacters.length} required characters for this recipe: ${missingCharactersDisplay}`,
 			relevantData: {
 				player,
 				recipe,
@@ -216,5 +227,40 @@ export class RecipeNotUnlockedError extends UserActionError {
 				recipe,
 			}
 		})
+	}
+}
+
+/**
+ * Error thrown when a non-player user uses an action that requires them to be a player
+ */
+export class NotAPlayerError extends UserActionError {
+	constructor(userID: string, userActionAttempting?: string) {
+		const message =
+			userActionAttempting
+				? `Non-player user, ${userID}, attempted to ${userActionAttempting} which requires them to be a player`
+				: `Non-player user, ${userID}, attempted to use an action which requires them to be a player`;
+
+		const userFriendlyMessage =
+			userActionAttempting
+				? `You must be a player to ${userActionAttempting}.`
+				: `You must be a player to use this.`
+
+		super({
+			message,
+			userFriendlyMessage,
+			relevantData: {
+				userID,
+				userActionAttempting,
+			}
+		})
+	}
+}
+
+/**
+ * Error thrown when a non-player user attempts to craft a character
+ */
+export class NonPlayerCraftedError extends NotAPlayerError {
+	constructor(userID: string) {
+		super(userID, "craft a character");
 	}
 }

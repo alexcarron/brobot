@@ -25,6 +25,10 @@ jest.mock('../utilities/discord-fetch.utility', () => ({
 	),
 }));
 
+jest.mock('../interfaces/recipe-select-menu', () => ({
+	createRecipeSelectMenu: jest.fn(),
+}));
+
 // Mock CronJob
 jest.mock('cron', () => ({
 	CronJob: jest.fn(() => ({

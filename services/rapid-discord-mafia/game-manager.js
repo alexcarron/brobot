@@ -1,4 +1,4 @@
-const ids = require("../../bot-config/discord-ids.js");
+const { ids } = require("../../bot-config/discord-ids");
 const { PermissionFlagsBits, Role, ChatInputCommandInteraction, TextChannel } = require("discord.js");
 const Death = require("./death.js");
 const PlayerManager = require("./player-manager.js");

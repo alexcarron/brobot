@@ -1,7 +1,7 @@
 const { Message, MessageType, PermissionsBitField, ChannelType } = require("discord.js");
 const TextToSpeechHandler = require("../services/text-to-speech/text-to-speech-handler");
 const { joinVoiceChannel } = require("@discordjs/voice");
-const ids = require("../bot-config/discord-ids");
+const { ids } = require("../bot-config/discord-ids");
 const { fetchGuildMember } = require("../utilities/discord-fetch-utils");
 const { GameState } = require("../services/rapid-discord-mafia/game-state-manager");
 const { logInfo } = require("../utilities/logging-utils");

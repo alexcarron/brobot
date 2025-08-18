@@ -1,6 +1,33 @@
-const { botStatus } = require("./bot-status");
+/**
+ * Selects a value based on the current environment mode.
+ *
+ * @param environmentToValue - An object containing values for both development and production environments.
+ * @returns The value corresponding to the current environment mode.
+ * @example
+ * const username = chooseByEnv({
+ *   development: "test-user",
+ *   production: "jsmith2002",
+ * });
+ */
+const chooseByEnv = <DevReturnType, ProdReturnType>(
+	environmentToValue: {
+		development: DevReturnType;
+		production: ProdReturnType;
+	}
+): DevReturnType | ProdReturnType => {
+	type Environment = keyof typeof environmentToValue;
+	const isInDevelopmentEnv =
+	  global?.botStatus?.isInDevelopmentMode;
 
-const ids = {
+	const environment: Environment =
+	  isInDevelopmentEnv
+			? "development"
+			: "production";
+
+	return environmentToValue[environment];
+}
+
+export const ids = {
 	users: {
     LL: "276119804182659072",
     Brobot: "803333218614116392",
@@ -10,26 +37,28 @@ const ids = {
     gameforge: "1135364976496873644",
     rapid_discord_mafia: "1031365759919726622",
     LLGameShowCenter: "1137452342850097252",
-    ll_game_show_center: "1137452342850097252",
-		get namesmith() {
-			if (botStatus.isInDevelopmentMode)
-				return "1386449684213530796";
-			else return "1347359771799453777";
+    LL_GAME_SHOW_CENTER: "1137452342850097252",
+		get NAMESMITH() {
+			return chooseByEnv({
+				development: "1386449684213530796",
+				production: "1347359771799453777",
+			});
 		},
 		evolutionGame: "1385961369223954522",
 		get sandSeason3() {
-			if (botStatus.isInDevelopmentMode)
-				return "1387934149985173654";
-			else return "1375999496164479226";
+			return chooseByEnv({
+				development: "1387934149985173654",
+				production: "1375999496164479226",
+			});
 		}
   },
   ll_user_id: "276119804182659072",
   get client() {
-		if (botStatus.isInDevelopmentMode)
-			return "1385404315581157498";
-		else return "803333218614116392";
+		return chooseByEnv({
+			development: "1385404315581157498",
+			production: "803333218614116392",
+		});
 	},
-
   ll_game_shows: {
     server_id: "1137452342850097252",
     controversial_channel_id: "1137452343785443471",
@@ -134,56 +163,66 @@ const ids = {
 			log: "1376025642386329610",
 			team1: {
 				get storageRoom() {
-					if (botStatus.isInDevelopmentMode)
-						return "1387934766438813717";
-					else return "1387954120920666333";
+					return chooseByEnv({
+						development: "1387934766438813717",
+						production: "1387954120920666333",
+					});
 				},
 				get kitchen() {
-					if (botStatus.isInDevelopmentMode)
-						return "1387934962002690151";
-					else return "1387954179368026122";
+					return chooseByEnv({
+						development: "1387934962002690151",
+						production: "1387954179368026122",
+					});
 				},
 				get hallway() {
-					if (botStatus.isInDevelopmentMode)
-						return "1387934976523108553";
-					else return "1387954225186738196";
+					return chooseByEnv({
+						development: "1387934976523108553",
+						production: "1387954225186738196",
+					});
 				},
 				get bathroom() {
-					if (botStatus.isInDevelopmentMode)
-						return "1387934990406385806";
-					else return "1387954271886119018";
+					return chooseByEnv({
+						development: "1387934990406385806",
+						production: "1387954271886119018",
+					});
 				},
 				get cyrostasisChamber() {
-					if (botStatus.isInDevelopmentMode)
-						return "1387935033926353008";
-					else return "1387954344988508301";
+					return chooseByEnv({
+						development: "1387935033926353008",
+						production: "1387954344988508301",
+					});
 				},
 			},
 			team2: {
 				get storageRoom() {
-					if (botStatus.isInDevelopmentMode)
-						return "1387935051248959498";
-					else return "1387954135923429466";
+					return chooseByEnv({
+						development: "1387935051248959498",
+						production: "1387954135923429466",
+					});
 				},
 				get kitchen() {
-					if (botStatus.isInDevelopmentMode)
-						return "1387935078943817818";
-					else return "1387954195599982602";
+					return chooseByEnv({
+						development: "1387935078943817818",
+						production: "1387954195599982602",
+					});
 				},
 				get hallway() {
-					if (botStatus.isInDevelopmentMode)
-						return "1387935124263407736";
-					else return "1387954244333867038";
+					return chooseByEnv({
+						development: "1387935124263407736",
+						production: "1387954244333867038",
+					});
 				},
 				get bathroom() {
-					if (botStatus.isInDevelopmentMode)
-						return "1387935138867843142";
-					else return "1387954292677410947";
+					return chooseByEnv({
+						development: "1387935138867843142",
+						production: "1387954292677410947",
+					});
 				},
 				get cyrostasisChamber() {
-					if (botStatus.isInDevelopmentMode)
-						return "1387935159155822652";
-					else return "1387954361610539119";
+					return chooseByEnv({
+						development: "1387935159155822652",
+						production: "1387954361610539119",
+					});
 				},
 			}
 		},
@@ -201,51 +240,66 @@ const ids = {
 	namesmith: {
 		roles: {
 			get namesmither() {
-				if (botStatus.isInDevelopmentMode)
-					return "1386449684213530798";
-				else return "1385046899685462186";
+				return chooseByEnv({
+					development: "1386449684213530798",
+					production: "1385046899685462186",
+				});
 			},
 			get spectator() {
-				if (botStatus.isInDevelopmentMode)
-					return "1386449684213530797";
-				else return "1383979159625138196";
+				return chooseByEnv({
+					development: "1386449684213530797",
+					production: "1383979159625138196",
+				});
 			},
 			get noName() {
-				if (botStatus.isInDevelopmentMode)
-					return "1386449684213530800";
-				else return "1383978619407302796";
+				return chooseByEnv({
+					development: "1386449684213530800",
+					production: "1383978619407302796",
+				});
 			},
 			get smithedName() {
-				if (botStatus.isInDevelopmentMode)
-					return "1386449684213530799";
-				else return "1383979126276489308";
+				return chooseByEnv({
+					development: "1386449684213530799",
+					production: "1383979126276489308",
+				});
 			},
 			get staff() {
-				if (botStatus.isInDevelopmentMode)
-					return "1386449684213530801";
-				else return "1386431888171733033";
+				return chooseByEnv({
+					development: "1386449684213530801",
+					production: "1386431888171733033",
+				});
 			}
 		},
 		channels: {
-			get openMysteryBoxes() {
-				if (botStatus.isInDevelopmentMode)
-					return "1386449685497254137";
-				else return "1384680717879087156";
+			get OPEN_MYSTERY_BOXES() {
+				return chooseByEnv({
+					development: "1386449685497254137",
+					production: "1384680717879087156",
+				});
 			},
-			get publishedNames() {
-				if (botStatus.isInDevelopmentMode)
-					return "1386449685283209282";
-				else return "1384682059938791576";
+			get PUBLISHED_NAMES() {
+				return chooseByEnv({
+					development: "1386449685283209282",
+					production: "1384682059938791576",
+				});
 			},
-			get namesToVoteOn() {
-				if (botStatus.isInDevelopmentMode)
-					return "1387849102687207444";
-				else return "1387849216319291553";
+			get NAMES_TO_VOTE_ON() {
+				return chooseByEnv({
+					development: "1387849102687207444",
+					production: "1387849216319291553",
+				});
 			},
-			get theWinner() {
-				if (botStatus.isInDevelopmentMode)
-					return "1388286079110611057";
-				else return "1388286117786292284";
+			get THE_WINNER() {
+				return chooseByEnv({
+					development: "1388286079110611057",
+					production: "1388286117786292284",
+				});
+			},
+			get RECIPES() {
+				return chooseByEnv({
+					development: "1403071809699713054",
+					production: "1403071766162833532",
+				});
 			},
 		},
 	},
@@ -256,5 +310,3 @@ const ids = {
 		},
 	},
 }
-
-module.exports = ids;

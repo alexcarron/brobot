@@ -1,4 +1,4 @@
-const ids = require("../../bot-config/discord-ids");
+const { ids } = require("../../bot-config/discord-ids");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { getCreaturesText, getChildCreaturesText } = require("../../services/evolution-game/creature-formatting-utils");
 const { parseCreaturesFromMessages } = require("../../services/evolution-game/creature-parser");

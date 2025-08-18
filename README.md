@@ -201,7 +201,7 @@ Contains the main entry point and all project-level configuration files.
   * Loads all commands and event listeners
   * Initializes all services
   * Optionally registers commands (`--deploy`, `--deploy-all`)
-* **`build.js`** Registers BroBot’s slash commands with Discord. Use only when adding, removing, or updating commands, as deployment time is unreliable.
+* **`build.ts`** Registers BroBot’s slash commands with Discord. Use only when adding, removing, or updating commands, as deployment time is unreliable.
 * **`LICENSE`** Specifies the licensing terms
 * **`package-lock.json`** Ensures consistent dependency versions across installs
 * **`package.json`** Contains project metadata and dependencies
@@ -223,10 +223,10 @@ Contains static media used in Brobot services (videos, images, audio, etc.)
 
 Contains configuration files related to Brobot.
 
-* **`bot-status.js`** Stores Brobot's current status that determines its overall behavior:
+* **`bot-status`** Stores Brobot's initial status that determines its overall behavior:
   * `isOn`: Whether Brobot is currently active
   * `isSleep`: If true, only admins can use Brobot (non-admins are restricted)
-* **`discord-ids.js`** Stores relevant Discord server, role, channel, category, and user IDs used throughout the code (e.g.,
+* **`discord-ids`** Stores relevant Discord server, role, channel, category, and user IDs used throughout the code (e.g.,
  admin IDs, allowed role IDs)
 * **`on-ready.js`** Handles setting up services and global variables when the client is ready to start running
 * **`setup-client.js`** Sets up the Discord client in the global scope with necessary intents and partials
@@ -289,6 +289,7 @@ Contains helper functions and reusable utilities for general functionality acros
 * **`date-time-utils.js`** Functions for time and date formatting, parsing, and calculations
 * **`discord-action-utils.js`** Functions for performing actions in Discord
 * **`discord-fetch-utils.js`** Functions for fetching Discord.js objects
+* **`discord-interface-utils.js`** Functions for creating and sending Discord components and interfaces users interact with
 * **`error-utils.js`** Error classes and functions for better managing and handling errors
 * **`github-json-storage-utils.js`** Functions for managing persistant JSON data storage on GitHub
 * **`jest-utils.js`** Functions for improving jest unit tests and increasing discoverability of jest features

@@ -1,9 +1,10 @@
-const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionOverwrites, PermissionFlagsBits, CategoryChannel, ChatInputCommandInteraction, Message, GuildChannel, ButtonInteraction } = require('discord.js');
+const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionOverwrites, PermissionFlagsBits, CategoryChannel, ChatInputCommandInteraction, Message, GuildChannel, ButtonInteraction, InteractionResponse, CommandInteraction, MessageComponentInteraction, ModalSubmitInteraction } = require('discord.js');
 const { Role } = require('../services/rapid-discord-mafia/role');
 const { fetchChannel, fetchChannelsInCategory, getEveryoneRole } = require('./discord-fetch-utils');
 const { incrementEndNumber } = require('./string-manipulation-utils');
 const { logInfo, logError, logWarning } = require('./logging-utils');
 const { getShuffledArray } = require('./data-structure-utils');
+const { InvalidArgumentTypeError } = require('./error-utils');
 
 
 
@@ -168,6 +169,32 @@ const deferInteraction = async (
     }
   }
 };
+
+/**
+ * Replies to an interaction with the provided message content.
+ * @param {CommandInteraction | MessageComponentInteraction | ModalSubmitInteraction} interaction - The interaction to reply to.
+ * @param {string} messageContent - The content of the message to reply with.
+ * @returns {Promise<InteractionResponse<boolean>>} A promise that resolves when the message is sent.
+ */
+const replyToInteraction = async (interaction, messageContent) => {
+	if (
+		interaction &&
+		"reply" in interaction &&
+		typeof interaction.reply === "function"
+	) {
+		return await interaction.reply({
+			content: messageContent,
+			ephemeral: true,
+		});
+	}
+
+	throw new InvalidArgumentTypeError({
+		functionName: "replyToInteraction",
+		argumentName: "interaction",
+		expectedType: "ReplyableInteraction",
+		actualValue: interaction
+	});
+}
 
 /**
  * Edits the reply to an interaction with new message contents.
@@ -742,6 +769,7 @@ module.exports = {
 	removeRoleFromMember,
 	removeAllRolesFromMember,
 	deferInteraction,
+	replyToInteraction,
 	editReplyToInteraction,
 	getInputFromCreatedTextModal,
 	createChannel,

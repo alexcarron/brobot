@@ -1,5 +1,5 @@
-const { botStatus } = require("./bot-config/bot-status");
-const { logInfo, logSuccess } = require("./utilities/logging-utils");
+import { initialBotStatus } from "./bot-config/bot-status";
+import { logInfo, logSuccess } from "./utilities/logging-utils";
 
 const GUILD_COMMANDS_ONLY_OPTIONS = [
 	'--without-global-commands',
@@ -24,7 +24,6 @@ const DEVELOPMENT_ENVIRONMENT_OPTIONS = [
 /**
  * Initializes and builds the bot by setting up the Discord client and deploying commands.
  * Use if command parameters or access level change or if new commands are added or removed.
- * @returns {Promise<void>}
  */
 const buildBrobot = async () => {
 	logInfo("Building bot...");
@@ -39,8 +38,10 @@ const buildBrobot = async () => {
 	const isDevelopmentEnvironment = commandArguments.some(argument =>
 		DEVELOPMENT_ENVIRONMENT_OPTIONS.includes(argument)
 	);
+
+	global.botStatus = initialBotStatus;
 	if (isDevelopmentEnvironment) {
-		botStatus.isInDevelopmentMode = true;
+		global.botStatus.isInDevelopmentMode = true;
 	}
 
 	const { setupClient } = require("./bot-config/setup-client");

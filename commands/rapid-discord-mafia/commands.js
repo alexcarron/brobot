@@ -1,6 +1,6 @@
 const { SlashCommand } = require('../../services/command-creation/slash-command');
 const { deferInteraction } = require('../../utilities/discord-action-utils');
-const ids = require(`../../bot-config/discord-ids.js`);
+const { ids } = require(`../../bot-config/discord-ids`);
 const { COMMAND_EXPLANATIONS } = require('../../services/rapid-discord-mafia/constants/possible-messages.js');
 
 module.exports = new SlashCommand({

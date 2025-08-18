@@ -1,12 +1,11 @@
 const { ChannelType, Collection } = require("discord.js");
-const ids = require("../bot-config/discord-ids");
-const { botStatus } = require("../bot-config/bot-status");
+const { ids } = require("../bot-config/discord-ids");
 const { logError, logInfo } = require("../utilities/logging-utils");
 const { editReplyToInteraction } = require("../utilities/discord-action-utils");
 
 const onSlashCommandExecuted = async (interaction) => {
 	const userName = interaction.user.username;
-	logInfo(`${userName} executing command: ${interaction.commandName}`);
+	logInfo(`${userName} executed this command: /${interaction.commandName}`);
 
 	const command = global.client.commands.get(interaction.commandName);
 
@@ -18,7 +17,7 @@ const onSlashCommandExecuted = async (interaction) => {
 	const isUserLL = interaction.user.id === ids.users.LL;
 
 	// Is the bot on?
-	if (botStatus.isSleep && !isUserLL) {
+	if (global.botStatus.isSleep && !isUserLL) {
 		interaction.reply({
 			content: "Someone turned me off, so you can't use me right now.",
 			ephemeral: true

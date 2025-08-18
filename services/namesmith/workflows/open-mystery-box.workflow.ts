@@ -29,7 +29,7 @@ export const openMysteryBox = async (
 
 	const characterValue = recievedCharacter.value;
 
-	await playerService.addCharacterToName(player, characterValue);
+	await playerService.giveCharacter(player, characterValue);
 
 	return {
 		character: recievedCharacter,

@@ -24,7 +24,8 @@ import { DatabaseQuerier } from "../database/database-querier";
 export const createMockGameStateService = (
 	mockGameStateRepository?: GameStateRepository,
 	mockPlayerService?: PlayerService,
-	mockVoteService?: VoteService
+	mockVoteService?: VoteService,
+	mockRecipeService?: RecipeService,
 ): GameStateService => {
 	const sharedDB =
 		mockGameStateRepository?.db ??
@@ -47,10 +48,18 @@ export const createMockGameStateService = (
 			playerService
 		);
 
+	const recipeService =
+		mockRecipeService ??
+		createMockRecipeService(
+			createMockRecipeRepo(sharedDB),
+			playerService
+		);
+
 	return new GameStateService(
 		gameStateRepository,
 		playerService,
-		voteService
+		voteService,
+		recipeService
 	);
 }
 

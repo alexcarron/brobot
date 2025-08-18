@@ -1,7 +1,7 @@
 /**
- * An object containing the current status of the bot
+ * An object containing the initial status of the bot
  */
-const botStatus = {
+export const initialBotStatus = {
 	/**
 	 * Whether Brobot is currently active
 	 */
@@ -22,5 +22,3 @@ const botStatus = {
 		"529143263265816576", // Dead Spaghetti Luigi
 	],
 }
-
-module.exports = { botStatus }

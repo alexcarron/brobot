@@ -1,4 +1,4 @@
-const ids = require("../bot-config/discord-ids");
+const { ids } = require("../bot-config/discord-ids");
 
 const onDmRecieved = (message) => {
 	let brobotServer = global.client.guilds.cache.get(ids.servers.brobot_testing),

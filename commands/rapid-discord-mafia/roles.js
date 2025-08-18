@@ -1,4 +1,4 @@
-const ids = require("../../bot-config/discord-ids.js");
+const { ids } = require("../../bot-config/discord-ids");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { deferInteraction } = require("../../utilities/discord-action-utils");
 const { toTitleCase } = require("../../utilities/string-manipulation-utils");

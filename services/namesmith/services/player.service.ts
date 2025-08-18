@@ -6,10 +6,11 @@ import { addButtonToMessageContents } from "../../../utilities/discord-action-ut
 import { fetchNamesmithGuildMember, fetchNamesmithGuildMembers } from "../utilities/discord-fetch.utility";
 import { isPlayer } from "../utilities/player.utility";
 import { InvalidArgumentError } from "../../../utilities/error-utils";
-import { PlayerNotFoundError, PlayerAlreadyExistsError } from "../utilities/error.utility";
+import { PlayerNotFoundError, PlayerAlreadyExistsError, NotAPlayerError } from "../utilities/error.utility";
 import { Inventory, Player, PlayerID, PlayerResolvable } from '../types/player.types';
 import { IfPresent } from "../../../utilities/types/generic-types";
-import { removeCharactersAsGivenFromEnd } from "../../../utilities/string-manipulation-utils";
+import { removeCharactersAsGivenFromEnd, removeMissingCharacters } from "../../../utilities/string-manipulation-utils";
+import { areCharactersInString } from "../../../utilities/string-checks-utils";
 
 /**
  * Provides methods for interacting with players.
@@ -72,6 +73,16 @@ export class PlayerService {
 	}
 
 	/**
+	 * Determines if a player with the given resolvable exists.
+	 * @param playerResolvable - The player resolvable to check for existence.
+	 * @returns True if a player with the given resolvable exists, false otherwise.
+	 */
+	isPlayer(playerResolvable: PlayerResolvable): boolean {
+		const playerID = this.resolveID(playerResolvable);
+		return this.playerRepository.doesPlayerExist(playerID);
+	}
+
+	/**
 	 * Retrieves the inventory of a player.
 	 * @param playerResolvable - The player resolvable whose inventory is being retrieved.
 	 * @returns The inventory of the player.
@@ -114,22 +125,147 @@ export class PlayerService {
 	}
 
 	/**
-	 * Adds a character to a player's name.
-	 * @param playerResolvable - The player resolvable whose name is being modified.
-	 * @param character - The character to add to the player's name.
-	 * @throws {Error} - If the addition of the character to the player's name would result in a name longer than MAX_NAME_LENGTH.
+	 * Adds a character to the end of the current name of a player.
+	 *
+	 * @param playerResolvable - The player whose name to add a character to.
+	 * @param character - The character to add to the current name.
 	 */
-	async addCharacterToName(
+	private async addCharacterToName(
 		playerResolvable: PlayerResolvable,
 		character: string
 	): Promise<void> {
-		const playerID = this.resolveID(playerResolvable);
-
 		const currentName = this.getCurrentName(playerResolvable);
 		const newName = currentName + character;
-
 		await this.changeCurrentName(playerResolvable, newName);
+	}
+
+	private async addCharactersToName(
+		playerResolvable: PlayerResolvable,
+		characters: string | string[]
+	): Promise<void> {
+		const currentName = this.getCurrentName(playerResolvable);
+		const newName = currentName + characters;
+		await this.changeCurrentName(playerResolvable, newName);
+	}
+
+	/**
+	 * Removes characters from the current name of a player, from the end of the string.
+	 * If the characters to remove exceed the length of the current name, the current name is cleared.
+	 * @param playerResolvable - The player resolvable whose name to remove characters from.
+	 * @param characters - The characters to remove from the current name.
+	 * @returns The new current name of the player.
+	 */
+	private async removeMissingCharactersFromName(
+		playerResolvable: PlayerResolvable
+	): Promise<string> {
+		const currentName = this.getCurrentName(playerResolvable);
+		const inventory = this.getInventory(playerResolvable);
+		const fixedName = removeMissingCharacters(currentName, inventory);
+
+		await this.changeCurrentName(playerResolvable, fixedName);
+		return fixedName;
+	}
+
+	/**
+	 * Checks if the player has a specific set of characters in their inventory.
+	 * @param playerResolvable - The player to check.
+	 * @param characters - The characters to check for. If an array, they are joined together with no separator.
+	 * @returns True if the player has all the characters in their inventory, false otherwise.
+	 */
+	hasCharacters(
+		playerResolvable: PlayerResolvable,
+		characters: string | string[]
+	): boolean {
+		characters = typeof characters === "string"
+			? characters
+			: characters.join("");
+
+		const player = this.resolvePlayer(playerResolvable);
+		return areCharactersInString(characters, player.inventory);
+	}
+
+	private addCharacterToInventory(
+		playerResolvable: PlayerResolvable,
+		character: string
+	): void {
+		const playerID = this.resolveID(playerResolvable);
 		this.playerRepository.addCharacterToInventory(playerID, character);
+	}
+
+	/**
+	 * Adds characters to the inventory of a player.
+	 * @param playerResolvable - The player resolvable whose inventory to add characters to.
+	 * @param characters - The characters to add to the inventory.
+	 * If `characters` is an array, it is joined together with no separator.
+	 * @returns The new inventory of the player.
+	 */
+	addCharactersToInventory(
+		playerResolvable: PlayerResolvable,
+		characters: string | string[]
+	): string {
+		characters = typeof characters === "string" ?
+			characters :
+			characters.join("");
+
+		const currentInventory = this.getInventory(playerResolvable);
+		const newInventory = currentInventory + characters;
+
+		const playerID = this.resolveID(playerResolvable);
+		this.playerRepository.setInventory(playerID, newInventory);
+		return newInventory;
+	}
+
+	/**
+	 * Removes characters from the inventory of a player, from the end of the string.
+	 * If the characters to remove exceed the length of the inventory, the inventory is cleared.
+	 * @param playerResolvable - The player resolvable whose inventory to remove characters from.
+	 * @param characters - The characters to remove from the inventory.
+	 * @returns The new inventory of the player.
+	 */
+	removeCharactersFromInventory(
+		playerResolvable: PlayerResolvable,
+		characters: string | string[]
+	): string {
+		const inventory = this.getInventory(playerResolvable);
+		const newInventory = removeCharactersAsGivenFromEnd(inventory, characters);
+		const playerID = this.resolveID(playerResolvable);
+		this.playerRepository.setInventory(playerID, newInventory);
+		return newInventory;
+	}
+
+	/**
+	 * Gives a character to a player, adding it to their inventory and name if possible.
+	 * @param playerResolvable - The player resolvable whose name is being modified.
+	 * @param character - The character to give to the player.
+	 */
+	async giveCharacter(
+		playerResolvable: PlayerResolvable,
+		character: string
+	): Promise<void> {
+		this.addCharacterToInventory(playerResolvable, character);
+		await this.addCharacterToName(playerResolvable, character);
+	}
+
+	async giveCharacters(
+		playerResolvable: PlayerResolvable,
+		characters: string | string[]
+	): Promise<void> {
+		this.addCharactersToInventory(playerResolvable, characters);
+		await this.addCharactersToName(playerResolvable, characters);
+	}
+
+	/**
+	 * Removes characters from the inventory and current name of a player.
+	 * @param playerResolvable - The player resolvable whose inventory and name to remove characters from.
+	 * @param characters - The characters to remove from the inventory and name.
+	 * If `characters` is an array, it is joined together with no separator.
+	 */
+	async removeCharacters(
+		playerResolvable: PlayerResolvable,
+		characters: string | string[]
+	): Promise<void> {
+		this.removeCharactersFromInventory(playerResolvable, characters);
+		await this.removeMissingCharactersFromName(playerResolvable);
 	}
 
 	/**
@@ -255,55 +391,6 @@ export class PlayerService {
 
 			await this.addNewPlayer(guildMember.id);
 		}
-	}
-
-	hasCharacters(
-		playerResolvable: PlayerResolvable,
-		characters: string
-	): boolean {
-		const inventory = this.getInventory(playerResolvable);
-		return inventory.includes(characters);
-	}
-
-	/**
-	 * Removes characters from the inventory of a player, from the end of the string.
-	 * If the characters to remove exceed the length of the inventory, the inventory is cleared.
-	 * @param playerResolvable - The player resolvable whose inventory to remove characters from.
-	 * @param characters - The characters to remove from the inventory.
-	 * @returns The new inventory of the player.
-	 */
-	removeCharactersFromInventory(
-		playerResolvable: PlayerResolvable,
-		characters: string | string[]
-	): string {
-		const inventory = this.getInventory(playerResolvable);
-		const newInventory = removeCharactersAsGivenFromEnd(inventory, characters);
-		const playerID = this.resolveID(playerResolvable);
-		this.playerRepository.setInventory(playerID, newInventory);
-		return newInventory;
-	}
-
-	/**
-	 * Adds characters to the inventory of a player.
-	 * @param playerResolvable - The player resolvable whose inventory to add characters to.
-	 * @param characters - The characters to add to the inventory.
-	 * If `characters` is an array, it is joined together with no separator.
-	 * @returns The new inventory of the player.
-	 */
-	addCharactersToInventory(
-		playerResolvable: PlayerResolvable,
-		characters: string | string[]
-	): string {
-		characters = typeof characters === "string" ?
-			characters :
-			characters.join("");
-
-		const currentInventory = this.getInventory(playerResolvable);
-		const newInventory = currentInventory + characters;
-
-		const playerID = this.resolveID(playerResolvable);
-		this.playerRepository.setInventory(playerID, newInventory);
-		return newInventory;
 	}
 
 	/**

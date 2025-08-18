@@ -1,4 +1,4 @@
-const ids = require("../../bot-config/discord-ids.js");
+const { ids } = require("../../bot-config/discord-ids");
 
 const { SlashCommand } = require('../../services/command-creation/slash-command');
 const { Parameter } = require('../../services/command-creation/parameter');

@@ -1,4 +1,4 @@
-import ids from "../../bot-config/discord-ids";
+import { ids } from "../../bot-config/discord-ids";
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getInputFromCreatedTextModal, addButtonToMessageContents, doWhenButtonPressed } from "../../utilities/discord-action-utils";
 import { getCharacterDifferencesInStrings } from "../../utilities/data-structure-utils";
@@ -7,7 +7,7 @@ import { getNamesmithServices } from "../../services/namesmith/services/get-name
 export const command = new SlashCommand({
 	name: "rearrange-name",
 	description: "Rearrange the order of the characters you have in your name",
-	required_servers: [ids.servers.namesmith],
+	required_servers: [ids.servers.NAMESMITH],
 	required_roles: [
 		[ids.namesmith.roles.namesmither, ids.namesmith.roles.noName, ids.namesmith.roles.smithedName],
 	],

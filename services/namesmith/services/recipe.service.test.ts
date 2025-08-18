@@ -1,3 +1,7 @@
+jest.mock("../utilities/discord-action.utility", () => ({
+	changeDiscordNameOfPlayer: jest.fn(),
+}));
+
 import { makeSure } from "../../../utilities/jest-utils";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer, addMockRecipe } from "../database/mock-database";
@@ -121,7 +125,7 @@ describe('RecipeService', () => {
 	});
 
 	describe('takeInputCharactersFromPlayer', () => {
-		it('should take the input characters from the player', () => {
+		it('should take the input characters from the player', async () => {
 			const player = addMockPlayer(db, {
 				inventory: 'abcdefgh',
 			});
@@ -134,22 +138,26 @@ describe('RecipeService', () => {
 				'removeCharactersFromInventory'
 			);
 
-			recipeService.takeInputCharactersFromPlayer(recipe.id, player.id);
+			await recipeService.takeInputCharactersFromPlayer(recipe.id, player.id);
 
 			expect(removeCharactersFromInventory).toHaveBeenCalledWith(player.id, 'abc');
 		});
 
-		it('should throw an error if the player is not found', () => {
-			expect(() => recipeService.takeInputCharactersFromPlayer(MOCK_RECIPE.id, "000000000000000000000")).toThrow(PlayerNotFoundError);
+		it('should throw an error if the player is not found', async () => {
+			makeSure(
+				recipeService.takeInputCharactersFromPlayer(MOCK_RECIPE.id, "000000000000000000000")
+			).eventuallyThrows(PlayerNotFoundError);
 		});
 
-		it('should throw an error if the recipe is not found', () => {
-			expect(() => recipeService.takeInputCharactersFromPlayer(-999, mockPlayers[0].id)).toThrow(RecipeNotFoundError);
+		it('should throw an error if the recipe is not found', async () => {
+			makeSure(
+				recipeService.takeInputCharactersFromPlayer(-999, mockPlayers[0].id)
+			).eventuallyThrows(RecipeNotFoundError);
 		});
 	});
 
 	describe('giveOutputCharactersToPlayer', () => {
-		it('should give the output characters to the player', () => {
+		it('should give the output characters to the player', async () => {
 			const player = addMockPlayer(db, {
 				inventory: '',
 			});
@@ -162,17 +170,21 @@ describe('RecipeService', () => {
 				'addCharactersToInventory'
 			);
 
-			recipeService.giveOutputCharacterToPlayer(recipe.id, player.id);
+			await recipeService.giveOutputCharacterToPlayer(recipe.id, player.id);
 
 			expect(addCharactersToInventory).toHaveBeenCalledWith(player.id, 'abc');
 		});
 
-		it('should throw an error if the player is not found', () => {
-			expect(() => recipeService.giveOutputCharacterToPlayer(MOCK_RECIPE.id, "000000000000000000000")).toThrow(PlayerNotFoundError);
+		it('should throw an error if the player is not found', async () => {
+			makeSure(
+				recipeService.giveOutputCharacterToPlayer(MOCK_RECIPE.id, "000000000000000000000")
+			).eventuallyThrows(PlayerNotFoundError);
 		});
 
 		it('should throw an error if the recipe is not found', () => {
-			expect(() => recipeService.giveOutputCharacterToPlayer(-999, mockPlayers[0].id)).toThrow(RecipeNotFoundError);
+			makeSure(
+				recipeService.giveOutputCharacterToPlayer(-999, mockPlayers[0].id)
+			).eventuallyThrows(RecipeNotFoundError);
 		});
 	});
 });

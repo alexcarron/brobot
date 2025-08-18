@@ -1,4 +1,4 @@
-const ids = require("../bot-config/discord-ids");
+const { ids } = require("../bot-config/discord-ids");
 const { isMemberInNamesmith, onUserJoinsNamesmith } = require("../services/namesmith/event-listeners/on-join-server");
 const { RDMDiscordRole } = require("../services/rapid-discord-mafia/discord-service");
 const { addRoleToMember } = require("../utilities/discord-action-utils");
@@ -11,8 +11,8 @@ const onUserJoinsServer = async function(guildMember) {
 
 		await addRoleToMember(guildMember, spectatorRole);
 	}
-	else if (guildMember.guild.id === ids.servers.ll_game_show_center) {
-		const LLGameShowsGuild = await fetchGuild(ids.servers.ll_game_show_center);
+	else if (guildMember.guild.id === ids.servers.LL_GAME_SHOW_CENTER) {
+		const LLGameShowsGuild = await fetchGuild(ids.servers.LL_GAME_SHOW_CENTER);
 		const viewerRole = await fetchRole(LLGameShowsGuild, ids.ll_game_shows.roles.viewer);
 
 		await addRoleToMember(guildMember, viewerRole);

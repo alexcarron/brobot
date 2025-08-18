@@ -1,6 +1,6 @@
 const { Parameter } = require("../../services/command-creation/parameter");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
-const ids = require("../../bot-config/discord-ids.js");
+const { ids } = require("../../bot-config/discord-ids");
 const { Vote, TrialVote } = require("../../services/rapid-discord-mafia/vote-manager.js");
 const { deferInteraction } = require("../../utilities/discord-action-utils.js");
 const { getStringParamValue } = require("../../utilities/discord-fetch-utils");

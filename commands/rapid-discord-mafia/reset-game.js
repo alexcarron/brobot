@@ -1,5 +1,5 @@
 const { SlashCommand } = require('../../services/command-creation/slash-command');
-const ids = require(`../../bot-config/discord-ids.js`);
+const { ids } = require(`../../bot-config/discord-ids`);
 const { PermissionFlagsBits } = require('discord.js');
 const { editReplyToInteraction, deferInteraction } = require('../../utilities/discord-action-utils.js');
 const { GameManager } = require('../../services/rapid-discord-mafia/game-manager.js');

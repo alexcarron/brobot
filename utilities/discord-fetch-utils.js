@@ -1,5 +1,5 @@
 const { Client, Guild, TextChannel, Message, ChannelType, GuildMember, User, Role, ChatInputCommandInteraction, GuildChannel, CategoryChannel, AutocompleteInteraction } = require("discord.js");
-const ids = require("../bot-config/discord-ids");
+const { ids } = require("../bot-config/discord-ids");
 const { discordCollectionToArray } = require("./data-structure-utils");
 const { InvalidArgumentError } = require("./error-utils");
 

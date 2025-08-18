@@ -1,5 +1,5 @@
 const { TextChannel, Message, Guild, PermissionFlagsBits, Role } = require("discord.js");
-const ids = require("../../bot-config/discord-ids.js");
+const { ids } = require("../../bot-config/discord-ids");
 const { fetchGuild, fetchGuildMember, fetchRole, fetchTextChannel } = require("../../utilities/discord-fetch-utils.js");
 
 /**

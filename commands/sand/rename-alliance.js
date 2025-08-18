@@ -1,5 +1,5 @@
 const { ChannelType } = require("discord.js");
-const ids = require("../../bot-config/discord-ids");
+const { ids } = require("../../bot-config/discord-ids");
 const { ParameterType, Parameter } = require("../../services/command-creation/parameter");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { deferInteraction, editReplyToInteraction, renameChannel } = require("../../utilities/discord-action-utils");

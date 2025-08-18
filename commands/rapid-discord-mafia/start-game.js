@@ -6,7 +6,7 @@ const { RoleIdentifier } = require("../../services/rapid-discord-mafia/role-iden
 /* eslint-disable no-unused-vars */
 const
 	{ PermissionFlagsBits } = require("discord.js"),
-	ids = require("../../bot-config/discord-ids.js");
+	{ ids } = require("../../bot-config/discord-ids");
 const { deferInteraction } = require("../../utilities/discord-action-utils.js");
 const { getRequiredStringParam } = require("../../utilities/discord-fetch-utils");
 

@@ -1,10 +1,12 @@
+jest.mock("../utilities/discord-action.utility", () => ({
+	changeDiscordNameOfPlayer: jest.fn(),
+}));
+
 import { makeSure } from "../../../utilities/jest-utils";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer, addMockRecipe } from "../database/mock-database";
 import { setupMockNamesmith } from "../event-listeners/mock-setup";
-import { mockPlayers, mockRecipes } from "../repositories/mock-repositories";
 import { getNamesmithServices } from "../services/get-namesmith-services";
-import { MysteryBoxService } from "../services/mystery-box.service";
 import { PlayerService } from "../services/player.service";
 import { RecipeService } from "../services/recipe.service";
 import { MissingRequiredCharactersError, RecipeNotUnlockedError } from "../utilities/error.utility";
@@ -51,6 +53,8 @@ describe('craft-character.workflow', () => {
 			makeSure(result).is({
 				newInventory: 'accddc',
 				craftedCharacter: 'c',
+				recipeUsed: recipe,
+				playerCrafting: player,
 			});
 		});
 
