@@ -118,6 +118,9 @@ const setupInteractionCreateListener =
 	(client) => {
 		client.on(Events.InteractionCreate,
 			async (interaction) => {
+				console.log(`Interaction type: ${interaction.type}`);
+				console.log(`Interaction type: ${interaction.customId}`);
+
 				if (isSlashCommand(interaction))
 					await onSlashCommandExecuted(interaction);
 
@@ -127,8 +130,11 @@ const setupInteractionCreateListener =
 				if (isButtonPressedEvent(interaction))
 					await eventHandlers.onButtonPressed.runHandlers(interaction);
 
-				if (isMenuOptionSelectedEvent(interaction))
+				if (isMenuOptionSelectedEvent(interaction)) {
+					console.log("Menu option selected");
+					console.log(`eventHandlers: `, JSON.stringify(eventHandlers.onMenuOptionSelected.handlers.byID));
 					await eventHandlers.onMenuOptionSelected.runHandlers(interaction);
+				}
 			}
 		)
 	};

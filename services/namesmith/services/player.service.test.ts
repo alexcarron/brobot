@@ -442,63 +442,6 @@ describe('PlayerService', () => {
 		});
 	});
 
-	describe('removeCharactersFromInventory()', () => {
-		it('should remove characters from the inventory', () => {
-			const player = addMockPlayer(db, {
-				inventory: 'aabbcdaebfcchhhaghcbhh',
-			});
-			const toRemove = 'hbbaaa';
-			const expectedNewInventory = 'abbcdefcchhhghch';
-
-			const returnedNewInventory = playerService.removeCharactersFromInventory(
-				player,
-				toRemove
-			);
-			const inventory = playerService.getInventory(player.id);
-
-			expect(inventory).toBe(expectedNewInventory);
-			expect(returnedNewInventory).toBe(expectedNewInventory);
-		});
-
-		it('should throw an error if the player is not found', () => {
-			expect(() => playerService.removeCharactersFromInventory('invalid-id', 'a')).toThrow();
-		});
-
-		it('should throw an error if the characters don\'t exist in the inventory', () => {
-			expect(() => playerService.removeCharactersFromInventory(mockPlayers[0].id, 'χ•∩∫')).toThrow();
-		});
-
-		it('should throw an error if there\'s too many of the same character to remove', () => {
-			const playerID = mockPlayers[0].id;
-			const firstLetterInInventory = mockPlayers[0].inventory[0];
-			const toRemove = firstLetterInInventory.repeat(100);
-			expect(() => playerService.removeCharactersFromInventory(
-				playerID,
-				toRemove
-			)).toThrow();
-		});
-	});
-
-	describe('addCharactersToInventory()', () => {
-		it('should add characters to the inventory', () => {
-			const player = addMockPlayer(db, {
-				inventory: 'aabbcdaebfcchhhaghcbhh',
-			});
-			const toAdd = 'χ•∩∫';
-			const expectedNewInventory = 'aabbcdaebfcchhhaghcbhhχ•∩∫';
-
-			const returnedNewInventory = playerService.addCharactersToInventory(player, toAdd);
-			const inventory = playerService.getInventory(player.id);
-
-			expect(inventory).toBe(expectedNewInventory);
-			expect(returnedNewInventory).toBe(expectedNewInventory);
-		});
-
-		it('should throw an error if the player is not found', () => {
-			expect(() => playerService.addCharactersToInventory('0000000000000000000000000', 'a')).toThrow(PlayerNotFoundError);
-		});
-	});
-
 	describe('reset()', () => {
 		it('should reset the player repository', () => {
 			playerService.reset();

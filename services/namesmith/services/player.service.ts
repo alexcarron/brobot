@@ -5,8 +5,8 @@ import { ButtonStyle } from "discord.js";
 import { addButtonToMessageContents } from "../../../utilities/discord-action-utils";
 import { fetchNamesmithGuildMember, fetchNamesmithGuildMembers } from "../utilities/discord-fetch.utility";
 import { isPlayer } from "../utilities/player.utility";
-import { InvalidArgumentError } from "../../../utilities/error-utils";
-import { PlayerNotFoundError, PlayerAlreadyExistsError, NotAPlayerError } from "../utilities/error.utility";
+import { attempt, InvalidArgumentError } from "../../../utilities/error-utils";
+import { PlayerNotFoundError, PlayerAlreadyExistsError, NotAPlayerError, NameTooLongError } from "../utilities/error.utility";
 import { Inventory, Player, PlayerID, PlayerResolvable } from '../types/player.types';
 import { IfPresent } from "../../../utilities/types/generic-types";
 import { removeCharactersAsGivenFromEnd, removeMissingCharacters } from "../../../utilities/string-manipulation-utils";
@@ -106,7 +106,7 @@ export class PlayerService {
 	 * Changes the current name of a player.
 	 * @param playerResolvable - The player resolvable whose current name is being changed.
 	 * @param  newName - The new name to assign to the player.
-	 * @throws {Error} - If the new name is longer than MAX_NAME_LENGTH.
+	 * @throws {NameTooLongError} If the new name is too long.
 	 */
 	async changeCurrentName(
 		playerResolvable: PlayerResolvable,
@@ -114,11 +114,8 @@ export class PlayerService {
 	) {
 		const playerID = this.resolveID(playerResolvable);
 
-		if (typeof newName !== "string")
-			throw new InvalidArgumentError("changeCurrentName: newName must be a string.");
-
 		if (newName.length > PlayerService.MAX_NAME_LENGTH)
-			throw new InvalidArgumentError(`changeCurrentName: newName must be less than or equal to ${PlayerService.MAX_NAME_LENGTH}.`);
+			throw new NameTooLongError(newName, PlayerService.MAX_NAME_LENGTH);
 
 		this.playerRepository.changeCurrentName(playerID, newName);
 		await changeDiscordNameOfPlayer(playerID, newName);
@@ -129,6 +126,7 @@ export class PlayerService {
 	 *
 	 * @param playerResolvable - The player whose name to add a character to.
 	 * @param character - The character to add to the current name.
+	 * @throws {NameTooLongError} If the new name is too long.
 	 */
 	private async addCharacterToName(
 		playerResolvable: PlayerResolvable,
@@ -139,6 +137,13 @@ export class PlayerService {
 		await this.changeCurrentName(playerResolvable, newName);
 	}
 
+	/**
+	 * Adds characters to the end of the current name of a player.
+	 *
+	 * @param playerResolvable - The player whose name to add characters to.
+	 * @param characters - The character(s) to add to the current name.
+	 * @throws {NameTooLongError} If the new name is too long.
+	 */
 	private async addCharactersToName(
 		playerResolvable: PlayerResolvable,
 		characters: string | string[]
@@ -184,6 +189,11 @@ export class PlayerService {
 		return areCharactersInString(characters, player.inventory);
 	}
 
+	/**
+	 * Adds a single character to the inventory of a player.
+	 * @param playerResolvable - The player to add the character to.
+	 * @param character - The character to add to the player's inventory.
+	 */
 	private addCharacterToInventory(
 		playerResolvable: PlayerResolvable,
 		character: string
@@ -199,7 +209,7 @@ export class PlayerService {
 	 * If `characters` is an array, it is joined together with no separator.
 	 * @returns The new inventory of the player.
 	 */
-	addCharactersToInventory(
+	private addCharactersToInventory(
 		playerResolvable: PlayerResolvable,
 		characters: string | string[]
 	): string {
@@ -222,7 +232,7 @@ export class PlayerService {
 	 * @param characters - The characters to remove from the inventory.
 	 * @returns The new inventory of the player.
 	 */
-	removeCharactersFromInventory(
+	private removeCharactersFromInventory(
 		playerResolvable: PlayerResolvable,
 		characters: string | string[]
 	): string {
@@ -235,23 +245,36 @@ export class PlayerService {
 
 	/**
 	 * Gives a character to a player, adding it to their inventory and name if possible.
-	 * @param playerResolvable - The player resolvable whose name is being modified.
+	 * @param player - The player whose name is being modified.
 	 * @param character - The character to give to the player.
 	 */
 	async giveCharacter(
-		playerResolvable: PlayerResolvable,
+		player: PlayerResolvable,
 		character: string
 	): Promise<void> {
-		this.addCharacterToInventory(playerResolvable, character);
-		await this.addCharacterToName(playerResolvable, character);
+		this.addCharacterToInventory(player, character);
+
+		await attempt(this.addCharacterToName(player, character))
+			// Don't update name if it is at max length
+			.ignoreError(NameTooLongError)
+			.execute();
 	}
 
+	/**
+	 * Gives characters to a player, adding them to their inventory and name if possible.
+	 * @param player - The player whose name is being modified.
+	 * @param characters - The characters to give to the player.
+	 */
 	async giveCharacters(
-		playerResolvable: PlayerResolvable,
+		player: PlayerResolvable,
 		characters: string | string[]
 	): Promise<void> {
-		this.addCharactersToInventory(playerResolvable, characters);
-		await this.addCharactersToName(playerResolvable, characters);
+		this.addCharactersToInventory(player, characters);
+
+		await attempt(this.addCharactersToName(player, characters))
+			// Don't update name if it is at max length
+			.ignoreError(NameTooLongError)
+			.execute();
 	}
 
 	/**

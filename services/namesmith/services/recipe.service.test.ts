@@ -133,14 +133,14 @@ describe('RecipeService', () => {
 				inputCharacters: 'abc',
 			});
 
-			const removeCharactersFromInventory = jest.spyOn(
+			const removeCharacters = jest.spyOn(
 				recipeService.playerService,
-				'removeCharactersFromInventory'
+				'removeCharacters'
 			);
 
 			await recipeService.takeInputCharactersFromPlayer(recipe.id, player.id);
 
-			expect(removeCharactersFromInventory).toHaveBeenCalledWith(player.id, 'abc');
+			expect(removeCharacters).toHaveBeenCalledWith(player.id, 'abc');
 		});
 
 		it('should throw an error if the player is not found', async () => {
@@ -165,14 +165,14 @@ describe('RecipeService', () => {
 				outputCharacters: 'abc',
 			});
 
-			const addCharactersToInventory = jest.spyOn(
+			const giveCharacters = jest.spyOn(
 				recipeService.playerService,
-				'addCharactersToInventory'
+				'giveCharacters'
 			);
 
 			await recipeService.giveOutputCharacterToPlayer(recipe.id, player.id);
 
-			expect(addCharactersToInventory).toHaveBeenCalledWith(player.id, 'abc');
+			expect(giveCharacters).toHaveBeenCalledWith(player.id, 'abc');
 		});
 
 		it('should throw an error if the player is not found', async () => {

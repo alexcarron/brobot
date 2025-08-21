@@ -1,10 +1,8 @@
-import { User } from 'discord.js';
 import { getCharacterDifferencesInStrings } from '../../../utilities/data-structure-utils';
 import { CustomError } from '../../../utilities/error-utils';
-import { createListFromWords, escapeDiscordMarkdown } from '../../../utilities/string-manipulation-utils';
+import { escapeDiscordMarkdown } from '../../../utilities/string-manipulation-utils';
 import { Player } from '../types/player.types';
 import { Recipe } from '../types/recipe.types';
-import { escape } from 'querystring';
 
 /**
  * Base class for all errors thrown by the namesmith service
@@ -262,5 +260,26 @@ export class NotAPlayerError extends UserActionError {
 export class NonPlayerCraftedError extends NotAPlayerError {
 	constructor(userID: string) {
 		super(userID, "craft a character");
+	}
+}
+
+/**
+ * Error thrown when a provided string for a name is not valid
+ */
+export class InvalidNameError extends NamesmithError {}
+
+/**
+ * Error thrown when a provided name is too long
+ */
+export class NameTooLongError extends InvalidNameError {
+	constructor(name: string, maxLength: number) {
+		super({
+			message: `Provided name, "${name}", exceeds the maximum length of ${maxLength} characters.`,
+			userFriendlyMessage: `Your name cannot be longer than ${maxLength} characters.`,
+			relevantData: {
+				name,
+				maxLength,
+			}
+		})
 	}
 }
