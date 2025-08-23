@@ -74,13 +74,8 @@ export async function startBackupCronJob() {
   logInfo('Starting hourly backup cron job...');
 
   // Schedule: At minute 0 past every hour
-<<<<<<< HEAD
   const task = cron.schedule('6 * * * *', async () => {
     await createBackup();
-=======
-  const task = cron.schedule('6 * * * *', () => {
-    createBackup();
->>>>>>> e0d0546 (Fix backup script to use new timestamp everytime)
   });
 
   // Start the cron job immediately
