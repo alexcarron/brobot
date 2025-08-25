@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/require-jsdoc */
 import { attempt, HandledError } from "../../../utilities/error-utils";
 import { makeSure } from "../../../utilities/jest-utils";
 import { logWarning } from "../../../utilities/logging-utils";
@@ -10,10 +11,6 @@ describe('error.utility', () => {
 
 		function throwsRangeError() {
 			throw new RangeError('Range error occurred');
-		}
-
-		function throwsTypeError() {
-			throw new TypeError('Type error occurred');
 		}
 
 		function addsPositiveNumbers(a: any, b: any) {
@@ -42,9 +39,13 @@ describe('error.utility', () => {
 			makeSure(result).is(5);
 		});
 
-		it('throws error when function throws without error handler', async () => {
-			makeSure(() => attempt(throwsRangeError).execute())
-				.throwsAnError();
+		it('throws error when function throws without error handler', () => {
+			const attemptInstance = attempt(throwsRangeError)
+
+			expect(() => {
+				attemptInstance.execute();
+			})
+				.toThrow();
 		});
 
 		it('onError handles matching error type', () => {
@@ -60,13 +61,15 @@ describe('error.utility', () => {
 		it('onError does not handle non-matching error type', () => {
 				const mockHandler = jest.fn();
 
+				let error = undefined;
 				try {
 					attempt(throwsRangeError)
 						.onError(TypeError, mockHandler)
 						.getReturnValue();
 				} catch (e) {
-					expect(e).toBeInstanceOf(RangeError); // assert it's unhandled
+					error = e;
 				}
+				expect(error).toBeInstanceOf(RangeError); // assert it's unhandled
 
 				expect(mockHandler).not.toHaveBeenCalled();
 		});
@@ -106,7 +109,7 @@ describe('error.utility', () => {
 
 		describe('handles most complex use case', () => {
 			const getResults = (callbackFunction: (...args: any[]) => undefined | number) => {
-				let results: Partial<{ result: number, message: string }> =
+				const results: Partial<{ result: number, message: string }> =
 					{ result: undefined, message: undefined };
 
 				try {

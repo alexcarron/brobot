@@ -21,6 +21,9 @@ const parseCreature = (text) => {
 	if (!nameMatch) return undefined; // skip invalid entries
 
 	const name = nameMatch[1].trim();
+	/**
+	 * @type {string[]}
+	 */
 	let evolvedFrom = [];
 
 	if (!evolvedMatch)

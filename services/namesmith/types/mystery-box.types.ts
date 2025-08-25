@@ -10,7 +10,11 @@ export interface MysteryBoxWithOdds extends MysteryBox {
 	characterOdds: CharacterOdds;
 }
 
-export interface DBMysteryBox extends MysteryBox {}
+/**
+ * DBMysteryBox represents a Mystery Box stored in the database.
+ * Currently identical to MysteryBox but kept for semantic clarity.
+ */
+export type DBMysteryBox = MysteryBox
 
 export interface DBCharacterOddsRow {
 	mysteryBoxID: number;

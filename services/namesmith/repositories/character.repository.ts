@@ -1,4 +1,3 @@
-import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { DatabaseQuerier } from "../database/database-querier";
 import { Character, DBCharacter, DBCharacterWithTags, CharacterWithTags } from "../types/character.types";
 import { getIDfromCharacterValue } from "../utilities/character.utility";
@@ -18,7 +17,7 @@ export class CharacterRepository {
 	 * @returns An array of character objects.
 	 */
 	getCharacters(): Character[] {
-		let query = `SELECT DISTINCT * FROM character`;
+		const query = `SELECT DISTINCT * FROM character`;
 		const getAllCharacters = this.db.prepare(query);
 		return getAllCharacters.all() as DBCharacter[];
 	}

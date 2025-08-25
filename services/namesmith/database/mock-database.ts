@@ -4,10 +4,9 @@ import { addInitialDataToDB } from './static-data/insert-static-data';
 import { InvalidArgumentError } from '../../../utilities/error-utils';
 import { DatabaseQuerier } from './database-querier';
 import { Recipe } from '../types/recipe.types';
-import { insertRecipesToDB } from './db-inserters';
-import { AtLeastOne, IfPresent } from '../../../utilities/types/generic-types';
+import { AtLeastOne } from '../../../utilities/types/generic-types';
 import { Player } from '../types/player.types';
-import { NamesmithError, PlayerAlreadyExistsError } from '../utilities/error.utility';
+import { PlayerAlreadyExistsError } from '../utilities/error.utility';
 import { createRandomNumericUUID } from '../../../utilities/random-utils';
 
 /**
@@ -25,6 +24,13 @@ export const createMockDB = (): DatabaseQuerier => {
  * Adds a player to the database with the given properties.
  * @param db - The in-memory database.
  * @param playerData - The player data to add.
+ * @param playerData.id - The ID of the player.
+ * @param playerData.currentName - The current name of the player.
+ * @param playerData.publishedName - The published name of the player.
+ * @param playerData.tokens - The number of tokens the player has.
+ * @param playerData.role - The role of the player.
+ * @param playerData.inventory - The player's inventory.
+ * @returns The player object that was added to the database.
  */
 export const addMockPlayer = (
 	db: DatabaseQuerier,
@@ -67,6 +73,8 @@ export const addMockPlayer = (
  * Adds a vote to the database with the given properties.
  * @param db - The in-memory database.
  * @param voteData - The vote data to add.
+ * @param voteData.voterID - The ID of the user who voted.
+ * @param voteData.playerVotedForID - The ID of the player voted for.
  * @returns The result of the insert operation.
  */
 export const addMockVote = (
@@ -97,6 +105,9 @@ export const addMockVote = (
  * Adds a recipe to the database with the given properties.
  * @param db - The in-memory database.
  * @param recipeData - The recipe data to add.
+ * @param recipeData.id - The ID of the recipe.
+ * @param recipeData.inputCharacters - The input characters of the recipe.
+ * @param recipeData.outputCharacters - The output characters of the recipe.
  * @returns The added recipe with an ID.
  */
 export const addMockRecipe = (

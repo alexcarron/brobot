@@ -1,4 +1,4 @@
-const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionOverwrites, PermissionFlagsBits, CategoryChannel, ChatInputCommandInteraction, Message, GuildChannel, ButtonInteraction, InteractionResponse, CommandInteraction, MessageComponentInteraction, ModalSubmitInteraction } = require('discord.js');
+const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionFlagsBits, CategoryChannel, ChatInputCommandInteraction, Message, GuildChannel, ButtonInteraction, InteractionResponse, CommandInteraction, MessageComponentInteraction, ModalSubmitInteraction } = require('discord.js');
 const { Role } = require('../services/rapid-discord-mafia/role');
 const { fetchChannel, fetchChannelsInCategory, getEveryoneRole } = require('./discord-fetch-utils');
 const { incrementEndNumber } = require('./string-manipulation-utils');
@@ -46,6 +46,11 @@ const confirmInteractionWithButtons = async ({
 		components: [actionRow],
 	});
 
+	/**
+	 * Filters the interaction to only allow the user who triggered the interaction
+	 * @param {import('discord.js').MessageComponentInteraction} otherInteraction - The interaction to filter
+	 * @returns {boolean} Whether the interaction is from the same user
+	 */
 	const filter = (otherInteraction) => otherInteraction.user.id === interaction.user.id;
 
 	try {
@@ -161,7 +166,13 @@ const deferInteraction = async (
       }
     }
   } catch (error) {
-    if (error.code === 10062) {
+		if (error instanceof Error === false)
+			throw error;
+
+    if (
+			'code' in error &&
+			error.code === 10062
+		) {
       logWarning("Interaction already expired: unable to reply/follow-up");
     }
 		else {
@@ -263,6 +274,9 @@ const getInputFromCreatedTextModal = async ({
 		});
 	}
 	catch (error) {
+		if (error instanceof Error === false)
+			throw error;
+
 		logError(`Error in getInputFromCreatedTextModal`, error);
 		return undefined;
 	}
@@ -283,7 +297,7 @@ const getInputFromCreatedTextModal = async ({
  * @param {object} options - Options for creating the channel.
  * @param {Guild} options.guild - The guild in which the channel is to be created.
  * @param {string} options.name - The name of the channel.
- * @param {PermissionOverwrites[]} [options.permissions] - Permission overwrites for the channel. If not provided, the default permissions will be used.
+ * @param {import('discord.js').OverwriteResolvable[]} [options.permissions] - Permission overwrites for the channel. If not provided, the default permissions will be used.
  * @param {import('discord.js').CategoryChannelResolvable | null} [options.parentCategory] - The parent category of the channel. If not provided, the channel will not have a parent category.
  * @returns {Promise<TextChannel>} The created channel.
  */
@@ -353,6 +367,7 @@ const createChannel = async ({guild, name, permissions = [], parentCategory: par
 			parentCategoryResolvable = await createCategory({
 				guild,
 				name: newCategoryName,
+				// @ts-ignore
 				permissions: [createEveryoneDenyViewPermission(guild)],
 			});
 		}
@@ -362,6 +377,9 @@ const createChannel = async ({guild, name, permissions = [], parentCategory: par
 		}
 	}
 
+	/**
+	 * @type {import('discord.js').GuildChannelCreateOptions & {type: import('discord.js').GuildChannelTypes;}}
+	 */
 	const options = {
 		name: name,
 		type: ChannelType.GuildText,
@@ -387,7 +405,7 @@ const createChannel = async ({guild, name, permissions = [], parentCategory: par
  * @param {object} options - Options for creating the category.
  * @param {Guild} options.guild - The guild in which the category is to be created.
  * @param {string} options.name - The name of the category.
- * @param {PermissionOverwrites[]} [options.permissions] - Permission overwrites for the category. If not provided, the default permissions will be used.
+ * @param {readonly import('discord.js').OverwriteResolvable[]} [options.permissions] - Permission overwrites for the category. If not provided, the default permissions will be used.
  * @returns {Promise<CategoryChannel>} The created category.
  */
 const createCategory = async ({guild, name, permissions = []}) => {
@@ -403,6 +421,9 @@ const createCategory = async ({guild, name, permissions = []}) => {
 	if (typeof name !== "string")
 		throw new Error("Category name must be a string");
 
+	/**
+	 * @type {import('discord.js').GuildChannelCreateOptions & {type: import('discord.js').GuildChannelTypes;}}
+	 */
 	const options = {
 		name: name,
 		type: ChannelType.GuildCategory,
@@ -422,9 +443,9 @@ const createCategory = async ({guild, name, permissions = []}) => {
  * Creates a permission overwrite object for a Discord channel.
  * @param {object} options - Options for creating the permission overwrite.
  * @param {string} options.userOrRoleID - The ID of the user or role for which the permissions are being set.
- * @param {PermissionFlagsBits[]} [options.allowedPermissions] - An array of permissions that are allowed for the user or role.
- * @param {PermissionFlagsBits[]} [options.deniedPermissions] - An array of permissions that are denied for the user or role.array.
- * @returns {object} The permission overwrite object.
+ * @param {import('discord.js').PermissionResolvable[]} [options.allowedPermissions] - An array of permissions that are allowed for the user or role.
+ * @param {import('discord.js').PermissionResolvable[]} [options.deniedPermissions] - An array of permissions that are denied for the user or role.array.
+ * @returns {import('discord.js').OverwriteResolvable} The permission overwrite object.
  */
 const createPermission = ({userOrRoleID, allowedPermissions, deniedPermissions}) => {
 	if (!userOrRoleID)
@@ -439,6 +460,9 @@ const createPermission = ({userOrRoleID, allowedPermissions, deniedPermissions})
 	if (deniedPermissions && !Array.isArray(deniedPermissions))
 		throw new Error("Denied permissions must be an array");
 
+	/**
+	 * @type {import('discord.js').OverwriteData}
+	 */
 	const overwrite = {
 		id: userOrRoleID,
 	};
@@ -455,7 +479,7 @@ const createPermission = ({userOrRoleID, allowedPermissions, deniedPermissions})
 /**
  * Creates a permission overwrite that denies everyone the ability to view a channel.
  * @param {Guild} guild - The guild in which the permission overwrite is to be created.
- * @returns {object} The permission overwrite object.
+ * @returns {import('discord.js').OverwriteData} The permission overwrite object.
  */
 const createEveryoneDenyViewPermission = (guild) =>
 	createPermission({
@@ -470,12 +494,15 @@ const createEveryoneDenyViewPermission = (guild) =>
  * @param {object} options - Options for setting permissions.
  * @param {TextChannel} options.channel - The channel to which the permissions are applied.
  * @param {string} options.userOrRoleID - The ID of the user or role for which the permissions are set.
- * @param {bigint[]} [options.allowedPermissions] - An array of permissions to allow.
- * @param {bigint[]} [options.deniedPermissions] - An array of permissions to deny.
+ * @param {import('./constants/discord-permissions').DiscordPermissionName[]} [options.allowedPermissions] - An array of permissions to allow.
+ * @param {import('./constants/discord-permissions').DiscordPermissionName[]} [options.deniedPermissions] - An array of permissions to deny.
  * @throws {Error} If neither allowedPermissions nor deniedPermissions are provided, or if they are not arrays.
  * @returns {Promise<void>} A promise that resolves when the permissions have been set.
  */
 const addPermissionToChannel = async ({channel, userOrRoleID, allowedPermissions, deniedPermissions}) => {
+	/**
+	 * @type {import('discord.js').PermissionOverwriteOptions}
+	 */
 	const permissions = {}
 
 	if (!allowedPermissions && !deniedPermissions)
@@ -521,12 +548,15 @@ const removePermissionFromChannel = async ({channel, userOrRoleID}) => {
  * @param {object} options - Options for updating the permissions.
  * @param {TextChannel} options.channel - The channel for which the permissions are being updated.
  * @param {string} options.userOrRoleID - The ID of the user or role for which the permissions are being updated.
- * @param {PermissionFlagsBits[]} [options.allowedPermissions] - An array of permissions that should be allowed for the user or role.
- * @param {PermissionFlagsBits[]} [options.unsetPermissions] - An array of permissions that should be unset for the user or role.
- * @param {PermissionFlagsBits[]} [options.deniedPermissions] - An array of permissions that should be denied for the user or role.
+ * @param {(keyof typeof PermissionFlagsBits)[]} [options.allowedPermissions] - An array of permissions that should be allowed for the user or role.
+ * @param {(keyof typeof PermissionFlagsBits)[]} [options.unsetPermissions] - An array of permissions that should be unset for the user or role.
+ * @param {(keyof typeof PermissionFlagsBits)[]} [options.deniedPermissions] - An array of permissions that should be denied for the user or role.
  * @throws Will throw an error if none of allowedPermissions, deniedPermissions, or unsetPermissions are provided, or if any of them are not arrays.
  */
 const changePermissionOnChannel = async ({channel, userOrRoleID, allowedPermissions, unsetPermissions, deniedPermissions}) => {
+	/**
+	 * @type {import('discord.js').PermissionOverwriteOptions}
+	 */
 	const permissions = {}
 
 	if (!allowedPermissions && !deniedPermissions && !unsetPermissions)
@@ -689,7 +719,7 @@ async function shuffleCategoryChannels(guild, category) {
 /**
  * Adds a button to the components array of an object representing the contents of a Discord message.
  * @param {object} options - Options for adding the button.
- * @param {string | object} options.contents - The contents of the message. Can be a string or an object with a "content" property.
+ * @param {string | import('discord.js').MessageCreateOptions} options.contents - The contents of the message. Can be a string or an object with a "content" property.
  * @param {string} options.buttonID - The custom ID of the button.
  * @param {string} options.buttonLabel - The label of the button.
  * @param {ButtonStyle} [options.buttonStyle] - The style of the button. Optional, defaults to ButtonStyle.Primary.
@@ -725,6 +755,7 @@ const addButtonToMessageContents = ({
 		.addComponents(button);
 
 	contents.components = contents.components || [];
+	// @ts-ignore
 	contents.components.push(actionRow);
 
 	return contents;
@@ -756,6 +787,9 @@ const doWhenButtonPressed = async (messsageWithButton, buttonID, onButtonPressed
 		}
 	}
 	catch (error) {
+		if (error instanceof Error === false)
+			throw error;
+
 		logError(
 			`Error while waiting for user to click button with ID ${buttonID}`,
 			error

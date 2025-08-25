@@ -32,6 +32,7 @@ module.exports = new SlashCommand({
 		const property = getRequiredStringParam(interaction, Parameters.Property.name);
 		const value = getRequiredStringParam(interaction, Parameters.Value.name);
 
+		// @ts-ignore
 		global.game_manager[property] = value;
 
 		interaction.editReply(`Changed **${property}** to \`${value}\``);

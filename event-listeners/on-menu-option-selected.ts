@@ -12,6 +12,7 @@ export function onMenuOptionSelected(
 /**
  * Adds an action to be completed when a button is pressed
  * @param idOrDoOnMenuOptionSelected - The action to be completed
+ * @param maybeDoOnMenuOptionSelected - The action to be completed
  */
 export function onMenuOptionSelected(
 	idOrDoOnMenuOptionSelected:
@@ -30,7 +31,7 @@ export function onMenuOptionSelected(
 		const doOnButtonPressed = idOrDoOnMenuOptionSelected;
 		eventHandlers.onMenuOptionSelected.addHandler(doOnButtonPressed);
 	}
-};
+}
 
 /**
  * Checks if an interaction is a select menu option selection

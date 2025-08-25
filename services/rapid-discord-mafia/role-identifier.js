@@ -35,19 +35,36 @@ const RoleIdentifierPriority = Object.freeze({
 class RoleIdentifier {
 	name;
 	type;
+	/**
+	 * @type {number}
+	 */
 	priority;
 
+	/**
+	 * Creates a new role identifier
+	 * @param {string} role_identifier_str The string representation of the role identifier
+	 */
 	constructor(role_identifier_str) {
 		this.name = role_identifier_str;
 		this.type = RoleIdentifier.getTypeFromIdentifierStr(role_identifier_str);
 		this.priority = this.getPriority();
 	}
 
+	/**
+	 * Checks if the given role identifier string is valid
+	 * @param {string} role_identifier_str The string representation of the role identifier
+	 * @returns {boolean} true if the given role identifier string is valid, false otherwise
+	 */
 	static isValidIdentifierStr(role_identifier_str) {
 		const type = RoleIdentifier.getTypeFromIdentifierStr(role_identifier_str);
 		return type !== undefined;
 	}
 
+	/**
+	 * Checks the given role identifier string to determine its type
+	 * @param {string} role_identifier_str The string representation of the role identifier
+	 * @returns {RoleIdentifierType[keyof RoleIdentifierType] | undefined} The type of the given role identifier string, or undefined if it is invalid
+	 */
 	static getTypeFromIdentifierStr(role_identifier_str) {
 		const role_names = RoleManager.getListOfRoles().map(role => role.name);
 
@@ -82,16 +99,27 @@ class RoleIdentifier {
 		}
 	}
 
+	/**
+	 * Gets the priority of this role identifier
+	 * @returns {number} The priority of this role identifier, or undefined if the type is invalid
+	 * The priority is determined by the type of the role identifier. If the type is not specific, the priority is
+	 * increased if the role identifier does not include a role in its possible faction.
+	 */
 	getPriority() {
 		let priority = RoleIdentifier.getPriorityFromType(this.type);
 
 		if (priority === undefined)
-			return undefined;
+			return Number.POSITIVE_INFINITY;
 
 		const possible_roles = this.getPossibleRoles();
-		const canIncludeRoleInFaction = possible_roles.some(role =>{
-			return RoleManager.isRoleInPossibleFaction(role)
-		})
+		const canIncludeRoleInFaction = possible_roles.some(
+			/**
+			 * Determines if the given role is in the possible faction
+			 * @param {any} role The role
+			 * @returns {boolean} If the role is in the possible faction
+			 */
+			role => RoleManager.isRoleInPossibleFaction(role)
+		)
 
 		if (!canIncludeRoleInFaction && this.type !== RoleIdentifierType.SPECIFIC_ROLE)
 			priority += 4;
@@ -123,7 +151,6 @@ class RoleIdentifier {
 	}
 
 	/**
-	 *
 	 * @param {string[]} role_identifier_strings The list of role identifier strings you want to convert
 	 * @returns {RoleIdentifier[]} The converted role identifiers
 	 */
@@ -133,6 +160,12 @@ class RoleIdentifier {
 		)
 	}
 
+	/**
+	 * Compares two role identifiers for sorting purposes
+	 * @param {RoleIdentifier} role_identifier1 The first role identifier
+	 * @param {RoleIdentifier} role_identifier2 The second role identifier
+	 * @returns {number} A negative number if `role_identifier1` should be sorted before `role_identifier2`, a positive number if `role_identifier2` should be sorted before `role_identifier1`, and 0 if they should be sorted equally
+	 */
 	static compare(role_identifier1, role_identifier2) {
 		return role_identifier1.priority - role_identifier2.priority;
 	}
@@ -166,10 +199,18 @@ class RoleIdentifier {
 	}
 
 	getPossibleRoles() {
+		/**
+		 * @type {Record<string, any>[]}
+		 */
 		let possible_roles = [];
 
 		if (this.type === RoleIdentifierType.SPECIFIC_ROLE) {
-			possible_roles = [RoleManager.getListOfRoles().find(role => role.name.toLowerCase() === this.name.toLowerCase())];
+			const allRoles = RoleManager.getListOfRoles();
+			const rolesWithName = allRoles.filter(role =>
+				role.name.toLowerCase() === this.name.toLowerCase()
+			);
+
+			possible_roles = [...rolesWithName];
 		}
 		else if (this.type === RoleIdentifierType.RANDOM_ROLE_IN_FACTION_ALIGNMENT) {
 			possible_roles = RoleManager.getListOfRoles().filter( role_checking => {

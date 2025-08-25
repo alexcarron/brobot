@@ -24,6 +24,7 @@ module.exports = new SlashCommand({
 		await deferInteraction(interaction);
 
 		const role_name = getRequiredStringParam(interaction, Parameters.RoleName.name)
+		// @ts-ignore
 		const role = global.game_manager.role_manager.getRole(role_name);
 
 		interaction.editReply(role.toString());

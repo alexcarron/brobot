@@ -1,4 +1,4 @@
-import Discord from 'discord.js';
+import Discord, { Client, DiscordAPIError } from 'discord.js';
 import { Routes } from 'discord.js';
 import { SlashCommand } from '../services/command-creation/slash-command';
 import path from 'path';
@@ -12,10 +12,10 @@ const COMMANDS_DIR_PATH = path.join(__dirname, '..', COMMANDS_DIR_NAME);
 
 /**
  * Recursively finds all .js files in the given directory and all its subdirectories.
- * @param {string} directoryPath - The path of the directory to search in.
- * @returns {string[]} An array of paths of all .js files found.
+ * @param directoryPath - The path of the directory to search in.
+ * @returns An array of paths of all .js files found.
  */
-const getAllJSFilesIn = (directoryPath) => {
+const getAllJSFilesIn = (directoryPath: string): string[] => {
 	const jsFiles: string[] = [];
 	const jsFileExtensions = ['.js', '.ts'];
 
@@ -47,15 +47,15 @@ const getAllJSFilesIn = (directoryPath) => {
 /**
  * Collects all commands from the commands directory and returns them as an array of objects.
  * @returns {ApplicationCommandData[]} An array of all the commands.
- * @warns If a command is missing a required property, it will not be registered.
  */
 const getCommands = () => {
-	let commands: SlashCommand[] = [];
+	const commands: SlashCommand[] = [];
 
 	const commandFilePaths = getAllJSFilesIn(COMMANDS_DIR_PATH);
 
 	for (const commandFilePath of commandFilePaths) {
-    let commandModule = require(commandFilePath);
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const commandModule = require(commandFilePath);
 
     // command might be default export or named export
     // Possible patterns: default export, named export
@@ -87,22 +87,20 @@ const getCommands = () => {
 
 /**
  * Stores a slash command in memory on the client.
- * @param {Discord.Client} client The bot client.
- * @param {SlashCommand} command The slash command to store in memory.
- * @returns {void}
+ * @param client The bot client.
+ * @param command The slash command to store in memory.
  */
-const storeCommandInMemory = (client, command) => {
-	client.commands.set(command.data.name, command);
+const storeCommandInMemory = (client: Client, command: SlashCommand): void => {
+	global.commands.set(command.data.name, command);
 }
 
 /**
  * Stores all slash commands in memory on the client.
- * @param {Discord.Client} client The bot client.
- * @param {Array<SlashCommand>} commands The array of slash commands to store in memory.
- * @returns {void}
+ * @param client The bot client.
+ * @param commands The array of slash commands to store in memory.
  */
-const storeCommandsInMemory = (client, commands) => {
-	client.commands = new Discord.Collection();
+const storeCommandsInMemory = (client: Client, commands: SlashCommand[]): void => {
+	global.commands = new Discord.Collection();
 	commands.forEach(command =>
 		storeCommandInMemory(client, command)
 	);
@@ -110,19 +108,19 @@ const storeCommandsInMemory = (client, commands) => {
 
 /**
  * Filters an array of slash commands to only include the ones that are not restricted to any particular server.
- * @param {Array<SlashCommand>} commands The array of slash commands to filter.
- * @returns {Array<SlashCommand>} The filtered array of slash commands that are not restricted to any particular server.
+ * @param commands The array of slash commands to filter.
+ * @returns The filtered array of slash commands that are not restricted to any particular server.
  */
-const getGlobalCommands = (commands) => {
+const getGlobalCommands = (commands: SlashCommand[]): SlashCommand[] => {
 	return commands.filter(command => command.isGlobalCommand());
 }
 
 /**
  * Maps an array of slash commands to the guild IDs they are restricted to.
- * @param {Array<SlashCommand>} commands The array of slash commands to map.
- * @returns {Map<string, Array<SlashCommand>>} A map of guild IDs to arrays of slash commands that are restricted to that guild.
+ * @param commands The array of slash commands to map.
+ * @returns A map of guild IDs to arrays of slash commands that are restricted to that guild.
  */
-const mapGuildCommandsToGuildID = (commands) => {
+const mapGuildCommandsToGuildID = (commands: SlashCommand[]): Map<string, SlashCommand[]> => {
 	const guildIDtoCommands = new Map();
 
 
@@ -143,8 +141,9 @@ const mapGuildCommandsToGuildID = (commands) => {
 
 /**
  * Deploys all slash commands for the bot. This function is called by the {@link setupAndDeployCommands} function.
- * @param globalCommands - An array of all global slash commands that should be deployed.
- * @param guildIDtoGuildCommands - An object mapping each guild ID to an array of private slash commands that should be deployed in that guild.
+ * @param options - An object containing the following properties:
+ * @param options.globalCommands - An array of all global slash commands that should be deployed.
+ * @param options.guildIDtoGuildCommands - An object mapping each guild ID to an array of private slash commands that should be deployed in that guild.
  */
 const deployCommands = async (
 	{globalCommands = [], guildIDtoGuildCommands}: {
@@ -176,6 +175,9 @@ const deployCommands = async (
 				},
 			);
     } catch (error) {
+			if (error instanceof DiscordAPIError === false)
+				throw error;
+
 			if (error.code === 50001 || error.code === 20012) {
 				logWarning(`Bot is not in guild ${requiredServerID} or lacks permission.`);
 			}
@@ -225,14 +227,19 @@ const deployCommands = async (
 /**
  * Sets up all slash commands for the bot by reading all .js files in the 'commands' directory
  * and its subdirectories, and registering them with Discord.
- * @param {Discord.Client} client The bot client.
- * @returns {Promise<void>}
+ * @param options - An object containing the following properties:
+ * @param options.client - The bot client.
+ * @param options.skipGlobalCommands - A boolean indicating whether to skip deploying global commands.
  */
-export const setupAndDeployCommands = async ({client, skipGlobalCommands = false}) => {
+export const setupAndDeployCommands = async (
+	{client, skipGlobalCommands = false}: {
+		client: Client,
+		skipGlobalCommands?: boolean
+}): Promise<void> => {
 	const commands = getCommands();
 	storeCommandsInMemory(client, commands);
 
-	let globalCommands = [];
+	let globalCommands: SlashCommand[] = [];
 	const guildIDtoGuildCommands = mapGuildCommandsToGuildID(commands);
 
 	if (!skipGlobalCommands)
@@ -246,10 +253,9 @@ export const setupAndDeployCommands = async ({client, skipGlobalCommands = false
 
 /**
  * Sets up all slash commands in memory for the bot without redeploying them to the Discord API.
- * @param {Discord.Client} client The bot client.
- * @returns {void}
+ * @param client The bot client.
  */
-export const setupCommands = (client) => {
+export const setupCommands = (client: Client): void => {
 	const commands = getCommands();
 	storeCommandsInMemory(client, commands);
 }

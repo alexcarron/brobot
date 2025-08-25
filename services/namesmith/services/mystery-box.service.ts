@@ -1,11 +1,10 @@
 import { getRandomWeightedElement } from "../../../utilities/data-structure-utils";
-import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { CharacterRepository } from "../repositories/character.repository";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
 import { Character } from "../types/character.types";
-import { MysteryBox, MysteryBoxResolveable, MysteryBoxWithOdds } from "../types/mystery-box.types";
+import { MysteryBoxResolveable, MysteryBoxWithOdds } from "../types/mystery-box.types";
 import { MysteryBoxNotFoundError } from "../utilities/error.utility";
-import { isMysteryBox, isMysteryBoxWithOdds } from "../utilities/mystery-box.utility";
+import { isMysteryBoxWithOdds } from "../utilities/mystery-box.utility";
 
 /**
  * Provides methods for interacting with mystery boxes.
@@ -43,7 +42,7 @@ export class MysteryBoxService {
 			else
 				id = mysteryBoxResolvable;
 
-			let mysteryBox = this.mysteryBoxRepository.getMysteryBoxWithOdds(id);
+			const mysteryBox = this.mysteryBoxRepository.getMysteryBoxWithOdds(id);
 
 			if (mysteryBox === undefined)
 				throw new MysteryBoxNotFoundError(id.toString());
@@ -55,7 +54,7 @@ export class MysteryBoxService {
 	/**
 	 * Returns a character from the mystery box with the given ID. The character is chosen using the weighted random distribution of the mystery box.
 	 * @param mysteryBoxResolvable - The mystery box from which to retrieve a character.
-	 * The character retrieved from the mystery box.
+	 * @returns The character retrieved from the mystery box.
 	 */
 	openBox(mysteryBoxResolvable: MysteryBoxResolveable): Character {
 		const mysteryBox = this.resolveMysteryBox(mysteryBoxResolvable);

@@ -13,7 +13,7 @@ export const command = new SlashCommand({
 	execute: async function execute(interaction) {
 		await deferInteraction(interaction);
 
-		createBackup();
+		await createBackup();
 
 		await interaction.editReply(`Backup created successfully.`);
 	}

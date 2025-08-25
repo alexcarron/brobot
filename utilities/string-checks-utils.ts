@@ -25,6 +25,7 @@ export const getCharacterCounts = (
  * Checks if a string contains all the characters provided in the characters argument (case-sensitive, order does not matter).
  * @param characters the characters to check for in the string
  * @param stringToCheck the string to check
+ * @returns true if the string contains all the characters provided in the characters argument, false otherwise
  */
 export const areCharactersInString = (
 	characters: string | string[],

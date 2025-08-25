@@ -3,6 +3,7 @@ const { deferInteraction } = require('../../utilities/discord-action-utils');
 const { SlashCommand } = require('../../services/command-creation/slash-command');
 const { ButtonBuilder, ButtonStyle, ActionRowBuilder  } = require('discord.js');
 const { logInfo } = require('../../utilities/logging-utils');
+const Viewer = require('../../services/ll-points/viewer');
 
 module.exports = new SlashCommand({
 	name: "leaderboard",
@@ -15,6 +16,9 @@ module.exports = new SlashCommand({
 		const VIEWERS_PER_PAGE = 25;
 		const NUM_PAGES = Math.ceil(Object.keys(viewers).length / VIEWERS_PER_PAGE);
 		let current_page = 1;
+		/**
+		 * @type {Viewer[][]}
+		 */
 		const PAGES = [];
 
 		// Sort LL Point Manager based on LL points
@@ -31,23 +35,30 @@ module.exports = new SlashCommand({
 			PAGES.push(page_of_viewers);
 		}
 
-		const createLeaderboardEmbed = function(current_page) {
-			logInfo(`Create Embed #${current_page}`);
+
+		/**
+		 * Creates an embed for the leaderboard command with the viewers' names and
+		 * LL points, paginated by `VIEWERS_PER_PAGE`.
+		 * @param {number} currentPageNumber - The page of the leaderboard to create the embed for
+		 * @returns {Discord.EmbedBuilder} The leaderboard embed
+		 */
+		const createLeaderboardEmbed = function(currentPageNumber) {
+			logInfo(`Create Embed #${currentPageNumber}`);
 
 			// Create the leaderboard embed
 			const leaderboard_embed = new Discord.EmbedBuilder()
 				.setColor(0x1cc347)
-				.setTitle(`LL Point Leaderboard (Page ${current_page}/${NUM_PAGES})`)
+				.setTitle(`LL Point Leaderboard (Page ${currentPageNumber}/${NUM_PAGES})`)
 				.setDescription('Here are the top users based on their LL points:')
 				.setTimestamp();
 
-			const page = PAGES[current_page-1];
+			const page = PAGES[currentPageNumber-1];
 
 			// Add each viewer to the leaderboard embed
 			let embed_description = "";
 			for (let index in page) {
 				let viewer = page[index];
-				const rank = parseInt(index) + (current_page-1)*VIEWERS_PER_PAGE + 1;
+				const rank = parseInt(index) + (currentPageNumber-1)*VIEWERS_PER_PAGE + 1;
 				const username = viewer.name;
 				const ll_points = viewer.ll_points;
 
@@ -59,8 +70,16 @@ module.exports = new SlashCommand({
 			return leaderboard_embed;
 		}
 
-		const createLeaderboardMessage = async function(current_page) {
-			const leaderboard_embed = await createLeaderboardEmbed(current_page);
+
+		/**
+		 * Creates a message for the leaderboard command with a paginated leaderboard embed and
+		 * two buttons to navigate to the previous and next pages of the leaderboard.
+		 * @param {number} currentPageNumber - The page of the leaderboard to create the embed for
+		 * @returns {Promise<import('discord.js').InteractionUpdateOptions>} The message options for the leaderboard command
+		 */
+		const createLeaderboardMessage = async function(currentPageNumber) {
+			const leaderboard_embed = await createLeaderboardEmbed(currentPageNumber);
+
 			const left_button = new ButtonBuilder()
 				.setCustomId('left')
 				.setLabel("👈")
@@ -71,8 +90,11 @@ module.exports = new SlashCommand({
 				.setLabel("👉")
 				.setStyle(ButtonStyle.Secondary);
 
+			/**
+			 * @type {ActionRowBuilder<ButtonBuilder>}
+			 */
 			const action_row = new ActionRowBuilder()
-				.addComponents(left_button, right_button)
+			action_row.addComponents(left_button, right_button)
 
 			return {
 				embeds: [leaderboard_embed],
@@ -85,7 +107,20 @@ module.exports = new SlashCommand({
 		// @ts-ignore
 		const leaderboard_msg = await interaction.editReply(message_options);
 
+	/**
+	 * Waits for the user to interact with the buttons on the leaderboard message.
+	 * When the user clicks on a button, it updates the leaderboard message with the new page and waits again.
+	 * If the user waits too long, the function cancels and removes the buttons from the message.
+	 * @param {Discord.Message} message - The message to wait for button interactions on
+	 * @param {number} current_page - The current page of the leaderboard
+	 */
 		const readButtonInteractions = async function(message, current_page) {
+			/**
+			 * A filter function for the button interaction collector.
+			 * This filter only allows button interactions from the user who originally interacted with the command.
+			 * @param {Discord.Interaction} button_interaction - The button interaction to check
+			 * @returns {boolean} `true` if the button interaction is from the correct user, `false` otherwise
+			 */
 			const collectorFilter = function(button_interaction) {
 				return button_interaction.user.id === interaction.user.id;
 			};
@@ -93,7 +128,10 @@ module.exports = new SlashCommand({
 			let button_interaction;
 
 			try {
-				button_interaction = await message.awaitMessageComponent({ filter: collectorFilter, time: 60_000 });
+				button_interaction = await message.awaitMessageComponent({
+					filter: collectorFilter,
+					time: 60_000
+				});
 
 				if (button_interaction.customId === 'left') {
 					logInfo("User clicked Left on LL Point Leaderboard");

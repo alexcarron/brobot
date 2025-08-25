@@ -47,7 +47,7 @@ const GameState = Object.freeze({
  */
 class GameStateManager {
 	/**
-	 * @param {object} game - The game's current instance
+	 * @param {Record<string, any>} game - The game's current instance
 	 */
 	constructor(game) {
 		this.game = game;
@@ -59,7 +59,7 @@ class GameStateManager {
 
 	/**
 	 * The current phase the game is in
-	 * @type {object}
+	 * @type {Phase[keyof Phase]}
 	 */
 	get phase() {
 		return this.game.phase;
@@ -70,7 +70,7 @@ class GameStateManager {
 
 	/**
 	 * The current subphase the game is in
-	 * @type {object}
+	 * @type {Subphase[keyof Subphase]}
 	 */
 	get subphase() {
 		return this.game.subphase;
@@ -81,7 +81,7 @@ class GameStateManager {
 
 	/**
 	 * The current state the game is in
-	 * @type {object}
+	 * @type {GameState[keyof GameState]}
 	 */
 	get state() {
 		return this.game.state;

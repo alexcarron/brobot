@@ -4,6 +4,7 @@ const { SlashCommand } = require("../../../services/command-creation/slash-comma
 const { fetchChannelsInCategory, getRequiredStringParam, getGuildOfInteraction, fetchCategory, fetchChannelsOfGuild } = require("../../../utilities/discord-fetch-utils");
 const { deferInteraction, editReplyToInteraction } = require("../../../utilities/discord-action-utils");
 const { logInfo, logError } = require("../../../utilities/logging-utils");
+const { throwIfNotError } = require("../../../utilities/error-utils");
 
 const Parameters = {
 	CategoryChannelId: new Parameter({
@@ -39,7 +40,8 @@ module.exports = new SlashCommand({
 				logInfo(`Deleted ${channel.name}`);
 			}
 			catch (error) {
-				logError(error);
+				throwIfNotError(error);
+				logError('Failed to delete channel', error);
 			}
 		}
 

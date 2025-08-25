@@ -67,7 +67,7 @@ channelsToMessages
 
 	/**
 	 * Get the TextChannel object from a channel name
-	 * @param {string} channelName Name of a channel
+	 * @param {keyof typeof ids.ll_game_shows.channels} channelName Name of a channel
 	 * @returns {Promise<import("discord.js").GuildBasedChannel>} The TextChannel object
 	 */
 	async convertChannelNameToChannel(channelName) {
@@ -118,6 +118,7 @@ channelsToMessages
 		}
 
 		const messageContents = this.getRandomMessage(channelName);
+		// @ts-ignore
 		const channel = await this.convertChannelNameToChannel(channelName);
 
 		this.removeMessage(channelName, messageContents);

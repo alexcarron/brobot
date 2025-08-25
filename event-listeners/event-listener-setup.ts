@@ -1,16 +1,17 @@
 import {
   ChannelType,
   Events,
-  InteractionType,
   Client,
 	ButtonInteraction,
 	StringSelectMenuInteraction,
+	Message,
+	Interaction,
 } from "discord.js";
 import { onNormalMessageSent } from "./on-normal-message-sent";
 import { onDmRecieved } from "./on-dm-recieved";
 import { onSlashCommandExecuted } from "./on-slash-command-executed";
 import { onSlashCommandAutocomplete } from "./on-slash-command-autocomplete";
-import { isButtonPressedEvent, onButtonPressed } from "./on-button-pressed";
+import { isButtonPressedEvent } from "./on-button-pressed";
 import { onUserJoinsServer } from "./on-user-joins-server";
 import { logInfo, logSuccess } from "../utilities/logging-utils";
 import { onMessageDeleted } from "./on-message-deleted";
@@ -82,14 +83,13 @@ export const eventHandlers = {
 	onMenuOptionSelected: createEventHandler<StringSelectMenuInteraction>(),
 }
 
-const isDM = (message) =>
-	message.channel.type === ChannelType.DM ||
-	message.channel.type === ChannelType.GroupDM;
+const isDM = (message: Message): message is Message<false> =>
+	message.channel.type === ChannelType.DM;
 
-const isSlashCommand = (interaction) =>
+const isSlashCommand = (interaction: Interaction) =>
 	interaction.isChatInputCommand();
 
-const isSlashCommandAutoComplete = (interaction) =>
+const isSlashCommandAutoComplete = (interaction: Interaction) =>
 	interaction.isAutocomplete();
 
 /**
@@ -99,7 +99,7 @@ const isSlashCommandAutoComplete = (interaction) =>
  * @param {Client} client - The Discord client instance
  */
 const setupMessageSentListener =
-	(client) => {
+	(client: Client) => {
 
 		client.on(Events.MessageCreate,
 			async (message) => {
@@ -115,12 +115,9 @@ const setupMessageSentListener =
 	};
 
 const setupInteractionCreateListener =
-	(client) => {
+	(client: Client) => {
 		client.on(Events.InteractionCreate,
 			async (interaction) => {
-				console.log(`Interaction type: ${interaction.type}`);
-				console.log(`Interaction type: ${interaction.customId}`);
-
 				if (isSlashCommand(interaction))
 					await onSlashCommandExecuted(interaction);
 
@@ -130,20 +127,17 @@ const setupInteractionCreateListener =
 				if (isButtonPressedEvent(interaction))
 					await eventHandlers.onButtonPressed.runHandlers(interaction);
 
-				if (isMenuOptionSelectedEvent(interaction)) {
-					console.log("Menu option selected");
-					console.log(`eventHandlers: `, JSON.stringify(eventHandlers.onMenuOptionSelected.handlers.byID));
+				if (isMenuOptionSelectedEvent(interaction))
 					await eventHandlers.onMenuOptionSelected.runHandlers(interaction);
-				}
 			}
 		)
 	};
 
 const setupGuildMemberAddListener =
-	(client) => {
+	(client: Client) => {
 		client.on(Events.GuildMemberAdd,
-			(guildMember) => {
-				onUserJoinsServer(guildMember);
+			async (guildMember) => {
+				await onUserJoinsServer(guildMember);
 			}
 		);
 	};
@@ -154,7 +148,7 @@ const setupGuildMemberAddListener =
  * @param {Client} client The Discord client instance.
  */
 const setupMessageDeleteListener =
-	(client) => {
+	(client: Client) => {
 		client.on(Events.MessageDelete,
 			(message) => {
 				if (message.partial) return;
@@ -165,7 +159,7 @@ const setupMessageDeleteListener =
 		);
 	};
 
-export const setupEventListeners = (client) => {
+export const setupEventListeners = (client: Client) => {
 	logInfo("Setting up event listeners...");
 
 	setupMessageSentListener(client);

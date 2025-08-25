@@ -64,12 +64,14 @@ module.exports = new SlashCommand({
 			return await interaction.editReply(result_msg);
 
 		let current_ll_points = global.LLPointManager.viewers.get(viewer_name).ll_points;
+		// @ts-ignore
 		let accomplishment_key = Object.keys(LLPointAccomplishment).find(key => LLPointAccomplishment[key] === accomplishment);
 
 		if (accomplishment_key === undefined)
 			return await interaction.editReply(`The accomplishment, **${accomplishment}**, doesn't exist.`);
 
 		await interaction.editReply(
+			// @ts-ignore
 			`Giving **${viewer_name}** \`${LLPointReward[accomplishment_key]}\` LL Point(s) for "*${accomplishment}*"\n` +
 			`They now have \`${current_ll_points}\` LL Point(s).`
 		);

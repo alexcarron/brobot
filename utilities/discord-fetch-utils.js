@@ -474,6 +474,9 @@ const fetchMessagesInChannel = async (channel) => {
 	let keepFetching = true;
 
   while (keepFetching) {
+		/**
+		 * @type {import("discord.js").Collection<string, Message>}
+		 */
     const fetched = await channel.messages.fetch({
 			limit: 100,
 			before: oldestMessageID

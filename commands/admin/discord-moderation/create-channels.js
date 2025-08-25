@@ -73,6 +73,9 @@ module.exports = new SlashCommand({
 		channelName += "-1"
 
 		for (let numChannel = 1; numChannel <= amount; numChannel++) {
+			/**
+			 * @type {Parameters<createChannel>[0]}
+			 */
 			const channelOptions = {
 				guild: guild,
 				name: channelName,

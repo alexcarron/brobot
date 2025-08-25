@@ -17,6 +17,7 @@ import {
 } from "./discord-fetch.utility";
 import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { GuildMember, TextChannel } from "discord.js";
+import { MessageContentResolvable } from "../../../utilities/types/discord-types";
 
 const MAX_NAME_LENGTH = 32;
 const NO_NAME = "˙";
@@ -72,7 +73,7 @@ export const sendToPublishedNamesChannel = async (message: string): Promise<void
  * @param message The message to be sent.
  * @returns A promise that resolves once the message has been sent.
  */
-export const sendToNamesToVoteOnChannel = async (message: string): Promise<void> => {
+export const sendToNamesToVoteOnChannel = async (message: MessageContentResolvable): Promise<void> => {
 	const namesToVoteOnChannel = await fetchNamesToVoteOnChannel();
 	await namesToVoteOnChannel.send(message);
 }

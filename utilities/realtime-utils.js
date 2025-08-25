@@ -1,6 +1,6 @@
 /**
  * Waits for a specified duration of time.
- * @param {number|object} duration The duration of time to wait.
+ * @param {number | Record<string, number>} duration The duration of time to wait.
  *  If a number, it is interpreted as milliseconds.
  *  If an object, it should have the following properties:
  *   - milliseconds: number of milliseconds
@@ -8,7 +8,7 @@
  *   - minutes: number of minutes
  *   - hours: number of hours
  *   - days: number of days
- * @returns {Promise} A promise that resolves after the specified duration.
+ * @returns {Promise<void>} A promise that resolves after the specified duration.
  */
 const wait = (duration) => {
 	let totalMilliseconds;
@@ -28,7 +28,12 @@ const wait = (duration) => {
 		const hourAliases = ['h', 'hour', 'hours'];
 		const dayAliases = ['d', 'day', 'days'];
 
-		// Helper function to get the value from an object using a list of aliases
+		/**
+		 * Helper function to get the value from an object using a list of aliases
+		 * @param {Record<string, number>} duration - The duration object to get the value from
+		 * @param {string[]} aliases - The list of aliases to use
+		 * @returns {number} The value from the duration object
+		 */
 		const getValueFromAliases = (duration, aliases) => {
 			let value = 0;
 			aliases.forEach(alias => {

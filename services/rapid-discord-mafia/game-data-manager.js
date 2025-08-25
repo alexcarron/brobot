@@ -7,7 +7,7 @@ const { saveObjectToJsonInGitHub, loadObjectFromJsonInGitHub } = require('../../
  */
 class GameDataManager {
 	/**
-	 * @param {object} game_manager - The game's current instance
+	 * @param {Record<string, any>} game_manager - The game's current instance
 	 */
 	constructor(game_manager) {
 		this.game_manager = game_manager;
@@ -36,6 +36,13 @@ class GameDataManager {
 		return game_obj_copy;
 	}
 
+	/**
+	 * Sets the game's data from a simple copy of a game object.
+	 * This method is used to set the game's data from a github json file.
+	 * It sets all properties of the game manager to their corresponding values in the game object,
+	 * and also sets the player manager's players from the players property of the game object.
+	 * @param {Record<string, any>} game_obj - The game object to set the game's data from
+	 */
 	async setGameFromGameObj(game_obj) {
 		for (const property in game_obj) {
 			if (property === "next_deaths") {

@@ -29,7 +29,7 @@ export class QueryUsageError extends NamesmithError {
 export class MultiStatementQueryError extends QueryUsageError {
 	constructor(sqlQuery: string, params?: object | unknown[]) {
 		super(
-			 `SQL query contains more than one statement and parameters are not supported with multi-statement queries: ${sqlQuery}`,
+			`SQL query contains more than one statement and parameters are not supported with multi-statement queries: ${sqlQuery}`,
 			sqlQuery,
 			params
 		)
@@ -96,6 +96,9 @@ export class MysteryBoxNotFoundError extends ResourceNotFoundError {
 	}
 }
 
+/**
+ * Error thrown when a requested namesmith character is not found.
+ */
 export class CharacterNotFoundError extends ResourceNotFoundError {
 	constructor(characterID: number) {
 		super({
@@ -105,6 +108,9 @@ export class CharacterNotFoundError extends ResourceNotFoundError {
 	}
 }
 
+/**
+ * Error thrown when a requested namesmith recipe is not found.
+ */
 export class RecipeNotFoundError extends ResourceNotFoundError {
 	constructor(recipeID: number) {
 		super({
@@ -214,6 +220,9 @@ export class MissingRequiredCharactersError extends UserActionError {
 	}
 }
 
+/**
+ * Error thrown when a recipe is not unlocked for a player
+ */
 export class RecipeNotUnlockedError extends UserActionError {
 	constructor(player: Player, recipe: Recipe) {
 		super({

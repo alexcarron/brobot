@@ -1,7 +1,7 @@
 /**
  * An object containing the initial status of the bot
  */
-export const initialBotStatus = {
+export const initialBotStatus: typeof global.botStatus = {
 	/**
 	 * Whether Brobot is currently active
 	 */

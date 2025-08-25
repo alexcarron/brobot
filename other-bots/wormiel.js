@@ -250,7 +250,7 @@ let unusedMessages = [...originalMessages];
 
 /**
  * Returns a random element from the given array
- * @param {Array} arr The array to get a random element from
+ * @param {unknown[]} arr The array to get a random element from
  * @returns {*} The randomly selected element
  */
 function getRandom(arr) {

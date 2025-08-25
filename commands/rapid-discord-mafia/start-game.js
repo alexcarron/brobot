@@ -26,6 +26,9 @@ module.exports = new SlashCommand({
 		await deferInteraction(interaction);
 
 		role_identifiers_str = getRequiredStringParam(interaction, "role-identifiers");
+		/**
+		 * @type {string[]}
+		 */
 		const role_identifier_strings = role_identifiers_str.split(', ');
 
 		const player_count = global.game_manager.player_manager.getPlayerCount();

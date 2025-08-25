@@ -1,10 +1,10 @@
-const { PermissionFlagsBits } = require("discord.js");
 const { ids } = require("../../bot-config/discord-ids");
 const { ParameterType, Parameter } = require("../../services/command-creation/parameter");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { deferInteraction, createChannel, editReplyToInteraction, createEveryoneDenyViewPermission, addPermissionToChannel, memberHasRole } = require("../../utilities/discord-action-utils");
 const { fetchGuild, getUserParamValue, fetchGuildMember, fetchTextChannel, getRequiredStringParam } = require("../../utilities/discord-fetch-utils");
 const { createListFromWords } = require("../../utilities/string-manipulation-utils");
+const { PermissionNames } = require("../../utilities/constants/discord-permissions");
 
 const Parameters = {
 	Name: new Parameter({
@@ -107,7 +107,7 @@ module.exports = new SlashCommand({
 			await addPermissionToChannel({
 				channel: newChannel,
 				userOrRoleID: contestantID,
-				allowedPermissions: [PermissionFlagsBits.ViewChannel],
+				allowedPermissions: [PermissionNames.ViewChannel],
 			})
 		}
 

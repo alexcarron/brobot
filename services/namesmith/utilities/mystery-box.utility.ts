@@ -1,3 +1,4 @@
+import { isObject, isStringToNumberRecord } from "../../../utilities/types/type-guards";
 import { CharacterOdds, MysteryBox, MysteryBoxWithOdds } from "../types/mystery-box.types";
 
 /**
@@ -6,13 +7,9 @@ import { CharacterOdds, MysteryBox, MysteryBoxWithOdds } from "../types/mystery-
  * @returns If the value is an object with character keys and number values.
  */
 export const isCharacterOdds = (value: unknown): value is CharacterOdds => (
-	value !== null &&
-	typeof value === 'object' &&
+	isObject(value) &&
 	Object.keys(value).length > 0 &&
-	Object.keys(value).every((characterValue) =>
-		typeof characterValue === 'string' &&
-		typeof value[characterValue] === 'number'
-	)
+	isStringToNumberRecord(value)
 )
 
 /**

@@ -49,6 +49,8 @@ export class VoteService {
 	/**
 	 * Adds a new vote to the list of votes.
 	 * @param vote - The vote object to add.
+	 * @param vote.voterID - The ID of the user who votes.
+	 * @param vote.playerVotedForID - The ID of the player voted for.
 	 * @returns A promise that resolves with a message indicating the result of the vote.
 	 */
 	addVote({ voterID, playerVotedForID }: Vote): string {
@@ -78,7 +80,7 @@ export class VoteService {
 	logVoteCountPerPlayer() {
 		const votes = this.voteRepository.getVotes();
 
-		const voteCountPerPlayer = {};
+		const voteCountPerPlayer: Record<PlayerID, number> = {};
 
 		votes.forEach(vote => {
 			const { playerVotedForID } = vote;

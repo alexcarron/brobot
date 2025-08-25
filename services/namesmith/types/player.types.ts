@@ -5,9 +5,13 @@ export interface Player {
 	tokens: number;
 	role: string | null;
 	inventory: string;
-};
+}
 
-export interface DBPlayer extends Player {};
+/**
+ * DBPlayer represents a Player stored in the database.
+ * Currently identical to Player but kept for semantic clarity.
+ */
+export type DBPlayer = Player
 
 export type PlayerID = Player["id"];
 

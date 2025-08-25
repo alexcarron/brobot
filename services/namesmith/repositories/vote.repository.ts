@@ -52,6 +52,8 @@ export class VoteRepository {
 	/**
 	 * Checks if a vote with the given properties exists.
 	 * @param voteData - The vote data to check for.
+	 * @param voteData.voterID - The ID of the user who voted.
+	 * @param voteData.playerVotedForID - The ID of the player voted for.
 	 * @returns A promise that resolves with a boolean indicating if the vote exists.
 	 */
 	doesVoteExist({ voterID, playerVotedForID }: AtLeastOne<Vote>): boolean {
@@ -78,6 +80,8 @@ export class VoteRepository {
 	/**
 	 * Adds a new vote to the list of votes.
 	 * @param vote - The vote object to add.
+	 * @param vote.voterID - The ID of the user who voted.
+	 * @param vote.playerVotedForID - The ID of the player voted for.
 	 */
 	addVote({ voterID, playerVotedForID }: Vote) {
 		if (!voterID)
@@ -100,6 +104,8 @@ export class VoteRepository {
 	/**
 	 * Changes the vote of a user by replacing the vote with a new player voted for ID.
 	 * @param vote - The vote object with the new player ID.
+	 * @param vote.voterID - The ID of the user who voted.
+	 * @param vote.playerVotedForID - The ID of the player voted for.
 	 */
 	changeVote({ voterID, playerVotedForID }: Vote) {
 		if (!voterID)

@@ -1,5 +1,5 @@
 const { ids } = require("../../bot-config/discord-ids");
-const { PermissionFlagsBits, Role, ChatInputCommandInteraction, TextChannel } = require("discord.js");
+const { PermissionFlagsBits, ChatInputCommandInteraction, TextChannel } = require("discord.js");
 const Death = require("./death.js");
 const PlayerManager = require("./player-manager.js");
 const Player = require("./player.js");
@@ -16,7 +16,7 @@ const { getShuffledArray, getRandomElement } = require("../../utilities/data-str
 const { fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchRoleByName, fetchTextChannel } = require("../../utilities/discord-fetch-utils.js");
 const { addRoleToMember, removeRoleFromMember } = require("../../utilities/discord-action-utils.js");
 const { wait } = require("../../utilities/realtime-utils.js");
-const { Goal, Faction, RoleName } = require("./role.js");
+const { Goal, Faction, RoleName, Role } = require("./role.js");
 // const Logger = require("./Logger.js");
 const { Phase } = require("./game-state-manager.js");
 const { Announcement, Feedback } = require("./constants/possible-messages.js");
@@ -47,31 +47,39 @@ const CoinReward = Object.freeze({
 class GameManager {
 	/**
 	 * The current phase the game is in
-	 * @type {Phase}
+	 * @type {Phase[keyof Phase]}
 	 */
-	phase;
+	phase = Phase.NONE;
 
 	/**
 	 * The current subphase the game is in
-	 * @type {Subphase}
+	 * @type {Subphase[keyof Subphase]}
 	 */
-	subphase;
+	subphase = Subphase.NONE;
 
 	/**
 	 * The current state the game is in
-	 * @type {GameState}
+	 * @type {GameState[keyof GameState]}
 	 */
-	state;
+	state = GameState.ENDED;
 
 	/**
 	 * The number of FULL days that have passed (day and night phase). During night, half of a full day has passed
 	 * @type {number}
 	 */
-	days_passed;
+	days_passed = 0;
 
 	/**
 	 * An object map of players to the ability they performed
-	 * @type {{[player_name: string]: {by: string, name: string, args: {[ability_arg_name: string]: string}}}}
+	 * @type {{
+	 * 	[player_name: string]: {
+	 * 		by: string,
+	 * 		name: keyof typeof AbilityManager.abilities,
+	 * 		args: {
+	 * 			[ability_arg_name: string]: string
+	 * 		}
+	 * 	}
+	 * }}
 	 */
 	abilities_performed;
 
@@ -140,7 +148,7 @@ class GameManager {
 	next_deaths;
 
 	/**
-	 * @param {object} players - An object map of player names to player objects
+	 * @param {Record<string, Player>} players - An object map of player names to player objects
 	 * @param {Logger} logger - An instance of a logger
 	 * @param {boolean} isMockGame - Whether this is a mock game
 	 */
@@ -161,6 +169,9 @@ class GameManager {
 
 		this.timeout_counter = 0;
 		this.votes = {};
+		/**
+		 * @type {Record<string, string>}
+		 */
 		this.trial_votes = {};
 		this.verdict = ""
 		this.on_trial = ""
@@ -174,11 +185,29 @@ class GameManager {
 				}
 		 */
 		this.next_deaths = [];
+		/**
+		 * @type {string[]}
+		 */
 		this.winning_factions = [];
+		/**
+		 * @type {string[]}
+		 */
 		this.winning_players = [];
+		/**
+		 * @type {Record<string, any> & {name: string}[]}
+		 */
 		this.unshuffled_role_identifiers = [];
+		/**
+		 * @type {Record<string, any>[]}
+		 */
 		this.role_identifiers = [];
+		/**
+		 * @type {RoleName[keyof RoleName][]}
+		 */
 		this.role_list = [];
+		/**
+		 * @type {Record<string, any>}
+		 */
 		this.action_log = {};
 		this.abilities_performed = {}
 		this.isMockGame = isMockGame;
@@ -229,6 +258,11 @@ class GameManager {
 	sortAbilitiesPerformed() {
 		this.abilities_performed = Object.values(this.abilities_performed)
 		.sort(
+			/**
+			 * @param {{name: keyof typeof AbilityManager.abilities}} ability_done1 - The first ability
+			 * @param {{name: keyof typeof AbilityManager.abilities}} ability_done2 - The second ability
+			 * @returns {number} The priority of the first ability - the priority of the second ability
+			 */
 			(ability_done1, ability_done2) => {
 				const ability1 = this.ability_manager.getAbility(ability_done1.name);
 				const ability2 = this.ability_manager.getAbility(ability_done2.name);
@@ -257,7 +291,7 @@ class GameManager {
 	/**
 	 * Starts the game
 	 * @requires this.Players defined
-	 * @param {object[]} role_identifiers The unshuffled role identifier strings for the game
+	 * @param {{name: string}[]} role_identifiers The unshuffled role identifier strings for the game
 	 */
 	async start(role_identifiers) {
 		const
@@ -301,7 +335,7 @@ class GameManager {
 
 	/**
 	 * Sends a message with all the role identifiers for the game to the announcements and role list channel
-	 * @param {object[]} role_identifiers The unshuffled role identifiers for the game
+	 * @param {{name: string}[]} role_identifiers The unshuffled role identifiers for the game
 	 */
 	async announceRoleList(role_identifiers) {
 		const rdm_guild = await fetchRDMGuild();
@@ -365,7 +399,7 @@ class GameManager {
 
 	/**
 	 * Gets a list of possible roles a role identifier could be
-	 * @param {object} role_identifier - The role identifier
+	 * @param {Record<string, any>} role_identifier - The role identifier
 	 * @param {{[faction_name: string]: number}} num_roles_in_faction - A dictionary which keeps track of the number of roles that exist for each faction
 	 * @returns {Role[]} An array of all possible roles a role identifier could roll as
 	 */
@@ -374,6 +408,9 @@ class GameManager {
 			existing_factions = Object.keys(num_roles_in_faction),
 			needOpposingFactions = existing_factions.length <= 1;
 
+		/**
+		 * @type {Role[]}
+		 */
 		let possible_roles = role_identifier.getPossibleRoles();
 
 		if (role_identifier.type === RoleIdentifierType.ANY_ROLE) {
@@ -462,7 +499,7 @@ class GameManager {
 	/**
 	 * Gets a random role from a role identifier
 	 * @param {object} role_identifier - The role identifier
-	 * @param {{[faction_name: string]: number} | {}} num_roles_in_faction - A dictionary which keeps track of the number of roles that exist for each faction
+	 * @param {{[faction_name: string]: number}} num_roles_in_faction - A dictionary which keeps track of the number of roles that exist for each faction
 	 * @returns {Role} The random role the role identifier rolled
 	 */
 	getRoleFromRoleIdentifier(role_identifier, num_roles_in_faction) {
@@ -489,6 +526,9 @@ class GameManager {
 	 * @requires this.role_identifiers defined
 	 */
 	createRoleList() {
+		/**
+		 * @type {{[faction_name: string]: number}}
+		 */
 		let num_roles_in_faction = {}
 
 		const sorted_role_identifiers =
@@ -542,6 +582,11 @@ class GameManager {
 		this.resetDeaths();
 	}
 
+	/**
+	 * Sends a reminder to all players, or only voters if specified.
+	 * @param {string} reminder - The reminder message to send
+	 * @param {boolean} [votersOnly] - Whether to only send the reminder to players that can vote
+	 */
 	async remindPlayersTo(reminder, votersOnly=false) {
 		for (const player_name of this.player_manager.getAlivePlayerNames()) {
 			const player = this.player_manager.get(player_name);
@@ -675,6 +720,11 @@ class GameManager {
 		);
 	}
 
+	/**
+	 * Adds the ON_TRIAL role to a player in the Rapid Discord Mafia guild.
+	 * @param {Player} player_on_trial - The player to give the ON_TRIAL role to.
+	 * @returns {Promise<void>}
+	 */
 	async givePlayerOnTrialRole(player_on_trial) {
 		if (!this.isMockGame) {
 			const rdm_guild = await fetchRDMGuild();
@@ -719,7 +769,7 @@ class GameManager {
 
 		await this.updateCurrentAbilitiesPerformed();
 		this.logger.logDebug("Abilities To Perform:")
-		this.logger.logDebug(this.abilities_performed);
+		this.logger.logDebug(JSON.stringify(this.abilities_performed, null, 2));
 
 		this.action_log[this.state_manager.day_num-1] = [];
 
@@ -806,12 +856,24 @@ class GameManager {
 		this.logger.log(`Announced Night ${night_num}.`);
 	}
 
+	/**
+	 * Checks if a role is in a faction that is in the list of missing factions
+	 * @param {Role} role - The role to check
+	 * @param {string[]} missing_factions - The list of missing factions
+	 * @returns {boolean} True if the role is in a missing faction
+	 */
 	isRoleInMissingFaction(role, missing_factions) {
 		return missing_factions.some((missing_faction) => {
 			return GameManager.isRoleInFaction(role, missing_faction);
 		});
 	}
 
+	/**
+	 * Checks if a role identifier is in a faction that is in the list of missing factions
+	 * @param {Record<string, any>} identifier - The role identifier to check
+	 * @param {Faction[keyof Faction][]} missing_factions - The list of missing factions
+	 * @returns {boolean} True if the role identifier is in a missing faction
+	 */
 	isIdentifierInMissingFaction(identifier, missing_factions) {
 		return missing_factions.some((missing_faction) => {
 			if (identifier.faction == "Any")
@@ -823,8 +885,15 @@ class GameManager {
 		});
 	}
 
+	/**
+	 * Adds a death to the list of deaths to be announced.
+	 * If the player is already in the list, the kill is added to the existing death.
+	 * @param {Player} player - The player who died.
+	 * @param {Player} killer - The player who killed them.
+	 * @param {string} [flavor_text] - The flavor text for the kill.
+	 */
 	addDeath(player, killer, flavor_text) {
-		this.logger.log(this.next_deaths)
+		this.logger.log(JSON.stringify(this.next_deaths, null, 2));
 		const death_index = this.next_deaths.findIndex(
 			death => death.victim == player.name
 		);
@@ -842,20 +911,39 @@ class GameManager {
 
 	}
 
+	/**
+	 * Adds an ability to the list of abilities that will be performed by the given player
+	 * @param {object} parameters - Object containing player, ability_name, and ability_arguments
+	 * @param {Player} parameters.player - The player performing the ability
+	 * @param {keyof typeof AbilityManager.abilities} parameters.ability_name - The name of the ability to be performed
+	 * @param {object} parameters.ability_arguments - The arguments to be passed to the ability
+	 */
 	makePlayerDoAbility({player, ability_name, ability_arguments}) {
 		this.abilities_performed[player.name] =
 			{
 				"name": ability_name,
 				"by": player.name,
+				// @ts-ignore
 				"args": ability_arguments
 			}
 		this.sortAbilitiesPerformed();
 	}
 
+	/**
+	 * Determines the majority vote given a set of votes.
+	 * @param {Record<string, string>} votes - A mapping of player names to their votes.
+	 * @returns {string} The majority vote.
+	 */
 	getMajorityVote(votes) {
-		let majority_vote = VotingOutcome.NO_VOTES,
-			vote_counts = {},
-			max_vote_count = 0;
+		/**
+		 * @type {string}
+		 */
+		let majority_vote = VotingOutcome.NO_VOTES;
+		/**
+		 * @type {Record<string, number>}
+		 */
+		let vote_counts = {};
+		let max_vote_count = 0;
 
 		for (let voter in votes) {
 			let vote = votes[voter];
@@ -881,7 +969,14 @@ class GameManager {
 		return majority_vote;
 	}
 
+	/**
+	 * Checks if a role is in a given faction.
+	 * @param {Role} role - The role to check
+	 * @param {string} faction - The faction to check against
+	 * @returns {boolean} True if the role is in the faction, false otherwise
+	 */
 	static isRoleInFaction(role, faction) {
+		// @ts-ignore
 		if (Object.values(Faction).includes(faction)) {
 			return role.faction === faction;
 		} else {
@@ -889,6 +984,7 @@ class GameManager {
 		}
 	}
 
+	// @ts-ignore
 	static isRoleInPossibleFaction(role) {
 		return GameManager.POSSIBLE_FACTIONS.some(faction =>
 			GameManager.isRoleInFaction(role, faction)
@@ -913,6 +1009,7 @@ class GameManager {
 		}
 	}
 
+	// @ts-ignore
 	setRoleIdentfiers(role_identifiers) {
 		this.role_identifiers = role_identifiers;
 	}
@@ -953,6 +1050,7 @@ class GameManager {
 		}
 	}
 
+	// @ts-ignore
 	async announceMessages(...messages) {
 		for (let message of messages) {
 			await this.discord_service.announce(message);
@@ -998,6 +1096,7 @@ class GameManager {
 		}
 	}
 
+	// @ts-ignore
 	async startDay(days_passed_last_night) {
 		if (!this.state_manager.canStartDay(days_passed_last_night)) {
 			return
@@ -1034,6 +1133,7 @@ class GameManager {
 		await this.startVoting(days_passed_last_day);
 	}
 
+	// @ts-ignore
 	async startVoting(days_passed_last_day) {
 		if (!this.state_manager.canStartVoting(days_passed_last_day)) {
 			return
@@ -1065,6 +1165,7 @@ class GameManager {
 		}
 	}
 
+	// @ts-ignore
 	async startTrial(days_passed_last_voting) {
 		if (!this.state_manager.canStartTrial(days_passed_last_voting)) {
 			return
@@ -1120,6 +1221,7 @@ class GameManager {
 		}
 	}
 
+	// @ts-ignore
 	async startTrialResults(days_passed_last_trial) {
 		if (!this.state_manager.canStartTrialResults(days_passed_last_trial)) {
 			return
@@ -1152,6 +1254,7 @@ class GameManager {
 		}
 	}
 
+	// @ts-ignore
 	async startNight(days_passed_last_day) {
 		if (!this.state_manager.canStartNight(days_passed_last_day)) {
 			return
@@ -1190,6 +1293,7 @@ class GameManager {
 		}
 	}
 
+	// @ts-ignore
 	static async getAlivePlayersAutocomplete(interaction) {
 		let autocomplete_values;
 		const focused_param = await interaction.options.getFocused(true);
@@ -1229,6 +1333,7 @@ class GameManager {
 			return new Player({}, this.logger);
 		}
 
+		// @ts-ignore
 		const validateName = (name) => {
 			const nameRegex = /^[a-zA-Z0-9 ]+$/;
 
@@ -1268,6 +1373,7 @@ class GameManager {
 		let player_obj = {id: player_id, name: player_name};
 
 		if (this.isMockGame)
+			// @ts-ignore
 			player_obj.isMockPlayer = true;
 
 		const player = await this.player_manager.addPlayerFromObj(player_obj);
@@ -1284,10 +1390,15 @@ class GameManager {
 
 	getWhichFactionWon() {
 		let winning_faction = false,
+			// @ts-ignore
 			winning_players = [],
+			// @ts-ignore
 			living_factions = [], // Factions that just need the other factions eliminated to win
+			// @ts-ignore
 			living_lone_survival_roles = [], // Roles that need to survive while eliminating every other faction
+			// @ts-ignore
 			living_survival_roles = [], // Roles that only need to survive to the end
+			// @ts-ignore
 			living_survive_without_town_roles = [], // Roles that only need to survive to the end
 			alive_players = this.player_manager.getAlivePlayers()
 
@@ -1296,22 +1407,26 @@ class GameManager {
 
 			// Roles that need to survive while eliminating every other faction
 			if (player_role.goal == Goal.SURVIVE_ELIMINATED_OTHER_FACTIONS) {
+				// @ts-ignore
 				if (!living_lone_survival_roles.includes(player_role.name))
 					living_lone_survival_roles.push(player_role.name);
 			}
 			// Roles that only need to survive to the end
 			else if (player_role.goal == Goal.SURVIVE) {
+				// @ts-ignore
 				if (!living_survival_roles.includes(player_role.name))
 					living_survival_roles.push(player_role.name);
 			}
 			// Roles that need to survive while town loses
 			else if (player_role.goal == Goal.SURVIVE_UNTIL_TOWN_LOSES) {
+				// @ts-ignore
 				if (!living_survive_without_town_roles.includes(player_role.faction))
 				living_survive_without_town_roles.push(player_role.faction);
 
 			}
 			// Factions that just need the other factions eliminated to win
 			else if (player_role.goal == Goal.ELIMINATE_OTHER_FACTIONS) {
+				// @ts-ignore
 				if (!living_factions.includes(player_role.faction))
 					living_factions.push(player_role.faction);
 			}
@@ -1343,9 +1458,11 @@ class GameManager {
 				// @ts-ignore
 				winning_faction = faction_checking;
 				winning_players = [
+					// @ts-ignore
 					...winning_players,
 					...this.player_manager.getPlayerList()
 						.filter(p =>
+							// @ts-ignore
 							this.role_manager.getRole(p.role).faction == faction_checking && !winning_players.includes(p.name)
 						)
 						.map(p => p.name)
@@ -1379,9 +1496,11 @@ class GameManager {
 				// @ts-ignore
 				winning_faction = role_checking;
 				winning_players = [
+					// @ts-ignore
 					...winning_players,
 					...alive_players
 						.filter(p =>
+							// @ts-ignore
 							p.role == role_checking && !winning_players.includes(p.name)
 						)
 						.map(p => p.name)
@@ -1393,8 +1512,10 @@ class GameManager {
 
 		for (let role_checking of living_survival_roles) {
 			winning_players = [
+				// @ts-ignore
 				...winning_players,
 				...alive_players
+					// @ts-ignore
 					.filter(p => p.role == role_checking && !winning_players.includes(p.name))
 					.map(p => p.name)
 			];
@@ -1413,8 +1534,10 @@ class GameManager {
 			// @ts-ignore
 			if (winning_faction === Faction.TOWN) break;
 			winning_players = [
+				// @ts-ignore
 				...winning_players,
 				...alive_players
+					// @ts-ignore
 					.filter(p => p.role == role_checking && !winning_players.includes(p.name))
 					.map(p => p.name)
 			];
@@ -1431,13 +1554,17 @@ class GameManager {
 
 		if (winning_faction) {
 			if (this.winning_factions.length <= 0) {
+				// @ts-ignore
 				this.winning_factions = [winning_faction];
+				// @ts-ignore
 				this.winning_players = winning_players;
 			}
 			else {
+				// @ts-ignore
 				this.winning_factions.push(winning_faction);
 				this.winning_players = [
 					...this.winning_players,
+					// @ts-ignore
 					...winning_players
 				];
 			}
@@ -1469,7 +1596,7 @@ class GameManager {
 					death_announcement_msgs.push(kill.flavor_text);
 				}
 				else if (
-					[RoleName.MAFIOSO, RoleName.GODFATHER].includes(kill.killer_role)
+					kill.killer_role === RoleName.MAFIOSO
 				) {
 					if (index == 0)
 						death_announcement_msgs.push(
@@ -1526,8 +1653,7 @@ class GameManager {
 	promoteMafia() {
 		if (this.player_manager.isFactionAlive(Faction.MAFIA)) {
 			if (
-				!this.player_manager.isRoleAlive(RoleName.MAFIOSO) &&
-				!this.player_manager.isRoleAlive(RoleName.GODFATHER)
+				!this.player_manager.isRoleAlive(RoleName.MAFIOSO)
 			) {
 				const mafia_players = this.player_manager.getAlivePlayersInFaction(Faction.MAFIA)
 
@@ -1602,6 +1728,7 @@ class GameManager {
 		}
 
 		if (!this.isMockGame)
+			// @ts-ignore
 			await wait({seconds: "30"});
 
 		await GameManager.reset();
@@ -2072,7 +2199,6 @@ class GameManager {
 	}
 
 	/**
-	 *
 	 * @param {Player} player_using_ability - player who is using the ability
 	 * @param {Arg} ability_arg - argument validating
 	 * @param {string} arg_value - argument value
@@ -2134,6 +2260,7 @@ class GameManager {
 	}
 }
 
+// @ts-ignore
 GameManager.isMockGame = undefined;
 
 module.exports = {GameManager, MessageReadTime};

@@ -1,5 +1,5 @@
-const { GITHUB_TOKEN } = require("../../bot-config/token.js");
-const { GitHubJsonURL, saveObjectToJsonInGitHub } = require("../../utilities/github-json-storage-utils.js");
+const { User, AutocompleteInteraction, ChatInputCommandInteraction } = require("discord.js");
+const { saveObjectToJsonInGitHub, loadObjectFromJsonInGitHub } = require("../../utilities/github-json-storage-utils.js");
 const Viewer = require("./viewer.js");
 
 /**
@@ -11,32 +11,12 @@ class LLPointManager {
 		this.sha = "";
 	}
 
-	updateViewersFromDatabase() {
-		const { promisify } = require('util');
-		const request = promisify(require("request"));
-
-		const options = {
-			url: GitHubJsonURL.VIEWERS,
-			headers: {
-				'Authorization': `Token ${GITHUB_TOKEN}`
-			},
-		};
-
-
-		request(
-			options,
-			(error, response, body) => {
-				if (!error && response.statusCode == 200) {
-					let viewers = JSON.parse(body);
-					this.setViewers(viewers);
-				} else {
-					console.error(error);
-				}
-			}
-		)
-		.catch(err => {
-			console.error(err);
-		});
+	async updateViewersFromDatabase() {
+		/**
+		 * @type {any}
+		 */
+		const viewers = await loadObjectFromJsonInGitHub("viewers");
+		this.setViewers(viewers);
 	}
 
 	async updateDatabase() {
@@ -45,6 +25,11 @@ class LLPointManager {
 	}
 
 
+	/**
+	 * Sets the viewers for this manager based on the given object.
+	 * @param {Record<string, Viewer>} viewers_obj - An object where the keys are the names of the viewers
+	 * and the values are objects with the properties that the Viewer class accepts in its constructor.
+	 */
 	setViewers(viewers_obj) {
 		for (let name in viewers_obj) {
 			let viewer_properties = viewers_obj[name];
@@ -65,10 +50,18 @@ class LLPointManager {
 		return Array.from(this.viewers.values()).map(viewer => viewer.name);
 	}
 
+	/**
+	 * @param {string} user_id - The id of the user whose viewer to find.
+	 * @returns {Promise<Viewer | undefined>} A promise that resolves with the viewer associated with the given user id, or undefined if no viewer associated with the given user id exists.
+	 */
 	async getViewerById(user_id) {
 		return await this.getArrayOfViewers().find(viewer => viewer.user_id === user_id);
 	}
 
+	/**
+	 * Adds a viewer to the manager.
+	 * @param {Viewer} viewer - The viewer to add.
+	 */
 	addViewer(viewer) {
 		this.viewers.set(viewer.name, viewer);
 	}
@@ -89,6 +82,11 @@ class LLPointManager {
 		await this.updateDatabase();
 	}
 
+	/**
+	 * Creates a new viewer with the given user's username and user id.
+	 * The viewer is then added to the manager.
+	 * @param {User} viewer_user - The user whose information to use when creating the new viewer.
+	 */
 	addViewerFromUser(viewer_user) {
 		let new_viewer = new Viewer({
 			name: viewer_user.username,
@@ -99,10 +97,18 @@ class LLPointManager {
 		this.addViewer(new_viewer);
 	}
 
+	/**
+	 * Removes a viewer from the manager.
+	 * @param {Viewer} viewer - The viewer to remove.
+	 */
 	removeViewer(viewer) {
 		this.viewers.delete(viewer.name);
 	}
 
+	/**
+	 * @param {string} name - The name of the viewer to find.
+	 * @returns {Viewer | undefined} The viewer associated with the given name, or undefined if no viewer associated with the given name exists.
+	 */
 	getViewerByName(name) {
 		return this.viewers.get(name);
 	}
@@ -111,6 +117,11 @@ class LLPointManager {
 		return this.viewers.size;
 	}
 
+	/**
+	 * Returns the rank of a viewer in the manager, ranked by LL Points in descending order.
+	 * @param {string} name - The name of the viewer to find the rank of.
+	 * @returns {number} The rank of the viewer, or 0 if the viewer does not exist.
+	 */
 	getRankOfViewer(name) {
 		const sorted_viewers_array =
 			this.getArrayOfViewers().sort(
@@ -128,6 +139,13 @@ class LLPointManager {
 		return Array.from(this.viewers.values());
 	}
 
+	/**
+	 * Responds to an interaction with a list of autocomplete options based on the user's input.
+	 * The list of autocomplete options is filtered based on the entered value, and capped at 25.
+	 * If no options are found, a default message is returned.
+	 * @param {AutocompleteInteraction} interaction - The interaction to respond to.
+	 * @returns {Promise<void>}
+	 */
 	static async getViewersAutocompleteValues(interaction) {
 		let autocomplete_values;
 		const focused_param = await interaction.options.getFocused(true);
@@ -180,17 +198,27 @@ class LLPointManager {
 		}
 	}
 
+	/**
+	 * @param {ChatInputCommandInteraction} interaction - The interaction to get the user from
+	 * @returns {Promise<Viewer>} - The viewer associated with the user ID from the interaction. If the viewer does not exist, it will be created and added to the database.
+	 */
 	async getViewerOrCreateViewer(interaction) {
 		const user_id = interaction.user.id;
 		const viewer = await this.getViewerById(user_id);
 
 		if (!viewer) {
-			interaction.channel.send(`You have not been added to the LL Point database yet. You will be added as **${interaction.user.username}**`);
+			if (interaction.channel !== null)
+				interaction.channel.send(`You have not been added to the LL Point database yet. You will be added as **${interaction.user.username}**`);
+
 			this.addViewerFromUser(interaction.user);
 
 			await this.updateDatabase();
 
-			return await this.getViewerById(interaction.user.id);
+			const viewer = await this.getViewerById(interaction.user.id);
+			if (!viewer) {
+				throw new Error(`Viewer ${interaction.user.username} could not be found in the database after being added.`);
+			}
+			return viewer
 		}
 		else {
 			return viewer

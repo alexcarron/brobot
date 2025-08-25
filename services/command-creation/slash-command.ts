@@ -85,7 +85,7 @@ export class SlashCommand {
 		required_permissions = [],
 		parameters = [],
 		execute,
-		autocomplete = async (interaction: AutocompleteInteraction) => {},
+		autocomplete = async () => {},
 		isInDevelopment = false,
 	}: {
 		name: string;
@@ -146,16 +146,13 @@ export class SlashCommand {
 
 		data.setDMPermission(this.allowsDMs)
 
-		const command = this;
-		command.data = data;
-
-		return command;
+		this.data = data;
+		return this;
 	}
 
 	/**
 	 * Determines if the command is a global command that can be run in any server.
-	 *
-	 * @return Whether the command is a global command.
+	 * @returns Whether the command is a global command.
 	 */
 	isGlobalCommand(): boolean {
 		return this.required_servers.length <= 0;
@@ -163,8 +160,7 @@ export class SlashCommand {
 
 	/**
 	 * Determines if the command is a server-based command that can only be run in specific servers.
-	 *
-	 * @return Whether the command is a server-based command.
+	 * @returns Whether the command is a server-based command.
 	 */
 	isServerBasedCommand(): boolean {
 		return !this.isGlobalCommand();
@@ -172,10 +168,10 @@ export class SlashCommand {
 
 	/**
 	 * Finds a parameter by its name from the command's parameters.
-	 * @param {string} name - The name of the parameter to search for.
-	 * @returns {Parameter | undefined} The found parameter, or undefined if not found.
+	 * @param name - The name of the parameter to search for.
+	 * @returns The found parameter, or undefined if not found.
 	 */
-	getParamByName(name) {
+	getParamByName(name: string): Parameter | undefined {
 		return this.parameters.find(parameter =>
 			parameter.name.toLowerCase() === name.toLowerCase()
 		);

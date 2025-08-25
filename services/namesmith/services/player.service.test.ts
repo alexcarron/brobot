@@ -30,7 +30,6 @@ import { createMockPlayerObject, mockPlayers } from "../repositories/mock-reposi
 import { PlayerRepository } from "../repositories/player.repository";
 import { changeDiscordNameOfPlayer, sendToPublishedNamesChannel, sendToNamesToVoteOnChannel, resetMemberToNewPlayer } from "../utilities/discord-action.utility";
 import { fetchNamesmithGuildMembers } from "../utilities/discord-fetch.utility";
-import { PlayerNotFoundError, NotAPlayerError } from "../utilities/error.utility";
 import { createMockPlayerService } from "./mock-services";
 import { PlayerService } from "./player.service";
 

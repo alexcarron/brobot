@@ -11,6 +11,9 @@ module.exports = new SlashCommand({
 	execute: async function(interaction) {
 		await deferInteraction(interaction);
 
+		/**
+		 * @type {Record<string, Record<string, string[]>>}
+		 */
 		const role_names_in_faction = {};
 		let message = "";
 

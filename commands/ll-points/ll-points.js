@@ -33,20 +33,25 @@ const command = new SlashCommand({
 			specified_viewer_name = getStringParamValue(interaction, Parameters.ViewerName.name),
 			noSpecifiedUser = !specified_viewer_name,
 			num_total_viewers = global.LLPointManager.getNumViewers(),
-			getViewer = async function(viewer_name) {
-				if (noSpecifiedUser) {
-					let viewer = await global.LLPointManager.getViewerById(interaction.user.id);
+			getViewer =
+				/**
+				 * @param {string} viewer_name - The name of the viewer whose LL point amount you want to see
+				 * @returns {Promise<{name: string, ll_points: number, tier: string} | undefined>} A promise that resolves with the viewer associated with the given name
+				 */
+				async function(viewer_name) {
+					if (noSpecifiedUser) {
+						let viewer = await global.LLPointManager.getViewerById(interaction.user.id);
+						if (viewer)
+							return viewer;
+					}
+
+					viewer = global.LLPointManager.getViewerByName(viewer_name);
 					if (viewer)
 						return viewer;
+
+					logInfo(`No viewer with name ${viewer_name} or id ${interaction.user.id}`);
+					return undefined;
 				}
-
-				viewer = global.LLPointManager.getViewerByName(viewer_name);
-				if (viewer)
-					return viewer;
-
-				logInfo(`No viewer with name ${viewer_name} or id ${interaction.user.id}`);
-				return undefined;
-			}
 
 		let viewer,
 			viewer_name,

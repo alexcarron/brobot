@@ -7,8 +7,33 @@ import { dbPath } from './get-database';
 import * as cron from 'node-cron';
 
 const backupDirectory = path.join(__dirname, 'backups');
-const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-const backupPath = path.join(backupDirectory, `namesmith-backup-${timestamp}.db`);
+
+/**
+ * Returns a timestamp string that can be used for file names.
+ * The returned string is in the format "YYYY-MM-DD-HH-mm-ss".
+ * This is safe to use as a filename as it does not contain any special characters.
+ * @returns {string} A timestamp string that can be used as a filename.
+ */
+const createTimestamp = () =>
+	new Date().toISOString().replace(/[:.]/g, '-');
+
+/**
+ * Returns a string that can be used as a filename for a database backup.
+ * The returned string is of the form "namesmith-backup-<timestamp>.db".
+ * The timestamp is in the format "YYYY-MM-DD-HH-mm-ss".
+ * This is safe to use as a filename as it does not contain any special characters.
+ * @returns {string} A string that can be used as a filename for a database backup.
+ */
+const createBackupFileName = () =>
+	`namesmith-backup-${createTimestamp()}.db`;
+
+/**
+ * Returns the path to the backup file that will be created when calling createBackup.
+ * The path is of the form "<backupDirectory>/namesmith-backup-<timestamp>.db".
+ * @returns {string} The path to the backup file.
+ */
+const createPathToBackup = () =>
+	path.join(backupDirectory, createBackupFileName());
 
 /**
  * Creates a backup of the database.
@@ -16,20 +41,19 @@ const backupPath = path.join(backupDirectory, `namesmith-backup-${timestamp}.db`
  * The backup will be named "namesmith-backup-<timestamp>.db".
  * If the backup fails, an error will be logged.
  */
-export const createBackup = (): void => {
+export const createBackup = async (): Promise<void> => {
   try {
-    logInfo('Starting database backup...');
-
     // Ensure the backup directory exists
     fs.ensureDirSync(backupDirectory);
 
     // Open the database in read-only mode
     const db = new Database(dbPath, { readonly: true });
+		const backupPath = createPathToBackup();
 
     // Use the SQLite .backup command to create a backup
     db.pragma('journal_mode = WAL');
     db.pragma('foreign_keys = ON');
-    db.backup(backupPath);
+    await db.backup(backupPath);
 
     logSuccess(`Backup completed successfully: ${backupPath}`);
   }
@@ -46,17 +70,16 @@ export const createBackup = (): void => {
  * Starts a cron job that runs the backup every hour.
  * @returns The scheduled cron job instance.
  */
-export function startBackupCronJob() {
+export async function startBackupCronJob() {
   logInfo('Starting hourly backup cron job...');
 
   // Schedule: At minute 0 past every hour
-  const task = cron.schedule('6 * * * *', () => {
-    logInfo('Running scheduled backup...');
-    createBackup();
+  const task = cron.schedule('6 * * * *', async () => {
+    await createBackup();
   });
 
   // Start the cron job immediately
-  task.start();
+  await task.start();
 
   return task;
-};
+}

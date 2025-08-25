@@ -8,6 +8,7 @@ const { findStringStartingWith } = require('../../utilities/string-manipulation-
 const { confirmInteractionWithButtons } = require('../../utilities/discord-action-utils.js');
 const { logInfo } = require('../../utilities/logging-utils.js');
 const { getRequiredStringParam, getRequiredNumberParam } = require('../../utilities/discord-fetch-utils.js');
+const Viewer = require('../../services/ll-points/viewer.js');
 
 
 const Parameters = {
@@ -42,6 +43,11 @@ module.exports = new SlashCommand({
 	execute: async function(interaction) {
 		await deferInteraction(interaction, "Adding LL Points...");
 
+		/**
+		 * @param {string} id The id of the user to look up
+		 * @param {string} name The name of the user to look up
+		 * @returns {Promise<Viewer | undefined>} The viewer if found, otherwise undefined
+		 */
 		const getViewer = async function(id, name) {
 			let gifter_viewer = await global.LLPointManager.getViewerById(interaction.user.id);
 
@@ -76,6 +82,10 @@ module.exports = new SlashCommand({
 				await global.LLPointManager.addViewerFromUser(interaction.user);
 				await global.LLPointManager.updateDatabase();
 				gifter_viewer = await global.LLPointManager.getViewerById(interaction.user.id);
+
+				if (!gifter_viewer) {
+					throw new Error(`Viewer ${interaction.user.username} could not be found in the database after being added.`);
+				}
 			}
 
 		}

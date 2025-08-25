@@ -32,7 +32,15 @@ module.exports = new SlashCommand({
 		let existing_new_viewer = await global.LLPointManager.getViewerByName(viewer_name);
 		let existing_new_viewer_by_id = await global.LLPointManager.getViewerById(viewer_id);
 
+		if (existing_new_viewer_by_id === undefined) {
+			return await interaction.editReply(`The viewer, **${viewer_name}**, doesn't exist in the database.`);
+		}
+
+
 		if (!existing_new_viewer && !existing_new_viewer_by_id) {
+			/**
+			 * @type {Record<string, any>}
+			 */
 			let new_viewer_obj = {
 				name: viewer_name,
 				ll_points: 0,

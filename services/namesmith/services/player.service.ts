@@ -6,7 +6,7 @@ import { addButtonToMessageContents } from "../../../utilities/discord-action-ut
 import { fetchNamesmithGuildMember, fetchNamesmithGuildMembers } from "../utilities/discord-fetch.utility";
 import { isPlayer } from "../utilities/player.utility";
 import { attempt, InvalidArgumentError } from "../../../utilities/error-utils";
-import { PlayerNotFoundError, PlayerAlreadyExistsError, NotAPlayerError, NameTooLongError } from "../utilities/error.utility";
+import { PlayerNotFoundError, PlayerAlreadyExistsError, NameTooLongError } from "../utilities/error.utility";
 import { Inventory, Player, PlayerID, PlayerResolvable } from '../types/player.types';
 import { IfPresent } from "../../../utilities/types/generic-types";
 import { removeCharactersAsGivenFromEnd, removeMissingCharacters } from "../../../utilities/string-manipulation-utils";
@@ -30,7 +30,7 @@ export class PlayerService {
 	 * Resolves a player from the given resolvable.
 	 * @param playerResolvable - The player resolvable to resolve.
 	 * @returns The resolved player object.
-	* @throws {Error} If the player resolvable is invalid or the player is not found.
+	 * @throws {Error} If the player resolvable is invalid or the player is not found.
 	 */
 	resolvePlayer(playerResolvable: PlayerResolvable): Player {
 		if (isPlayer(playerResolvable)) {
@@ -123,7 +123,6 @@ export class PlayerService {
 
 	/**
 	 * Adds a character to the end of the current name of a player.
-	 *
 	 * @param playerResolvable - The player whose name to add a character to.
 	 * @param character - The character to add to the current name.
 	 * @throws {NameTooLongError} If the new name is too long.
@@ -139,7 +138,6 @@ export class PlayerService {
 
 	/**
 	 * Adds characters to the end of the current name of a player.
-	 *
 	 * @param playerResolvable - The player whose name to add characters to.
 	 * @param characters - The character(s) to add to the current name.
 	 * @throws {NameTooLongError} If the new name is too long.
@@ -157,7 +155,6 @@ export class PlayerService {
 	 * Removes characters from the current name of a player, from the end of the string.
 	 * If the characters to remove exceed the length of the current name, the current name is cleared.
 	 * @param playerResolvable - The player resolvable whose name to remove characters from.
-	 * @param characters - The characters to remove from the current name.
 	 * @returns The new current name of the player.
 	 */
 	private async removeMissingCharactersFromName(

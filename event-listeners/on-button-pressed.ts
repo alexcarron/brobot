@@ -12,6 +12,7 @@ export function onButtonPressed(
 /**
  * Adds an action to be completed when a button is pressed
  * @param idOrDoOnButtonPressed - The action to be completed
+ * @param maybeDoOnButtonPressed - The action to be completed
  */
 export function onButtonPressed(
 	idOrDoOnButtonPressed:
@@ -30,7 +31,7 @@ export function onButtonPressed(
 		const doOnButtonPressed = idOrDoOnButtonPressed;
 		eventHandlers.onButtonPressed.addHandler(doOnButtonPressed);
 	}
-};
+}
 
 /**
  * Checks if an interaction is a button press

@@ -1,12 +1,20 @@
 const { createListFromWords } = require("../../utilities/string-manipulation-utils");
 const { getChildCreaturesOf, assertAreCreatures, assertIsCreature } = require("./creature-utils");
 
+/**
+ * @param {unknown} creature - The creature to format
+ * @returns {string} - The formatted creature
+ */
 const getCreatureText = creature => {
 	assertIsCreature(creature);
 
 	return `[${creature.name}](${creature.link})`;
 }
 
+/**
+ * @param {unknown[]} creatures - The creatures to format
+ * @returns {string} - The formatted creatures
+ */
 const getCreaturesText = creatures => {
 	assertAreCreatures(creatures);
 
@@ -18,8 +26,8 @@ const getCreaturesText = creatures => {
 /**
  * Recursively generate a string of all child creatures of each creature in the
  * childCreatures array, indented by numParents levels.
- * @param {object[]} childCreatures - An array of creature objects
- * @param {object[]} creatures - An array of all creature objects
+ * @param {import("./creature-utils").Creature[]} childCreatures - An array of creature objects
+ * @param {import("./creature-utils").Creature[]} creatures - An array of all creature objects
  * @param {number} [numParents] - The number of levels of indentation to use
  * @returns {string} - A string of all child creatures indented by numParents levels
  */

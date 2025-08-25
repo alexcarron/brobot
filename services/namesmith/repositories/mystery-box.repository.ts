@@ -41,7 +41,7 @@ export class MysteryBoxRepository {
 		return mysteryBoxes.map(mysteryBox => {
 			const characterOdds = characterOddsRows
 				.filter(row => row.mysteryBoxID === mysteryBox.id)
-				.reduce((characterOdds, oddsRow) => {
+				.reduce<CharacterOdds>((characterOdds, oddsRow) => {
 					characterOdds[getCharacterValueFromID(oddsRow.characterID)] = oddsRow.weight;
 					return characterOdds;
 				}, {});
@@ -83,10 +83,11 @@ export class MysteryBoxRepository {
 			WHERE mysteryBoxID = @id
 		`).all({ id }) as DBCharacterOddsRow[];
 
-		const characterOdds = characterOddsRows.reduce((characterOdds, oddsRow) => {
-			characterOdds[getCharacterValueFromID(oddsRow.characterID)] = oddsRow.weight;
-			return characterOdds;
-		}, {});
+		const characterOdds = characterOddsRows
+			.reduce<CharacterOdds>((characterOdds, oddsRow) => {
+				characterOdds[getCharacterValueFromID(oddsRow.characterID)] = oddsRow.weight;
+				return characterOdds;
+			}, {});
 
 		return {
 			...mysteryBox,
@@ -104,9 +105,10 @@ export class MysteryBoxRepository {
 		const getCharacterOdds = this.db.prepare(query);
 		const characterOddsRows = getCharacterOdds.all({ mysteryBoxID }) as DBCharacterOddsRow[];
 
-		return characterOddsRows.reduce((characterOdds, oddsRow) => {
-			characterOdds[oddsRow.characterID] = oddsRow.weight;
-			return characterOdds;
-		}, {});
+		return characterOddsRows
+			.reduce<CharacterOdds>((characterOdds, oddsRow) => {
+				characterOdds[oddsRow.characterID] = oddsRow.weight;
+				return characterOdds;
+			}, {});
 	}
 }

@@ -22,10 +22,9 @@ export class DatabaseQuerier {
 	 * @param error - The error that occurred
 	 * @param sqlQuery - The SQL query that was run
 	 * @param params - The parameters that were passed to the query, if any
-	 * @returns A RunResult with changes and lastInsertRowid set to -1
 	 * @throws If the error is not a multi-statement query error or a foreign key constraint error
 	 */
-	private handleError(error: unknown, sqlQuery: string, params?: object | unknown[]): RunResult {
+	private handleError(error: unknown, sqlQuery: string, params?: object | unknown[]): void {
 		if (
 			error === null ||
 			typeof error !== "object" ||
@@ -60,9 +59,10 @@ export class DatabaseQuerier {
   getQuery(sqlQuery: string) {
     const queryStatement =
 			attempt(() => this.db.prepare(sqlQuery))
-				.onError((error) =>
+				.onError((error) => {
 					this.handleError(error, sqlQuery)
-				)
+					throw error;
+				})
 				.getReturnValue();
 
 		const executeMethod = <ReturnType>(

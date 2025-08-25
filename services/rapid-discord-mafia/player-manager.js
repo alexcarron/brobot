@@ -26,6 +26,12 @@ class PlayerManager {
 	 */
 	isMockPlayerManager;
 
+	/**
+	 * @param {Record<string, Player>} players - A map of player names to their player object
+	 * @param {Record<string, any>} game_manager - The game manager for this player manager
+	 * @param {Logger} [logger] - The logger for this player manager
+	 * @param {boolean} [isMockPlayerManager] - Whether this is a mock player manager used for testing
+	 */
 	constructor(players = {}, game_manager, logger=new Logger(), isMockPlayerManager=false) {
 		this.game_manager = game_manager;
 		this.players = players;
@@ -43,10 +49,20 @@ class PlayerManager {
 		return this.players;
 	}
 
+	/**
+	 * Gets a player from the player list by id
+	 * @param {string} id - The id of the player to get
+	 * @returns {Player | undefined} The player with the given id, or undefined if the player is not found
+	 */
 	getPlayerFromId(id) {
 		return this.getPlayerList().find(player => player.id === id);
 	}
 
+	/**
+	 * Gets a player from the player list by name
+	 * @param {string} name - The name of the player to get
+	 * @returns {Player | undefined} The player with the given name, or undefined if the player is not found
+	 */
 	getPlayerFromName(name) {
 		return this.getPlayerList().find(player => player.name === name);
 	}
@@ -58,6 +74,11 @@ class PlayerManager {
 		this.players[player.name] = player;
 	}
 
+	/**
+	 * Creates a new player from an object and adds it to the player list
+	 * @param {object} player_obj - The object to create a player from
+	 * @returns {Promise<Player>} The newly created player
+	 */
 	async addPlayerFromObj(player_obj) {
 		const player = new Player(player_obj, this.logger);
 		await this.addPlayer(player);
@@ -65,7 +86,6 @@ class PlayerManager {
 	}
 
 	/**
-	 *
 	 * @param {string} name The name of the player getting
 	 * @returns {Player} player gettings
 	 */
@@ -92,6 +112,10 @@ class PlayerManager {
 		return this.getPlayerList().filter( player => player.role === "Executioner" );
 	}
 
+	/**
+	 * @param {string} role_name - The name of the role to get all players of
+	 * @returns {Player[]} An array of all players with the given role
+	 */
 	getPlayersWithRole(role_name) {
 		return this.getPlayerList().filter( player => player.role === role_name );
 	}
@@ -100,6 +124,10 @@ class PlayerManager {
 		return this.getPlayerList().filter( player => player.isInLimbo);
 	}
 
+	/**
+	 * @param {string} role_name - The name of the role to get the first player of
+	 * @returns {Player | undefined} The first player with the given role, or undefined if none are found
+	 */
 	getPlayerWithRole(role_name) {
 		return this.getPlayerList().find( player => player.role === role_name );
 	}
@@ -112,6 +140,11 @@ class PlayerManager {
 		return this.getPlayerList().filter( player => player.isAlive );
 	}
 
+	/**
+	 * Gets all players in a given faction
+	 * @param {Faction[keyof Faction]} faction - The faction to get all players of
+	 * @returns {Player[]} An array of all players in the given faction
+	 */
 	getPlayersInFaction(faction) {
 		return this.getPlayerList().filter(
 			player => {
@@ -125,6 +158,11 @@ class PlayerManager {
 		);
 	}
 
+	/**
+	 * Gets all alive players in a given faction
+	 * @param {Faction[keyof Faction]} faction - The faction to get all alive players of
+	 * @returns {Player[]} An array of all alive players in the given faction
+	 */
 	getAlivePlayersInFaction(faction) {
 		return this.getAlivePlayers().filter(
 			player => {
@@ -149,10 +187,20 @@ class PlayerManager {
 		return alive_players;
 	}
 
+	/**
+	 * Removes a player from the game
+	 * @param {string} player_name - The name of the player to remove
+	 */
 	removePlayer(player_name) {
 		delete this.players[player_name];
 	}
 
+	/**
+	 * Renames a player from the game
+	 * @param {string} old_name - The old name of the player
+	 * @param {string} new_name - The new name of the player
+	 * @returns {Promise<void>}
+	 */
 	async renamePlayer(old_name, new_name) {
 		this.players[new_name] = this.players[old_name];
 		delete this.players[old_name];
@@ -175,6 +223,11 @@ class PlayerManager {
 		}
 	}
 
+	/**
+	 * Checks if there is at least one alive player in a faction.
+	 * @param {Faction[keyof Faction]} faction - The faction to check
+	 * @returns {boolean} Whether there is at least one alive player in the given faction
+	 */
 	isFactionAlive(faction) {
 		return this.getAlivePlayers().some(
 			player => {
@@ -188,6 +241,11 @@ class PlayerManager {
 		)
 	}
 
+	/**
+	 * Checks if a given role is still alive
+	 * @param {RoleName[keyof RoleName]} role - The role to check
+	 * @returns {boolean} Whether the role is still alive
+	 */
 	isRoleAlive(role) {
 		return this.getAlivePlayers().some(player =>
 			player.role === role
@@ -216,7 +274,7 @@ class PlayerManager {
 				actual_phases_inactive < Player.MAX_INACTIVE_PHASES
 			) {
 				const remaining_inactive_phases = Player.MAX_INACTIVE_PHASES-actual_phases_inactive;
-				await player.sendFeedback(Feedback.INACTIVITY_WARNING(this, actual_phases_inactive, remaining_inactive_phases));
+				await player.sendFeedback(Feedback.INACTIVITY_WARNING(player, actual_phases_inactive, remaining_inactive_phases));
 			}
 		}
 	}

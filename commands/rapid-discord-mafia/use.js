@@ -4,10 +4,11 @@ const { deferInteraction } = require("../../utilities/discord-action-utils");
 const { ids } = require("../../bot-config/discord-ids");
 const AbilityManager = require("../../services/rapid-discord-mafia/ability-manager.js");
 const { toTitleCase } = require("../../utilities/string-manipulation-utils");
-const { fetchRDMGuild, fetchTextChannel, getStringParamValue, getRequiredStringParam } = require("../../utilities/discord-fetch-utils.js");
+const { fetchRDMGuild, fetchTextChannel, getRequiredStringParam } = require("../../utilities/discord-fetch-utils.js");
 const { AbilityUseCount, AbilityName } = require("../../services/rapid-discord-mafia/ability.js");
 const { Faction } = require("../../services/rapid-discord-mafia/role.js");
 const { AbilityArgType, ArgumentSubtype } = require("../../services/rapid-discord-mafia/arg.js");
+const RDMPlayer = require("../../services/rapid-discord-mafia/player");
 
 const parameters = [
 	new Parameter({
@@ -17,7 +18,10 @@ const parameters = [
 	}),
 ];
 
-for (const ability_name in AbilityManager.abilities) {
+/** @type {keyof typeof AbilityManager.abilities} */
+let ability_name;
+
+for (ability_name in AbilityManager.abilities) {
 	const ability = AbilityManager.abilities[ability_name];
 
 	if (
@@ -81,11 +85,12 @@ module.exports = new SlashCommand({
 	execute: async function(interaction, isTest) {
 		await deferInteraction(interaction);
 
-		let player, ability_name;
+		let player;
+		let ability_name;
 
 		// Get player from user or player name argument
 		if (isTest) {
-			const player_name = getStringParamValue(interaction, "player-name");
+			const player_name = getRequiredStringParam(interaction, "player-name");
 			console.log({player_name});
 			player = global.game_manager.player_manager.get(player_name);
 			console.log(player);
@@ -111,9 +116,16 @@ module.exports = new SlashCommand({
 			ability_name = subcommand_name.split("-").map(name => toTitleCase(name)).join(" ");
 		}
 
-		let arg_values = {}, ability_using;
+		/**
+		 * @type {Record<string, string>}
+		 */
+		let arg_values = {}
+		let ability_using;
 		if (ability_name !== AbilityName.NOTHING) {
 			// Organize command parameter values into arg_values
+			/**
+			 * @type {Record<string, string>}
+			 */
 			arg_values = {};
 			ability_using = Object.values(AbilityManager.abilities).find(ability =>
 				ability.name === ability_name
@@ -146,7 +158,7 @@ module.exports = new SlashCommand({
 					arg_param_value = ability_argument[1];
 				}
 				else {
-					arg_param_value = getStringParamValue(interaction, arg_param_name);
+					arg_param_value = getRequiredStringParam(interaction, arg_param_name);
 				}
 				arg_values[ability_arg.name] = arg_param_value;
 			}
@@ -155,6 +167,7 @@ module.exports = new SlashCommand({
 		/** @type {string | boolean} */
 		let can_use_ability_feedback = true;
 		if (ability_name !== AbilityName.NOTHING) {
+			// @ts-ignore
 			const ability = AbilityManager.abilities[ability_name];
 
 			if (ability) {
@@ -172,6 +185,7 @@ module.exports = new SlashCommand({
 		if (typeof can_use_ability_feedback === "string")
 			return await interaction.editReply(can_use_ability_feedback);
 
+		// @ts-ignore
 		const ability = global.game_manager.ability_manager.getAbility(ability_name);
 		const ability_feedback = player.useAbility(ability, arg_values);
 		await global.game_manager.data_manager.saveToGithub();
@@ -194,7 +208,10 @@ module.exports = new SlashCommand({
 		global.game_manager.startDayIfAllPlayersActed();
 	},
 	autocomplete: async function(interaction) {
-		let autocomplete_values;
+		/**
+		 * @type {{name: string, value: string}[]}
+		 */
+		let autocomplete_values = [];
 		const focused_param = interaction.options.getFocused(true);
 
 		if (!focused_param) return;
@@ -272,6 +289,11 @@ module.exports = new SlashCommand({
 					}
 				)
 				.reduce(
+					/**
+					 * @param {{name: string, value: string}[]} accumValue - The accumulated autocomplete values
+					 * @param {RDMPlayer} prevPlayer - The previous player
+					 * @returns {{name: string, value: string}[]} The accumulated autocomplete values
+					 */
 					(accumValue, prevPlayer) => {
 						return [
 							...accumValue,
@@ -282,10 +304,10 @@ module.exports = new SlashCommand({
 				);
 		}
 
-		if (Object.values(autocomplete_values).length <= 0) {
+		if (autocomplete_values.length <= 0) {
 			autocomplete_values = [{name: "Sorry, there are no players left to choose from", value: "N/A"}];
 		}
-		else if (Object.values(autocomplete_values).length > 25) {
+		else if (autocomplete_values.length > 25) {
 			autocomplete_values.splice(25);
 		}
 

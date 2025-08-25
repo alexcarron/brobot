@@ -43,6 +43,15 @@ const ArgumentSubtype = Object.freeze({
  * Class representing an Arg for an Ability
  */
 class Arg {
+	/**
+	 * Creates a new Arg.
+	 * @param {object} options - The options to create the Arg with
+	 * @param {string} options.name - The name of the Arg
+	 * @param {string} options.description - The description of the Arg
+	 * @param {AbilityArgType[keyof AbilityArgType]} options.type - The type of the Arg
+	 * @param {ArgumentSubtype[keyof ArgumentSubtype][]} options.subtypes - The subtypes of the Arg
+	 * @param {string} [options.value] - The value of the Arg
+	 */
 	constructor( { name, description, type, subtypes, value="" } ) {
 		this.name = name;
 		this.description = description;

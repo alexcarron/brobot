@@ -9,8 +9,16 @@ const { AbilityName } = require("../services/rapid-discord-mafia/ability");
 const Player = require("../services/rapid-discord-mafia/player");
 const { Feedback } = require("../services/rapid-discord-mafia/constants/possible-messages");
 
+/**
+ * Called when a message is sent to the bot and the bot is configured to convert
+ * the message to speech in the user's voice channel.
+ * @param {Message} message The message sent to the bot.
+ */
 const onTTSMessageSent = async (message) => {
 	logInfo(`TTS Message Sent: ${message.content}`);
+
+	if (message.guild === null)
+		return;
 
 	const guildMember = await fetchGuildMember(message.guild, message.author.id);
 	const voiceChannel = guildMember.voice.channel;
@@ -20,6 +28,9 @@ const onTTSMessageSent = async (message) => {
 
 
 	const botVCPermissions = voiceChannel.permissionsFor(message.client.user);
+
+	if (botVCPermissions === undefined || botVCPermissions === null)
+		return;
 
 	const botHasConnectPermission = botVCPermissions.has(PermissionsBitField.Flags.Connect);
 	const botHasSpeakPermission = botVCPermissions.has(PermissionsBitField.Flags.Speak);
@@ -39,6 +50,13 @@ const onTTSMessageSent = async (message) => {
 	TextToSpeechHandler.addUsersMessageToQueue(message, voiceConnection);
 }
 
+/**
+ * Called when a message is sent to a channel that is a kidnapped player's channel.
+ * If the message is from the kidnapped player, and the player is still kidnapped,
+ * this will send a message to all the players that kidnapped the speaking player
+ * with the contents of the message and the kidnapped player's name.
+ * @param {Message} message - The message sent to the bot.
+ */
 const onRDMKidnapperMessageSent = (message) => {
 	// TODO: Encapsulate logic in rapid discord mafia service
 	const kidnapped_players = global.game_manager.player_manager.getPlayerList()

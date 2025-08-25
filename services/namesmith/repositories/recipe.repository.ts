@@ -1,5 +1,5 @@
 import { InvalidArgumentError } from "../../../utilities/error-utils";
-import { IfPresent, Possibly } from "../../../utilities/types/generic-types";
+import { IfPresent } from "../../../utilities/types/generic-types";
 import { DatabaseQuerier } from "../database/database-querier";
 import { DBRecipe, Recipe, RecipeID } from "../types/recipe.types";
 

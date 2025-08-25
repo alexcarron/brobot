@@ -9,24 +9,13 @@ class Effect {
 	name;
 
 	/**
-	 * The function that applies the effect.
-	 * @type {(
-	 * 	game?: object,
-	 * 	player_using_ability?: object,
-	 * 	ability?: object,
-	 * 	arg_values?: {[arg_name: string]: string}
-	 * ) => Promise<void> | void}
-	 */
-	applyEffect;
-
-	/**
 	 * An effect applied to a player using an ability or having an ability used on them.
 	 * @param {object} options - The options for the effect.
 	 * @param {string} options.name - The name of the effect.
 	 * @param {(
-	 * 	game?: object,
-	 * 	player_using_ability?: object,
-	 * 	ability?: object,
+	 * 	game: Record<string, any>,
+	 * 	player_using_ability: Record<string, any>,
+	 * 	ability: Record<string, any>,
 	 * 	arg_values?: {[arg_name: string]: string}
 	 * ) => Promise<void> | void} options.applyEffect - The function that applies the effect.
 	 */

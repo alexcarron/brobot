@@ -1,9 +1,9 @@
-const { PermissionFlagsBits } = require("discord.js");
 const { ids } = require("../../bot-config/discord-ids");
 const { Parameter, ParameterType } = require("../../services/command-creation/parameter");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { deferInteraction, addPermissionToChannel, editReplyToInteraction, memberHasRole } = require("../../utilities/discord-action-utils");
 const { fetchGuild, fetchGuildMember, fetchTextChannel, getCategoryOfInteraction, getRequiredUserParam, getTextChannelOfInteraction } = require("../../utilities/discord-fetch-utils");
+const { PermissionNames } = require("../../utilities/constants/discord-permissions");
 
 const Parameters = {
 	Contestant: new Parameter({
@@ -60,7 +60,7 @@ module.exports = new SlashCommand({
 		await addPermissionToChannel({
 			channel: allianceChannel,
       userOrRoleID: contestantAdded.id,
-      allowedPermissions: [PermissionFlagsBits.ViewChannel],
+      allowedPermissions: [PermissionNames.ViewChannel],
 		});
 
 		allianceChannel.send(`${commandUser} added ${contestantAdded} to the alliance`);

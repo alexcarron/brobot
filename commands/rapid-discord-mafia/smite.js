@@ -25,6 +25,12 @@ module.exports = new SlashCommand({
 
 		const player_name = getRequiredStringParam(interaction, Parameters.PlayerSmiting.name);
 		const player = global.game_manager.player_manager.getPlayerFromName(player_name);
+
+		if (player === undefined) {
+			await interaction.editReply(`There is no player with the name **${player_name}**`);
+			return;
+		}
+
 		await global.game_manager.player_manager.smitePlayer(player);
 		await interaction.editReply(`You have smited **${player.name}**`);
 	},

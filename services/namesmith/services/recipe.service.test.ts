@@ -144,13 +144,13 @@ describe('RecipeService', () => {
 		});
 
 		it('should throw an error if the player is not found', async () => {
-			makeSure(
+			await makeSure(
 				recipeService.takeInputCharactersFromPlayer(MOCK_RECIPE.id, "000000000000000000000")
 			).eventuallyThrows(PlayerNotFoundError);
 		});
 
 		it('should throw an error if the recipe is not found', async () => {
-			makeSure(
+			await makeSure(
 				recipeService.takeInputCharactersFromPlayer(-999, mockPlayers[0].id)
 			).eventuallyThrows(RecipeNotFoundError);
 		});
@@ -176,13 +176,13 @@ describe('RecipeService', () => {
 		});
 
 		it('should throw an error if the player is not found', async () => {
-			makeSure(
+			await makeSure(
 				recipeService.giveOutputCharacterToPlayer(MOCK_RECIPE.id, "000000000000000000000")
 			).eventuallyThrows(PlayerNotFoundError);
 		});
 
-		it('should throw an error if the recipe is not found', () => {
-			makeSure(
+		it('should throw an error if the recipe is not found', async () => {
+			await makeSure(
 				recipeService.giveOutputCharacterToPlayer(-999, mockPlayers[0].id)
 			).eventuallyThrows(RecipeNotFoundError);
 		});

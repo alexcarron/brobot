@@ -15,7 +15,7 @@ const GitHubJsonURL = Object.freeze({
 /**
  * Saves an object to a specified json file path in the GitHub repository
  * If the file already exists, it will be updated, otherwise it will be created
- * @param {object} object - The object to save
+ * @param {Record<string, unknown>} object - The object to save
  * @param {string} jsonFileName - The name of the json file to save to
  */
 const saveObjectToJsonInGitHub = async (object, jsonFileName) => {
@@ -44,6 +44,14 @@ const saveObjectToJsonInGitHub = async (object, jsonFileName) => {
 		logWarning(`File ${jsonFileName} does not exist in GitHub, creating new file`);
 	}
 
+	/**
+	 * The request body to send to the GitHub API
+	 * @type {{
+	 *   message: string,
+	 *   content: string,
+	 *   sha?: string
+	 * }}
+	 */
 	const requestBody = {
 		// The message will be used to create a commit in the GitHub repository
 		message: `Update ${jsonFileName}`,
@@ -75,7 +83,9 @@ const saveObjectToJsonInGitHub = async (object, jsonFileName) => {
 		);
 	}
 	catch (error) {
-		logError("Error saving object to GitHub", error);
+		if (error instanceof Error) {
+			logError("Error saving object to GitHub", error);
+		}
 		throw error;
 	}
 };
@@ -84,7 +94,7 @@ const saveObjectToJsonInGitHub = async (object, jsonFileName) => {
  * Loads an object from a specified json file path in the GitHub repository
  * If the file does not exist, it will be created and an empty object will be returned
  * @param {string} jsonFileName - The name of the json file to load from
- * @returns {Promise<object>} The object loaded from the file
+ * @returns {Promise<Record<string, unknown>>} The object loaded from the file
  */
 const loadObjectFromJsonInGitHub = async (jsonFileName) => {
 	const path = `${jsonFileName}.json`;
@@ -106,7 +116,18 @@ const loadObjectFromJsonInGitHub = async (jsonFileName) => {
 		file = response.data;
 	}
 	catch (error) {
-		if (error.response.status === 404) {
+		if (error instanceof Error === false) {
+			throw error;
+		}
+
+		if (
+			'response' in error &&
+			typeof error.response === 'object' &&
+			error.response !== null &&
+			'status' in error.response &&
+			typeof error.response.status === 'number' &&
+			error.response.status === 404
+		) {
 			// If the file doesn't exist, create it with an empty object
 			await saveObjectToJsonInGitHub({}, jsonFileName);
 			return {};

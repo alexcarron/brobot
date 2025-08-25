@@ -21,9 +21,14 @@ module.exports = new SlashCommand({
 	execute: async function execute(interaction) {
 		await interaction.deferReply({ephemeral: true});
 
-		let player_id = interaction.user.id,
-			old_player_name = global.game_manager.player_manager.getPlayerFromId(player_id).name,
-			new_player_name = getRequiredStringParam(interaction, "name");
+		let player_id = interaction.user.id;
+		let old_player = global.game_manager.player_manager.getPlayerFromId(player_id);
+
+		if (old_player === undefined)
+			return await interaction.editReply("You are not in the game.");
+
+		let old_player_name = old_player.name;
+		let new_player_name = getRequiredStringParam(interaction, "name");
 
 
 		if ( global.game_manager.state !== GameState.SIGN_UP ) {
@@ -34,6 +39,11 @@ module.exports = new SlashCommand({
 			return await interaction.editReply(`The name, **${new_player_name}**, already exists.`)
 		}
 
+	/**
+	 * Validates a player name
+	 * @param {string} name - The name to validate
+	 * @returns {string|boolean} - The error message if the name is invalid, or true if the name is valid
+	 */
 		const validateName = (name) => {
 			const nameRegex = /^[a-zA-Z0-9 ]+$/;
 
@@ -50,7 +60,7 @@ module.exports = new SlashCommand({
 		};
 
 		const validator_result = validateName(new_player_name);
-		if (validator_result !== true)
+		if (validator_result !== true && validator_result !== false)
 			return await interaction.editReply(validator_result);
 
 		await global.game_manager.player_manager.renamePlayer(old_player_name, new_player_name);

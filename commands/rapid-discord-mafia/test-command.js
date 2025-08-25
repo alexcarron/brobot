@@ -133,6 +133,7 @@ module.exports = new SlashCommand({
 		// Fake Joins
 		if (subcommand === "start-with-fake-joins") {
 
+			// @ts-ignore
 			if ( [GameState.SIGN_UP, GameState.IN_PROGRESS].includes(global.game_manager.state) ) {
 				return interaction.editReply("There's already a game in sign-ups or in progress.");
 			}

@@ -1,8 +1,10 @@
 const { Collection } = require("discord.js");
+const { InvalidArgumentError } = require("./error-utils");
+const { isStringToUnknownRecord, isArray } = require("./types/type-guards");
 
 /**
  * Sets a nested property in an object.
- * @param {object} object - The object that contains the property to be set.
+ * @param {Record<string, unknown>} object - The object that contains the property to be set.
  * @param {Array<string>} propertyPath - The path to the property to be set, as an array of strings.
  * @param {*} value - The value to be set for the property.
  */
@@ -29,7 +31,10 @@ const setNestedProperty = (object, propertyPath, value) => {
 		object[topLevelProperty] = {};
 	}
 
-	// Go one level deeper in the object
+	if (!isStringToUnknownRecord(object[topLevelProperty])) {
+		throw new InvalidArgumentError(`setNestedProperty: Value of property "${topLevelProperty}" is not an object.`);
+	}
+
 	setNestedProperty(
 		object[topLevelProperty],
 		propertyPath.slice(1),
@@ -39,7 +44,7 @@ const setNestedProperty = (object, propertyPath, value) => {
 
 /**
  * Appends a value to a nested property in an object. If the property does not exist, it is created.
- * @param {object} object - The object that contains the property to be set.
+ * @param {Record<string, unknown>} object - The object that contains the property to be set.
  * @param {Array<string>} propertyPath - The path to the property to be set, as an array of strings.
  * @param {*} value - The value to be appended to the property.
  */
@@ -57,7 +62,10 @@ const appendToNestedProperty = (object, propertyPath, value) => {
 
 	if (propertyPath.length == 1) {
 		if (object[topLevelProperty]) {
-			object[topLevelProperty].push(value);
+			if (isArray(object[topLevelProperty]))
+				object[topLevelProperty].push(value);
+			else
+				throw new InvalidArgumentError(`appendToNestedProperty: Value of property "${topLevelProperty}" is not an array.`);
 		} else {
 			object[topLevelProperty] = [value];
 		}
@@ -70,6 +78,10 @@ const appendToNestedProperty = (object, propertyPath, value) => {
 		object[topLevelProperty] = {};
 	}
 
+	if (!isStringToUnknownRecord(object[topLevelProperty])) {
+		throw new InvalidArgumentError(`appendToNestedProperty: Value of property "${topLevelProperty}" is not an object.`);
+	}
+
 	// Go one level deeper in the object
 	appendToNestedProperty(
 		object[topLevelProperty],
@@ -78,6 +90,12 @@ const appendToNestedProperty = (object, propertyPath, value) => {
 	);
 }
 
+/**
+ * Swaps the elements at the two given indices in the given array.
+ * @param {unknown[]} array - The array to be modified.
+ * @param {number} index1 - The index of the first element to be swapped.
+ * @param {number} index2 - The index of the second element to be swapped.
+ */
 const swapArrayElements = (array, index1, index2) => {
 	let valueOfIndex1 = array[index1];
 	let valueOfIndex2 = array[index2];
@@ -88,8 +106,9 @@ const swapArrayElements = (array, index1, index2) => {
 
 /**
  * Returns a copy of the given array, shuffled randomly.
- * @param {Array} array - The array to be shuffled.
- * @returns {Array} A shuffled copy of the given array.
+ * @template ElementType
+ * @param {ElementType[]} array - The array to be shuffled.
+ * @returns {ElementType[]} A shuffled copy of the given array.
  */
 const getShuffledArray = (array) => {
 	if (!Array.isArray(array))
@@ -116,7 +135,7 @@ const getShuffledArray = (array) => {
 
 /**
  * Checks if all given arrays have the same elements.
- * @param {...Array} arrays - The arrays to be compared.
+ * @param {...unknown[]} arrays - The arrays to be compared.
  * @returns {boolean} True if all arrays have the same elements, false otherwise.
  */
 const arraysHaveSameElements = (...arrays) => {
@@ -165,7 +184,7 @@ const arraysHaveSameElements = (...arrays) => {
 
 /**
  * Gets a random element from an array.
- * @param {Array} array - The array to get a random element from.
+ * @param {unknown[]} array - The array to get a random element from.
  * @returns {*} A random element from the passed array.
  * @throws {Error} If the given value is not an array.
  * @throws {Error} If the array is empty.

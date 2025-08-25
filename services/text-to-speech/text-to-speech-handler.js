@@ -6,6 +6,7 @@ const { wrapTextByLineWidth, removeLinks, removeEmojis } = require('../../utilit
 const { logError, logSuccess, logInfo } = require('../../utilities/logging-utils');
 const { default: axios } = require('axios');
 const fs = require('fs');
+const { Message } = require('discord.js');
 ffmpeg.setFfmpegPath(ffmpegPath);
 
 /**
@@ -13,9 +14,21 @@ ffmpeg.setFfmpegPath(ffmpegPath);
  */
 class TextToSpeechHandler {
 	constructor() {
+		/**
+		 * @type {{user_id: string, text: string}[]}
+		 * @private
+		 */
 		this._messages = [];
 		this._isPlaying = false;
 		this._isWaitingToDie = false;
+		/**
+		 * @type {{
+		 * 	user_id: string,
+		 * 	channel_id: string,
+		 * 	name: string | null,
+		 * }[]}
+		 * @private
+		 */
 		this._toggled_users = [];
 		this._speedMultiplier = 1.5;
 		this._volumeMultiplier = 0.5;
@@ -75,14 +88,38 @@ class TextToSpeechHandler {
 		"cy",
 	]
 
+	/**
+	 * Sets the speed multiplier for the audio output. The speed multiplier is a
+	 * number between 0.5 and 2 that controls how fast the audio is played. The
+	 * default value is 1.
+	 * @param {number} speed - The speed multiplier to use. Must be between 0.5 and 2.
+	 * @returns {undefined}
+	 */
 	setSpeedMultiplier(speed) {
 		this._speedMultiplier = speed;
 	}
 
+	/**
+	 * Sets the volume multiplier for the audio output. The volume multiplier is a
+	 * number between 0 and 1 that controls how loud the audio is played. The
+	 * default value is 0.5.
+	 * @param {number} volume - The volume multiplier to use. Must be between 0 and 1.
+	 * @returns {undefined}
+	 */
 	setVolumeMultiplier(volume) {
 		this._volumeMultiplier = volume;
 	}
 
+	/**
+	 * Adds a user to the toggled users list. The toggled user list is a list of users
+	 * that have toggled the TTS for a specific channel. The user is added with the
+	 * given user_id, channel_id, and name. If the user is already toggled, this will
+	 * update the name.
+	 * @param {string} user_id - The user id of the user to add.
+	 * @param {string} channel_id - The channel id of the channel the user is adding.
+	 * @param {string | null} name - The name to use for the user when speaking in the channel.
+	 * @returns {undefined}
+	 */
 	addToggledUser(user_id, channel_id, name=null) {
 		this._toggled_users.push(
 			{
@@ -93,30 +130,75 @@ class TextToSpeechHandler {
 		);
 	}
 
+	/**
+	 * Removes a user from the toggled users list. The user is removed based on
+	 * the user_id provided. If the user is not found, nothing happens.
+	 * @param {string} user_id - The user id of the user to remove.
+	 * @returns {undefined}
+	 */
 	removeToggledUser(user_id) {
-		this._toggled_users = this._toggled_users.filter(toggle => toggle.user_id !== user_id);
+		this._toggled_users = this._toggled_users.filter(toggle =>
+			toggle.user_id !== user_id
+		);
 	}
 
+	/**
+	 * Checks if a user has toggled TTS for a specific channel.
+	 * @param {string} user_id - The user id of the user to check.
+	 * @param {string} channel_id - The channel id of the channel to check.
+	 * @returns {boolean} Whether the user has toggled TTS for the channel.
+	 */
 	isUserToggledWithChannel(user_id, channel_id) {
-		return this._toggled_users.some(toggle => toggle.user_id === user_id && toggle.channel_id === channel_id);
+		return this._toggled_users.some(toggle =>
+			toggle.user_id === user_id &&
+			toggle.channel_id === channel_id
+		);
 	}
 
+	/**
+	 * Finds a toggled user in the toggled users list by their user_id. If the user
+	 * is found, their toggle object is returned. If the user is not found, undefined
+	 * is returned.
+	 * @param {string} user_id - The user id of the user to find.
+	 * @returns {{
+	 * 	user_id: string,
+	 * 	channel_id: string,
+	 * 	name: string | null
+	 * } | undefined} The toggle object of the user, or undefined.
+	 */
 	getToggledUser(user_id) {
-		const toggle = this._toggled_users.find(toggle => toggle.user_id === user_id);
+		const toggle = this._toggled_users.find(toggle =>
+			toggle.user_id === user_id
+		);
+
 		if (toggle)
 			return toggle;
 		else
 			return undefined;
 	}
 
+	/**
+	 * Finds a toggled user in the toggled users list by their user_id and returns
+	 * their name if they are found. If the user is not found, undefined is
+	 * returned.
+	 * @param {string} user_id - The user id of the user to find.
+	 * @returns {string | null} The name of the user if found, or undefined.
+	 */
 	getToggledUserName(user_id) {
 		const toggle = this.getToggledUser(user_id);
 		if (toggle)
 			return toggle.name;
 		else
-			return undefined;
+			return null;
 	}
 
+	/**
+	 * Updates the name of a user in the toggled users list. If the user is not
+	 * found, nothing happens.
+	 * @param {string} user_id - The user id of the user to update.
+	 * @param {string} name - The new name to use for the user.
+	 * @returns {undefined}
+	 */
 	updateToggledUserName(user_id, name) {
 		const toggled_user = this.getToggledUser(user_id);
 
@@ -126,6 +208,15 @@ class TextToSpeechHandler {
 		toggled_user.name = name;
 	}
 
+	/**
+	 * Adds a message to the list of messages to be spoken. If the list is not empty
+	 * and there is no audio currently playing, this will start the audio playback.
+	 * @param {VoiceConnection} voice_connection - The voice connection to use.
+	 * @param {string} message - The text of the message to be spoken.
+	 * @param {string} user_id - The user id of the user who sent the message.
+	 * @param {string} [speaker_name] - The name of the speaker. If not provided, the user's name will not be announced.
+	 * @returns {undefined}
+	 */
 	addMessage(voice_connection, message, user_id, speaker_name=undefined) {
 		// Filter out links
 		message = removeLinks(message);
@@ -152,6 +243,16 @@ class TextToSpeechHandler {
 		})
 	}
 
+	/**
+	 * Given a message, determine the voice to use for the message.
+	 * Tries to assign a different voice to each user, and if a user has not been seen before,
+	 * assigns a random voice to the user.
+	 * @param {{
+	 * 	user_id: string,
+	 * 	text: string
+	 * }} message - The message to be spoken.
+	 * @returns {string} The voice to use for the message.
+	 */
 	getVoiceFromMessage(message) {
 		const toggled_user_index = this._toggled_users.findIndex(toggled_user => toggled_user.user_id === message.user_id);
 
@@ -219,6 +320,11 @@ class TextToSpeechHandler {
 		const tempInputPath = 'temp-input.mp3';
 
 		// Step 1: Download audio
+		/**
+		 * Downloads the audio file from the given URL and saves it to a temporary file
+		 * @param {string} audioUrl - URL of the audio file to download
+		 * @returns {Promise<void>} Promise that resolves when the audio file is downloaded
+		 */
 		const downloadAudio = async (audioUrl) => {
 			const response = await axios.get(audioUrl,
 				{ responseType: 'stream' }
@@ -272,10 +378,16 @@ class TextToSpeechHandler {
 				.on('start', (commandLine) => {
 					logInfo(`Audio conversion started with command: ${commandLine}`);
 				})
-				.on('error', function(err) {
-					logError('Error converting audio', err);
-					reject(err);
-				})
+				.on('error',
+					/**
+					 * Handles error during audio conversion
+					 * @param {Error} err - error object
+					 */
+					function(err) {
+						logError('Error converting audio', err);
+						reject(err);
+					}
+				)
 				.on('end', function() {
 					logSuccess('Audio converted successfully');
 					resolve(outputFilePath);
@@ -285,7 +397,11 @@ class TextToSpeechHandler {
     });
 	}
 
-
+	/**
+	 * Determines whether a message should trigger text to speech based on user preference.
+	 * @param {Message} message - message to check
+	 * @returns {boolean} whether the message should trigger text to speech
+	 */
 	static shouldMessageTriggerTTS(message) {
 		const textToSpeechInstance = global.tts;
 
@@ -304,6 +420,11 @@ class TextToSpeechHandler {
 			return false;
 	}
 
+	/**
+	 * Adds a message to the text to speech queue based on user preference
+	 * @param {Message} message - message to add to the queue
+	 * @param {VoiceConnection} voiceConnection - the voice connection to use for the audio
+	 */
 	static addUsersMessageToQueue(message, voiceConnection) {
 		const textToSpeechInstance = global.tts;
 
@@ -312,6 +433,9 @@ class TextToSpeechHandler {
 
 		const user = message.author;
 		const guildMember = message.member;
+
+		if (guildMember === null)
+			return;
 
 		const name = textToSpeechInstance.getToggledUserName(user.id);
 

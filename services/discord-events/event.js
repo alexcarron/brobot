@@ -35,7 +35,7 @@ class Event {
 	 * Constructor for an Event object
 	 * @param {object} options - The options to create the Event with
 	 * @param {string} [options._name] - The name of the event
-	 * @param {Viewer | null} [options._host] - The host of the event
+	 * @param {Viewer | {user_id: string} | null} [options._host] - The host of the event
 	 * @param {string} [options._plan] - The plan for the event
 	 * @param {string} [options._instructions] - The instructions for the event
 	 * @param {string} [options._summary] - The summary for the event
@@ -51,13 +51,14 @@ class Event {
 		_time = 0,
 		_ping_role_ids = []
 	}) {
-		this.name = _name;
+		this._name = _name;
+		this._host = null;
 		this.setHost(_host);
-		this.plan = _plan;
-		this.instructions = _instructions;
-		this.summary = _summary;
-		this.time = _time;
-		this.ping_role_ids = _ping_role_ids;
+		this._plan = _plan;
+		this._instructions = _instructions;
+		this._summary = _summary;
+		this._time = _time;
+		this._ping_role_ids = _ping_role_ids;
 	}
 
 	/**
@@ -79,10 +80,23 @@ class Event {
     return this._host;
   }
 
-	async setHost(host) {
-		if (!(host instanceof Viewer) && host) {
-			host = await global.LLPointManager.getViewerById(host.user_id);
+	/**
+	 * Sets the host of the event.
+	 * If the host is not already an instance of Viewer, it will be looked up by user_id.
+	 * @param {Viewer | {user_id: string} | null} hostResolvable - The host of the event.
+	 */
+	async setHost(hostResolvable) {
+		let host;
+
+		if (!(hostResolvable instanceof Viewer) && hostResolvable) {
+			host = await global.LLPointManager.getViewerById(
+				hostResolvable.user_id
+			) || null;
 		}
+		else {
+			host = hostResolvable;
+		}
+
     this._host = host;
 	}
 

@@ -253,7 +253,11 @@ module.exports = new SlashCommand({
 
 		let choseDay = false;
 		let choseTime = false;
-		let chosen_week_day, chosen_time;
+		/**
+		 * @type {keyof typeof week_days}
+		 */
+		let chosen_week_day = "Saturday";
+		let chosen_time;
 
 		let date_time_confirmation_interaction;
 		while (!(choseDay && choseTime)) {
@@ -392,7 +396,9 @@ module.exports = new SlashCommand({
 					chosen_ping_names = [];
 					// @ts-ignore
 					for (const ping_role of ping_role_confirmation_interaction.values) {
+						// @ts-ignore
 						chosen_ping_roles.push(ping_role_ids[ping_role]);
+						// @ts-ignore
 						chosen_ping_names.push(ping_role_names[ping_role]);
 					}
 

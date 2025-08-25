@@ -12,7 +12,7 @@ import { AtLeast } from '../../../utilities/types/generic-types';
 import { Recipe } from "../types/recipe.types";
 import { RecipeRepository } from "./recipe.repository";
 import { insertRecipesToDB } from "../database/db-inserters";
-import { PlayerAlreadyExistsError, PlayerNotFoundError } from '../utilities/error.utility';
+import { PlayerAlreadyExistsError } from '../utilities/error.utility';
 
 /**
  * Creates a mock character repository instance with an in-memory database for testing purposes.
@@ -52,12 +52,13 @@ export const createMockMysteryBoxRepo =
 
 /**
  * Creates a mock player object with default values for optional properties.
- * @param id - The ID of the player.
- * @param currentName - The current name of the player.
- * @param publishedName - The published name of the player.
- * @param tokens - The number of tokens the player has.
- * @param role - The role of the player.
- * @param inventory - The player's inventory.
+ * @param options - An object with the following properties:
+ * @param options.id - The ID of the player.
+ * @param options.currentName - The current name of the player.
+ * @param options.publishedName - The published name of the player.
+ * @param options.tokens - The number of tokens the player has.
+ * @param options.role - The role of the player.
+ * @param options.inventory - The player's inventory.
  * @returns A mock player object with the given properties and default values for optional properties.
  */
 export const createMockPlayerObject = ({
@@ -114,7 +115,7 @@ export const mockPlayers: Player[] = [
 
 /**
  * Creates a mock player repository instance with an in-memory database for testing purposes.
- *
+
  * The mock repository is populated with mock player data from the mockPlayers array.
  * @param mockDB - An optional mock database instance.
  * @param players - An optional array of mock player data.
@@ -156,7 +157,7 @@ export const mockVotes: Vote[] = [
 
 /**
  * Creates a mock vote repository instance with an in-memory database for testing purposes.
- *
+
  * The mock repository is populated with mock vote data from the mockVotes array.
  * @param mockDB - An optional mock database instance.
  * @param players - An optional array of mock player data.
@@ -243,7 +244,7 @@ export const createMockRecipeRepo = (
 
 /**
  * Creates an object containing mock instances of the repositories and the in-memory database for testing purposes.
- *
+
  * The returned object contains the following properties:
  * - db: The mock database instance.
  * - characterRepository: A mock instance of the CharacterRepository.
@@ -252,6 +253,7 @@ export const createMockRecipeRepo = (
  * - playerRepository: A mock instance of the PlayerRepository.
  * - voteRepository: A mock instance of the VoteRepository.
  * @param mockDB - An optional mock database instance.
+ * @param options - An object containing optional parameters.
  * @param options.players - An optional array of mock player data.
  * @param options.votes - An optional array of mock vote data.
  * @returns A mock instance of the repositories and the in-memory database.
@@ -281,4 +283,4 @@ export function createMockRepositories(
 		playerRepository: createMockPlayerRepo(mockDB, players),
 		voteRepository: createMockVoteRepo(mockDB, players, votes),
 	}
-};
+}

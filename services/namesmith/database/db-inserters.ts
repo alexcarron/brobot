@@ -1,6 +1,6 @@
-import { attempt, InvalidArgumentError, validateArguments } from "../../../utilities/error-utils";
+import { InvalidArgumentError, validateArguments } from "../../../utilities/error-utils";
 import { WithOptional } from "../../../utilities/types/generic-types";
-import { Character, CharacterWithTags } from "../types/character.types";
+import { CharacterWithTags } from "../types/character.types";
 import { MysteryBox } from "../types/mystery-box.types";
 import { Recipe } from "../types/recipe.types";
 import { getIDfromCharacterValue, getCharacterValueFromID } from "../utilities/character.utility";
@@ -164,7 +164,6 @@ export const insertMysteryBoxesToDB = (db: DatabaseQuerier, mysteryBoxes: Myster
 
 /**
  * Inserts a list of recipes into the database.
- *
  * @param db - The database querier used to execute queries.
  * @param recipes - An array of recipe objects to be inserted. Each recipe can optionally include an 'id'. If 'id' is not provided, it will be auto-generated.
  */

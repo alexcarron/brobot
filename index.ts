@@ -1,8 +1,10 @@
 import { initialBotStatus } from "./bot-config/bot-status";
 import { setupEventListeners } from './event-listeners/event-listener-setup';
-import { logInfo } from './utilities/logging-utils.js';
+import { logInfo, logSuccess } from './utilities/logging-utils.js';
 import { Events } from 'discord.js';
 import { onClientReady } from './bot-config/on-ready.js';
+import { setupAndDeployCommands, setupCommands } from "./bot-config/setup-commands";
+import { setupClient } from "./bot-config/setup-client";
 
 
 const DEPLOY_GUILD_COMMANDS_OPTIONS = [
@@ -29,6 +31,7 @@ const DEVELOPMENT_ENVIRONMENT_OPTIONS = [
 ];
 
 const startBrobot = async () => {
+	// eslint-disable-next-line @typescript-eslint/no-require-imports
 	logInfo(`Using discord.js version: ${require('discord.js').version}`);
 
 	const commandArguments = process.argv;
@@ -45,9 +48,6 @@ const startBrobot = async () => {
 		global.botStatus.isInDevelopmentMode = true;
 	}
 
-	const { setupCommands, setupAndDeployCommands } = require('./bot-config/setup-commands');
-	const { setupClient } = require('./bot-config/setup-client');
-
 	const client = await setupClient();
 
 	if (isDeployingAll)
@@ -55,7 +55,7 @@ const startBrobot = async () => {
 	else if (isDeploying)
 		await setupAndDeployCommands({client, skipGlobalCommands: true});
 	else
-		setupCommands(client, isDevelopmentEnvironment);
+		setupCommands(client);
 
 	setupEventListeners(client);
 
@@ -66,6 +66,6 @@ const startBrobot = async () => {
 	});
 }
 
-// 0.87
-
-startBrobot();
+startBrobot()
+	.then(() => logSuccess("Finished starting Brobot"))
+	.catch(console.error);

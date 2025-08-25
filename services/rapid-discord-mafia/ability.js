@@ -80,6 +80,12 @@ const AbilityDuration = Object.freeze({
 const AbilityUseCount = Object.freeze({
 	UNLIMITED: -1,
 	NONE: 0,
+	/**
+	 * Creates an AbilityUseCount with the given amount of uses.
+	 * @param {number} amount - The amount of uses. Must be a positive non-zero integer.
+	 * @returns {number} The AbilityUseCount with the given amount of uses.
+	 * @throws {Error} If the given amount is not a positive non-zero integer.
+	 */
 	AMOUNT: (amount) => {
 		if ( !Number.isInteger(amount) || amount <= 0 )
 			throw new Error(`Error: Invalid AbilityUseCount.Amount ${amount}. Must be positive non-zero integer.`);
@@ -153,7 +159,10 @@ class Ability {
 
 	/**
 	 * A function that reverses the effects of the ability
-	 * @type {(player: object, game_manager?: object) => Promise<void> | void}
+	 * @type {(
+	 * 	player: Record<string, any>,
+	 * 	game_manager?: Record<string, any>,
+	 * ) => Promise<void> | void}
 	 */
 	reverseEffects;
 
@@ -170,7 +179,10 @@ class Ability {
  * @param {number} [options.duration] - The duration of the ability.
  * @param {Arg[]} [options.args] - A list of arguments a player must enter when performing the ability.
  * @param {string[]} [options.effects] - A list of the effects this ability applies.
- * @param {(player: object, game_manager?: object) => Promise<void> | void} [options.reverseEffects] - A function that reverses the effects of the ability
+ * @param {(
+ * 	player: Record<string, any>,
+ * 	game_manager?: Record<string, any>
+ * ) => Promise<void> | void} [options.reverseEffects] - A function that reverses the effects of the ability
  */
 
 	constructor({

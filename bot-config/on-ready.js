@@ -7,7 +7,8 @@ const Timer = require('../services/timers/timer.js');
 const DailyMessageHandler = require('../services/discussion-prompts/daily-message-handler.js');
 const TextToSpeechHandler = require('../services/text-to-speech/text-to-speech-handler.js');
 const { setupNamesmith } = require('../services/namesmith/event-listeners/on-setup');
-const setupAnomolyService = require('../services/sand-season-3/anomoly/on-setup');
+const { isStringToStringsRecord } = require('../utilities/types/type-guards.js');
+const { InitializationError } = require('../utilities/error-utils');
 
 /**
  * Called when the client is ready to start running.
@@ -23,11 +24,13 @@ const onClientReady = async () => {
 	global.botStatus.isOn = true;
 
 	setupNamesmith();
-	setupAnomolyService();
 
 	logInfo("Loading timers database");
 	const timersJSON = await loadObjectFromJsonInGitHub("timers");
-	let timers = timersJSON.timers;
+	let timers = []
+	if ("timers" in timersJSON && Array.isArray(timersJSON.timers)) {
+		timers = timersJSON.timers;
+	}
 	for (const timerIndex in timers) {
 		let timer = timers[timerIndex];
 		timer = new Timer(timer);
@@ -51,13 +54,17 @@ const onClientReady = async () => {
 
 	logInfo("Loading viewers database");
 	global.LLPointManager.setViewers(
+		// @ts-ignore
 		await loadObjectFromJsonInGitHub("viewers")
 	);
 	logSuccess("Viewers Database Downloaded");
 
 	logInfo("Loading events database");
 	const events_json = await loadObjectFromJsonInGitHub("events");
-	let events = events_json.events;
+	let events = [];
+	if ("events" in events_json && Array.isArray(events_json.events)) {
+		events = events_json.events;
+	}
 	for (const event_index in events) {
 		let event = events[event_index];
 		event = new Event(event);
@@ -69,7 +76,14 @@ const onClientReady = async () => {
 
 	logInfo("Loading messages database");
 	global.questions = [];
-	global.channelsToMessages = await loadObjectFromJsonInGitHub("messages");
+	const channelsToMessages = await loadObjectFromJsonInGitHub("messages");
+	if (isStringToStringsRecord(channelsToMessages)) {
+		global.channelsToMessages = channelsToMessages;
+	}
+	else {
+		throw new InitializationError(`Loaded messages GitHub database is not in format of string to string[]: ${JSON.stringify(channelsToMessages)}`);
+	}
+
 	logSuccess("Messages Database Downloaded");
 	const dailyMessageHandler = new DailyMessageHandler(global.channelsToMessages);
 	dailyMessageHandler.startDailyMessages();

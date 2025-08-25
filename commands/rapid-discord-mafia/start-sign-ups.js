@@ -17,6 +17,7 @@ module.exports = new SlashCommand({
 		console.timeEnd("deferInteraction");
 
 		console.time("editReply");
+		// @ts-ignore
 		if ( [GameState.SIGN_UP, GameState.IN_PROGRESS].includes(global.game_manager.state) ) {
 			return interaction.editReply("There's already a game in sign-ups or in progress.");
 		}

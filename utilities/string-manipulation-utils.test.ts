@@ -72,12 +72,6 @@ describe('string-manipulation-utils', () => {
 			expect(result).toBe('[▇▇▇▇▇▇▇—————————————]33%');
 		});
 
-		it('should throw an error for non-numeric input', () => {
-			expect(() => createTextProgressBar('a', 100, 20)).toThrow();
-			expect(() => createTextProgressBar(100, 'b', 20)).toThrow();
-			expect(() => createTextProgressBar(100, 100, 'c')).toThrow();
-		});
-
 		it('should return an empty progress bar for edge cases', () => {
 			const result1 = createTextProgressBar(0, 0, 7);
 			expect(result1).toBe('[———————]0%');
@@ -121,12 +115,6 @@ describe('string-manipulation-utils', () => {
 			expect(toNumericOrdinal(13)).toBe('13th');
 		});
 
-		it('should throw an error for non-numeric inputs', () => {
-			expect(() => toNumericOrdinal('a')).toThrow('Input is not a valid number');
-			expect(() => toNumericOrdinal(null)).toThrow('Input is not a valid number');
-			expect(() => toNumericOrdinal(undefined)).toThrow('Input is not a valid number');
-		});
-
 		it('should throw an error for NaN inputs', () => {
 			expect(() => toNumericOrdinal(NaN)).toThrow('Input is not a valid number');
 		});
@@ -156,12 +144,6 @@ describe('string-manipulation-utils', () => {
 			expect(toWordOrdinal(21)).toBe('twenty-first');
 			expect(toWordOrdinal(32)).toBe('thirty-second');
 			expect(toWordOrdinal(43)).toBe('forty-third');
-		});
-
-		it('should throw an error for non-numeric input', () => {
-			expect(() => toWordOrdinal('a')).toThrow('Input is not a valid number');
-			expect(() => toWordOrdinal(null)).toThrow('Input is not a valid number');
-			expect(() => toWordOrdinal(undefined)).toThrow('Input is not a valid number');
 		});
 
 		it('should throw an error for NaN input', () => {
@@ -197,14 +179,6 @@ describe('string-manipulation-utils', () => {
 
 		it('should return multiple words with commas and "and" for multiple word array', () => {
 			expect(createListFromWords(['hello', 'world', 'foo', 'bar'])).toBe('hello, world, foo, and bar');
-		});
-
-		it('should return empty string for null input', () => {
-			expect(createListFromWords(null)).toBe('');
-		});
-
-		it('should return empty string for undefined input', () => {
-			expect(createListFromWords(undefined)).toBe('');
 		});
 	});
 
@@ -251,17 +225,10 @@ describe('string-manipulation-utils', () => {
 			expect(wrapTextByLineWidth(text, lineWidth)).toEqual(['hello', 'world this', 'is a test']);
 		});
 
-		it('should throw an error for invalid text input', () => {
-			expect(() => wrapTextByLineWidth(123, 10)).toThrow('text must be a string.');
-			expect(() => wrapTextByLineWidth(null, 10)).toThrow('text must be a string.');
-			expect(() => wrapTextByLineWidth(undefined, 10)).toThrow('text must be a string.');
-		});
-
 		it('should throw an error for invalid line width', () => {
 			const text = 'hello world';
 			expect(() => wrapTextByLineWidth(text, -10)).toThrow('lineWidth must be a positive number.');
 			expect(() => wrapTextByLineWidth(text, 0)).toThrow('lineWidth must be a positive number.');
-			expect(() => wrapTextByLineWidth(text, 'invalid')).toThrow('lineWidth must be a positive number.');
 		});
 	});
 
@@ -295,14 +262,6 @@ describe('string-manipulation-utils', () => {
 			const expectedOutput = '';
 			expect(removeLinks(input)).toBe(expectedOutput);
 		});
-
-		it('should throw an error for a null input', () => {
-			expect(() => removeLinks(null)).toThrow();
-		});
-
-		it('should throw an error for an undefined input', () => {
-			expect(() => removeLinks(undefined)).toThrow();
-		});
 	});
 
 	describe('removeEmojis()', () => {
@@ -322,21 +281,6 @@ describe('string-manipulation-utils', () => {
 			const input = '';
 			const expectedOutput = '';
 			expect(removeEmojis(input)).toBe(expectedOutput);
-		});
-
-		it('should throw an error if the input is null', () => {
-			const input = null;
-			expect(() => removeEmojis(input)).toThrow();
-		});
-
-		it('should throw an error if the input is undefined', () => {
-			const input = undefined;
-			expect(() => removeEmojis(input)).toThrow();
-		});
-
-		it('should throw an error if the input is not a string', () => {
-			const input = 123;
-			expect(() => removeEmojis(input)).toThrow();
 		});
 	});
 
@@ -375,32 +319,8 @@ describe('string-manipulation-utils', () => {
 
 		it('should return undefined with empty possible strings array', () => {
 			const startingString = 'hello';
-			const possibleStrings = [];
+			const possibleStrings: string[] = [];
 			expect(findStringStartingWith(startingString, possibleStrings)).toBeUndefined();
-		});
-
-		it('should throw error with null possible strings array', () => {
-			const startingString = 'hello';
-			const possibleStrings = null;
-			expect(() => findStringStartingWith(startingString, possibleStrings)).toThrow();
-		});
-
-		it('should throw error with undefined possible strings array', () => {
-			const startingString = 'hello';
-			const possibleStrings = undefined;
-			expect(() => findStringStartingWith(startingString, possibleStrings)).toThrow();
-		});
-
-		it('should throw error with non-string starting string', () => {
-			const startingString = 123;
-			const possibleStrings = ['hello', 'world', 'foo'];
-			expect(() => findStringStartingWith(startingString, possibleStrings)).toThrow();
-		});
-
-		it('should throw error with non-array possible strings', () => {
-			const startingString = 'hello';
-			const possibleStrings = 'not an array';
-			expect(() => findStringStartingWith(startingString, possibleStrings)).toThrow();
 		});
 	});
 
@@ -435,10 +355,6 @@ describe('string-manipulation-utils', () => {
 
 		it('should increment a string with a number at the end that results in a multi-digit number', () => {
 			expect(incrementEndNumber('hello9', 10)).toBe('hello19');
-		});
-
-		it('should throw an error with a non-string input', () => {
-			expect(() => incrementEndNumber(123)).toThrow();
 		});
 
 		it('should handle negative end number outputs', () => {

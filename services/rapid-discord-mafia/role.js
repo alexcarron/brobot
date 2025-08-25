@@ -5,7 +5,6 @@ const { toTitleCase } = require("../../utilities/string-manipulation-utils");
  */
 const RoleName = Object.freeze({
 	MAFIOSO: "Mafioso",
-	GODFATHER: "Godfather",
 	FRAMER: "Framer",
 	CONSORT: "Consort",
 	EXECUTIONER: "Executioner",
@@ -81,9 +80,9 @@ const Immunity = Object.freeze({
 class Role {
 	/**
 	 * The name of the role
-	 * @type {string}
+	 * @type {RoleName[keyof RoleName]}
 	 */
-	name = "";
+	name = RoleName.TOWNIE;
 
 	/**
 	 * The faction the role belongs to
@@ -128,12 +127,6 @@ class Role {
 	immunities = [];
 
 	/**
-	 * The abilities the role has
-	 * @type {object[]}
-	 */
-	abilities = [];
-
-	/**
 	 * Any special notes about the role
 	 * @type {string}
 	 */
@@ -142,7 +135,7 @@ class Role {
 	/**
 	 * Initializes a new Role instance with the provided parameters.
 	 * @param {object} params - The parameters for initializing the role.
-	 * @param {string} params.name - The name of the role.
+	 * @param {RoleName[keyof RoleName]} params.name - The name of the role.
 	 * @param {string} params.faction - The faction the role belongs to.
 	 * @param {string} params.alignment - The alignment of the role.
 	 * @param {number} params.attack - The attack level of the role.
@@ -150,7 +143,7 @@ class Role {
 	 * @param {string} params.goal - The win condition of the role.
 	 * @param {boolean} [params.isUnique] - Whether the role is unique.
 	 * @param {string[]} [params.immunities] - The immunities the role has.
-	 * @param {object[]} [params.abilities] - The abilities the role has.
+	 * @param {{name: string}[]} [params.abilities] - The abilities the role has.
 	 * @param {string} [params.notes] - Any special notes about the role.
 	 */
 	constructor({name, faction, alignment, attack, defense, goal, isUnique = false, immunities = [], abilities = [], notes = ""}) {
@@ -163,7 +156,6 @@ class Role {
 		this.isUnique = isUnique;
 		this.immunities = immunities;
 		this.abilities = abilities;
-		this.abilities = abilities
 		this.notes = notes;
 	}
 

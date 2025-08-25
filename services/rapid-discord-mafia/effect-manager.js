@@ -1,7 +1,7 @@
 const Effect = require("./effect");
 const { AbilityUseCount, AbilityName } = require("./ability");
 const { Faction, Alignment, Immunity, RoleName } = require("./role");
-const { AbilityArgType, ArgumentSubtype, AbilityArgName } = require("./arg");
+const { AbilityArgType, ArgumentSubtype, AbilityArgName, Arg } = require("./arg");
 const { Feedback } = require("./constants/possible-messages");
 
 /**
@@ -43,6 +43,12 @@ class EffectManager {
 	static effects = {
 		[this.EffectName.Roleblock]: new Effect({
 			name: this.EffectName.Roleblock,
+			/**
+			 * Applies the roleblock effect to the roleblocked player and adds feedback to both the roleblocking player and the roleblocked player
+			 * @param {Record<string, any>} game - Current game instance
+			 * @param {Record<string, any>} player_using_ability - Player using the ability
+			 * @param {Record<string, any>} ability - Ability being used
+			 */
 			applyEffect: function(game, player_using_ability, ability) {
 				const
 					roleblocked_player_name = player_using_ability.visiting,
@@ -65,6 +71,10 @@ class EffectManager {
 				if (
 					roleblocked_player_role.name === RoleName.SERIAL_KILLER &&
 					!roleblocked_player.affected_by.some(
+						/**
+						 * @param {Record<string, any>} affect - The ability
+						 * @returns {boolean} If the ability is cautious
+						 */
 						affect => affect.name === AbilityName.CAUTIOUS
 					)
 				) {
@@ -275,23 +285,31 @@ class EffectManager {
 
 				game.logger.log(`${player_using_ability.name} looks out at ${target_player_name}'s house`);
 
+				/**
+				 * @type {(Record<string, any> & {name: string})[]}
+				 */
 				let players_seen_visiting = [];
 
-				game.player_manager.getPlayerList().forEach(player => {
-					const player_visiting_name = player.getPercievedVisit();
+				game.player_manager.getPlayerList().forEach(
+					/**
+					 * @param {Record<string, any> & {name: string}} player - The player to check
+					 */
+					player => {
+						const player_visiting_name = player.getPercievedVisit();
 
-					const isPlayerTarget = player.name === target_player.name;
-					const isPlayerLookout = player.name === player_using_ability.name;
-					const isPlayerVisitingTarget = player_visiting_name === target_player_name;
+						const isPlayerTarget = player.name === target_player.name;
+						const isPlayerLookout = player.name === player_using_ability.name;
+						const isPlayerVisitingTarget = player_visiting_name === target_player_name;
 
-					if (
-						!isPlayerTarget &&
-						!isPlayerLookout &&
-						isPlayerVisitingTarget
-					) {
-						players_seen_visiting.push(player);
+						if (
+							!isPlayerTarget &&
+							!isPlayerLookout &&
+							isPlayerVisitingTarget
+						) {
+							players_seen_visiting.push(player);
+						}
 					}
-				});
+				);
 
 				if (players_seen_visiting.length > 0)
 					player_using_ability.addFeedback(Feedback.LOOKOUT_SEES_VISITS(target_player, players_seen_visiting));
@@ -344,12 +362,15 @@ class EffectManager {
 			applyEffect: function(game, player_using_ability, ability, arg_values) {
 				if (arg_values === undefined)
 					throw new Error("Control.applyEffect: arg_values is undefined");
-				
+
 				const
 					player_controlling_name = arg_values[AbilityArgName.PLAYER_CONTROLLING],
 					player_controlling_into_name = arg_values[AbilityArgName.PLAYER_CONTROLLED_INTO],
 					player_controlling = game.player_manager.get(player_controlling_name),
 					player_controlling_role = game.role_manager.getRole(player_controlling.role),
+					/**
+					 * @type {Record<string, any> & {args: Arg[]}}
+					 */
 					ability_to_control = player_controlling_role.abilities[0];
 
 				const abilityToControlExists = ability_to_control !== null && ability_to_control !== undefined;

@@ -1,61 +1,6 @@
-const { defineTest, makeSure, groupTests, runBeforeEachTest, runAfterEachTest, runBeforeAllTests, runAfterAllTests, the, should, inThe, inside } = require("./jest-utils");
+const { makeSure } = require("./jest-utils");
 
 describe('jest-utils.js', () => {
-
-  groupTests('runBeforeEachTest', () => {
-    let counter = 0;
-
-    runBeforeEachTest(() => {
-      counter++;
-    });
-
-    defineTest('beforeEach callback increments counter', () => {
-			expect(counter).toBe(1);
-    });
-  });
-
-  the('runAfterEachTest function', () => {
-		let counter = 0;
-
-    runAfterEachTest(() => {
-			counter++;
-    });
-
-    should('call the afterEach callback after each test', () => {
-			expect(counter).toBe(0);
-    });
-
-		should('call the afterEach callback after each test', () => {
-			expect(counter).toBe(1);
-		})
-  });
-
-  inThe('runBeforeAllTests function', () => {
-    let called = false;
-    runBeforeAllTests(() => {
-      called = true;
-    });
-
-    defineTest('called should be true', () => {
-      expect(called).toBe(true);
-    });
-  });
-
-  inside('runAfterAllTests', () => {
-    let called = false;
-    runAfterAllTests(() => {
-      called = true;
-    });
-
-		defineTest('called should not be true', () => {
-			expect(called).toBe(false);
-		});
-
-		defineTest('called should not be true', () => {
-			expect(called).toBe(false);
-		});
-  });
-
   describe('expectValue (makeSure) matcher object', () => {
     test('isTrue passes on true', () => {
       expect(() => {

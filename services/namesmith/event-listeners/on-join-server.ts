@@ -16,7 +16,7 @@ export const isMemberInNamesmith = function(guildMember: GuildMember): boolean {
  * Handles actions to be taken when a user joins the Namesmith server.
  * @param guildMember - The guild member who joined the Namesmith server.
  */
-export const onUserJoinsNamesmith = function(guildMember: GuildMember) {
+export const onUserJoinsNamesmith = async function(guildMember: GuildMember) {
 	const { playerService } = getNamesmithServices();
-	playerService.addNewPlayer(guildMember.id);
+	await playerService.addNewPlayer(guildMember.id);
 }

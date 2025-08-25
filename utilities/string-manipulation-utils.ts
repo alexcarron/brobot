@@ -23,12 +23,12 @@ export const toTitleCase = (string: string): string => {
 
 /**
  * Creates a text-based progress bar based on a current value and total value.
- * @param {number} currentValue - The current value which will eventually reach the total.
- * @param {number} totalValue - The total value the current value will eventually reach.
- * @param {number} characterSize - The total number of characters used to represent the progress bar.
- * @returns {string} A string representation of the progress bar.
+ * @param currentValue - The current value which will eventually reach the total.
+ * @param totalValue - The total value the current value will eventually reach.
+ * @param characterSize - The total number of characters used to represent the progress bar.
+ * @returns A string representation of the progress bar.
  */
-export const createTextProgressBar = (currentValue, totalValue, characterSize) => {
+export const createTextProgressBar = (currentValue: number, totalValue: number, characterSize: number): string => {
 		if (typeof currentValue !== 'number')
 			throw new Error('currentValue must be a number.');
 		else if (typeof totalValue !== 'number')
@@ -69,11 +69,11 @@ export const createTextProgressBar = (currentValue, totalValue, characterSize) =
 
 /**
  * Converts a number to its ordinal representation as a string.
- * @param {number} number - The number to convert.
- * @returns {string} The ordinal representation of the number.
+ * @param number - The number to convert.
+ * @returns The ordinal representation of the number.
  * @throws {Error} Throws an error if the input is not a valid number.
  */
-export const toNumericOrdinal = (number) => {
+export const toNumericOrdinal = (number: number): string => {
 	// Check if the input is a valid number
 	if (typeof number !== 'number' || isNaN(number)) {
 		throw new Error('Input is not a valid number');
@@ -104,11 +104,11 @@ export const toNumericOrdinal = (number) => {
 
 /**
  * Converts a number to its word ordinal representation as a string.
- * @param {number} number - The number to convert.
- * @returns {string} The word ordinal representation of the number.
+ * @param number - The number to convert.
+ * @returns The word ordinal representation of the number.
  * @throws {Error} Throws an error if the input is not a valid number or too large.
  */
-export const toWordOrdinal = (number) => {
+export const toWordOrdinal = (number: number): string => {
   // Check if the input is a valid number
   if (typeof number !== 'number' || isNaN(number))
     throw new Error('Input is not a valid number');
@@ -158,13 +158,7 @@ export const toWordOrdinal = (number) => {
 
   throw new Error('Number too large');
 }
-
-/**
- * Creates a formatted list sentence from an array of words.
- * @param {string[]} words - An array of words to form into a sentence.
- * @returns {string} A sentence formed by the words, separated by commas and an 'and' before the last word.
- */
-export const createListFromWords = (words) => {
+export const createListFromWords = (words: string[]): string => {
 	if (!words || words.length <= 0) {
 		return "";
 	}
@@ -183,20 +177,14 @@ export const createListFromWords = (words) => {
 	return `${nonLastWords.join(", ")}, and ${lastWord}`;
 }
 
-/**
- * Wrap a given text into an array of strings, where each string is as long as the given line width without breaking words.
- * @param {string} text - The text to wrap
- * @param {number} lineWidth - The width of each line
- * @returns {string[]} An array of strings, where each string is a line of the wrapped text
- */
-export const wrapTextByLineWidth = (text, lineWidth) => {
+export const wrapTextByLineWidth = (text: string, lineWidth: number): string[] => {
 	if (typeof text !== 'string')
 		throw new Error('text must be a string.');
 
 	if (typeof lineWidth !== 'number' || lineWidth <= 0)
 		throw new Error('lineWidth must be a positive number.');
 
-	let lines: string[] = [];
+	const lines: string[] = [];
 	let currentText = text.replace(/\s+/g, ' ');
 	currentText = currentText.trim();
 	if (currentText.length === 0) return [];
@@ -234,33 +222,32 @@ export const wrapTextByLineWidth = (text, lineWidth) => {
 
 	return lines;
 }
-
 /**
  * Removes any URLs from a given string.
- * @param {string} string - The string to remove URLs from
- * @returns {string} The string with all URLs removed
+ * @param string - The string to remove URLs from
+ * @returns The string with all URLs removed
  */
-export const removeLinks = (string) => {
+export const removeLinks = (string: string): string => {
 	const urlRegex = /(https?:\/\/[^\s]+)/g;
 	return string.replace(urlRegex, '');
 }
 
 /**
  * Removes all emojis from a given string.
- * @param {string} string - The string to remove emojis from
- * @returns {string} The string with all emojis removed
+ * @param string - The string to remove emojis from
+ * @returns The string with all emojis removed
  */
-export const removeEmojis = (string) => {
+export const removeEmojis = (string: string): string => {
 	return string.replace(/(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/g, '');
 }
 
 /**
  * Finds the first string in a list of possible strings that starts with a given string (case-insensitive).
- * @param {string} startingString - The string to search for
- * @param {string[]} possibleStrings - The list of strings to search in
- * @returns {string|undefined} The first string that starts with the given string, or undefined if no string is found
+ * @param startingString - The string to search for
+ * @param possibleStrings - The list of strings to search in
+ * @returns The first string that starts with the given string, or undefined if no string is found
  */
-export const findStringStartingWith = (startingString, possibleStrings) => {
+export const findStringStartingWith = (startingString: string, possibleStrings: string[]): string | undefined => {
 	if (typeof startingString !== 'string')
 		throw new Error('startingString must be a string.');
 
@@ -280,11 +267,11 @@ export const findStringStartingWith = (startingString, possibleStrings) => {
 
 /**
  * Increments the number at the end of a given string by a given amount.
- * @param {string} string - The string to increment
- * @param {number} [incrementAmount] - The amount to increment the number by
- * @returns {string} The string with the number at the end incremented by the given amount
+ * @param string - The string to increment
+ * @param incrementAmount - The amount to increment the number by
+ * @returns The string with the number at the end incremented by the given amount
  */
-export const incrementEndNumber = (string, incrementAmount = 1) => {
+export const incrementEndNumber = (string: string, incrementAmount: number = 1): string => {
 	if (typeof string !== 'string')
 		throw new Error('string must be a string.');
 
@@ -327,8 +314,8 @@ export const removeCharacterAt = (string: string, index: number): string => {
 
 /**
  * Removes a specific collection of characters from the end of a string until all characters in the given collection are removed.
- * @param charactersToRemove - The characters to remove from the string
  * @param string - The string to remove characters from
+ * @param charactersToRemove - The characters to remove from the string
  * @returns The string with all characters removed from the end
  */
 export const removeCharactersAsGivenFromEnd = (
@@ -372,7 +359,6 @@ export const removeCharactersAsGivenFromEnd = (
  * @param {string} string - The string to remove characters from.
  * @param {string} availableCharacters - The set of available characters.
  * @returns {string} The string with missing characters removed.
- *
  * @example
  * removeMissingCharacters('hello', 'elope'); // 'elo'
  */

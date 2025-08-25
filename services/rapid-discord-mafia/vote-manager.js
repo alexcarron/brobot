@@ -7,6 +7,11 @@ const Player = require("./player");
 const Vote = Object.freeze({
 	NOBODY: "Nobody",
 	ABSTAIN: "Abstain",
+	/**
+	 * Creates a vote value for a specific player
+	 * @param {string} playerName The name of the player
+	 * @returns {string} A vote value of a specific player
+	 */
 	PLAYER: (playerName) => `${playerName}`,
 });
 
@@ -26,6 +31,11 @@ const VotingOutcome = Object.freeze({
 	NOBODY: "Nobody",
 	NO_VOTES: "none",
 	TIE: "tie",
+	/**
+	 * Gets a voting outcome value for a specific player
+	 * @param {string} player_name The name of the player
+	 * @returns {string} A voting outcome value for a specific player
+	 */
 	PLAYER: (player_name) => `${player_name}`,
 });
 
@@ -43,6 +53,10 @@ const TrialOutcome = Object.freeze({
  * Handles all the voting and trial voting
  */
 class VoteManager {
+	/**
+	 * Creates an instance of the VoteManager
+	 * @param {Record<string, any>} game_manager The game's current instance
+	 */
 	constructor(game_manager) {
 		this.game_manager = game_manager;
 	}
@@ -94,7 +108,14 @@ class VoteManager {
 		player_voting.resetInactivity();
 
 		let curr_votes = this.votes;
-		let max_voters_count = this.game_manager.player_manager.getAlivePlayers().filter(player => player.canVote === true).length;
+		let max_voters_count = this.game_manager.player_manager.getAlivePlayers().filter(
+			/**
+			 * Filters out players that can't vote
+			 * @param {Player} player The player
+			 * @returns {boolean} true if the player can vote
+			 */
+			player => player.canVote === true
+		).length;
 		let feedback;
 
 		if (curr_votes[player_voting.name]) {
@@ -157,6 +178,11 @@ class VoteManager {
 	addVoteForTrialOutcome(player_voting, trial_outcome) {
 		let curr_votes = this.game_manager.trial_votes;
 		let max_voters_count = this.game_manager.player_manager.getAlivePlayers().filter(
+			/**
+			 * Filters out players that can't vote
+			 * @param {Player} player The player
+			 * @returns {boolean} true if the player can vote
+			 */
 			player => player.name !== this.game_manager.on_trial && player.canVote === true
 		).length;
 		let feedback;
@@ -210,6 +236,9 @@ class VoteManager {
 		);
 
 		if (total_vote_count >= majority_player_count) {
+			/**
+			 * @type {{[vote: string]: number}}
+			 */
 			let vote_counts = {};
 
 			for (let voter in player_votes) {

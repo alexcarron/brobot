@@ -11,14 +11,13 @@ import { MysteryBoxService } from "./mystery-box.service";
 import { PlayerService } from "./player.service";
 import { RecipeService } from "./recipe.service";
 import { VoteService } from "./vote.service";
-import { IfDefined } from '../../../utilities/types/generic-types';
-import { DatabaseQuerier } from "../database/database-querier";
 
 /**
  * Creates a mock GameStateService instance for testing purposes.
  * @param mockGameStateRepository - The mock game state repository to use.
  * @param mockPlayerService - The mock player service to use.
  * @param mockVoteService - The mock vote service to use.
+ * @param mockRecipeService - The mock recipe service to use.
  * @returns A mock instance of the GameStateService.
  */
 export const createMockGameStateService = (
@@ -80,7 +79,7 @@ export const createMockPlayerService = (
 
 /**
  * Creates a mock VoteService instance for testing purposes.
- * @param mockVoteRepo- The mock vote repository to use.
+ * @param mockVoteRepo - The mock vote repository to use.
  * @param mockPlayerService - The mock player service to use.
  * @returns A mock instance of the VoteService.
  */
@@ -160,7 +159,7 @@ export const createMockRecipeService = (
 
 /**
  * Creates mock service instances for testing purposes.
- *
+
  * If any of the mock repository parameters are undefined, a default mock repository
  * instance is created for the respective service.
  * @param options - An object with the mock repository instances to use.
@@ -168,7 +167,8 @@ export const createMockRecipeService = (
  * @param options.mockVoteRepo - The mock vote repository to use.
  * @param options.mockMysteryBoxRepo - The mock mystery box repository to use.
  * @param options.mockCharacterRepo - The mock character repository to use.
- * @param options.gameStateRepository - The mock game state repository to use.
+ * @param options.mockRecipeRepo - The mock recipe repository to use.
+ * @param options.mockGameStateRepository - The mock game state repository to use.
  * @returns An object with the created mock service instances.
  */
 export const createMockServices = ({

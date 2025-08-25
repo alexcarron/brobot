@@ -1,13 +1,18 @@
-const { ChannelType, Collection } = require("discord.js");
+const { ChannelType, Collection, ChatInputCommandInteraction, InteractionResponse } = require("discord.js");
 const { ids } = require("../bot-config/discord-ids");
 const { logError, logInfo } = require("../utilities/logging-utils");
 const { editReplyToInteraction } = require("../utilities/discord-action-utils");
 
+/**
+ * Handles the execution of a slash command.
+ * @param {ChatInputCommandInteraction} interaction - The interaction object.
+ * @returns {Promise<InteractionResponse | undefined>} A promise that resolves when the command is executed.
+ */
 const onSlashCommandExecuted = async (interaction) => {
 	const userName = interaction.user.username;
 	logInfo(`${userName} executed this command: /${interaction.commandName}`);
 
-	const command = global.client.commands.get(interaction.commandName);
+	const command = global.commands.get(interaction.commandName);
 
 	if (command === undefined) {
 		console.error(`No command matching ${interaction.commandName} was found.`);
@@ -28,10 +33,10 @@ const onSlashCommandExecuted = async (interaction) => {
 	// Is the command server-only?
 	if (
 		(
-			command.isServerOnly ||
+			command.isServerBasedCommand() ||
 			command.required_servers && command.required_servers.length > 0
 		) &&
-		interaction.channel.type === ChannelType.DM
+		interaction.channel?.type === ChannelType.DM
 	)
 		return interaction.reply({
 			content: `You aren't allowed to use this command in DMs.`,
@@ -40,14 +45,20 @@ const onSlashCommandExecuted = async (interaction) => {
 
 	// Does the user have the required permissions?
 	if (
-		command.required_permission &&
-		command.required_permission > 0
+		command.required_permissions &&
+		command.required_permissions.length > 0
 	) {
-		const userPermissions = interaction.channel.permissionsFor(interaction.author);
+		if (interaction.channel === null || interaction.channel.type === ChannelType.DM)
+			return interaction.reply({
+				content: `You aren't allowed to use this command here.`,
+				ephemeral: true
+			});
+
+		const userPermissions = interaction.channel.permissionsFor(interaction.user);
 
 		if (
 			!userPermissions ||
-			!userPermissions.has(command.required_permission)
+			!userPermissions.has(command.required_permissions)
 		) {
 			return interaction.reply({
 				content: `You don't have the permissions required to use this command.`,
@@ -60,7 +71,11 @@ const onSlashCommandExecuted = async (interaction) => {
 	if (
 		command.required_servers &&
 		command.required_servers.length > 0 &&
-		!command.required_servers.includes(interaction.guild.id)
+		(
+			interaction.guild === null ||
+			interaction.guild.id === null ||
+			!command.required_servers.includes(interaction.guild.id)
+		)
 	)
 		return interaction.reply({
 			content: `You aren't allowed to use this command in this server.`,
@@ -71,7 +86,11 @@ const onSlashCommandExecuted = async (interaction) => {
 	if (
 		command.required_channels &&
 		command.required_channels.length > 0 &&
-		!command.required_channels.includes(interaction.channel.id)
+		(
+			interaction.channel === null ||
+			interaction.channel.type === ChannelType.DM ||
+			!command.required_channels.includes(interaction.channel.id)
+		)
 	) {
 		return interaction.reply({
 			content: `You aren't allowed to use this command in this channel.`,
@@ -83,7 +102,12 @@ const onSlashCommandExecuted = async (interaction) => {
 	if (
 		command.required_categories &&
 		command.required_categories.length > 0 &&
-		!command.required_categories.includes(interaction.channel.parent.id)
+		(
+			interaction.channel === null ||
+			interaction.channel.type === ChannelType.DM ||
+			interaction.channel.parent === null ||
+			!command.required_categories.includes(interaction.channel.parent.id)
+		)
 	)
 		return interaction.reply({
 			content: `You aren't allowed to use this command in this channel category.`,
@@ -95,6 +119,17 @@ const onSlashCommandExecuted = async (interaction) => {
 		command.required_roles &&
 		command.required_roles.length > 0
 	) {
+		if (
+			interaction.member === null ||
+			interaction.member.roles === null ||
+			'cache' in interaction.member.roles === false
+		) {
+			return interaction.reply({
+				content: `You don't have the roles required to use this command.`,
+				ephemeral: true
+			});
+		}
+
 		const userRoleNames = interaction.member.roles.cache.map(role => role.name);
 		const userRoleIDs = interaction.member.roles.cache.map(role => role.id);
 
@@ -123,19 +158,18 @@ const onSlashCommandExecuted = async (interaction) => {
 
 	// Does the command have a cooldown?
 	const cooldowns = global.cooldowns;
-	if (!cooldowns.has(command.data.name)) {
-		cooldowns.set(command.data.name, new Collection());
-	}
 
 	// Is the command on cooldown?
 	const now = Date.now();
-	const timestamps = cooldowns.get(command.data.name);
-	const defaultCooldownSeconds = 1;
+	const timestamps = cooldowns.get(command.data.name)
+		?? new Collection();
+
+	const defaultCooldownSeconds = 0;
 	const cooldownSeconds = (command.cooldown ?? defaultCooldownSeconds) * 1000;
 
-	if (timestamps.has(interaction.user.id)) {
-		const cooldownExpirationTime =
-			timestamps.get(interaction.user.id) + cooldownSeconds;
+	const timestamp = timestamps.get(interaction.user.id);
+	if (timestamp !== undefined) {
+		const cooldownExpirationTime = timestamp + cooldownSeconds;
 
 		if (now < cooldownExpirationTime && !isUserLL) {
 			const expired_timestamp =
@@ -157,6 +191,9 @@ const onSlashCommandExecuted = async (interaction) => {
 		await command.execute(interaction);
 	}
 	catch (error) {
+		if (error instanceof Error === false)
+			throw error;
+
 		logError(`There was an error while running the command ${command.name}`, error);
 
 		if (interaction.replied || interaction.deferred) {

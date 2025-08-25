@@ -7,6 +7,7 @@ const { fetchRDMGuild, fetchRoleByName, fetchGuildMember } = require("../../util
 const { addRoleToMember, removeRoleFromMember } = require("../../utilities/discord-action-utils.js");
 const { ArgumentSubtype } = require("./arg.js");
 const { Announcement, Feedback } = require("./constants/possible-messages.js");
+const { Message } = require("discord.js");
 const RDM_IDS = ids.rapid_discord_mafia;
 
 /**
@@ -73,6 +74,62 @@ class RDMPlayer {
 	 */
 	logger;
 
+	/**
+	 * @param {object} parameters - An object containing the parameters to be
+	 * set on the player.
+	 * @param {string} [parameters.id] - The id of the player.
+	 * @param {string} [parameters.name] - The name of the
+	 * player.
+	 * @param {string} [parameters.channel_id] - The channel id of the
+	 * player.
+	 * @param {boolean} [parameters.isAlive] - Whether the player is alive
+	 * or not.
+	 * @param {boolean} [parameters.isInLimbo] - Whether the player is in
+	 * limbo or not.
+	 * @param {boolean} [parameters.hasWon] - Whether the player has won
+	 * or not.
+	 * @param {boolean} [parameters.isRoleblocked] - Whether the player is
+	 * roleblocked or not.
+	 * @param {boolean} [parameters.isDoused] - Whether the player is
+	 * doused or not.
+	 * @param {RoleName[keyof RoleName]} [parameters.role] - The role of the player.
+	 * @param {string} [parameters.visiting] - The visiting of the player.
+	 * @param {string} [parameters.last_will] - The last will of the player.
+	 * @param {string} [parameters.death_note] - The death note of the
+	 * player.
+	 * @param {string} [parameters.exe_target] - The executioner target of
+	 * the player.
+	 * @param {number} [parameters.num_phases_inactive] - The number of phases
+	 * the player has been inactive for.
+	 * @param {string[]} [parameters.feedback] - An array of all feedback
+	 * messages to be sent to the player.
+	 * @param {{name: string, args: {[arg_name: string]: string}} | null} [parameters.ability_doing] - The ability the player is currently
+	 * doing.
+	 * @param {Record<string, number>} [parameters.used] - A dictionary of all the players
+	 * the player has used an ability on.
+	 * @param {{role?: string, visiting?: string}} [parameters.percieved] -
+	 * The perceived role and visiting of the player.
+	 * @param {{name: string, by: string, during_phase: number}[]} [parameters.affected_by] - An array of all the effects that have been
+	 * applied to the player.
+	 * @param {number} [parameters.attack] - The attack level of the player.
+	 * @param {number} [parameters.defense] - The defense level of the player.
+	 * @param {string | undefined} [parameters.last_player_observed_name] - The name of the
+	 * player the player has last observed.
+	 * @param {boolean} [parameters.isUnidentifiable] - Whether the player
+	 * is unidentifiable or not.
+	 * @param {string[]} [parameters.players_can_use_on] - An array of all
+	 * the players the player can use an ability on.
+	 * @param {boolean} [parameters.isMuted] - Whether the player is muted
+	 * or not.
+	 * @param {boolean} [parameters.canVote] - Whether the player can vote
+	 * or not.
+	 * @param {boolean} [parameters.isMockPlayer] - Whether the player is
+	 * a mock player or not.
+	 * @param {Logger} [parameters.logger] - The logger to use for
+	 * the player.
+	 * @param {string} [parameters.role_log] - The role log of the player.
+	 * @param {Logger} [logger] - The logger to use for the player.
+	 */
 	constructor({
 		id = ids.users.LL,
 		name = "Mock Player Name",
@@ -82,7 +139,7 @@ class RDMPlayer {
 		hasWon = false,
 		isRoleblocked = false,
 		isDoused = false,
-		role = "",
+		role = RoleName.TOWNIE,
 		visiting = "",
 		last_will = "",
 		death_note = "",
@@ -120,6 +177,10 @@ class RDMPlayer {
 		this.exe_target = exe_target;
 		this.feedback = feedback;
 		this.ability_doing = ability_doing;
+
+		/**
+		 * @type {Record<string, number>}
+		 */
 		this.used = used;
 		this.percieved = percieved;
 		this.affected_by = affected_by;
@@ -149,7 +210,7 @@ class RDMPlayer {
 		this.hasWon = false;
 		this.isRoleblocked = false;
 		this.isDoused = false;
-		this.role = "";
+		this.role = RoleName.TOWNIE;
 		this.visiting = "";
 		this.last_will = "";
 		this.death_note = "";
@@ -236,6 +297,13 @@ class RDMPlayer {
 		}
 	}
 
+	/**
+	 * Sends a private message to the player with the given feedback.
+	 * If isPinned is true, the message will be pinned in the channel.
+	 * @param {string} feedback The message to send to the player
+	 * @param {boolean} [isPinned] Whether to pin the message in the player's channel
+	 * @returns {Promise<Message | undefined>} The sent message
+	 */
 	async sendFeedback(feedback, isPinned=false) {
 		if (isPinned) {
 			return await this.discord_service.sendAndPinMessage({
@@ -251,6 +319,10 @@ class RDMPlayer {
 		}
 	}
 
+	/**
+	 * Adds the given feedback to the player's feedback list
+	 * @param {string} feedback The feedback to add to the list
+	 */
 	addFeedback(feedback) {
 		this.feedback.push(feedback);
 	}
@@ -296,15 +368,27 @@ class RDMPlayer {
 		}
 	}
 
+	/**
+	 * Sets the executioner's target and sends an announcement to the player about their target.
+	 * @param {Record<string, any>} player player object that the executioner is targeting.
+	 */
 	async setExeTarget(player) {
 		this.exe_target = player.name;
 		await this.sendFeedback(Announcement.GIVE_EXE_TARGET(this.exe_target), true)
 	}
 
+	/**
+	 * Set the player that the player is currently visiting.
+	 * @param {string} player_name - The name of the player being visited.
+	 */
 	setVisiting(player_name) {
 		this.visiting = player_name;
 	}
 
+	/**
+	 * Set the alignment of the player.
+	 * @param {string} alignment - The alignment to set the player to.
+	 */
 	addAlignment(alignment) {
 		this.alignment = alignment;
 	}
@@ -405,7 +489,14 @@ class RDMPlayer {
 	}
 
 	/**
-	 * @param {object | undefined} ability_using - The ability the player is using
+	 * @param {{
+	 *	name: string,
+	 *  feedback: (...args: string[]) => string,
+	 *	args: {
+	 *		name: string,
+	 *		subtypes: string[],
+	 * 	}[],
+	 * } | undefined} ability_using - The ability the player is using
 	 * @param {{[arg_name: string]: string}} arg_values - An object map from the argument name to it's passed value. Empty object by default.
 	 * @returns {string} confirmation feedback for using ability
 	 */
@@ -470,6 +561,11 @@ class RDMPlayer {
 		this.logger.log(`Let **${this.name}** not see mafia chat.`);
 	}
 
+	/**
+	 * Whisper a message to another player in the town discussion channel
+	 * @param {Record<string, any> & {name: string}} player_whispering_to the player to send the whisper to
+	 * @param {string} whisper_contents the contents of the message to send
+	 */
 	async whisper(player_whispering_to, whisper_contents) {
 		await this.discord_service.sendToTownDiscussion(
 			Announcement.WHISPER(this, player_whispering_to)
@@ -528,12 +624,20 @@ class RDMPlayer {
 		);
 	}
 
+	/**
+	 * Updates the player's death note
+	 * @param {string} death_note The new death note
+	 */
 	updateDeathNote(death_note) {
 		this.death_note = death_note;
 
 		this.logger.log(`**${this.name}** updated their death note to be \n\`\`\`\n${this.death_note}\n\`\`\``);
 	}
 
+	/**
+	 * Updates the player's last will
+	 * @param {string} last_will The new last will
+	 */
 	updateLastWill(last_will) {
 		this.last_will = last_will;
 

@@ -1,10 +1,18 @@
 const { arraysHaveSameElements } = require("../../utilities/data-structure-utils");
 
 /**
+ * @typedef {object} Creature
+ * @property {string} name - The name of the creature.
+ * @property {string[]} evolvedFrom - The name of the creature that this creature evolved from.
+ * @property {string} link - The link to the creature's message on Discord.
+ */
+
+/**
  * Asserts that the given creature is a valid creature object. Throws an error
  * if any of the required properties are missing.
- * @param {object} creature - The creature to validate.
+ * @param {unknown} creature - The creature to validate.
  * @param {boolean} isFromArray - True if the creature is in an array of creatures.
+ * @returns {asserts creature is Creature} If the creature is valid.
  */
 const assertIsCreature = (creature, isFromArray=false) => {
 	let errorMessage = undefined;
@@ -13,14 +21,35 @@ const assertIsCreature = (creature, isFromArray=false) => {
 		errorMessage = isFromArray ?
 			'creature in creatures array is undefined' :
 			'creature is undefined';
-	else if (creature.name === undefined)
+	else if (creature === null)
+		errorMessage = isFromArray ?
+			'creature in creatures array is null' :
+			'creature is null';
+	else if (typeof creature !== 'object')
+		errorMessage = isFromArray ?
+			'creature in creatures array is not an object' :
+			'creature is not an object';
+	else if (
+		'name' in creature === false ||
+		creature.name === undefined
+	)
 		errorMessage = isFromArray ?
 			'creature.name in creatures array is undefined' :
 			'creature.name is undefined';
-	else if (creature.evolvedFrom === undefined)
+	else if (
+		'evolvedFrom' in creature === false ||
+		creature.evolvedFrom === undefined
+	)
 		errorMessage = isFromArray ?
 			'creature.evolvedFrom in creatures array is undefined' :
 			'creature.evolvedFrom is undefined';
+	else if (
+		'link' in creature === false ||
+		creature.link === undefined
+	)
+		errorMessage = isFromArray ?
+			'creature.link in creatures array is undefined' :
+			'creature.link is undefined';
 
 	if (errorMessage !== undefined) throw new Error(errorMessage);
 }
@@ -29,7 +58,8 @@ const assertIsCreature = (creature, isFromArray=false) => {
  * Asserts that the given array of creatures contains only valid creature objects.
  * Throws an error if any of the creatures are invalid or missing required
  * properties.
- * @param {object[]} creatures - The array of creatures to validate.
+ * @param {unknown[]} creatures - The array of creatures to validate.
+ * @returns {asserts creatures is Creature[]} If the creatures are valid.
  */
 const assertAreCreatures = (creatures) => {
 	if (!Array.isArray(creatures)) throw new Error('creatures is not an array');
@@ -40,8 +70,8 @@ const assertAreCreatures = (creatures) => {
  * Returns an array of root creatures from the given array of creatures.
  * A root creature is defined as a creature that has no ancestors (i.e., its evolvedFrom
  * array is empty).
- * @param {object[]} creatures - The array of creatures to search for root creatures.
- * @returns {object[]} An array of root creatures.
+ * @param {Creature[]} creatures - The array of creatures to search for root creatures.
+ * @returns {Creature[]} An array of root creatures.
  */
 
 const getRootCreatures = (creatures) => {
@@ -53,7 +83,7 @@ const getRootCreatures = (creatures) => {
  * Given an array of creatures, returns an array of all the unique hybrid
  * combinations that appear in the array. A "hybrid combination" is an
  * array of creature names that together form a hybrid.
- * @param {object[]} creatures - The array of creatures to find the unique
+ * @param {unknown[]} creatures - The array of creatures to find the unique
  * hybrid combinations of.
  * @returns {string[][]} - An array of arrays of creature names, where each
  * inner array represents a unique hybrid combination.
@@ -123,8 +153,8 @@ const getCreatureWithName = (creatureName, creatures) => {
  * have the given names as their evolution parents.
  * @param {string[]} parentCreatureNames - The array of creature names to
  * search for in the evolution parents of the given creatures.
- * @param {object[]} creatures - The array of creatures to search in.
- * @returns {object[]} - An array of creatures that have the given names as
+ * @param {Creature[]} creatures - The array of creatures to search in.
+ * @returns {Creature[]} - An array of creatures that have the given names as
  * their evolution parents.
  */
 const getChildCreaturesOf = (parentCreatureNames, creatures) => {

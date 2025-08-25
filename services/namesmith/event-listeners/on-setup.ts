@@ -19,7 +19,7 @@ import { VoteService } from "../services/vote.service";
 export const setupNamesmith = async () => {
 	logInfo("Setting up Namesmith...");
 
-	const db = setupDatabase();
+	const db = await setupDatabase();
 
 	global.namesmith = {};
 	global.namesmith.mysteryBoxRepository =

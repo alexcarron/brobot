@@ -1,4 +1,4 @@
-import { BooleanIfKnown, TypedNamedValue } from "./types/generic-types";
+import { TypedNamedValue } from "./types/generic-types";
 
 /**
  * Base class for all custom errors defined in this project
@@ -174,7 +174,6 @@ export const assertCorrectArgumentType = (
  * Validates all arguments in a function.
  * @param functionName Name of the function to which the arguments are being passed.
  * @param typedArguments Array of objects, where each object has a key-value pair of the argument name and its value and a key-value pair of "type" and the expected type of the argument.
- *
  * @example
  * validateArguments("insertCharactersToDB",
  *   {id, type: "number"},
@@ -218,10 +217,6 @@ export class InitializationError extends CustomError {}
  */
 export class HandledError extends CustomError {}
 
-type MaybePromise<Type> = Type | Promise<Type>;
-type MaybeAsyncFunction<ReturnType> =
-	(...args: any[]) => MaybePromise<ReturnType>;
-
 /**
  * A class that represents an attempt to run a function and handle errors that occur.
  */
@@ -235,7 +230,7 @@ abstract class BaseAttempt<ReturnType> {
   protected returnValue?: ReturnType;
 
 	onError<ErrorType extends Error = Error>(
-		handleError: (error: Error) => any | Promise<any>
+		handleError: (error: ErrorType) => any | Promise<any>
 	): this;
 	onError<ErrorType extends Error>(
 		errorType: new (...args: any[]) => ErrorType,
@@ -245,7 +240,6 @@ abstract class BaseAttempt<ReturnType> {
 	/**
 	 * Attaches an error handler for a specific error type to the current attempt chain.
 	 * This handler will be executed if the function throws an error of the specified type.
-	 *
 	 * @param errorTypeOrHandleError - The constructor of the error type to handle.
 	 * @param maybeHandleError - A function that handles the error. It receives the error as an argument.
 	 * @returns The current instance of the attempt chain to allow for method chaining.
@@ -294,7 +288,6 @@ abstract class BaseAttempt<ReturnType> {
 	/**
 	 * Attaches a success handler to the current attempt chain.
 	 * This handler will be executed if the function does not throw an error.
-	 *
 	 * @param successHandler - A function that handles the return value of the function. It receives the return value as an argument.
 	 * @returns The current instance of the attempt chain to allow for method chaining.
 	 */
@@ -308,15 +301,15 @@ abstract class BaseAttempt<ReturnType> {
   protected dispatchError(error: unknown, awaitErrorHandlers: true): Promise<void>;
   protected dispatchError(error: unknown, awaitErrorHandlers?: false): void;
 
-  /**
-   * Dispatches an error to the appropriate error handler in the current attempt chain.
-   * If the error matches a specified error type, its corresponding handler is executed.
-   * If `awaitErrorHandlers` is true, the handler is awaited.
-   *
-   * @param error - The error object that may be dispatched to a handler.
-   * @param awaitErrorHandlers - Boolean indicating if the error handler should be awaited.
-   * @throws If no matching error handler is found, the error is re-thrown.
-   */
+	/**
+	 * Dispatches an error to the appropriate error handler in the current attempt chain.
+	 * If the error matches a specified error type, its corresponding handler is executed.
+	 * If `awaitErrorHandlers` is true, the handler is awaited.
+	 * @param error - The error object that may be dispatched to a handler.
+	 * @param awaitErrorHandlers - Boolean indicating if the error handler should be awaited.
+	 * @returns A Promise<void> if `awaitErrorHandlers` is true, otherwise void.
+	 * @throws If no matching error handler is found, the error is re-thrown.
+	 */
   protected dispatchError(
     error: unknown,
     awaitErrorHandlers = false
@@ -331,10 +324,13 @@ abstract class BaseAttempt<ReturnType> {
 				wasHandled = true;
 
         if (awaitErrorHandlers) {
+          // eslint-disable-next-line promise/no-promise-in-callback
           return Promise.resolve(handleError(error))
             .then(possibleError => {
               if (possibleError instanceof Error)
 								throw possibleError;
+
+							return undefined;
             });
         }
 				else {
@@ -354,7 +350,6 @@ abstract class BaseAttempt<ReturnType> {
 
   /**
    * Dispatches a successful return value to any registered success handler.
-   *
    * @param returnedValue - The value returned by the function.
    */
 	protected dispatchSuccess(returnedValue: ReturnType): void {
@@ -396,9 +391,10 @@ class Attempt<ReturnType> extends BaseAttempt<ReturnType> {
     }
   }
 
-  /**
-   * Executes the function and returns the result if it hasn't been executed before, or just returns the result if it has been executed before.
-   */
+	/**
+	 * Executes the function and returns the result if it hasn't been executed before, or just returns the result if it has been executed before.
+	 * @returns The result of the function.
+	 */
   getReturnValue(): ReturnType {
     if (!this.isExecuted) this.execute();
     return this.returnValue as ReturnType;
@@ -437,9 +433,10 @@ class AsyncAttempt<ReturnType> extends BaseAttempt<ReturnType> {
     }
   }
 
-  /**
-   * Executes the function and returns the result if it hasn't been executed before, or just returns the result if it has been executed before.
-   */
+	/**
+	 * Executes the function and returns the result if it hasn't been executed before, or just returns the result if it has been executed before.
+	 * @returns The result of the function.
+	 */
   async getReturnValue(): Promise<ReturnType> {
     if (!this.isExecuted) await this.execute();
     return this.returnValue as ReturnType;
@@ -458,6 +455,9 @@ export function attempt<ReturnType>(
 /**
  * Creates an Attempt object from a synchronous or asynchronous function that may throw an error or return a value.
  * The created Attempt object allows you to handle errors that may be thrown by the function.
+ * @param functionOrPromise - A function that may throw an error or return a value. If the function is asynchronous, it should return a Promise.
+ * @param args - The arguments to pass to the function.
+ * @returns An Attempt object that allows you to handle errors that may be thrown by the function.
  * @example
  * // Synchronous function
  * const sum = attempt(addNumbers, 1, 2)
@@ -468,7 +468,6 @@ export function attempt<ReturnType>(
  *     console.warn("The result is not a number.");
  *   })
  *   .getReturnValue();
- *
  * @example
  * // Asynchronous function
  * await attempt(waitSeconds(10))
@@ -476,7 +475,6 @@ export function attempt<ReturnType>(
  *     console.warn("The result is out of range.");
  *   })
  *   .execute();
- *
  * @example
  * // ❌ Invalid usage ❌
  * await attempt(asyncFunction)
@@ -500,8 +498,24 @@ export function attempt<ReturnType>(
 	}
 
 	const func = functionOrPromise as (...args: any[]) => ReturnType;
+		/**
+		 * A wrapper function that calls the given function with the arguments given when attempt was called.
+		 * This is used to create a new function that takes no arguments, so that the same Attempt class can
+		 * be used for both synchronous and asynchronous functions.
+		 * @returns The return value of the given function.
+		 */
 	function noArgsFunction() {
 		return func(...args)
 	}
 	return new Attempt(noArgsFunction);
+}
+
+/**
+ * Throws the given value if it is not an instance of the built-in Error class.
+ * After calling this, the value is known to be an Error.
+ * @param error - The value to check.
+ * @throws {unknown} - Throws the value if it's not an Error.
+ */
+export function throwIfNotError(error: unknown): asserts error is Error {
+  if (!(error instanceof Error)) throw error;
 }

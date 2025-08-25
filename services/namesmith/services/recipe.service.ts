@@ -4,7 +4,6 @@ import { RecipeNotFoundError } from "../utilities/error.utility";
 import { isRecipe } from "../utilities/recipe.utility";
 import { PlayerResolvable } from '../types/player.types';
 import { PlayerService } from "./player.service";
-import { areCharactersInString } from "../../../utilities/string-checks-utils";
 
 /**
  * Provides methods for interacting with recipes.
@@ -45,7 +44,6 @@ export class RecipeService {
 	/**
 	 * Returns a string representation of a recipe's input characters followed by
 	 * an arrow (➔) and the recipe's output characters.
-	 *
 	 * @param recipeResolvable - The recipe resolvable for which to get the display name.
 	 * @returns The display name of the recipe.
 	 */
@@ -57,7 +55,6 @@ export class RecipeService {
 
 	/**
 	 * Retrieves the ID of a recipe.
-	 *
 	 * @param recipeResolvable - The recipe resolvable for which the ID is being retrieved.
 	 * @returns The ID of the recipe.
 	 */
@@ -83,7 +80,9 @@ export class RecipeService {
 	 * @returns A boolean indicating if the recipe is unlocked for the player.
 	 */
 	isUnlockedForPlayer(
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		recipeResolvable: RecipeResolvable,
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		playerResolvable: PlayerResolvable
 	): boolean {
 		// TODO: Add logic for locking recipes or delete this method

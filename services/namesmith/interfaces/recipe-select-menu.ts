@@ -5,7 +5,7 @@ import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PlayerResolvable } from "../types/player.types";
 import { RecipeResolvable } from "../types/recipe.types";
 import { fetchRecipesChannel } from "../utilities/discord-fetch.utility";
-import { MissingRequiredCharactersError, NonPlayerCraftedError, NotAPlayerError, RecipeNotUnlockedError } from "../utilities/error.utility";
+import { MissingRequiredCharactersError, NonPlayerCraftedError, RecipeNotUnlockedError } from "../utilities/error.utility";
 import { craftCharacter } from "../workflows/craft-character.workflow";
 import { replyToInteraction } from "../../../utilities/discord-action-utils";
 import { escapeDiscordMarkdown } from "../../../utilities/string-manipulation-utils";
@@ -19,25 +19,25 @@ const onRecipeSelected = async (
 	await attempt(
 		craftCharacter({...getNamesmithServices(), player, recipe})
 	)
-		.onError(NonPlayerCraftedError, (error) => {
-			replyToInteraction(interaction, error.userFriendlyMessage);
+		.onError(NonPlayerCraftedError, async (error) => {
+			await replyToInteraction(interaction, error.userFriendlyMessage);
 		})
-		.onError(MissingRequiredCharactersError, (error) => {
-			replyToInteraction(interaction, error.userFriendlyMessage);
+		.onError(MissingRequiredCharactersError, async (error) => {
+			await replyToInteraction(interaction, error.userFriendlyMessage);
 		})
-		.onError(RecipeNotUnlockedError, (error) => {
-			replyToInteraction(interaction, error.userFriendlyMessage);
+		.onError(RecipeNotUnlockedError, async (error) => {
+			await replyToInteraction(interaction, error.userFriendlyMessage);
 		})
-		.onError((error) => {
+		.onError(async (error) => {
 			const errorMessage =
 				(error as any).userFriendlyMessage ??
 				error.message ??
 				"An unknown error has occurred.";
 
-			replyToInteraction(interaction, errorMessage);
+			await replyToInteraction(interaction, errorMessage);
 		})
 		.onSuccess(async ({newInventory, craftedCharacter, recipeUsed}) => {
-			replyToInteraction(interaction, escapeDiscordMarkdown(
+			await replyToInteraction(interaction, escapeDiscordMarkdown(
 				`Successfully crafted ${craftedCharacter} using ${recipeUsed.inputCharacters}\n` +
 				`Your inventory now contains ${newInventory}`
 			));
@@ -55,7 +55,7 @@ export const createRecipeSelectMenu = async (
 			value: recipeService.getID(recipe).toString()
 	}));
 
-	sendSelectMenu({
+	await sendSelectMenu({
 		inChannel: recipeChannel,
 		promptText: "Select a recipe to instantly craft a character",
 		placeholderText: "Select a recipe here...",

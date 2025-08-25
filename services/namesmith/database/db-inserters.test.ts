@@ -3,9 +3,8 @@ import { DatabaseQuerier } from "./database-querier";
 import { insertCharactersToDB, insertMysteryBoxesToDB, insertRecipesToDB } from "./db-inserters";
 import { applySchemaToDB } from "./queries/apply-schema";
 import { getIDfromCharacterValue } from "../utilities/character.utility";
-import { InvalidArgumentError } from "../../../utilities/error-utils";
-import { Character, CharacterWithTags } from "../types/character.types";
-import { MysteryBox, MysteryBoxWithOdds } from "../types/mystery-box.types";
+import { CharacterWithTags } from "../types/character.types";
+import { MysteryBoxWithOdds } from "../types/mystery-box.types";
 import { Recipe } from "../types/recipe.types";
 import { WithOptional } from '../../../utilities/types/generic-types';
 

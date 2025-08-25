@@ -2,7 +2,7 @@ const { PermissionFlagsBits } = require("discord.js");
 const { Parameter } = require("../../services/command-creation/parameter");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { deferInteraction, editReplyToInteraction } = require("../../utilities/discord-action-utils");
-const { getStringParamValue } = require("../../utilities/discord-fetch-utils");
+const { getRequiredStringParam } = require("../../utilities/discord-fetch-utils");
 const { LLPointManager } = require("../../services/ll-points/ll-point-manager");
 
 const Parameters = {
@@ -32,8 +32,8 @@ module.exports = new SlashCommand({
 	required_permissions: [PermissionFlagsBits.Administrator],
 	execute: async function(interaction) {
 		await deferInteraction(interaction);
-		const viewerName = getStringParamValue(interaction, Parameters.ViewerName.name);
-		const newViewerName = getStringParamValue(interaction, Parameters.NewViewerName.name);
+		const viewerName = getRequiredStringParam(interaction, Parameters.ViewerName.name);
+		const newViewerName = getRequiredStringParam(interaction, Parameters.NewViewerName.name);
 
 		const llPointManager = global.LLPointManager;
 		llPointManager.changeNameOfViewer(viewerName, newViewerName);

@@ -21,7 +21,7 @@ export const isVoteButtonInteraction = (interaction: ButtonInteraction): boolean
  * Handles a vote button press event. This is used to vote for a name submitted to the Names to Vote On channel.
  * @param buttonInteraction - The interaction that triggered the event.
  */
-export const onVoteButtonPressed = (buttonInteraction: ButtonInteraction) => {
+export const onVoteButtonPressed = async (buttonInteraction: ButtonInteraction) => {
 	const buttonID = buttonInteraction.customId;
 	const userID = buttonInteraction.user.id;
 
@@ -38,11 +38,14 @@ export const onVoteButtonPressed = (buttonInteraction: ButtonInteraction) => {
 		});
 	}
 	catch (error) {
-		buttonInteraction.reply({
+		if (error instanceof Error === false)
+			throw error;
+
+		await buttonInteraction.reply({
 			content: error.message, ephemeral: true
 		});
 		return;
 	}
 
-	buttonInteraction.reply({ content: feedbackMessage, ephemeral: true });
+	await buttonInteraction.reply({ content: feedbackMessage, ephemeral: true });
 };

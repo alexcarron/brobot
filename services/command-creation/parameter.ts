@@ -1,3 +1,4 @@
+import { ApplicationCommandOptionBase } from 'discord.js';
 import { toTitleCase } from '../../utilities/string-manipulation-utils';
 
 export const ParameterType = Object.freeze({
@@ -18,49 +19,39 @@ export const ParameterType = Object.freeze({
  * @class
  */
 export class Parameter {
-	/** @field {"subcommand" | "string" | "channel" | "attachment" | "boolean" | "mentionable" | "number" | "integer" | "role" | "user"}*/
 	type;
 
-	/** @field {string}*/
 	name;
 
-	/** @field {string}*/
 	description;
 
-	/** @field {boolean}*/
 	isRequired;
 
-	/** @field {boolean}*/
 	isAutocomplete;
 
-	/** @field {number}*/
 	min_value;
 
-	/** @field {number}*/
 	max_value;
 
-	/** @field {{[autocomplete_entry: string]: string}} All autocomplete entries */
 	autocomplete;
 
-	/** @field {Paramater[]} Paramaters specific to this subcommand parameter */
 	subparameters;
 
-	/** @field {Paramater[]} Subcommand parameters specific to this subcommandgroup parameter */
 	subcommands;
 
 	/**
 	 * Creates a new Parameter.
 	 * @param {object} options - The options to create the Parameter with
 	 * @param {"subcommand" | "string" | "channel" | "attachment" | "boolean" | "mentionable" | "number" | "integer" | "role" | "user"} options.type - The type of the parameter
-	 * @param {string} options.name
-	 * @param {string} options.description
-	 * @param {boolean} options.isRequired
-	 * @param {boolean} options.isAutocomplete
-	 * @param {{[autocomplete_entry: string]: string}} options.autocomplete
-	 * @param {number} options.min_value
-	 * @param {number} options.max_value
-	 * @param {Parameter[]} options.subparameters
-	 * @param {Parameter[]} options.subcommands
+	 * @param {string} options.name - The name of the parameter
+	 * @param {string} options.description - The description of the parameter
+	 * @param {boolean} options.isRequired - Whether the parameter is required
+	 * @param {boolean} options.isAutocomplete - Whether the parameter is autocomplete
+	 * @param {{[autocomplete_entry: string]: string}} options.autocomplete - The autocomplete options
+	 * @param {number} options.min_value - The minimum value
+	 * @param {number} options.max_value - The maximum value
+	 * @param {Parameter[]} options.subparameters - The subparameters
+	 * @param {Parameter[]} options.subcommands - The subcommands
 	 */
 	constructor({
 		type,
@@ -99,10 +90,10 @@ export class Parameter {
 
 	/**
 	 * Adds parameter to command or subcommand
-	 *
-	 * @param {object} command The command data or subcommand you want the paramter added to.
+	 * @param command The command data or subcommand you want the paramter added to.
+	 * @returns The command or subcommand with the added parameter
 	 */
-	addToCommand(command) {
+	addToCommand(command: Record<string, any>) {
 		const type = toTitleCase(this.type);
 
 		if (type === "Subcommand") {
@@ -113,34 +104,58 @@ export class Parameter {
 			this.addSubcommandGroupToCommand(command);
 		}
 		else {
-			command[`add${type}Option`](option => {
+			command[`add${type}Option`]((option: ApplicationCommandOptionBase) => {
 				option
 					.setName(this.name)
 					.setDescription(this.description)
 					.setRequired(this.isRequired)
 
 				if (this.type === "string") {
-					option.setAutocomplete(this.isAutocomplete)
+					if (
+						'setAutocomplete' in option &&
+						typeof option.setAutocomplete === 'function'
+					)
+						option.setAutocomplete(this.isAutocomplete)
+					else
+						throw new Error(`Option ${option.name} does not support autocomplete.`);
 				}
 
 				if (this.min_value) {
-					option.setMinValue(this.min_value);
+					if (
+						'setMinValue' in option &&
+						typeof option.setMinValue === 'function'
+					)
+						option.setMinValue(this.min_value);
+					else
+						throw new Error(`Option ${option.name} does not support min_value.`);
 				}
 
 				if (this.max_value) {
-					option.setMaxValue(this.max_value);
+					if (
+						'setMaxValue' in option &&
+						typeof option.setMaxValue === 'function'
+					)
+						option.setMaxValue(this.max_value);
+					else
+						throw new Error(`Option ${option.name} does not support max_value.`);
 				}
 
 				if (this.autocomplete) {
-					option.addChoices(
-						...Object.entries(this.autocomplete).map(entry => {
-							const name = entry[0];
-							const value = entry[1];
-
-							return {name, value};
-						})
+					if (
+						'addChoices' in option &&
+						typeof option.addChoices === 'function'
 					)
-				};
+						option.addChoices(
+							...Object.entries(this.autocomplete).map(entry => {
+								const name = entry[0];
+								const value = entry[1];
+
+								return {name, value};
+							})
+						)
+					else
+						throw new Error(`Option ${option.name} does not support autocomplete.`);
+				}
 
 				return option;
 			})
@@ -148,8 +163,15 @@ export class Parameter {
 
 		return command;
 	}
-	addSubcommandToCommand(command) {
-		command.addSubcommand( (subcommand) => {
+
+	/**
+	 * Adds a subcommand to the given command with the same name and description as the Parameter.
+	 * The subcommand's options are then set to the subparameters of the Parameter.
+	 * @param command The command to add the subcommand to.
+	 * @returns The command with the added subcommand.
+	 */
+	addSubcommandToCommand(command: Record<string, any>) {
+		command.addSubcommand( (subcommand: Record<string, any>) => {
 			subcommand
 				.setName(this.name)
 				.setDescription(this.description);
@@ -163,8 +185,8 @@ export class Parameter {
 
 		return command;
 	}
-	addSubcommandGroupToCommand(command) {
-		command.addSubcommandGroup( (subcommand_group) => {
+	addSubcommandGroupToCommand(command: Record<string, any>) {
+		command.addSubcommandGroup( (subcommand_group: Record<string, any>) => {
 			subcommand_group
 				.setName(this.name)
 				.setDescription(this.description);

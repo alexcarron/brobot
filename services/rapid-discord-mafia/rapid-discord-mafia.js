@@ -14,6 +14,9 @@ const { logSuccess } = require("../../utilities/logging-utils.js");
  */
 class RapidDiscordMafia {
 	constructor() {
+		/**
+		 * @type {Record<string, Contestant>}
+		 */
 		this.contestants = {};
 	}
 
@@ -55,7 +58,7 @@ class RapidDiscordMafia {
 
 	/**
 	 * @param {GameManager} mock_game - The game's current instance
-	 * @param {string[]} roles_in_game - An array of all role names in the game
+	 * @param {(keyof RoleManager.roles)[]} roles_in_game - An array of all role names in the game
 	 */
 	static async startMockGameWithRoles(mock_game, roles_in_game) {
 		roles_in_game.forEach(async role_name => {
@@ -89,6 +92,12 @@ class RapidDiscordMafia {
 		await mock_game.giveAllExesTargets();
 	}
 
+	/**
+	 * Returns the Contestant instance associated with the given Player instance.
+	 * If the association does not exist, it creates it.
+	 * @param {Record<string, any>} player - The player to get the associated Contestant from
+	 * @returns {Contestant} The associated contestant
+	 */
 	getContestantFromPlayer(player) {
 		let contestant = this.contestants[player.id];
 
@@ -100,6 +109,11 @@ class RapidDiscordMafia {
 		return contestant;
 	}
 
+	/**
+	 * Sets all properties of this RapidDiscordMafia instance to their corresponding
+	 * values in the given object.
+	 * @param {Record<string, any>} object - The object containing the values to set
+	 */
 	setTo(object) {
 		for (const property in object) {
 			if (property === "contestants") {
@@ -113,6 +127,7 @@ class RapidDiscordMafia {
 				}
 			}
 			else {
+				// @ts-ignore
 				this[property] = object[property];
 			}
 		}

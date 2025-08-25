@@ -3,16 +3,21 @@ const {Arg, AbilityArgType, ArgumentSubtype, AbilityArgName} = require("./arg.js
 const { Phase } = require("./game-state-manager.js");
 const { Announcement, Feedback } = require("./constants/possible-messages.js");
 const EffectManager = require("./effect-manager.js");
+const { InvalidArgumentError } = require("../../utilities/error-utils");
 
 /**
  * Used to handle ability effects and apply them
  */
 class AbilityManager {
+	/**
+	 * Constructs a new AbilityManager instance.
+	 * @param {Record<string, any>} game_manager The GameManager which the AbilityManager will use to apply effects.
+	 */
 	constructor(game_manager) {
 		this.game_manager = game_manager;
 	}
 
-	static abilities = {
+	static abilities = Object.freeze({
 		[AbilityName.HEAL]: new Ability({
 			name: AbilityName.HEAL,
 			description: "At night, you can heal a player that's not yourself at night to give them a level two defense for the night and following day. You and your target will be notified if your target was attacked while healed.",
@@ -35,6 +40,11 @@ class AbilityManager {
 					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NOT_SELF],
 				})
 			],
+			/**
+			 * Reverses the effects of this ability. This is done by simply restoring
+			 * the player's old defense.
+			 * @param {Record<string, any>} player The player on which to reverse the effects.
+			 */
 			reverseEffects: (player) => {
 				player.restoreOldDefense();
 			},
@@ -54,6 +64,11 @@ class AbilityManager {
 			feedback: function(player_name="You", isYou=true) {
 				return `**${isYou ? "You" : player_name}** will attempt to heal ${player_name==="You" ? "yourself" : "themself"} tonight`
 			},
+			/**
+			 * Reverses the effects of this ability. This is done by simply restoring
+			 * the player's old defense.
+			 * @param {Record<string, any>} player The player on which to reverse the effects.
+			 */
 			reverseEffects: (player) => {
 				player.restoreOldDefense();
 			},
@@ -150,6 +165,10 @@ class AbilityManager {
 					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NOT_SELF]
 				})
 			],
+			/**
+			 * Reverses the effects of the roleblock ability.
+			 * @param {Record<string, any>} player - The player whose roleblock is being reversed.
+			 */
 			reverseEffects: (player) => {
 				player.isRoleblocked = false;
 			},
@@ -249,6 +268,11 @@ class AbilityManager {
 					subtypes: [ArgumentSubtype.VISITING, ArgumentSubtype.NON_MAFIA]
 				})
 			],
+			/**
+			 * Reverses the effects of the Ability.
+			 * In this case, resets the player's percieved role to their actual role.
+			 * @param {Record<string, any>} player - the player who's ability is being reversed
+			 */
 			reverseEffects: (player) => {
 				player.resetPercieved();
 			},
@@ -467,6 +491,8 @@ class AbilityManager {
 				EffectManager.EffectName.Attack
 			],
 			reverseEffects: (player, game_manager) => {
+				if (!game_manager) throw new InvalidArgumentError(`Cannot reverse the suicide ability without a game manager argument.`);
+
 				game_manager.addDeath(player, player, Announcement.VIGILANTE_SUICIDE);
 
 				player.sendFeedback(Feedback.COMITTING_SUICIDE);
@@ -578,11 +604,11 @@ class AbilityManager {
 				player.sendFeedback(Feedback.UNKIDNAPPED);
 			},
 		}),
-	}
+	});
 
 	/**
 	 * Get an ability from an ability name
-	 * @param {string} ability_name - The name of the ability
+	 * @param {keyof typeof AbilityManager.abilities} ability_name - The name of the ability
 	 * @returns {Ability} The ability
 	 */
 	getAbility(ability_name) {
@@ -597,7 +623,7 @@ class AbilityManager {
 	/**
 	 * Determines if a certain ability a player uses with specific arguments can be used by that player
 	 * @param {object} parameters - Object containing player, ability, and arg_values
-	 * @param {object} parameters.player - Player attempting to use ability
+	 * @param {Record<string, any>} parameters.player - Player attempting to use ability
 	 * @param {Ability} parameters.ability - Ability using
 	 * @param {{[arg_name: string]: string}} parameters.arg_values - An object map from the argument name to it's passed value
 	 * @returns {true | string} true if you can use the ability. Otherwise, feedback for why you can't use the ability
@@ -606,7 +632,13 @@ class AbilityManager {
 		const player_role = this.game_manager.role_manager.getRole(player.role);
 
 		// Check if role has ability
-		if (player_role.abilities.every(ability => ability.name !== ability.name)) {
+		if (player_role.abilities.every(
+			/**
+			 * @param {Ability} ability - The ability
+			 * @returns {boolean} If the ability is the ability
+			 */
+			ability => ability.name !== ability.name
+		)) {
 			return `${ability.name} is not an ability you can use`;
 		}
 

@@ -68,7 +68,7 @@ describe('CharacterRepository', () => {
 	});
 
 	describe('getCharacterWithTags()', () => {
-		it('returns a character object with tags', async () => {
+		it('returns a character object with tags', () => {
 			const character = characterRepo.getCharacterWithTags(65);
 
 			expect(character).toBeDefined();

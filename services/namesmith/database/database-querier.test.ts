@@ -1,5 +1,6 @@
 import Database from "better-sqlite3";
 import { DatabaseQuerier } from "./database-querier";
+import { QueryUsageError } from "../utilities/error.utility";
 
 describe('DatabaseQuerier', () => {
 	let dbQuerier: DatabaseQuerier;
@@ -37,7 +38,7 @@ describe('DatabaseQuerier', () => {
 
     it('throws an error if the query is invalid', () => {
       const query = 'INVALID QUERY';
-      expect(() => dbQuerier.getQuery(query)).toThrow();
+      expect(() => dbQuerier.getQuery(query)).toThrow(QueryUsageError);
     });
   });
 
@@ -152,11 +153,13 @@ describe('DatabaseQuerier', () => {
 
 	describe('.getTransaction()', () => {
 		it('creates a transaction of multiple queries and returns a function that starts the transaction when called', () => {
-			const transaction = dbQuerier.getTransaction((queries, params) => {
-				return queries.map((query, index) => {
-					return dbQuerier.run(query, params[index]);
-				});
-			});
+			const transaction = dbQuerier.getTransaction(
+				(queries: string[], params: object[]) => {
+					return queries.map((query, index) => {
+						return dbQuerier.run(query, params[index]);
+					});
+				}
+			);
 			expect(typeof transaction).toBe('function');
 
 			const queries = [
@@ -187,7 +190,7 @@ describe('DatabaseQuerier', () => {
 			]
 
 			const result = dbQuerier.runTransaction((queries, params) => {
-				return queries.map((query, index) => {
+				return queries.map((query: string, index: number) => {
 					return dbQuerier.run(query, params[index]);
 				});
 			}, queries, params);

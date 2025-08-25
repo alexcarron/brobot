@@ -4,6 +4,10 @@ const { RDMDiscordRole } = require("../services/rapid-discord-mafia/discord-serv
 const { addRoleToMember } = require("../utilities/discord-action-utils");
 const { fetchGuild, fetchRole, fetchRoleByName } = require("../utilities/discord-fetch-utils");
 
+/**
+ * Handles actions to be taken when a user joins a server.
+ * @param {import("discord.js").GuildMember} guildMember - The guild member who joined the server.
+ */
 const onUserJoinsServer = async function(guildMember) {
 	if (guildMember.guild.id === ids.servers.rapid_discord_mafia) {
 		const rdmGuild = await fetchGuild(ids.servers.rapid_discord_mafia);

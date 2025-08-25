@@ -56,8 +56,10 @@ export class GameStateRepository {
 	/**
 	 * Sets the current game state.
 	 * @param newGameState - The new game state.
+	 * @param newGameState.timeStarted - The time when the game started.
+	 * @param newGameState.timeEnding - The time when the game is expected to end.
+	 * @param newGameState.timeVoteIsEnding - The time when voting is expected to end.
 	 * @throws If there are no fields provided to update.
-	 * @returns A promise that resolves once the change has been saved.
 	 */
 	setGameState({ timeStarted, timeEnding, timeVoteIsEnding }: AtLeastOne<GameState>) {
 		const assignmentExpressions: string[] = [];

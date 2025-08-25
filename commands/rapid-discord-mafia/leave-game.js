@@ -14,6 +14,10 @@ module.exports = new SlashCommand({
 
 		const player = global.game_manager.player_manager.getPlayerFromId(interaction.user.id);
 
+		if (player === undefined) {
+			return await interaction.editReply("You are not in the game.");
+		}
+
 		if (global.game_manager.state === GameState.SIGN_UP) {
 			if (
 				!await confirmInteractionWithButtons({

@@ -23,6 +23,7 @@ export class GameStateService {
 	 * @param gameStateRepository - The repository used for accessing the game state.
 	 * @param playerService - The service used for accessing players.
 	 * @param voteService - The service used for accessing votes.
+	 * @param recipeService - The service used for accessing recipes.
 	 */
 	constructor(
 		public gameStateRepository: GameStateRepository,
@@ -83,17 +84,15 @@ export class GameStateService {
 		}
 
 		const now = new Date();
-		const gameStateService = this;
 
 		const endGameCronJob = new CronJob(
 			endDate,
-			async function() {
-				await gameStateService.endGame();
+			async () => {
+				await this.endGame();
 			},
 		);
 
-		if (now < endDate)
-			endGameCronJob.start();
+		if (now < endDate) endGameCronJob.start();
 	}
 
 	/**
@@ -132,12 +131,11 @@ export class GameStateService {
 		}
 
 		const now = new Date();
-		const gameStateService = this;
 
 		const voteIsEndingCronJob = new CronJob(
 			voteEndingDate,
-			async function() {
-				await gameStateService.endVoting();
+			async () => {
+				await this.endVoting();
 			},
 		);
 

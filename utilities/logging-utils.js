@@ -8,6 +8,11 @@ const LogColor = Object.freeze({
 	WHITE: 37,
 });
 
+/**
+ * Converts a given value into a string, regardless of its type.
+ * @param {unknown} value The value to convert to a string.
+ * @returns {string} The string representation of the given value.
+ */
 const stringifyNonString = (value) => {
 	if (value === null) {
 		return "null";
@@ -63,10 +68,10 @@ const logWithColor = (message, color) => {
 
 /**
  * Logs a formatted string to the console with the specified colors.
- *
+
  * Use Format: logWithColors`A normal message with ${['green', LogColor.GREEN]} and ${['blue', LogColor.BLUE]}.`;
  * @param {TemplateStringsArray} strings - The strings to log, with placeholders for expressions.
- * @param {...[(string | number), number | undefined]} expressions - The expressions to fill in the placeholders, with the first element of each expression being the value and the second element being the color.
+ * @param {([(string | number), number | undefined] | string)[]} expressions - The expressions to fill in the placeholders, with the first element of each expression being the value and the second element being the color.
  * @throws {TypeError} If strings or expressions are not arrays.
  * @throws {TypeError} If strings contains non-string elements.
  * @throws {TypeError} If expressions contains non-tuple elements or tuple elements with incorrect length.
@@ -77,6 +82,9 @@ const logWithColors = (strings, ...expressions) => {
 		throw new TypeError("Strings must be an array.");
 
 	// Ensure strings contains strings
+	/**
+	 * @type {string[]}
+	 */
 	const newStrings = [];
 	for (let index in strings) {
 		let string = strings[index];
@@ -90,7 +98,10 @@ const logWithColors = (strings, ...expressions) => {
 	if (!Array.isArray(expressions))
 		throw new TypeError("Expressions must be an array.");
 
-	expressions = expressions.map(expression => {
+	/**
+	 * @type {[(string | number), number | undefined][]}
+	 */
+	const valueWithColors = expressions.map(expression => {
 		if (!Array.isArray(expression))
 			return [expression, undefined];
 
@@ -108,7 +119,10 @@ const logWithColors = (strings, ...expressions) => {
 	});
 
 	// Stringify expressions
-	expressions = expressions.map(expression => {
+	/**
+	 * @type {[string, number | undefined][]}
+	 */
+	const stringColors = valueWithColors.map(expression => {
 		let value = expression[0];
 
 		if (typeof value !== "string")
@@ -121,7 +135,7 @@ const logWithColors = (strings, ...expressions) => {
 	const formattedStrings = [];
 	for (let index in newStrings) {
 		let string = newStrings[index];
-		let expression = expressions[index];
+		let expression = stringColors[index];
 
 		if (expression === undefined)
 			formattedStrings.push(string);
@@ -155,6 +169,14 @@ const logError = (message, error = undefined) => {
 	console.trace('Error location:');
 }
 
+/**
+ * Logs a message to the console with a category prefix and specified color.
+ * @param {string} category - The category to log the message under.
+ * @param {number} color - The color to use when logging the message.
+ * @param {string} message - The message to log.
+ * @throws {TypeError} If category is not a string.
+ * @throws {TypeError} If color is not a valid LogColor.
+ */
 const logCategory = (category, color, message) => {
 	if (typeof category !== "string")
     throw new TypeError("Category must be a string.");
@@ -162,6 +184,7 @@ const logCategory = (category, color, message) => {
   if (typeof message !== "string")
 		message = stringifyNonString(message);
 
+	// @ts-ignore
 	if (!Object.values(LogColor).includes(color))
 		throw new TypeError("Color must be a valid LogColor.");
 

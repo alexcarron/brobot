@@ -46,6 +46,10 @@ module.exports = new SlashCommand({
 				await global.LLPointManager.addViewerFromUser(interaction.user);
 				await global.LLPointManager.updateDatabase();
 				viewer = await global.LLPointManager.getViewerById(interaction.user.id);
+
+				if (!viewer) {
+					return await interaction.editReply("There was an error adding you to the LL Point database.");
+				}
 			}
 		}
 

@@ -39,6 +39,12 @@ module.exports = new SlashCommand({
 		const whisper_contents = getRequiredStringParam(interaction, Parameters.WhisperContents.name);
 		const player_whispering_to = global.game_manager.player_manager.getPlayerFromName(player_whispering_to_name);
 
+		if (player_whispering === undefined)
+			return await interaction.editReply("You're not in the game!");
+
+		if (player_whispering_to === undefined)
+			return await interaction.editReply("That player isn't in the game!");
+
 		if (player_whispering.name === player_whispering_to.name) {
 			return await interaction.editReply("Don't you think it's a bit weird to whisper to yourself?");
 		}
@@ -57,6 +63,8 @@ module.exports = new SlashCommand({
 		if (!focused_param) return;
 		const entered_value = focused_param.value;
 		const player_using_cmd = global.game_manager.player_manager.getPlayerFromId(interaction.user.id);
+
+		if (player_using_cmd === undefined) return;
 
 		autocomplete_values = global.game_manager.player_manager.getAlivePlayers()
 			.filter(player => player.name !== player_using_cmd.name)

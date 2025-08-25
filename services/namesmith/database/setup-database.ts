@@ -9,12 +9,12 @@ import { startBackupCronJob } from './backup-database';
  * It is the caller's responsibility to close the database when finished.
  * @returns The Namesmith database instance.
  */
-export const setupDatabase = (): DatabaseQuerier => {
+export const setupDatabase = async (): Promise<DatabaseQuerier> => {
 	const db = getDatabase();
 	db.pragma('journal_mode = WAL');
 	db.pragma('foreign_keys = ON');
 	applySchemaToDB(db);
 	addInitialDataToDB(db);
-	startBackupCronJob();
+	await startBackupCronJob();
 	return db;
 };

@@ -1,4 +1,6 @@
 import { initialBotStatus } from "./bot-config/bot-status";
+import { setupClient } from "./bot-config/setup-client";
+import { setupAndDeployCommands } from "./bot-config/setup-commands";
 import { logInfo, logSuccess } from "./utilities/logging-utils";
 
 const GUILD_COMMANDS_ONLY_OPTIONS = [
@@ -44,8 +46,6 @@ const buildBrobot = async () => {
 		global.botStatus.isInDevelopmentMode = true;
 	}
 
-	const { setupClient } = require("./bot-config/setup-client");
-	const { setupAndDeployCommands } = require("./bot-config/setup-commands");
 
 	const client = await setupClient();
 	await setupAndDeployCommands({
@@ -58,4 +58,6 @@ const buildBrobot = async () => {
 	process.exit(0);
 }
 
-buildBrobot();
+buildBrobot()
+	.then(() => logSuccess("Bot built."))
+	.catch(error => console.error(error));

@@ -73,7 +73,7 @@ export const createAllMocks = (): {
  * Sets up a mock Namesmith server with mock repositories and services. This is
  * used by the event listeners to simulate the game state and player state
  * during testing.
- *
+
  * This function should be called before any of the event listeners are set up
  * and before any tests are run.
  */

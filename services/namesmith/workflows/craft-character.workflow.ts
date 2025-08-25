@@ -6,7 +6,8 @@ import { MissingRequiredCharactersError, NonPlayerCraftedError, RecipeNotUnlocke
 
 /**
  * Crafts a character using a given recipe and player.
- * @param {{playerService: PlayerService, recipeService: RecipeService, player: PlayerResolvable, recipe: RecipeResolvable}} args
+ * @param {{playerService: PlayerService, recipeService: RecipeService, player: PlayerResolvable, recipe: RecipeResolvable}} args - The arguments for crafting a character.
+ * @returns {Promise<void>} A promise that resolves when the character is crafted.
  * @throws {MissingRequiredCharactersError} If the player does not have all the required characters to craft the character.
  * @throws {RecipeNotUnlockedError} If the recipe is not unlocked for the player.
  */

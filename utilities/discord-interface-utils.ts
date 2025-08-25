@@ -1,6 +1,6 @@
 import { createRandomUUID } from "./random-utils";
 import { ActionRowBuilder, ButtonBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from "@discordjs/builders";
-import { ButtonInteraction, ButtonStyle, ChannelResolvable, Message, StringSelectMenuInteraction, TextChannel } from "discord.js";
+import { ButtonInteraction, ButtonStyle, Message, StringSelectMenuInteraction, TextChannel } from "discord.js";
 import { InvalidArgumentError } from "./error-utils";
 import { onButtonPressed } from "../event-listeners/on-button-pressed";
 import { onMenuOptionSelected } from "../event-listeners/on-menu-option-selected";
@@ -35,6 +35,11 @@ const createSelectMenuPageComponents = (
 	if (options.length === 0)
 		throw new InvalidArgumentError('createSelectMenu: options must not be empty.');
 
+	/**
+	 * Checks if an options array is an array of strings or an array of option objects.
+	 * @param option - The options array to check.
+	 * @returns Whether the options array is an array of strings.
+	 */
 	function isStringOption(option:
 		| string[]
 		| {label: string, value: string}[]
@@ -132,11 +137,13 @@ const createSelectMenuPageComponents = (
 /**
  * Sends a select menu to a channel with a button to change the page.
  * @param options - The options for the select menu.
- * @param channel - The channel to send the select menu to.
- * @param content - The message content to send with the select menu.
- * @param onOptionSelected - The function to call when an option is selected.
- * @param placeholderText - The text to display in the placeholder of the select menu.
- * @param menuID - The ID of the select menu.
+ * @param options.options - The options for the select menu.
+ * @param options.inChannel - The channel to send the select menu to.
+ * @param options.promptText - The prompt text to send with the select menu.
+ * @param options.content - The message content to send with the select menu.
+ * @param options.onOptionSelected - The function to call when an option is selected.
+ * @param options.placeholderText - The text to display in the placeholder of the select menu.
+ * @param options.menuID - The ID of the select menu.
  * @returns The message that is sent.
  * @example
  * const message = await sendSelectMenu({

@@ -260,7 +260,7 @@ class RoleManager {
 
 	/**
 	 * Get a role from a role name
-	 * @param {string} role_name - the name of the role
+	 * @param {keyof typeof RoleManager.roles} role_name - the name of the role
 	 * @returns {Role} The role
 	 */
 	getRole(role_name) {

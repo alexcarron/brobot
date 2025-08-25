@@ -1,3 +1,5 @@
+/* eslint-disable jsdoc/require-param-description */
+/* eslint-disable jsdoc/require-returns */
 const { ids } = require("../../../bot-config/discord-ids");
 const { createListFromWords } = require("../../../utilities/string-manipulation-utils");
 const { createNowUnixTimestamp } = require("../../../utilities/date-time-utils.js");
@@ -25,41 +27,75 @@ const COMMAND_EXPLANATIONS = [
  * Enum of possible announcements sent to the public by the game
  */
 const Announcement = Object.freeze({
+	/**
+	 * @param {string} sign_up_ping_id
+	 * @param {string} join_chat_id
+	 * @param {string | number} unix_timestamp
+	 */
 	START_SIGN_UPS: (sign_up_ping_id, join_chat_id, unix_timestamp) =>
 		`<@&${sign_up_ping_id}> @everyone A Rapid Discord Mafia game is starting <t:${unix_timestamp}:R>.` + "\n" +
 		`To join the game, go to <#${join_chat_id}> and use the command \`/join\`.\n` +
 		`While you wait, read <#${ids.rapid_discord_mafia.channels.how_to_play}> and <#${ids.rapid_discord_mafia.channels.rules}>!`,
 
+	/**
+	 * @param {string} join_chat_id
+	 * @param {string | number} unix_timestamp
+	 */
 	SIGN_UPS_REMINDER: (join_chat_id, unix_timestamp) =>
 		`@here A Rapid Discord Mafia game will begin <t:${unix_timestamp}:R>!` + "\n" +
 		`To join the game, go to <#${join_chat_id}> and use the command \`/join\`.\n` +
 		`While you wait, read <#${ids.rapid_discord_mafia.channels.how_to_play}> and <#${ids.rapid_discord_mafia.channels.rules}>!`,
 
+	/**
+	 * @param {string} join_chat_id
+	 * @param {string | number} unix_timestamp
+	 */
 	SIGN_UPS_FINAL_REMINDER: (join_chat_id, unix_timestamp) =>
 		`@here Final call to sign up for the Rapid Discord Mafia game!` + "\n" +
 		`Sign-ups will close and the game will begin <t:${unix_timestamp}:R>.` + "\n" +
 		`To join the game, go to <#${join_chat_id}> and use the command \`/join\`.`,
 
+	/**
+	 * @param {string} ll_user_id
+	 * @param {string} living_role_id
+	 * @param {number} player_count
+	 */
 	SIGN_UPS_CLOSED: (ll_user_id, living_role_id, player_count) =>
 		`<@${ll_user_id}> <@&${living_role_id}> Sign-ups are now closed and the game will now begin with \`${player_count}\` players!` + "\n" +
 		`While you wait, read <#${ids.rapid_discord_mafia.channels.how_to_play}> and <#${ids.rapid_discord_mafia.channels.rules}>\n` +
 		`Standby for role assignments in your player action channel...`,
 
+	/**
+	 * @param {number} player_count
+	 * @param {number} min_player_count
+	 */
 	NOT_ENOUGH_SIGN_UPS: (player_count, min_player_count) =>
 		`Unfortunately we didn't get enough players. We needed \`${min_player_count}\` but we got \`${player_count}\`. Game cancelled :(`,
 
+	/**
+	 * @param {string} target_name
+	 */
 	GIVE_EXE_TARGET: (target_name) =>
 		`Your target is **${target_name}**! Make sure they are lynched by any means necessary.`,
 
+	/**
+	 * @param {string[]} living_player_names
+	 */
 	SHOW_LIVING_PLAYERS: (living_player_names) =>
 		"_ _\n" +
 		`# Living Players` + "\n" +
 		">>> " + living_player_names.map(name => `**${name}**\n`).join(""),
 
+	/**
+	 * @param {{name: string}[]} role_identifiers
+	 */
 	SHOW_ROLE_LIST: (role_identifiers) =>
 		`# Role List` + "\n" +
 		">>> " + role_identifiers.map(identifier => `**${identifier.name}**\n`).join(""),
 
+	/**
+	 * @param {string} living_role_id
+	 */
 	GAME_STARTED: (living_role_id) => [
 		`<@&${living_role_id}> Good morning! The game will now begin!`,
 		`_ _\n## Helpful Reminders`,
@@ -73,6 +109,10 @@ const Announcement = Object.freeze({
 		`**The day phase will end <t:${createNowUnixTimestamp() + PhaseLength.FIRST_DAY*60}:R>**`,
 	],
 
+	/**
+	 * @param {string} living_role_id
+	 * @param {number} day_num
+	 */
 	START_DAY: (living_role_id, day_num) => [
 		`_ _\n# Day ${day_num}`,
 		`<@&${living_role_id}> Good morning! It is now day.`,
@@ -89,6 +129,9 @@ const Announcement = Object.freeze({
 
 	USE_NIGHT_ABILITY_REMINDER: "It's night time. Use the command `/use ABILITY-NAME-HERE` to perform an ability or `/use nothing`.",
 
+	/**
+	 * @param {string} living_role_id
+	 */
 	VOTING_OVER: (living_role_id) =>
 		`_ _\n<@&${living_role_id}> Voting is closed. Let's see who is put on trial...`,
 
@@ -98,37 +141,71 @@ const Announcement = Object.freeze({
 
 	VOTING_OUTCOME_NO_VOTES: `Nobody voted, so we will be skipping the trial.`,
 
+	/**
+	 * @param {string} player_name_on_trial
+	 */
 	VOTING_OUTCOME_PLAYER: (player_name_on_trial) => `The town puts **${player_name_on_trial}** on trial.`,
 
+	/**
+	 * @param {number} num_day
+	 */
 	TRIAL_VOTES_HEADER: (num_day) => `## Trial Vote (Day ${num_day})`,
 
+	/**
+	 * @param {string} on_trial_role_id
+	 */
 	ON_TRIAL_PLAYER_GIVE_DEFENSE: (on_trial_role_id) =>
 		`<@&${on_trial_role_id}> You can now give your defense here:`,
 
+	/**
+	 * @param {{name: string}} player_on_trial
+	 */
 	START_TRIAL: (player_on_trial) => [
 		`_ _\n## Trial Phase`,
 		`The trial part of the day will now begin and **end <t:${createNowUnixTimestamp() + PhaseLength.TRIAL*60}:R>**.`,
 		`Use \`/vote for-trial-outcome\` in your player action channel to vote whether or not **${player_on_trial.name}** should be hung. (Or abstain)\nYour votes will be anonymous until day starts.`
 	],
 
+	/**
+	 * @param {{name: string}} player_on_trial
+	 */
 	TRIAL_VOTING_REMINDER: (player_on_trial) =>
 		`Use the command \`/vote for-trial-outcome\` in this channel to vote whether or not **${player_on_trial.name}** should be hung.`,
 
+	/**
+	 * @param {string} living_role_id
+	 */
 	TRIAL_OVER: (living_role_id) =>
 		`_ _\n<@&${living_role_id}> Trial voting is closed. Let's see the verdict...`,
 
+	/**
+	 * @param {{name: string}} player_on_trial
+	 */
 	TRIAL_OUTCOME_TIE: (player_on_trial) =>
 		`It was a tie. The town couldn't agree whether or not to lynch **${player_on_trial.name}**, so they live.`,
 
+	/**
+	 * @param {{name: string}} player_on_trial
+	 */
 	TRIAL_OUTCOME_NO_VOTES: (player_on_trial) =>
 		`Nobody voted, so **${player_on_trial.name}** lives.`,
 
+	/**
+	 * @param {{name: string}} player_on_trial
+	 */
 	TRIAL_OUTCOME_INNOCENT: (player_on_trial) =>
 		`**${player_on_trial.name}** was deemed innocent by the town. They get to live another day.`,
 
+	/**
+	 * @param {{name: string}} player_on_trial
+	 */
 	TRIAL_OUTCOME_GUILTY: (player_on_trial) =>
 		`**${player_on_trial.name}** was deemed guilty by the town. They will be hung to death this instant.`,
 
+	/**
+	 * @param {string} living_role_id
+	 * @param {number} night_num
+	 */
 	START_NIGHT: (living_role_id, night_num) => [
 		`_ _\n# Night ${night_num}`,
 		`<@&${living_role_id}> Goodnight! It is now nightime.`,
@@ -137,6 +214,9 @@ const Announcement = Object.freeze({
 		`If you're not using an ability, do \`/use nothing\` to speed up the night`,
 	],
 
+	/**
+	 * @param {number} min_left
+	 */
 	PHASE_ALMOST_OVER_WARNING: (min_left) =>
 		`**WARNING: Phase ends <t:${createNowUnixTimestamp() + min_left*60}:R>**`,
 
@@ -146,29 +226,58 @@ const Announcement = Object.freeze({
 
 	VIGILANTE_SUICIDE: "They comitted suicide over the guilt of killing a town member.",
 
+	/**
+	 * @param {{name: string, role: string}} player
+	 */
 	ROLE_REVEAL: (player) =>
 		`**${player.name}**'s role was revealed to be **${player.role}**.`,
 
+	/**
+	 * @param {{name: string}} player
+	 */
 	ROLE_IS_UNIDENTIFIABLE: (player) =>
 		`**${player.name}**'s role could not be determined.`,
 
+	/**
+	 * @param {number} num_day
+	 */
 	LYNCH_VOTE_HEADER: (num_day) =>
 		`# Day ${num_day} Lynch Vote`,
 
+	/**
+	 * @param {string} day_chat_chnl_id
+	 */
 	OPEN_DAY_CHAT: (day_chat_chnl_id) =>
 		`_ _\nYou may now discuss in <#${day_chat_chnl_id}>`,
 
+	/**
+	 * @param {{name: string}} player
+	 */
 	PLAYER_FOUND_DEAD: (player) =>
 		`:skull: **${player.name}** was found dead.`,
 
+	/**
+	 * @param {string} last_will
+	 */
 	LAST_WILL_UNIDENTIFIABLE:
 		`The contents of their last will could not be determined.`,
 
+	/**
+	 * @param {string} last_will
+	 */
 	LAST_WILL_NOT_FOUND:
 		`No last will could be found.`,
+
+	/**
+	 * @param {string} last_will
+	 */
 	LAST_WILL_FOUND: (last_will) =>
 		`They left behind a last will: \`\`\`\n${last_will}\n\`\`\``,
 
+	/**
+	 * @param {string[]} winning_factions
+	 * @param {string[]} winning_player_names
+	 */
 	CONGRATULATE_WINNERS: (winning_factions, winning_player_names) => {
 		const bolded_winning_player_names = winning_player_names.map(
 			name => `**${name}**`
@@ -185,21 +294,45 @@ const Announcement = Object.freeze({
 		]
 	},
 
+	/**
+	 * @param {{name: string}} player_whispering
+	 * @param {{name: string}} player_whispering_to
+	 */
 	WHISPER: (player_whispering, player_whispering_to) =>
 		`> **${player_whispering.name}** whispers to **${player_whispering_to.name}**`,
 
+	/**
+	 * @param {{name: string, role: string}} player_whispering
+	 * @param {{name: string, role: string}} player_whispering_to
+	 * @param {string} whisper_contents
+	 */
 	WHISPER_LOG: (player_whispering, player_whispering_to, whisper_contents) =>
 		`\`[${player_whispering.role}]\` **${player_whispering.name}** whispers to \`[${player_whispering_to.role}]\` **${player_whispering_to.name}**\n>>> ${whisper_contents}`,
 
+	/**
+	 * @param {string} player_name
+	 * @param {number} coins
+	 */
 	REWARD_COINS_TO_PLAYER: (player_name, coins) =>
 		`**${player_name}** is rewarded with \`${coins}\` coins!`,
 
+	/**
+	 * @param {string[]} player_names
+	 * @param {number} coins
+	 */
 	REWARD_COINS_TO_PLAYERS: (player_names, coins) =>
 		`🪙 **${player_names.join(", ")}** is rewarded with \`${coins}\` coins!`,
 
+	/**
+	 * @param {number} num_days_since_deaths
+	 */
 	DRAW_GAME_FROM_TIMEOUT: (num_days_since_deaths) =>
 		`There have been no deaths for the past **${num_days_since_deaths} day(s)**, so it's a draw!`,
 
+	/**
+	 * @param {number} max_days_since_death
+	 * @param {number} num_days_since_deaths
+	 */
 	TIMEOUT_WARNING: (max_days_since_death, num_days_since_deaths) =>
 		`Nobody has died in the past **${num_days_since_deaths} day(s)**. **${max_days_since_death - num_days_since_deaths}** more days without bloodshed and the game ends in a draw.`,
 	LYNCHED_FOOL: `You feel like you've made a terrible mistake...`,
@@ -209,12 +342,18 @@ const Announcement = Object.freeze({
  * Enum of possible feedback sent privately to a player
  */
 const Feedback = Object.freeze({
+	/**
+	 * @param {{id: string, name: string}} player
+	 */
 	CREATED_PLAYER_ACTION_CHANNEL: (player) =>
 		`<@${player.id}> Welcome to your player action channel!` + "\n" +
 		`If your new to Rapid Discord Mafia learn <#${ids.rapid_discord_mafia.channels.how_to_play}> and read <#${ids.rapid_discord_mafia.channels.rules}>\n` +
 		`Here's a list of commands that are good to know:\n` +
 		COMMAND_EXPLANATIONS.map(string => `> - ${string}`).join("\n"),
 
+	/**
+	 * @param {{name: string}} player_smithed_for
+	 */
 	SMITHED_VEST_FOR_PLAYER: (player_smithed_for) =>
 		`You smited a vest for **${player_smithed_for.name}** last night.`,
 
@@ -224,6 +363,9 @@ const Feedback = Object.freeze({
 
 	DID_CAUTIOUS: "You were cautious last night and didn't attack any roleblockers.",
 
+	/**
+	 * @param {{name: string}} roleblocked_player
+	 */
 	ROLEBLOCKED_PLAYER: (roleblocked_player) =>
 		`You attempted to roleblock **${roleblocked_player.name}** last night.`,
 
@@ -243,10 +385,19 @@ const Feedback = Object.freeze({
 
 	COMITTED_SUICIDE: "You comitted suicide over the guilt of killing a town member.",
 
+	/**
+	 * @param {string} faction
+	 */
 	ANNOUNCE_MURDER_BY_FACTION: (faction) =>  `They were killed by the **${faction}**.`,
 
+	/**
+	 * @param {string} faction
+	 */
 	ANNOUNCE_ANOTHER_MURDER_BY_FACTION: (faction) =>  `They were also killed by the **${faction}**.`,
 
+	/**
+	 * @param {string} role
+	 */
 	ANNOUNCE_MURDER_BY_ROLE: (role) => {
 		switch (role) {
 			case RoleName.IMPERSONATOR:
@@ -257,78 +408,170 @@ const Feedback = Object.freeze({
 		}
 	},
 
+	/**
+	 * @param {string} role
+	 */
 	ANNOUNCE_ANOTHER_MURDER_BY_ROLE: (role) =>  `They were also killed by a(n) **${role}**.`,
 
 	CONTROLLED: "You were controlled.",
 
+	/**
+	 * @param {{name: string}} player_controlled
+	 */
+	CONTROLLED_PLAYER: (player_controlled) => `You were controlled by **${player_controlled.name}**.`,
+
+	/**
+	 * @param {string} player_evaluating
+	 * @param {string} player_role
+	 */
 	INVESTIGATED_PLAYERS_ROLE: (player_evaluating, player_role) => {return `**${player_evaluating}** seemed to be the role, **${player_role}**.`},
 
+	/**
+	 * @param {string} player_evaluating
+	 */
 	GOT_UNCLEAR_EVALUATION: (player_evaluating) => {return `The results on **${player_evaluating}** were unclear.`},
 
+	/**
+	 * @param {string} player_evaluating_name
+	 */
 	GOT_SUSPICIOUS_EVALUATION: (player_evaluating_name) => {return `**${player_evaluating_name}** seemed to be suspicious.`},
 
+	/**
+	 * @param {string} player_evaluating
+	 */
 	GOT_INNOCENT_EVALUATION: (player_evaluating) => {return `**${player_evaluating}** seemed to be innocent.`},
 
+	/**
+	 * @param {{name: string}} target_player
+	 */
 	LOOKOUT_SEES_NO_VISITS: (target_player) =>
 		`It seems like nobody visited **${target_player.name}** last night.`,
 
+	/**
+	 * @param {{name: string}} target_player
+	 * @param {{name: string}[]} player_seen_visiting
+	 */
 	LOOKOUT_SEES_VISITS: (target_player, player_seen_visiting) => {
 		const player_names_visiting =
 		player_seen_visiting.map(player => `**${player.name}**`);
 		return `It seems like **${target_player.name}** was visited by ${createListFromWords(player_names_visiting)} last night.`;
 	},
 
+	/**
+	 * @param {string} player_tracked_name
+	 * @param {string} visited_player_name
+	 */
 	TRACKER_SAW_PLAYER_VISIT: (player_tracked_name, visited_player_name) => {return `It looked like **${player_tracked_name}** visited **${visited_player_name}** last night.`},
 
+	/**
+	 * @param {string} player_tracked_name
+	 */
 	TRACKER_SAW_PLAYER_NOT_VISIT: (player_tracked_name) => {return `It looked like **${player_tracked_name}** didn't visit anyone last night.`},
 
+	/**
+	 * @param {string} player_attacking
+	 */
 	ATTACK_FAILED: (player_attacking) => {return `You tried to attack **${player_attacking}**, but their defense was too strong.`},
 
+	/**
+	 * @param {string} player_attacking
+	 */
 	KILLED_PLAYER: (player_attacking) => {return `You attacked and killed **${player_attacking}**.`},
 
+	/**
+	 * @param {string} player_attacking
+	 */
 	ORDERED_BY_GODFATHER: (player_attacking) => {return `The Godfather ordered you to attack **${player_attacking}**.`},
 
+	/**
+	 * @param {string} player_attacking
+	 */
 	KILL_FOR_MAFIOSO: (player_attacking) => {return `The mafioso wasn't able to attack **${player_attacking}**, so you did it for them.`},
 
+	/**
+	 * @param {string} player_controlled
+	 */
 	CONTROL_FAILED: (player_controlled) => {return `You tried to control **${player_controlled}**, but you were unable to.`},
 
+	/**
+	 * @param {string} player_controlled
+	 * @param {string} player_controlled_into
+	 */
 	CONTROL_SUCCEEDED: (player_controlled, player_controlled_into) => {return `You controlled **${player_controlled}** into using their ability on **${player_controlled_into}**.`},
 
+	/**
+	 * @param {{id: string}} player
+	 * @param {number} num_subphases_inactive
+	 * @param {number} num_subphases_inactive_left
+	 */
 	INACTIVITY_WARNING: (player, num_subphases_inactive, num_subphases_inactive_left) =>
 		`\n` +
 		`<@${player.id}>` + `\n` +
 		`You've been inactive for **${num_subphases_inactive}** subphases. If you are inactive for **${num_subphases_inactive_left}** more subphases, you will be kicked from the game.` + `\n` +
 		`Try doing \`/use nothing\`, \`/vote for-player Abstain\`, and \`/vote for-trial-outcome Abstain\` to reduce inactivity.`,
 
+	/**
+	 * @param {{id: string}} player
+	 */
 	SMITTEN: (player) => `<@${player.id}> You have been smitten for inactivity.`,
 
+	/**
+	 * @param {{name: string}} player_whispering
+	 * @param {string} whisper_contents
+	 */
 	WHISPERED_TO: (player_whispering, whisper_contents) =>
 		`**${player_whispering.name}** whispers to you:\n>>> ${whisper_contents}`,
 
+	/**
+	 * @param {{name: string}} player_observing
+	 */
 	OBSERVED_WITH_NO_PREVIOUS_OBSERVE: (player_observing) =>
 		`You observed **${player_observing.name}** last night. The next time you observe someone, you'll know if they and **${player_observing.name}** are working together.`,
 
+	/**
+	 * @param {{name: string}} player_observing
+	 * @param {{name: string}} previous_player_observed
+	 */
 	OBSERVED_WORKING_TOGETHER: (player_observing, previous_player_observed) =>
 		`You observed **${player_observing.name}** last night and it seems like they're in the same faction as **${previous_player_observed.name}**, the previous player you observed.`,
 
+	/**
+	 * @param {{name: string}} player_observing
+	 * @param {{name: string}} previous_player_observed
+	 */
 	OBSERVED_NOT_WORKING_TOGETHER: (player_observing, previous_player_observed) =>
 		`You observed **${player_observing.name}** last night and it seems like they're NOT in the same faction as **${previous_player_observed.name}**, the previous player you observed.`,
 
+	/**
+	 * @param {{name: string}} player_observing
+	 */
 	OBSERVED_SAME_PERSON: (player_observing) =>
 		`You observed **${player_observing.name}** last night, but it was pretty obvious they were in the same faction as themselves.`,
 
 	REPLACED_BY_REPLACER:
 		`Don't worry, you have been replaced by someone.`,
 
+	/**
+	 * @param {{name: string, role: string}} player_replacing
+	 */
 	REPLACED_PLAYER: (player_replacing) =>
 		`You have successfully replaced **${player_replacing.name}**'s role as **${player_replacing.role}**`,
 
+	/**
+	 * @param {{name: string}} player_replacing
+	 */
 	REPLACE_FAILED: (player_replacing) =>
 		`You failed to replace **${player_replacing.name}**...`,
 
+	/**
+	 * @param {{name: string}} player_kindapped
+	 */
 	KIDNAPPED_PLAYER: (player_kindapped) =>
 		`You kidnapped **${player_kindapped.name}**. They won't be able to speak or vote tonight and you attempted to roleblock them.`,
 
+	/**
+	 * @param {{name: string}} player_kindapped
+	 */
 	ATTACK_BY_KIDNAPPED_PLAYER: (player_kindapped) =>
 		`You kidnapped **${player_kindapped.name}**. They won't be able to speak or vote tonight and you attempted to roleblock them, but they were stronger than you thought and attacked you.`,
 
@@ -346,9 +589,19 @@ const Feedback = Object.freeze({
 
 	WON_AS_EXECUTIONER: `You win! You have successfully gotten your target lynched. Do whatever you want now. You'll still win if you die.`,
 
+	/**
+	 * @param {{id: string, name: string}} player_converting
+	 * @param {string} last_role_name
+	 * @param {string} new_role_name
+	 */
 	CONVERTED_TO_ROLE: (player_converting, last_role_name, new_role_name) =>
 		`<@${player_converting.id}>\n# You've been converted from ${last_role_name} to ${new_role_name}`,
 
+	/**
+	 * @param {{id: string, name: string}} kidnapper_player
+	 * @param {{id: string, name: string}} kidnapped_player
+	 * @param {string} message
+	 */
 	KIDNAPPER_YELLS: (kidnapper_player, kidnapped_player, message) =>
 		`_ _\n<@${kidnapper_player.id}> **${kidnapped_player.name}** screams at you:\n>>> ${message}`
 });
