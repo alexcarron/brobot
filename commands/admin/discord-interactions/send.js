@@ -26,7 +26,6 @@ module.exports = new SlashCommand({
 		Parameters.Channel,
 		Parameters.Message,
 	],
-	isInDevelopment: true,
 	execute: async function(interaction) {
 		await deferInteraction(interaction);
 

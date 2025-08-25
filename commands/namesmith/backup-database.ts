@@ -9,7 +9,6 @@ export const command = new SlashCommand({
 	description: "Backs up the naesmith database",
 	required_servers: [ids.servers.NAMESMITH],
 	required_permissions: [PermissionFlagsBits.Administrator],
-	isInDevelopment: true,
 	execute: async function execute(interaction) {
 		await deferInteraction(interaction);
 

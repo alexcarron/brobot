@@ -49,7 +49,7 @@ export class SlashCommand {
 	/**
 	 * Permissions that users must have to run this command
 	 */
-	public readonly required_permissions: bigint[];
+	public required_permissions: bigint[];
 
 	/**
 	 * Parameters that users can enter when running the command
@@ -57,9 +57,24 @@ export class SlashCommand {
 	public readonly parameters: Parameter[];
 
 	/**
-	 * If the command is currently in development
+	 * If the command is still in development.
+	 *
+	 * When true, the command is
+	 * - Deployed in the development environment
+	 * - Not deployed in production
+	 * - Can only be used by developers
 	 */
-	public readonly isInDevelopment: boolean;
+	public readonly isInDevelopment: boolean = false;
+
+	/**
+	 * If the command is not finished but can be used by users for testing purposes. Overrides `isInDevelopment`
+	 *
+	 * When true, the command is
+	 * - Deployed in the development environment
+	 * - Not deployed in production
+	 * - Can be used by all users
+	 */
+	public readonly isInUserTesting: boolean = false;
 
 	/**
 	 * A function which takes a discord.js Interaction that executes when the command is autocompleted
@@ -87,6 +102,7 @@ export class SlashCommand {
 		execute,
 		autocomplete = async () => {},
 		isInDevelopment = false,
+		isInUserTesting = false,
 	}: {
 		name: string;
 		description: string;
@@ -101,6 +117,7 @@ export class SlashCommand {
 		parameters?: Parameter[];
 		autocomplete?: (interaction: AutocompleteInteraction) => Promise<any>;
 		isInDevelopment?: boolean;
+		isInUserTesting?: boolean;
 	}) {
 		this.name = name;
 		this.description = description;
@@ -115,15 +132,15 @@ export class SlashCommand {
 		this.execute = execute;
 		this.autocomplete = autocomplete;
 		this.isInDevelopment = isInDevelopment;
+		this.isInUserTesting = isInUserTesting;
 	}
 
 	/**
 	 * Constructs and returns a SlashCommand object configured with its name, description,
 	 * parameters, required permissions, and DM permissions.
-	 * @returns {SlashCommand} The configured SlashCommand instance.
+	 * @returns The configured SlashCommand instance.
 	 */
-	getCommand() {
-
+	getCommand(): SlashCommand {
 		const data = new SlashCommandBuilder()
 			.setName(this.name)
 			.setDescription(this.description);

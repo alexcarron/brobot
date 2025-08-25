@@ -10,7 +10,7 @@ module.exports = new SlashCommand({
 	name: "list-creatures",
 	description: "Have Brobot send a list of all creatures in the evolution game with links to their messages",
 	required_servers: [ids.servers.evolutionGame],
-	isInDevelopment: true,
+	isInUserTesting: true,
 	execute: async function execute(interaction) {
 		await deferInteraction(interaction);
 

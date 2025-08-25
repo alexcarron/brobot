@@ -7,7 +7,7 @@ const Timer = require('../services/timers/timer.js');
 const DailyMessageHandler = require('../services/discussion-prompts/daily-message-handler.js');
 const TextToSpeechHandler = require('../services/text-to-speech/text-to-speech-handler.js');
 const { setupNamesmith } = require('../services/namesmith/event-listeners/on-setup');
-const { isStringToStringsRecord } = require('../utilities/types/type-guards.js');
+const { isStringToStringsRecord } = require('../utilities/types/type-guards');
 const { InitializationError } = require('../utilities/error-utils');
 
 /**

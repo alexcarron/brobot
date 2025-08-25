@@ -23,7 +23,7 @@ declare global {
 		isOn: boolean,
 		isSleep: boolean,
 		isInDevelopmentMode: boolean
-		testUsers: string[],
+		testUsersAndDevelopers: string[],
 	};
 
 	var client: Client;

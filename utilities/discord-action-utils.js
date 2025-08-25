@@ -185,31 +185,36 @@ const deferInteraction = async (
  * Replies to an interaction with the provided message content.
  * @param {CommandInteraction | MessageComponentInteraction | ModalSubmitInteraction} interaction - The interaction to reply to.
  * @param {string} messageContent - The content of the message to reply with.
- * @returns {Promise<InteractionResponse<boolean>>} A promise that resolves when the message is sent.
+ * @returns {Promise<InteractionResponse | Message>} A promise that resolves when the message is sent.
  */
 const replyToInteraction = async (interaction, messageContent) => {
-	if (
-		interaction &&
-		"reply" in interaction &&
-		typeof interaction.reply === "function"
-	) {
-		return await interaction.reply({
-			content: messageContent,
-			ephemeral: true,
+	try {
+		if (
+			interaction &&
+			"reply" in interaction &&
+			typeof interaction.reply === "function"
+		) {
+			return await interaction.reply({
+				content: messageContent,
+				ephemeral: true,
+			});
+		}
+
+		throw new InvalidArgumentTypeError({
+			functionName: "replyToInteraction",
+			argumentName: "interaction",
+			expectedType: "ReplyableInteraction",
+			actualValue: interaction
 		});
 	}
-
-	throw new InvalidArgumentTypeError({
-		functionName: "replyToInteraction",
-		argumentName: "interaction",
-		expectedType: "ReplyableInteraction",
-		actualValue: interaction
-	});
+	catch (error) {
+		return editReplyToInteraction(interaction, messageContent);
+	}
 }
 
 /**
  * Edits the reply to an interaction with new message contents.
- * @param {ChatInputCommandInteraction} interaction - The interaction whose reply is being updated.
+ * @param {CommandInteraction | MessageComponentInteraction | ModalSubmitInteraction} interaction - The interaction whose reply is being updated.
  * @param {string | object} newMessageContents - The new contents for the message.
  * @returns {Promise<Message<boolean>>} A promise that resolves when the message is edited.
  */

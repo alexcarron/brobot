@@ -66,6 +66,13 @@ const getCommands = () => {
 
 
 		if (command instanceof SlashCommand) {
+			if (
+				(command.isInDevelopment || command.isInUserTesting) &&
+				global.botStatus.isInDevelopmentMode === false
+			) {
+				// If the command is in development and the bot is not in development mode, skip it
+				continue;
+			}
 			command = command.getCommand();
 		}
 
@@ -155,7 +162,6 @@ const deployCommands = async (
 	const rest = new Discord.REST().setToken(DISCORD_TOKEN);
 
 	logInfo(`Started deploying slash commands...`);
-
 	// The put method is used to fully refresh all commands in the guild with the current set
 	for (const requiredServerID of guildIDtoGuildCommands.keys()) {
 		const slashCommands = guildIDtoGuildCommands.get(requiredServerID);
@@ -237,6 +243,7 @@ export const setupAndDeployCommands = async (
 		skipGlobalCommands?: boolean
 }): Promise<void> => {
 	const commands = getCommands();
+
 	storeCommandsInMemory(client, commands);
 
 	let globalCommands: SlashCommand[] = [];

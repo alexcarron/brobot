@@ -1,7 +1,7 @@
 const { ChannelType, Collection, ChatInputCommandInteraction, InteractionResponse } = require("discord.js");
 const { ids } = require("../bot-config/discord-ids");
 const { logError, logInfo } = require("../utilities/logging-utils");
-const { editReplyToInteraction } = require("../utilities/discord-action-utils");
+const { replyToInteraction } = require("../utilities/discord-action-utils");
 
 /**
  * Handles the execution of a slash command.
@@ -20,6 +20,7 @@ const onSlashCommandExecuted = async (interaction) => {
 	}
 
 	const isUserLL = interaction.user.id === ids.users.LL;
+	const isUserADeveloper = global.botStatus.testUsersAndDevelopers.includes(interaction.user.id) || isUserLL;
 
 	// Is the bot on?
 	if (global.botStatus.isSleep && !isUserLL) {
@@ -42,6 +43,14 @@ const onSlashCommandExecuted = async (interaction) => {
 			content: `You aren't allowed to use this command in DMs.`,
 			ephemeral: true
 		});
+
+	// Is the command in development
+	if (command.isInDevelopment && !isUserADeveloper) {
+		return interaction.reply({
+			content: `You aren't allowed to use this command since it's in development and you aren't a developer.`,
+			ephemeral: true
+		});
+	}
 
 	// Does the user have the required permissions?
 	if (
@@ -203,7 +212,7 @@ const onSlashCommandExecuted = async (interaction) => {
 			});
 		}
 		else {
-			await editReplyToInteraction(interaction, 'There was an error while executing this command!');
+			await replyToInteraction(interaction, 'There was an error while executing this command!');
 		}
 	}
 }

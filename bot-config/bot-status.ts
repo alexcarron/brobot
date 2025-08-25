@@ -17,7 +17,10 @@ export const initialBotStatus: typeof global.botStatus = {
 	 */
 	isInDevelopmentMode: false,
 
-	testUsers: [
+	/**
+	 * An array of user IDs that are considered test users or developers of Brobot
+	 */
+	testUsersAndDevelopers: [
 		"599383947016929293", // The Impartial Narrator,
 		"529143263265816576", // Dead Spaghetti Luigi
 	],
