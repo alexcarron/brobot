@@ -1,6 +1,5 @@
 import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { logInfo } from "../../../utilities/logging-utils";
-import { IfPresent } from "../../../utilities/types/generic-types";
 import { VoteRepository } from "../repositories/vote.repository";
 import { PlayerID } from "../types/player.types";
 import { Vote, VoteResolvable } from "../types/vote.types";
@@ -37,7 +36,7 @@ export class VoteService {
 			const voterID = voteResolvable;
 			const vote = this.voteRepository.getVoteByVoterID(voterID);
 
-			if (vote === undefined)
+			if (vote === null)
 				throw new VoteNotFoundError(voterID);
 
 			return vote;
@@ -58,7 +57,7 @@ export class VoteService {
 			throw new InvalidArgumentError("Missing voterID or playerVotedForID");
 
 		const vote = this.voteRepository.getVoteByVoterID(voterID);
-		const hasVotedBefore = vote !== undefined;
+		const hasVotedBefore = vote !== null;
 		const nameVotingFor = this.playerService.getPublishedName(playerVotedForID);
 
 		if (hasVotedBefore) {
@@ -103,7 +102,7 @@ export class VoteService {
 	 * Finds the player with the most votes and returns their published name.
 	 * @returns The ID of the winning player or null if there are are no votes or if there is a tie.
 	 */
-	getWinningPlayerID(): IfPresent<PlayerID> {
+	getWinningPlayerID(): PlayerID | null {
 		const votes = this.voteRepository.getVotes();
 		const voteCountPerPlayer: Record<PlayerID, number> = {};
 
@@ -117,7 +116,7 @@ export class VoteService {
 			}
 		});
 
-		let winningPlayerID: IfPresent<PlayerID> = null;
+		let winningPlayerID: PlayerID | null = null;
 		let winningVoteCount = 0;
 
 		for (const [playerID, voteCount] of Object.entries(voteCountPerPlayer)) {

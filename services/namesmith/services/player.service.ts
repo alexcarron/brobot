@@ -8,7 +8,6 @@ import { isPlayer } from "../utilities/player.utility";
 import { attempt, InvalidArgumentError } from "../../../utilities/error-utils";
 import { PlayerNotFoundError, PlayerAlreadyExistsError, NameTooLongError } from "../utilities/error.utility";
 import { Inventory, Player, PlayerID, PlayerResolvable } from '../types/player.types';
-import { IfPresent } from "../../../utilities/types/generic-types";
 import { removeCharactersAsGivenFromEnd, removeMissingCharacters } from "../../../utilities/string-manipulation-utils";
 import { areCharactersInString } from "../../../utilities/string-checks-utils";
 
@@ -41,7 +40,7 @@ export class PlayerService {
 			const playerID = playerResolvable;
 			const player = this.playerRepository.getPlayerByID(playerID);
 
-			if (player === undefined)
+			if (player === null)
 				throw new PlayerNotFoundError(playerID);
 
 			return player;
@@ -293,7 +292,7 @@ export class PlayerService {
 	 * @param playerResolvable - The player resolvable whose published name is being retrieved.
 	 * @returns The published name of the player, or null if no published name exists.
 	 */
-	getPublishedName(playerResolvable: PlayerResolvable): IfPresent<string> {
+	getPublishedName(playerResolvable: PlayerResolvable): string | null {
 		const playerID = this.resolveID(playerResolvable);
 		return this.playerRepository.getPublishedName(playerID);
 	}

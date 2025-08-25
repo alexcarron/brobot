@@ -1,4 +1,4 @@
-export type Class<ClassType = any> = new (...args: any[]) => ClassType;
+ export type Class<ClassType = any> = new (...args: any[]) => ClassType;
 
 /**
  * Represents a error class that extends the Error class
@@ -32,28 +32,6 @@ export type TypedNamedValue<
 > =
 	{ [PossibleProperty in Name]: ValueType; } &
 	{ type: TypeType; };
-
-
-/**
- * Represents a type that is either the given type or undefined
- * @example
- * const name: IfDefined<string> = getNameByID(id);
- */
-export type IfDefined<Type> = Type | undefined;
-
-/**
- * Represents a value that is defined if present, otherwise null
- * @example
- * const publishedName: IfPresent<string> = player.publishedName;
- */
-export type IfPresent<Type> = Type | null;
-
-/**
- * Represents a type that is either the given type or undefined or null
- * @example
- * const name: Possibly<string> = getNameByID(id);
- */
-export type Possibly<Type> = Type | undefined | null;
 
 /**
  * Requires at least one property to be defined of a given object type

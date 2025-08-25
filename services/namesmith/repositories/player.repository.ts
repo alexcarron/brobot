@@ -1,5 +1,5 @@
 import { InvalidArgumentError } from "../../../utilities/error-utils";
-import { Override, IfDefined, IfPresent } from "../../../utilities/types/generic-types";
+import { Override } from "../../../utilities/types/generic-types";
 import { DatabaseQuerier } from "../database/database-querier";
 import { DBPlayer, Player, PlayerID } from "../types/player.types";
 import { PlayerNotFoundError, PlayerAlreadyExistsError } from "../utilities/error.utility";
@@ -32,12 +32,13 @@ export class PlayerRepository {
 	/**
 	 * Retrieves a player by their ID.
 	 * @param playerID - The ID of the player to be retrieved.
-	 * @returns The player object if found, otherwise undefined.
+	 * @returns The player object if found, otherwise null.
 	 */
-	getPlayerByID(playerID: string): IfDefined<Player> {
+	getPlayerByID(playerID: string): Player | null {
 		const query = `SELECT * FROM player WHERE id = @id`;
 		const getPlayerById = this.db.prepare(query);
-		return getPlayerById.get({ id: playerID }) as IfDefined<DBPlayer>;
+		const player = getPlayerById.get({ id: playerID }) as DBPlayer | undefined;
+		return player || null;
 	}
 
 	/**
@@ -131,7 +132,7 @@ export class PlayerRepository {
 	 * @param playerID - The ID of the player whose name is being retrieved.
 	 * @returns The published name of the player, or undefined if the player has no published name.
 	 */
-	getPublishedName(playerID: string): IfPresent<string> {
+	getPublishedName(playerID: string): string | null {
 		const player = this.getPlayerByID(playerID);
 		if (!player)
 			throw new PlayerNotFoundError(playerID);
@@ -145,9 +146,6 @@ export class PlayerRepository {
 	 * @param name - The name to be published for the player.
 	 */
 	publishName(playerID: string, name: string) {
-		if (name === undefined)
-			throw new InvalidArgumentError("publishName: name is undefined.");
-
 		if (name.length > MAX_NAME_LENGTH)
 			throw new InvalidArgumentError(`publishName: name must be less than or equal to ${MAX_NAME_LENGTH}.`);
 

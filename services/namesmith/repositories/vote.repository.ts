@@ -1,5 +1,5 @@
 import { InvalidArgumentError } from "../../../utilities/error-utils";
-import { AtLeastOne, IfDefined } from "../../../utilities/types/generic-types";
+import { AtLeastOne } from "../../../utilities/types/generic-types";
 import { DatabaseQuerier } from "../database/database-querier";
 import { DBVote, Vote } from "../types/vote.types";
 import { VoteAlreadyExistsError, VoteNotFoundError } from "../utilities/error.utility";
@@ -32,10 +32,11 @@ export class VoteRepository {
 	 * @param voterID - The ID of the user who voted.
 	 * @returns A vote object if found, otherwise undefined.
 	 */
-	getVoteByVoterID(voterID: string): IfDefined<Vote> {
+	getVoteByVoterID(voterID: string): Vote | null {
 		const query = `SELECT * FROM vote WHERE voterID = @voterID`;
 		const getVoteByVoterID = this.db.prepare(query);
-		return getVoteByVoterID.get({ voterID }) as IfDefined<DBVote>;
+		const vote = getVoteByVoterID.get({ voterID }) as DBVote | undefined;
+		return vote ?? null;
 	}
 
 	/**

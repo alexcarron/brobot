@@ -29,9 +29,9 @@ describe('PlayerRepository', () => {
 			expect(result).toEqual(mockPlayers[0]);
 		});
 
-		it('returns undefined if the player is not found', () => {
+		it('returns null if the player is not found', () => {
 			const result = playerRepository.getPlayerByID("invalid-id");
-			expect(result).toBeUndefined();
+			expect(result).toBeNull();
 		});
   });
 

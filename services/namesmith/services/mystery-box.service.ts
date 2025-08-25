@@ -44,7 +44,7 @@ export class MysteryBoxService {
 
 			const mysteryBox = this.mysteryBoxRepository.getMysteryBoxWithOdds(id);
 
-			if (mysteryBox === undefined)
+			if (mysteryBox === null)
 				throw new MysteryBoxNotFoundError(id.toString());
 
 			return mysteryBox;

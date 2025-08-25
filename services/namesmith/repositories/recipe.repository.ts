@@ -1,5 +1,4 @@
 import { InvalidArgumentError } from "../../../utilities/error-utils";
-import { IfPresent } from "../../../utilities/types/generic-types";
 import { DatabaseQuerier } from "../database/database-querier";
 import { DBRecipe, Recipe, RecipeID } from "../types/recipe.types";
 
@@ -25,14 +24,10 @@ export class RecipeRepository {
 	 * @param id - The unique identifier of the recipe to retrieve.
 	 * @returns The recipe object with the specified ID, or null if no such recipe exists.
 	 */
-	getRecipeByID(id: RecipeID): IfPresent<Recipe> {
+	getRecipeByID(id: RecipeID): Recipe | null {
 		const query = "SELECT * FROM recipe WHERE id = @id";
 		const recipe = this.db.getRow(query, { id }) as DBRecipe | undefined;
-
-		if (recipe === undefined)
-			return null;
-
-		return recipe;
+		return recipe ?? null;
 	}
 
 	/**

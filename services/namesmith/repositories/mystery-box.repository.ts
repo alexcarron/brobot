@@ -1,5 +1,4 @@
 import { InvalidArgumentError } from "../../../utilities/error-utils";
-import { IfDefined } from "../../../utilities/types/generic-types";
 import { DatabaseQuerier } from "../database/database-querier";
 import { CharacterOdds, DBCharacterOddsRow, DBMysteryBox, MysteryBox, MysteryBoxWithOdds } from "../types/mystery-box.types";
 import { getCharacterValueFromID } from "../utilities/character.utility";
@@ -55,9 +54,9 @@ export class MysteryBoxRepository {
 	/**
 	 * Given a mystery box id, returns the corresponding mystery box object.
 	 * @param id - The id of the mystery box to return.
-	 * @returns The mystery box object with the given id or undefined if no such object exists.
+	 * @returns The mystery box object with the given id or null if no such object exists.
 	 */
-	getMysteryBoxByID(id: number): IfDefined<MysteryBox> {
+	getMysteryBoxByID(id: number): MysteryBox | null {
 		if (!id)
 			throw new InvalidArgumentError('getMysteryBoxByID: Mystery box id must be provided.');
 
@@ -66,17 +65,18 @@ export class MysteryBoxRepository {
 
 		const query = `SELECT * FROM mysteryBox WHERE id = @id`;
 		const getMysteryBoxById = this.db.prepare(query);
-		return getMysteryBoxById.get({ id }) as IfDefined<DBMysteryBox>;
+		const mysteryBox = getMysteryBoxById.get({ id }) as DBMysteryBox | undefined;
+		return mysteryBox ?? null;
 	}
 
 	/**
 	 * Given a mystery box id, returns the corresponding mystery box object with its character odds.
 	 * @param id - The id of the mystery box to return.
-	 * @returns The mystery box object with the given id and its character odds or undefined if no such object exists.
+	 * @returns The mystery box object with the given id and its character odds or null if no such object exists.
 	 */
-	getMysteryBoxWithOdds(id: number): IfDefined<MysteryBoxWithOdds> {
+	getMysteryBoxWithOdds(id: number): MysteryBoxWithOdds | null {
 		const mysteryBox = this.getMysteryBoxByID(id);
-		if (mysteryBox === undefined) return undefined;
+		if (mysteryBox === null) return null;
 
 		const characterOddsRows = this.db.prepare(`
 			SELECT characterID, weight FROM mysteryBoxCharacterOdds

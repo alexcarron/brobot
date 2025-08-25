@@ -17,14 +17,14 @@ export const command = new SlashCommand({
 
 		const playerID = interaction.user.id;
 
-		const currentName = await playerService.getCurrentName(playerID);
-		const currentPublishedName = await playerService.getPublishedName(playerID);
+		const currentName = playerService.getCurrentName(playerID);
+		const currentPublishedName = playerService.getPublishedName(playerID);
 
 		const didConfirmAction = await confirmInteractionWithButtons({
 			interaction,
 			message:
 				`Are you sure you want to publish your current name: \`${currentName}\`?` +
-				(currentPublishedName !== undefined ?
+				(currentPublishedName !== null ?
 					`\nCurrently, your published name is ${currentPublishedName}`
 					: ""
 				),

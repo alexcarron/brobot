@@ -1,7 +1,7 @@
 import { InvalidArgumentError, validateArguments } from "../../../utilities/error-utils";
 import { WithOptional } from "../../../utilities/types/generic-types";
 import { CharacterWithTags } from "../types/character.types";
-import { MysteryBox } from "../types/mystery-box.types";
+import { MysteryBoxWithOdds } from "../types/mystery-box.types";
 import { Recipe } from "../types/recipe.types";
 import { getIDfromCharacterValue, getCharacterValueFromID } from "../utilities/character.utility";
 import { ForeignKeyConstraintError } from "../utilities/error.utility";
@@ -25,18 +25,6 @@ export const insertCharactersToDB = (db: DatabaseQuerier, characters: CharacterW
 
 	const insertCharacters = db.getTransaction((characters: CharacterWithTags[]) => {
 		for (const character of characters) {
-			if (character.id === undefined)
-				throw new InvalidArgumentError("insertCharactersToDB: character id is undefined.");
-
-			if (typeof character.id !== "number")
-				throw new InvalidArgumentError(`insertCharactersToDB: character id must be a nurmber, but got ${character.id}.`);
-
-			if (character.value === undefined)
-				throw new InvalidArgumentError("insertCharactersToDB: character value is undefined.");
-
-			if (typeof character.value !== "string")
-				throw new InvalidArgumentError(`insertCharactersToDB: character value must be a string, but got ${character.value}.`);
-
 			if (character.value.length !== 1)
 				throw new InvalidArgumentError("insertCharactersToDB: character value must be a single character.");
 
@@ -45,12 +33,6 @@ export const insertCharactersToDB = (db: DatabaseQuerier, characters: CharacterW
 
 			if (getCharacterValueFromID(character.id) !== character.value)
 				throw new InvalidArgumentError(`insertCharactersToDB: character value ${character.value} does not match character id ${character.id}.`);
-
-			if (character.rarity === undefined)
-				throw new InvalidArgumentError("insertCharactersToDB: character rarity is undefined.");
-
-			if (typeof character.rarity !== "number")
-				throw new InvalidArgumentError(`insertCharactersToDB: character rarity must be a number, but got ${character.rarity}.`);
 
 
 			insertCharacter.run({
@@ -75,7 +57,7 @@ export const insertCharactersToDB = (db: DatabaseQuerier, characters: CharacterW
  * @param db - The database querier instance used for executing SQL statements.
  * @param mysteryBoxes - An array of mystery box objects to be inserted.
  */
-export const insertMysteryBoxesToDB = (db: DatabaseQuerier, mysteryBoxes: MysteryBox[]) => {
+export const insertMysteryBoxesToDB = (db: DatabaseQuerier, mysteryBoxes: MysteryBoxWithOdds[]) => {
 	if (!Array.isArray(mysteryBoxes))
 		throw new InvalidArgumentError("insertMysteryBoxesToDB: mysteryBoxes must be an array.");
 
@@ -85,7 +67,7 @@ export const insertMysteryBoxesToDB = (db: DatabaseQuerier, mysteryBoxes: Myster
 	const insertMysteryBox = db.getQuery("INSERT OR IGNORE INTO mysteryBox (name, tokenCost) VALUES (@name, @tokenCost)");
 	const insertMysteryBoxCharacterOdds = db.getQuery("INSERT OR IGNORE INTO mysteryBoxCharacterOdds (mysteryBoxID, characterID, weight) VALUES (@mysteryBoxID, @characterID, @weight)");
 
-	const insertMysteryBoxes = db.getTransaction((mysteryBoxes) => {
+	const insertMysteryBoxes = db.getTransaction((mysteryBoxes: MysteryBoxWithOdds[]) => {
 		db.run("DELETE FROM mysteryBoxCharacterOdds");
 		db.run("DELETE FROM mysteryBox");
 
@@ -93,24 +75,6 @@ export const insertMysteryBoxesToDB = (db: DatabaseQuerier, mysteryBoxes: Myster
 		db.run("UPDATE sqlite_sequence SET seq = 0 WHERE name = 'mysteryBox'");
 
 		for (const mysteryBox of mysteryBoxes) {
-			if (mysteryBox.name === undefined)
-				throw new InvalidArgumentError("insertMysteryBoxesToDB: mystery box name is undefined.");
-
-			if (typeof mysteryBox.name !== "string")
-				throw new InvalidArgumentError(`insertMysteryBoxesToDB: mystery box name must be a string, but got ${mysteryBox.name}.`);
-
-			if (mysteryBox.tokenCost === undefined)
-				throw new InvalidArgumentError("insertMysteryBoxesToDB: mystery box token cost is undefined.");
-
-			if (typeof mysteryBox.tokenCost !== "number")
-				throw new InvalidArgumentError(`insertMysteryBoxesToDB: mystery box token cost must be a number, but got ${mysteryBox.tokenCost}.`);
-
-			if (mysteryBox.characterOdds === undefined)
-				throw new InvalidArgumentError("insertMysteryBoxesToDB: mystery box character odds is undefined.");
-
-			if (typeof mysteryBox.characterOdds !== "object")
-				throw new InvalidArgumentError(`insertMysteryBoxesToDB: mystery box character odds must be an object, but got ${mysteryBox.characterOdds}.`);
-
 			const result = insertMysteryBox.run({
 				name: mysteryBox.name,
 				tokenCost: mysteryBox.tokenCost
@@ -118,18 +82,6 @@ export const insertMysteryBoxesToDB = (db: DatabaseQuerier, mysteryBoxes: Myster
 			const newId = result.lastInsertRowid;
 
 			for (const [characterValue, weight] of Object.entries(mysteryBox.characterOdds)) {
-				if (characterValue === undefined)
-					throw new InvalidArgumentError("insertMysteryBoxesToDB: character value is undefined.");
-
-				if (typeof characterValue !== "string")
-					throw new InvalidArgumentError(`insertMysteryBoxesToDB: character value must be a string, but got ${characterValue}.`);
-
-				if (weight === undefined)
-					throw new InvalidArgumentError("insertMysteryBoxesToDB: character weight is undefined.");
-
-				if (typeof weight !== "number")
-					throw new InvalidArgumentError(`insertMysteryBoxesToDB: character weight must be a number, but got ${weight}.`);
-
 				const characterID = getIDfromCharacterValue(characterValue);
 				const insertCharacterOdds = () =>
 					insertMysteryBoxCharacterOdds.run({
@@ -175,7 +127,7 @@ export const insertRecipesToDB = (
 
 	const insertRecipeIntoDBWithID = db.getQuery("INSERT INTO recipe (id, inputCharacters, outputCharacters) VALUES (@id, @inputCharacters, @outputCharacters)");
 
-	const insertRecipes = db.getTransaction((recipes) => {
+	const insertRecipes = db.getTransaction((recipes: WithOptional<Recipe, "id">[]) => {
 		db.run("DELETE FROM recipe");
 
 		// SET AUTO INCREMENT TO 1

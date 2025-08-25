@@ -21,9 +21,9 @@ describe('VoteRepository', () => {
 			expect(result).toEqual(mockVotes[0]);
 		});
 
-		it('returns undefined if no vote is found', () => {
+		it('returns null if no vote is found', () => {
 			const result = voteRepository.getVoteByVoterID("invalid-id");
-			expect(result).toBeUndefined();
+			expect(result).toBeNull();
 		});
 	});
 
@@ -148,7 +148,7 @@ describe('VoteRepository', () => {
 		it('deletes a vote by voterID', () => {
 			voteRepository.deleteVote("1234567890");
 			const result = voteRepository.getVoteByVoterID("1234567890");
-			expect(result).toBeUndefined();
+			expect(result).toBeNull();
 		});
 
 		it('throws an error if the voter ID does not exist', () => {

@@ -44,9 +44,9 @@ describe('CharacterRepository', () => {
 			expect(character).toHaveProperty('rarity', expect.any(Number));
 		});
 
-		it('returns undefined if no character is found', async () => {
+		it('returns null if no character is found', async () => {
 			const character = await characterRepo.getCharacterByID(0);
-			expect(character).toBeUndefined();
+			expect(character).toBeNull();
 		});
 	});
 
