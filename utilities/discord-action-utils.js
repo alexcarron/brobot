@@ -1,10 +1,11 @@
-const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionFlagsBits, CategoryChannel, ChatInputCommandInteraction, Message, GuildChannel, ButtonInteraction, InteractionResponse, CommandInteraction, MessageComponentInteraction, ModalSubmitInteraction } = require('discord.js');
+const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionFlagsBits, CategoryChannel, ChatInputCommandInteraction, Message, GuildChannel, ButtonInteraction, InteractionResponse, CommandInteraction, MessageComponentInteraction, ModalSubmitInteraction, Attachment } = require('discord.js');
 const { Role } = require('../services/rapid-discord-mafia/role');
-const { fetchChannel, fetchChannelsInCategory, getEveryoneRole } = require('./discord-fetch-utils');
+const { fetchChannel, fetchChannelsInCategory, getEveryoneRole, fetchMessagesInChannel } = require('./discord-fetch-utils');
 const { incrementEndNumber } = require('./string-manipulation-utils');
 const { logInfo, logError, logWarning } = require('./logging-utils');
 const { getShuffledArray } = require('./data-structure-utils');
 const { InvalidArgumentTypeError } = require('./error-utils');
+const { ids } = require('../bot-config/discord-ids');
 
 
 
@@ -802,6 +803,82 @@ const doWhenButtonPressed = async (messsageWithButton, buttonID, onButtonPressed
 	}
 };
 
+/**
+ * Converts a MessageCreateOptions object into a MessageEditOptions object.
+ * @param {import('discord.js').MessageCreateOptions} createOptions - The object to convert.
+ * @returns {import('discord.js').MessageEditOptions} The converted object.
+ */
+function getMessageEditFromCreateOptions(createOptions) {
+	const editOptions = {};
+
+  if (createOptions.content !== undefined)
+		editOptions.content = createOptions.content;
+
+  if (createOptions.embeds)
+		editOptions.embeds = createOptions.embeds;
+
+  if (createOptions.allowedMentions)
+		editOptions.allowedMentions = createOptions.allowedMentions;
+
+  if (createOptions.components)
+		editOptions.components = createOptions.components;
+
+  if (createOptions.files) {
+    editOptions.attachments = createOptions.files
+			.filter(file =>
+				file instanceof Attachment ||
+				(
+					typeof file === 'object' &&
+					'id' in file
+				)
+			)
+  }
+
+  if ('allowedMentions' in createOptions)
+		editOptions.allowedMentions = createOptions.allowedMentions;
+
+  return editOptions;
+}
+
+/**
+ * Deletes all messages in a channel.
+ * @param {import('discord.js').TextBasedChannel} channel - The channel to delete all messages from.
+ * @returns {Promise<void>} A promise that resolves when all messages have been deleted.
+ */
+async function deleteAllMessagesInChannel(channel) {
+	const allMessagesInChannel = await fetchMessagesInChannel(channel);
+	await Promise.all(allMessagesInChannel.map((message) => message.delete()));
+}
+
+/**
+ * Sets the exclusive message in the given channel to the given message.
+ * - Clears all other messages in the channel.
+ * - Sends the given message.
+ * @param {import('discord.js').TextBasedChannel} channel - The channel to set the message in.
+ * @param {string | import('discord.js').MessageCreateOptions} message - The message to set.
+ * @returns {Promise<import('discord.js').Message>} The message that was set.
+ */
+async function setChannelMessage(channel, message) {
+	if (typeof message === "string")
+		message = {content: message};
+
+	const allMessagesInChannel = await fetchMessagesInChannel(channel);
+
+	const isTheSetMessage =
+		allMessagesInChannel.length === 1 &&
+		allMessagesInChannel[0].author.id === ids.users.BROBOT;
+
+	if (isTheSetMessage) {
+		const theSetMessage = allMessagesInChannel[0];
+		const editMessageOptions = getMessageEditFromCreateOptions(message);
+		return await theSetMessage.edit(editMessageOptions);
+	}
+	else {
+		await deleteAllMessagesInChannel(channel);
+		return await channel.send(message);
+	}
+}
+
 module.exports = {
 	confirmInteractionWithButtons,
 	addRoleToMember,
@@ -826,4 +903,5 @@ module.exports = {
 	addButtonToMessageContents,
 	doWhenButtonPressed,
 	shuffleCategoryChannels,
+	setChannelMessage,
 };

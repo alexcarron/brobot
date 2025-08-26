@@ -3,7 +3,6 @@ const { Parameter } = require("../../../services/command-creation/parameter");
 const { SlashCommand } = require("../../../services/command-creation/slash-command");
 const { deferInteraction } = require("../../../utilities/discord-action-utils");
 const { getRequiredStringParam, getRequiredChannelParam } = require("../../../utilities/discord-fetch-utils");
-const { escapeDiscordMarkdown } = require("../../../utilities/string-manipulation-utils");
 
 const Parameters = {
 	Channel: new Parameter({
@@ -32,7 +31,7 @@ module.exports = new SlashCommand({
 		const channel = getRequiredChannelParam(interaction, Parameters.Channel.name);
 		const message = getRequiredStringParam(interaction, Parameters.Message.name);
 
-		await channel.send(escapeDiscordMarkdown(message));
+		await channel.send(message);
 
 		await interaction.editReply(`Sent \`${message}\` to **${channel}**`)
 	}

@@ -23,12 +23,12 @@ const onDmRecieved = async (message) => {
 		throw new InvalidArgumentError(`Recipient of message ${message.id} is null in channel ${channelSentIn.id}`);
 
 	// From BroBot
-	if (message.author.id === ids.users.Brobot) {
-		recipient_message = `<@${ids.users.Brobot}> ➜ <@${recipient.id}>\n\`Brobot ➜ ${recipient.username}\``;
+	if (message.author.id === ids.users.BROBOT) {
+		recipient_message = `<@${ids.users.BROBOT}> ➜ <@${recipient.id}>\n\`Brobot ➜ ${recipient.username}\``;
 	}
 	// To Brobot
 	else {
-		recipient_message = `<@${recipient.id}> ➜ <@${ids.users.Brobot}>\n\`${recipient.username} ➜ Brobot\``;
+		recipient_message = `<@${recipient.id}> ➜ <@${ids.users.BROBOT}>\n\`${recipient.username} ➜ Brobot\``;
 	}
 
 	await dmChannel.send(

@@ -32,7 +32,7 @@ const chooseByEnv = <DevReturnType, ProdReturnType>(
 export const ids = {
 	users: {
     LL: "276119804182659072",
-    Brobot: "803333218614116392",
+    BROBOT: "803333218614116392",
   },
   servers: {
     brobot_testing: "726562624682197024",
