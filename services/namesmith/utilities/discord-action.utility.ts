@@ -18,10 +18,7 @@ import {
 import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { GuildMember, TextChannel } from "discord.js";
 import { MessageContentResolvable } from "../../../utilities/types/discord-types";
-
-const MAX_NAME_LENGTH = 32;
-const NO_NAME = "˙";
-
+import { DISCORD_NICKNAME_FOR_NO_NAME, MAX_NAME_LENGTH } from "../constants/namesmith.constants";
 
 /**
  * Changes a player's current name in Discord.
@@ -42,7 +39,7 @@ export const changeDiscordNameOfPlayer = async (playerID: string, newName: strin
 		await addRoleToMember(guildMember, ids.namesmith.roles.smithedName);
 	}
 	else if (!hasNoNameRole && newName.length <= 0) {
-		newName = NO_NAME;
+		newName = DISCORD_NICKNAME_FOR_NO_NAME;
 		await removeRoleFromMember(guildMember, ids.namesmith.roles.smithedName);
 		await addRoleToMember(guildMember, ids.namesmith.roles.noName);
 	}
@@ -151,5 +148,5 @@ export const isNonPlayer = async (guildMember: GuildMember): Promise<boolean> =>
 export const resetMemberToNewPlayer = async (guildMember: GuildMember) => {
 	await removeAllRolesFromMember(guildMember);
 	await addRoleToMember(guildMember, ids.namesmith.roles.noName);
-	await setNicknameOfMember(guildMember, NO_NAME);
+	await setNicknameOfMember(guildMember, DISCORD_NICKNAME_FOR_NO_NAME);
 }

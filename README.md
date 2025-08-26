@@ -285,6 +285,7 @@ Contains helper functions and reusable utilities for general functionality acros
 
 * **`types/`** Contains file to store types used throughout the entire codebase
   * **`generic-types.js`** Types that could be used in any situation ever
+* **`constants/`** Contains file to store useful static values referenced throughout the entire codebase
 * **`data-structure-utils.js`** Functions for working with JavaScript objects and arrays
 * **`date-time-utils.js`** Functions for time and date formatting, parsing, and calculations
 * **`discord-action-utils.js`** Functions for performing actions in Discord

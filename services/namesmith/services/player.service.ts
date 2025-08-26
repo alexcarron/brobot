@@ -10,13 +10,12 @@ import { PlayerNotFoundError, PlayerAlreadyExistsError, NameTooLongError } from 
 import { Inventory, Player, PlayerID, PlayerResolvable } from '../types/player.types';
 import { removeCharactersAsGivenFromEnd, removeMissingCharacters } from "../../../utilities/string-manipulation-utils";
 import { areCharactersInString } from "../../../utilities/string-checks-utils";
+import { MAX_NAME_LENGTH } from "../constants/namesmith.constants";
 
 /**
  * Provides methods for interacting with players.
  */
 export class PlayerService {
-	static MAX_NAME_LENGTH: number = 32;
-
 	/**
 	 * Constructs a new PlayerService instance.
 	 * @param playerRepository - The repository used for accessing players.
@@ -146,8 +145,8 @@ export class PlayerService {
 	) {
 		const playerID = this.resolveID(playerResolvable);
 
-		if (newName.length > PlayerService.MAX_NAME_LENGTH)
-			throw new NameTooLongError(newName, PlayerService.MAX_NAME_LENGTH);
+		if (newName.length > MAX_NAME_LENGTH)
+			throw new NameTooLongError(newName, MAX_NAME_LENGTH);
 
 		this.playerRepository.changeCurrentName(playerID, newName);
 		await changeDiscordNameOfPlayer(playerID, newName);

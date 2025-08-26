@@ -1,10 +1,9 @@
 import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { Override } from "../../../utilities/types/generic-types";
+import { MAX_NAME_LENGTH } from "../constants/namesmith.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { DBPlayer, Player, PlayerID } from "../types/player.types";
 import { PlayerNotFoundError, PlayerAlreadyExistsError } from "../utilities/error.utility";
-
-const MAX_NAME_LENGTH = 32;
 
 /**
  * Provides access to the dynamic player data.

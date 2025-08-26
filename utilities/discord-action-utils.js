@@ -500,8 +500,8 @@ const createEveryoneDenyViewPermission = (guild) =>
  * @param {object} options - Options for setting permissions.
  * @param {TextChannel} options.channel - The channel to which the permissions are applied.
  * @param {string} options.userOrRoleID - The ID of the user or role for which the permissions are set.
- * @param {import('./constants/discord-permissions').DiscordPermissionName[]} [options.allowedPermissions] - An array of permissions to allow.
- * @param {import('./constants/discord-permissions').DiscordPermissionName[]} [options.deniedPermissions] - An array of permissions to deny.
+ * @param {import('./constants/discord-permission.constants').DiscordPermissionName[]} [options.allowedPermissions] - An array of permissions to allow.
+ * @param {import('./constants/discord-permission.constants').DiscordPermissionName[]} [options.deniedPermissions] - An array of permissions to deny.
  * @throws {Error} If neither allowedPermissions nor deniedPermissions are provided, or if they are not arrays.
  * @returns {Promise<void>} A promise that resolves when the permissions have been set.
  */

@@ -3,7 +3,7 @@ const { Parameter, ParameterType } = require("../../services/command-creation/pa
 const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { deferInteraction, addPermissionToChannel, editReplyToInteraction, memberHasRole } = require("../../utilities/discord-action-utils");
 const { fetchGuild, fetchGuildMember, fetchTextChannel, getCategoryOfInteraction, getRequiredUserParam, getTextChannelOfInteraction } = require("../../utilities/discord-fetch-utils");
-const { PermissionNames } = require("../../utilities/constants/discord-permissions");
+const { PermissionNames } = require("../../utilities/constants/discord-permission.constants");
 
 const Parameters = {
 	Contestant: new Parameter({
