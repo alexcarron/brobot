@@ -2,6 +2,7 @@ const { Client, Guild, TextChannel, Message, ChannelType, GuildMember, User, Rol
 const { ids } = require("../bot-config/discord-ids");
 const { discordCollectionToArray } = require("./data-structure-utils");
 const { InvalidArgumentError } = require("./error-utils");
+const { Parameter } = require("../services/command-creation/parameter");
 
 /**
  * Asserts that the Discord client is setup and ready.
@@ -284,24 +285,37 @@ const fetchRDMGuild = async () => {
 }
 
 /**
+ * Resolves a parameter name given either a string or a Parameter object.
+ * @param {string | Parameter} parameter - The parameter to resolve the name of.
+ * @returns {string} The resolved name of the parameter.
+ */
+const resolveParameterName = (parameter) => {
+	return typeof parameter === "string"
+		? parameter
+		: parameter.name;
+}
+
+/**
  * Gets a number parameter value of a slash command by name.
  * @param {ChatInputCommandInteraction} interaction - The interaction whose reply is being updated.
- * @param {string} name - The name of the number parameter
+ * @param {string | Parameter} nameOrParameter - The name of the number parameter or the parameter itself
  * @returns {number | null} The value of the number parameter
  */
-const getNumberParamValue = (interaction, name) => {
+const getNumberParamValue = (interaction, nameOrParameter) => {
+	let name = resolveParameterName(nameOrParameter);
 	return interaction.options.getNumber(name);
 }
 
 /**
  * Gets a number parameter value of a slash command by name, and throws an error if the parameter is not provided.
  * @param {ChatInputCommandInteraction} interaction - The interaction whose reply is being updated.
- * @param {string} name - The name of the number parameter
+ * @param {string | Parameter} nameOrParameter - The name of the number parameter or the parameter itself
  * @returns {number} The value of the number parameter
  * @throws {Error} If the parameter is not provided
  */
-const getRequiredNumberParam = (interaction, name) => {
-	const value = getNumberParamValue(interaction, name);
+const getRequiredNumberParam = (interaction, nameOrParameter) => {
+	const name = resolveParameterName(nameOrParameter);
+	const value = getNumberParamValue(interaction, nameOrParameter);
 	if (value === null || value === undefined)
 		throw new Error(`getRequiredNumberParamValue: ${name} is required`);
 	return value;
@@ -310,22 +324,24 @@ const getRequiredNumberParam = (interaction, name) => {
 /**
  * Gets an integer parameter value of a slash command by name.
  * @param {ChatInputCommandInteraction} interaction - The interaction whose reply is being updated.
- * @param {string} name - The name of the integer parameter
+ * @param {string | Parameter} nameOrParameter - The name of the integer parameter or the parameter itself
  * @returns {number | null} The value of the integer parameter
  */
-const getIntegerParamValue = (interaction, name) => {
+const getIntegerParamValue = (interaction, nameOrParameter) => {
+	let name = resolveParameterName(nameOrParameter);
 	return interaction.options.getInteger(name);
 }
 
 /**
  * Gets an integer parameter value of a slash command by name, and throws an error if the parameter is not provided.
  * @param {ChatInputCommandInteraction} interaction - The interaction whose reply is being updated.
- * @param {string} name - The name of the integer parameter
+ * @param {string | Parameter} nameOrParameter - The name of the integer parameter or the parameter itself
  * @returns {number} The value of the integer parameter
  * @throws {Error} If the parameter is not provided
  */
-const getRequiredIntegerParam = (interaction, name) => {
-	const value = getIntegerParamValue(interaction, name);
+const getRequiredIntegerParam = (interaction, nameOrParameter) => {
+	const name = resolveParameterName(nameOrParameter);
+	const value = getIntegerParamValue(interaction, nameOrParameter);
 	if (value === null || value === undefined)
 		throw new Error(`getRequiredIntegerParamValue: ${name} is required`);
 	return value;
@@ -334,21 +350,23 @@ const getRequiredIntegerParam = (interaction, name) => {
 /**
  * Gets a string parameter value of a slash command by name.
  * @param {ChatInputCommandInteraction} interaction - The interaction whose reply is being updated.
- * @param {string} name - The name of the string parameter
+ * @param {string | Parameter} nameOrParameter - The name of the string parameter or the parameter itself
  * @returns {string | null} The value of the string parameter
  */
-const getStringParamValue = (interaction, name) => {
+const getStringParamValue = (interaction, nameOrParameter) => {
+	let name = resolveParameterName(nameOrParameter);
 	return interaction.options.getString(name);
 }
 
 /**
  * Gets a string parameter value of a slash command by name, and throws an error if the parameter is not provided.
  * @param {ChatInputCommandInteraction} interaction - The interaction whose reply is being updated.
- * @param {string} name - The name of the string parameter
+ * @param {string | Parameter} nameOrParameter - The name of the string parameter or the parameter itself
  * @returns {string} The value of the string parameter
  * @throws {Error} If the parameter is not provided
  */
-const getRequiredStringParam = (interaction, name) => {
+const getRequiredStringParam = (interaction, nameOrParameter) => {
+	const name = resolveParameterName(nameOrParameter);
 	const value = getStringParamValue(interaction, name);
 	if (value === null || value === undefined)
 		throw new Error(`getRequiredStringParamValue: ${name} is required`);
@@ -358,21 +376,23 @@ const getRequiredStringParam = (interaction, name) => {
 /**
  * Gets a user parameter value of a slash command by name.
  * @param {ChatInputCommandInteraction} interaction - The interaction whose reply is being updated.
- * @param {string} name - The name of the parameter
+ * @param {string | Parameter} nameOrParameter - The name of the user parameter or the parameter itself
  * @returns {User | null} The value of the user parameter
  */
-const getUserParamValue = (interaction, name) => {
-	return getUserParamValue(interaction, name);
+const getUserParamValue = (interaction, nameOrParameter) => {
+	const name = resolveParameterName(nameOrParameter);
+	return interaction.options.getUser(name);
 }
 
 /**
  * Gets a user parameter value of a slash command by name, and throws an error if the parameter is not provided.
  * @param {ChatInputCommandInteraction} interaction - The interaction whose reply is being updated.
- * @param {string} name - The name of the parameter
+ * @param {string | Parameter} nameOrParameter - The name of the user parameter or the parameter itself
  * @returns {User} The value of the user parameter
  * @throws {Error} If the parameter is not provided
  */
-const getRequiredUserParam = (interaction, name) => {
+const getRequiredUserParam = (interaction, nameOrParameter) => {
+	const name = resolveParameterName(nameOrParameter);
 	const value = getUserParamValue(interaction, name);
 	if (value === null || value === undefined)
 		throw new Error(`getRequiredUserParamValue: ${name} is required`);
@@ -382,10 +402,11 @@ const getRequiredUserParam = (interaction, name) => {
 /**
  * Gets a channel parameter value of a slash command by name.
  * @param {ChatInputCommandInteraction} interaction - The interaction whose reply is being updated.
- * @param {string} name - The name of the channel parameter
+ * @param {string | Parameter} nameOrParameter - The name of the channel parameter
  * @returns {import("discord.js").TextBasedChannel | undefined} The value of the channel parameter. If the parameter is not provided, or if the channel is not a valid channel, then null is returned.
  */
-const getChannelParamValue = (interaction, name) => {
+const getChannelParamValue = (interaction, nameOrParameter) => {
+	const name = resolveParameterName(nameOrParameter);
 	const channel = interaction.options.getChannel(name);
 
   if (
@@ -401,11 +422,12 @@ const getChannelParamValue = (interaction, name) => {
 /**
  * Gets a channel parameter value of a slash command by name, and throws an error if the parameter is not provided.
  * @param {ChatInputCommandInteraction} interaction - The interaction whose reply is being updated.
- * @param {string} name - The name of the channel parameter
+ * @param {string | Parameter} nameOrParameter - The name of the channel parameter
  * @returns {import("discord.js").TextBasedChannel} The value of the channel parameter
  * @throws {Error} If the parameter is not provided
  */
-const getRequiredChannelParam = (interaction, name) => {
+const getRequiredChannelParam = (interaction, nameOrParameter) => {
+	const name = resolveParameterName(nameOrParameter);
 	const value = getChannelParamValue(interaction, name);
 	if (value === null || value === undefined)
 		throw new Error(`getRequiredChannelParamValue: ${name} is required`);
@@ -520,4 +542,44 @@ const getVoiceChannelOfInteraction = (interaction) => {
 	);
 }
 
-module.exports = { assertClientSetup, fetchGuild, getGuildOfInteraction, fetchChannel, fetchCategory, getCategoryOfInteraction, fetchTextChannel, getTextChannelOfInteraction, fetchChannelsOfGuild, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchAllGuildMembers, fetchUser, fetchRole, fetchRoleByName, getStringParamValue, getUserParamValue, getEveryoneRole, getNumberParamValue, getRequiredNumberParam, getIntegerParamValue, getNicknameOfInteractionUser, fetchMessagesInChannel, getChannelParamValue, getRequiredIntegerParam, getRequiredStringParam, getRequiredUserParam, getRequiredChannelParam, getSubcommandUsed, fetchVoiceChannelMemberIsIn, fetchTextChannelsInCategory, getVoiceChannelOfInteraction, getMemberOfInteraction };
+/**
+ * Attempts to fetch a user by username.
+ * - Checks cache
+ * - Checks all guild members (if available)
+ * - Optionally fetches uncached members from Discord API
+ * @param {string} username The username or tag (e.g. "SomeUser" or "SomeUser#1234")
+ * @returns {Promise<User|null>} The User object or null if not found
+ */
+async function fetchUserByUsername(username) {
+	assertClientSetup();
+	const client = global.client;
+  let user = client.users.cache.find(
+    user => user.username === username || user.tag === username
+  );
+  if (user) return user;
+
+  for (const guild of client.guilds.cache.values()) {
+    const member = guild.members.cache.find(
+      m => m.user.username === username || m.user.tag === username
+    );
+    if (member) return member.user;
+  }
+
+  for (const guild of client.guilds.cache.values()) {
+    try {
+      const fetched = await guild.members.fetch({ query: username, limit: 1 });
+      if (fetched.size > 0) {
+				const member = fetched.first();
+				if (member) return member.user;
+      }
+    }
+		catch (err) {
+			// Do nothing
+    }
+  }
+
+  return null;
+}
+
+
+module.exports = { assertClientSetup, fetchGuild, getGuildOfInteraction, fetchChannel, fetchCategory, getCategoryOfInteraction, fetchTextChannel, getTextChannelOfInteraction, fetchChannelsOfGuild, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchAllGuildMembers, fetchUser, fetchRole, fetchRoleByName, getStringParamValue, getUserParamValue, getEveryoneRole, getNumberParamValue, getRequiredNumberParam, getIntegerParamValue, getNicknameOfInteractionUser, fetchMessagesInChannel, getChannelParamValue, getRequiredIntegerParam, getRequiredStringParam, getRequiredUserParam, getRequiredChannelParam, getSubcommandUsed, fetchVoiceChannelMemberIsIn, fetchTextChannelsInCategory, getVoiceChannelOfInteraction, getMemberOfInteraction, fetchUserByUsername };

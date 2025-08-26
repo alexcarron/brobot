@@ -1,11 +1,15 @@
+import { DatabaseQuerier } from "../database/database-querier";
+import { addMockPlayer } from "../database/mock-database";
 import { createMockPlayerRepo, mockPlayers } from "./mock-repositories";
 import { PlayerRepository } from "./player.repository";
 
 describe('PlayerRepository', () => {
 	let playerRepository: PlayerRepository;
+	let db: DatabaseQuerier;
 
 	beforeEach(() => {
 		playerRepository = createMockPlayerRepo();
+		db = playerRepository.db;
 	});
 
 	afterEach(() => {
@@ -34,6 +38,30 @@ describe('PlayerRepository', () => {
 			expect(result).toBeNull();
 		});
   });
+
+	describe('getPlayersByCurrentName()', () => {
+		it('should return an array of both players with the same current name', () => {
+			const sameNamePlayer = addMockPlayer(db, {
+				currentName: mockPlayers[0].currentName,
+			});
+
+			const result = playerRepository.getPlayersByCurrentName(mockPlayers[0].currentName);
+
+			expect(result).toEqual([mockPlayers[0], sameNamePlayer]);
+		})
+
+		it('should return an array of a single player with the same current name', () => {
+			const result = playerRepository.getPlayersByCurrentName(mockPlayers[0].currentName);
+
+			expect(result).toEqual([mockPlayers[0]]);
+		});
+
+		it('should return an empty array if no players have the same current name', () => {
+			const result = playerRepository.getPlayersByCurrentName("invalid-name");
+
+			expect(result).toEqual([]);
+		});
+	})
 
   describe('doesPlayerExist()', () => {
 		it('returns true if the player is found', () => {

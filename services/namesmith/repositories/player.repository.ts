@@ -42,6 +42,17 @@ export class PlayerRepository {
 	}
 
 	/**
+	 * Retrieves a list of all player objects with the given current name.
+	 * @param currentName - The current name to search for.
+	 * @returns An array of player objects with the given current name.
+	 */
+	getPlayersByCurrentName(currentName: string): Player[] {
+		const query = `SELECT * FROM player WHERE currentName = @currentName`;
+		const getPlayersByCurrentName = this.db.prepare(query);
+		return getPlayersByCurrentName.all({ currentName }) as DBPlayer[];
+	}
+
+	/**
 	 * Checks if a player exists in the database by their ID.
 	 * @param playerID - The ID of the player to check for existence.
 	 * @returns True if the player exists, otherwise false.

@@ -1,7 +1,7 @@
 import { sendToPublishedNamesChannel, sendToNamesToVoteOnChannel, isNonPlayer, resetMemberToNewPlayer, changeDiscordNameOfPlayer } from "../utilities/discord-action.utility";
 import { PlayerRepository } from "../repositories/player.repository";
 import { logWarning } from "../../../utilities/logging-utils";
-import { ButtonStyle } from "discord.js";
+import { ButtonStyle, ChatInputCommandInteraction } from "discord.js";
 import { addButtonToMessageContents } from "../../../utilities/discord-action-utils";
 import { fetchNamesmithGuildMember, fetchNamesmithGuildMembers } from "../utilities/discord-fetch.utility";
 import { isPlayer } from "../utilities/player.utility";
@@ -24,6 +24,19 @@ export class PlayerService {
 	constructor(
 		public playerRepository: PlayerRepository
 	) {}
+
+	/**
+	 * Retrieves a player from the repository.
+	 * @param playerResolvable - The player resolvable to retrieve.
+	 * @returns The retrieved player object, or null if the player is not found.
+	 */
+	getPlayer(playerResolvable: PlayerResolvable): Player | null {
+		if (isPlayer(playerResolvable)) {
+			return playerResolvable;
+		}
+
+		return this.playerRepository.getPlayerByID(playerResolvable);
+	}
 
 	/**
 	 * Resolves a player from the given resolvable.
@@ -69,6 +82,26 @@ export class PlayerService {
 		}
 
 		throw new InvalidArgumentError(`resolvePlayerID: Invalid player resolvable ${playerResolvable}`);
+	}
+
+	/**
+	 * Retrieves all players with the given name.
+	 * @param name - The name to search for.
+	 * @returns An array of players with the given name.
+	 */
+	getPlayersWithName(name: string): Player[] {
+		return this.playerRepository.getPlayersByCurrentName(name);
+	}
+
+	/**
+	 * Retrieves the player running a command from the interaction, if it exists.
+	 * @param interaction - The interaction to get the player from.
+	 * @returns The player running the command, or null if no player is found.
+	 */
+	getPlayerRunningCommand(interaction: ChatInputCommandInteraction): Player | null {
+		const userID = interaction.user.id;
+		const player = this.playerRepository.getPlayerByID(userID);
+		return player;
 	}
 
 	/**
@@ -285,6 +318,24 @@ export class PlayerService {
 	): Promise<void> {
 		this.removeCharactersFromInventory(playerResolvable, characters);
 		await this.removeMissingCharactersFromName(playerResolvable);
+	}
+
+	/**
+	 * Sets the inventory of a player.
+	 * @param playerResolvable - The player resolvable whose inventory is being set.
+	 * @param inventory - The new inventory of the player.
+	 * If `inventory` is an array, it is joined together with no separator.
+	 */
+	setInventory(
+		playerResolvable: PlayerResolvable,
+		inventory: string | string[]
+	) {
+		inventory = typeof inventory === "string"
+			? inventory :
+			inventory.join("");
+
+		const playerID = this.resolveID(playerResolvable);
+		this.playerRepository.setInventory(playerID, inventory);
 	}
 
 	/**
