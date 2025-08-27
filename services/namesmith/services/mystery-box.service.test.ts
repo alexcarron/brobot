@@ -27,17 +27,17 @@ describe('VoteService', () => {
 	});
 
 	describe('.resolveMysteryBox()', () => {
-		it('should resolve a mystery box object to a mystery box object', async () => {
+		it('should resolve a mystery box object to a mystery box object', () => {
 			const mysteryBox = mysteryBoxService.mysteryBoxRepository.getMysteryBoxes()[0];
 
-			const resolvedMysteryBox = await mysteryBoxService.resolveMysteryBox(mysteryBox);
+			const resolvedMysteryBox = mysteryBoxService.resolveMysteryBox(mysteryBox);
 			expect(resolvedMysteryBox).toHaveProperty('id', expect.any(Number));
 			expect(resolvedMysteryBox).toHaveProperty('name', expect.any(String));
 			expect(resolvedMysteryBox).toHaveProperty('tokenCost', expect.any(Number));
 		});
 
-		it('should resolve a mystery box ID to a mystery box object', async () => {
-			const resolvedMysteryBox = await mysteryBoxService.resolveMysteryBox(1);
+		it('should resolve a mystery box ID to a mystery box object', () => {
+			const resolvedMysteryBox = mysteryBoxService.resolveMysteryBox(1);
 			expect(resolvedMysteryBox).toHaveProperty('id', expect.any(Number));
 			expect(resolvedMysteryBox).toHaveProperty('name', expect.any(String));
 			expect(resolvedMysteryBox).toHaveProperty('tokenCost', expect.any(Number));

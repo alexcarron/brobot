@@ -1,6 +1,6 @@
 /* eslint-disable jsdoc/require-jsdoc */
 import { attempt, HandledError } from "../../../utilities/error-utils";
-import { makeSure } from "../../../utilities/jest-utils";
+import { makeSure } from "../../../utilities/jest/jest-utils";
 import { logWarning } from "../../../utilities/logging-utils";
 
 describe('error.utility', () => {

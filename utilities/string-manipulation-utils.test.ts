@@ -14,7 +14,7 @@ import {
 	removeMissingCharacters,
 } from "./string-manipulation-utils";
 import { createNowUnixTimestamp } from "./date-time-utils";
-import { makeSure } from "./jest-utils";
+import { makeSure } from "./jest/jest-utils";
 
 describe('string-manipulation-utils', () => {
 	describe('toTitleCase()', () => {

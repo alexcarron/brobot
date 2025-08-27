@@ -1,4 +1,4 @@
-import { Database, PragmaOptions, RunResult, Statement, Transaction } from "better-sqlite3";
+import DatabasePkg, { Database, PragmaOptions, RunResult, Statement, Transaction } from "better-sqlite3";
 import { ForeignKeyConstraintError, MultiStatementQueryError, QueryUsageError } from "../utilities/error.utility";
 import { AnyFunction } from "../../../utilities/types/generic-types";
 import { attempt } from '../../../utilities/error-utils';
@@ -10,11 +10,30 @@ import { attempt } from '../../../utilities/error-utils';
 export class DatabaseQuerier {
 	db: Database;
 
-  /**
-   * @param db - better-sqlite3 Database instance
-   */
-  constructor(db: Database) {
-    this.db = db;
+	/**
+	 * @param options - An object with optional parameters for the database instance.
+	 * @param options.inMemory - A boolean indicating whether to use an in-memory database.
+	 * @param options.path - The path to the database file for a disk-backed database.
+	 */
+  constructor(options?: {
+		inMemory?: boolean;
+		path?: string;
+	} | Database) {
+		if (options instanceof DatabasePkg) {
+			this.db = options;
+			return;
+		}
+
+    if (options?.inMemory) {
+      this.db = new DatabasePkg(":memory:");
+      // PRAGMA optimizations for in-memory testing
+      this.db.pragma("synchronous = OFF");
+      this.db.pragma("journal_mode = MEMORY");
+      this.db.pragma("temp_store = MEMORY");
+    } else {
+      if (!options?.path) throw new Error("Database path must be provided for disk-backed DB");
+      this.db = new DatabasePkg(options.path);
+    }
   }
 
 	/**
@@ -269,4 +288,17 @@ export class DatabaseQuerier {
 	close(): Database {
 		return this.db.close();
 	}
+
+	/**
+	 * Wrap a function in a single transaction to speed up multiple writes (for in-memory testing)
+	 * @param fn - The function to wrap in a transaction
+	 * @returns The wrapped function
+	 */
+  wrapInTransaction(fn: AnyFunction): AnyFunction {
+    if (!this.db.inTransaction) {
+      const txn = this.db.transaction(fn);
+      return (...args: unknown[]) => txn(...args);
+    }
+    return fn;
+  }
 }

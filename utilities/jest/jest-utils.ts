@@ -3,7 +3,7 @@
  * @description Centralized test utility functions to make writing Jest unit tests easier, more consistent, and discoverable—especially for new developers.
  */
 
-import { Class, ErrorClass } from "./types/generic-types";
+import { Class, ErrorClass } from "../types/generic-types";
 
 
 /**

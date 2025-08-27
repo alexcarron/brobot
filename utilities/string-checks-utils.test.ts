@@ -1,4 +1,4 @@
-import { makeSure } from "./jest-utils";
+import { makeSure } from "./jest/jest-utils";
 import { areCharactersInString, getCharacterCounts } from "./string-checks-utils";
 
 describe('string-checks-utils', () => {

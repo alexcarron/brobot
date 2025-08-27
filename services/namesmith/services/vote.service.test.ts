@@ -1,4 +1,4 @@
-import { makeSure } from "../../../utilities/jest-utils";
+import { makeSure } from "../../../utilities/jest/jest-utils";
 import { mockPlayers, mockVotes } from "../repositories/mock-repositories";
 import { VoteRepository } from "../repositories/vote.repository";
 import { createMockVoteService } from "./mock-services";

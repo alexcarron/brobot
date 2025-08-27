@@ -2,7 +2,7 @@ jest.mock("../utilities/discord-action.utility", () => ({
 	changeDiscordNameOfPlayer: jest.fn(),
 }));
 
-import { makeSure } from "../../../utilities/jest-utils";
+import { makeSure } from "../../../utilities/jest/jest-utils";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer, addMockRecipe } from "../database/mock-database";
 import { setupMockNamesmith } from "../event-listeners/mock-setup";

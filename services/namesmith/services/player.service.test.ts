@@ -23,7 +23,7 @@ jest.mock("../../../utilities/discord-action-utils", () => ({
 	addButtonToMessageContents: jest.fn(),
 }));
 
-import { makeSure } from "../../../utilities/jest-utils";
+import { makeSure } from "../../../utilities/jest/jest-utils";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer } from "../database/mock-database";
 import { createMockPlayerObject, mockPlayers } from "../repositories/mock-repositories";

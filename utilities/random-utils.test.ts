@@ -1,4 +1,4 @@
-import { makeSure } from "./jest-utils";
+import { makeSure } from "./jest/jest-utils";
 import { createRandomNumericUUID, createRandomUUID } from "./random-utils";
 
 describe('random-utils', () => {

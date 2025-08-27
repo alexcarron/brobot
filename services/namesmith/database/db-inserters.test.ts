@@ -1,4 +1,3 @@
-import Database from "better-sqlite3";
 import { DatabaseQuerier } from "./database-querier";
 import { insertCharactersToDB, insertMysteryBoxesToDB, insertRecipesToDB } from "./db-inserters";
 import { applySchemaToDB } from "./queries/apply-schema";
@@ -18,7 +17,7 @@ describe('db-inserters.js', () => {
 	let recipes: WithOptional<Recipe, "id">[];
 
   beforeEach(() => {
-		db = new DatabaseQuerier(new Database(':memory:'));
+		db = new DatabaseQuerier({ inMemory: true });
 		applySchemaToDB(db);
 
     characters = [

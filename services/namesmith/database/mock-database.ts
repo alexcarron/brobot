@@ -1,4 +1,4 @@
-import Database, { RunResult } from 'better-sqlite3';
+import { RunResult } from 'better-sqlite3';
 import { applySchemaToDB } from './queries/apply-schema';
 import { addInitialDataToDB } from './static-data/insert-static-data';
 import { InvalidArgumentError } from '../../../utilities/error-utils';
@@ -14,7 +14,7 @@ import { createRandomNumericUUID } from '../../../utilities/random-utils';
  * @returns The in-memory database.
  */
 export const createMockDB = (): DatabaseQuerier => {
-	const db = new DatabaseQuerier(new Database(':memory:'));
+	const db = new DatabaseQuerier({inMemory: true});
 	applySchemaToDB(db);
 	addInitialDataToDB(db);
 	return db;
