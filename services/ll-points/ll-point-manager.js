@@ -1,5 +1,5 @@
 const { User, AutocompleteInteraction, ChatInputCommandInteraction } = require("discord.js");
-const { saveObjectToJsonInGitHub, loadObjectFromJsonInGitHub } = require("../../utilities/github-json-storage-utils.js");
+const { saveObjectToJsonInGitHub, loadObjectFromJsonInGitHub } = require("../../utilities/persistent-storage-utils.js");
 const Viewer = require("./viewer.js");
 
 /**

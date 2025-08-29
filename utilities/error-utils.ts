@@ -280,9 +280,12 @@ abstract class BaseAttempt<ReturnType> {
 	 * @returns The current instance of the attempt chain to allow for method chaining.
 	 */
 	ignoreError<ErrorType extends Error>(
-		errorType: new (...args: any[]) => ErrorType
+		errorType?: new (...args: any[]) => ErrorType
 	) {
-		return this.onError(errorType, () => {});
+		if (errorType === undefined)
+			return this.onError(() => {});
+		else
+			return this.onError(errorType, () => {});
 	}
 
 	/**
@@ -518,4 +521,110 @@ export function attempt<ReturnType>(
  */
 export function throwIfNotError(error: unknown): asserts error is Error {
   if (!(error instanceof Error)) throw error;
+}
+
+
+
+export function hasFailed<ReturnType>(
+	promise: Promise<ReturnType>
+): Promise<boolean>;
+
+export function hasFailed<ReturnType>(
+	func: (...args: any[]) => ReturnType,
+	...args: any[]
+): boolean;
+
+/**
+ * Returns a boolean indicating whether the given function or promise has failed.
+ * If the given argument is a promise, it will be resolved or rejected and the
+ * result will be returned. If the given argument is a function, it will be
+ * called with the given arguments and the result will be returned. If the
+ * function throws, the result will be true. If the function does not throw, the
+ * result will be false.
+ * @param functionOrPromise - The function or promise to check.
+ * @param args - The arguments to pass to the function, if the given argument is a function.
+ * @returns A boolean indicating whether the given function or promise has failed.
+ * @example
+ * // Synchronous function
+ * const result = hasFailed(addNumbers, 1, 2);
+ * const result = hasFailed(() => addNumbers(1, 2)));
+ * @example
+ * // Asynchronous function
+ * const result = await hasFailed(waitSeconds(10));
+ */
+export function hasFailed<ReturnType>(
+	functionOrPromise:
+		| Promise<ReturnType>
+		| ((...args: any[]) => ReturnType),
+	...args: any[]
+) {
+	const isPromise = functionOrPromise instanceof Promise;
+
+	if (isPromise) {
+		const promise = functionOrPromise as Promise<ReturnType>;
+		if (args.length !== 0)
+			throw new InvalidArgumentError("Asynchronous functions cannot have arguments.");
+
+		return new Promise<boolean>((resolve) =>
+			promise
+				.then(() => resolve(false))
+				.catch(() => resolve(true))
+		);
+	}
+
+	const func = functionOrPromise as (...args: any[]) => ReturnType;
+
+	try {
+		func(...args);
+		return false;
+	}
+	catch {
+		return true;
+	}
+}
+
+export function toNullOnFailure<ReturnType>(
+	promise: Promise<ReturnType>
+): Promise<ReturnType | null>;
+
+export function toNullOnFailure<ReturnType>(
+	func: (...args: any[]) => ReturnType,
+	...args: any[]
+): ReturnType | null;
+
+/**
+ * Runs a function or a promise and returns null if an error is thrown or encountered.
+ * If the function or promise returns a value, that value is returned.
+ * @param functionOrPromise - The function or promise to run.
+ * @param args - The arguments to pass to the function if it is synchronous.
+ * @returns The return value of the function or promise, or null if an error was thrown or encountered.
+ */
+export function toNullOnFailure<ReturnType>(
+	functionOrPromise:
+		| Promise<ReturnType>
+		| ((...args: any[]) => ReturnType),
+	...args: any[]
+) {
+	const isPromise = functionOrPromise instanceof Promise;
+
+	if (isPromise) {
+		const promise = functionOrPromise as Promise<ReturnType>;
+		if (args.length !== 0)
+			throw new InvalidArgumentError("Asynchronous functions cannot have arguments.");
+
+		return new Promise<ReturnType | null>((resolve) =>
+			promise
+				.then((result) => resolve(result))
+				.catch(() => resolve(null))
+		);
+	}
+
+	const func = functionOrPromise as (...args: any[]) => ReturnType;
+
+	try {
+		return func(...args);
+	}
+	catch {
+		return null;
+	}
 }

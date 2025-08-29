@@ -406,7 +406,7 @@ export class PlayerService {
 		await this.changeCurrentName(playerResolvable, publishedName);
 
 		await sendToNamesToVoteOnChannel(
-			await addButtonToMessageContents({
+			addButtonToMessageContents({
 				contents: `_ _\n${publishedName}`,
 				buttonID: `vote-${playerID}`,
 				buttonLabel: 'Vote as Favorite Name',

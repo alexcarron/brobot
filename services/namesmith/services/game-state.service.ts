@@ -5,7 +5,7 @@ import { closeNamesToVoteOnChannel, openNamesToVoteOnChannel, sendToNamesToVoteO
 import { VoteService } from "./vote.service";
 import { PlayerService } from "./player.service";
 import { InvalidArgumentError } from "../../../utilities/error-utils";
-import { createRecipeSelectMenu } from "../interfaces/recipe-select-menu";
+import { sendRecipeSelectMenu } from "../interfaces/recipe-select-menu";
 import { RecipeService } from "./recipe.service";
 
 /**
@@ -64,7 +64,7 @@ export class GameStateService {
 		await this.playerService.addEveryoneInServer();
 
 		// Send the recipe select menu in the recipes channel
-		await createRecipeSelectMenu({recipeService: this.recipeService});
+		await sendRecipeSelectMenu({recipeService: this.recipeService});
 	}
 
 	/**

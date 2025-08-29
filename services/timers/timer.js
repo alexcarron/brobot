@@ -1,7 +1,7 @@
 const { TextChannel } = require("discord.js");
 const cron = require("cron");
 const { fetchGuild, fetchTextChannel } = require("../../utilities/discord-fetch-utils");
-const { saveObjectToJsonInGitHub } = require("../../utilities/github-json-storage-utils");
+const { saveObjectToJsonInGitHub } = require("../../utilities/persistent-storage-utils");
 
 /**
  * Represents a timer set by Brobot.

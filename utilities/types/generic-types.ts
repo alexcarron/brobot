@@ -33,7 +33,7 @@ export type TypedNamedValue<
 	{ [PossibleProperty in Name]: ValueType; } &
 	{ type: TypeType; };
 
-/**
+/**l
  * Requires at least one property to be defined of a given object type
  * @example
  * type ContactInfo = AtLeastOne<{

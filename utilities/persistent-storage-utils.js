@@ -1,6 +1,8 @@
 const axios = require('axios');
 const { GITHUB_TOKEN } = require('../bot-config/token');
 const { logError, logWarning } = require('./logging-utils');
+const path = require('path');
+const Database = require('better-sqlite3');
 const REPO_OWNER = "alexcarron";
 const REPO_NAME = "brobot-database";
 
@@ -148,4 +150,68 @@ const loadObjectFromJsonInGitHub = async (jsonFileName) => {
 	return object;
 };
 
-module.exports = {saveObjectToJsonInGitHub, loadObjectFromJsonInGitHub, GitHubJsonURL};
+/**
+ * Creates the database file if it does not exist and returns a database instance for it
+ * @returns {import("better-sqlite3").Database} The database instance
+ */
+const createDBIfDoesNotExist = () => {
+	const currDirectory = __dirname;
+	const dbPath = path.join(currDirectory, 'db', 'brobot-database.db');
+	const database = new Database(dbPath);
+	createTableIfDoesNotExist(database);
+	return database;
+};
+
+/**
+ * Creates the `unique_values` table if it does not exist in the database
+ * @param {import("better-sqlite3").Database} database - The database instance
+ */
+const createTableIfDoesNotExist = (database) => {
+	database.prepare(`CREATE TABLE IF NOT EXISTS unique_values (unique_key TEXT PRIMARY KEY, value TEXT)`).run();
+}
+
+/**
+ * Saves a unique key-value pair to the database
+ * @param {{uniqueKey: string, value: string}} options - The key-value pair to save
+ * @throws {Error} If the unique key already exists in the database
+ */
+const saveStringValueInDB = ({uniqueKey, value}) => {
+	const database = createDBIfDoesNotExist();
+
+	// Check if unique key already exists
+	const uniqueKeyExists = database.prepare(`SELECT * FROM unique_values WHERE unique_key = ?`).get(uniqueKey);
+	if (uniqueKeyExists) {
+		throw new Error(
+			`Unique key already exists in the database: ${uniqueKey}`
+		)
+	}
+
+	database.prepare(`INSERT INTO unique_values (unique_key, value) VALUES (?, ?)`).run(uniqueKey, value);
+}
+
+/**
+ * Loads a value from the database with a unique key
+ * @param {string} uniqueKey - The key to load the value by
+ * @returns {string|null} The value associated with the unique key, or null if the key does not exist
+ */
+const loadStringValueFromDB = (uniqueKey) => {
+	const database = createDBIfDoesNotExist();
+	const result = database.prepare(`SELECT value FROM unique_values WHERE unique_key = ?`).get(uniqueKey);
+	if (
+		typeof result !== 'object' ||
+		result === null ||
+		'value' in result === false ||
+		typeof result.value !== 'string'
+	) {
+		return null;
+	}
+	return result.value;
+}
+
+module.exports = {
+	saveObjectToJsonInGitHub,
+	loadObjectFromJsonInGitHub,
+	GitHubJsonURL,
+	saveStringValueInDB,
+	loadStringValueFromDB
+};

@@ -292,7 +292,7 @@ Contains helper functions and reusable utilities for general functionality acros
 * **`discord-fetch-utils.js`** Functions for fetching Discord.js objects
 * **`discord-interface-utils.js`** Functions for creating and sending Discord components and interfaces users interact with
 * **`error-utils.ts`** Error classes and functions for better managing and handling errors
-* **`github-json-storage-utils.js`** Functions for managing persistant JSON data storage on GitHub
+* **`persistent-storage-utils.js`** Functions for managing persistant JSON data storage on GitHub
 * **`jest-utils.js`** Functions for improving jest unit tests and increasing discoverability of jest features
 * **`logging-utils.js`** Functions for custom logging and error reporting
 * **`random-utils.js`** Functions for generating random values and other randomness-related operations

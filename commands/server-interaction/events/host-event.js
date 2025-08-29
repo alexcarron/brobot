@@ -6,7 +6,7 @@ const { toTitleCase } = require("../../../utilities/string-manipulation-utils");
 const { toUnixTimestamp } = require("../../../utilities/date-time-utils.js");
 const { confirmInteractionWithButtons } = require("../../../utilities/discord-action-utils.js");
 const { wait } = require("../../../utilities/realtime-utils.js");
-const { saveObjectToJsonInGitHub } = require("../../../utilities/github-json-storage-utils.js");
+const { saveObjectToJsonInGitHub } = require("../../../utilities/persistent-storage-utils.js");
 const Event = require("../../../services/discord-events/event.js");
 const { LLPointTier } = require("../../../services/ll-points/ll-point-enums.js");
 

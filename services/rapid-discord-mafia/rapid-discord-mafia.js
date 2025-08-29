@@ -6,7 +6,7 @@ const DiscordLogger = require("./discord-logger.js");
 const { ids } = require("../../bot-config/discord-ids");
 const { GameManager } = require("./game-manager.js");
 const { fetchRDMGuild, fetchTextChannel } = require("../../utilities/discord-fetch-utils.js");
-const { loadObjectFromJsonInGitHub } = require("../../utilities/github-json-storage-utils.js");
+const { loadObjectFromJsonInGitHub } = require("../../utilities/persistent-storage-utils.js");
 const { logSuccess } = require("../../utilities/logging-utils.js");
 
 /**

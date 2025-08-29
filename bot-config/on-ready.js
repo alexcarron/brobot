@@ -1,7 +1,7 @@
 const RapidDiscordMafia = require('../services/rapid-discord-mafia/rapid-discord-mafia.js');
 const { LLPointManager } = require('../services/ll-points/ll-point-manager.js');
 const { logSuccess, logInfo } = require('../utilities/logging-utils.js');
-const { loadObjectFromJsonInGitHub } = require('../utilities/github-json-storage-utils.js');
+const { loadObjectFromJsonInGitHub } = require('../utilities/persistent-storage-utils.js');
 const Event = require('../services/discord-events/event.js');
 const Timer = require('../services/timers/timer.js');
 const DailyMessageHandler = require('../services/discussion-prompts/daily-message-handler.js');

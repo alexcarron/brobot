@@ -26,7 +26,7 @@ jest.mock('../utilities/discord-fetch.utility', () => ({
 }));
 
 jest.mock('../interfaces/recipe-select-menu', () => ({
-	createRecipeSelectMenu: jest.fn(),
+	sendRecipeSelectMenu: jest.fn(),
 }));
 
 // Mock CronJob
@@ -146,7 +146,7 @@ describe('GameStateService', () => {
 		it('should replace players with players in server', async () => {
 			await gameStateService.startGame();
 
-			const players = await playerService.playerRepository.getPlayers();
+			const players = playerService.playerRepository.getPlayers();
 			expect(players.length).toBe(2);
 		});
 	});

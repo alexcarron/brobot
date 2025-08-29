@@ -1,6 +1,6 @@
 const PlayerManager = require('./player-manager.js');
 const Death = require('./death.js');
-const { saveObjectToJsonInGitHub, loadObjectFromJsonInGitHub } = require('../../utilities/github-json-storage-utils.js');
+const { saveObjectToJsonInGitHub, loadObjectFromJsonInGitHub } = require('../../utilities/persistent-storage-utils.js');
 
 /**
  * A class to handle the game data that persists across mulitple sessions on github

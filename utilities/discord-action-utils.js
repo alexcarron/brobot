@@ -808,7 +808,7 @@ const doWhenButtonPressed = async (messsageWithButton, buttonID, onButtonPressed
  * @param {import('discord.js').MessageCreateOptions} createOptions - The object to convert.
  * @returns {import('discord.js').MessageEditOptions} The converted object.
  */
-function getMessageEditFromCreateOptions(createOptions) {
+function toMessageEditFromCreateOptions(createOptions) {
 	const editOptions = {};
 
   if (createOptions.content !== undefined)
@@ -847,6 +847,10 @@ function getMessageEditFromCreateOptions(createOptions) {
  */
 async function deleteAllMessagesInChannel(channel) {
 	const allMessagesInChannel = await fetchMessagesInChannel(channel);
+
+	if (allMessagesInChannel.length >= 50)
+		throw new Error(`Too risky to delete ${allMessagesInChannel.length} messages in channel #${channel.id}`);
+
 	await Promise.all(allMessagesInChannel.map((message) => message.delete()));
 }
 
@@ -870,7 +874,7 @@ async function setChannelMessage(channel, message) {
 
 	if (isTheSetMessage) {
 		const theSetMessage = allMessagesInChannel[0];
-		const editMessageOptions = getMessageEditFromCreateOptions(message);
+		const editMessageOptions = toMessageEditFromCreateOptions(message);
 		return await theSetMessage.edit(editMessageOptions);
 	}
 	else {
@@ -904,4 +908,6 @@ module.exports = {
 	doWhenButtonPressed,
 	shuffleCategoryChannels,
 	setChannelMessage,
+	toMessageEditFromCreateOptions,
+	deleteAllMessagesInChannel,
 };

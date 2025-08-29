@@ -1,5 +1,4 @@
 import { StringSelectMenuInteraction } from "discord.js";
-import { sendSelectMenu } from "../../../utilities/discord-interface-utils";
 import { attempt } from "../../../utilities/error-utils";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PlayerResolvable } from "../types/player.types";
@@ -7,9 +6,10 @@ import { RecipeResolvable } from "../types/recipe.types";
 import { fetchRecipesChannel } from "../utilities/discord-fetch.utility";
 import { MissingRequiredCharactersError, NonPlayerCraftedError, RecipeNotUnlockedError } from "../utilities/error.utility";
 import { craftCharacter } from "../workflows/craft-character.workflow";
-import { replyToInteraction } from "../../../utilities/discord-action-utils";
+import { replyToInteraction, setChannelMessage } from "../../../utilities/discord-action-utils";
 import { escapeDiscordMarkdown } from "../../../utilities/string-manipulation-utils";
 import { RecipeService } from "../services/recipe.service";
+import { DiscordSelectMenu } from "../../../utilities/discord-interface-utils";
 
 const onRecipeSelected = async (
 	player: PlayerResolvable,
@@ -45,18 +45,16 @@ const onRecipeSelected = async (
 		.execute();
 }
 
-export const createRecipeSelectMenu = async (
+export const createRecipeSelectMenu = (
 	{recipeService}: {recipeService: RecipeService},
-) => {
-	const recipeChannel = await fetchRecipesChannel();
+): DiscordSelectMenu => {
 	const allRecipes = recipeService.getRecipes();
 	const options = allRecipes.map(recipe => ({
 			label: recipeService.getDisplayName(recipe),
 			value: recipeService.getID(recipe).toString()
 	}));
 
-	await sendSelectMenu({
-		inChannel: recipeChannel,
+	const recipeSelectMenu = new DiscordSelectMenu({
 		promptText: "Select a recipe to instantly craft a character",
 		placeholderText: "Select a recipe here...",
 		menuID: "namesmith-recipes",
@@ -69,5 +67,23 @@ export const createRecipeSelectMenu = async (
 
 			await onRecipeSelected(userID, idSelected, interaction);
 		}
-	})
+	});
+
+	return recipeSelectMenu;
+}
+
+export const sendRecipeSelectMenu = async (
+	{recipeService}: {recipeService: RecipeService},
+) => {
+	const recipeSelectMenu = createRecipeSelectMenu({recipeService});
+	const recipeChannel = await fetchRecipesChannel();
+	await setChannelMessage(recipeChannel, recipeSelectMenu.getMessageContents());
+}
+
+export const regenerateRecipeSelectMenu = async (
+	{recipeService}: {recipeService: RecipeService},
+) => {
+	const recipeSelectMenu = createRecipeSelectMenu({recipeService});
+	const recipeChannel = await fetchRecipesChannel();
+	await recipeSelectMenu.regenerate({channel: recipeChannel});
 }

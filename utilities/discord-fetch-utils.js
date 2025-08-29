@@ -153,7 +153,7 @@ const getTextChannelOfInteraction = (interaction) => {
 
 /**
  * Fetches a message from Discord using the given channel.
- * @param {TextChannel} channel The channel that the message belongs to.
+ * @param {import("discord.js").TextBasedChannel} channel The channel that the message belongs to.
  * @param {string} messageID The ID of the message to fetch.
  * @returns {Promise<Message>} A Promise that resolves with the Message object if successful, or rejects with an Error if not.
  */
@@ -581,5 +581,20 @@ async function fetchUserByUsername(username) {
   return null;
 }
 
+/**
+ * Fetches the most recent message in a channel.
+ * @param {import("discord.js").TextBasedChannel} channel The channel to fetch the message from.
+ * @returns {Promise<Message>} A Promise that resolves with the most recent Message object in the channel.
+ * @throws {Error} If the channel is not an instance of TextChannel.
+ */
+async function fetchChannelMessage(channel) {
+	channel = await channel.fetch();
+	const messageID = channel.lastMessageId;
 
-module.exports = { assertClientSetup, fetchGuild, getGuildOfInteraction, fetchChannel, fetchCategory, getCategoryOfInteraction, fetchTextChannel, getTextChannelOfInteraction, fetchChannelsOfGuild, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchAllGuildMembers, fetchUser, fetchRole, fetchRoleByName, getStringParamValue, getUserParamValue, getEveryoneRole, getNumberParamValue, getRequiredNumberParam, getIntegerParamValue, getNicknameOfInteractionUser, fetchMessagesInChannel, getChannelParamValue, getRequiredIntegerParam, getRequiredStringParam, getRequiredUserParam, getRequiredChannelParam, getSubcommandUsed, fetchVoiceChannelMemberIsIn, fetchTextChannelsInCategory, getVoiceChannelOfInteraction, getMemberOfInteraction, fetchUserByUsername };
+	if (messageID === null)
+		throw new Error(`fetchChannelMessage: No message found in channel ${channel.id}`);
+
+	return fetchMessage(channel, messageID);
+}
+
+module.exports = { assertClientSetup, fetchGuild, getGuildOfInteraction, fetchChannel, fetchCategory, getCategoryOfInteraction, fetchTextChannel, getTextChannelOfInteraction, fetchChannelsOfGuild, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchAllGuildMembers, fetchUser, fetchRole, fetchRoleByName, getStringParamValue, getUserParamValue, getEveryoneRole, getNumberParamValue, getRequiredNumberParam, getIntegerParamValue, getNicknameOfInteractionUser, fetchMessagesInChannel, getChannelParamValue, getRequiredIntegerParam, getRequiredStringParam, getRequiredUserParam, getRequiredChannelParam, getSubcommandUsed, fetchVoiceChannelMemberIsIn, fetchTextChannelsInCategory, getVoiceChannelOfInteraction, getMemberOfInteraction, fetchUserByUsername, fetchChannelMessage };

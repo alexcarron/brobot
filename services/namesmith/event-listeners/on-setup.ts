@@ -1,6 +1,6 @@
 import { logInfo, logSuccess } from "../../../utilities/logging-utils";
 import { setupDatabase } from "../database/setup-database";
-import {  } from "../interfaces/recipe-select-menu";
+import { regenerateRecipeSelectMenu } from "../interfaces/recipe-select-menu";
 import { CharacterRepository } from "../repositories/character.repository";
 import { GameStateRepository } from "../repositories/game-state.repository";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
@@ -8,17 +8,13 @@ import { PlayerRepository } from "../repositories/player.repository";
 import { RecipeRepository } from "../repositories/recipe.repository";
 import { VoteRepository } from "../repositories/vote.repository";
 import { GameStateService } from "../services/game-state.service";
+import { getNamesmithServices } from "../services/get-namesmith-services";
 import { MysteryBoxService } from "../services/mystery-box.service";
 import { PlayerService } from "../services/player.service";
 import { RecipeService } from "../services/recipe.service";
 import { VoteService } from "../services/vote.service";
 
-/**
- * Sets up Namesmith by loading and setting up the necessary repositories and services when the bot starts up.
- */
-export const setupNamesmith = async () => {
-	logInfo("Setting up Namesmith...");
-
+export const initializeServices = async () => {
 	const db = await setupDatabase();
 
 	global.namesmith = {};
@@ -67,8 +63,20 @@ export const setupNamesmith = async () => {
 	);
 
 	global.namesmith.gameStateService = gameStateService;
+};
+
+/**
+ * Sets up Namesmith by loading and setting up the necessary repositories and services when the bot starts up.
+ */
+export const setupNamesmith = async () => {
+	logInfo("Setting up Namesmith...");
+	await initializeServices();
+
+	const { gameStateService, recipeService } = getNamesmithServices();
 
 	gameStateService.startCronJobs();
+	
+	await regenerateRecipeSelectMenu({recipeService});
 
 	logSuccess("Namesmith set up");
 }
