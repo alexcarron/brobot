@@ -58,7 +58,7 @@ export const command = new SlashCommand({
 			}
 
 			// 3) Try players with a matching display name
-			const playerByName = playerService.getPlayersWithName(playerNameOrUsernameOrID)[0];
+			const playerByName = playerService.getPlayersByName(playerNameOrUsernameOrID)[0];
 			if (playerByName) return playerByName;
 
 			return null;

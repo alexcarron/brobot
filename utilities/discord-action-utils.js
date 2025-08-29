@@ -1,6 +1,6 @@
 const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionFlagsBits, CategoryChannel, ChatInputCommandInteraction, Message, GuildChannel, ButtonInteraction, InteractionResponse, CommandInteraction, MessageComponentInteraction, ModalSubmitInteraction, Attachment } = require('discord.js');
 const { Role } = require('../services/rapid-discord-mafia/role');
-const { fetchChannel, fetchChannelsInCategory, getEveryoneRole, fetchMessagesInChannel } = require('./discord-fetch-utils');
+const { fetchChannel, fetchChannelsInCategory, getEveryoneRole, fetchAllMessagesInChannel } = require('./discord-fetch-utils');
 const { incrementEndNumber } = require('./string-manipulation-utils');
 const { logInfo, logError, logWarning } = require('./logging-utils');
 const { getShuffledArray } = require('./data-structure-utils');
@@ -846,7 +846,7 @@ function toMessageEditFromCreateOptions(createOptions) {
  * @returns {Promise<void>} A promise that resolves when all messages have been deleted.
  */
 async function deleteAllMessagesInChannel(channel) {
-	const allMessagesInChannel = await fetchMessagesInChannel(channel);
+	const allMessagesInChannel = await fetchAllMessagesInChannel(channel);
 
 	if (allMessagesInChannel.length >= 50)
 		throw new Error(`Too risky to delete ${allMessagesInChannel.length} messages in channel #${channel.id}`);
@@ -866,7 +866,7 @@ async function setChannelMessage(channel, message) {
 	if (typeof message === "string")
 		message = {content: message};
 
-	const allMessagesInChannel = await fetchMessagesInChannel(channel);
+	const allMessagesInChannel = await fetchAllMessagesInChannel(channel);
 
 	const isTheSetMessage =
 		allMessagesInChannel.length === 1 &&

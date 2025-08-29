@@ -1,8 +1,6 @@
-import { sendToPublishedNamesChannel, sendToNamesToVoteOnChannel, isNonPlayer, resetMemberToNewPlayer, changeDiscordNameOfPlayer } from "../utilities/discord-action.utility";
+import { sendToPublishedNamesChannel, isNonPlayer, resetMemberToNewPlayer, changeDiscordNameOfPlayer } from "../utilities/discord-action.utility";
 import { PlayerRepository } from "../repositories/player.repository";
 import { logWarning } from "../../../utilities/logging-utils";
-import { ButtonStyle, ChatInputCommandInteraction } from "discord.js";
-import { addButtonToMessageContents } from "../../../utilities/discord-action-utils";
 import { fetchNamesmithGuildMember, fetchNamesmithGuildMembers } from "../utilities/discord-fetch.utility";
 import { isPlayer } from "../utilities/player.utility";
 import { attempt, InvalidArgumentError } from "../../../utilities/error-utils";
@@ -11,6 +9,7 @@ import { Inventory, Player, PlayerID, PlayerResolvable } from '../types/player.t
 import { removeCharactersAsGivenFromEnd, removeMissingCharacters } from "../../../utilities/string-manipulation-utils";
 import { areCharactersInString } from "../../../utilities/string-checks-utils";
 import { MAX_NAME_LENGTH } from "../constants/namesmith.constants";
+import { ChatInputCommandInteraction } from "discord.js";
 
 /**
  * Provides methods for interacting with players.
@@ -88,8 +87,16 @@ export class PlayerService {
 	 * @param name - The name to search for.
 	 * @returns An array of players with the given name.
 	 */
-	getPlayersWithName(name: string): Player[] {
+	getPlayersByName(name: string): Player[] {
 		return this.playerRepository.getPlayersByCurrentName(name);
+	}
+
+	/**
+	 * Retrieves all players with published names.
+	 * @returns An array of players with published names.
+	 */
+	getPlayersWithPublishedName(){
+		return this.playerRepository.getPlayersWithPublishedNames();
 	}
 
 	/**
@@ -404,15 +411,6 @@ export class PlayerService {
 		}
 
 		await this.changeCurrentName(playerResolvable, publishedName);
-
-		await sendToNamesToVoteOnChannel(
-			addButtonToMessageContents({
-				contents: `_ _\n${publishedName}`,
-				buttonID: `vote-${playerID}`,
-				buttonLabel: 'Vote as Favorite Name',
-				buttonStyle: ButtonStyle.Secondary
-			})
-		);
 	}
 
 	async finalizeAllNames() {

@@ -2,12 +2,12 @@ import { createRandomUUID } from "./random-utils";
 import { ActionRowBuilder, ButtonBuilder, ComponentBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from "@discordjs/builders";
 import { ButtonInteraction, ButtonStyle, Message, MessageCreateOptions, StringSelectMenuInteraction, TextBasedChannel } from "discord.js";
 import { InvalidArgumentError } from "./error-utils";
-import { onButtonPressed } from "../event-listeners/on-button-pressed";
-import { onMenuOptionSelected } from "../event-listeners/on-menu-option-selected";
+import { doOnButtonPressed } from '../event-listeners/on-button-pressed';
+import { doOnMenuOptionSelected } from "../event-listeners/on-menu-option-selected";
 import { isStrings } from "./types/type-guards";
 import { DiscordSelectMenuOption } from "./constants/discord-interface.constants";
 import { setChannelMessage, toMessageEditFromCreateOptions } from "./discord-action-utils";
-import { fetchChannelMessage } from "./discord-fetch-utils";
+import { fetchMessageWithComponent } from "./discord-fetch-utils";
 
 const OPTIONS_PER_SELECT_MENU = 25;
 
@@ -83,7 +83,10 @@ abstract class DiscordInterface {
 			message ??
 			this.message ??
 			(maybeChannel !== undefined
-				? await fetchChannelMessage(maybeChannel)
+				? await fetchMessageWithComponent({
+						channel: maybeChannel,
+						componentID: this.id
+					})
 				: null);
 
 
@@ -267,7 +270,7 @@ export class DiscordSelectMenu extends DiscordInterface {
 					new StringSelectMenuOptionBuilder(option)
 				)
 			);
-		onMenuOptionSelected(this.id, this.onOptionSelected);
+		doOnMenuOptionSelected(this.id, this.onOptionSelected);
 		return selectMenu;
 	}
 
@@ -284,7 +287,7 @@ export class DiscordSelectMenu extends DiscordInterface {
 			.setStyle(ButtonStyle.Secondary)
 			.setDisabled(numPage === 0);
 
-		onButtonPressed(this.perviousPageButtonID, async (buttonInteraction) => {
+		doOnButtonPressed(this.perviousPageButtonID, async (buttonInteraction) => {
 			await this.updateOnNewPage({
 				buttonInteraction,
 				newPageNum: numPage - 1
@@ -307,7 +310,7 @@ export class DiscordSelectMenu extends DiscordInterface {
 			.setStyle(ButtonStyle.Secondary)
 			.setDisabled(numPage >= this.totalPages - 1);
 
-		onButtonPressed(this.nextPageButtonID, async (buttonInteraction) => {
+		doOnButtonPressed(this.nextPageButtonID, async (buttonInteraction) => {
 			await this.updateOnNewPage({
 				buttonInteraction,
 				newPageNum: numPage + 1
@@ -347,17 +350,20 @@ export class DiscordButton extends DiscordInterface {
 	private promptText: string;
 	private buttonLabel: string;
 	private buttonStyle: ButtonStyle;
+	private onButtonPressed: (buttonInteraction: ButtonInteraction) => Promise<void>;
 
   constructor({
     promptText,
     buttonLabel,
     buttonStyle = ButtonStyle.Primary,
     buttonID,
+		onButtonPressed,
   }: {
     promptText: string;
     buttonLabel: string;
     buttonStyle?: ButtonStyle; // optional
     buttonID: string;
+		onButtonPressed: (buttonInteraction: ButtonInteraction) => Promise<void>;
   }) {
 		super({
 			id: buttonID ?? `button-${createRandomUUID()}`,
@@ -366,6 +372,7 @@ export class DiscordButton extends DiscordInterface {
     this.promptText = promptText;
     this.buttonLabel = buttonLabel;
     this.buttonStyle = buttonStyle;
+		this.onButtonPressed = onButtonPressed;
   }
 
 	getComponents(): {button: ButtonBuilder} {
@@ -373,6 +380,8 @@ export class DiscordButton extends DiscordInterface {
 			.setCustomId(this.id)
 			.setLabel(this.buttonLabel)
 			.setStyle(this.buttonStyle);
+
+		doOnButtonPressed(this.id, this.onButtonPressed);
 
 		return {
 			button,

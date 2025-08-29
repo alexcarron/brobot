@@ -1,10 +1,10 @@
 import { Interaction, InteractionType, StringSelectMenuInteraction } from "discord.js";
 import { eventHandlers, Handler } from "./event-listener-setup";
 
-export function onMenuOptionSelected(
+export function doOnMenuOptionSelected(
 	doOnMenuOptionSelected: Handler<StringSelectMenuInteraction>
 ): void
-export function onMenuOptionSelected(
+export function doOnMenuOptionSelected(
 	buttonID: string,
 	doOnMenuOptionSelected: Handler<StringSelectMenuInteraction>
 ): void
@@ -14,7 +14,7 @@ export function onMenuOptionSelected(
  * @param idOrDoOnMenuOptionSelected - The action to be completed
  * @param maybeDoOnMenuOptionSelected - The action to be completed
  */
-export function onMenuOptionSelected(
+export function doOnMenuOptionSelected(
 	idOrDoOnMenuOptionSelected:
 		| string
 		| Handler<StringSelectMenuInteraction>,

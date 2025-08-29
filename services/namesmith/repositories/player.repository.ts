@@ -75,6 +75,16 @@ export class PlayerRepository {
 	}
 
 	/**
+	 * Retrieves a list of players with published names.
+	 * @returns An array of player objects with a published name.
+	 */
+	getPlayersWithPublishedNames(): Override<Player, "publishedName", string>[] {
+		const query = `SELECT * FROM player WHERE publishedName IS NOT NULL`;
+		const getPlayersWithPublishedNames = this.db.prepare(query);
+		return getPlayersWithPublishedNames.all() as Override<DBPlayer, "publishedName", string>[];
+	}
+
+	/**
 	 * Retrieves the inventory of a player.
 	 * @param playerID - The ID of the player whose inventory is being retrieved.
 	 * @returns The inventory of the player.

@@ -1,10 +1,10 @@
 import { ButtonInteraction, Interaction, InteractionType } from "discord.js";
 import { eventHandlers, Handler } from "./event-listener-setup";
 
-export function onButtonPressed(
+export function doOnButtonPressed(
 	doOnButtonPressed: Handler<ButtonInteraction>
 ): void
-export function onButtonPressed(
+export function doOnButtonPressed(
 	buttonID: string,
 	doOnButtonPressed: Handler<ButtonInteraction>
 ): void
@@ -14,7 +14,7 @@ export function onButtonPressed(
  * @param idOrDoOnButtonPressed - The action to be completed
  * @param maybeDoOnButtonPressed - The action to be completed
  */
-export function onButtonPressed(
+export function doOnButtonPressed(
 	idOrDoOnButtonPressed:
 		| string
 		| Handler<ButtonInteraction>,

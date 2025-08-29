@@ -375,7 +375,6 @@ describe('PlayerService', () => {
 			await playerService.finalizeName(mockPlayers[1].id);
 			const currentName = playerService.getCurrentName(mockPlayers[1].id);
 			expect(currentName).toEqual(mockPlayers[1].publishedName);
-			expect(sendToNamesToVoteOnChannel).toHaveBeenCalled();
 		});
 
 		it('should not change current name of player to their published name when they don\'t have one', async () => {

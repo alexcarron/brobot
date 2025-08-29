@@ -486,7 +486,7 @@ const getNicknameOfInteractionUser = (interaction) => {
  * @param {import("discord.js").Channel} channel The channel whose messages you want to fetch
  * @returns {Promise<Message[]>} A Promise that resolves with an array of all messages in the channel
  */
-const fetchMessagesInChannel = async (channel) => {
+const fetchAllMessagesInChannel = async (channel) => {
   if (!channel || !(channel instanceof TextChannel)) {
 		throw new InvalidArgumentError("Channel is required and must be an instance of TextChannel");
   }
@@ -597,4 +597,31 @@ async function fetchChannelMessage(channel) {
 	return fetchMessage(channel, messageID);
 }
 
-module.exports = { assertClientSetup, fetchGuild, getGuildOfInteraction, fetchChannel, fetchCategory, getCategoryOfInteraction, fetchTextChannel, getTextChannelOfInteraction, fetchChannelsOfGuild, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchAllGuildMembers, fetchUser, fetchRole, fetchRoleByName, getStringParamValue, getUserParamValue, getEveryoneRole, getNumberParamValue, getRequiredNumberParam, getIntegerParamValue, getNicknameOfInteractionUser, fetchMessagesInChannel, getChannelParamValue, getRequiredIntegerParam, getRequiredStringParam, getRequiredUserParam, getRequiredChannelParam, getSubcommandUsed, fetchVoiceChannelMemberIsIn, fetchTextChannelsInCategory, getVoiceChannelOfInteraction, getMemberOfInteraction, fetchUserByUsername, fetchChannelMessage };
+/**
+ * Fetch a message from a channel that contains a specific component ID
+ * @param {object} options - The options object
+ * @param {import("discord.js").TextBasedChannel} options.channel - The Discord channel to search in
+ * @param {string} options.componentID - The customId of the component (button, select menu, etc.)
+ * @returns {Promise<Message|null>} - The message containing the component, or null if not found
+ */
+async function fetchMessageWithComponent({channel, componentID}) {
+    const messages = await fetchAllMessagesInChannel(channel);
+
+    for (const message of messages) {
+        if (!message.components || message.components.length === 0) continue;
+
+        // Loop through action rows and components
+        for (const row of message.components) {
+            for (const component of row.components) {
+                if (component.customId === componentID) {
+                    return message; // Found the message
+                }
+            }
+        }
+    }
+
+    return null; // Not found
+}
+
+
+module.exports = { assertClientSetup, fetchGuild, getGuildOfInteraction, fetchChannel, fetchCategory, getCategoryOfInteraction, fetchTextChannel, getTextChannelOfInteraction, fetchChannelsOfGuild, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchAllGuildMembers, fetchUser, fetchRole, fetchRoleByName, getStringParamValue, getUserParamValue, getEveryoneRole, getNumberParamValue, getRequiredNumberParam, getIntegerParamValue, getNicknameOfInteractionUser, fetchAllMessagesInChannel, getChannelParamValue, getRequiredIntegerParam, getRequiredStringParam, getRequiredUserParam, getRequiredChannelParam, getSubcommandUsed, fetchVoiceChannelMemberIsIn, fetchTextChannelsInCategory, getVoiceChannelOfInteraction, getMemberOfInteraction, fetchUserByUsername, fetchChannelMessage, fetchMessageWithComponent };

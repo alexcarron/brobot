@@ -1,12 +1,13 @@
 import { CronJob } from "cron";
 import { logWarning } from "../../../utilities/logging-utils";
 import { GameStateRepository } from "../repositories/game-state.repository";
-import { closeNamesToVoteOnChannel, openNamesToVoteOnChannel, sendToNamesToVoteOnChannel, sendMessageToTheWinnerChannel, closeTheWinnerChannel, openTheWinnerChannel } from "../utilities/discord-action.utility";
+import { closeNamesToVoteOnChannel, sendMessageToTheWinnerChannel, closeTheWinnerChannel, openTheWinnerChannel } from "../utilities/discord-action.utility";
 import { VoteService } from "./vote.service";
 import { PlayerService } from "./player.service";
 import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { sendRecipeSelectMenu } from "../interfaces/recipe-select-menu";
 import { RecipeService } from "./recipe.service";
+import { sendVotingDisplay } from "../interfaces/voting-display";
 
 /**
  * Provides methods for interacting with the game state.
@@ -46,14 +47,14 @@ export class GameStateService {
 			GameStateService.GAME_DURATION_DAYS
 		);
 		this.gameStateRepository.setTimeEnding(endDate);
-		this.startEndGameCronJob(endDate);
 
 		const voteEndingDate = new Date(endDate.getTime());
 		voteEndingDate.setDate(endDate.getDate() +
 			GameStateService.VOTE_DURATION_DAYS
 		);
 		this.gameStateRepository.setTimeVoteIsEnding(voteEndingDate);
-		this.startVoteIsEndingCronJob(voteEndingDate);
+
+		this.startCronJobs();
 
 		// Reset the channel permissions
 		await closeNamesToVoteOnChannel();
@@ -92,7 +93,7 @@ export class GameStateService {
 			},
 		);
 
-		if (now < endDate) endGameCronJob.start();
+		if (now < endDate && !this.endGameCronJob) endGameCronJob.start();
 	}
 
 	/**
@@ -102,13 +103,11 @@ export class GameStateService {
 	async endGame(): Promise<void> {
 		await this.playerService.publishUnpublishedNames();
 
-		await openNamesToVoteOnChannel();
-
-		await sendToNamesToVoteOnChannel(`The game has ended and now it's time to vote on the players' final names!`);
-		await sendToNamesToVoteOnChannel(`# Finalized Names`);
-
 		await this.playerService.finalizeAllNames();
-		await this.voteService.reset();
+
+		await sendVotingDisplay({playerService: this.playerService});
+
+		this.voteService.reset();
 	}
 
 	/**
@@ -139,7 +138,7 @@ export class GameStateService {
 			},
 		);
 
-		if (now < voteEndingDate)
+		if (now < voteEndingDate && !this.voteIsEndingCronJob)
 			voteIsEndingCronJob.start();
 	}
 
@@ -168,6 +167,8 @@ export class GameStateService {
 	 * If the current time is before the stored times, the jobs will be started.
 	 */
 	startCronJobs(): void {
+		this.voteIsEndingCronJob?.stop();
+		this.endGameCronJob?.stop();
 		this.startEndGameCronJob(this.gameStateRepository.getTimeEnding());
 		this.startVoteIsEndingCronJob(this.gameStateRepository.getTimeVoteIsEnding());
 	}

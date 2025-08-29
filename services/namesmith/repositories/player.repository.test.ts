@@ -85,6 +85,16 @@ describe('PlayerRepository', () => {
 		});
 	});
 
+	describe('getPlayersWithPublishedNames()', () => {
+		it('returns an array of player objects with a published name', () => {
+			const result = playerRepository.getPlayersWithPublishedNames();
+
+			expect(result).toEqual(
+				mockPlayers.filter(player => player.publishedName !== null)
+			);
+		});
+	})
+
 	describe('getInventory()', () => {
 		it('returns the inventory of a player', () => {
 			const result = playerRepository.getInventory(mockPlayers[0].id);

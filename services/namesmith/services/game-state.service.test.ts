@@ -23,10 +23,15 @@ jest.mock('../utilities/discord-fetch.utility', () => ({
 	fetchNamesmithGuildMembers: jest.fn(() =>
 		Promise.resolve(mockPlayers.slice(0, 2).map((player) => ({ id: player.id })))
 	),
+	fetchNamesToVoteOnChannel: jest.fn(() => Promise.resolve({})),
 }));
 
 jest.mock('../interfaces/recipe-select-menu', () => ({
 	sendRecipeSelectMenu: jest.fn(),
+}));
+
+jest.mock('../interfaces/voting-display', () => ({
+	sendVotingDisplay: jest.fn(),
 }));
 
 // Mock CronJob
@@ -40,11 +45,12 @@ jest.mock('cron', () => ({
 import { CronJob } from "cron";
 import { GameStateRepository } from "../repositories/game-state.repository";
 import { mockPlayers } from "../repositories/mock-repositories";
-import { sendToNamesToVoteOnChannel, openNamesToVoteOnChannel, sendMessageToTheWinnerChannel, closeNamesToVoteOnChannel, openTheWinnerChannel, closeTheWinnerChannel } from "../utilities/discord-action.utility";
+import { sendMessageToTheWinnerChannel, closeNamesToVoteOnChannel, openTheWinnerChannel, closeTheWinnerChannel } from "../utilities/discord-action.utility";
 import { GameStateService } from "./game-state.service";
 import { createMockServices } from "./mock-services";
 import { PlayerService } from "./player.service";
 import { VoteService } from "./vote.service";
+import { sendVotingDisplay } from "../interfaces/voting-display";
 
 
 describe('GameStateService', () => {
@@ -196,13 +202,10 @@ describe('GameStateService', () => {
 			}
 		});
 
-		it('should open names to vote on channel and send messages', async () => {
+		it('should send the voting display', async () => {
 			await gameStateService.endGame();
 
-			expect(openNamesToVoteOnChannel).toHaveBeenCalledTimes(1);
-			expect(sendToNamesToVoteOnChannel).toHaveBeenCalledTimes(
-				2 + mockPlayers.length
-			);
+			expect(sendVotingDisplay).toHaveBeenCalledTimes(1);
 		});
 
 		it('should finalize all names', async () => {
@@ -218,7 +221,7 @@ describe('GameStateService', () => {
 		it('should reset votes', async () => {
 			await gameStateService.endGame();
 
-			const votes = await voteService.voteRepository.getVotes();
+			const votes = voteService.voteRepository.getVotes();
 			expect(votes.length).toBe(0);
 		});
 	});

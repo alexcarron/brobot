@@ -1,6 +1,7 @@
 import { logInfo, logSuccess } from "../../../utilities/logging-utils";
 import { setupDatabase } from "../database/setup-database";
 import { regenerateRecipeSelectMenu } from "../interfaces/recipe-select-menu";
+import { regenerateVoteDisplay } from "../interfaces/voting-display";
 import { CharacterRepository } from "../repositories/character.repository";
 import { GameStateRepository } from "../repositories/game-state.repository";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
@@ -72,11 +73,12 @@ export const setupNamesmith = async () => {
 	logInfo("Setting up Namesmith...");
 	await initializeServices();
 
-	const { gameStateService, recipeService } = getNamesmithServices();
+	const { gameStateService, recipeService, playerService } = getNamesmithServices();
 
 	gameStateService.startCronJobs();
-	
+
 	await regenerateRecipeSelectMenu({recipeService});
+	await regenerateVoteDisplay({playerService});
 
 	logSuccess("Namesmith set up");
 }

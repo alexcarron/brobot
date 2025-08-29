@@ -6,7 +6,7 @@ import { RecipeResolvable } from "../types/recipe.types";
 import { fetchRecipesChannel } from "../utilities/discord-fetch.utility";
 import { MissingRequiredCharactersError, NonPlayerCraftedError, RecipeNotUnlockedError } from "../utilities/error.utility";
 import { craftCharacter } from "../workflows/craft-character.workflow";
-import { replyToInteraction, setChannelMessage } from "../../../utilities/discord-action-utils";
+import { replyToInteraction } from "../../../utilities/discord-action-utils";
 import { escapeDiscordMarkdown } from "../../../utilities/string-manipulation-utils";
 import { RecipeService } from "../services/recipe.service";
 import { DiscordSelectMenu } from "../../../utilities/discord-interface-utils";
@@ -77,7 +77,7 @@ export const sendRecipeSelectMenu = async (
 ) => {
 	const recipeSelectMenu = createRecipeSelectMenu({recipeService});
 	const recipeChannel = await fetchRecipesChannel();
-	await setChannelMessage(recipeChannel, recipeSelectMenu.getMessageContents());
+	await recipeSelectMenu.setIn(recipeChannel);
 }
 
 export const regenerateRecipeSelectMenu = async (

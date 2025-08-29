@@ -4,7 +4,7 @@ const { getCreaturesText, getChildCreaturesText } = require("../../services/evol
 const { parseCreaturesFromMessages } = require("../../services/evolution-game/creature-parser");
 const { getEvolutionRoots, getCreatureWithName, getChildCreaturesOf, } = require("../../services/evolution-game/creature-utils");
 const { deferInteraction, editReplyToInteraction } = require("../../utilities/discord-action-utils");
-const { fetchMessagesInChannel, getGuildOfInteraction, fetchTextChannel, getTextChannelOfInteraction } = require("../../utilities/discord-fetch-utils");
+const { fetchAllMessagesInChannel, getGuildOfInteraction, fetchTextChannel, getTextChannelOfInteraction } = require("../../utilities/discord-fetch-utils");
 
 module.exports = new SlashCommand({
 	name: "list-creatures",
@@ -20,7 +20,7 @@ module.exports = new SlashCommand({
 			ids.evolutionGame.channels.evolutions
 		);
 
-		const allMessages = await fetchMessagesInChannel(evolutionsChannel);
+		const allMessages = await fetchAllMessagesInChannel(evolutionsChannel);
 
 		const creatures = parseCreaturesFromMessages(allMessages);
 		console.log(creatures);

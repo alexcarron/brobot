@@ -60,6 +60,9 @@ export class VoteService {
 		const hasVotedBefore = vote !== null;
 		const nameVotingFor = this.playerService.getPublishedName(playerVotedForID);
 
+		if (voterID === playerVotedForID)
+			return `You cannot vote for yourself!`;
+
 		if (hasVotedBefore) {
 			if (vote.playerVotedForID === playerVotedForID)
 				return `You already voted for this name as your favorite!`;
