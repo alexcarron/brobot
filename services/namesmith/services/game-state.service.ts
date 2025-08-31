@@ -1,21 +1,20 @@
 import { CronJob } from "cron";
 import { logWarning } from "../../../utilities/logging-utils";
 import { GameStateRepository } from "../repositories/game-state.repository";
-import { closeNamesToVoteOnChannel, sendMessageToTheWinnerChannel, closeTheWinnerChannel, openTheWinnerChannel } from "../utilities/discord-action.utility";
 import { VoteService } from "./vote.service";
 import { PlayerService } from "./player.service";
 import { InvalidArgumentError } from "../../../utilities/error-utils";
-import { sendRecipeSelectMenu } from "../interfaces/recipe-select-menu";
 import { RecipeService } from "./recipe.service";
-import { sendVotingDisplay } from "../interfaces/voting-display";
+import { DAYS_TO_BUILD_NAME, DAYS_TO_VOTE } from "../constants/namesmith.constants";
+import { addDays } from "../../../utilities/date-time-utils";
+import { startVoting } from "../event-listeners/on-voting-start";
+import { getNamesmithServices } from "./get-namesmith-services";
+import { endVoting } from "../event-listeners/on-voting-end";
 
 /**
  * Provides methods for interacting with the game state.
  */
 export class GameStateService {
-	static GAME_DURATION_DAYS = 4;
-	static VOTE_DURATION_DAYS = 2;
-
 	private endGameCronJob?: CronJob;
 	private voteIsEndingCronJob?: CronJob;
 
@@ -34,38 +33,17 @@ export class GameStateService {
 	) {}
 
 	/**
-	 * Starts a new game.
-	 * Sets the game's start time to the current time and its end time to be GAME_DURATION_IN_DAYS days in the future.
+	 * Sets the game's start time to the given date, and its vote start and end times according to the configured constants.
+	 * @param startDate - The date to set as the start of the game.
 	 */
-	async startGame(): Promise<void> {
-		// Set the game start and end times
-		const now = new Date();
-		this.gameStateRepository.setTimeStarted(now);
+	setupTimings(startDate: Date) {
+		this.gameStateRepository.setTimeStarted(startDate);
 
-		const endDate = new Date(now.getTime());
-		endDate.setDate(now.getDate() +
-			GameStateService.GAME_DURATION_DAYS
-		);
-		this.gameStateRepository.setTimeEnding(endDate);
+		const votingDate = addDays(startDate, DAYS_TO_BUILD_NAME);
+		this.gameStateRepository.setTimeVoting(votingDate);
 
-		const voteEndingDate = new Date(endDate.getTime());
-		voteEndingDate.setDate(endDate.getDate() +
-			GameStateService.VOTE_DURATION_DAYS
-		);
-		this.gameStateRepository.setTimeVoteIsEnding(voteEndingDate);
-
-		this.startCronJobs();
-
-		// Reset the channel permissions
-		await closeNamesToVoteOnChannel();
-		await closeTheWinnerChannel();
-
-		// Set up the players
-		this.playerService.reset();
-		await this.playerService.addEveryoneInServer();
-
-		// Send the recipe select menu in the recipes channel
-		await sendRecipeSelectMenu({recipeService: this.recipeService});
+		const votingEndDate = addDays(votingDate, DAYS_TO_VOTE);
+		this.gameStateRepository.setTimeVotingEnds(votingEndDate);
 	}
 
 	/**
@@ -89,25 +67,11 @@ export class GameStateService {
 		const endGameCronJob = new CronJob(
 			endDate,
 			async () => {
-				await this.endGame();
+				await startVoting({...getNamesmithServices()});
 			},
 		);
 
 		if (now < endDate && !this.endGameCronJob) endGameCronJob.start();
-	}
-
-	/**
-	 * Ends the current game.
-	 * Publishes any names that have not yet been published and finalizes all names.
-	 */
-	async endGame(): Promise<void> {
-		await this.playerService.publishUnpublishedNames();
-
-		await this.playerService.finalizeAllNames();
-
-		await sendVotingDisplay({playerService: this.playerService});
-
-		this.voteService.reset();
 	}
 
 	/**
@@ -134,7 +98,7 @@ export class GameStateService {
 		const voteIsEndingCronJob = new CronJob(
 			voteEndingDate,
 			async () => {
-				await this.endVoting();
+				await endVoting({...getNamesmithServices()});
 			},
 		);
 
@@ -143,30 +107,10 @@ export class GameStateService {
 	}
 
 	/**
-	 * Ends the voting phase of the game.
-	 * Closes the "Names to Vote On" channel to everyone and logs the current vote count for each player.
-	 */
-	async endVoting(): Promise<void> {
-		await closeNamesToVoteOnChannel();
-		await openTheWinnerChannel();
-		this.voteService.logVoteCountPerPlayer();
-		const winningPlayerID = this.voteService.getWinningPlayerID();
-
-		if (winningPlayerID === null) {
-			await sendMessageToTheWinnerChannel(`The voting phase has ended and there was a tie!`);
-			return;
-		}
-
-		const name = this.playerService.getPublishedName(winningPlayerID);
-
-		await sendMessageToTheWinnerChannel(`<@${winningPlayerID}>!\nThe voting phase has ended and the winner is **${name}**!`);
-	}
-
-	/**
 	 * Starts the cron jobs to end the game and end voting at the times stored in the game state.
 	 * If the current time is before the stored times, the jobs will be started.
 	 */
-	startCronJobs(): void {
+	scheduleGameEvents(): void {
 		this.voteIsEndingCronJob?.stop();
 		this.endGameCronJob?.stop();
 		this.startEndGameCronJob(this.gameStateRepository.getTimeEnding());

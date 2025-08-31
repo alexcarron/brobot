@@ -5,7 +5,8 @@ import {
 	addRoleToMember,
 	closeChannel,
 	openChannel,
-	removeAllRolesFromMember
+	removeAllRolesFromMember,
+	deleteAllMessagesInChannel
 } from "../../../utilities/discord-action-utils";
 import { ids } from "../../../bot-config/discord-ids";
 import {
@@ -94,11 +95,19 @@ export const closeNamesToVoteOnChannel = async () => {
 }
 
 /**
+ * Deletes all messages in the 'Names to Vote On' channel.
+ */
+export const clearNamesToVoteOnChannel = async () => {
+	const namesToVoteOnChannel = await fetchNamesToVoteOnChannel();
+	await deleteAllMessagesInChannel(namesToVoteOnChannel);
+}
+
+/**
  * Sends a message to the 'The Winner' channel.
  * @param message The message to be sent.
  * @returns A promise that resolves once the message has been sent.
  */
-export const sendMessageToTheWinnerChannel = async (message: string) => {
+export const sendToTheWinnerChannel = async (message: string) => {
 	const theWinnerChannel = await fetchTheWinnerChannel();
 	await theWinnerChannel.send(message);
 }
@@ -119,6 +128,14 @@ export const openTheWinnerChannel = async () => {
 export const closeTheWinnerChannel = async () => {
 	const theWinnerChannel = await fetchTheWinnerChannel();
 	await closeChannel(theWinnerChannel);
+}
+
+/**
+ * Deletes all messages in the 'The Winner' channel.
+ */
+export const clearTheWinnerChannel = async () => {
+	const theWinnerChannel = await fetchTheWinnerChannel();
+	await deleteAllMessagesInChannel(theWinnerChannel);
 }
 
 /**

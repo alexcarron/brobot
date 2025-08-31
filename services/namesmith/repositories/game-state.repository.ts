@@ -121,7 +121,7 @@ export class GameStateRepository {
 	 * Sets the time when the game is expected to end.
 	 * @param timeEnding - The time when the game is expected to end.
 	 */
-	setTimeEnding(timeEnding: Date) {
+	setTimeVoting(timeEnding: Date) {
 		this.setGameState({ timeEnding });
 	}
 
@@ -138,7 +138,7 @@ export class GameStateRepository {
 	 * Sets the time when the voting phase is expected to end.
 	 * @param timeVoteIsEnding - The time when the voting phase is expected to end.
 	 */
-	setTimeVoteIsEnding(timeVoteIsEnding: Date) {
+	setTimeVotingEnds(timeVoteIsEnding: Date) {
 		this.setGameState({ timeVoteIsEnding });
 	}
 }

@@ -116,7 +116,7 @@ describe('GameStateRepository', () => {
 				timeVoteIsEnding: TEST_DATE,
 			});
 
-			gameStateRepo.setTimeEnding(DIFFERENT_DATE);
+			gameStateRepo.setTimeVoting(DIFFERENT_DATE);
 			const gameState = gameStateRepo.getGameState();
 			expect(gameState.timeEnding).toEqual(DIFFERENT_DATE);
 		});
@@ -142,7 +142,7 @@ describe('GameStateRepository', () => {
 				timeEnding: TEST_DATE,
 				timeVoteIsEnding: TEST_DATE,
 			});
-			gameStateRepo.setTimeVoteIsEnding(DIFFERENT_DATE);
+			gameStateRepo.setTimeVotingEnds(DIFFERENT_DATE);
 			const gameState = gameStateRepo.getGameState();
 			expect(gameState.timeVoteIsEnding).toEqual(DIFFERENT_DATE);
 		});

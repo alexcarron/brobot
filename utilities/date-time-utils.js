@@ -30,4 +30,18 @@ const toCronExpression = (date) => {
 	return cronExpression;
 }
 
-module.exports = { toUnixTimestamp, createNowUnixTimestamp, toCronExpression };
+/**
+ * Adds a specified number of days to a given Date object.
+ * @param {Date} date - The Date object to modify.
+ * @param {number} days - The number of days to add to the given Date object.
+ * @returns {Date} A new Date object with the specified number of days added to the original date.
+ * @example
+ * const fiveDaysLater = addDays(new Date(), 5);
+ */
+const addDays = (date, days) => {
+	const newDate = new Date(date.getTime());
+	newDate.setDate(newDate.getDate() + days);
+	return newDate;
+}
+
+module.exports = { toUnixTimestamp, createNowUnixTimestamp, toCronExpression, addDays };
