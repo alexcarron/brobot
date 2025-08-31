@@ -44,4 +44,18 @@ const addDays = (date, days) => {
 	return newDate;
 }
 
-module.exports = { toUnixTimestamp, createNowUnixTimestamp, toCronExpression, addDays };
+/**
+ * Adds a specified number of seconds to a given Date object.
+ * @param {Date} date - The Date object to modify.
+ * @param {number} seconds - The number of seconds to add to the given Date object.
+ * @returns {Date} A new Date object with the specified number of seconds added to the original date.
+ * @example
+ * const fiveSecondsLater = addSeconds(new Date(), 5);
+ */
+const addSeconds = (date, seconds) => {
+	const newDate = new Date(date.getTime());
+	newDate.setSeconds(newDate.getSeconds() + seconds);
+	return newDate;
+}
+
+module.exports = { toUnixTimestamp, createNowUnixTimestamp, toCronExpression, addDays, addSeconds };

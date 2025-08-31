@@ -1,6 +1,7 @@
+import { sendWinnerDisplay } from "../interfaces/winner-display";
 import { PlayerService } from "../services/player.service";
 import { VoteService } from "../services/vote.service";
-import { closeNamesToVoteOnChannel, openTheWinnerChannel, sendToTheWinnerChannel } from "../utilities/discord-action.utility";
+import { closeNamesToVoteOnChannel, openTheWinnerChannel } from "../utilities/discord-action.utility";
 
 /**
  * Ends the voting phase of the game by doing the following:
@@ -21,13 +22,11 @@ export async function endVoting(
 
 	voteService.logVoteCountPerPlayer();
 	const winningPlayerID = voteService.getWinningPlayerID();
+	let winningPlayer = null;
 
-	if (winningPlayerID === null) {
-		await sendToTheWinnerChannel(`The voting phase has ended and there was a tie!`);
-		return;
+	if (winningPlayerID !== null) {
+		winningPlayer = playerService.resolvePlayer(winningPlayerID);
 	}
 
-	const name = playerService.getPublishedName(winningPlayerID);
-
-	await sendToTheWinnerChannel(`<@${winningPlayerID}>!\nThe voting phase has ended and the winner is **${name}**!`);
+	await sendWinnerDisplay({winningPlayer});
 }
