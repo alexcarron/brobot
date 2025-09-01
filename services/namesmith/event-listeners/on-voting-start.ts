@@ -1,6 +1,7 @@
 import { sendVotingDisplay } from '../interfaces/voting-display';
 import { VoteService } from "../services/vote.service";
 import { PlayerService } from "../services/player.service";
+import { closePublishedNamesChannel } from '../utilities/discord-action.utility';
 
 /**
  * Starts the voting phase of the game by doing the following:
@@ -19,6 +20,8 @@ export async function startVoting(
 ) {
 	await playerService.publishUnpublishedNames();
 	await playerService.finalizeAllNames();
+
+	await closePublishedNamesChannel();
 
 	await sendVotingDisplay({playerService});
 

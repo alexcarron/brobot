@@ -3,6 +3,7 @@ import { DiscordButton } from "../../../utilities/discord-interface-utils";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { fetchNamesToVoteOnChannel } from "../utilities/discord-fetch.utility";
 import { Player, PlayerID } from "../types/player.types";
+import { attempt } from '../../../utilities/error-utils';
 
 
 /**
@@ -70,5 +71,7 @@ export const regenerateVoteButton = async ({playerVotingFor}: {
 }) => {
 	const voteButton = createVoteButton({playerVotingFor});
 	const namesToVoteOnChannel = await fetchNamesToVoteOnChannel();
-	await voteButton.regenerate({channel: namesToVoteOnChannel});
+	await attempt(
+		voteButton.regenerate({channel: namesToVoteOnChannel})
+	).ignoreError().execute();
 }

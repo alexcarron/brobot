@@ -2,7 +2,7 @@ import { sendRecipeSelectMenu } from '../interfaces/recipe-select-menu';
 import { GameStateService } from '../services/game-state.service';
 import { PlayerService } from '../services/player.service';
 import { RecipeService } from '../services/recipe.service';
-import { clearNamesToVoteOnChannel, clearTheWinnerChannel, closeNamesToVoteOnChannel, closeTheWinnerChannel } from '../utilities/discord-action.utility';
+import { clearNamesToVoteOnChannel, clearPublishedNamesChannel, clearTheWinnerChannel, closeNamesToVoteOnChannel, closeTheWinnerChannel, openPublishedNamesChannel } from '../utilities/discord-action.utility';
 
 /**
  * Starts a new game by doing the following
@@ -26,8 +26,12 @@ export async function startGame(
 	// Reset the channel permissions
 	await closeNamesToVoteOnChannel();
 	await clearNamesToVoteOnChannel();
+
 	await closeTheWinnerChannel();
 	await clearTheWinnerChannel();
+
+	await clearPublishedNamesChannel();
+	await openPublishedNamesChannel();
 
 	// Set up the players
 	playerService.reset();

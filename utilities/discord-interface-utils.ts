@@ -79,16 +79,24 @@ abstract class DiscordInterface {
 			channel ??
 			this.channel;
 
-		const maybeMessage =
+		let maybeMessage =
 			message ??
 			this.message ??
-			(maybeChannel !== undefined
-				? await fetchMessageWithComponent({
-						channel: maybeChannel,
-						componentID: this.id
-					})
-				: null);
+			null;
 
+		if (maybeChannel !== undefined) {
+			const messageFound = await fetchMessageWithComponent({
+				channel: maybeChannel,
+				componentID: this.id
+			});
+
+			if (messageFound === null)
+				throw new InvalidArgumentError(
+					`No message found in channel ${maybeChannel.id} with component ID ${this.id}`
+				)
+
+			maybeMessage = messageFound
+		}
 
 		if (!maybeMessage) {
 			throw new InvalidArgumentError(

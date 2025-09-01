@@ -67,6 +67,33 @@ export const sendToPublishedNamesChannel = async (message: string): Promise<void
 }
 
 /**
+ * Opens the published names channel to allow everyone to view it but not send messages.
+ * @returns A promise that resolves once the channel has been opened.
+ */
+export const openPublishedNamesChannel = async () => {
+	const publishedNamesChannel = await fetchPublishedNamesChannel();
+	await openChannel(publishedNamesChannel);
+}
+
+/**
+ * Closes the published names channel to everyone so they can't view it until it is opened again.
+ * @returns A promise that resolves once the channel has been closed.
+ */
+export const closePublishedNamesChannel = async () => {
+	const publishedNamesChannel = await fetchPublishedNamesChannel();
+	await closeChannel(publishedNamesChannel);
+}
+
+/**
+ * Deletes all messages in the 'published names' channel.
+ * @returns A promise that resolves once all messages have been deleted.
+ */
+export const clearPublishedNamesChannel = async () => {
+	const publishedNamesChannel = await fetchPublishedNamesChannel();
+	await deleteAllMessagesInChannel(publishedNamesChannel);
+}
+
+/**
  * Sends a message to the 'Names to Vote On' channel.
  * @param message The message to be sent.
  * @returns A promise that resolves once the message has been sent.
