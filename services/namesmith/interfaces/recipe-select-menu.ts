@@ -85,5 +85,7 @@ export const regenerateRecipeSelectMenu = async (
 ) => {
 	const recipeSelectMenu = createRecipeSelectMenu({recipeService});
 	const recipeChannel = await fetchRecipesChannel();
-	await recipeSelectMenu.regenerate({channel: recipeChannel});
+	await attempt(
+		recipeSelectMenu.regenerate({channel: recipeChannel})
+	).ignoreError().execute();
 }
