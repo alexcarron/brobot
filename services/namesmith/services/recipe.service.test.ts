@@ -3,6 +3,7 @@ jest.mock("../utilities/discord-action.utility", () => ({
 }));
 
 import { makeSure } from "../../../utilities/jest/jest-utils";
+import { INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer, addMockRecipe } from "../database/mock-database";
 import { mockPlayers, mockRecipes } from "../repositories/mock-repositories";
@@ -145,7 +146,7 @@ describe('RecipeService', () => {
 
 		it('should throw an error if the player is not found', async () => {
 			await makeSure(
-				recipeService.takeInputCharactersFromPlayer(MOCK_RECIPE.id, "000000000000000000000")
+				recipeService.takeInputCharactersFromPlayer(MOCK_RECIPE.id, INVALID_PLAYER_ID)
 			).eventuallyThrows(PlayerNotFoundError);
 		});
 
@@ -177,7 +178,7 @@ describe('RecipeService', () => {
 
 		it('should throw an error if the player is not found', async () => {
 			await makeSure(
-				recipeService.giveOutputCharacterToPlayer(MOCK_RECIPE.id, "000000000000000000000")
+				recipeService.giveOutputCharacterToPlayer(MOCK_RECIPE.id, INVALID_PLAYER_ID)
 			).eventuallyThrows(PlayerNotFoundError);
 		});
 

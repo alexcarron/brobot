@@ -12,6 +12,8 @@ import {
 	removeCharactersAsGivenFromEnd,
 	removeCharacterAt,
 	removeMissingCharacters,
+	addSIfPlural,
+	toAmountOfNoun,
 } from "./string-manipulation-utils";
 import { createNowUnixTimestamp } from "./date-time-utils";
 import { makeSure } from "./jest/jest-utils";
@@ -480,4 +482,40 @@ describe('string-manipulation-utils', () => {
 			makeSure(removeMissingCharacters(' ❌•╹≠∪', '❌λ ∪∩')).is(' ❌∪');
 		});
 	});
+
+	describe('addSIfPlural()', () => {
+		it('should add an "s" if the amount is not 1', () => {
+			makeSure(addSIfPlural('cat', 2)).is('cats');
+		});
+
+		it('should not add an "s" if the amount is 1', () => {
+			makeSure(addSIfPlural('cat', 1)).is('cat');
+		});
+
+		it('should add an "s" if the amount is 0', () => {
+			makeSure(addSIfPlural('cat', 0)).is('cats');
+		});
+
+		it('should add an "s" if the amount is negative', () => {
+			makeSure(addSIfPlural('cat', -1)).is('cats');
+		});
+	});
+
+	describe('toNumericalNounPhrase()', () => {
+		it('should return a singular if the amount is 1', () => {
+			makeSure(toAmountOfNoun(1, 'cat')).is('1 cat');
+		});
+
+		it('should return a plural if the amount is 0', () => {
+			makeSure(toAmountOfNoun(0, 'cat')).is('0 cats');
+		});
+
+		it('should return a plural if the amount is negative', () => {
+			makeSure(toAmountOfNoun(-1, 'cat')).is('-1 cats');
+		});
+
+		it('should add an "s" if the amount is 2', () => {
+			makeSure(toAmountOfNoun(2, 'cat')).is('2 cats');
+		});
+	})
 });

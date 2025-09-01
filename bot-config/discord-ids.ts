@@ -303,6 +303,12 @@ export const ids = {
 					production: "1403071766162833532",
 				});
 			},
+			get MINE_TOKENS() {
+				return chooseByEnv({
+					development: "1386449685497254133",
+					production: "1384678822615453847",
+				});
+			}
 		},
 	},
 

@@ -422,6 +422,61 @@ export class PlayerService {
 	}
 
 	/**
+	 * Adds tokens to a player's token count.
+	 * @param playerResolvable - The player resolvable whose tokens are being increased.
+	 * @param tokens - The number of tokens to add to the player's count.
+	 * @throws {InvalidArgumentError} - If the number of tokens is negative.
+	 */
+	giveTokens(playerResolvable: PlayerResolvable, tokens: number) {
+		const playerID = this.resolveID(playerResolvable);
+
+		if (tokens < 0)
+			throw new InvalidArgumentError(`giveTokens: tokens must be a non-negative number, but got ${tokens}.`);
+
+		const currentTokens = this.playerRepository.getTokens(playerID);
+		const newTokens = currentTokens + tokens;
+		this.playerRepository.setTokens(playerID, newTokens);
+	}
+
+	/**
+	 * Takes tokens from a player's token count.
+	 * @param playerResolvable - The player resolvable whose tokens are being decreased.
+	 * @param tokens - The number of tokens to take from the player's count.
+	 * @throws {InvalidArgumentError} - If the number of tokens is negative.
+	 */
+	takeTokens(playerResolvable: PlayerResolvable, tokens: number) {
+		const playerID = this.resolveID(playerResolvable);
+
+		if (tokens < 0)
+			throw new InvalidArgumentError(`takeTokens: tokens must be a non-negative number, but got ${tokens}.`);
+
+		const currentTokens = this.playerRepository.getTokens(playerID);
+		const newTokens = currentTokens - tokens;
+		this.playerRepository.setTokens(playerID, newTokens);
+	}
+
+	/**
+	 * Checks if a player has a certain number of tokens.
+	 * @param playerResolvable - The player resolvable to check.
+	 * @param tokens - The number of tokens to check for.
+	 * @returns True if the player has at least the number of tokens specified, false otherwise.
+	 */
+	hasTokens(playerResolvable: PlayerResolvable, tokens: number): boolean {
+		const playerID = this.resolveID(playerResolvable);
+		return this.playerRepository.getTokens(playerID) >= tokens;
+	}
+
+	/**
+	 * Retrieves the number of tokens a player has.
+	 * @param playerResolvable - The player resolvable whose tokens are being retrieved.
+	 * @returns The number of tokens the player has.
+	 */
+	getTokens(playerResolvable: PlayerResolvable): number {
+		const playerID = this.resolveID(playerResolvable);
+		return this.playerRepository.getTokens(playerID);
+	}
+
+	/**
 	 * Adds a new player to the game.
 	 * @param playerResolvable - The player resolvable to add to the game.
 	 * @throws {Error} - If the player already exists in the game.

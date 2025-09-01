@@ -273,6 +273,15 @@ export class NonPlayerCraftedError extends NotAPlayerError {
 }
 
 /**
+ * Error thrown when a non-player user attempts to mine tokens
+ */
+export class NonPlayerMinedError extends NotAPlayerError {
+	constructor(userID: string) {
+		super(userID, "mine tokens");
+	}
+}
+
+/**
  * Error thrown when a provided string for a name is not valid
  */
 export class InvalidNameError extends NamesmithError {}

@@ -17,3 +17,13 @@ export const DAYS_TO_BUILD_NAME = 4;
  * The number of days players will have to vote on their favorite name before the game ends.
  */
 export const DAYS_TO_VOTE = 2;
+
+/**
+ * The number of tokens given to a player when they mine tokens.
+ */
+export const MIN_TOKENS_FOR_MINING = 1;
+
+/**
+ * The average amount of tokens you will receive overtime from mining.
+ */
+export const MINING_EXPECTED_VALUE = 1.5;

@@ -377,3 +377,56 @@ export const removeMissingCharacters = (
 export const escapeDiscordMarkdown = (text: string): string => {
 	return text.replace(/([_*~`>|()[\]{}#+\-=.!\\])/g, "\\$1");
 }
+
+/**
+ * Returns either the singular or plural form of a word based on a given number.
+ * @param options - An object containing the value to check, the singular form of the word, and the plural form of the word.
+ * @param options.value - The value to check.
+ * @param options.singular - The singular form of the word.
+ * @param options.plural - The plural form of the word.
+ * @returns The singular or plural form of the word, depending on the value.
+ * @example
+ * chooseByPlurality({value: 1, singular: 'cat', plural: 'cats'}); // 'cat'
+ * chooseByPlurality({value: 2, singular: 'cat', plural: 'cats'}); // 'cats'
+ */
+function chooseByPlurality<ReturnType>(
+	{value, singular, plural}:  {
+		value: number,
+		singular: ReturnType,
+		plural: ReturnType
+	}
+): ReturnType {
+	return value === 1 ? singular : plural;
+}
+
+/**
+ * Adds an 's' to the end of a string if the given amount is not 1.
+ * @param text - The string to add the 's' to.
+ * @param amount - The amount to check.
+ * @returns The string with or without the added 's', depending on the amount.
+ * @example
+ * addSIfPlural('cat', 1); // 'cat'
+ * addSIfPlural('cat', 2); // 'cats'
+ */
+export function addSIfPlural(text: string, amount: number) {
+	return chooseByPlurality({
+		value: amount,
+		singular: `${text}`,
+		plural: `${text}s`
+	});
+}
+
+/**
+ * Returns a string in the format of "{amount} {text}" with the text
+ * properly pluralized.
+ * @param amount - The amount to pluralize the string by.
+ * @param text - The string to pluralize.
+ * @returns A string in the format of "{amount} {text}" with the text
+ *   properly pluralized.
+ * @example
+ * toAmountOfNoun(1, 'cat'); // '1 cat'
+ * toAmountOfNoun(2, 'cat'); // '2 cats'
+ */
+export function toAmountOfNoun(amount: number, text: string) {
+	return `${amount} ${addSIfPlural(text, amount)}`;
+}

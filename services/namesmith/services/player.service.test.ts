@@ -24,6 +24,7 @@ jest.mock("../../../utilities/discord-action-utils", () => ({
 }));
 
 import { makeSure } from "../../../utilities/jest/jest-utils";
+import { INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer } from "../database/mock-database";
 import { createMockPlayerObject, mockPlayers } from "../repositories/mock-repositories";
@@ -72,7 +73,7 @@ describe('PlayerService', () => {
 		});
 
 		it('should return null if the player is not found', () => {
-			expect(playerService.getPlayer("invalid-id")).toBeNull();
+			expect(playerService.getPlayer(INVALID_PLAYER_ID)).toBeNull();
 		});
 	})
 
@@ -83,15 +84,15 @@ describe('PlayerService', () => {
 			expect(resolvedPlayer).toEqual(player);
 		});
 
-		it('should resolve a vote ID to a vote object', () => {
+		it('should resolve a player ID to a player object', () => {
 			const player = playerService.playerRepository.getPlayers()[0];
 			const playerID = player.id;
 			const resolvedPlayer = playerService.resolvePlayer(playerID);
 			expect(resolvedPlayer).toEqual(player);
 		});
 
-		it('should throw an error if the vote resolvable is invalid', () => {
-			expect(() => playerService.resolvePlayer("invalid-id")).toThrow();
+		it('should throw an error if the player resolvable is invalid', () => {
+			expect(() => playerService.resolvePlayer(INVALID_PLAYER_ID)).toThrow();
 		});
 	});
 
@@ -112,7 +113,7 @@ describe('PlayerService', () => {
 
 	describe('isPlayer()', () => {
 		it('should return false if the player ID is not found', () => {
-			makeSure(playerService.isPlayer("00000000000000000")).isFalse();
+			makeSure(playerService.isPlayer(INVALID_PLAYER_ID)).isFalse();
 		});
 
 		it('should return true if the player ID is found', () => {
@@ -120,7 +121,7 @@ describe('PlayerService', () => {
 		});
 
 		it('should return false if the player object\'s ID is not found', () => {
-			const fakePlayer = createMockPlayerObject({ id: "invalid-id" });
+			const fakePlayer = createMockPlayerObject({ id: INVALID_PLAYER_ID });
 			makeSure(playerService.isPlayer(fakePlayer)).isFalse();
 		});
 
@@ -136,7 +137,7 @@ describe('PlayerService', () => {
 		});
 
 		it('should throw an error if the player is not found', () => {
-			expect(() => playerService.getInventory("invalid-id")).toThrow();
+			expect(() => playerService.getInventory(INVALID_PLAYER_ID)).toThrow();
 		});
 	});
 
@@ -147,7 +148,7 @@ describe('PlayerService', () => {
 		});
 
 		it('should throw an error if the player is not found', () => {
-			expect(() => playerService.getCurrentName("invalid-id")).toThrow();
+			expect(() => playerService.getCurrentName(INVALID_PLAYER_ID)).toThrow();
 		});
 	});
 
@@ -173,7 +174,7 @@ describe('PlayerService', () => {
 		});
 
 		it('should throw an error if the player is not found', async () => {
-			await expect(playerService.changeCurrentName("invalid-id", "new name")).rejects.toThrow();
+			await expect(playerService.changeCurrentName(INVALID_PLAYER_ID, "new name")).rejects.toThrow();
 		});
 
 		it('should throw an error if the new name is too long', async () => {
@@ -195,7 +196,7 @@ describe('PlayerService', () => {
 		});
 
 		it('should throw an error if the player is not found', async () => {
-			await expect(playerService.giveCharacter("invalid-id", "a")).rejects.toThrow();
+			await expect(playerService.giveCharacter(INVALID_PLAYER_ID, "a")).rejects.toThrow();
 		});
 
 		it('should throw an error if the character is too long', async () => {
@@ -224,7 +225,7 @@ describe('PlayerService', () => {
 		});
 
 		it('should throw an error if the player is not found', async () => {
-			await expect(playerService.giveCharacters("000000000000000", "a")).rejects.toThrow();
+			await expect(playerService.giveCharacters(INVALID_PLAYER_ID, "a")).rejects.toThrow();
 		});
 	})
 
@@ -264,7 +265,7 @@ describe('PlayerService', () => {
 		});
 
 		it('should throw an error if the player is not found', () => {
-			expect(() => playerService.hasCharacters("0000000000", "a")).toThrow();
+			expect(() => playerService.hasCharacters(INVALID_PLAYER_ID, "a")).toThrow();
 		})
 	});
 
@@ -296,7 +297,7 @@ describe('PlayerService', () => {
 		});
 
 		it('should throw an error if the player is not found', async () => {
-			await makeSure(playerService.removeCharacters("00000000", "a")).eventuallyThrowsAnError();
+			await makeSure(playerService.removeCharacters(INVALID_PLAYER_ID, "a")).eventuallyThrowsAnError();
 		});
 
 		it('should throw an error if the characters are not in their inventory', async () => {
@@ -330,7 +331,7 @@ describe('PlayerService', () => {
 		});
 
 		it("should throw an error if the player is not found", () => {
-			expect(() => playerService.getPublishedName("invalid-id")).toThrow();
+			expect(() => playerService.getPublishedName(INVALID_PLAYER_ID)).toThrow();
 		});
 	});
 
@@ -344,7 +345,7 @@ describe('PlayerService', () => {
 		});
 
 		it("should throw an error if the player is not found", async () => {
-			await expect(playerService.publishName("invalid-id")).rejects.toThrow();
+			await expect(playerService.publishName(INVALID_PLAYER_ID)).rejects.toThrow();
 		});
 
 		it("should not publish name if it is an empty string", async () => {
@@ -387,7 +388,7 @@ describe('PlayerService', () => {
 		});
 
 		it('should throw an error if the player is not found', async () => {
-			await expect(playerService.finalizeName("invalid-id")).rejects.toThrow();
+			await expect(playerService.finalizeName(INVALID_PLAYER_ID)).rejects.toThrow();
 		});
 	});
 
@@ -400,6 +401,80 @@ describe('PlayerService', () => {
 				const publishedName = playerService.getPublishedName(player.id);
 				expect(currentName).toEqual(publishedName);
 			}
+		});
+	});
+
+	describe('giveTokens()', () => {
+		it('should give tokens to a player', () => {
+			playerService.giveTokens(mockPlayers[0].id, 10);
+
+			const tokens = playerService.playerRepository.getTokens(mockPlayers[0].id);
+
+			expect(tokens).toBe(mockPlayers[0].tokens + 10);
+		});
+
+		it('should throw an error if the player is not found', () => {
+			expect(() => playerService.giveTokens(INVALID_PLAYER_ID, 10)).toThrow();
+		});
+
+		it('should throw an error if the amount is negative', () => {
+			expect(() => playerService.giveTokens(mockPlayers[0].id, -10)).toThrow();
+		});
+	});
+
+	describe('takeTokens()', () => {
+		it('should take tokens from a player', () => {
+			const mockPlayer = addMockPlayer(db, { tokens: 20 });
+			playerService.takeTokens(mockPlayer.id, 10);
+			const tokens = playerService.playerRepository.getTokens(mockPlayer.id);
+			expect(tokens).toBe(10);
+		});
+
+		it('should throw an error if the amount is negative', () => {
+			makeSure(() => playerService.takeTokens(mockPlayers[0].id, -10)).throwsAnError();
+		});
+
+		it('should throw an error if the player does not have enough tokens', () => {
+			const mockPlayer = addMockPlayer(db, { tokens: 10 });
+			makeSure(() => playerService.takeTokens(mockPlayer.id, 20)).throwsAnError();
+		});
+
+		it('should throw an error if the player is not found', () => {
+			makeSure(() => playerService.takeTokens(INVALID_PLAYER_ID, 10)).throwsAnError();
+		});
+	});
+
+	describe('hasTokens()', () => {
+		it('should return true if the player has enough tokens', () => {
+			const result = playerService.hasTokens(mockPlayers[0].id, mockPlayers[0].tokens);
+			makeSure(result).isTrue();
+		});
+
+		it('should return true if the player has more than enough tokens', () => {
+			const mockPlayer = addMockPlayer(db, { tokens: 20 });
+			const result = playerService.hasTokens(mockPlayer.id, 10);
+			makeSure(result).isTrue();
+		});
+
+		it('should return false if the player does not have enough tokens', () => {
+			const result = playerService.hasTokens(mockPlayers[0].id, mockPlayers[0].tokens + 10);
+			makeSure(result).isFalse();
+		});
+
+		it('should throw an error if the player is not found', () => {
+			expect(() => playerService.hasTokens(INVALID_PLAYER_ID, 10)).toThrow();
+		});
+	});
+
+	describe('getTokens()', () => {
+		it('should return the number of tokens a player has', () => {
+			const mockPlayer = addMockPlayer(db, { tokens: 5000 });
+			const result = playerService.getTokens(mockPlayer.id);
+			expect(result).toBe(5000);
+		});
+
+		it('should throw an error if the player is not found', () => {
+			expect(() => playerService.getTokens(INVALID_PLAYER_ID)).toThrow();
 		});
 	});
 

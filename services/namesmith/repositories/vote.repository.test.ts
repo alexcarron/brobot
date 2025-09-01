@@ -1,3 +1,4 @@
+import { INVALID_VOTE_ID } from "../constants/test.constants";
 import { createMockVoteRepo, mockVotes } from "./mock-repositories";
 import { VoteRepository } from "./vote.repository";
 
@@ -22,7 +23,7 @@ describe('VoteRepository', () => {
 		});
 
 		it('returns null if no vote is found', () => {
-			const result = voteRepository.getVoteByVoterID("invalid-id");
+			const result = voteRepository.getVoteByVoterID(INVALID_VOTE_ID);
 			expect(result).toBeNull();
 		});
 	});
@@ -34,7 +35,7 @@ describe('VoteRepository', () => {
 		});
 
 		it('returns an empty list if no votes are found', () => {
-			const result = voteRepository.getVotesByVotedForID("invalid-id");
+			const result = voteRepository.getVotesByVotedForID(INVALID_VOTE_ID);
 			expect(result).toEqual([]);
 		});
 	});
@@ -51,14 +52,14 @@ describe('VoteRepository', () => {
 		it('returns false if the vote exists with given voterID but not playerVotedForID', () => {
 			const result = voteRepository.doesVoteExist({
 				voterID: mockVotes[0].voterID,
-				playerVotedForID: "invalid-id"
+				playerVotedForID: INVALID_VOTE_ID
 			});
 			expect(result).toBe(false);
 		});
 
 		it('returns false if the vote exists with given playerVotedForID but not voterID', () => {
 			const result = voteRepository.doesVoteExist({
-				voterID: "invalid-id",
+				voterID: INVALID_VOTE_ID,
 				playerVotedForID: mockVotes[0].playerVotedForID
 			});
 			expect(result).toBe(false);
@@ -73,7 +74,7 @@ describe('VoteRepository', () => {
 
 		it('returns false if the vote does not exist with given voterID', () => {
 			const result = voteRepository.doesVoteExist({
-				voterID: "invalid-id",
+				voterID: INVALID_VOTE_ID,
 			});
 			expect(result).toBe(false);
 		});
@@ -87,7 +88,7 @@ describe('VoteRepository', () => {
 
 		it('returns false if the vote does not exist with given playerVotedForID', async () => {
 			const result = await voteRepository.doesVoteExist({
-				playerVotedForID: "invalid-id",
+				playerVotedForID: INVALID_VOTE_ID,
 			});
 			expect(result).toBe(false);
 		});
@@ -131,7 +132,7 @@ describe('VoteRepository', () => {
 
 		it('throws an error if the voter ID does not exist', () => {
 			expect(() => voteRepository.changeVote({
-				voterID: "invalid-id",
+				voterID: INVALID_VOTE_ID,
 				playerVotedForID: "1234567892",
 			})).toThrow();
 		});
@@ -139,7 +140,7 @@ describe('VoteRepository', () => {
 		it('throws an error if the player ID does not exist', () => {
 			expect(() => voteRepository.changeVote({
 				voterID: "1234567890",
-				playerVotedForID: "invalid-id",
+				playerVotedForID: INVALID_VOTE_ID,
 			})).toThrow();
 		});
 	});
@@ -152,7 +153,7 @@ describe('VoteRepository', () => {
 		});
 
 		it('throws an error if the voter ID does not exist', () => {
-			expect(() => voteRepository.deleteVote("invalid-id")).toThrow();
+			expect(() => voteRepository.deleteVote(INVALID_VOTE_ID)).toThrow();
 		});
 	});
 

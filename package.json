@@ -9,7 +9,6 @@
 		"test": "node -r ts-node/register ./node_modules/jest/bin/jest.js --runInBand --silent",
 		"lint": "eslint . --ignore-path .gitignore",
 		"typecheck": "tsc --noEmit",
-		"start": "npm run build && node -r ts-node/register index.ts",
 		"build": "node -r ts-node/register build.ts",
 		"build:guild": "npm run build -- --guild-commands-only",
 		"build:dev": "npm run build -- --development",
@@ -17,7 +16,9 @@
 		"build:dev:guild": "npm run build -- --development --guild-commands-only",
 		"dev": "nodemon --ext ts,js index.ts --development",
 		"dev:deploy": "npm run build -- --development --guild-commands-only && npm run dev",
-		"dev:deploy-all": "npm run build -- --development && npm run dev"
+		"dev:deploy-all": "npm run build -- --development && npm run dev",
+		"start": "npm run build && node -r ts-node/register index.ts",
+		"start:dev": "npm run build:dev && npm run dev"
 	},
 	"dependencies": {
 		"@discordjs/builders": "^1.6.5",

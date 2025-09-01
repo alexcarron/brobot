@@ -1,3 +1,4 @@
+import { INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer } from "../database/mock-database";
 import { createMockPlayerRepo, mockPlayers } from "./mock-repositories";
@@ -34,7 +35,7 @@ describe('PlayerRepository', () => {
 		});
 
 		it('returns null if the player is not found', () => {
-			const result = playerRepository.getPlayerByID("invalid-id");
+			const result = playerRepository.getPlayerByID(INVALID_PLAYER_ID);
 			expect(result).toBeNull();
 		});
   });
@@ -70,7 +71,7 @@ describe('PlayerRepository', () => {
 		});
 
 		it('returns false if the player is not found', () => {
-			const result = playerRepository.doesPlayerExist("invalid-id");
+			const result = playerRepository.doesPlayerExist(INVALID_PLAYER_ID);
 			expect(result).toBe(false);
 		});
   });
@@ -102,7 +103,7 @@ describe('PlayerRepository', () => {
 		});
 
 		it('throws an error if the player is not found', () => {
-			expect(() => playerRepository.getInventory("invalid-id")).toThrow();
+			expect(() => playerRepository.getInventory(INVALID_PLAYER_ID)).toThrow();
 		});
 	});
 
@@ -114,7 +115,7 @@ describe('PlayerRepository', () => {
 		});
 
 		it('throws an error if the player is not found', () => {
-			expect(() => playerRepository.setInventory("invalid-id", "new inventory")).toThrow();
+			expect(() => playerRepository.setInventory(INVALID_PLAYER_ID, "new inventory")).toThrow();
 		});
 	});
 
@@ -125,7 +126,7 @@ describe('PlayerRepository', () => {
 		});
 
 		it('throws an error if the player is not found', () => {
-			expect(() => playerRepository.getCurrentName("invalid-id")).toThrow();
+			expect(() => playerRepository.getCurrentName(INVALID_PLAYER_ID)).toThrow();
 		});
 	});
 
@@ -137,7 +138,7 @@ describe('PlayerRepository', () => {
 		});
 
 		it('throws an error if the player is not found', () => {
-			expect(() => playerRepository.changeCurrentName("invalid-id", "new name")).toThrow();
+			expect(() => playerRepository.changeCurrentName(INVALID_PLAYER_ID, "new name")).toThrow();
 		});
 
 		it('throws an error if the new name is too long', () => {
@@ -152,7 +153,7 @@ describe('PlayerRepository', () => {
 		});
 
 		it('throws an error if the player is not found', () => {
-			expect(() => playerRepository.getPublishedName("invalid-id")).toThrow();
+			expect(() => playerRepository.getPublishedName(INVALID_PLAYER_ID)).toThrow();
 		});
 	});
 
@@ -164,11 +165,47 @@ describe('PlayerRepository', () => {
 		});
 
 		it('throws an error if the player is not found', () => {
-			expect(() => playerRepository.publishName("invalid-id", "new name")).toThrow();
+			expect(() => playerRepository.publishName(INVALID_PLAYER_ID, "new name")).toThrow();
 		});
 
 		it('throws an error if the new name is too long', () => {
 			expect(() => playerRepository.publishName(mockPlayers[1].id, "a".repeat(33))).toThrow();
+		});
+	});
+
+	describe('getTokens()', () => {
+		it('returns the number of tokens a player has', () => {
+			const result = playerRepository.getTokens(mockPlayers[0].id);
+			expect(result).toEqual(mockPlayers[0].tokens);
+		});
+
+		it('returns a large amount of tokens a player has', () => {
+			const mockPlayer = addMockPlayer(db, {
+				tokens: 928831923
+			});
+
+			const result = playerRepository.getTokens(mockPlayer.id);
+			expect(result).toEqual(928831923);
+		});
+
+		it('throws an error if the player is not found', () => {
+			expect(() => playerRepository.getTokens(INVALID_PLAYER_ID)).toThrow();
+		});
+	});
+
+	describe('setTokens()', () => {
+		it('sets the number of tokens a player has', () => {
+			playerRepository.setTokens(mockPlayers[0].id, 500);
+			const result = playerRepository.getTokens(mockPlayers[0].id);
+			expect(result).toEqual(500);
+		});
+
+		it('throws error if the number of tokens is negative', () => {
+			expect(() => playerRepository.setTokens(mockPlayers[0].id, -500)).toThrow();
+		});
+
+		it('throws an error if the player is not found', () => {
+			expect(() => playerRepository.setTokens(INVALID_PLAYER_ID, 500)).toThrow();
 		});
 	});
 
@@ -211,7 +248,7 @@ describe('PlayerRepository', () => {
 		});
 
 		it('throws an error if the player is not found', () => {
-			expect(() => playerRepository.addCharacterToInventory("invalid-id", "A")).toThrow();
+			expect(() => playerRepository.addCharacterToInventory(INVALID_PLAYER_ID, "A")).toThrow();
 		});
 
 		it('throws an error if the character is too long', () => {

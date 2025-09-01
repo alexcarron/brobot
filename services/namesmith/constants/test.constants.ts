@@ -1,0 +1,3 @@
+export const INVALID_PLAYER_ID = "1612132518";
+
+export const INVALID_VOTE_ID = "2215205";

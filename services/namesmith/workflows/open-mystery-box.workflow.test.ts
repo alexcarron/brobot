@@ -10,6 +10,7 @@ import { getNamesmithServices } from "../services/get-namesmith-services";
 import { MysteryBoxService } from "../services/mystery-box.service";
 import { PlayerService } from "../services/player.service";
 import { MysteryBoxNotFoundError, PlayerNotFoundError } from "../utilities/error.utility";
+import { INVALID_PLAYER_ID } from "../constants/test.constants";
 
 describe('open-mystery-box.workflow', () => {
 	/**
@@ -77,7 +78,7 @@ describe('open-mystery-box.workflow', () => {
 		it('should throw an error if the player is not found', async () => {
 			await expect(openMysteryBox({
 				...services,
-				player: "0000009000000",
+				player: INVALID_PLAYER_ID,
 				mysteryBox: 1
 			})).rejects.toThrow(PlayerNotFoundError);
 		});

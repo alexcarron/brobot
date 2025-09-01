@@ -114,6 +114,27 @@ export class PlayerRepository {
 	}
 
 	/**
+	 * Adds a character to the player's inventory.
+	 * @param playerID - The ID of the player whose inventory is being modified.
+	 * @param characterValue - The value of the character to add to the player's inventory.
+	 */
+	addCharacterToInventory(playerID: string, characterValue: string) {
+		if (characterValue.length !== 1)
+			throw new InvalidArgumentError("addCharacterToInventory: characterValue must be a single character.");
+
+		const query = `
+			UPDATE player
+			SET inventory = inventory || @characterValue
+			WHERE id = @playerID
+		`;
+
+		const addCharacterToInventory = this.db.prepare(query);
+		const result = addCharacterToInventory.run({ characterValue, playerID });
+		if (result.changes === 0)
+			throw new PlayerNotFoundError(playerID);
+	}
+
+	/**
 	 * Retrieves the current name of a player.
 	 * @param playerID - The ID of the player whose name is being retrieved.
 	 * @returns The current name of the player.
@@ -182,6 +203,43 @@ export class PlayerRepository {
 	}
 
 	/**
+	 * Retrieves the number of tokens a player has.
+	 * @param playerID - The ID of the player whose tokens are being retrieved.
+	 * @returns The number of tokens the player has.
+	 * @throws {PlayerNotFoundError} - If the player with the specified ID is not found.
+	 */
+	getTokens(playerID: string): number {
+		const player = this.getPlayerByID(playerID);
+
+		if (!player)
+			throw new PlayerNotFoundError(playerID);
+
+		return player.tokens;
+	}
+
+	/**
+	 * Sets the number of tokens a player has in the namesmith database.
+	 * @param playerID - The ID of the player whose tokens are being set.
+	 * @param tokens - The number of tokens the player is being given.
+	 * @throws {PlayerNotFoundError} - If the player with the specified ID is not found.
+	 * @throws {InvalidArgumentError} - If the number of tokens is negative.
+	 */
+	setTokens(playerID: string, tokens: number) {
+		if (tokens < 0)
+			throw new InvalidArgumentError(`setTokens: tokens must be a non-negative integer, received ${tokens}.`);
+
+		const query = `
+			UPDATE player
+			SET tokens = @tokens
+			WHERE id = @id
+		`;
+
+		const result = this.db.run(query, { tokens, id: playerID });
+		if (result.changes === 0)
+			throw new PlayerNotFoundError(playerID);
+	}
+
+	/**
 	 * Adds a new player to the game's database.
 	 * @param playerID - The ID of the player to be added.
 	 */
@@ -212,26 +270,5 @@ export class PlayerRepository {
 		const query = `DELETE FROM player`;
 		const reset = this.db.prepare(query);
 		reset.run();
-	}
-
-	/**
-	 * Adds a character to the player's inventory.
-	 * @param playerID - The ID of the player whose inventory is being modified.
-	 * @param characterValue - The value of the character to add to the player's inventory.
-	 */
-	addCharacterToInventory(playerID: string, characterValue: string) {
-		if (characterValue.length !== 1)
-			throw new InvalidArgumentError("addCharacterToInventory: characterValue must be a single character.");
-
-		const query = `
-			UPDATE player
-			SET inventory = inventory || @characterValue
-			WHERE id = @playerID
-		`;
-
-		const addCharacterToInventory = this.db.prepare(query);
-		const result = addCharacterToInventory.run({ characterValue, playerID });
-		if (result.changes === 0)
-			throw new PlayerNotFoundError(playerID);
 	}
 }
