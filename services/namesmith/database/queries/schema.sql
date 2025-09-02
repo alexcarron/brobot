@@ -42,7 +42,8 @@ CREATE TABLE IF NOT EXISTS player (
 	publishedName TEXT,
 	tokens INTEGER NOT NULL,
 	role TEXT,
-	inventory TEXT
+	inventory TEXT,
+	lastClaimedRefillTime TEXT
 );
 
 -- Player Perks table

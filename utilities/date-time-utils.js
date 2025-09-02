@@ -1,3 +1,5 @@
+const { attempt } = require("./error-utils");
+
 /**
  * Converts a given Date object to its corresponding Unix timestamp.
  * @param {Date} date - The Date object to convert.
@@ -45,6 +47,20 @@ const addDays = (date, days) => {
 }
 
 /**
+ * Adds a specified number of hours to a given Date object.
+ * @param {Date} date - The Date object to modify.
+ * @param {number} hours - The number of hours to add to the given Date object.
+ * @returns {Date} A new Date object with the specified number of hours added to the original date.
+ * @example
+ * const fiveHoursLater = addHours(new Date(), 5);
+ */
+const addHours = (date, hours) => {
+	const newDate = new Date(date.getTime());
+	newDate.setHours(newDate.getHours() + hours);
+	return newDate;
+}
+
+/**
  * Adds a specified number of seconds to a given Date object.
  * @param {Date} date - The Date object to modify.
  * @param {number} seconds - The number of seconds to add to the given Date object.
@@ -58,4 +74,26 @@ const addSeconds = (date, seconds) => {
 	return newDate;
 }
 
-module.exports = { toUnixTimestamp, createNowUnixTimestamp, toCronExpression, addDays, addSeconds };
+/**
+ * Converts a given time string to a Date object.
+ * @param {string} timeString - The number of milliseconds since 1970-01-01T00:00:00Z.
+ * @returns {Date} A Date object with the given time string.
+ * @throws An error if the time string is not a valid number of milliseconds since 1970-01-01T00:00:00Z.
+ * @example
+ * const date = toDateFromTimeString('1640995200000');
+ */
+const toDateFromTimeString = (timeString) => {
+	let time = attempt(() => parseInt(timeString))
+		.onError(() => {
+			throw new Error(`Time string should be the number of milliseconds since 1970-01-01T00:00:00Z, but was ${timeString}`)
+		})
+		.getReturnValue();
+
+	const date = new Date(time);
+	if (isNaN(date.getTime()))
+		throw new Error(`Time string should be the number of milliseconds since 1970-01-01T00:00:00Z, but was ${timeString}`);
+
+	return date;
+}
+
+module.exports = { toUnixTimestamp, createNowUnixTimestamp, toCronExpression, addDays, addHours, addSeconds, toDateFromTimeString };

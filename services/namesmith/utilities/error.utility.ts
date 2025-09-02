@@ -238,6 +238,30 @@ export class RecipeNotUnlockedError extends UserActionError {
 }
 
 /**
+ * Error thrown when a player attempts to claim a refill before the next available refill time
+ */
+export class RefillAlreadyClaimedError extends UserActionError {
+	relevantData: { player: Player, nextRefillTime: Date };
+
+	constructor(player: Player, nextRefillTime: Date) {
+		super({
+			message: `Player ${player.currentName} attempted to claim a refill before the next refill time of ${nextRefillTime}.`,
+			userFriendlyMessage:
+				`You already claimed your refill! The next available refill is at ${nextRefillTime}.`,
+			relevantData: {
+				player,
+				nextRefillTime,
+			}
+		})
+
+		this.relevantData = {
+			player,
+			nextRefillTime,
+		}
+	}
+}
+
+/**
  * Error thrown when a non-player user uses an action that requires them to be a player
  */
 export class NotAPlayerError extends UserActionError {
@@ -278,6 +302,15 @@ export class NonPlayerCraftedError extends NotAPlayerError {
 export class NonPlayerMinedError extends NotAPlayerError {
 	constructor(userID: string) {
 		super(userID, "mine tokens");
+	}
+}
+
+/**
+ * Error thrown when a non-player user attempts to refill tokens
+ */
+export class NonPlayerRefilledError extends NotAPlayerError {
+	constructor(userID: string) {
+		super(userID, "refill tokens");
 	}
 }
 

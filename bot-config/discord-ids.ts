@@ -308,7 +308,13 @@ export const ids = {
 					development: "1386449685497254133",
 					production: "1384678822615453847",
 				});
-			}
+			},
+			get CLAIM_REFILL() {
+				return chooseByEnv({
+					development: "1386449685497254134",
+					production: "1384678899614613594",
+				});
+			},
 		},
 	},
 

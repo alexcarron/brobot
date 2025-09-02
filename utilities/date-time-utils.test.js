@@ -1,4 +1,4 @@
-const { toUnixTimestamp, toCronExpression, addDays, addSeconds } = require("./date-time-utils");
+const { toUnixTimestamp, toCronExpression, addDays, addSeconds, addHours, toDateFromTimeString } = require("./date-time-utils");
 
 describe('toUnixTimestamp()', () => {
 	it('should return the correct Unix timestamp for a valid Date object', () => {
@@ -117,4 +117,38 @@ describe('addSeconds()', () => {
 	it('throws an error for an invalid Date object (null)', () => {
 		expect(() => addSeconds(null, 5)).toThrow();
 	});
+
+	describe('addHours()', () => {
+		it('adds positive number of hours to a valid Date object', () => {
+			const date = new Date('2022-01-01T00:00:00.000Z');
+			const expected = new Date('2022-01-01T02:00:00.000Z');
+			expect(addHours(date, 2)).toEqual(expected);
+		});
+
+		it('adds negative number of hours to a valid Date object', () => {
+			const date = new Date('2022-01-01T02:00:00.000Z');
+			const expected = new Date('2022-01-01T00:00:00.000Z');
+			expect(addHours(date, -2)).toEqual(expected);
+		});
+
+		it('adds zero hours to a valid Date object', () => {
+			const date = new Date('2022-01-01T00:00:00.000Z');
+			expect(addHours(date, 0)).toEqual(date);
+		});
+	});
+
+	describe('toDateFromTimeString()', () => {
+		it('should convert a string of a Date\'s time to a Date object', () => {
+			const expected = new Date('2022-01-01T00:00:00.000Z');
+			expect(toDateFromTimeString('1640995200000')).toEqual(expected);
+		});
+
+		it('should throw an error for an invalid string', () => {
+			expect(() => toDateFromTimeString('not a date')).toThrow();
+		});
+
+		it('should throw an error for an integer that is an invalid timestamp', () => {
+			expect(() => toDateFromTimeString('-921031291293812931')).toThrow();
+		});
+	})
 })

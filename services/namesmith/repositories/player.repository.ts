@@ -1,3 +1,4 @@
+import { toDateFromTimeString } from "../../../utilities/date-time-utils";
 import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { Override } from "../../../utilities/types/generic-types";
 import { MAX_NAME_LENGTH } from "../constants/namesmith.constants";
@@ -19,13 +20,33 @@ export class PlayerRepository {
 	}
 
 	/**
+	 * Converts a DBPlayer object to a Player object.
+	 * @param dbPlayer - The database player object to convert.
+	 * @returns The converted player object.
+	 */
+	toPlayerObject(dbPlayer: DBPlayer): Player {
+		const dbLastClaimedRefillTime = dbPlayer.lastClaimedRefillTime
+		let lastClaimedRefillTime = null;
+
+		if (dbLastClaimedRefillTime !== null) {
+			lastClaimedRefillTime = toDateFromTimeString(dbLastClaimedRefillTime);
+		}
+
+		return {
+			...dbPlayer,
+			lastClaimedRefillTime
+		};
+	}
+
+	/**
 	 * Returns a list of all player objects in the game.
 	 * @returns An array of player objects.
 	 */
 	getPlayers(): Player[] {
 		const query = `SELECT * FROM player`;
 		const getAllPlayers = this.db.prepare(query);
-		return getAllPlayers.all() as DBPlayer[];
+		const dbPlayers = getAllPlayers.all() as DBPlayer[];
+		return dbPlayers.map(dbPlayer => this.toPlayerObject(dbPlayer));
 	}
 
 	/**
@@ -37,7 +58,7 @@ export class PlayerRepository {
 		const query = `SELECT * FROM player WHERE id = @id`;
 		const getPlayerById = this.db.prepare(query);
 		const player = getPlayerById.get({ id: playerID }) as DBPlayer | undefined;
-		return player || null;
+		return player ? this.toPlayerObject(player) : null;
 	}
 
 	/**
@@ -48,7 +69,8 @@ export class PlayerRepository {
 	getPlayersByCurrentName(currentName: string): Player[] {
 		const query = `SELECT * FROM player WHERE currentName = @currentName`;
 		const getPlayersByCurrentName = this.db.prepare(query);
-		return getPlayersByCurrentName.all({ currentName }) as DBPlayer[];
+		const dbPlayers = getPlayersByCurrentName.all({ currentName }) as DBPlayer[];
+		return dbPlayers.map(dbPlayer => this.toPlayerObject(dbPlayer));
 	}
 
 	/**
@@ -68,20 +90,36 @@ export class PlayerRepository {
 	 * Retrieves a list of players without published names.
 	 * @returns An array of player objects without a published name.
 	 */
-	getPlayersWithoutPublishedNames(): Override<Player, "publishedName", null>[] {
+	getPlayersWithoutPublishedNames(): Override<Player, {
+		publishedName: null
+	}>[] {
 		const query = `SELECT * FROM player WHERE publishedName IS NULL`;
 		const getPlayersWithoutPublishedNames = this.db.prepare(query);
-		return getPlayersWithoutPublishedNames.all() as Override<DBPlayer, "publishedName", null>[];
+		const dbPlayers = getPlayersWithoutPublishedNames.all() as Override<DBPlayer, {publishedName: null}>[];
+
+		return dbPlayers.map(dbPlayer => ({
+			...this.toPlayerObject(dbPlayer),
+			publishedName: null
+		}));
 	}
 
 	/**
 	 * Retrieves a list of players with published names.
 	 * @returns An array of player objects with a published name.
 	 */
-	getPlayersWithPublishedNames(): Override<Player, "publishedName", string>[] {
+	getPlayersWithPublishedNames(): Override<Player,
+		{publishedName: string}
+	>[] {
 		const query = `SELECT * FROM player WHERE publishedName IS NOT NULL`;
 		const getPlayersWithPublishedNames = this.db.prepare(query);
-		return getPlayersWithPublishedNames.all() as Override<DBPlayer, "publishedName", string>[];
+		const dbPlayers = getPlayersWithPublishedNames.all() as Override<DBPlayer,
+			{publishedName: string}
+		>[];
+
+		return dbPlayers.map(dbPlayer => ({
+			...this.toPlayerObject(dbPlayer),
+			publishedName: dbPlayer.publishedName
+		}));
 	}
 
 	/**
@@ -235,6 +273,43 @@ export class PlayerRepository {
 		`;
 
 		const result = this.db.run(query, { tokens, id: playerID });
+		if (result.changes === 0)
+			throw new PlayerNotFoundError(playerID);
+	}
+
+	/**
+	 * Retrieves the last time a player claimed a refill from the namesmith database.
+	 * @param playerID - The ID of the player whose last claimed refill time is being retrieved.
+	 * @returns The last time the player claimed a refill, or null if the player has never claimed a refill.
+	 * @throws {PlayerNotFoundError} - If the player with the specified ID is not found.
+	 */
+	getLastClaimedRefillTime(playerID: string): Date | null {
+		const player = this.getPlayerByID(playerID);
+
+		if (!player)
+			throw new PlayerNotFoundError(playerID);
+
+		return player.lastClaimedRefillTime;
+	}
+
+	/**
+	 * Sets the last time a player claimed a refill in the namesmith database.
+	 * @param playerID - The ID of the player whose last claimed refill time is being set.
+	 * @param lastClaimedRefillTime - The last time the player claimed a refill.
+	 * @throws {PlayerNotFoundError} - If the player with the specified ID is not found.
+	 */
+	setLastClaimedRefillTime(playerID: string, lastClaimedRefillTime: Date) {
+		const query = `
+			UPDATE player
+			SET lastClaimedRefillTime = @lastClaimedRefillTime
+			WHERE id = @id
+		`;
+
+		const result = this.db.run(query, {
+			lastClaimedRefillTime: lastClaimedRefillTime.getTime(),
+			id: playerID
+		});
+
 		if (result.changes === 0)
 			throw new PlayerNotFoundError(playerID);
 	}

@@ -61,17 +61,30 @@ export type AtLeast<
 	{ [Key in Exclude<keyof ObjectType, RequiredKeys>]?: ObjectType[Key] };
 
 /**
+ * Removes all properties from an object type that are not in another object type
+ * @example
+ * type PlayerIdentifier = KeepSharedProperties<Player, { id: string }>
+ */
+type KeepSharedProperties<
+	PossibleProperties extends object,
+	AllowedProperties extends object
+> = {
+  [Property in keyof PossibleProperties]:
+		Property extends keyof AllowedProperties
+			? PossibleProperties[Property]
+			: never
+};
+
+/**
  * Overrides one or more properties of a given object type with a new type
  * @example
  * type PlayerWithoutName = Override<Player, "currentName", null>
  */
 export type Override<
 	ObjectType extends object,
-	PropertyName extends keyof ObjectType,
-	PropertyType
+  Overrides extends { [K in keyof ObjectType]?: any } & KeepSharedProperties<Overrides, ObjectType>
 > =
-	Omit<ObjectType, PropertyName> &
-	{ [Property in PropertyName]: PropertyType; };
+	Omit<ObjectType, keyof Overrides> & Overrides;
 
 /**
  * Makes one or more properties of a given object type optional
@@ -86,3 +99,11 @@ export type WithOptional<
 	Partial<Pick<ObjectType, PropertyName>>;
 
 export type AnyFunction = (...args: any[]) => any;
+
+/**
+ * Expands a type to include all of its properties
+ */
+export type Expand<Type> =
+	Type extends infer Object
+		? { [Key in keyof Object]: Object[Key] }
+		: never;

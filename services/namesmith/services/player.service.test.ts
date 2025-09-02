@@ -23,7 +23,9 @@ jest.mock("../../../utilities/discord-action-utils", () => ({
 	addButtonToMessageContents: jest.fn(),
 }));
 
+import { addDays, addHours, addSeconds } from "../../../utilities/date-time-utils";
 import { makeSure } from "../../../utilities/jest/jest-utils";
+import { REFILL_COOLDOWN_HOURS } from "../constants/namesmith.constants";
 import { INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer } from "../database/mock-database";
@@ -477,6 +479,73 @@ describe('PlayerService', () => {
 			expect(() => playerService.getTokens(INVALID_PLAYER_ID)).toThrow();
 		});
 	});
+
+	describe('getNextAvailableRefillTime()', () => {
+
+		it('should return now if the player has never been refilled', () => {
+			const NOW = new Date();
+			const mockPlayer = addMockPlayer(db, {
+				lastClaimedRefillTime : null
+			});
+			const result = playerService.getNextAvailableRefillTime(mockPlayer.id);
+			makeSure(result).isCloseToDate(NOW);
+		});
+
+		it('should return the next available refill time if the player has been refilled', () => {
+			const NOW = new Date();
+			const YESTERDAY = addDays(NOW, -1);
+			const mockPlayer = addMockPlayer(db, {
+				lastClaimedRefillTime : YESTERDAY
+			});
+			const result = playerService.getNextAvailableRefillTime(mockPlayer.id);
+			makeSure(result).isCloseToDate(addHours(YESTERDAY, REFILL_COOLDOWN_HOURS));
+		});
+
+		it('should throw an error if the player is not found', () => {
+			expect(() => playerService.getNextAvailableRefillTime(INVALID_PLAYER_ID)).toThrow();
+		})
+	});
+
+	describe('canRefill()', () => {
+		const NOW = new Date();
+		const YESTERDAY = addDays(NOW, -1);
+
+		it('should return true if the player has never refilled', () => {
+			const mockPlayer = addMockPlayer(db, {
+				lastClaimedRefillTime : null
+			});
+			const result = playerService.canRefill(mockPlayer.id);
+			makeSure(result).isTrue();
+		});
+
+		it('should return true if the player refilled longer ago than the cooldown', () => {
+			const mockPlayer = addMockPlayer(db, {
+				lastClaimedRefillTime : YESTERDAY
+			});
+			const result = playerService.canRefill(mockPlayer.id);
+			makeSure(result).isTrue();
+		});
+
+		it('should return false if the player refilled less than the cooldown ago', () => {
+			const mockPlayer = addMockPlayer(db, {
+				lastClaimedRefillTime : addSeconds(NOW, -1)
+			});
+			const result = playerService.canRefill(mockPlayer.id);
+			makeSure(result).isFalse();
+		});
+
+		it('should return true if the player refilled exactly the cooldown ago', () => {
+			const mockPlayer = addMockPlayer(db, {
+				lastClaimedRefillTime : addHours(NOW, -REFILL_COOLDOWN_HOURS)
+			});
+			const result = playerService.canRefill(mockPlayer.id);
+			makeSure(result).isTrue();
+		})
+
+		it('should throw an error if the player is not found', () => {
+			expect(() => playerService.canRefill(INVALID_PLAYER_ID)).toThrow();
+		})
+	})
 
 	describe('addNewPlayer()', () => {
 		it('should add a new player', async () => {

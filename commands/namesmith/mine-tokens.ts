@@ -6,7 +6,6 @@ import { deferInteraction, replyToInteraction } from "../../utilities/discord-ac
 import { attempt } from "../../utilities/error-utils";
 import { NonPlayerMinedError } from '../../services/namesmith/utilities/error.utility';
 import { toAmountOfNoun } from "../../utilities/string-manipulation-utils";
-import { wait } from "../../utilities/realtime-utils";
 
 export const command = new SlashCommand({
 	name: "mine-tokens",
@@ -19,10 +18,8 @@ export const command = new SlashCommand({
 	execute: async function execute(interaction) {
 		await deferInteraction(interaction);
 
-		await wait({seconds: 10});
-
-		attempt(
-			() => mineTokens({
+		attempt(() =>
+			mineTokens({
 				...getNamesmithServices(),
 				playerMining: interaction.user.id,
 			})
@@ -32,9 +29,10 @@ export const command = new SlashCommand({
 				`You're not a player, so you can't mine tokens.`
 			);
 		})
-		.onSuccess(async ({ tokensEarned }) => {
+		.onSuccess(async ({ tokensEarned, newTokenCount }) => {
 			await replyToInteraction(interaction,
-				'+' + toAmountOfNoun(tokensEarned, 'Token') + ' ' + '🪙'.repeat(tokensEarned)
+				`**+${toAmountOfNoun(tokensEarned, 'Token')}** ` + '🪙'.repeat(tokensEarned) + `\n` +
+				`-# You now have ${toAmountOfNoun(newTokenCount, 'token')}\n`
 			);
 		})
 		.execute();

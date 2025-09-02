@@ -83,7 +83,6 @@ export function makeSure(actualValue: unknown) {
 				!Number.isNaN(actualValue)
 			) {
 				throw new Error(`Expected actual value to NOT be a number, but got number: ${actualValue}`);
-
 			}
 		},
 
@@ -114,6 +113,30 @@ export function makeSure(actualValue: unknown) {
 			baseExpect.toBe(false);
 		},
 
+		/**
+		 * Asserts that the actual date is within the given tolerance of the expected date.
+		 * @param expectedDate - The expected date to check against.
+		 * @param toleranceMs - The tolerance in milliseconds.
+		 * @example
+		 * makeSure(actualDate).isCloseToDate(expectedDate, 500); // within 500ms
+		 */
+		isCloseToDate(expectedDate: Date, toleranceMs: number = 1000): void {
+			if (
+				actualValue instanceof Date === false
+			) {
+				throw new Error(`Expected actual value to be a Date, but got: ${actualValue}`);
+			}
+
+			const actualTime = actualValue.getTime();
+			const expectedTime = expectedDate.getTime();
+			const timeDifference = Math.abs(actualTime - expectedTime);
+
+			if (timeDifference > toleranceMs) {
+				throw new Error(
+					`Expected ${baseExpect} to be within ${toleranceMs}ms of ${expectedDate}, but difference was ${timeDifference}ms.`
+				);
+			}
+		},
 
 		/**
 		 * Asserts that the actual string has the same characters as the expected string, regardless of order.

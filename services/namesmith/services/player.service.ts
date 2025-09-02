@@ -8,8 +8,9 @@ import { PlayerNotFoundError, PlayerAlreadyExistsError, NameTooLongError } from 
 import { Inventory, Player, PlayerID, PlayerResolvable } from '../types/player.types';
 import { removeCharactersAsGivenFromEnd, removeMissingCharacters } from "../../../utilities/string-manipulation-utils";
 import { areCharactersInString } from "../../../utilities/string-checks-utils";
-import { MAX_NAME_LENGTH } from "../constants/namesmith.constants";
+import { MAX_NAME_LENGTH, REFILL_COOLDOWN_HOURS } from "../constants/namesmith.constants";
 import { ChatInputCommandInteraction } from "discord.js";
+import { addHours } from "../../../utilities/date-time-utils";
 
 /**
  * Provides methods for interacting with players.
@@ -474,6 +475,43 @@ export class PlayerService {
 	getTokens(playerResolvable: PlayerResolvable): number {
 		const playerID = this.resolveID(playerResolvable);
 		return this.playerRepository.getTokens(playerID);
+	}
+
+	/**
+	 * Sets the last time a player claimed a refill.
+	 * @param playerResolvable - The player resolvable whose last refill time is being set.
+	 * @param time - The last time the player claimed a refill.
+	 */
+	setLastRefillTime(playerResolvable: PlayerResolvable, time: Date) {
+		const playerID = this.resolveID(playerResolvable);
+		this.playerRepository.setLastClaimedRefillTime(playerID, time);
+	}
+
+	/**
+	 * Checks if a player is eligible to claim a token refill.
+	 * @param playerResolvable - The player resolvable to check.
+	 * @returns True if the player is eligible to claim a token refill, false otherwise.
+	 */
+	canRefill(playerResolvable: PlayerResolvable): boolean {
+		const playerID = this.resolveID(playerResolvable);
+		const lastRefillTime = this.playerRepository.getLastClaimedRefillTime(playerID);
+
+		if (lastRefillTime === null)
+			return true;
+
+		const now = new Date(Date.now());
+		const nextAvailableRefillTime = this.getNextAvailableRefillTime(playerResolvable);
+		return now >= nextAvailableRefillTime;
+	}
+
+	getNextAvailableRefillTime(playerResolvable: PlayerResolvable): Date {
+		const playerID = this.resolveID(playerResolvable);
+		const lastRefillTime = this.playerRepository.getLastClaimedRefillTime(playerID);
+
+		if (lastRefillTime === null)
+			return new Date(Date.now());
+
+		return addHours(lastRefillTime, REFILL_COOLDOWN_HOURS);
 	}
 
 	/**

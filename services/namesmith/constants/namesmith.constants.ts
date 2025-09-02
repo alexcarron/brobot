@@ -24,6 +24,21 @@ export const DAYS_TO_VOTE = 2;
 export const MIN_TOKENS_FOR_MINING = 1;
 
 /**
- * The average amount of tokens you will receive overtime from mining.
+ * The average amount of tokens a player will receive over many mine operations.
  */
 export const MINING_EXPECTED_VALUE = 1.5;
+
+/**
+ * The minimum amount of tokens given to a player when they refill their tokens.
+ */
+export const MIN_TOKENS_FROM_REFILLING = 50;
+
+/**
+ * The average number of tokens a player receives per refill over many refills
+ */
+export const AVERAGE_TOKENS_FROM_REFILLING = 75;
+
+/**
+ * The number of hours players must wait between refills.
+ */
+export const REFILL_COOLDOWN_HOURS = 2;

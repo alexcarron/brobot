@@ -30,6 +30,7 @@ export const createMockDB = (): DatabaseQuerier => {
  * @param playerData.tokens - The number of tokens the player has.
  * @param playerData.role - The role of the player.
  * @param playerData.inventory - The player's inventory.
+ * @param playerData.lastClaimedRefillTime - The last time the player claimed a refill.
  * @returns The player object that was added to the database.
  */
 export const addMockPlayer = (
@@ -41,6 +42,7 @@ export const addMockPlayer = (
 		tokens = 0,
 		role = null,
 		inventory = "",
+		lastClaimedRefillTime = null
 	}:
 	AtLeastOne<Player>
 ): Player => {
@@ -60,12 +62,18 @@ export const addMockPlayer = (
 		throw new PlayerAlreadyExistsError(id);
 	}
 
-	const player = { id, currentName, publishedName, tokens, role, inventory };
+	const player = { id, currentName, publishedName, tokens, role, inventory, lastClaimedRefillTime};
 	const insertPlayer = db.prepare(`
-		INSERT INTO player (id, currentName, publishedName, tokens, role, inventory)
-		VALUES (@id, @currentName, @publishedName, @tokens, @role, @inventory)
+		INSERT INTO player (id, currentName, publishedName, tokens, role, inventory, lastClaimedRefillTime)
+		VALUES (@id, @currentName, @publishedName, @tokens, @role, @inventory, @lastClaimedRefillTime)
 	`);
-	insertPlayer.run(player);
+	insertPlayer.run({
+		...player,
+		lastClaimedRefillTime:
+			lastClaimedRefillTime === null
+				? null
+				: lastClaimedRefillTime.getTime()
+	});
 	return player;
 };
 

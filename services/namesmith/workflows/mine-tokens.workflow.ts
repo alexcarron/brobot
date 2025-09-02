@@ -5,7 +5,7 @@ import { PlayerResolvable } from "../types/player.types";
 import { NonPlayerMinedError } from "../utilities/error.utility";
 
 /**
- * Workflow function that gives tokens to a player for mining.
+ * gives tokens to a player for mining.
  * @param params - The parameters for the function.
  * @param params.playerService The player service.
  * @param params.playerMining The player that is mining.

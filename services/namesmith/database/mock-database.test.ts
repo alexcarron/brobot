@@ -54,6 +54,7 @@ describe("mock-database", () => {
         tokens: 100,
         role: null,
         inventory: "{}",
+				lastClaimedRefillTime: null,
       };
 
       addMockPlayer(db, playerData);

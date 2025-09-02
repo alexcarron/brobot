@@ -59,6 +59,7 @@ export const createMockMysteryBoxRepo =
  * @param options.tokens - The number of tokens the player has.
  * @param options.role - The role of the player.
  * @param options.inventory - The player's inventory.
+ * @param options.lastClaimedRefillTime - The last time the player claimed a refill.
  * @returns A mock player object with the given properties and default values for optional properties.
  */
 export const createMockPlayerObject = ({
@@ -68,49 +69,54 @@ export const createMockPlayerObject = ({
 	tokens = 0,
 	role = null,
 	inventory = "",
+	lastClaimedRefillTime = null
 }: AtLeast<Player, "id">): Player => {
 	if (id === undefined || typeof id !== "string")
 		throw new InvalidArgumentError(`createMockPlayerObject: player id must be a string, but got ${id}.`);
 
-	return {id, currentName, publishedName, tokens, role, inventory};
+	return {id, currentName, publishedName, tokens, role, inventory, lastClaimedRefillTime};
 }
 
 /**
  * An array of mock player data for use in tests.
  */
 export const mockPlayers: Player[] = [
-	{
+	createMockPlayerObject({
 		id: "1234567890",
 		currentName: "John Doe",
 		publishedName: "John Doe",
 		tokens: 10,
 		role: "magician",
 		inventory: "John Doe",
-	},
-	{
+		lastClaimedRefillTime: null,
+	}),
+	createMockPlayerObject({
 		id: "1234567891",
 		currentName: "abcdefgh",
 		publishedName: "abcd",
 		tokens: 0,
 		role: "magician",
 		inventory: "abcdefghijklmnopqrstuvwxyz",
-	},
-	{
+		lastClaimedRefillTime: null,
+	}),
+	createMockPlayerObject({
 		id: "1234567892",
 		currentName: "UNPUBLISHED",
 		publishedName: null,
 		tokens: 0,
 		role: "magician",
 		inventory: "UNPUBLISHED",
-	},
-	{
+		lastClaimedRefillTime: null,
+	}),
+	createMockPlayerObject({
 		id: "1234567893",
 		currentName: "non-voter",
 		publishedName: "non-voter",
 		tokens: 0,
 		role: "magician",
 		inventory: "non-voter",
-	}
+		lastClaimedRefillTime: null,
+	})
 ];
 
 /**

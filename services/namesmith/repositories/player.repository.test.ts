@@ -209,6 +209,39 @@ describe('PlayerRepository', () => {
 		});
 	});
 
+	describe('getLastClaimedRefillTime()', () => {
+		it('returns the last claimed refill time of a player', () => {
+			const result = playerRepository.getLastClaimedRefillTime(mockPlayers[0].id);
+			expect(result).toEqual(mockPlayers[0].lastClaimedRefillTime);
+		});
+
+		it('returns the date of a player that has claimed a refill', () => {
+			const mockPlayer = addMockPlayer(db, {
+				lastClaimedRefillTime: new Date()
+			});
+
+			const result = playerRepository.getLastClaimedRefillTime(mockPlayer.id);
+			expect(result).toEqual(mockPlayer.lastClaimedRefillTime);
+		});
+
+		it('throws an error if the player is not found', () => {
+			expect(() => playerRepository.getLastClaimedRefillTime(INVALID_PLAYER_ID)).toThrow();
+		})
+	})
+
+	describe('setLastClaimedRefillTime()', () => {
+		it('sets the last claimed refill time of a player to a date', () => {
+			const DATE = new Date();
+			playerRepository.setLastClaimedRefillTime(mockPlayers[0].id, DATE);
+			const result = playerRepository.getLastClaimedRefillTime(mockPlayers[0].id);
+			expect(result).toEqual(DATE);
+		});
+
+		it('throws an error if the player is not found', () => {
+			expect(() => playerRepository.setLastClaimedRefillTime(INVALID_PLAYER_ID, new Date())).toThrow();
+		})
+	})
+
 	describe('addPlayer()', () => {
 		it('adds a new player to the database', () => {
 			playerRepository.addPlayer("new-player-id");
@@ -222,6 +255,7 @@ describe('PlayerRepository', () => {
 				tokens: 0,
 				role: null,
 				inventory: "",
+				lastClaimedRefillTime: null
 			});
 		});
 
