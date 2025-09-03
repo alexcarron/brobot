@@ -2,17 +2,19 @@ jest.mock("../utilities/discord-action.utility", () => ({
 	changeDiscordNameOfPlayer: jest.fn(),
 }));
 
-import { openMysteryBox } from "./open-mystery-box.workflow";
+import { buyMysteryBox } from "./buy-mystery-box.workflow";
 import { mockPlayers } from "../repositories/mock-repositories";
 import { setupMockNamesmith } from "../event-listeners/mock-setup";
 import { changeDiscordNameOfPlayer } from "../utilities/discord-action.utility";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { MysteryBoxService } from "../services/mystery-box.service";
 import { PlayerService } from "../services/player.service";
-import { MysteryBoxNotFoundError, PlayerNotFoundError } from "../utilities/error.utility";
-import { INVALID_PLAYER_ID } from "../constants/test.constants";
+import { MysteryBoxNotFoundError, NotAPlayerError, PlayerCantAffordMysteryBoxError } from "../utilities/error.utility";
+import { INVALID_MYSTERY_BOX_ID, INVALID_PLAYER_ID } from "../constants/test.constants";
+import { addMockMysteryBox, addMockPlayer } from "../database/mock-database";
+import { DatabaseQuerier } from "../database/database-querier";
 
-describe('open-mystery-box.workflow', () => {
+describe('buy-mystery-box.workflow', () => {
 	/**
 	 * The services to use for opening the mystery box and adding a character to the player's name.
 	 */
@@ -21,6 +23,8 @@ describe('open-mystery-box.workflow', () => {
 		playerService: PlayerService
 	};
 
+	let db: DatabaseQuerier;
+
 	beforeEach(() => {
 		setupMockNamesmith();
 		const { mysteryBoxService, playerService } = getNamesmithServices();
@@ -28,6 +32,8 @@ describe('open-mystery-box.workflow', () => {
 			mysteryBoxService,
 			playerService
 		};
+
+		db = playerService.playerRepository.db;
 	});
 
 	afterEach(() => {
@@ -38,11 +44,15 @@ describe('open-mystery-box.workflow', () => {
 		jest.restoreAllMocks();
 	});
 
-	describe('openMysteryBox()', () => {
+	describe('buyMysteryBox()', () => {
 		it('should return the recieved character', async () => {
-			const { character } = await openMysteryBox({
+			const richPlayer = addMockPlayer(db, {
+				tokens: 9999
+			});
+
+			const { character } = await buyMysteryBox({
 				...services,
-				player: mockPlayers[0].id,
+				player: richPlayer.id,
 				mysteryBox: 1
 			});
 			expect(character).toHaveProperty('id', expect.any(Number));
@@ -51,43 +61,67 @@ describe('open-mystery-box.workflow', () => {
 		});
 
 		it('should change the player\'s Discord name to their current name plus that recieved character', async () => {
-			const { character } = await openMysteryBox({
+			const richPlayer = addMockPlayer(db, {
+				tokens: 9999
+			});
+
+			const { character } = await buyMysteryBox({
 				...services,
-				player: mockPlayers[0].id,
+				player: richPlayer.id,
 				mysteryBox: 1
 			});
 
 			expect(changeDiscordNameOfPlayer).toHaveBeenCalledTimes(1);
 			expect(changeDiscordNameOfPlayer).toHaveBeenCalledWith(
-				mockPlayers[0].id,
-				mockPlayers[0].currentName + character.value
+				richPlayer.id,
+				richPlayer.currentName + character.value
 			)
 		});
 
 		it('should change the player\'s name to their current name plus that recieved character', async () => {
-			const { character } = await openMysteryBox({
+			const richPlayer = addMockPlayer(db, {
+				tokens: 9999
+			});
+
+			const { character } = await buyMysteryBox({
 				...services,
-				player: mockPlayers[0].id,
+				player: richPlayer.id,
 				mysteryBox: 1
 			});
 
-			const newCurrentName = await services.playerService.getCurrentName(mockPlayers[0].id);
-			expect(newCurrentName).toEqual(mockPlayers[0].currentName + character.value);
+			const newCurrentName = services.playerService.getCurrentName(richPlayer.id);
+			expect(newCurrentName).toEqual(richPlayer.currentName + character.value);
 		});
 
-		it('should throw an error if the player is not found', async () => {
-			await expect(openMysteryBox({
+		it('should throw PlayerCantAffordMysteryBoxError error if the player does not have enough tokens to buy the mystery box', async () => {
+			const expensiveMysteryBox = addMockMysteryBox(db, {
+				tokenCost: 100
+			});
+
+			const brokePlayer = addMockPlayer(db, {
+				tokens: 30
+			});
+
+			await expect(buyMysteryBox({
+				...services,
+				player: brokePlayer,
+				mysteryBox: expensiveMysteryBox
+			})).rejects.toThrow(PlayerCantAffordMysteryBoxError);
+		});
+
+		it('should throw NotAPlayerError error if the user is not a player', async () => {
+			await expect(buyMysteryBox({
 				...services,
 				player: INVALID_PLAYER_ID,
 				mysteryBox: 1
-			})).rejects.toThrow(PlayerNotFoundError);
+			})).rejects.toThrow(NotAPlayerError);
 		});
 
 		it('should throw an error if no mystery box is found', async () => {
-			await expect(openMysteryBox({
+			await expect(buyMysteryBox({
 				...services,
 				player: mockPlayers[0].id,
-				mysteryBox: -999
+				mysteryBox: INVALID_MYSTERY_BOX_ID
 			})).rejects.toThrow(MysteryBoxNotFoundError);
 		});
 	})

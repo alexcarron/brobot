@@ -1,3 +1,5 @@
+import { INVALID_MYSTERY_BOX_ID } from "../constants/test.constants";
+import { MysteryBoxNotFoundError } from "../utilities/error.utility";
 import { createMockMysteryBoxRepo } from "./mock-repositories";
 import { MysteryBoxRepository } from "./mystery-box.repository";
 
@@ -74,6 +76,17 @@ describe('MysteryBoxRepository', () => {
 				Object.values(definedResult.characterOdds)
 				.every(weight => weight > 0)
 			).toBe(true);
+		});
+	});
+
+	describe('getTokenCost()', () => {
+		it('should return the token cost of the mystery box with the given ID', () => {
+			const result = mysteryBoxRepo.getTokenCost(1);
+			expect(result).toBe(25);
+		});
+
+		it('should throw an error if the mystery box with the given ID does not exist', () => {
+			expect(() => mysteryBoxRepo.getTokenCost(INVALID_MYSTERY_BOX_ID)).toThrow(MysteryBoxNotFoundError);
 		});
 	});
 });

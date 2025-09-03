@@ -1,3 +1,6 @@
+import { INVALID_MYSTERY_BOX_ID } from "../constants/test.constants";
+import { DatabaseQuerier } from "../database/database-querier";
+import { addMockMysteryBox } from "../database/mock-database";
 import { CharacterRepository } from "../repositories/character.repository";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
 import { createMockMysteryBoxService } from "./mock-services";
@@ -5,9 +8,11 @@ import { MysteryBoxService } from "./mystery-box.service";
 
 describe('VoteService', () => {
 	let mysteryBoxService: MysteryBoxService;
+	let db: DatabaseQuerier;
 
 	beforeEach(() => {
 		mysteryBoxService = createMockMysteryBoxService();
+		db = mysteryBoxService.mysteryBoxRepository.db;
 	});
 
 	afterEach(() => {
@@ -58,6 +63,26 @@ describe('VoteService', () => {
 
 		it('should throw an error if the mystery box with the given ID does not exist', () => {
 			expect(() => mysteryBoxService.openBox(-999)).toThrow();
+		});
+	});
+
+	describe('getCost()', () => {
+		it('should return the cost of the mystery box with the given mystery box object', () => {
+			const mockMysteryBox = addMockMysteryBox(db, {
+				tokenCost: 250
+			});
+
+			const result = mysteryBoxService.getCost(mockMysteryBox);
+			expect(result).toBe(250);
+		});
+
+		it('should return the token cost of the mystery box with the given ID', () => {
+			const result = mysteryBoxService.getCost(1);
+			expect(result).toBe(25);
+		});
+
+		it('should throw an error if the mystery box with the given ID does not exist', () => {
+			expect(() => mysteryBoxService.getCost(INVALID_MYSTERY_BOX_ID)).toThrow();
 		});
 	});
 });

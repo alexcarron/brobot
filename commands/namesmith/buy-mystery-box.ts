@@ -1,12 +1,12 @@
 import { ids } from "../../bot-config/discord-ids";
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
-import { openMysteryBox } from "../../services/namesmith/workflows/open-mystery-box.workflow";
+import { buyMysteryBox } from "../../services/namesmith/workflows/buy-mystery-box.workflow";
 import { deferInteraction } from "../../utilities/discord-action-utils";
 
 export const command = new SlashCommand({
-	name: "open-mystery-box",
-	description: "Open a mystery box",
+	name: "buy-mystery-box",
+	description: "Buy a mystery box to instantly open",
 	required_servers: [ids.servers.NAMESMITH],
 	required_roles: [
 		[ids.namesmith.roles.namesmither, ids.namesmith.roles.noName, ids.namesmith.roles.smithedName],
@@ -19,7 +19,7 @@ export const command = new SlashCommand({
 		const playerID = interaction.user.id;
 		const mysteryBoxID = 1;
 		const { mysteryBoxService, playerService } = getNamesmithServices();
-		const { character } = await openMysteryBox(
+		const { character } = await buyMysteryBox(
 			{
 				mysteryBoxService,
 				playerService,

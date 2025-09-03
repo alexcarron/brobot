@@ -1,6 +1,7 @@
 import { getCharacterDifferencesInStrings } from '../../../utilities/data-structure-utils';
 import { CustomError } from '../../../utilities/error-utils';
 import { escapeDiscordMarkdown } from '../../../utilities/string-manipulation-utils';
+import { MysteryBox } from '../types/mystery-box.types';
 import { Player } from '../types/player.types';
 import { Recipe } from '../types/recipe.types';
 
@@ -88,7 +89,7 @@ export class VoteNotFoundError extends ResourceNotFoundError {
  * Error thrown when a requested namesmith mystery box is not found.
  */
 export class MysteryBoxNotFoundError extends ResourceNotFoundError {
-	constructor(mysteryBoxID: string) {
+	constructor(mysteryBoxID: number) {
 		super({
 			message: `Mystery box with ID ${mysteryBoxID} not found.`,
 			relevantData: { mysteryBoxID }
@@ -262,6 +263,23 @@ export class RefillAlreadyClaimedError extends UserActionError {
 }
 
 /**
+ * Error thrown when a player attempts to buy a mystery box that is too expensive
+ */
+export class PlayerCantAffordMysteryBoxError extends UserActionError {
+	constructor(mysteryBox: MysteryBox, player: Player) {
+		super({
+			message: `Player ${player.currentName} attempted to buy the mystery box ${mysteryBox.name} but they cannot afford it.`,
+			userFriendlyMessage:
+				`You cannot afford the "${mysteryBox.name}" mystery box.`,
+			relevantData: {
+				mysteryBox,
+				player,
+			}
+		})
+	}
+}
+
+/**
  * Error thrown when a non-player user uses an action that requires them to be a player
  */
 export class NotAPlayerError extends UserActionError {
@@ -311,6 +329,15 @@ export class NonPlayerMinedError extends NotAPlayerError {
 export class NonPlayerRefilledError extends NotAPlayerError {
 	constructor(userID: string) {
 		super(userID, "refill tokens");
+	}
+}
+
+/**
+ * Error thrown when a non-player user attempts to buy a mystery box
+ */
+export class NonPlayerBoughtMysteryBoxError extends NotAPlayerError {
+	constructor(userID: string) {
+		super(userID, "buy a mystery box");
 	}
 }
 

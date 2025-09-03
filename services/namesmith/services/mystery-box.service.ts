@@ -45,10 +45,30 @@ export class MysteryBoxService {
 			const mysteryBox = this.mysteryBoxRepository.getMysteryBoxWithOdds(id);
 
 			if (mysteryBox === null)
-				throw new MysteryBoxNotFoundError(id.toString());
+				throw new MysteryBoxNotFoundError(id);
 
 			return mysteryBox;
 		}
+	}
+
+	/**
+	 * Resolves a mystery box resolvable to its ID.
+	 * @param mysteryBoxResolvable - The mystery box resolvable to resolve.
+	 * @returns The ID of the resolved mystery box.
+	 */
+	resolveMysteryBoxID(mysteryBoxResolvable: MysteryBoxResolveable) {
+		const mysteryBox = this.resolveMysteryBox(mysteryBoxResolvable);
+		return mysteryBox.id;
+	}
+
+	/**
+	 * Returns the cost of a mystery box in tokens.
+	 * @param mysteryBoxResolvable - The mystery box to get the cost of.
+	 * @returns The cost of the mystery box in tokens.
+	 */
+	getCost(mysteryBoxResolvable: MysteryBoxResolveable): number {
+		const mysteryBoxID = this.resolveMysteryBoxID(mysteryBoxResolvable);
+		return this.mysteryBoxRepository.getTokenCost(mysteryBoxID);
 	}
 
 	/**

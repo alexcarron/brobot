@@ -178,3 +178,43 @@ export function getAnticipatedRandomNum(
 		}
 	}
 }
+
+/**
+ * Gets a random element from the given array.
+ * @template ElementType
+ * @param {ElementType[]} array - The array to get a random element from.
+ * @returns {ElementType} A random element from the array.
+ */
+function getRandomElement<ElementType>(array: ElementType[]): ElementType {
+	const randomIndex = Math.floor(getRandom() * array.length);
+	return array[randomIndex];
+}
+
+/**
+ * Generates a random integer between the given min and max values.
+ * @param {number} min - The minimum value of the range to generate a random number from.
+ * @param {number} max - The maximum value of the range to generate a random number from.
+ * @returns {number} A random integer between min and max (inclusive).
+ */
+function getBetween(min: number, max: number) {
+	return Math.floor(getRandom() * (max - min + 1)) + min;
+}
+
+/**
+ * Generates a random name, between 32 and 128 characters long.
+ * The first letter is always uppercase.
+ * @returns {string} A random name.
+ */
+export const createRandomName = () => {
+	const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
+	const firstLetter = getRandomElement(letters).toUpperCase();
+	let name = firstLetter;
+
+	const length = getBetween(32, 128);
+
+	for (let index = 1; index < length; index++) {
+		name += getRandomElement(letters);
+	}
+
+	return name;
+}

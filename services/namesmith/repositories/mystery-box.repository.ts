@@ -2,6 +2,7 @@ import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { DatabaseQuerier } from "../database/database-querier";
 import { CharacterOdds, DBCharacterOddsRow, DBMysteryBox, MysteryBox, MysteryBoxWithOdds } from "../types/mystery-box.types";
 import { getCharacterValueFromID } from "../utilities/character.utility";
+import { MysteryBoxNotFoundError } from "../utilities/error.utility";
 
 /**
  * Provides access to the static mystery box data.
@@ -110,5 +111,19 @@ export class MysteryBoxRepository {
 				characterOdds[oddsRow.characterID] = oddsRow.weight;
 				return characterOdds;
 			}, {});
+	}
+
+	/**
+	 * Returns the token cost of a mystery box.
+	 * @param mysteryBoxID - The ID of the mystery box to get the token cost for.
+	 * @returns The token cost of the mystery box.
+	 * @throws {MysteryBoxNotFoundError} If a mystery box with the given ID does not exist.
+	 */
+	getTokenCost(mysteryBoxID: number): number {
+		const mysteryBox = this.getMysteryBoxByID(mysteryBoxID);
+		if (mysteryBox === null)
+			throw new MysteryBoxNotFoundError(mysteryBoxID);
+
+		return mysteryBox.tokenCost;
 	}
 }

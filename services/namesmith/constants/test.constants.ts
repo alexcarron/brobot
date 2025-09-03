@@ -1,3 +1,5 @@
 export const INVALID_PLAYER_ID = "1612132518";
 
 export const INVALID_VOTE_ID = "2215205";
+
+export const INVALID_MYSTERY_BOX_ID = 1325192051825;

@@ -3,6 +3,7 @@ import { PlayerService } from "../services/player.service";
 import { Character } from "../types/character.types";
 import { MysteryBoxResolveable } from "../types/mystery-box.types";
 import { PlayerResolvable } from "../types/player.types";
+import { NonPlayerBoughtMysteryBoxError, PlayerCantAffordMysteryBoxError } from "../utilities/error.utility";
 
 /**
  * Opens a mystery box and adds a character to the player's name.
@@ -13,7 +14,7 @@ import { PlayerResolvable } from "../types/player.types";
  * @param options.mysteryBox - The mystery box to open.
  * @returns A promise that resolves with the character object received from the mystery box.
  */
-export const openMysteryBox = async (
+export const buyMysteryBox = async (
 	{
 		mysteryBoxService, playerService,
 		player,
@@ -25,6 +26,20 @@ export const openMysteryBox = async (
 		mysteryBox?: MysteryBoxResolveable
 	}
 ): Promise<{character: Character}> => {
+	if (!playerService.isPlayer(player)) {
+		throw new NonPlayerBoughtMysteryBoxError(
+			playerService.resolveID(player)
+		);
+	}
+
+	const tokenCost = mysteryBoxService.getCost(mysteryBox);
+	if (!playerService.hasTokens(player, tokenCost)) {
+		throw new PlayerCantAffordMysteryBoxError(
+			mysteryBoxService.resolveMysteryBox(mysteryBox),
+			playerService.resolvePlayer(player),
+		);
+	}
+
 	const recievedCharacter = mysteryBoxService.openBox(mysteryBox);
 
 	const characterValue = recievedCharacter.value;

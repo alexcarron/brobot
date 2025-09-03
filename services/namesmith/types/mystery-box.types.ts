@@ -1,12 +1,12 @@
 export type CharacterOdds = Record<string, number>;
 
-export interface MysteryBox {
+export type MysteryBox = {
 	id: number;
 	name: string;
 	tokenCost: number;
 }
 
-export interface MysteryBoxWithOdds extends MysteryBox {
+export type MysteryBoxWithOdds = MysteryBox & {
 	characterOdds: CharacterOdds;
 }
 

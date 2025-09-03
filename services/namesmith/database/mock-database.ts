@@ -7,7 +7,8 @@ import { Recipe } from '../types/recipe.types';
 import { AtLeastOne } from '../../../utilities/types/generic-types';
 import { Player } from '../types/player.types';
 import { PlayerAlreadyExistsError } from '../utilities/error.utility';
-import { createRandomNumericUUID } from '../../../utilities/random-utils';
+import { createRandomName, createRandomNumericUUID } from '../../../utilities/random-utils';
+import { MysteryBox } from '../types/mystery-box.types';
 
 /**
  * Creates an in-memory SQLite database with the schema and initial data for Namesmith already populated.
@@ -144,4 +145,44 @@ export const addMockRecipe = (
 		);
 	}
 	return { id, inputCharacters, outputCharacters };
+};
+
+/**
+ * Adds a mystery box to the database with the given properties.
+ * @param db - The in-memory database.
+ * @param mysteryBoxData - The mystery box data to add.
+ * @param mysteryBoxData.id - The ID of the mystery box.
+ * @param mysteryBoxData.name - The name of the mystery box.
+ * @param mysteryBoxData.tokenCost - The number of tokens to purchase the mystery box.
+ * @returns The added mystery box with an ID.
+ */
+export const addMockMysteryBox = (
+	db: DatabaseQuerier,
+	{
+		id = undefined,
+    name = undefined,
+    tokenCost = 0,
+	}: AtLeastOne<MysteryBox>
+): MysteryBox => {
+	if (name === undefined)
+		name = createRandomName();
+
+	if (id === undefined) {
+		const runResult = db.run(
+			"INSERT INTO mysteryBox (name, tokenCost) VALUES (@name, @tokenCost)",
+			{ name, tokenCost }
+		);
+
+		if (typeof runResult.lastInsertRowid !== "number")
+			id = Number(runResult.lastInsertRowid);
+		else
+			id = runResult.lastInsertRowid;
+	}
+	else {
+		db.run(
+			"INSERT INTO mysteryBox (id, name, tokenCost) VALUES (@id, @name, @tokenCost)",
+			{ id, name, tokenCost }
+		);
+	}
+	return { id, name, tokenCost };
 };
