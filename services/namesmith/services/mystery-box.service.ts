@@ -62,6 +62,14 @@ export class MysteryBoxService {
 	}
 
 	/**
+	 * Returns an array of all mystery box objects with their character odds.
+	 * @returns An array of mystery box objects with their character odds.
+	 */
+	getMysteryBoxes(): MysteryBoxWithOdds[] {
+		return this.mysteryBoxRepository.getMysteryBoxesWithOdds();
+	}
+
+	/**
 	 * Returns the cost of a mystery box in tokens.
 	 * @param mysteryBoxResolvable - The mystery box to get the cost of.
 	 * @returns The cost of the mystery box in tokens.

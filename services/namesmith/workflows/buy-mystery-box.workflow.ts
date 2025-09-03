@@ -1,7 +1,6 @@
 import { MysteryBoxService } from "../services/mystery-box.service";
 import { PlayerService } from "../services/player.service";
-import { Character } from "../types/character.types";
-import { MysteryBoxResolveable } from "../types/mystery-box.types";
+import { MysteryBoxResolveable } from '../types/mystery-box.types';
 import { PlayerResolvable } from "../types/player.types";
 import { NonPlayerBoughtMysteryBoxError, PlayerCantAffordMysteryBoxError } from "../utilities/error.utility";
 
@@ -13,6 +12,8 @@ import { NonPlayerBoughtMysteryBoxError, PlayerCantAffordMysteryBoxError } from 
  * @param options.player - The player who is opening the mystery box.
  * @param options.mysteryBox - The mystery box to open.
  * @returns A promise that resolves with the character object received from the mystery box.
+ * @throws {NonPlayerBoughtMysteryBoxError} if the player is not a player.
+ * @throws {PlayerCantAffordMysteryBoxError} if the player does not have enough tokens to buy the mystery box.
  */
 export const buyMysteryBox = async (
 	{
@@ -25,7 +26,7 @@ export const buyMysteryBox = async (
 		player: PlayerResolvable,
 		mysteryBox?: MysteryBoxResolveable
 	}
-): Promise<{character: Character}> => {
+) => {
 	if (!playerService.isPlayer(player)) {
 		throw new NonPlayerBoughtMysteryBoxError(
 			playerService.resolveID(player)
@@ -40,13 +41,17 @@ export const buyMysteryBox = async (
 		);
 	}
 
-	const recievedCharacter = mysteryBoxService.openBox(mysteryBox);
+	playerService.takeTokens(player, tokenCost);
 
+	const recievedCharacter = mysteryBoxService.openBox(mysteryBox);
 	const characterValue = recievedCharacter.value;
 
 	await playerService.giveCharacter(player, characterValue);
 
 	return {
-		character: recievedCharacter,
+		player: playerService.resolvePlayer(player),
+		mysteryBox: mysteryBoxService.resolveMysteryBox(mysteryBox),
+		tokenCost,
+		recievedCharacter,
 	};
 };

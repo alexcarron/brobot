@@ -202,6 +202,7 @@ export class UserActionError extends NamesmithError {
  * Error thrown when a player is missing required characters for a recipe
  */
 export class MissingRequiredCharactersError extends UserActionError {
+	declare relevantData: { player: Player, recipe: Recipe };
 	constructor(player: Player, recipe: Recipe) {
 		const { missingCharacters } =
 			getCharacterDifferencesInStrings(recipe.inputCharacters, player.inventory);
@@ -225,6 +226,7 @@ export class MissingRequiredCharactersError extends UserActionError {
  * Error thrown when a recipe is not unlocked for a player
  */
 export class RecipeNotUnlockedError extends UserActionError {
+	declare relevantData: { player: Player, recipe: Recipe };
 	constructor(player: Player, recipe: Recipe) {
 		super({
 			message: `Recipe is not unlocked for player`,
@@ -242,7 +244,7 @@ export class RecipeNotUnlockedError extends UserActionError {
  * Error thrown when a player attempts to claim a refill before the next available refill time
  */
 export class RefillAlreadyClaimedError extends UserActionError {
-	relevantData: { player: Player, nextRefillTime: Date };
+	declare relevantData: { player: Player, nextRefillTime: Date };
 
 	constructor(player: Player, nextRefillTime: Date) {
 		super({
@@ -254,11 +256,6 @@ export class RefillAlreadyClaimedError extends UserActionError {
 				nextRefillTime,
 			}
 		})
-
-		this.relevantData = {
-			player,
-			nextRefillTime,
-		}
 	}
 }
 
@@ -266,6 +263,7 @@ export class RefillAlreadyClaimedError extends UserActionError {
  * Error thrown when a player attempts to buy a mystery box that is too expensive
  */
 export class PlayerCantAffordMysteryBoxError extends UserActionError {
+	declare relevantData: { mysteryBox: MysteryBox, player: Player };
 	constructor(mysteryBox: MysteryBox, player: Player) {
 		super({
 			message: `Player ${player.currentName} attempted to buy the mystery box ${mysteryBox.name} but they cannot afford it.`,
@@ -283,6 +281,7 @@ export class PlayerCantAffordMysteryBoxError extends UserActionError {
  * Error thrown when a non-player user uses an action that requires them to be a player
  */
 export class NotAPlayerError extends UserActionError {
+	declare relevantData: { userID: string, userActionAttempting?: string };
 	constructor(userID: string, userActionAttempting?: string) {
 		const message =
 			userActionAttempting
@@ -350,6 +349,7 @@ export class InvalidNameError extends NamesmithError {}
  * Error thrown when a provided name is too long
  */
 export class NameTooLongError extends InvalidNameError {
+	declare relevantData: { name: string, maxLength: number };
 	constructor(name: string, maxLength: number) {
 		super({
 			message: `Provided name, "${name}", exceeds the maximum length of ${maxLength} characters.`,

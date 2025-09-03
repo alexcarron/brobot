@@ -3,7 +3,6 @@ jest.mock("../utilities/discord-action.utility", () => ({
 }));
 
 import { buyMysteryBox } from "./buy-mystery-box.workflow";
-import { mockPlayers } from "../repositories/mock-repositories";
 import { setupMockNamesmith } from "../event-listeners/mock-setup";
 import { changeDiscordNameOfPlayer } from "../utilities/discord-action.utility";
 import { getNamesmithServices } from "../services/get-namesmith-services";
@@ -13,6 +12,8 @@ import { MysteryBoxNotFoundError, NotAPlayerError, PlayerCantAffordMysteryBoxErr
 import { INVALID_MYSTERY_BOX_ID, INVALID_PLAYER_ID } from "../constants/test.constants";
 import { addMockMysteryBox, addMockPlayer } from "../database/mock-database";
 import { DatabaseQuerier } from "../database/database-querier";
+import { Player } from '../types/player.types';
+import { MysteryBox } from "../types/mystery-box.types";
 
 describe('buy-mystery-box.workflow', () => {
 	/**
@@ -24,6 +25,8 @@ describe('buy-mystery-box.workflow', () => {
 	};
 
 	let db: DatabaseQuerier;
+	let richPlayer: Player;
+	let defaultMysteryBox: MysteryBox;
 
 	beforeEach(() => {
 		setupMockNamesmith();
@@ -34,6 +37,10 @@ describe('buy-mystery-box.workflow', () => {
 		};
 
 		db = playerService.playerRepository.db;
+		richPlayer = addMockPlayer(db, {
+			tokens: 9999
+		});
+		defaultMysteryBox = mysteryBoxService.resolveMysteryBox(1);
 	});
 
 	afterEach(() => {
@@ -45,52 +52,52 @@ describe('buy-mystery-box.workflow', () => {
 	});
 
 	describe('buyMysteryBox()', () => {
-		it('should return the recieved character', async () => {
-			const richPlayer = addMockPlayer(db, {
-				tokens: 9999
-			});
-
-			const { character } = await buyMysteryBox({
+		it('should return the recieved character, token cost, player and mystery box', async () => {
+			const { recievedCharacter, tokenCost, player, mysteryBox } = await buyMysteryBox({
 				...services,
 				player: richPlayer.id,
-				mysteryBox: 1
+				mysteryBox: defaultMysteryBox.id
 			});
-			expect(character).toHaveProperty('id', expect.any(Number));
-			expect(character).toHaveProperty('value', expect.any(String));
-			expect(character).toHaveProperty('rarity', expect.any(Number));
+
+			expect(recievedCharacter).toHaveProperty('id', expect.any(Number));
+			expect(recievedCharacter).toHaveProperty('value', expect.any(String));
+			expect(recievedCharacter).toHaveProperty('rarity', expect.any(Number));
+
+			expect(tokenCost).toBe(25);
+
+			expect(player).toEqual({
+				...richPlayer,
+				tokens: richPlayer.tokens - tokenCost,
+				currentName: richPlayer.currentName + recievedCharacter.value,
+				inventory: richPlayer.inventory + recievedCharacter.value
+			});
+
+			expect(mysteryBox).toEqual(defaultMysteryBox);
 		});
 
 		it('should change the player\'s Discord name to their current name plus that recieved character', async () => {
-			const richPlayer = addMockPlayer(db, {
-				tokens: 9999
-			});
-
-			const { character } = await buyMysteryBox({
+			const { recievedCharacter } = await buyMysteryBox({
 				...services,
 				player: richPlayer.id,
-				mysteryBox: 1
+				mysteryBox: defaultMysteryBox.id
 			});
 
 			expect(changeDiscordNameOfPlayer).toHaveBeenCalledTimes(1);
 			expect(changeDiscordNameOfPlayer).toHaveBeenCalledWith(
 				richPlayer.id,
-				richPlayer.currentName + character.value
+				richPlayer.currentName + recievedCharacter.value
 			)
 		});
 
 		it('should change the player\'s name to their current name plus that recieved character', async () => {
-			const richPlayer = addMockPlayer(db, {
-				tokens: 9999
-			});
-
-			const { character } = await buyMysteryBox({
+			const { recievedCharacter } = await buyMysteryBox({
 				...services,
 				player: richPlayer.id,
-				mysteryBox: 1
+				mysteryBox: defaultMysteryBox.id
 			});
 
 			const newCurrentName = services.playerService.getCurrentName(richPlayer.id);
-			expect(newCurrentName).toEqual(richPlayer.currentName + character.value);
+			expect(newCurrentName).toEqual(richPlayer.currentName + recievedCharacter.value);
 		});
 
 		it('should throw PlayerCantAffordMysteryBoxError error if the player does not have enough tokens to buy the mystery box', async () => {
@@ -113,14 +120,14 @@ describe('buy-mystery-box.workflow', () => {
 			await expect(buyMysteryBox({
 				...services,
 				player: INVALID_PLAYER_ID,
-				mysteryBox: 1
+				mysteryBox: defaultMysteryBox.id
 			})).rejects.toThrow(NotAPlayerError);
 		});
 
 		it('should throw an error if no mystery box is found', async () => {
 			await expect(buyMysteryBox({
 				...services,
-				player: mockPlayers[0].id,
+				player: richPlayer.id,
 				mysteryBox: INVALID_MYSTERY_BOX_ID
 			})).rejects.toThrow(MysteryBoxNotFoundError);
 		});

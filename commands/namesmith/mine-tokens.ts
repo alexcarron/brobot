@@ -11,9 +11,6 @@ export const command = new SlashCommand({
 	name: "mine-tokens",
 	description: "Mines a small amount of tokens",
 	required_servers: [ids.servers.NAMESMITH],
-	required_roles: [
-		[ids.namesmith.roles.namesmither, ids.namesmith.roles.noName, ids.namesmith.roles.smithedName],
-	],
 	required_channels: [ids.namesmith.channels.MINE_TOKENS],
 	execute: async function execute(interaction) {
 		await deferInteraction(interaction);

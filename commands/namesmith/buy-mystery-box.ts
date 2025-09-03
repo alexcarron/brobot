@@ -1,34 +1,83 @@
 import { ids } from "../../bot-config/discord-ids";
+import { Parameter, ParameterType } from "../../services/command-creation/parameter";
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
+import { NonPlayerBoughtMysteryBoxError, PlayerCantAffordMysteryBoxError } from "../../services/namesmith/utilities/error.utility";
 import { buyMysteryBox } from "../../services/namesmith/workflows/buy-mystery-box.workflow";
-import { deferInteraction } from "../../utilities/discord-action-utils";
+import { deferInteraction, replyToInteraction } from "../../utilities/discord-action-utils";
+import { getRequiredStringParam } from "../../utilities/discord-fetch-utils";
+import { attempt } from "../../utilities/error-utils";
+import { addSIfPlural, toAmountOfNoun } from "../../utilities/string-manipulation-utils";
+
+const Parameters = Object.freeze({
+	MYSTERY_BOX: new Parameter({
+		type: ParameterType.STRING,
+		name: "mystery-box",
+		description: "The mystery box to buy",
+		isAutocomplete: true,
+	}),
+});
 
 export const command = new SlashCommand({
 	name: "buy-mystery-box",
 	description: "Buy a mystery box to instantly open",
-	required_servers: [ids.servers.NAMESMITH],
-	required_roles: [
-		[ids.namesmith.roles.namesmither, ids.namesmith.roles.noName, ids.namesmith.roles.smithedName],
+	parameters: [
+		Parameters.MYSTERY_BOX
 	],
+	required_servers: [ids.servers.NAMESMITH],
 	required_channels: [ids.namesmith.channels.OPEN_MYSTERY_BOXES],
-	cooldown: 5,
 	execute: async function execute(interaction) {
 		await deferInteraction(interaction);
 
-		const playerID = interaction.user.id;
-		const mysteryBoxID = 1;
-		const { mysteryBoxService, playerService } = getNamesmithServices();
-		const { character } = await buyMysteryBox(
-			{
-				mysteryBoxService,
-				playerService,
-				player: playerID,
-				mysteryBox: mysteryBoxID
-			},
-		);
-		const characterValue = character.value;
+		const mysteryBoxID = getRequiredStringParam(interaction, Parameters.MYSTERY_BOX.name);
 
-		await interaction.editReply(`The character in your mystery box is:\n\`\`\`${characterValue}\`\`\``);
-	}
+		await attempt(buyMysteryBox({
+			...getNamesmithServices(),
+			player: interaction.user.id,
+			mysteryBox: parseInt(mysteryBoxID)
+		}))
+			.onError(NonPlayerBoughtMysteryBoxError, async () => {
+				await replyToInteraction(interaction,
+					`You're not a player, so you can't buy a mystery box.`
+				);
+			})
+			.onError(PlayerCantAffordMysteryBoxError, async (error) => {
+				const tokenCost = error.relevantData.mysteryBox.tokenCost;
+				const tokensOwned = error.relevantData.player.tokens;
+				const tokensNeeded = tokenCost - tokensOwned;
+
+				await replyToInteraction(interaction,
+					`You don't have enough tokens to buy a mystery box.\n` +
+					`-# You need ${tokensNeeded} more ${addSIfPlural('token', tokensNeeded)} to afford the box, but you only have ${toAmountOfNoun(tokensOwned, 'token')}\n`
+				);
+			})
+			.onSuccess(async ({recievedCharacter, mysteryBox, player}) => {
+				const characterValue = recievedCharacter.value;
+				const newTokenCount = player.tokens;
+				const newInventory = player.inventory;
+
+				await replyToInteraction(interaction,
+					`You opened a ${mysteryBox.name} mystery box and received:\n` +
+					`\`\`\`${characterValue}\`\`\`\n` +
+					`-# You now have ${toAmountOfNoun(newTokenCount, 'token')}\n` +
+					`-# Your inventory now contains: ${newInventory}`
+				);
+			})
+			.execute();
+	},
+	autocomplete: async function autocomplete(interaction) {
+		const { mysteryBoxService } = getNamesmithServices()
+		const mysteryBoxes = mysteryBoxService.getMysteryBoxes();
+		const autocompleteValues = mysteryBoxes.map(mysteryBox => {
+			const {id, tokenCost, name, characterOdds} = mysteryBox;
+			const characters = Object.keys(characterOdds);
+
+			return {
+				name: `$${tokenCost} - ${name}: ${characters.sort().join("")}`,
+				value: id.toString()
+			}
+		});
+
+		await interaction.respond(autocompleteValues)
+	},
 });

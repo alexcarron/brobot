@@ -12,9 +12,6 @@ export const command = new SlashCommand({
 	name: "claim-refill",
 	description: "Claim your refill of a decent amount of tokens every so often.",
 	required_servers: [ids.servers.NAMESMITH],
-	required_roles: [
-		[ids.namesmith.roles.namesmither, ids.namesmith.roles.noName, ids.namesmith.roles.smithedName],
-	],
 	required_channels: [ids.namesmith.channels.CLAIM_REFILL],
 	execute: async function execute(interaction) {
 		await deferInteraction(interaction);
