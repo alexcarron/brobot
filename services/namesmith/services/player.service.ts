@@ -11,6 +11,7 @@ import { areCharactersInString } from "../../../utilities/string-checks-utils";
 import { MAX_NAME_LENGTH, REFILL_COOLDOWN_HOURS } from "../constants/namesmith.constants";
 import { ChatInputCommandInteraction } from "discord.js";
 import { addHours } from "../../../utilities/date-time-utils";
+import { fetchUserByUsername } from "../../../utilities/discord-fetch-utils";
 
 /**
  * Provides methods for interacting with players.
@@ -59,6 +60,31 @@ export class PlayerService {
 		}
 
 		throw new InvalidArgumentError(`resolvePlayer: Invalid player resolvable ${playerResolvable}`);
+	}
+
+	/**
+	 * Resolves a player from a given name, username, or ID.
+	 * @param playerString - The name, username, or ID of the player to resolve.
+	 * @returns The resolved player, or null if the player is not found.
+	 * @throws {Error} If the player is not found.
+	 */
+	async resolvePlayerFromString(
+		playerString: string
+	): Promise<Player | null> {
+		const playerById = this.playerRepository.getPlayerByID(playerString);
+		if (playerById) return playerById;
+
+		const user = await fetchUserByUsername(playerString);
+		if (user) {
+			const playerByUserId = this.playerRepository.getPlayerByID(user.id);
+			if (playerByUserId) return playerByUserId;
+		}
+
+		// 3) Try players with a matching display name
+		const playerByName = this.playerRepository.getPlayersByCurrentName(playerString)[0];
+		if (playerByName) return playerByName;
+
+		return null;
 	}
 
 	/**

@@ -4,7 +4,7 @@ import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { Player } from "../../services/namesmith/types/player.types";
 import { deferInteraction, replyToInteraction } from "../../utilities/discord-action-utils";
-import { fetchUserByUsername, getRequiredStringParam, getStringParamValue } from "../../utilities/discord-fetch-utils";
+import { getRequiredStringParam, getStringParamValue } from "../../utilities/discord-fetch-utils";
 
 const Parameters = Object.freeze({
 	INVENTORY: new Parameter({
@@ -39,33 +39,9 @@ export const command = new SlashCommand({
 		const playerParamGiven = playerNameOrUsernameOrID !== null;
 		let player: Player | null;
 
-		/**
-		 * Resolves a player from a given name, username, or ID.
-		 * @param playerNameOrUsernameOrID - The name, username, or ID of the player to resolve.
-		 * @returns The resolved player, or null if the player is not found.
-		 * @throws {Error} If the player is not found.
-		 */
-		const resolvePlayer = async (playerNameOrUsernameOrID: string) => {
-			// 1) Direct lookup by id/username (if your service supports both)
-			const playerById = playerService.getPlayer(playerNameOrUsernameOrID);
-			if (playerById) return playerById;
-
-			// 2) Try to resolve a platform user by username and then lookup by user ID
-			const user = await fetchUserByUsername(playerNameOrUsernameOrID); // Promise<User | null>
-			if (user) {
-				const playerByUserId = playerService.getPlayer(user.id);
-				if (playerByUserId) return playerByUserId;
-			}
-
-			// 3) Try players with a matching display name
-			const playerByName = playerService.getPlayersByName(playerNameOrUsernameOrID)[0];
-			if (playerByName) return playerByName;
-
-			return null;
-		}
-
 		if (playerParamGiven) {
-			player = await resolvePlayer(playerNameOrUsernameOrID);
+			player = await playerService.resolvePlayerFromString(playerNameOrUsernameOrID);
+
 
 			if (player === null) {
 				return await replyToInteraction(interaction,

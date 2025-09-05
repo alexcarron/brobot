@@ -6,7 +6,7 @@ import {
 	closeChannel,
 	openChannel,
 	removeAllRolesFromMember,
-	deleteAllMessagesInChannel
+	deleteAllMessagesInChannel,
 } from "../../../utilities/discord-action-utils";
 import { ids } from "../../../bot-config/discord-ids";
 import {
@@ -17,9 +17,13 @@ import {
 	fetchNamesmithChannel
 } from "./discord-fetch.utility";
 import { InvalidArgumentError } from "../../../utilities/error-utils";
-import { GuildMember, TextChannel } from "discord.js";
+import { ChatInputCommandInteraction, GuildMember, TextChannel } from "discord.js";
 import { MessageContentResolvable } from "../../../utilities/types/discord-types";
 import { DISCORD_NICKNAME_FOR_NO_NAME, MAX_NAME_LENGTH } from "../constants/namesmith.constants";
+import { Parameter } from "../../command-creation/parameter";
+import { getStringParamValue } from "../../../utilities/discord-fetch-utils";
+import { Player } from "../types/player.types";
+import { PlayerService } from "../services/player.service";
 
 /**
  * Changes a player's current name in Discord.
@@ -193,4 +197,41 @@ export const resetMemberToNewPlayer = async (guildMember: GuildMember) => {
 	await removeAllRolesFromMember(guildMember);
 	await addRoleToMember(guildMember, ids.namesmith.roles.noName);
 	await setNicknameOfMember(guildMember, DISCORD_NICKNAME_FOR_NO_NAME);
+}
+
+/**
+ * Resolves a player from a command parameter value and the current player running the command.
+ * @param parameters An object containing the following properties:
+ * @param parameters.interaction The interaction whose command parameter is being resolved.
+ * @param parameters.parameter The parameter to resolve the player from.
+ * @param parameters.playerService The player service to use to resolve the player.
+ * @returns A promise that resolves to the resolved player, or a string error message if no player is found.
+ */
+export const getPlayerFromCommandParameter = async (
+	{interaction, parameter, playerService}: {
+		interaction: ChatInputCommandInteraction,
+		parameter: Parameter,
+		playerService: PlayerService
+}): Promise<Player | string> => {
+	const playerNameOrUsernameOrID = getStringParamValue(interaction, parameter);
+	const playerParamGiven = playerNameOrUsernameOrID !== null;
+
+	let player: Player | null;
+
+	if (playerParamGiven) {
+		player = await playerService.resolvePlayerFromString(playerNameOrUsernameOrID);
+
+		if (player === null) {
+			return `The given player was not found: ${playerNameOrUsernameOrID}`
+		}
+	}
+	else {
+		player = playerService.getPlayerRunningCommand(interaction);
+
+		if (player === null) {
+			return `You must be be a player or specify a player to give the inventory to.`;
+		}
+	}
+
+	return player;
 }

@@ -19,7 +19,7 @@ export type DBPlayer = Override<Player, {
 }>;
 
 export type PlayerID = Player["id"];
-
+export type PlayerName = Player["currentName"];
 export type Inventory = Player["inventory"];
 
 export type PlayerResolvable = Player | PlayerID;

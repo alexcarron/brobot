@@ -45,10 +45,12 @@ export const command = new SlashCommand({
 				const tokenCost = error.relevantData.mysteryBox.tokenCost;
 				const tokensOwned = error.relevantData.player.tokens;
 				const tokensNeeded = tokenCost - tokensOwned;
+				const mysteryBoxName = error.relevantData.mysteryBox.name;
 
 				await replyToInteraction(interaction,
-					`You don't have enough tokens to buy a mystery box.\n` +
-					`-# You need ${tokensNeeded} more ${addSIfPlural('token', tokensNeeded)} to afford the box, but you only have ${toAmountOfNoun(tokensOwned, 'token')}\n`
+					`You need **${tokensNeeded} more ${addSIfPlural('token', tokensNeeded)}** to afford the "${mysteryBoxName}" mystery box\n` +
+					`-# You only have **${toAmountOfNoun(tokensOwned, 'token')}**\n` +
+					`-# <#${ids.namesmith.channels.MINE_TOKENS}> and <#${ids.namesmith.channels.CLAIM_REFILL}> to get more \n`
 				);
 			})
 			.onSuccess(async ({recievedCharacter, mysteryBox, player}) => {
