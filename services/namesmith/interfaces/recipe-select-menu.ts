@@ -10,6 +10,7 @@ import { escapeDiscordMarkdown } from "../../../utilities/string-manipulation-ut
 import { RecipeService } from "../services/recipe.service";
 import { DiscordSelectMenu } from "../../../utilities/discord-interface-utils";
 import { getCharacterDifferencesInStrings } from "../../../utilities/data-structure-utils";
+import { attempt } from "../../../utilities/error-utils";
 
 const onRecipeSelected = async (
 	player: PlayerResolvable,
