@@ -75,10 +75,12 @@ export const setupNamesmith = async () => {
 
 	const { gameStateService, recipeService, playerService } = getNamesmithServices();
 
-	gameStateService.scheduleGameEvents();
+	if (gameStateService.hasStarted()) {
+		gameStateService.scheduleGameEvents();
 
-	await regenerateRecipeSelectMenu({recipeService});
-	await regenerateVoteDisplay({playerService});
+		await regenerateRecipeSelectMenu({recipeService});
+		await regenerateVoteDisplay({playerService});
+	}
 
 	logSuccess("Namesmith set up");
 }

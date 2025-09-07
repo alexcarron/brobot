@@ -116,4 +116,19 @@ export class GameStateService {
 		this.startEndGameCronJob(this.gameStateRepository.getTimeEnding());
 		this.startVoteIsEndingCronJob(this.gameStateRepository.getTimeVoteIsEnding());
 	}
+
+	/**
+	 * Determines if the game has started.
+	 * @returns Whether the game has started.
+	 */
+	hasStarted(): boolean {
+		const now = new Date();
+		try {
+			const startTime = this.gameStateRepository.getTimeStarted();
+			return now > startTime;
+		}
+		catch {
+			return false;
+		}
+	}
 }

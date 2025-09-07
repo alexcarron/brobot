@@ -547,6 +547,8 @@ export function throwIfError<GivenType>(
 	if (valueOrError instanceof Error) throw valueOrError;
 }
 
+
+
 /**
  * Returns the given value if it is not an instance of the built-in Error class.
  * If the given value is an instance of the built-in Error class, it is thrown.
