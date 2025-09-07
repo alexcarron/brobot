@@ -14,6 +14,8 @@ import { addMockMysteryBox, addMockPlayer } from "../database/mock-database";
 import { DatabaseQuerier } from "../database/database-querier";
 import { Player } from '../types/player.types';
 import { MysteryBox } from "../types/mystery-box.types";
+import { returnIfNotError } from "../../../utilities/error-utils";
+import { makeSure } from "../../../utilities/jest/jest-utils";
 
 describe('buy-mystery-box.workflow', () => {
 	/**
@@ -53,11 +55,11 @@ describe('buy-mystery-box.workflow', () => {
 
 	describe('buyMysteryBox()', () => {
 		it('should return the recieved character, token cost, player and mystery box', async () => {
-			const { recievedCharacter, tokenCost, player, mysteryBox } = await buyMysteryBox({
+			const { recievedCharacter, tokenCost, player, mysteryBox } = returnIfNotError(await buyMysteryBox({
 				...services,
 				player: richPlayer.id,
 				mysteryBox: defaultMysteryBox.id
-			});
+			}));
 
 			expect(recievedCharacter).toHaveProperty('id', expect.any(Number));
 			expect(recievedCharacter).toHaveProperty('value', expect.any(String));
@@ -76,11 +78,13 @@ describe('buy-mystery-box.workflow', () => {
 		});
 
 		it('should change the player\'s Discord name to their current name plus that recieved character', async () => {
-			const { recievedCharacter } = await buyMysteryBox({
-				...services,
-				player: richPlayer.id,
-				mysteryBox: defaultMysteryBox.id
-			});
+			const { recievedCharacter } = returnIfNotError(
+				await buyMysteryBox({
+					...services,
+					player: richPlayer.id,
+					mysteryBox: defaultMysteryBox.id
+				})
+			);
 
 			expect(changeDiscordNameOfPlayer).toHaveBeenCalledTimes(1);
 			expect(changeDiscordNameOfPlayer).toHaveBeenCalledWith(
@@ -90,11 +94,12 @@ describe('buy-mystery-box.workflow', () => {
 		});
 
 		it('should change the player\'s name to their current name plus that recieved character', async () => {
-			const { recievedCharacter } = await buyMysteryBox({
-				...services,
-				player: richPlayer.id,
-				mysteryBox: defaultMysteryBox.id
-			});
+			const { recievedCharacter } =
+				returnIfNotError(await buyMysteryBox({
+					...services,
+					player: richPlayer.id,
+					mysteryBox: defaultMysteryBox.id
+				}));
 
 			const newCurrentName = services.playerService.getCurrentName(richPlayer.id);
 			expect(newCurrentName).toEqual(richPlayer.currentName + recievedCharacter.value);
@@ -109,27 +114,27 @@ describe('buy-mystery-box.workflow', () => {
 				tokens: 30
 			});
 
-			await expect(buyMysteryBox({
+			makeSure(await buyMysteryBox({
 				...services,
 				player: brokePlayer,
 				mysteryBox: expensiveMysteryBox
-			})).rejects.toThrow(PlayerCantAffordMysteryBoxError);
+			})).isAnInstanceOf(PlayerCantAffordMysteryBoxError);
 		});
 
 		it('should throw NotAPlayerError error if the user is not a player', async () => {
-			await expect(buyMysteryBox({
+			makeSure(await buyMysteryBox({
 				...services,
 				player: INVALID_PLAYER_ID,
 				mysteryBox: defaultMysteryBox.id
-			})).rejects.toThrow(NotAPlayerError);
+			})).isAnInstanceOf(NotAPlayerError);
 		});
 
 		it('should throw an error if no mystery box is found', async () => {
-			await expect(buyMysteryBox({
+			await makeSure(buyMysteryBox({
 				...services,
 				player: richPlayer.id,
 				mysteryBox: INVALID_MYSTERY_BOX_ID
-			})).rejects.toThrow(MysteryBoxNotFoundError);
+			})).eventuallyThrows(MysteryBoxNotFoundError);
 		});
 	})
 })

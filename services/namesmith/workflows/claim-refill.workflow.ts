@@ -11,22 +11,22 @@ import { addHours } from '../../../utilities/date-time-utils';
  * @param params.playerService The player service.
  * @param params.playerRefilling The player that is refilling.
  * @returns An object containing the amount of tokens earned and the new token count of the player.
- * @throws {RefillAlreadyClaimedError} If the player has already claimed a refill.
- * @throws {NonPlayerRefilledError} If the provided player is not a valid player.
+ * - RefillAlreadyClaimedError if the player has already claimed a refill.
+ * - NonPlayerRefilledError if the provided player is not a valid player.
  */
-export const refillTokens = (
+export const claimRefill = (
 	{playerService, playerRefilling}: {
 		playerService: PlayerService,
 		playerRefilling: PlayerResolvable,
 	}
 ) => {
 	if (!playerService.isPlayer(playerRefilling)) {
-		throw new NonPlayerRefilledError(playerService.resolveID(playerRefilling));
+		return new NonPlayerRefilledError(playerService.resolveID(playerRefilling));
 	}
 
 	const now = new Date();
 	if (!playerService.canRefill(playerRefilling)) {
-		throw new RefillAlreadyClaimedError(
+		return new RefillAlreadyClaimedError(
 			playerService.resolvePlayer(playerRefilling),
 			playerService.getNextAvailableRefillTime(playerRefilling)
 		);

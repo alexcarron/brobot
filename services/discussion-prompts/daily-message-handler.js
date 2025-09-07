@@ -5,6 +5,7 @@ const { fetchGuild, fetchTextChannel } = require("../../utilities/discord-fetch-
 const { saveObjectToJsonInGitHub } = require("../../utilities/persistent-storage-utils.js");
 const { logWarning, logInfo } = require("../../utilities/logging-utils.js");
 const { ids } = require("../../bot-config/discord-ids");
+const { attempt } = require("../../utilities/error-utils");
 
 /**
  * Handles the sending of daily messages
@@ -118,8 +119,15 @@ channelsToMessages
 		}
 
 		const messageContents = this.getRandomMessage(channelName);
-		// @ts-ignore
-		const channel = await this.convertChannelNameToChannel(channelName);
+		const channel =
+			// @ts-ignore
+			await attempt(this.convertChannelNameToChannel(channelName))
+				.onError(() => {
+					logWarning(`Could not find channel with name ${channelName}`)
+					return undefined
+				})
+				.getReturnValue();
+
 
 		this.removeMessage(channelName, messageContents);
 

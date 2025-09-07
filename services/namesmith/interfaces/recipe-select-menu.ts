@@ -1,5 +1,4 @@
 import { StringSelectMenuInteraction } from "discord.js";
-import { attempt } from "../../../utilities/error-utils";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PlayerResolvable } from "../types/player.types";
 import { RecipeResolvable } from "../types/recipe.types";
@@ -10,39 +9,50 @@ import { replyToInteraction } from "../../../utilities/discord-action-utils";
 import { escapeDiscordMarkdown } from "../../../utilities/string-manipulation-utils";
 import { RecipeService } from "../services/recipe.service";
 import { DiscordSelectMenu } from "../../../utilities/discord-interface-utils";
+import { getCharacterDifferencesInStrings } from "../../../utilities/data-structure-utils";
 
 const onRecipeSelected = async (
 	player: PlayerResolvable,
 	recipe: RecipeResolvable,
 	interaction: StringSelectMenuInteraction,
 ) => {
-	await attempt(
-		craftCharacter({...getNamesmithServices(), player, recipe})
-	)
-		.onError(NonPlayerCraftedError, async (error) => {
-			await replyToInteraction(interaction, error.userFriendlyMessage);
-		})
-		.onError(MissingRequiredCharactersError, async (error) => {
-			await replyToInteraction(interaction, error.userFriendlyMessage);
-		})
-		.onError(RecipeNotUnlockedError, async (error) => {
-			await replyToInteraction(interaction, error.userFriendlyMessage);
-		})
-		.onError(async (error) => {
-			const errorMessage =
-				(error as any).userFriendlyMessage ??
-				error.message ??
-				"An unknown error has occurred.";
+	const craftingResult = await craftCharacter({
+		...getNamesmithServices(),
+		player,
+		recipe
+	});
+	if (craftingResult instanceof NonPlayerCraftedError) {
+		await replyToInteraction(interaction,
+			'You\'re not a player, so you can\'t craft a character.'
+		);
+		return;
+	}
+	else if (craftingResult instanceof MissingRequiredCharactersError) {
+		const error = craftingResult;
+		const { player, recipe } = error.relevantData;
+		const { missingCharacters } =
+			getCharacterDifferencesInStrings(recipe.inputCharacters, player.inventory);
 
-			await replyToInteraction(interaction, errorMessage);
-		})
-		.onSuccess(async ({newInventory, craftedCharacter, recipeUsed}) => {
-			await replyToInteraction(interaction, escapeDiscordMarkdown(
-				`Successfully crafted ${craftedCharacter} using ${recipeUsed.inputCharacters}\n` +
-				`Your inventory now contains ${newInventory}`
-			));
-		})
-		.execute();
+		const missingCharactersDisplay =
+			escapeDiscordMarkdown(missingCharacters.join(''));
+
+		await replyToInteraction(interaction,
+			`You are missing ${missingCharacters.length} required characters for this recipe: ${missingCharactersDisplay}`
+		);
+		return;
+	}
+	else if (craftingResult instanceof RecipeNotUnlockedError) {
+		await replyToInteraction(interaction,
+			"You must unlock this recipe before you can use it."
+		);
+		return;
+	}
+
+	const {newInventory, craftedCharacter, recipeUsed} = craftingResult;
+	await replyToInteraction(interaction, escapeDiscordMarkdown(
+		`Successfully crafted ${craftedCharacter} using ${recipeUsed.inputCharacters}\n` +
+		`Your inventory now contains ${newInventory}`
+	));
 }
 
 export const createRecipeSelectMenu = (

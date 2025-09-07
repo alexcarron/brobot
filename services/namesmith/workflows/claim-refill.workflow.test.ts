@@ -3,6 +3,7 @@ jest.mock("../../../utilities/random-utils", () => ({
   getAnticipatedRandomNum: jest.fn().mockReturnValue(50),
 }));
 
+import { returnIfNotError } from "../../../utilities/error-utils";
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { REFILL_COOLDOWN_HOURS } from "../constants/namesmith.constants";
 import { INVALID_PLAYER_ID } from "../constants/test.constants";
@@ -12,9 +13,9 @@ import { setupMockNamesmith } from "../event-listeners/mock-setup";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PlayerService } from "../services/player.service";
 import { NonPlayerRefilledError, RefillAlreadyClaimedError } from "../utilities/error.utility";
-import { refillTokens } from "./refill-tokens.workflow";
+import { claimRefill } from "./claim-refill.workflow";
 
-describe('refill-tokens.workflow', () => {
+describe('claim-tokens.workflow', () => {
 	let services: {
 		playerService: PlayerService
 	};
@@ -36,10 +37,11 @@ describe('refill-tokens.workflow', () => {
 				tokens: 10
 			});
 
-			const { newTokenCount, tokensEarned, nextRefillTime } = refillTokens({
-				...services,
-				playerRefilling: mockPlayer.id
-			});
+			const { newTokenCount, tokensEarned, nextRefillTime } =
+				returnIfNotError(claimRefill({
+					...services,
+					playerRefilling: mockPlayer.id
+				}));
 
 			makeSure(newTokenCount).is(mockPlayer.tokens + 50);
 			makeSure(tokensEarned).is(50);
@@ -53,17 +55,17 @@ describe('refill-tokens.workflow', () => {
 				lastClaimedRefillTime: new Date()
 			});
 
-			makeSure(() => refillTokens({
+			makeSure(claimRefill({
 				...services,
 				playerRefilling: mockPlayer.id
-			})).throws(RefillAlreadyClaimedError);
+			})).isAnInstanceOf(RefillAlreadyClaimedError);
 		})
 
 		it('should throw NonPlayerRefilledError if the provided player is not a valid player', () => {
-			makeSure(() => refillTokens({
+			makeSure(claimRefill({
 				...services,
 				playerRefilling: INVALID_PLAYER_ID
-			})).throws(NonPlayerRefilledError);
+			})).isAnInstanceOf(NonPlayerRefilledError);
 		});
 	});
 });

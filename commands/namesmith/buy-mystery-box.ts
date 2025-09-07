@@ -6,7 +6,6 @@ import { NonPlayerBoughtMysteryBoxError, PlayerCantAffordMysteryBoxError } from 
 import { buyMysteryBox } from "../../services/namesmith/workflows/buy-mystery-box.workflow";
 import { deferInteraction, replyToInteraction } from "../../utilities/discord-action-utils";
 import { getRequiredStringParam } from "../../utilities/discord-fetch-utils";
-import { attempt } from "../../utilities/error-utils";
 import { addSIfPlural, toAmountOfNoun } from "../../utilities/string-manipulation-utils";
 
 const Parameters = Object.freeze({
@@ -31,41 +30,42 @@ export const command = new SlashCommand({
 
 		const mysteryBoxID = getRequiredStringParam(interaction, Parameters.MYSTERY_BOX.name);
 
-		await attempt(buyMysteryBox({
+		const result = await buyMysteryBox({
 			...getNamesmithServices(),
 			player: interaction.user.id,
 			mysteryBox: parseInt(mysteryBoxID)
-		}))
-			.onError(NonPlayerBoughtMysteryBoxError, async () => {
-				await replyToInteraction(interaction,
-					`You're not a player, so you can't buy a mystery box.`
-				);
-			})
-			.onError(PlayerCantAffordMysteryBoxError, async (error) => {
-				const tokenCost = error.relevantData.mysteryBox.tokenCost;
-				const tokensOwned = error.relevantData.player.tokens;
-				const tokensNeeded = tokenCost - tokensOwned;
-				const mysteryBoxName = error.relevantData.mysteryBox.name;
+		});
 
-				await replyToInteraction(interaction,
-					`You need **${tokensNeeded} more ${addSIfPlural('token', tokensNeeded)}** to afford the "${mysteryBoxName}" mystery box\n` +
-					`-# You only have **${toAmountOfNoun(tokensOwned, 'token')}**\n` +
-					`-# <#${ids.namesmith.channels.MINE_TOKENS}> and <#${ids.namesmith.channels.CLAIM_REFILL}> to get more \n`
-				);
-			})
-			.onSuccess(async ({recievedCharacter, mysteryBox, player}) => {
-				const characterValue = recievedCharacter.value;
-				const newTokenCount = player.tokens;
-				const newInventory = player.inventory;
+		if (result instanceof NonPlayerBoughtMysteryBoxError) {
+			return await replyToInteraction(interaction,
+				`You're not a player, so you can't buy a mystery box.`
+			);
+		}
+		else if (result instanceof PlayerCantAffordMysteryBoxError) {
+			const error = result;
+			const tokenCost = error.relevantData.mysteryBox.tokenCost;
+			const tokensOwned = error.relevantData.player.tokens;
+			const tokensNeeded = tokenCost - tokensOwned;
+			const mysteryBoxName = error.relevantData.mysteryBox.name;
 
-				await replyToInteraction(interaction,
-					`You opened a ${mysteryBox.name} mystery box and received:\n` +
-					`\`\`\`${characterValue}\`\`\`\n` +
-					`-# You now have ${toAmountOfNoun(newTokenCount, 'token')}\n` +
-					`-# Your inventory now contains: ${newInventory}`
-				);
-			})
-			.execute();
+			return await replyToInteraction(interaction,
+				`You need **${tokensNeeded} more ${addSIfPlural('token', tokensNeeded)}** to afford the "${mysteryBoxName}" mystery box\n` +
+				`-# You only have **${toAmountOfNoun(tokensOwned, 'token')}**\n` +
+				`-# <#${ids.namesmith.channels.MINE_TOKENS}> and <#${ids.namesmith.channels.CLAIM_REFILL}> to get more \n`
+			);
+		}
+
+		const {recievedCharacter, mysteryBox, player} = result;
+		const characterValue = recievedCharacter.value;
+		const newTokenCount = player.tokens;
+		const newInventory = player.inventory;
+
+		await replyToInteraction(interaction,
+			`You opened a ${mysteryBox.name} mystery box and received:\n` +
+			`\`\`\`${characterValue}\`\`\`\n` +
+			`-# You now have ${toAmountOfNoun(newTokenCount, 'token')}\n` +
+			`-# Your inventory now contains: ${newInventory}`
+		);
 	},
 	autocomplete: async function autocomplete(interaction) {
 		const { mysteryBoxService } = getNamesmithServices()

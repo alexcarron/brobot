@@ -6,10 +6,14 @@ import { MissingRequiredCharactersError, NonPlayerCraftedError, RecipeNotUnlocke
 
 /**
  * Crafts a character using a given recipe and player.
- * @param {{playerService: PlayerService, recipeService: RecipeService, player: PlayerResolvable, recipe: RecipeResolvable}} args - The arguments for crafting a character.
- * @returns {Promise<void>} A promise that resolves when the character is crafted.
- * @throws {MissingRequiredCharactersError} If the player does not have all the required characters to craft the character.
- * @throws {RecipeNotUnlockedError} If the recipe is not unlocked for the player.
+ * @param parameters - The parameters for the function
+ * @param parameters.playerService - The player service
+ * @param parameters.recipeService - The recipe service
+ * @param parameters.player - The player who is crafting the character
+ * @param parameters.recipe - The recipe used to craft the character
+ * @returns An object containing the new inventory, the crafted character, the recipe used, and the player who is crafting the character.
+ * - MissingRequiredCharactersError if the player does not have all the required characters to craft the character.
+ * - RecipeNotUnlockedError if the recipe is not unlocked for the player.
  */
 export const craftCharacter = async (
 	{playerService, recipeService, player, recipe}: {
@@ -20,12 +24,12 @@ export const craftCharacter = async (
 	}
 ) => {
 	if (!playerService.isPlayer(player)) {
-		throw new NonPlayerCraftedError(playerService.resolveID(player));
+		return new NonPlayerCraftedError(playerService.resolveID(player));
 	}
 
 	const hasRequiredCharacters = recipeService.playerHasInputCharacters(recipe, player);
 	if (!hasRequiredCharacters) {
-		throw new MissingRequiredCharactersError(
+		return new MissingRequiredCharactersError(
 			playerService.resolvePlayer(player),
 			recipeService.resolveRecipe(recipe)
 		);
@@ -33,7 +37,7 @@ export const craftCharacter = async (
 
 	const isUnlocked = recipeService.isUnlockedForPlayer(recipe, player);
 	if (!isUnlocked) {
-		throw new RecipeNotUnlockedError(
+		return new RecipeNotUnlockedError(
 			playerService.resolvePlayer(player),
 			recipeService.resolveRecipe(recipe)
 		);

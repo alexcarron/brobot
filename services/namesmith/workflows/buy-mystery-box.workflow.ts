@@ -12,8 +12,8 @@ import { NonPlayerBoughtMysteryBoxError, PlayerCantAffordMysteryBoxError } from 
  * @param options.player - The player who is opening the mystery box.
  * @param options.mysteryBox - The mystery box to open.
  * @returns A promise that resolves with the character object received from the mystery box.
- * @throws {NonPlayerBoughtMysteryBoxError} if the player is not a player.
- * @throws {PlayerCantAffordMysteryBoxError} if the player does not have enough tokens to buy the mystery box.
+ * - NonPlayerBoughtMysteryBoxError if the player is not a player.
+ * - PlayerCantAffordMysteryBoxError if the player does not have enough tokens to buy the mystery box.
  */
 export const buyMysteryBox = async (
 	{
@@ -28,14 +28,14 @@ export const buyMysteryBox = async (
 	}
 ) => {
 	if (!playerService.isPlayer(player)) {
-		throw new NonPlayerBoughtMysteryBoxError(
+		return new NonPlayerBoughtMysteryBoxError(
 			playerService.resolveID(player)
 		);
 	}
 
 	const tokenCost = mysteryBoxService.getCost(mysteryBox);
 	if (!playerService.hasTokens(player, tokenCost)) {
-		throw new PlayerCantAffordMysteryBoxError(
+		return new PlayerCantAffordMysteryBoxError(
 			mysteryBoxService.resolveMysteryBox(mysteryBox),
 			playerService.resolvePlayer(player),
 		);

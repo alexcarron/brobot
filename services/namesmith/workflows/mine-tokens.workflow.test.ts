@@ -12,6 +12,7 @@ import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PlayerService } from "../services/player.service";
 import { NonPlayerMinedError } from "../utilities/error.utility";
 import { mineTokens } from "./mine-tokens.workflow";
+import { returnIfNotError } from '../../../utilities/error-utils';
 
 describe('mine-tokens.workflow', () => {
 	let services: {
@@ -35,10 +36,10 @@ describe('mine-tokens.workflow', () => {
 				tokens: 10
 			});
 
-			const { newTokenCount, tokensEarned } = mineTokens({
+			const { newTokenCount, tokensEarned } = returnIfNotError(mineTokens({
 				...services,
 				playerMining: mockPlayer.id
-			});
+			}));
 
 			makeSure(newTokenCount).is(mockPlayer.tokens + 10);
 			makeSure(tokensEarned).is(10);
@@ -48,10 +49,10 @@ describe('mine-tokens.workflow', () => {
 		});
 
 		it('should throw NonPlayerMinedError if the provided player is not a valid player', () => {
-			makeSure(() => mineTokens({
+			makeSure(mineTokens({
 				...services,
 				playerMining: INVALID_PLAYER_ID
-			})).throws(NonPlayerMinedError);
+			})).isAnInstanceOf(NonPlayerMinedError);
 		});
 	});
 });

@@ -518,12 +518,55 @@ export function attempt<ReturnType>(
  * After calling this, the value is known to be an Error.
  * @param error - The value to check.
  * @throws {unknown} - Throws the value if it's not an Error.
+ * @example
+ * try {
+ *   const money = praseInt(moneyInput)
+ * }
+ * catch (maybeError) {
+ *   throwIfNotError(maybeError);
+ *   const error: Error = error
+ * }
  */
 export function throwIfNotError(error: unknown): asserts error is Error {
   if (!(error instanceof Error)) throw error;
 }
 
+/**
+ * Throws the given value if it is an instance of the built-in Error class.
+ * After calling this, the value is known to not be an Error.
+ * @param valueOrError - The value to check.
+ * @throws {unknown} - Throws the value if it's an Error.
+ * @example
+ * const maybeMoney: number | Error = calculateMoney();
+ * throwIfError(maybeMoney);
+ * const money: number = maybeMoney;
+ */
+export function throwIfError<GivenType>(
+	valueOrError: GivenType
+): asserts valueOrError is Exclude<GivenType, Error> {
+	if (valueOrError instanceof Error) throw valueOrError;
+}
 
+/**
+ * Returns the given value if it is not an instance of the built-in Error class.
+ * If the given value is an instance of the built-in Error class, it is thrown.
+ * After calling this, the value is known to not be an Error.
+ * @param valueOrError - The value to check.
+ * @returns The given value if it is not an Error.
+ * @throws {unknown} - Throws the value if it's an Error.
+ * @example
+ * const calculateMoney = () => {
+ * 	if (Math.random() < 0.5) return new Error("Money not found.");
+ * 	return 100;
+ * };
+ * const money: number = returnIfNotError(calculateMoney());
+ */
+export function returnIfNotError<GivenType>(
+	valueOrError: GivenType
+): Exclude<GivenType, Error> {
+	if (valueOrError instanceof Error) throw valueOrError;
+	return valueOrError as Exclude<GivenType, Error>;
+}
 
 export function hasFailed<ReturnType>(
 	promise: Promise<ReturnType>

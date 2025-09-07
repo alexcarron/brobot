@@ -11,6 +11,7 @@ import { PlayerService } from "../services/player.service";
 import { RecipeService } from "../services/recipe.service";
 import { MissingRequiredCharactersError, RecipeNotUnlockedError } from "../utilities/error.utility";
 import { craftCharacter } from "./craft-character.workflow";
+import { returnIfNotError } from '../../../utilities/error-utils';
 
 describe('craft-character.workflow', () => {
 	let recipeService: RecipeService;
@@ -43,9 +44,9 @@ describe('craft-character.workflow', () => {
 				outputCharacters: 'c'
 			});
 
-			const result = await craftCharacter({
+			const result = returnIfNotError(await craftCharacter({
 				playerService, recipeService, player, recipe
-			});
+			}));
 
 			const inventoryAfter = playerService.getInventory(player);
 
@@ -66,9 +67,9 @@ describe('craft-character.workflow', () => {
 				inputCharacters: 'def'
 			});
 
-			await makeSure(craftCharacter({
+			await makeSure(await craftCharacter({
 				playerService, recipeService, player, recipe
-			})).eventuallyThrows(MissingRequiredCharactersError);
+			})).isAnInstanceOf(MissingRequiredCharactersError);
 		});
 
 		it('should throw RecipeNotUnlockedError if the recipe is not unlocked for the player.', async () => {
@@ -83,9 +84,9 @@ describe('craft-character.workflow', () => {
 				outputCharacters: 'c'
 			});
 
-			await makeSure(craftCharacter({
+			await makeSure(await craftCharacter({
 				playerService, recipeService, player, recipe
-			})).eventuallyThrows(RecipeNotUnlockedError);
+			})).isAnInstanceOf(RecipeNotUnlockedError);
 		});
 	});
 });

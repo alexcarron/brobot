@@ -10,7 +10,7 @@ import { NonPlayerMinedError } from "../utilities/error.utility";
  * @param params.playerService The player service.
  * @param params.playerMining The player that is mining.
  * @returns An object containing the amount of tokens earned and the new token count of the player.
- * @throws {NonPlayerMinedError} If the provided player is not a valid player.
+ * - NonPlayerMinedError if the provided player is not a valid player.
  */
 export const mineTokens = (
 	{playerService, playerMining}: {
@@ -19,7 +19,7 @@ export const mineTokens = (
 	}
 ) => {
 	if (!playerService.isPlayer(playerMining)) {
-		throw new NonPlayerMinedError(playerService.resolveID(playerMining));
+		return new NonPlayerMinedError(playerService.resolveID(playerMining));
 	}
 
 	const tokensEarned = Math.round(getAnticipatedRandomNum({
