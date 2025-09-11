@@ -1,4 +1,15 @@
-const { setNestedProperty, appendToNestedProperty, getShuffledArray, arraysHaveSameElements, getRandomElement, getCharacterDifferencesInStrings, getRandomWeightedElement } = require("./data-structure-utils");
+import {
+	setNestedProperty,
+	appendToNestedProperty,
+	getShuffledArray,
+	arraysHaveSameElements,
+	getRandomElement,
+	getCharacterDifferencesInStrings,
+	getRandomWeightedElement,
+	mapToObject,
+} from "./data-structure-utils";
+import { InvalidArgumentError } from "./error-utils";
+import { makeSure } from "./jest/jest-utils";
 
 describe('setNestedProperty', () => {
 	it('sets a property directly', () => {
@@ -43,21 +54,7 @@ describe('setNestedProperty', () => {
 
 	it('throws an error when setting a property with an empty property path', () => {
 		const object = {};
-		const propertyPath = [];
-		const value = 'value';
-		expect(() => setNestedProperty(object, propertyPath, value)).toThrow();
-	});
-
-	it('throws an error when setting a property with a null or undefined object', () => {
-		const object = null;
-		const propertyPath = ['property1'];
-		const value = 'value';
-		expect(() => setNestedProperty(object, propertyPath, value)).toThrow();
-	});
-
-	it('throws an error when setting a property with a non-array property path', () => {
-		const object = {};
-		const propertyPath = 'property1';
+		const propertyPath: string[] = [];
 		const value = 'value';
 		expect(() => setNestedProperty(object, propertyPath, value)).toThrow();
 	});
@@ -96,27 +93,6 @@ describe('appendToNestedProperty', () => {
 		expect(object).toEqual({ property1: { property2: ['value'] } });
 	});
 
-	it('throws an error if the object is not an object', () => {
-		const object = 'not an object';
-		const propertyPath = ['property1'];
-		const value = 'value';
-		expect(() => appendToNestedProperty(object, propertyPath, value)).toThrow('Object must be an object.');
-	});
-
-	it('throws an error if the property path is not an array', () => {
-		const object = {};
-		const propertyPath = 'not an array';
-		const value = 'value';
-		expect(() => appendToNestedProperty(object, propertyPath, value)).toThrow('Property path must be an array.');
-	});
-
-	it('throws an error if the property path is empty', () => {
-		const object = {};
-		const propertyPath = [];
-		const value = 'value';
-		expect(() => appendToNestedProperty(object, propertyPath, value)).toThrow('Property path must have at least one property.');
-	});
-
 	it('handles multiple levels of nesting', () => {
 		const object = { property1: {} };
 		const propertyPath = ['property1', 'property2', 'property3'];
@@ -143,13 +119,8 @@ describe('getShuffledArray()', () => {
 			expect(getShuffledArray([1])).toEqual([1]);
 	});
 
-
-	it('should throw an error when given a non-array input', () => {
-		expect(() => getShuffledArray('not an array')).toThrow();
-	});
-
 	it('should return an empty array when given an empty array input', () => {
-		const originalArray = [];
+		const originalArray: number[] = [];
 		const shuffledArray = getShuffledArray(originalArray);
 		expect(shuffledArray).toEqual([]);
 	});
@@ -158,10 +129,6 @@ describe('getShuffledArray()', () => {
 describe('arraysHaveSameElements()', () => {
 	it('should throw an error if less than two arrays are passed', () => {
 		expect(() => arraysHaveSameElements([1, 2, 3])).toThrow('At least two arrays must be passed.');
-	});
-
-	it('should throw an error if not all arguments are arrays', () => {
-		expect(() => arraysHaveSameElements([1, 2, 3], 'hello')).toThrow('All arguments must be arrays.');
 	});
 
 	it('should return false if arrays have different lengths', () => {
@@ -199,10 +166,6 @@ describe('getRandomElement()', () => {
 		const array = [1, 2, 3, 4, 5];
 		const randomElement = getRandomElement(array);
 		expect(array.includes(randomElement)).toBe(true);
-	});
-
-	it('should throw an error when the input is not an array', () => {
-		expect(() => getRandomElement('hello')).toThrow('Given value must be an array. Received: string');
 	});
 
 	it('should throw an error when the array is empty', () => {
@@ -313,18 +276,6 @@ describe('getCharacterDifferencesInStrings()', () => {
 			extraCharacters: ['4', '5', '6']
 		});
 	});
-
-	it('should throw an error for null input', () => {
-		expect(() => getCharacterDifferencesInStrings(null, 'hello')).toThrow(TypeError);
-	});
-
-	it('should throw an error for undefined input', () => {
-		expect(() => getCharacterDifferencesInStrings(undefined, 'hello')).toThrow(TypeError);
-	});
-
-	it('should throw an error for non-string input', () => {
-		expect(() => getCharacterDifferencesInStrings(123, 'hello')).toThrow(TypeError);
-	});
 });
 
 describe('getRandomWeightedElement()', () => {
@@ -332,10 +283,6 @@ describe('getRandomWeightedElement()', () => {
     const elementToWeight = { a: 1, b: 2, c: 3 };
     const result = getRandomWeightedElement(elementToWeight);
     expect(Object.keys(elementToWeight)).toContain(result);
-  });
-
-  it('should throw an error when the input is not an object', () => {
-    expect(() => getRandomWeightedElement('hello')).toThrow('getRandomWeightedElement: elementToWeight must be an object.');
   });
 
   it('should throw an error when any of the weights is not a positive number', () => {
@@ -360,3 +307,119 @@ describe('getRandomWeightedElement()', () => {
     expect(result).toBe('a');
   });
 });
+
+describe('mapToObject()', () => {
+	const players = [
+		{
+			id: 1,
+			name: 'John Doe',
+			age: 30,
+		},
+		{
+			id: 2,
+			name: 'Jane Doe',
+			age: 25
+		},
+		{
+			id: 3,
+			name: 'Bob Smith',
+			age: 30
+		}
+	]
+
+	it('merges an array of objects with unique keys into a single object', () => {
+		makeSure(
+			mapToObject(players, player => ({ [player.id]: player }))
+		)
+		.is({
+			1: {id: 1, name: 'John Doe', age: 30},
+			2: {id: 2, name: 'Jane Doe', age: 25},
+			3: {id: 3, name: 'Bob Smith', age: 30}
+		})
+	})
+
+	it('returns an empty object when given an empty array', () => {
+		const idObjects: {id: number}[]	= [];
+		makeSure(
+			mapToObject(idObjects, object => ({ [object.id]: object }))
+		)
+		.is({})
+	})
+
+	// Array with objects having overlapping keys: last one wins
+	it('throws error when multiple objects have the same key', () => {
+		makeSure(() =>
+			mapToObject(players, player => ({ [player.age]: player }))
+		)
+		.throws(InvalidArgumentError);
+	})
+
+	it('returns the same object when the array contains a single object', () => {
+		makeSure(
+			mapToObject([{ id: 1, name: 'John Doe', age: 30 }], player => player)
+		)
+		.is({
+			id: 1,
+			name: 'John Doe',
+			age: 30
+		})
+	})
+
+	it('merges nested objects as values, but does not deep merge them', () => {
+		makeSure(
+			mapToObject(
+				[
+					{
+						id: 1,
+						name: 'John Doe',
+						car: {
+							name: 'Ford',
+							year: 2019
+						}
+					},
+					{
+						id: 2,
+						name: 'Jane Doe',
+						car: {
+							name: 'Toyota',
+							year: 2020
+						}
+					}
+				],
+				player => ({ [player.id]: player })
+			)
+		)
+		.is({
+			1: {
+				id: 1,
+				name: 'John Doe',
+				car: {
+					name: 'Ford',
+					year: 2019
+				}
+			},
+			2: {
+				id: 2,
+				name: 'Jane Doe',
+				car: {
+					name: 'Toyota',
+					year: 2020
+				}
+			}
+		})
+	})
+
+	it('handles objects with dynamic keys generated from array items', () => {
+		const numbers = [1, 2, 3, 4, 5];
+		makeSure(
+			mapToObject(numbers, number => ({ [`key${number}`]: number }))
+		)
+		.is({
+			key1: 1,
+			key2: 2,
+			key3: 3,
+			key4: 4,
+			key5: 5
+		})
+	})
+})

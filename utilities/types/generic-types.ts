@@ -42,7 +42,7 @@ export type TypedNamedValue<
  *   linkedIn: string;
  * }>
  */
-export type AtLeastOne<ObjectType extends object> = {
+export type WithAtLeastOne<ObjectType extends object> = {
   [RequiredKey in keyof ObjectType]:
 		{ [Key in RequiredKey]: ObjectType[Key] } &
 		Partial<Omit<ObjectType, RequiredKey>>
@@ -53,7 +53,7 @@ export type AtLeastOne<ObjectType extends object> = {
  * @example
  * type IdentifiablePlayer = AtLeast<Player, "id" | "currentName">
  */
-export type AtLeast<
+export type WithAtLeast<
 	ObjectType extends object,
 	RequiredKeys extends keyof ObjectType
 > =
@@ -65,7 +65,7 @@ export type AtLeast<
  * @example
  * type PlayerIdentifier = KeepSharedProperties<Player, { id: string }>
  */
-type KeepSharedProperties<
+type WithOnlySharedProperties<
 	PossibleProperties extends object,
 	AllowedProperties extends object
 > = {
@@ -82,9 +82,20 @@ type KeepSharedProperties<
  */
 export type Override<
 	ObjectType extends object,
-  Overrides extends { [K in keyof ObjectType]?: any } & KeepSharedProperties<Overrides, ObjectType>
+  Overrides extends { [K in keyof ObjectType]?: any } & WithOnlySharedProperties<Overrides, ObjectType>
 > =
 	Omit<ObjectType, keyof Overrides> & Overrides;
+
+/**
+ * Removes one or more properties from an object type
+ * @example
+ * type PlayerCreationOptions = Without<Player, "id" | "status">
+ */
+export type Without<
+  ObjectType extends object,
+  PropertyNames extends keyof ObjectType
+> = Omit<ObjectType, PropertyNames>;
+
 
 /**
  * Makes one or more properties of a given object type optional

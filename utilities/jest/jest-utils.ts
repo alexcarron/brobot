@@ -73,6 +73,17 @@ export function makeSure(actualValue: unknown) {
 		},
 
 		/**
+		 * Asserts that the actual value is a number.
+		 * @example
+		 * makeSure(actualResultValue).isANumber();
+		 */
+		isANumber(): void {
+			if (typeof actualValue !== 'number') {
+				throw new Error(`Expected actual value to be a number, but got: ${actualValue}`);
+			}
+		},
+
+		/**
 		 * Asserts that the actual value is not a number.
 		 * @example
 		 * makeSure(actualResultValue).isNotANumber();

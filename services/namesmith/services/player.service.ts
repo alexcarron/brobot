@@ -558,7 +558,7 @@ export class PlayerService {
 
 		await resetMemberToNewPlayer(guildMember);
 
-		this.playerRepository.addPlayer(playerID);
+		this.playerRepository.createPlayer(playerID);
 	}
 
 	/**

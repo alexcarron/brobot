@@ -1,9 +1,12 @@
 import { getCharacterDifferencesInStrings } from '../../../utilities/data-structure-utils';
 import { CustomError } from '../../../utilities/error-utils';
 import { escapeDiscordMarkdown } from '../../../utilities/string-manipulation-utils';
-import { MysteryBox } from '../types/mystery-box.types';
+import { CharacterID } from '../types/character.types';
+import { MysteryBox, MysteryBoxID } from '../types/mystery-box.types';
 import { Player } from '../types/player.types';
-import { Recipe } from '../types/recipe.types';
+import { Recipe, RecipeID } from '../types/recipe.types';
+import { TradeID } from '../types/trade.types';
+import { VoteID } from '../types/vote.types';
 
 /**
  * Base class for all errors thrown by the namesmith service
@@ -56,6 +59,39 @@ export class ForeignKeyConstraintError extends QueryUsageError {
  */
 export class ResourceError extends NamesmithError {}
 
+
+
+/**
+ * Error thrown when a
+ */
+export class CannotCreateTradeError extends ResourceError {
+	declare relevantData: {
+		initiatingPlayer: string,
+		recipientPlayer: string,
+		offeredCharacters: string,
+		requestedCharacters: string
+	}
+
+	constructor(
+		{initiatingPlayer, recipientPlayer, offeredCharacters, requestedCharacters}: {
+			initiatingPlayer: string,
+			recipientPlayer: string,
+			offeredCharacters: string,
+			requestedCharacters: string
+		}
+	) {
+		super({
+			message: `Cannot create trade between ${initiatingPlayer} and ${recipientPlayer} with offered characters ${offeredCharacters} and requested characters ${requestedCharacters}.`,
+			relevantData: {
+				initiatingPlayer,
+				recipientPlayer,
+				offeredCharacters,
+				requestedCharacters
+			}
+		})
+	}
+}
+
 /**
  * Error thrown when a requested namesmith resource is not found.
  */
@@ -77,7 +113,7 @@ export class PlayerNotFoundError extends ResourceNotFoundError {
  * Error thrown when a namesmith vote is not found.
  */
 export class VoteNotFoundError extends ResourceNotFoundError {
-	constructor(voteID: string) {
+	constructor(voteID: VoteID) {
 		super({
 			message: `Vote with ID ${voteID} not found.`,
 			relevantData: { voteID }
@@ -89,7 +125,7 @@ export class VoteNotFoundError extends ResourceNotFoundError {
  * Error thrown when a requested namesmith mystery box is not found.
  */
 export class MysteryBoxNotFoundError extends ResourceNotFoundError {
-	constructor(mysteryBoxID: number) {
+	constructor(mysteryBoxID: MysteryBoxID) {
 		super({
 			message: `Mystery box with ID ${mysteryBoxID} not found.`,
 			relevantData: { mysteryBoxID }
@@ -101,7 +137,7 @@ export class MysteryBoxNotFoundError extends ResourceNotFoundError {
  * Error thrown when a requested namesmith character is not found.
  */
 export class CharacterNotFoundError extends ResourceNotFoundError {
-	constructor(characterID: number) {
+	constructor(characterID: CharacterID) {
 		super({
 			message: `Character with ID ${characterID} not found.`,
 			relevantData: { characterID }
@@ -113,10 +149,24 @@ export class CharacterNotFoundError extends ResourceNotFoundError {
  * Error thrown when a requested namesmith recipe is not found.
  */
 export class RecipeNotFoundError extends ResourceNotFoundError {
-	constructor(recipeID: number) {
+	constructor(recipeID: RecipeID) {
 		super({
 			message: `Recipe with ID ${recipeID} not found.`,
 			relevantData: { recipeID }
+		})
+	}
+}
+
+/**
+ * Error thrown when a requested namesmith trade is not found.
+ */
+export class TradeNotFoundError extends ResourceNotFoundError {
+	declare relevantData: { tradeID: TradeID }
+
+	constructor(tradeID: TradeID) {
+		super({
+			message: `Trade with ID ${tradeID} not found.`,
+			relevantData: { tradeID }
 		})
 	}
 }

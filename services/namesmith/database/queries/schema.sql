@@ -56,7 +56,8 @@ CREATE TABLE IF NOT EXISTS playerPerk (
 -- Votes table
 CREATE TABLE IF NOT EXISTS vote (
 	voterID TEXT PRIMARY KEY,
-	playerVotedForID TEXT NOT NULL REFERENCES player(id) ON DELETE CASCADE
+	playerVotedForID TEXT NOT NULL REFERENCES player(id)
+		ON DELETE CASCADE
 );
 
 -- Recipes table
@@ -65,6 +66,21 @@ CREATE TABLE IF NOT EXISTS recipe (
 	inputCharacters TEXT NOT NULL,
 	outputCharacters TEXT NOT NULL
 );
+
+-- Trades table
+CREATE TABLE IF NOT EXISTS trade (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	initiatingPlayer TEXT NOT NULL REFERENCES player(id)
+		ON DELETE CASCADE,
+	recipientPlayer TEXT NOT NULL REFERENCES player(id)
+		ON DELETE CASCADE,
+	offeredCharacters TEXT NOT NULL,
+	requestedCharacters TEXT NOT NULL,
+	status TEXT NOT NULL CHECK(status IN
+		('awaitingRecipient', 'awaitingInitiater', 'accepted', 'declined')
+	) DEFAULT 'awaitingRecipient'
+);
+
 
 -- Optional index for performance
 CREATE INDEX IF NOT EXISTS characterIDIndex ON character (id);

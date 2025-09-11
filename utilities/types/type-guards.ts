@@ -125,3 +125,19 @@ export function isStringToNumberRecord(
 		value => isNumber(value)
 	);
 }
+
+/**
+ * Checks if an object has a property with the given key.
+ * @param object - The object to check.
+ * @param key - The key to check for.
+ * @returns If the object has a property with the given key.
+ */
+export function hasProperty<
+	ObjectType extends object,
+	KeyType extends string | number | symbol
+>(
+	object: ObjectType,
+	key: KeyType
+): object is ObjectType & Record<KeyType, unknown> {
+	return key in object;
+}

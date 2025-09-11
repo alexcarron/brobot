@@ -244,7 +244,7 @@ describe('PlayerRepository', () => {
 
 	describe('addPlayer()', () => {
 		it('adds a new player to the database', () => {
-			playerRepository.addPlayer("new-player-id");
+			playerRepository.createPlayer("new-player-id");
 
 			const result = playerRepository.getPlayerByID("new-player-id");
 
@@ -260,7 +260,7 @@ describe('PlayerRepository', () => {
 		});
 
 		it('throws an error if the player already exists', () => {
-			expect(() => playerRepository.addPlayer(mockPlayers[0].id)).toThrow();
+			expect(() => playerRepository.createPlayer(mockPlayers[0].id)).toThrow();
 		});
 	});
 

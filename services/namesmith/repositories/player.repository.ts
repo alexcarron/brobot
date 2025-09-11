@@ -318,7 +318,7 @@ export class PlayerRepository {
 	 * Adds a new player to the game's database.
 	 * @param playerID - The ID of the player to be added.
 	 */
-	addPlayer(playerID: string) {
+	createPlayer(playerID: string) {
 		const query = `
 			INSERT INTO player (id, currentName, publishedName, tokens, role, inventory)
 			VALUES (@id, @currentName, @publishedName, @tokens, @role, @inventory)

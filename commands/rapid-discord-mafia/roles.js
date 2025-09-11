@@ -2,7 +2,7 @@ const { ids } = require("../../bot-config/discord-ids");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { deferInteraction } = require("../../utilities/discord-action-utils");
 const { toTitleCase } = require("../../utilities/string-manipulation-utils");
-const { appendToNestedProperty } = require("../../utilities/data-structure-utils.js");
+const { appendToNestedProperty } = require("../../utilities/data-structure-utils");
 
 module.exports = new SlashCommand({
 	name: "roles",

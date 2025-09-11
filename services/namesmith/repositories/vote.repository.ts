@@ -1,5 +1,5 @@
 import { InvalidArgumentError } from "../../../utilities/error-utils";
-import { AtLeastOne } from "../../../utilities/types/generic-types";
+import { WithAtLeastOne } from "../../../utilities/types/generic-types";
 import { DatabaseQuerier } from "../database/database-querier";
 import { DBVote, Vote } from "../types/vote.types";
 import { VoteAlreadyExistsError, VoteNotFoundError } from "../utilities/error.utility";
@@ -57,7 +57,7 @@ export class VoteRepository {
 	 * @param voteData.playerVotedForID - The ID of the player voted for.
 	 * @returns A promise that resolves with a boolean indicating if the vote exists.
 	 */
-	doesVoteExist({ voterID, playerVotedForID }: AtLeastOne<Vote>): boolean {
+	doesVoteExist({ voterID, playerVotedForID }: WithAtLeastOne<Vote>): boolean {
 		if (voterID === undefined && playerVotedForID === undefined)
 			throw new InvalidArgumentError(`doesVoteExist: Missing voterID and playerVotedForID`);
 

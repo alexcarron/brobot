@@ -1,14 +1,18 @@
-const { Collection } = require("discord.js");
-const { InvalidArgumentError } = require("./error-utils");
-const { isStringToUnknownRecord, isArray } = require("./types/type-guards");
+import { Collection } from "discord.js";
+import { InvalidArgumentError } from "./error-utils";
+import { isStringToUnknownRecord, isArray } from "./types/type-guards";
 
 /**
  * Sets a nested property in an object.
- * @param {Record<string, unknown>} object - The object that contains the property to be set.
- * @param {Array<string>} propertyPath - The path to the property to be set, as an array of strings.
- * @param {*} value - The value to be set for the property.
+ * @param object - The object that contains the property to be set.
+ * @param propertyPath - The path to the property to be set, as an array of strings.
+ * @param value - The value to be set for the property.
  */
-const setNestedProperty = (object, propertyPath, value) => {
+export const setNestedProperty = (
+	object: Record<string, unknown>,
+	propertyPath: string[],
+	value: unknown
+) => {
 	if (typeof object !== 'object')
 		throw new Error('Object must be an object.');
 
@@ -18,7 +22,7 @@ const setNestedProperty = (object, propertyPath, value) => {
 	if (propertyPath.length === 0)
 		throw new Error('Property path must have at least one property.');
 
-	let topLevelProperty = propertyPath[0];
+	const topLevelProperty = propertyPath[0];
 
 	// If the property path only has one element, we can set the property directly.
 	if (propertyPath.length <= 1) {
@@ -44,11 +48,15 @@ const setNestedProperty = (object, propertyPath, value) => {
 
 /**
  * Appends a value to a nested property in an object. If the property does not exist, it is created.
- * @param {Record<string, unknown>} object - The object that contains the property to be set.
- * @param {Array<string>} propertyPath - The path to the property to be set, as an array of strings.
- * @param {*} value - The value to be appended to the property.
+ * @param object - The object that contains the property to be set.
+ * @param propertyPath - The path to the property to be set, as an array of strings.
+ * @param value - The value to be appended to the property.
  */
-const appendToNestedProperty = (object, propertyPath, value) => {
+export const appendToNestedProperty = (
+	object: Record<string, unknown>,
+	propertyPath: string[],
+	value: unknown
+) => {
 	if (typeof object !== 'object')
 		throw new Error('Object must be an object.');
 
@@ -58,7 +66,7 @@ const appendToNestedProperty = (object, propertyPath, value) => {
 	if (propertyPath.length === 0)
 		throw new Error('Property path must have at least one property.');
 
-	let topLevelProperty = propertyPath[0];
+	const topLevelProperty = propertyPath[0];
 
 	if (propertyPath.length == 1) {
 		if (object[topLevelProperty]) {
@@ -92,29 +100,33 @@ const appendToNestedProperty = (object, propertyPath, value) => {
 
 /**
  * Swaps the elements at the two given indices in the given array.
- * @param {unknown[]} array - The array to be modified.
- * @param {number} index1 - The index of the first element to be swapped.
- * @param {number} index2 - The index of the second element to be swapped.
+ * @param array {unknown[]} - The array to be modified.
+ * @param index1 {number} - The index of the first element to be swapped.
+ * @param index2 {number} - The index of the second element to be swapped.
  */
-const swapArrayElements = (array, index1, index2) => {
-	let valueOfIndex1 = array[index1];
-	let valueOfIndex2 = array[index2];
+export const swapArrayElements = (
+	array: unknown[],
+	index1: number,
+	index2: number
+) => {
+	const valueOfIndex1 = array[index1];
+	const valueOfIndex2 = array[index2];
 	array[index1] = valueOfIndex2;
 	array[index2] = valueOfIndex1;
 }
 
-
 /**
  * Returns a copy of the given array, shuffled randomly.
- * @template ElementType
- * @param {ElementType[]} array - The array to be shuffled.
- * @returns {ElementType[]} A shuffled copy of the given array.
+ * @param array - The array to be shuffled.
+ * @returns A shuffled copy of the given array.
  */
-const getShuffledArray = (array) => {
+export const getShuffledArray = <ElementType>(
+	array: ElementType[]
+): ElementType[] => {
 	if (!Array.isArray(array))
 		throw new Error('Given value must be an array.');
 
-	const arrayCopy = [...array];
+	const arrayCopy: ElementType[] = [...array];
 	let currentIndex = arrayCopy.length;
 	let randomIndex;
 
@@ -135,10 +147,10 @@ const getShuffledArray = (array) => {
 
 /**
  * Checks if all given arrays have the same elements.
- * @param {...unknown[]} arrays - The arrays to be compared.
- * @returns {boolean} True if all arrays have the same elements, false otherwise.
+ * @param arrays - The arrays to be compared.
+ * @returns True if all arrays have the same elements, false otherwise.
  */
-const arraysHaveSameElements = (...arrays) => {
+export const arraysHaveSameElements = (...arrays: unknown[][]): boolean => {
 	if (arrays.length < 2)
 		throw new Error('At least two arrays must be passed.');
 
@@ -181,15 +193,14 @@ const arraysHaveSameElements = (...arrays) => {
 	return true;
 }
 
-
 /**
  * Gets a random element from an array.
- * @param {unknown[]} array - The array to get a random element from.
- * @returns {*} A random element from the passed array.
- * @throws {Error} If the given value is not an array.
- * @throws {Error} If the array is empty.
+ * @param array - The array to get a random element from.
+ * @returns A random element from the passed array.
+ * @throws If the given value is not an array.
+ * @throws If the array is empty.
  */
-const getRandomElement = (array) => {
+export const getRandomElement = <ElementType>(array: ElementType[]): ElementType => {
 	if (!Array.isArray(array)) {
 		throw new Error(`Given value must be an array. Received: ${typeof array}`);
 	}
@@ -201,18 +212,17 @@ const getRandomElement = (array) => {
 	const randomIndex = Math.floor(Math.random() * array.length);
 	return array[randomIndex];
 }
-
 /**
  * Identifies the differences between two strings by comparing their characters.
  * It determines which characters are extra or missing in the modified string compared to the original string.
- * @param {string} originalString - The original string for comparison.
- * @param {string} differentString - The other string to compare against the original.
- * @returns {{
- * 	missingCharacters: Array<string>,
- * 	extraCharacters: Array<string>
- * }} An object containing two arrays: `missingCharacters` (characters present in the original but missing in the modified) and `extraCharacters` (characters present in the modified but not in the original).
+ * @param originalString The original string for comparison.
+ * @param differentString The other string to compare against the original.
+ * @returns An object containing two arrays: `missingCharacters` (characters present in the original but missing in the modified) and `extraCharacters` (characters present in the modified but not in the original).
  */
-const getCharacterDifferencesInStrings = (originalString, differentString) => {
+export const getCharacterDifferencesInStrings = (
+	originalString: string,
+	differentString: string
+) => {
 	if (typeof originalString !== 'string' || typeof differentString !== 'string') {
 		throw new TypeError('Both the original and modified strings arguments must be strings.');
 	}
@@ -267,23 +277,24 @@ const getCharacterDifferencesInStrings = (originalString, differentString) => {
 
 /**
  * Converts a Discord.js Collection into an array
- * @template ElementType
- * @param {Collection<string, ElementType>} collection Discord.js Collection
- * @returns {Array<ElementType>} Array of values from the Collection
+ * @param collection Discord.js Collection
+ * @returns Array of values from the Collection
  */
-const discordCollectionToArray = (collection) => {
+export function discordCollectionToArray<KeyType, ValueType>(
+	collection: Collection<KeyType, ValueType>
+): ValueType[] {
 	return Array.from(collection.values());
 }
 
 /**
  * Returns a random element from a given object where the property values are used as weights.
- * @param {object} elementToWeight An object where the property values are used as weights.
- * @returns {any} The selected element.
- * @throws {Error} If the elementToWeight is not an object.
- * @throws {Error} If any of the weights is not a positive number.
- * @throws {Error} If the total weight is not greater than 0.
+ * @param elementToWeight An object where the property values are used as weights.
+ * @returns The selected element.
+ * @throws If the elementToWeight is not an object.
+ * @throws If any of the weights is not a positive number.
+ * @throws If the total weight is not greater than 0.
  */
-const getRandomWeightedElement = (elementToWeight) => {
+export const getRandomWeightedElement = (elementToWeight: Record<string, number>): string => {
 	if (typeof elementToWeight !== 'object') {
 		throw new Error('getRandomWeightedElement: elementToWeight must be an object.');
 	}
@@ -312,4 +323,39 @@ const getRandomWeightedElement = (elementToWeight) => {
 	throw new Error('getRandomWeightedElement failed: no element selected.');
 }
 
-module.exports = { setNestedProperty, appendToNestedProperty, getShuffledArray, arraysHaveSameElements, getRandomElement, getCharacterDifferencesInStrings, discordCollectionToArray, getRandomWeightedElement };
+/**
+ * Maps an array to a single object by merging the results of a mapping function.
+ *
+ * Each element is passed to `getPropertyFromItem`, which must return an object
+ * (commonly with a single property). These objects are then merged (left to right)
+ * into one result object.
+ * @param array The array to map into an object.
+ * @param getPropertyFromItem A function that maps each item to an object.
+ * @returns The merged object containing properties from all items.
+ */
+export function mapToObject<
+	ItemType,
+	ObjectType extends Record<string, unknown>
+>(
+	array: ItemType[],
+	getPropertyFromItem: (item: ItemType) => ObjectType
+): ObjectType {
+  const result = array.reduce<Partial<ObjectType>>(
+    (object: Partial<ObjectType>, item: ItemType) => {
+			const property = getPropertyFromItem(item);
+
+			for (const key of Object.keys(property)) {
+				if (key in object) {
+					throw new InvalidArgumentError(
+						`mapToObject: The given getPropertyFromItem function must return an object with unique keys. Duplicate key: ${key}`
+					);
+				}
+			}
+
+			return Object.assign(object, property)
+		},
+    {}
+  );
+
+	return result as ObjectType;
+}
