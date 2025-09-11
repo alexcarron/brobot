@@ -875,6 +875,39 @@ async function setChannelMessage(channel, message) {
 	}
 }
 
+/**
+ * Moves a channel into a category or uncategorizes it.
+ * @param {import("discord.js").GuildChannel} channel - The channel to move.
+ * @param {import("discord.js").CategoryChannel | null} [category] - The category to move the channel into, or null for no category.
+ * @param {boolean} [inheritPermissions] - Whether to inherit permissions from the category.
+ * @returns {Promise<import("discord.js").GuildChannel>} - The updated channel.
+ */
+async function moveChannelToCategory(channel, category, inheritPermissions = false) {
+	if (channel instanceof GuildChannel === false)
+		throw new InvalidArgumentTypeError({
+			functionName: "moveChannelToCategory",
+			argumentName: "channel",
+			expectedType: "GuildChannel",
+			actualValue: channel
+		});
+
+	if (
+		category !== null && category !== undefined &&
+		category instanceof CategoryChannel === false
+	)
+		throw new InvalidArgumentTypeError({
+			functionName: "moveChannelToCategory",
+			argumentName: "category",
+			expectedType: "CategoryChannel",
+			actualValue: category
+		});
+
+	if (category === null || category === undefined)
+		return await channel.setParent(null, { lockPermissions: inheritPermissions });
+	else
+		return await channel.setParent(category, { lockPermissions: inheritPermissions });
+}
+
 module.exports = {
 	confirmInteractionWithButtons,
 	addRoleToMember,
@@ -902,4 +935,5 @@ module.exports = {
 	setChannelMessage,
 	toMessageEditFromCreateOptions,
 	deleteAllMessagesInChannel,
+	moveChannelToCategory,
 };

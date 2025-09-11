@@ -136,6 +136,22 @@ const fetchTextChannel = async (guild, channelID) => {
 }
 
 /**
+ * Fetches a GuildChannel from Discord using the given guild.
+ * @param {Guild} guild The guild that the channel belongs to.
+ * @param {string} channelID The ID of the channel to fetch.
+ * @returns {Promise<GuildChannel>} A Promise that resolves with the GuildChannel object if successful, or rejects with an Error if not.
+ * @throws {Error} If the client is not setup or not ready.
+ */
+const fetchGuildChannel = async (guild, channelID) => {
+	const channel = await fetchChannel(guild, channelID);
+
+	if (!(channel instanceof GuildChannel))
+		throw new Error(`fetchGuildChannel: channel is not an instance of GuildChannel, got ${channel}`);
+
+	return channel;
+}
+
+/**
  * Gets the text channel of the interaction.
  * @param {ChatInputCommandInteraction} interaction - The interaction whose text channel is to be retrieved.
  * @returns {TextChannel} The text channel of the interaction.
@@ -435,6 +451,33 @@ const getRequiredChannelParam = (interaction, nameOrParameter) => {
 }
 
 /**
+ * Gets a boolean parameter value of a slash command by name.
+ * @param {ChatInputCommandInteraction} interaction - The interaction whose reply is being updated.
+ * @param {string | Parameter} nameOrParameter - The name of the boolean parameter or the parameter itself
+ * @returns {boolean | null} The value of the boolean parameter
+ */
+const getBooleanParamValue = (interaction, nameOrParameter) => {
+	const name = resolveParameterName(nameOrParameter);
+	const boolean = interaction.options.getBoolean(name);
+	return boolean;
+}
+
+/**
+ * Gets a boolean parameter value of a slash command by name, and throws an error if the parameter is not provided.
+ * @param {ChatInputCommandInteraction} interaction - The interaction whose reply is being updated.
+ * @param {string | Parameter} nameOrParameter - The name of the boolean parameter or the parameter itself
+ * @returns {boolean} The value of the boolean parameter
+ * @throws {Error} If the parameter is not provided
+ */
+const getRequiredBooleanParam = (interaction, nameOrParameter) => {
+	const name = resolveParameterName(nameOrParameter);
+	const value = getBooleanParamValue(interaction, name);
+	if (value === null || value === undefined)
+		throw new Error(`getRequiredBooleanParamValue: ${name} is required`);
+	return value;
+}
+
+/**
  * Retrieves the subcommand or subcommand group used in a slash command interaction.
  * @param {ChatInputCommandInteraction} interaction - The interaction object from which to get the subcommand.
  * @returns {string} The name of the subcommand or subcommand group used.
@@ -623,5 +666,4 @@ async function fetchMessageWithComponent({channel, componentID}) {
     return null; // Not found
 }
 
-
-module.exports = { assertClientSetup, fetchGuild, getGuildOfInteraction, fetchChannel, fetchCategory, getCategoryOfInteraction, fetchTextChannel, getTextChannelOfInteraction, fetchChannelsOfGuild, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchAllGuildMembers, fetchUser, fetchRole, fetchRoleByName, getStringParamValue, getUserParamValue, getEveryoneRole, getNumberParamValue, getRequiredNumberParam, getIntegerParamValue, getNicknameOfInteractionUser, fetchAllMessagesInChannel, getChannelParamValue, getRequiredIntegerParam, getRequiredStringParam, getRequiredUserParam, getRequiredChannelParam, getSubcommandUsed, fetchVoiceChannelMemberIsIn, fetchTextChannelsInCategory, getVoiceChannelOfInteraction, getMemberOfInteraction, fetchUserByUsername, fetchChannelMessage, fetchMessageWithComponent };
+module.exports = { assertClientSetup, fetchGuild, getGuildOfInteraction, fetchChannel, fetchCategory, getCategoryOfInteraction, fetchTextChannel, fetchGuildChannel, getTextChannelOfInteraction, fetchChannelsOfGuild, fetchMessage, fetchCategoriesOfGuild, fetchChannelsInCategory, fetchRDMGuild, fetchGuildMember, fetchAllGuildMembers, fetchUser, fetchRole, fetchRoleByName, getStringParamValue, getUserParamValue, getEveryoneRole, getNumberParamValue, getRequiredNumberParam, getIntegerParamValue, getNicknameOfInteractionUser, fetchAllMessagesInChannel, getChannelParamValue, getRequiredIntegerParam, getRequiredStringParam, getRequiredUserParam, getRequiredChannelParam, getBooleanParamValue, getRequiredBooleanParam, getSubcommandUsed, fetchVoiceChannelMemberIsIn, fetchTextChannelsInCategory, getVoiceChannelOfInteraction, getMemberOfInteraction, fetchUserByUsername, fetchChannelMessage, fetchMessageWithComponent };
