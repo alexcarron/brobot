@@ -1,4 +1,4 @@
-import { createMockRecipeRepo, mockRecipes } from "./mock-repositories";
+import { createMockRecipeRepo, mockRecipes } from "../mocks/mock-repositories";
 import { RecipeRepository } from "./recipe.repository"
 
 describe('RecipeRepository', () => {

@@ -1,10 +1,10 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { INVALID_TRADE_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
-import { addMockTrade } from "../database/mock-database";
+import { addMockTrade } from "../mocks/mock-database";
 import { TradeStatuses } from '../types/trade.types';
 import { CannotCreateTradeError, TradeNotFoundError } from "../utilities/error.utility";
-import { createMockTradeRepo, mockPlayers, mockTrades } from "./mock-repositories";
+import { createMockTradeRepo, mockPlayers, mockTrades } from "../mocks/mock-repositories";
 import { TradeRepository } from "./trade.repository";
 
 describe('TradeRepoistory', () => {
@@ -71,8 +71,8 @@ describe('TradeRepoistory', () => {
 	describe('createTrade()', () => {
 		it('creates a new trade and returns its ID', () => {
 			const trade = {
-				initiatingPlayer: mockPlayers[2].id,
-				recipientPlayer: mockPlayers[3].id,
+				initiatingPlayerID: mockPlayers[2].id,
+				recipientPlayerID: mockPlayers[3].id,
 				offeredCharacters: "aaa",
 				requestedCharacters: "bbb"
 			};
@@ -96,8 +96,8 @@ describe('TradeRepoistory', () => {
 				}));
 
 			const trade = {
-				initiatingPlayer: mockPlayers[2].id,
-				recipientPlayer: mockPlayers[3].id,
+				initiatingPlayerID: mockPlayers[2].id,
+				recipientPlayerID: mockPlayers[3].id,
 				offeredCharacters: "aaa",
 				requestedCharacters: "bbb"
 			};
@@ -110,26 +110,26 @@ describe('TradeRepoistory', () => {
 
 	describe('getInitiatingPlayer()', () => {
 		it('returns the ID of the initiating player', () => {
-			const result = tradeRepository.getInitiatingPlayer(MOCK_TRADE.id);
-			expect(result).toEqual(MOCK_TRADE.initiatingPlayer);
+			const result = tradeRepository.getInitiatingPlayerID(MOCK_TRADE.id);
+			expect(result).toEqual(MOCK_TRADE.initiatingPlayerID);
 		});
 
 		it('throws TradeNotFoundError if trade does not exist', () => {
 			makeSure(() =>
-				tradeRepository.getInitiatingPlayer(INVALID_TRADE_ID)
+				tradeRepository.getInitiatingPlayerID(INVALID_TRADE_ID)
 			).throws(TradeNotFoundError);
 		})
 	});
 
 	describe('getRecipientPlayer()', () => {
 		it('returns the ID of the recipient player', () => {
-			const result = tradeRepository.getRecipientPlayer(MOCK_TRADE.id);
-			expect(result).toEqual(MOCK_TRADE.recipientPlayer);
+			const result = tradeRepository.getRecipientPlayerID(MOCK_TRADE.id);
+			expect(result).toEqual(MOCK_TRADE.recipientPlayerID);
 		});
 
 		it('throws TradeNotFoundError if trade does not exist', () => {
 			makeSure(() =>
-				tradeRepository.getRecipientPlayer(INVALID_TRADE_ID)
+				tradeRepository.getRecipientPlayerID(INVALID_TRADE_ID)
 			).throws(TradeNotFoundError);
 		})
 	});

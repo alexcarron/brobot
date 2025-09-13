@@ -5,15 +5,17 @@ jest.mock("../utilities/discord-action.utility", () => ({
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
-import { addMockPlayer, addMockRecipe } from "../database/mock-database";
-import { mockPlayers, mockRecipes } from "../repositories/mock-repositories";
+import { addMockPlayer, addMockRecipe } from "../mocks/mock-database";
+import { mockPlayers, mockRecipes } from "../mocks/mock-repositories";
 import { RecipeRepository } from "../repositories/recipe.repository";
 import { PlayerNotFoundError, RecipeNotFoundError } from "../utilities/error.utility";
-import { createMockRecipeService } from "./mock-services";
+import { createMockRecipeService } from "../mocks/mock-services";
 import { RecipeService } from "./recipe.service";
+import { Recipe } from "../types/recipe.types";
 
 describe('RecipeService', () => {
 	const MOCK_RECIPE = mockRecipes[0];
+
 	let recipeService: RecipeService;
 	let db: DatabaseQuerier;
 
@@ -37,6 +39,16 @@ describe('RecipeService', () => {
 
 		it('should throw an error if the recipe with the given ID is not found', () => {
 			expect(() => recipeService.resolveRecipe(0)).toThrow(RecipeNotFoundError);
+		});
+
+		it('returns a current recipe when given an outdated recipe object', () => {
+			const OUTDATED_RECIPE: Recipe = {
+				...MOCK_RECIPE,
+				outputCharacters: "OUTDATED"
+			};
+			
+			const recipe = recipeService.resolveRecipe(OUTDATED_RECIPE);
+			expect(recipe).toEqual(MOCK_RECIPE);
 		});
 
 		it('should resolve a recipe object to itself', () => {

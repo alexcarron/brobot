@@ -1,5 +1,5 @@
 import { GameStateRepository } from "./game-state.repository";
-import { createMockGameStateRepo } from './mock-repositories';
+import { createMockGameStateRepo } from '../mocks/mock-repositories';
 
 describe('GameStateRepository', () => {
 	const TEST_DATE = new Date('2021-01-01T00:00:00.000Z');

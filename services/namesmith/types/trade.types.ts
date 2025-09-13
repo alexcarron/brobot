@@ -2,21 +2,23 @@ import { PlayerID } from "./player.types";
 
 export type TradeStatus =
 	| 'awaitingRecipient'
-	| 'awaitingInitiater'
+	| 'awaitingInitiator'
 	| 'accepted'
 	| 'declined'
+	| 'ignored'
 
 export const TradeStatuses = Object.freeze({
 	AWAITING_RECIPIENT: 'awaitingRecipient',
-	AWAITING_INITIATER: 'awaitingInitiater',
+	AWAITING_INITIATOR: 'awaitingInitiator',
 	ACCEPTED: 'accepted',
-	DECLINED: 'declined'
+	DECLINED: 'declined',
+	IGNORED: 'ignored',
 } as const);
 
 export type Trade = {
 	id: number;
-	initiatingPlayer: PlayerID;
-	recipientPlayer: PlayerID;
+	initiatingPlayerID: PlayerID;
+	recipientPlayerID: PlayerID;
 	offeredCharacters: string;
 	requestedCharacters: string;
 	status: TradeStatus;

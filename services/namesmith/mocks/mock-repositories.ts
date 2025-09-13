@@ -1,21 +1,22 @@
 import { InvalidArgumentError, attempt } from '../../../utilities/error-utils';
 import { DatabaseQuerier } from "../database/database-querier";
-import { createMockDB, addMockPlayer, addMockVote, addMockTrade } from "../database/mock-database";
+import { createMockDB, addMockPlayer, addMockVote, addMockTrade } from "./mock-database";
 import { Player } from "../types/player.types";
 import { Vote } from "../types/vote.types";
-import { CharacterRepository } from "./character.repository";
-import { GameStateRepository } from "./game-state.repository";
-import { MysteryBoxRepository } from "./mystery-box.repository";
-import { PlayerRepository } from "./player.repository";
-import { VoteRepository } from "./vote.repository";
+import { CharacterRepository } from "../repositories/character.repository";
+import { GameStateRepository } from "../repositories/game-state.repository";
+import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
+import { PlayerRepository } from "../repositories/player.repository";
+import { VoteRepository } from "../repositories/vote.repository";
 import { WithAtLeast } from '../../../utilities/types/generic-types';
 import { Recipe } from "../types/recipe.types";
-import { RecipeRepository } from "./recipe.repository";
+import { RecipeRepository } from "../repositories/recipe.repository";
 import { insertRecipesToDB } from "../database/db-inserters";
 import { PlayerAlreadyExistsError } from '../utilities/error.utility';
 import { Trade, TradeStatuses } from '../types/trade.types';
 import { getRandomNumber } from '../../../utilities/random-utils';
-import { TradeRepository } from './trade.repository';
+import { TradeRepository } from '../repositories/trade.repository';
+import { NamesmithRepositories } from '../types/namesmith.types';
 
 /**
  * Creates a mock character repository instance with an in-memory database for testing purposes.
@@ -255,8 +256,8 @@ export const createMockRecipeRepo = (
  * Creates a mock trade object with default values for optional properties.
  * @param parameters - An object with optional parameters for the mock trade object.
  * @param parameters.id - The ID of the trade. If not provided, a random number will be generated.
- * @param parameters.initiatingPlayer - The ID of the player who initiated the trade.
- * @param parameters.recipientPlayer - The ID of the player who received the trade.
+ * @param parameters.initiatingPlayerID - The ID of the player who initiated the trade.
+ * @param parameters.recipientPlayerID - The ID of the player who received the trade.
  * @param parameters.offeredCharacters - The characters offered in the trade.
  * @param parameters.requestedCharacters - The characters requested in the trade.
  * @param parameters.status - The status of the trade.
@@ -264,8 +265,8 @@ export const createMockRecipeRepo = (
  */
 export const createMockTradeObject = ({
 	id = undefined,
-	initiatingPlayer = mockPlayers[0].id,
-	recipientPlayer = mockPlayers[1].id,
+	initiatingPlayerID = mockPlayers[0].id,
+	recipientPlayerID = mockPlayers[1].id,
 	offeredCharacters = "abc",
 	requestedCharacters = "edf",
 	status = TradeStatuses.AWAITING_RECIPIENT,
@@ -273,14 +274,14 @@ export const createMockTradeObject = ({
 	if (id === undefined)
 		id = getRandomNumber();
 
-	return { id, initiatingPlayer, recipientPlayer, offeredCharacters, requestedCharacters, status };
+	return { id, initiatingPlayerID, recipientPlayerID, offeredCharacters, requestedCharacters, status };
 }
 
 export const mockTrades: Trade[] = [
 	createMockTradeObject({
 		id: 1,
-		initiatingPlayer: mockPlayers[0].id,
-		recipientPlayer: mockPlayers[1].id,
+		initiatingPlayerID: mockPlayers[0].id,
+		recipientPlayerID: mockPlayers[1].id,
 		offeredCharacters: "abc",
 		requestedCharacters: "edf",
 		status: TradeStatuses.AWAITING_RECIPIENT,
@@ -307,8 +308,8 @@ export const createMockTradeRepo = (
 	// Get a list of unique player IDs used in votes
 	const requiredPlayerIDs = [
 		...new Set([
-			...trades.map(trade => trade.initiatingPlayer),
-			...trades.map(trade => trade.recipientPlayer)
+			...trades.map(trade => trade.initiatingPlayerID),
+			...trades.map(trade => trade.recipientPlayerID)
 		])
 	];
 
@@ -360,21 +361,11 @@ export function createMockRepositories(
 		recipes?: Recipe[],
 		trades?: Trade[],
 	} = {}
-): {
-	db: DatabaseQuerier,
-	characterRepository: CharacterRepository,
-	gameStateRepository: GameStateRepository,
-	mysteryBoxRepository: MysteryBoxRepository,
-	playerRepository: PlayerRepository,
-	voteRepository: VoteRepository,
-	recipeRepository: RecipeRepository,
-	tradeRepository: TradeRepository
-} {
+): NamesmithRepositories {
 	if (mockDB === undefined || !(mockDB instanceof DatabaseQuerier))
 		mockDB = createMockDB();
 
 	return {
-		db: mockDB,
 		characterRepository: createMockCharacterRepo(mockDB),
 		gameStateRepository: createMockGameStateRepo(mockDB),
 		mysteryBoxRepository: createMockMysteryBoxRepo(mockDB),

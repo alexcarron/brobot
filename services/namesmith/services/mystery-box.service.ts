@@ -2,9 +2,7 @@ import { getRandomWeightedElement } from "../../../utilities/data-structure-util
 import { CharacterRepository } from "../repositories/character.repository";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
 import { Character } from "../types/character.types";
-import { MysteryBoxResolveable, MysteryBoxWithOdds } from "../types/mystery-box.types";
-import { MysteryBoxNotFoundError } from "../utilities/error.utility";
-import { isMysteryBoxWithOdds } from "../utilities/mystery-box.utility";
+import { MysteryBoxID, MysteryBoxResolveable, MysteryBoxWithOdds } from "../types/mystery-box.types";
 
 /**
  * Provides methods for interacting with mystery boxes.
@@ -30,25 +28,12 @@ export class MysteryBoxService {
 	resolveMysteryBox(
 		mysteryBoxResolvable: MysteryBoxResolveable
 	): MysteryBoxWithOdds {
-		if (isMysteryBoxWithOdds(mysteryBoxResolvable)) {
-			const mysteryBox = mysteryBoxResolvable;
-			return mysteryBox;
-		}
-		else {
-			let id: number;
+		const mysteryBoxID: MysteryBoxID =
+			typeof mysteryBoxResolvable === 'object'
+				? mysteryBoxResolvable.id
+				: mysteryBoxResolvable;
 
-			if (typeof mysteryBoxResolvable === 'object')
-				id = mysteryBoxResolvable.id;
-			else
-				id = mysteryBoxResolvable;
-
-			const mysteryBox = this.mysteryBoxRepository.getMysteryBoxWithOdds(id);
-
-			if (mysteryBox === null)
-				throw new MysteryBoxNotFoundError(id);
-
-			return mysteryBox;
-		}
+		return this.mysteryBoxRepository.getMysteryBoxWithOddsOrThrow(mysteryBoxID);
 	}
 
 	/**

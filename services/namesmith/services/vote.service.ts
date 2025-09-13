@@ -3,8 +3,6 @@ import { logInfo } from "../../../utilities/logging-utils";
 import { VoteRepository } from "../repositories/vote.repository";
 import { PlayerID } from "../types/player.types";
 import { Vote, VoteResolvable } from "../types/vote.types";
-import { VoteNotFoundError } from "../utilities/error.utility";
-import { isVote } from "../utilities/vote.utility";
 import { PlayerService } from "./player.service";
 
 /**
@@ -28,21 +26,12 @@ export class VoteService {
 	 * @throws {Error} If the vote resolvable is invalid.
 	 */
 	resolveVote(voteResolvable: VoteResolvable): Vote {
-		if (isVote(voteResolvable)) {
-			const vote = voteResolvable;
-			return vote;
-		}
-		else if (typeof voteResolvable === "string") {
-			const voterID = voteResolvable;
-			const vote = this.voteRepository.getVoteByVoterID(voterID);
+		const voteID =
+			typeof voteResolvable === 'object'
+				? voteResolvable.voterID
+				: voteResolvable;
 
-			if (vote === null)
-				throw new VoteNotFoundError(voterID);
-
-			return vote;
-		}
-
-		throw new InvalidArgumentError(`resolveVote: Invalid vote resolvable: ${voteResolvable}`);
+		return this.voteRepository.getVoteOrThrow(voteID);
 	}
 
 	/**

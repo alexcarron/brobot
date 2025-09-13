@@ -12,10 +12,10 @@ export function isTrade(value: unknown): value is Trade {
 		isObject(value) &&
 		hasProperty(value, "id") &&
 		isNumber(value.id) &&
-		hasProperty(value, "initiatingPlayer") &&
-		isString(value.initiatingPlayer) &&
-		hasProperty(value, "recipientPlayer") &&
-		isString(value.recipientPlayer) &&
+		hasProperty(value, "initiatingPlayerID") &&
+		isString(value.initiatingPlayerID) &&
+		hasProperty(value, "recipientPlayerID") &&
+		isString(value.recipientPlayerID) &&
 		hasProperty(value, "offeredCharacters") &&
 		isString(value.offeredCharacters) &&
 		hasProperty(value, "requestedCharacters") &&

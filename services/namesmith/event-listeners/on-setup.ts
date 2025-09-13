@@ -7,12 +7,14 @@ import { GameStateRepository } from "../repositories/game-state.repository";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
 import { PlayerRepository } from "../repositories/player.repository";
 import { RecipeRepository } from "../repositories/recipe.repository";
+import { TradeRepository } from "../repositories/trade.repository";
 import { VoteRepository } from "../repositories/vote.repository";
 import { GameStateService } from "../services/game-state.service";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { MysteryBoxService } from "../services/mystery-box.service";
 import { PlayerService } from "../services/player.service";
 import { RecipeService } from "../services/recipe.service";
+import { TradeService } from "../services/trade.service";
 import { VoteService } from "../services/vote.service";
 
 export const initializeServices = async () => {
@@ -37,6 +39,9 @@ export const initializeServices = async () => {
 	global.namesmith.recipeRepository =
 		new RecipeRepository(db);
 
+	global.namesmith.tradeRepository =
+		new TradeRepository(db);
+
 	global.namesmith.mysteryBoxService = new MysteryBoxService(
 		global.namesmith.mysteryBoxRepository,
 		global.namesmith.characterRepository,
@@ -53,6 +58,11 @@ export const initializeServices = async () => {
 
 	global.namesmith.recipeService = new RecipeService(
 		global.namesmith.recipeRepository,
+		global.namesmith.playerService,
+	);
+
+	global.namesmith.tradeService = new TradeService(
+		global.namesmith.tradeRepository,
 		global.namesmith.playerService,
 	);
 

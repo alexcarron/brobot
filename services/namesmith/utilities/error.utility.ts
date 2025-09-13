@@ -5,7 +5,7 @@ import { CharacterID } from '../types/character.types';
 import { MysteryBox, MysteryBoxID } from '../types/mystery-box.types';
 import { Player } from '../types/player.types';
 import { Recipe, RecipeID } from '../types/recipe.types';
-import { TradeID } from '../types/trade.types';
+import { Trade, TradeID, TradeResolveable } from '../types/trade.types';
 import { VoteID } from '../types/vote.types';
 
 /**
@@ -66,25 +66,25 @@ export class ResourceError extends NamesmithError {}
  */
 export class CannotCreateTradeError extends ResourceError {
 	declare relevantData: {
-		initiatingPlayer: string,
-		recipientPlayer: string,
+		initiatingPlayerID: string,
+		recipientPlayerID: string,
 		offeredCharacters: string,
 		requestedCharacters: string
 	}
 
 	constructor(
-		{initiatingPlayer, recipientPlayer, offeredCharacters, requestedCharacters}: {
-			initiatingPlayer: string,
-			recipientPlayer: string,
+		{initiatingPlayerID, recipientPlayerID, offeredCharacters, requestedCharacters}: {
+			initiatingPlayerID: string,
+			recipientPlayerID: string,
 			offeredCharacters: string,
 			requestedCharacters: string
 		}
 	) {
 		super({
-			message: `Cannot create trade between ${initiatingPlayer} and ${recipientPlayer} with offered characters ${offeredCharacters} and requested characters ${requestedCharacters}.`,
+			message: `Cannot create trade between ${initiatingPlayerID} and ${recipientPlayerID} with offered characters ${offeredCharacters} and requested characters ${requestedCharacters}.`,
 			relevantData: {
-				initiatingPlayer,
-				recipientPlayer,
+				initiatingPlayerID,
+				recipientPlayerID,
 				offeredCharacters,
 				requestedCharacters
 			}
@@ -218,6 +218,11 @@ export class GameStateInitializationError extends StateInitializationError {
 }
 
 /**
+ * Error thrown when an entity is in an invalid state for the attempted operation.
+ */
+export class InvalidStateError extends NamesmithError {}
+
+/**
  * Error thrown when a user action is blocked, prevented, or used incorrectly and must be handled by the interface.
  */
 export class UserActionError extends NamesmithError {
@@ -273,6 +278,63 @@ export class MissingRequiredCharactersError extends UserActionError {
 }
 
 /**
+ * Error thrown when a player is missing offered characters for a trade
+ */
+export class MissingOfferedCharactersError extends UserActionError {
+	declare relevantData: { player: Player, offeredCharacters: string };
+
+	constructor(player: Player, offeredCharacters: string) {
+		super({
+			message: `Player is missing offered characters for trade`,
+			userFriendlyMessage:
+				`You are missing ${offeredCharacters.length} offered characters for this trade.`,
+			relevantData: {
+				player,
+				offeredCharacters,
+			}
+		})
+	}
+}
+
+/**
+ * Error thrown when a recipient player is missing requested characters for a trade
+ */
+export class MissingRequestedCharactersError extends UserActionError {
+	declare relevantData: { player: Player, requestedCharacters: string };
+
+	constructor(player: Player, requestedCharacters: string) {
+		super({
+			message: `Player is missing requested characters for trade`,
+			userFriendlyMessage:
+				`You are missing ${requestedCharacters.length} requested characters for this trade.`,
+			relevantData: {
+				player,
+				requestedCharacters,
+			}
+		})
+	}
+}
+
+/**
+ * Error thrown when a player attempts to respond to a trade they cannot respond to
+ */
+export class CannotRespondToTradeError extends UserActionError {
+	declare relevantData: { player: Player, trade: Trade };
+
+	constructor(player: Player, trade: Trade) {
+		super({
+			message: `A player attempted to respond to a trade request they cannot respond to.`,
+			userFriendlyMessage:
+				`You cannot respond to this trade request.`,
+			relevantData: {
+				player,
+				trade,
+			}
+		})
+	}
+}
+
+/**
  * Error thrown when a recipe is not unlocked for a player
  */
 export class RecipeNotUnlockedError extends UserActionError {
@@ -322,6 +384,41 @@ export class PlayerCantAffordMysteryBoxError extends UserActionError {
 			relevantData: {
 				mysteryBox,
 				player,
+			}
+		})
+	}
+}
+
+/**
+ * Error thrown when a player attempts to respond to a trade that does not exist
+ */
+export class NonTradeRespondedToError extends UserActionError {
+	declare relevantData: { player: Player, trade: TradeResolveable };
+
+	constructor(player: Player, trade: TradeResolveable) {
+		super({
+			message: `A player attempted to respond to a trade that does not exist.`,
+			userFriendlyMessage: `You cannot respond to this trade because it does not exist.`,
+			relevantData: {
+				player,
+				trade,
+			}
+		})
+	}
+}
+
+/**
+ * Error thrown when a trade that is ignored cannot be ignored
+ */
+export class CannotIgnoreTradeError extends UserActionError {
+	declare relevantData: { trade: Trade };
+
+	constructor(trade: Trade) {
+		super({
+			message: `A player attempted to ignore a trade that cannot be ignored.`,
+			userFriendlyMessage: `You cannot ignore this trade.`,
+			relevantData: {
+				trade,
 			}
 		})
 	}
@@ -387,6 +484,33 @@ export class NonPlayerRefilledError extends NotAPlayerError {
 export class NonPlayerBoughtMysteryBoxError extends NotAPlayerError {
 	constructor(userID: string) {
 		super(userID, "buy a mystery box");
+	}
+}
+
+/**
+ * Error thrown when a non-player user attempts to initiate a trade
+ */
+export class NonPlayerInitiatedTradeError extends NotAPlayerError {
+	constructor(userID: string) {
+		super(userID, "initiate a trade");
+	}
+}
+
+/**
+ * Error thrown when a non-player user receives a trade request
+ */
+export class NonPlayerReceivedTradeError extends NotAPlayerError {
+	constructor(userID: string) {
+		super(userID, "receive a trade request");
+	}
+}
+
+/**
+ * Error thrown when a non-player user attempts to respond a trade request
+ */
+export class NonPlayerRespondedToTradeError extends NotAPlayerError {
+	constructor(userID: string) {
+		super(userID, "respond to a trade request");
 	}
 }
 

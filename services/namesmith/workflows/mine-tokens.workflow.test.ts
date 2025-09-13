@@ -6,8 +6,8 @@ jest.mock("../../../utilities/random-utils", () => ({
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
-import { addMockPlayer } from "../database/mock-database";
-import { setupMockNamesmith } from "../event-listeners/mock-setup";
+import { addMockPlayer } from "../mocks/mock-database";
+import { setupMockNamesmith } from "../mocks/mock-setup";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PlayerService } from "../services/player.service";
 import { NonPlayerMinedError } from "../utilities/error.utility";
@@ -31,7 +31,7 @@ describe('mine-tokens.workflow', () => {
 	});
 
 	describe('mineTokens()', () => {
-		it('should give the player tokens for mining', () => {
+		it('should return the correct newTokenCount and tokensEarned', () => {
 			const mockPlayer = addMockPlayer(db, {
 				tokens: 10
 			});
@@ -46,6 +46,24 @@ describe('mine-tokens.workflow', () => {
 
 			const newTokenBalance = services.playerService.getTokens(mockPlayer.id);
 			makeSure(newTokenBalance).is(newTokenCount);
+		});
+
+		it('should give the player tokens for mining', () => {
+			const mockPlayer = addMockPlayer(db, {
+				tokens: 10
+			});
+
+			mineTokens({
+				...services,
+				playerMining: mockPlayer.id
+			});
+
+			const updatedPlayer = services.playerService.getPlayer(mockPlayer.id);
+
+			makeSure(updatedPlayer).is({
+				...mockPlayer,
+				tokens: mockPlayer.tokens + 10
+			});
 		});
 
 		it('should throw NonPlayerMinedError if the provided player is not a valid player', () => {

@@ -20,5 +20,10 @@ export interface DBCharacterWithTags extends DBCharacter {
 }
 
 export type CharacterID = Character["id"];
+export type CharacterValue = Character["value"];
 
-export type CharacterResolvable = Character | CharacterWithTags | CharacterID;
+export type CharacterResolvable =
+	| Character
+	| CharacterWithTags
+	| CharacterID
+	| CharacterValue;

@@ -60,19 +60,28 @@ export class TradeRepository {
 		return trade
 	}
 
+	/**
+	 * Checks if a trade exists in the database.
+	 * @param tradeID - The ID of the trade to check.
+	 * @returns true if the trade exists, false otherwise.
+	 */
+	doesTradeExist(tradeID: TradeID): boolean {
+		return this.getTradeByID(tradeID) !== null;
+	}
+
 	createTrade(trade: {
-		initiatingPlayer: PlayerID,
-		recipientPlayer: PlayerID,
+		initiatingPlayerID: PlayerID,
+		recipientPlayerID: PlayerID,
 		offeredCharacters: string,
 		requestedCharacters: string
 	}): TradeID {
 		const query = `INSERT INTO trade (
-			initiatingPlayer,
-			recipientPlayer,
+			initiatingPlayerID,
+			recipientPlayerID,
 			offeredCharacters,
 			requestedCharacters
 		)
-		VALUES (@initiatingPlayer, @recipientPlayer, @offeredCharacters, @requestedCharacters)`;
+		VALUES (@initiatingPlayerID, @recipientPlayerID, @offeredCharacters, @requestedCharacters)`;
 
 		const runResult = this.db.run(query, trade);
 
@@ -88,9 +97,9 @@ export class TradeRepository {
 	 * @returns The ID of the player that initiated the trade.
 	 * @throws {TradeNotFoundError} - If the trade does not exist.
 	 */
-	getInitiatingPlayer(tradeID: TradeID): PlayerID {
+	getInitiatingPlayerID(tradeID: TradeID): PlayerID {
 		const trade = this.getTradeOrThrow(tradeID);
-		return trade.initiatingPlayer
+		return trade.initiatingPlayerID
 	}
 
 	/**
@@ -99,9 +108,9 @@ export class TradeRepository {
 	 * @returns The ID of the player that is the recipient of the trade.
 	 * @throws {TradeNotFoundError} - If the trade does not exist.
 	 */
-	getRecipientPlayer(tradeID: TradeID): PlayerID {
+	getRecipientPlayerID(tradeID: TradeID): PlayerID {
 		const trade = this.getTradeOrThrow(tradeID);
-		return trade.recipientPlayer
+		return trade.recipientPlayerID
 	}
 
 	/**

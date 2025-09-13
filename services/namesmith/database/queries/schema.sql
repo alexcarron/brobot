@@ -70,14 +70,14 @@ CREATE TABLE IF NOT EXISTS recipe (
 -- Trades table
 CREATE TABLE IF NOT EXISTS trade (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	initiatingPlayer TEXT NOT NULL REFERENCES player(id)
+	initiatingPlayerID TEXT NOT NULL REFERENCES player(id)
 		ON DELETE CASCADE,
-	recipientPlayer TEXT NOT NULL REFERENCES player(id)
+	recipientPlayerID TEXT NOT NULL REFERENCES player(id)
 		ON DELETE CASCADE,
 	offeredCharacters TEXT NOT NULL,
 	requestedCharacters TEXT NOT NULL,
 	status TEXT NOT NULL CHECK(status IN
-		('awaitingRecipient', 'awaitingInitiater', 'accepted', 'declined')
+		('awaitingRecipient', 'awaitingInitiator', 'accepted', 'declined', 'ignored')
 	) DEFAULT 'awaitingRecipient'
 );
 

@@ -40,6 +40,21 @@ export class VoteRepository {
 	}
 
 	/**
+	 * Retrieves a vote by the ID of the user who voted or throws a VoteNotFoundError if it does not exist.
+	 * @param voterID - The ID of the user who voted.
+	 * @returns A vote object if found.
+	 * @throws VoteNotFoundError - If the vote does not exist.
+	 */
+	getVoteOrThrow(voterID: string): Vote {
+		const vote = this.getVoteByVoterID(voterID);
+
+		if (vote === null)
+			throw new VoteNotFoundError(voterID);
+
+		return vote;
+	}
+
+	/**
 	 * Retrieves a list of votes by the ID of the player voted for.
 	 * @param playerVotedForID - The ID of the player voted for.
 	 * @returns A list of vote objects.

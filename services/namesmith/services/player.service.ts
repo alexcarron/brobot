@@ -4,7 +4,7 @@ import { logWarning } from "../../../utilities/logging-utils";
 import { fetchNamesmithGuildMember, fetchNamesmithGuildMembers } from "../utilities/discord-fetch.utility";
 import { isPlayer } from "../utilities/player.utility";
 import { attempt, InvalidArgumentError } from "../../../utilities/error-utils";
-import { PlayerNotFoundError, PlayerAlreadyExistsError, NameTooLongError } from "../utilities/error.utility";
+import { PlayerAlreadyExistsError, NameTooLongError } from "../utilities/error.utility";
 import { Inventory, Player, PlayerID, PlayerResolvable } from '../types/player.types';
 import { removeCharactersAsGivenFromEnd, removeMissingCharacters } from "../../../utilities/string-manipulation-utils";
 import { areCharactersInString } from "../../../utilities/string-checks-utils";
@@ -45,21 +45,12 @@ export class PlayerService {
 	 * @throws {Error} If the player resolvable is invalid or the player is not found.
 	 */
 	resolvePlayer(playerResolvable: PlayerResolvable): Player {
-		if (isPlayer(playerResolvable)) {
-			const player: Player = playerResolvable;
-			return player;
-		}
-		else if (typeof playerResolvable === "string") {
-			const playerID = playerResolvable;
-			const player = this.playerRepository.getPlayerByID(playerID);
+		const playerID: PlayerID =
+			isPlayer(playerResolvable)
+				? playerResolvable.id
+				: playerResolvable;
 
-			if (player === null)
-				throw new PlayerNotFoundError(playerID);
-
-			return player;
-		}
-
-		throw new InvalidArgumentError(`resolvePlayer: Invalid player resolvable ${playerResolvable}`);
+		return this.playerRepository.getPlayerOrThrow(playerID);
 	}
 
 	/**
@@ -351,6 +342,21 @@ export class PlayerService {
 	): Promise<void> {
 		this.removeCharactersFromInventory(playerResolvable, characters);
 		await this.removeMissingCharactersFromName(playerResolvable);
+	}
+
+	/**
+	 * Transfers characters from one player to another, removing them from the first player's inventory and name, and adding them to the second player's inventory and name if possible.
+	 * @param fromPlayer - The player whose characters are being transferred.
+	 * @param toPlayer - The player whose characters are being transferred to.
+	 * @param characters - The characters to transfer from one player to another.
+	 */
+	async transferCharacters(
+		fromPlayer: PlayerResolvable,
+		toPlayer: PlayerResolvable,
+		characters: string | string[]
+	): Promise<void> {
+		await this.removeCharacters(fromPlayer, characters);
+		await this.giveCharacters(toPlayer, characters);
 	}
 
 	/**

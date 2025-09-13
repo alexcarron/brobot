@@ -1,18 +1,23 @@
 import { INVALID_MYSTERY_BOX_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
-import { addMockMysteryBox } from "../database/mock-database";
+import { addMockMysteryBox } from "../mocks/mock-database";
 import { CharacterRepository } from "../repositories/character.repository";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
-import { createMockMysteryBoxService } from "./mock-services";
+import { createMockMysteryBoxService } from "../mocks/mock-services";
 import { MysteryBoxService } from "./mystery-box.service";
+import { MysteryBox } from "../types/mystery-box.types";
 
-describe('VoteService', () => {
+describe('MysteryBoxService', () => {
 	let mysteryBoxService: MysteryBoxService;
 	let db: DatabaseQuerier;
+
+	let MOCK_MYSTERY_BOX: MysteryBox;
 
 	beforeEach(() => {
 		mysteryBoxService = createMockMysteryBoxService();
 		db = mysteryBoxService.mysteryBoxRepository.db;
+
+		MOCK_MYSTERY_BOX = mysteryBoxService.mysteryBoxRepository.getMysteryBoxesWithOdds()[0];
 	});
 
 	afterEach(() => {
@@ -33,19 +38,19 @@ describe('VoteService', () => {
 
 	describe('.resolveMysteryBox()', () => {
 		it('should resolve a mystery box object to a mystery box object', () => {
-			const mysteryBox = mysteryBoxService.mysteryBoxRepository.getMysteryBoxes()[0];
-
-			const resolvedMysteryBox = mysteryBoxService.resolveMysteryBox(mysteryBox);
-			expect(resolvedMysteryBox).toHaveProperty('id', expect.any(Number));
-			expect(resolvedMysteryBox).toHaveProperty('name', expect.any(String));
-			expect(resolvedMysteryBox).toHaveProperty('tokenCost', expect.any(Number));
+			const resolvedMysteryBox = mysteryBoxService.resolveMysteryBox(MOCK_MYSTERY_BOX);
+			expect(resolvedMysteryBox).toEqual(MOCK_MYSTERY_BOX);
 		});
 
 		it('should resolve a mystery box ID to a mystery box object', () => {
-			const resolvedMysteryBox = mysteryBoxService.resolveMysteryBox(1);
-			expect(resolvedMysteryBox).toHaveProperty('id', expect.any(Number));
-			expect(resolvedMysteryBox).toHaveProperty('name', expect.any(String));
-			expect(resolvedMysteryBox).toHaveProperty('tokenCost', expect.any(Number));
+			const resolvedMysteryBox = mysteryBoxService.resolveMysteryBox(MOCK_MYSTERY_BOX.id);
+			expect(resolvedMysteryBox).toEqual(MOCK_MYSTERY_BOX);
+		});
+
+		it('returns the current mystery box when given an outdated mystery box object', () => {
+			const OUTDATED_MYSTERY_BOX = {...MOCK_MYSTERY_BOX, tokenCost: 999};
+			const resolvedMysteryBox = mysteryBoxService.resolveMysteryBox(OUTDATED_MYSTERY_BOX);
+			expect(resolvedMysteryBox).toEqual(MOCK_MYSTERY_BOX);
 		});
 
 		it('should throw an error if the mystery box with the given ID does not exist', () => {

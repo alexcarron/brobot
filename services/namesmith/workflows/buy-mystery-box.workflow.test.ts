@@ -3,14 +3,14 @@ jest.mock("../utilities/discord-action.utility", () => ({
 }));
 
 import { buyMysteryBox } from "./buy-mystery-box.workflow";
-import { setupMockNamesmith } from "../event-listeners/mock-setup";
+import { setupMockNamesmith } from "../mocks/mock-setup";
 import { changeDiscordNameOfPlayer } from "../utilities/discord-action.utility";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { MysteryBoxService } from "../services/mystery-box.service";
 import { PlayerService } from "../services/player.service";
 import { MysteryBoxNotFoundError, NotAPlayerError, PlayerCantAffordMysteryBoxError } from "../utilities/error.utility";
 import { INVALID_MYSTERY_BOX_ID, INVALID_PLAYER_ID } from "../constants/test.constants";
-import { addMockMysteryBox, addMockPlayer } from "../database/mock-database";
+import { addMockMysteryBox, addMockPlayer } from "../mocks/mock-database";
 import { DatabaseQuerier } from "../database/database-querier";
 import { Player } from '../types/player.types';
 import { MysteryBox } from "../types/mystery-box.types";

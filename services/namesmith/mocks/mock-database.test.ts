@@ -1,5 +1,6 @@
-import { DatabaseQuerier } from "./database-querier";
-import { createMockDB, addMockPlayer, addMockVote } from "./mock-database";
+import { DatabaseQuerier } from "../database/database-querier";
+import { DBPlayer, Player } from "../types/player.types";
+import { createMockDB, addMockPlayer, addMockVote, editMockPlayer } from "./mock-database";
 
 describe("mock-database", () => {
   let db: DatabaseQuerier;
@@ -100,4 +101,48 @@ describe("mock-database", () => {
       expect(votes[0]).toEqual(voteData);
     });
   });
+
+	describe('editMockPlayer', () => {
+		let ORIGINAL_PLAYER: Player;
+
+		beforeEach(() => {
+			ORIGINAL_PLAYER = addMockPlayer(db, {
+				id: "123",
+				currentName: "John Doe",
+				publishedName: null,
+				tokens: 100,
+				role: null,
+				inventory: "{}",
+				lastClaimedRefillTime: null,
+			});
+		})
+
+		it("updates only defined fields", () => {
+			editMockPlayer(db, {
+				id: ORIGINAL_PLAYER.id,
+				currentName: "Jane Doe",
+				tokens: 200,
+			});
+
+			const player = db.getRow(
+				"SELECT * FROM player WHERE id = @id",
+				{ id: ORIGINAL_PLAYER.id }
+			) as DBPlayer | undefined;
+
+			expect(player).toBeDefined();
+			expect(player).toEqual({
+				...ORIGINAL_PLAYER,
+				currentName: "Jane Doe",
+				tokens: 200,
+			});
+		});
+
+		it("throws if no properties to update", () => {
+			expect(() => editMockPlayer(db, { id: ORIGINAL_PLAYER.id })).toThrow();
+		});
+
+		it("throws if no player is found on update", () => {
+			expect(() => editMockPlayer(db, { id: "456" })).toThrow();
+		});
+	});
 });

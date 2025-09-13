@@ -1,16 +1,20 @@
-import { createMockDB } from "../database/mock-database";
+import { createMockDB } from "./mock-database";
 import { CharacterRepository } from "../repositories/character.repository";
 import { GameStateRepository } from "../repositories/game-state.repository";
-import { createMockPlayerRepo, createMockVoteRepo, createMockMysteryBoxRepo, createMockCharacterRepo, createMockGameStateRepo, createMockRecipeRepo } from "../repositories/mock-repositories";
+import { createMockPlayerRepo, createMockVoteRepo, createMockMysteryBoxRepo, createMockCharacterRepo, createMockGameStateRepo, createMockRecipeRepo, createMockTradeRepo } from "./mock-repositories";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
 import { PlayerRepository } from "../repositories/player.repository";
 import { RecipeRepository } from "../repositories/recipe.repository";
+import { TradeRepository } from "../repositories/trade.repository";
 import { VoteRepository } from "../repositories/vote.repository";
-import { GameStateService } from "./game-state.service";
-import { MysteryBoxService } from "./mystery-box.service";
-import { PlayerService } from "./player.service";
-import { RecipeService } from "./recipe.service";
-import { VoteService } from "./vote.service";
+import { GameStateService } from "../services/game-state.service";
+import { MysteryBoxService } from "../services/mystery-box.service";
+import { PlayerService } from "../services/player.service";
+import { RecipeService } from "../services/recipe.service";
+import { TradeService } from "../services/trade.service";
+import { VoteService } from "../services/vote.service";
+import { NamesmithServices } from "../types/namesmith.types";
+import { CharacterService } from "../services/character.service";
 
 /**
  * Creates a mock GameStateService instance for testing purposes.
@@ -158,6 +162,43 @@ export const createMockRecipeService = (
 }
 
 /**
+ * Creates a mock TradeService instance for testing purposes.
+ * If any of the mock repository parameters are undefined, a default mock repository instance is created for the respective service.
+ * @param mockTradeRepository - The mock trade repository to use.
+ * @param mockPlayerService - The mock player service to use.
+ * @returns A mock instance of the TradeService.
+ */
+export const createMockTradeService = (
+	mockTradeRepository?: TradeRepository,
+	mockPlayerService?: PlayerService,
+) => {
+  const sharedDB =
+    mockTradeRepository?.db ??
+    mockPlayerService?.playerRepository.db ??
+    createMockDB();
+
+  const tradeRepository =
+		mockTradeRepository ??
+		createMockTradeRepo(sharedDB);
+
+  const playerService =
+    mockPlayerService ??
+    createMockPlayerService(createMockPlayerRepo(sharedDB));
+
+  return new TradeService(tradeRepository, playerService);
+}
+
+export const createMockCharacterService = (
+	mockCharacterRepository?: CharacterRepository
+) => {
+	const characterRepository =
+		mockCharacterRepository ??
+		createMockCharacterRepo();
+
+	return new CharacterService(characterRepository);
+}
+
+/**
  * Creates mock service instances for testing purposes.
 
  * If any of the mock repository parameters are undefined, a default mock repository
@@ -168,7 +209,8 @@ export const createMockRecipeService = (
  * @param options.mockMysteryBoxRepo - The mock mystery box repository to use.
  * @param options.mockCharacterRepo - The mock character repository to use.
  * @param options.mockRecipeRepo - The mock recipe repository to use.
- * @param options.mockGameStateRepository - The mock game state repository to use.
+ * @param options.mockGameStateRepo - The mock game state repository to use.
+ * @param options.mockTradeRepo - The mock trade repository to use.
  * @returns An object with the created mock service instances.
  */
 export const createMockServices = ({
@@ -177,28 +219,24 @@ export const createMockServices = ({
 	mockMysteryBoxRepo,
 	mockCharacterRepo,
 	mockRecipeRepo,
-	mockGameStateRepository
+	mockGameStateRepo,
+	mockTradeRepo
 }: {
 	mockPlayerRepo?: PlayerRepository,
 	mockVoteRepo?: VoteRepository,
 	mockMysteryBoxRepo?: MysteryBoxRepository,
 	mockCharacterRepo?: CharacterRepository,
 	mockRecipeRepo?: RecipeRepository,
-	mockGameStateRepository?: GameStateRepository
-} = {}): {
-	playerService: PlayerService,
-	voteService: VoteService,
-	mysteryBoxService: MysteryBoxService,
-	recipeService: RecipeService,
-	gameStateService: GameStateService
-} => {
+	mockGameStateRepo?: GameStateRepository,
+	mockTradeRepo?: TradeRepository
+} = {}): NamesmithServices => {
 	const sharedDB =
 		mockPlayerRepo?.db ??
 		mockVoteRepo?.db ??
 		mockMysteryBoxRepo?.db ??
 		mockCharacterRepo?.db ??
 		mockRecipeRepo?.db ??
-		mockGameStateRepository?.db ??
+		mockGameStateRepo?.db ??
 		createMockDB();
 
 	const playerRepo =
@@ -221,9 +259,13 @@ export const createMockServices = ({
 		mockRecipeRepo ??
 		createMockRecipeRepo(sharedDB);
 
-	const gameStateRepository =
-		mockGameStateRepository ??
+	const gameStateRepo =
+		mockGameStateRepo ??
 		createMockGameStateRepo(sharedDB);
+
+	const tradeRepo =
+		mockTradeRepo ??
+		createMockTradeRepo(sharedDB);
 
 	const playerService = createMockPlayerService(playerRepo);
 	const voteService = createMockVoteService(
@@ -236,7 +278,13 @@ export const createMockServices = ({
 		recipeRepo, playerService
 	);
 	const gameStateService = createMockGameStateService(
-		gameStateRepository, playerService, voteService
+		gameStateRepo, playerService, voteService
+	);
+	const tradeService = createMockTradeService(
+		tradeRepo, playerService
+	);
+	const characterService = createMockCharacterService(
+		characterRepo
 	);
 
 	return {
@@ -244,6 +292,8 @@ export const createMockServices = ({
 		voteService: voteService,
 		mysteryBoxService: mysteryBoxService,
 		recipeService: recipeService,
-		gameStateService: gameStateService
+		gameStateService: gameStateService,
+		tradeService: tradeService,
+		characterService: characterService,
 	}
 };

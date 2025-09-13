@@ -1,7 +1,5 @@
 import { RecipeRepository } from "../repositories/recipe.repository";
 import { Recipe, RecipeID, RecipeResolvable } from "../types/recipe.types";
-import { RecipeNotFoundError } from "../utilities/error.utility";
-import { isRecipe } from "../utilities/recipe.utility";
 import { PlayerResolvable } from '../types/player.types';
 import { PlayerService } from "./player.service";
 
@@ -21,15 +19,12 @@ export class RecipeService {
 	 * @throws {RecipeNotFoundError} If the recipe with the given ID is not found.
 	 */
 	resolveRecipe(recipeResolvable: RecipeResolvable): Recipe {
-		if (isRecipe(recipeResolvable))
-			return recipeResolvable;
+		const recipeID =
+			typeof recipeResolvable === 'object'
+				? recipeResolvable.id
+				: recipeResolvable;
 
-		const recipe = this.recipeRepository.getRecipeByID(recipeResolvable);
-
-		if (recipe === null)
-			throw new RecipeNotFoundError(recipeResolvable);
-
-		return recipe;
+		return this.recipeRepository.getRecipeOrThrow(recipeID);
 	}
 
 	/**

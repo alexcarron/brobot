@@ -1,6 +1,6 @@
 import { CharacterNotFoundError } from "../utilities/error.utility";
 import { CharacterRepository } from "./character.repository";
-import { createMockCharacterRepo } from "./mock-repositories";
+import { createMockCharacterRepo } from "../mocks/mock-repositories";
 
 describe('CharacterRepository', () => {
 	let characterRepo: CharacterRepository;
