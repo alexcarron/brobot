@@ -107,6 +107,19 @@ export class GameStateService {
 	}
 
 	/**
+	 * Checks if the game has started.
+	 * @returns True if the game has started, false otherwise.
+	 */
+	hasStarted(): boolean {
+		try {
+			return this.gameStateRepository.getTimeStarted() !== null;
+		}
+		catch {
+			return false;
+		}
+	}
+
+	/**
 	 * Starts the cron jobs to end the game and end voting at the times stored in the game state.
 	 * If the current time is before the stored times, the jobs will be started.
 	 */

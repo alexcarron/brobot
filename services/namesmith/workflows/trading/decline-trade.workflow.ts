@@ -1,8 +1,8 @@
 import { TradeService } from '../../services/trade.service';
 import { PlayerService } from '../../services/player.service';
-import { TradeResolveable } from '../../types/trade.types';
+import { TradeResolveable, TradeStatuses } from '../../types/trade.types';
 import { PlayerResolvable } from '../../types/player.types';
-import { CannotRespondToTradeError, NonPlayerRespondedToTradeError, NonTradeRespondedToError } from '../../utilities/error.utility';
+import { NonPlayerRespondedToTradeError, NonTradeRespondedToError, TradeAlreadyRespondedToError, TradeAwaitingDifferentPlayerError } from '../../utilities/error.utility';
 
 export const declineTrade = (
 	{tradeService, playerService, playerDeclining, trade}: {
@@ -25,18 +25,30 @@ export const declineTrade = (
 	}
 	trade = tradeService.resolveTrade(trade);
 
-	// Is this player allowed to respond to this trade request?
+	// Is this trade already responded to?
+	if (tradeService.hasBeenRespondedTo(trade)) {
+		const player = playerService.resolvePlayer(playerDeclining);
+		trade = tradeService.resolveTrade(trade);
+		return new TradeAlreadyRespondedToError(player, trade);
+	}
+
+	// Is this trade awaiting this player?
 	if (!tradeService.canPlayerRespond(trade, playerDeclining)) {
 		const player = playerService.resolvePlayer(playerDeclining);
 		trade = tradeService.resolveTrade(trade);
-		return new CannotRespondToTradeError(player, trade);
+		return new TradeAwaitingDifferentPlayerError(player, trade);
 	}
 
 	tradeService.decline(trade);
 
+	const playerDeclinedID =
+		trade.status === TradeStatuses.AWAITING_INITIATOR
+			? trade.recipientPlayerID
+			: trade.initiatingPlayerID;
+
 	return {
 		trade: tradeService.resolveTrade(trade.id),
-		initiatingPlayer: playerService.resolvePlayer(trade.initiatingPlayerID),
-		recipientPlayer: playerService.resolvePlayer(trade.recipientPlayerID),
+		playerDeclining: playerService.resolvePlayer(playerDeclining),
+		playerDeclined: playerService.resolvePlayer(playerDeclinedID),
 	};
 }

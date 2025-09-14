@@ -2,7 +2,7 @@ import { TradeService } from '../../services/trade.service';
 import { PlayerService } from '../../services/player.service';
 import { TradeResolveable } from '../../types/trade.types';
 import { PlayerResolvable } from '../../types/player.types';
-import { CannotRespondToTradeError, MissingOfferedCharactersError, MissingRequestedCharactersError, NonPlayerRespondedToTradeError, NonTradeRespondedToError } from '../../utilities/error.utility';
+import { CannotRespondToTradeError, MissingOfferedCharactersError, MissingRequestedCharactersError, NonPlayerRespondedToTradeError, NonTradeRespondedToError, TradeAlreadyRespondedToError, TradeAwaitingDifferentPlayerError } from '../../utilities/error.utility';
 
 /**
  * Accepts a trade request, transferring characters between the two players.
@@ -39,11 +39,18 @@ export const acceptTrade = async (
 	}
 	trade = tradeService.resolveTrade(trade);
 
-	// Is this player allowed to respond to this trade request?
+	// Is this trade already responded to?
+	if (tradeService.hasBeenRespondedTo(trade)) {
+		const player = playerService.resolvePlayer(playerAccepting);
+		trade = tradeService.resolveTrade(trade);
+		return new TradeAlreadyRespondedToError(player, trade);
+	}
+
+	// Is this trade awaiting this player?
 	if (!tradeService.canPlayerRespond(trade, playerAccepting)) {
 		const player = playerService.resolvePlayer(playerAccepting);
 		trade = tradeService.resolveTrade(trade);
-		return new CannotRespondToTradeError(player, trade);
+		return new TradeAwaitingDifferentPlayerError(player, trade);
 	}
 
 	// Does the initating player have the characters they are offering?

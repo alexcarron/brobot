@@ -30,7 +30,7 @@ jest.mock('../interfaces/recipe-select-menu', () => ({
 	sendRecipeSelectMenu: jest.fn(),
 }));
 
-jest.mock('../interfaces/voting-display', () => ({
+jest.mock('../interfaces/voting/voting-display', () => ({
 	sendVotingDisplay: jest.fn(),
 }));
 

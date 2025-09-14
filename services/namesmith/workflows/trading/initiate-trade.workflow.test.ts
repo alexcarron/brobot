@@ -7,7 +7,7 @@ import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { PlayerService } from "../../services/player.service";
 import { TradeService } from "../../services/trade.service";
 import { TradeStatuses } from "../../types/trade.types";
-import { MissingOfferedCharactersError, MissingRequestedCharactersError, NonPlayerInitiatedTradeError, NonPlayerReceivedTradeError } from "../../utilities/error.utility";
+import { MissingOfferedCharactersError, MissingRequestedCharactersError, NonPlayerInitiatedTradeError, NonPlayerReceivedTradeError, TradeBetweenSamePlayersError } from "../../utilities/error.utility";
 import { initiateTrade } from "./initiate-trade.workflow";
 
 describe('initiate-trade.workflow.ts', () => {
@@ -76,6 +76,18 @@ describe('initiate-trade.workflow.ts', () => {
 					requestedCharacters: MOCK_RECIPIENT_PLAYER.inventory,
 				})
 			).isAnInstanceOf(NonPlayerReceivedTradeError);
+		});
+
+		it('returns TradeBetweenSamePlayersError if the initiating player attempts to trade with themselves', () => {
+			makeSure(
+				initiateTrade({
+					...services,
+					initiatingPlayer: MOCK_INITIATING_PLAYER,
+					recipientPlayer: MOCK_INITIATING_PLAYER,
+					offeredCharacters: MOCK_INITIATING_PLAYER.inventory,
+					requestedCharacters: MOCK_RECIPIENT_PLAYER.inventory,
+				})
+			).isAnInstanceOf(TradeBetweenSamePlayersError);
 		});
 
 		it('returns MissingOfferedCharactersError if the initiating player does not have the characters they are offering', () => {

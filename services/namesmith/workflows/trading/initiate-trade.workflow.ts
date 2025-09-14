@@ -1,7 +1,7 @@
 import { PlayerService } from "../../services/player.service";
 import { TradeService } from "../../services/trade.service"
 import { PlayerResolvable } from "../../types/player.types"
-import { MissingOfferedCharactersError, MissingRequestedCharactersError, NonPlayerInitiatedTradeError, NonPlayerReceivedTradeError } from "../../utilities/error.utility";
+import { MissingOfferedCharactersError, MissingRequestedCharactersError, NonPlayerInitiatedTradeError, NonPlayerReceivedTradeError, TradeBetweenSamePlayersError } from "../../utilities/error.utility";
 
 /**
  * Initiates a trade between two users.
@@ -38,6 +38,12 @@ export const initiateTrade = (
 	if (!playerService.isPlayer(recipientPlayer)) {
 		const playerID = playerService.resolveID(recipientPlayer);
 		return new NonPlayerReceivedTradeError(playerID);
+	}
+
+	// Is the player trading with themselves?
+	if (playerService.areSamePlayers(initiatingPlayer, recipientPlayer)) {
+		const player = playerService.resolvePlayer(initiatingPlayer);
+		return new TradeBetweenSamePlayersError(player);
 	}
 
 	// Does the initating player have the characters they are offering?

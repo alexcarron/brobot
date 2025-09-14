@@ -337,7 +337,7 @@ export function mapToObject<
 	ItemType,
 	ObjectType extends Record<string, unknown>
 >(
-	array: ItemType[],
+	array: readonly ItemType[],
 	getPropertyFromItem: (item: ItemType) => ObjectType
 ): ObjectType {
   const result = array.reduce<Partial<ObjectType>>(

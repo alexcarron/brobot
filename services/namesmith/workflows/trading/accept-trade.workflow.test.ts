@@ -31,9 +31,10 @@ import { addMockPlayer, addMockTrade, editMockPlayer } from "../../mocks/mock-da
 import { mockPlayers } from "../../mocks/mock-repositories";
 import { setupMockNamesmith } from "../../mocks/mock-setup";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
+import { TradeService } from "../../services/trade.service";
 import { Player } from "../../types/player.types";
 import { Trade, TradeStatuses } from "../../types/trade.types";
-import { CannotRespondToTradeError, MissingOfferedCharactersError, MissingRequestedCharactersError, NonPlayerRespondedToTradeError, NonTradeRespondedToError } from "../../utilities/error.utility";
+import { MissingOfferedCharactersError, MissingRequestedCharactersError, NonPlayerRespondedToTradeError, NonTradeRespondedToError, TradeAlreadyRespondedToError, TradeAwaitingDifferentPlayerError } from "../../utilities/error.utility";
 import { acceptTrade } from "./accept-trade.workflow";
 
 describe('accept-trade.workflow.ts', () => {
@@ -41,9 +42,10 @@ describe('accept-trade.workflow.ts', () => {
 	let MOCK_RECIPIENT_PLAYER: Player;
 	let MOCK_TRADE: Trade;
 	let db: DatabaseQuerier;
+	let tradeService: TradeService;
 
 	beforeEach(() => {
-		({ db } = setupMockNamesmith());
+		({ db, tradeService } = setupMockNamesmith());
 
 		MOCK_INITIATING_PLAYER = addMockPlayer(db, {
 			inventory: "Bbbdoevr",
@@ -139,14 +141,26 @@ describe('accept-trade.workflow.ts', () => {
 			).isAnInstanceOf(NonTradeRespondedToError);
 		});
 
-		it('returns a CannotRespondToTradeError if the player accepting the trade is not the recipient while the trade is awaiting the recipient', async () => {
+		it('returns a TradeAlreadyRespondedToError if the trade has already been declined', async () => {
+			tradeService.decline(MOCK_TRADE);
+
 			makeSure(
 				await acceptTrade({
 					...getNamesmithServices(),
 					playerAccepting: MOCK_INITIATING_PLAYER,
 					trade: MOCK_TRADE,
 				})
-			).isAnInstanceOf(CannotRespondToTradeError);
+			).isAnInstanceOf(TradeAlreadyRespondedToError);
+		});
+
+		it('returns a TradeAwaitingDifferentPlayerError if the player accepting the trade is not the recipient while the trade is awaiting the recipient', async () => {
+			makeSure(
+				await acceptTrade({
+					...getNamesmithServices(),
+					playerAccepting: MOCK_INITIATING_PLAYER,
+					trade: MOCK_TRADE,
+				})
+			).isAnInstanceOf(TradeAwaitingDifferentPlayerError);
 		});
 
 		it('returns a MissingOfferedCharactersError if the initiating player no longer has the characters they are offering', async () => {

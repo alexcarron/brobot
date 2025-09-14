@@ -139,6 +139,18 @@ export class PlayerService {
 	}
 
 	/**
+	 * Determines if two players are the same based on their IDs.
+	 * @param player1 - The first player to compare.
+	 * @param player2 - The second player to compare.
+	 * @returns True if the two players are the same, false otherwise.
+	 */
+	areSamePlayers(player1: PlayerResolvable, player2: PlayerResolvable): boolean {
+		const player1ID = this.resolveID(player1);
+		const player2ID = this.resolveID(player2);
+		return player1ID === player2ID;
+	}
+
+	/**
 	 * Retrieves the inventory of a player.
 	 * @param playerResolvable - The player resolvable whose inventory is being retrieved.
 	 * @returns The inventory of the player.

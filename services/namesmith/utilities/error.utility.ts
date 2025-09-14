@@ -316,6 +316,62 @@ export class MissingRequestedCharactersError extends UserActionError {
 }
 
 /**
+ * Error thrown when a player attempts to trade with themselves
+ */
+export class TradeBetweenSamePlayersError extends UserActionError {
+	declare relevantData: { player: Player };
+	constructor(player: Player) {
+		super({
+			message: `A player attempted to trade with themselves.`,
+			userFriendlyMessage:
+				`You cannot trade with yourself!`,
+			relevantData: {
+				player,
+			}
+		})
+	}
+}
+
+/**
+ * Error thrown a player responds to a trade that has already been responded to
+ */
+export class TradeAlreadyRespondedToError extends UserActionError {
+	declare relevantData: { player: Player, trade: Trade };
+	constructor(player: Player, trade: Trade) {
+		super({
+			message: `A player attempted to respond to a trade that has already been responded to.`,
+			userFriendlyMessage:
+				`This trade has already been responded to!`,
+			relevantData: {
+				player,
+				trade,
+			}
+		})
+	}
+}
+
+/**
+ * Error thrown a player responds to a trade that is awaiting a different player's response
+ */
+export class TradeAwaitingDifferentPlayerError extends UserActionError {
+	declare relevantData: {
+		playerAwaitingTrade: Player,
+		trade: Trade
+	};
+	constructor(playerAwaitingTrade: Player, trade: Trade) {
+		super({
+			message: `A player attempted to respond to a trade that is awaiting a different player's response.`,
+			userFriendlyMessage:
+				`You can only respond to a trade that is awaiting your response!`,
+			relevantData: {
+				playerAwaitingTrade,
+				trade,
+			}
+		})
+	}
+}
+
+/**
  * Error thrown when a player attempts to respond to a trade they cannot respond to
  */
 export class CannotRespondToTradeError extends UserActionError {

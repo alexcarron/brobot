@@ -42,6 +42,14 @@ export class TradeService {
 	}
 
 	/**
+	 * Retrieves all trade requests from the database.
+	 * @returns An array of all trade objects in the database.
+	 */
+	getTrades(): Trade[] {
+		return this.tradeRepository.getTrades();
+	}
+
+	/**
 	 * Creates a new trade request with the given properties.
 	 * @param parameters - An object containing the properties for the trade request.
 	 * @param parameters.initiatingPlayer - The ID of the player who is initiating the trade.
@@ -141,6 +149,18 @@ export class TradeService {
 		this.tradeRepository.setStatus(
 			tradeID, TradeStatuses.IGNORED
 		)
+	}
+
+	/**
+	 * Determines if the given trade has been responded to by either the initiating or recipient player.
+	 * @param trade - The trade to check.
+	 * @returns True if the trade has been responded to, false otherwise.
+	 */
+	hasBeenRespondedTo(trade: TradeResolveable): boolean {
+		trade = this.resolveTrade(trade);
+		return (
+			trade.status !== TradeStatuses.AWAITING_INITIATOR && trade.status !== TradeStatuses.AWAITING_RECIPIENT
+		);
 	}
 
 	/**

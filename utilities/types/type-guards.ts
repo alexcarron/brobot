@@ -141,3 +141,14 @@ export function hasProperty<
 ): object is ObjectType & Record<KeyType, unknown> {
 	return key in object;
 }
+
+/**
+ * Checks if a given value is an instance of the built-in Error class.
+ * @param value - The value to check.
+ * @returns If the value is an instance of the built-in Error class.
+ */
+export function isError(
+	value: unknown
+): value is Error {
+	return value instanceof Error;
+}

@@ -1,15 +1,118 @@
 import { createRandomUUID } from "./random-utils";
-import { ActionRowBuilder, ButtonBuilder, ComponentBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from "@discordjs/builders";
-import { ButtonInteraction, ButtonStyle, Message, MessageCreateOptions, StringSelectMenuInteraction, TextBasedChannel } from "discord.js";
-import { InvalidArgumentError } from "./error-utils";
+import { ActionRowBuilder, ButtonBuilder, ComponentBuilder, ModalBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, TextInputBuilder } from "@discordjs/builders";
+import { ButtonInteraction, ButtonStyle, Message, MessageCreateOptions, ModalSubmitInteraction, StringSelectMenuInteraction, TextBasedChannel, TextInputStyle } from "discord.js";
+import { InvalidArgumentError, throwIfNotError } from "./error-utils";
 import { doOnButtonPressed } from '../event-listeners/on-button-pressed';
 import { doOnMenuOptionSelected } from "../event-listeners/on-menu-option-selected";
 import { isStrings } from "./types/type-guards";
-import { DiscordSelectMenuOption } from "./constants/discord-interface.constants";
+import { DiscordSelectMenuOption, InteractionWithModalSupport } from "./constants/discord-interface.constants";
 import { setChannelMessage, toMessageEditFromCreateOptions } from "./discord-action-utils";
 import { fetchMessageWithComponent } from "./discord-fetch-utils";
+import { logError } from "./logging-utils";
+import { mapToObject } from "./data-structure-utils";
 
 const OPTIONS_PER_SELECT_MENU = 25;
+
+/**
+ * Shows a modal to a user, prompting them for text input. Returns the text entered by the user.
+ * @param options - Options for showing the modal.
+ * @param options.interaction - The interaction that triggered the modal.
+ * @param options.id - The custom ID of the modal.
+ * @param options.title - The title of the modal. Must be less than or equal to 45 characters.
+ * @param options.textInputs - The text inputs to show in the modal. The label must be less than or equal to 45 characters.
+ * @param options.onModalSubmitted - The function to call when the user submits the modal.
+ * @param options.timeout - The amount of time to wait for the user to submit the modal.
+ */
+export async function showModalWithTextInputs<
+	TextInputs extends readonly {
+		id: string;
+		label: string;
+		initialValue: string;
+		maxLength?: number;
+	}[]
+> (
+	{interaction, id, title, textInputs, onModalSubmitted, timeout = 600_000}: {
+		interaction: InteractionWithModalSupport;
+		id?: string;
+		title: string;
+		textInputs: TextInputs;
+		onModalSubmitted: (args:
+			& {interaction: ModalSubmitInteraction}
+			& {[TextInput in TextInputs[number] as `${TextInput['id']}Value`]: string;}
+		) => Promise<unknown>;
+		timeout?: number;
+	}
+) {
+	const modalID = id ?? `modal-${createRandomUUID()}`;
+	if (title.length > 45)
+		title = title.substring(0, 45);
+
+	// Create the modal
+	const modal = new ModalBuilder()
+		.setCustomId(modalID)
+		.setTitle(title);
+
+	const modalTextInputs = textInputs.map(
+		({id, label, initialValue, maxLength}) => {
+			if (label.length > 45)
+				label = label.substring(0, 45);
+
+			// Create the text input field
+			const textInput = new TextInputBuilder()
+				.setCustomId(id)
+				.setLabel(label)
+				.setPlaceholder(initialValue)
+				.setValue(initialValue)
+				.setRequired(true)
+				.setStyle(TextInputStyle.Paragraph);
+
+			if (maxLength) textInput.setMaxLength(maxLength);
+
+			return textInput;
+		}
+	);
+
+	const textInputsActionRows = modalTextInputs.map(modalTextInput =>
+		new ActionRowBuilder<TextInputBuilder>().addComponents(modalTextInput)
+	)
+
+	modal.addComponents(textInputsActionRows);
+
+	let submittedInteraction: ModalSubmitInteraction;
+	try {
+		await interaction.showModal(modal);
+
+		// Wait for user to submit the modal
+		submittedInteraction = await interaction.awaitModalSubmit({
+			filter: (submitInteraction) =>
+				submitInteraction.customId === modalID &&
+				submitInteraction.user.id === interaction.user.id,
+			time: timeout,
+		});
+
+		if (submittedInteraction instanceof ModalSubmitInteraction) {
+			textInputs.forEach(({id}) =>
+				submittedInteraction.fields.getTextInputValue(id)
+			);
+
+			const textInputsValues = mapToObject(textInputs, ({id}) => ({
+				[`${id}Value`]: submittedInteraction.fields.getTextInputValue(id),
+			}))
+
+			await onModalSubmitted({
+				interaction: submittedInteraction,
+				...textInputsValues as {
+					[TextInput in TextInputs[number] as `${TextInput['id']}Value`]: string;
+				},
+			});
+		}
+	}
+	catch (error) {
+		throwIfNotError(error);
+		logError(`Error while waiting for user to submit modal`, error);
+	}
+}
+
 
 /**
  * Represents a Discord interface that can be created, sent to a channel, regenerated, and deleted.
@@ -20,16 +123,20 @@ abstract class DiscordInterface {
 	protected channel?: TextBasedChannel;
 
 	constructor({id}: {
-		id?: string
+		id: string
 	}) {
-		this.id = id ?? createRandomUUID();
+		this.id = id;
 	}
 
 	/**
 	 * Returns the components of the interface as a Record<string, ComponentBuilder>.
 	 * @returns The components of the interface as a Record<string, ComponentBuilder>.
 	 */
-	abstract getComponents(): Record<string, ComponentBuilder>;
+	abstract getComponents(): Record<string,
+		| ComponentBuilder
+		| Array<ComponentBuilder>
+		| Record<string, ComponentBuilder>
+	>;
 
 	/**
 	 * Returns the contents of the interface as a MessageCreateOptions object.
@@ -152,7 +259,7 @@ export class DiscordSelectMenu extends DiscordInterface {
 		{promptText, placeholderText, menuID, options, onOptionSelected}: {
 			promptText: string,
 			placeholderText?: string,
-			menuID?: string,
+			menuID: string,
 			options:
 				| string[]
 				| {label: string; value: string}[],
@@ -160,7 +267,7 @@ export class DiscordSelectMenu extends DiscordInterface {
 		}
 	) {
 		super({
-			id: menuID ?? `select-menu-${createRandomUUID()}`
+			id: menuID
 		});
 
 		this.promptText = promptText;
@@ -352,7 +459,7 @@ export class DiscordSelectMenu extends DiscordInterface {
 }
 
 /**
- * Represents a Discord button interface that can be created, sent to a channel, regenerated, and deleted.
+ * Represents an interface with a message and one button that can be created, sent to a channel, regenerated, and deleted.
  */
 export class DiscordButton extends DiscordInterface {
 	private promptText: string;
@@ -374,7 +481,7 @@ export class DiscordButton extends DiscordInterface {
 		onButtonPressed: (buttonInteraction: ButtonInteraction) => Promise<void>;
   }) {
 		super({
-			id: buttonID ?? `button-${createRandomUUID()}`,
+			id: buttonID
 		});
 
     this.promptText = promptText;
@@ -391,18 +498,80 @@ export class DiscordButton extends DiscordInterface {
 
 		doOnButtonPressed(this.id, this.onButtonPressed);
 
-		return {
-			button,
-		};
+		return {button};
 	}
 
 	getMessageContents(): MessageCreateOptions {
-		const {button} = this.getComponents();
+		const { button } = this.getComponents();
 
 		return {
 			content: this.promptText,
 			components: [
 				new ActionRowBuilder<ButtonBuilder>().addComponents(button)
+			]
+		};
+	}
+}
+
+/**
+ * Represents an interface of a single message with multiple buttons that can be created, sent to a channel, regenerated, and deleted.
+ */
+export class DiscordButtons extends DiscordInterface {
+	private promptText: string;
+	private buttons: Array<{
+		id: string;
+		label: string;
+		style: ButtonStyle;
+		onButtonPressed: (buttonInteraction: ButtonInteraction) => Promise<unknown>;
+	}>;
+
+	constructor({
+		promptText,
+		buttons,
+	}: {
+		promptText: string;
+		buttons: Array<{
+			id: string;
+			label: string;
+			style: ButtonStyle;
+			onButtonPressed: (buttonInteraction: ButtonInteraction) => Promise<unknown>;
+		}>;
+	}) {
+		if (buttons.length === 0)
+			throw new InvalidArgumentError('DiscordButtons must have at least one button');
+
+		super({
+			id: buttons[0].id
+		});
+
+		this.promptText = promptText;
+		this.buttons = buttons;
+	}
+
+	getComponents(): {buttons: Array<ButtonBuilder>} {
+		const buttons = this.buttons.map(({id, label, style, onButtonPressed}) => {
+			const button = new ButtonBuilder()
+				.setCustomId(id)
+				.setLabel(label)
+				.setStyle(style);
+
+			doOnButtonPressed(id, onButtonPressed);
+
+			return button;
+		});
+
+		return {buttons};
+	}
+
+	getMessageContents(): MessageCreateOptions {
+		const { buttons } = this.getComponents();
+
+		return {
+			content: this.promptText,
+			components: [
+				new ActionRowBuilder<ButtonBuilder>().addComponents(
+					...buttons
+				)
 			]
 		};
 	}

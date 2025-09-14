@@ -143,6 +143,42 @@ describe('PlayerService', () => {
 		})
 	});
 
+	describe('areSamePlayers()', () => {
+		it('should return false if the player IDs are not the same', () => {
+			makeSure(playerService.areSamePlayers(mockPlayers[0].id, mockPlayers[1].id)).isFalse();
+		});
+
+		it('should return true if the player IDs are the same', () => {
+			makeSure(playerService.areSamePlayers(mockPlayers[0].id, mockPlayers[0].id)).isTrue();
+		});
+
+		it('should return false if the player objects are not the same', () => {
+			makeSure(playerService.areSamePlayers(mockPlayers[0], mockPlayers[1])).isFalse();
+		});
+
+		it('should return true if the player objects are the same', () => {
+			makeSure(playerService.areSamePlayers(mockPlayers[0], mockPlayers[0])).isTrue();
+		});
+
+		it('should work with mismatched player resolvables', () => {
+			makeSure(playerService.areSamePlayers(
+				mockPlayers[0].id, mockPlayers[0]
+			)).isTrue();
+
+			makeSure(playerService.areSamePlayers(
+				mockPlayers[0], mockPlayers[0].id
+			)).isTrue();
+
+			makeSure(playerService.areSamePlayers(
+				mockPlayers[1], mockPlayers[0].id
+			)).isFalse();
+
+			makeSure(playerService.areSamePlayers(
+				mockPlayers[0].id, mockPlayers[1]
+			)).isFalse();
+		})
+	})
+
 	describe('getInventory()', () => {
 		it('should return the inventory of a player', () => {
 			const result = playerService.getInventory(mockPlayers[0].id);

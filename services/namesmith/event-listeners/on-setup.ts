@@ -1,7 +1,8 @@
 import { logInfo, logSuccess } from "../../../utilities/logging-utils";
 import { setupDatabase } from "../database/setup-database";
 import { regenerateRecipeSelectMenu } from "../interfaces/recipe-select-menu";
-import { regenerateVoteDisplay } from "../interfaces/voting-display";
+import { regenerateAllTradeMessages } from "../interfaces/trading/trade-message";
+import { regenerateVoteDisplay } from "../interfaces/voting/voting-display";
 import { CharacterRepository } from "../repositories/character.repository";
 import { GameStateRepository } from "../repositories/game-state.repository";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
@@ -9,6 +10,7 @@ import { PlayerRepository } from "../repositories/player.repository";
 import { RecipeRepository } from "../repositories/recipe.repository";
 import { TradeRepository } from "../repositories/trade.repository";
 import { VoteRepository } from "../repositories/vote.repository";
+import { CharacterService } from "../services/character.service";
 import { GameStateService } from "../services/game-state.service";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { MysteryBoxService } from "../services/mystery-box.service";
@@ -16,64 +18,69 @@ import { PlayerService } from "../services/player.service";
 import { RecipeService } from "../services/recipe.service";
 import { TradeService } from "../services/trade.service";
 import { VoteService } from "../services/vote.service";
+import { NamesmithDependencies } from "../types/namesmith.types";
 
-export const initializeServices = async () => {
+/**
+ * Initializes all the dependencies required for the Namesmith game to run.
+ * This sets up all the repositories and services with the correct dependencies.
+ * It should be called before any of the event listeners are set up, and before any tests are run.
+ * @returns The dependencies required for the Namesmith game to run.
+ */
+export const initializeDependencies = async (): Promise<NamesmithDependencies> => {
 	const db = await setupDatabase();
 
-	global.namesmith = {};
-	global.namesmith.mysteryBoxRepository =
-		new MysteryBoxRepository(db);
+	const mysteryBoxRepository = new MysteryBoxRepository(db);
+	const characterRepository = new CharacterRepository(db);
+	const playerRepository = new PlayerRepository(db);
+	const gameStateRepository = new GameStateRepository(db);
+	const voteRepository = new VoteRepository(db);
+	const recipeRepository = new RecipeRepository(db);
+	const tradeRepository = new TradeRepository(db);
 
-	global.namesmith.characterRepository =
-		new CharacterRepository(db);
-
-	global.namesmith.playerRepository =
-		new PlayerRepository(db);
-
-	global.namesmith.gameStateRepository =
-		new GameStateRepository(db);
-
-	global.namesmith.voteRepository =
-		new VoteRepository(db);
-
-	global.namesmith.recipeRepository =
-		new RecipeRepository(db);
-
-	global.namesmith.tradeRepository =
-		new TradeRepository(db);
-
-	global.namesmith.mysteryBoxService = new MysteryBoxService(
-		global.namesmith.mysteryBoxRepository,
-		global.namesmith.characterRepository,
+	const mysteryBoxService = new MysteryBoxService(
+		mysteryBoxRepository,
+		characterRepository,
 	);
 
-	global.namesmith.playerService = new PlayerService(
-		global.namesmith.playerRepository,
+	const characterService = new CharacterService(
+		characterRepository,
 	);
 
-	global.namesmith.voteService = new VoteService(
-		global.namesmith.voteRepository,
-		global.namesmith.playerService,
+	const playerService = new PlayerService(
+		playerRepository,
 	);
 
-	global.namesmith.recipeService = new RecipeService(
-		global.namesmith.recipeRepository,
-		global.namesmith.playerService,
+	const voteService = new VoteService(
+		voteRepository,
+		playerService,
 	);
 
-	global.namesmith.tradeService = new TradeService(
-		global.namesmith.tradeRepository,
-		global.namesmith.playerService,
+	const recipeService = new RecipeService(
+		recipeRepository,
+		playerService,
+	);
+
+	const tradeService = new TradeService(
+		tradeRepository,
+		playerService,
 	);
 
 	const gameStateService = new GameStateService(
-		global.namesmith.gameStateRepository,
-		global.namesmith.playerService,
-		global.namesmith.voteService,
-		global.namesmith.recipeService
+		gameStateRepository,
+		playerService,
+		voteService,
+		recipeService
 	);
 
-	global.namesmith.gameStateService = gameStateService;
+	const namesmithDependencies: NamesmithDependencies = {
+		db,
+		mysteryBoxRepository, characterRepository, playerRepository, gameStateRepository, voteRepository, recipeRepository, tradeRepository,
+		mysteryBoxService, characterService, playerService, voteService, recipeService, tradeService, gameStateService
+	};
+
+	global.namesmith = namesmithDependencies;
+
+	return namesmithDependencies
 };
 
 /**
@@ -81,14 +88,17 @@ export const initializeServices = async () => {
  */
 export const setupNamesmith = async () => {
 	logInfo("Setting up Namesmith...");
-	await initializeServices();
+	await initializeDependencies();
 
-	const { gameStateService, recipeService, playerService } = getNamesmithServices();
+	const { gameStateService, recipeService, playerService, tradeService } = getNamesmithServices();
 
-	gameStateService.scheduleGameEvents();
+	if (gameStateService.hasStarted()) {
+		gameStateService.scheduleGameEvents();
+	}
 
 	await regenerateRecipeSelectMenu({recipeService});
 	await regenerateVoteDisplay({playerService});
+	await regenerateAllTradeMessages({tradeService, playerService});
 
 	logSuccess("Namesmith set up");
 }
