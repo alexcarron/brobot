@@ -37,7 +37,6 @@ export const command = new SlashCommand({
 		Parameters.CHARACTERS_GIVING,
 		Parameters.CHARACTERS_RECEIVING,
 	],
-	isInDevelopment: true,
 	execute: async (interaction) => {
 		await deferInteraction(interaction);
 
