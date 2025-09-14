@@ -4,8 +4,8 @@ jest.mock("../utilities/discord-action.utility", () => ({
 
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { DatabaseQuerier } from "../database/database-querier";
-import { addMockPlayer, addMockRecipe } from "../database/mock-database";
-import { setupMockNamesmith } from "../event-listeners/mock-setup";
+import { addMockPlayer, addMockRecipe } from "../mocks/mock-database";
+import { setupMockNamesmith } from "../mocks/mock-setup";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PlayerService } from "../services/player.service";
 import { RecipeService } from "../services/recipe.service";
@@ -35,6 +35,30 @@ describe('craft-character.workflow', () => {
 	});
 
 	describe('craftCharacter()', () => {
+		it('should return the player and recipe in the correct state.', async () => {
+			const player = addMockPlayer(db, {
+				inventory: 'aabbccdd'
+			});
+			const recipe = addMockRecipe(db, {
+				inputCharacters: 'abb',
+				outputCharacters: 'c'
+			});
+
+			const {newInventory, craftedCharacter, recipeUsed, playerCrafting} = returnIfNotError(
+					await craftCharacter({
+					playerService, recipeService, player, recipe
+				})
+			);
+
+			makeSure(newInventory).is('accddc');
+			makeSure(craftedCharacter).is('c');
+			makeSure(recipeUsed).is(recipe);
+			makeSure(playerCrafting).is({
+				...playerCrafting,
+				inventory: 'accddc'
+			});
+		});
+
 		it('should craft a character using a given recipe and player.', async () => {
 			const player = addMockPlayer(db, {
 				inventory: 'aabbccdd'
@@ -44,19 +68,13 @@ describe('craft-character.workflow', () => {
 				outputCharacters: 'c'
 			});
 
-			const result = returnIfNotError(await craftCharacter({
+			await craftCharacter({
 				playerService, recipeService, player, recipe
-			}));
+			});
 
 			const inventoryAfter = playerService.getInventory(player);
 
 			makeSure(inventoryAfter).is('accddc');
-			makeSure(result).is({
-				newInventory: 'accddc',
-				craftedCharacter: 'c',
-				recipeUsed: recipe,
-				playerCrafting: player,
-			});
 		});
 
 		it('should throw MissingRequiredCharactersError if the player does not have all the required characters to craft the character.', async () => {

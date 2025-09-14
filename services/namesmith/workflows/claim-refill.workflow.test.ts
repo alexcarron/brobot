@@ -8,8 +8,8 @@ import { makeSure } from "../../../utilities/jest/jest-utils";
 import { REFILL_COOLDOWN_HOURS } from "../constants/namesmith.constants";
 import { INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
-import { addMockPlayer } from "../database/mock-database";
-import { setupMockNamesmith } from "../event-listeners/mock-setup";
+import { addMockPlayer } from "../mocks/mock-database";
+import { setupMockNamesmith } from "../mocks/mock-setup";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PlayerService } from "../services/player.service";
 import { NonPlayerRefilledError, RefillAlreadyClaimedError } from "../utilities/error.utility";
@@ -32,7 +32,7 @@ describe('claim-tokens.workflow', () => {
 	});
 
 	describe('refillTokens()', () => {
-		it('should give the player tokens for refilling', () => {
+		it('should return the correct newTokenCount, tokensEarned, and nextRefillTime', () => {
 			const mockPlayer = addMockPlayer(db, {
 				tokens: 10
 			});
@@ -48,6 +48,22 @@ describe('claim-tokens.workflow', () => {
 
 			const expectedDate = new Date(new Date().getTime() + REFILL_COOLDOWN_HOURS * 60 * 60 * 1000);
 			makeSure(nextRefillTime).isCloseToDate(expectedDate);
+		});
+
+		it('should give the player tokens for refilling', () => {
+			const mockPlayer = addMockPlayer(db, {
+				tokens: 10
+			});
+
+			claimRefill({
+				...services,
+				playerRefilling: mockPlayer.id
+			});
+
+			const { playerService } = services;
+			const player = playerService.resolvePlayer(mockPlayer.id);
+
+			makeSure(player.tokens).is(mockPlayer.tokens + 50);
 		});
 
 		it('should throw RefillAlreadyClaimedError if the player has already claimed a refill', () => {

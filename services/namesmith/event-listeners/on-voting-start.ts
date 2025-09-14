@@ -1,4 +1,4 @@
-import { sendVotingDisplay } from '../interfaces/voting-display';
+import { sendVotingDisplay } from '../interfaces/voting/voting-display';
 import { VoteService } from "../services/vote.service";
 import { PlayerService } from "../services/player.service";
 import { closePublishedNamesChannel } from '../utilities/discord-action.utility';

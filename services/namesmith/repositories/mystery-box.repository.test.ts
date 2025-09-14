@@ -1,6 +1,6 @@
 import { INVALID_MYSTERY_BOX_ID } from "../constants/test.constants";
 import { MysteryBoxNotFoundError } from "../utilities/error.utility";
-import { createMockMysteryBoxRepo } from "./mock-repositories";
+import { createMockMysteryBoxRepo } from "../mocks/mock-repositories";
 import { MysteryBoxRepository } from "./mystery-box.repository";
 
 describe('MysteryBoxRepository', () => {

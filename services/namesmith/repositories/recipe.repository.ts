@@ -1,6 +1,7 @@
 import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { DatabaseQuerier } from "../database/database-querier";
 import { DBRecipe, Recipe, RecipeID } from "../types/recipe.types";
+import { RecipeNotFoundError } from "../utilities/error.utility";
 
 /**
  * Provides access to all static recipe data.
@@ -28,6 +29,21 @@ export class RecipeRepository {
 		const query = "SELECT * FROM recipe WHERE id = @id";
 		const recipe = this.db.getRow(query, { id }) as DBRecipe | undefined;
 		return recipe ?? null;
+	}
+
+	/**
+	 * Retrieves a recipe by its ID, or throws an error if no such recipe exists.
+	 * @param id - The unique identifier of the recipe to retrieve.
+	 * @returns The recipe object with the specified ID.
+	 * @throws {RecipeNotFoundError} If no recipe with the given ID exists.
+	 */
+	getRecipeOrThrow(id: RecipeID): Recipe {
+		const recipe = this.getRecipeByID(id);
+
+		if (recipe === null)
+			throw new RecipeNotFoundError(id);
+
+		return recipe;
 	}
 
 	/**

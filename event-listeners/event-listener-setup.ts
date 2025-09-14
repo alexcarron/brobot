@@ -20,7 +20,7 @@ import { isMenuOptionSelectedEvent } from "./on-menu-option-selected";
 /**
  * Represents a function that handles an event.
  */
-export type Handler<EventType> = (event: EventType) => Promise<void>;
+export type Handler<EventType> = (event: EventType) => Promise<unknown>;
 
 /**
  * Represents an object that can handle events of a specific type.

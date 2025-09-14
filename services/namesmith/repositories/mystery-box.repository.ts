@@ -1,6 +1,6 @@
 import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { DatabaseQuerier } from "../database/database-querier";
-import { CharacterOdds, DBCharacterOddsRow, DBMysteryBox, MysteryBox, MysteryBoxWithOdds } from "../types/mystery-box.types";
+import { CharacterOdds, DBCharacterOddsRow, DBMysteryBox, MysteryBox, MysteryBoxID, MysteryBoxWithOdds } from "../types/mystery-box.types";
 import { getCharacterValueFromID } from "../utilities/character.utility";
 import { MysteryBoxNotFoundError } from "../utilities/error.utility";
 
@@ -94,6 +94,21 @@ export class MysteryBoxRepository {
 			...mysteryBox,
 			characterOdds
 		};
+	}
+
+	/**
+	 * Given a mystery box id, returns the corresponding mystery box object with its character odds or throws a MysteryBoxNotFoundError if no such object exists.
+	 * @param id - The id of the mystery box to return.
+	 * @returns The mystery box object with the given id and its character odds.
+	 * @throws {MysteryBoxNotFoundError} If no mystery box object with the given id exists.
+	 */
+	getMysteryBoxWithOddsOrThrow(id: MysteryBoxID): MysteryBoxWithOdds {
+		const mysteryBox = this.getMysteryBoxWithOdds(id);
+
+		if (mysteryBox === null)
+			throw new MysteryBoxNotFoundError(id);
+
+		return mysteryBox;
 	}
 
 	/**

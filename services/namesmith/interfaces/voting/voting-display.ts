@@ -1,7 +1,7 @@
-import { deleteAllMessagesInChannel } from "../../../utilities/discord-action-utils";
-import { PlayerService } from "../services/player.service"
-import { openNamesToVoteOnChannel, sendToNamesToVoteOnChannel } from "../utilities/discord-action.utility";
-import { fetchNamesToVoteOnChannel } from "../utilities/discord-fetch.utility";
+import { deleteAllMessagesInChannel } from "../../../../utilities/discord-action-utils";
+import { PlayerService } from "../../services/player.service"
+import { openNamesToVoteOnChannel, sendToNamesToVoteOnChannel } from "../../utilities/discord-action.utility";
+import { fetchNamesToVoteOnChannel } from "../../utilities/discord-fetch.utility";
 import { regenerateVoteButton, sendVoteButton } from "./vote-button";
 
 export const sendVotingDisplay = async ({playerService}: {

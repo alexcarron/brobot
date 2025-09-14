@@ -1,9 +1,10 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
-import { mockPlayers, mockVotes } from "../repositories/mock-repositories";
+import { mockPlayers, mockVotes } from "../mocks/mock-repositories";
 import { VoteRepository } from "../repositories/vote.repository";
-import { createMockVoteService } from "./mock-services";
+import { createMockVoteService } from "../mocks/mock-services";
 import { PlayerService } from "./player.service";
 import { VoteService } from "./vote.service";
+import { INVALID_PLAYER_ID } from "../constants/test.constants";
 
 describe('VoteService', () => {
 	let voteService: VoteService;
@@ -44,6 +45,17 @@ describe('VoteService', () => {
 			const resolvedVote = voteService.resolveVote(voteID);
 
 			makeSure(resolvedVote).is(vote);
+		});
+
+		it('resolves the current vote object from an outdated vote object', () => {
+			const OUTDATED_VOTE = {
+				...mockVotes[0],
+				playerVotedForID: INVALID_PLAYER_ID
+			};
+
+			const resolvedVote = voteService.resolveVote(OUTDATED_VOTE);
+
+			makeSure(resolvedVote).is(mockVotes[0]);
 		});
 
 		it('should throw an error if the vote resolvable is invalid', () => {

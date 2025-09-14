@@ -1,5 +1,5 @@
 import { DatabaseQuerier } from "../database/database-querier";
-import { Character, DBCharacter, DBCharacterWithTags, CharacterWithTags } from "../types/character.types";
+import { Character, DBCharacter, DBCharacterWithTags, CharacterWithTags, CharacterID } from "../types/character.types";
 import { getIDfromCharacterValue } from "../utilities/character.utility";
 import { CharacterNotFoundError } from "../utilities/error.utility";
 
@@ -67,6 +67,22 @@ export class CharacterRepository {
 	getCharacterByValue(value: string): Character {
 		const id = getIDfromCharacterValue(value);
 		const character = this.getCharacterByID(id);
+		if (character === null)
+			throw new CharacterNotFoundError(id);
+
+		return character;
+	}
+
+	/**
+	 * Retrieves a character from the database by its ID.
+	 * If no character with the given ID is found, throws a CharacterNotFoundError.
+	 * @param id - The ID of the character to retrieve.
+	 * @returns The character with the given ID.
+	 * @throws {CharacterNotFoundError} If no character with the given ID is found.
+	 */
+	getCharacterOrThrow(id: CharacterID): Character {
+		const character = this.getCharacterByID(id);
+
 		if (character === null)
 			throw new CharacterNotFoundError(id);
 

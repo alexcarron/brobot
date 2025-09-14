@@ -315,6 +315,12 @@ export const ids = {
 					production: "1384678899614613594",
 				});
 			},
+			get TRADE_CHARACTERS() {
+				return chooseByEnv({
+					development: "1386449685497254138",
+					production: "1384681851028901918",
+				});
+			},
 		},
 	},
 

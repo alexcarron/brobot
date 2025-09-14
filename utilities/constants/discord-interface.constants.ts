@@ -1,4 +1,4 @@
-import { APIMessageComponentEmoji} from "discord.js";
+import { APIMessageComponentEmoji, ButtonInteraction, ChatInputCommandInteraction, ContextMenuCommandInteraction, MessageContextMenuCommandInteraction, SelectMenuInteraction, UserContextMenuCommandInteraction} from "discord.js";
 
 export type DiscordSelectMenuOption = {
     /**
@@ -26,3 +26,11 @@ export type DiscordSelectMenuOption = {
      */
     default?: boolean;
 }
+
+export type InteractionWithModalSupport =
+  | ButtonInteraction
+  | SelectMenuInteraction
+  | ChatInputCommandInteraction
+  | ContextMenuCommandInteraction
+  | MessageContextMenuCommandInteraction
+  | UserContextMenuCommandInteraction;

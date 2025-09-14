@@ -1,7 +1,7 @@
 import { INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
-import { addMockPlayer } from "../database/mock-database";
-import { createMockPlayerRepo, mockPlayers } from "./mock-repositories";
+import { addMockPlayer } from "../mocks/mock-database";
+import { createMockPlayerRepo, mockPlayers } from "../mocks/mock-repositories";
 import { PlayerRepository } from "./player.repository";
 
 describe('PlayerRepository', () => {
@@ -244,7 +244,7 @@ describe('PlayerRepository', () => {
 
 	describe('addPlayer()', () => {
 		it('adds a new player to the database', () => {
-			playerRepository.addPlayer("new-player-id");
+			playerRepository.createPlayer("new-player-id");
 
 			const result = playerRepository.getPlayerByID("new-player-id");
 
@@ -260,7 +260,7 @@ describe('PlayerRepository', () => {
 		});
 
 		it('throws an error if the player already exists', () => {
-			expect(() => playerRepository.addPlayer(mockPlayers[0].id)).toThrow();
+			expect(() => playerRepository.createPlayer(mockPlayers[0].id)).toThrow();
 		});
 	});
 

@@ -28,16 +28,18 @@ import { makeSure } from "../../../utilities/jest/jest-utils";
 import { REFILL_COOLDOWN_HOURS } from "../constants/namesmith.constants";
 import { INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
-import { addMockPlayer } from "../database/mock-database";
-import { createMockPlayerObject, mockPlayers } from "../repositories/mock-repositories";
+import { addMockPlayer } from "../mocks/mock-database";
+import { createMockPlayerObject, mockPlayers } from "../mocks/mock-repositories";
 import { PlayerRepository } from "../repositories/player.repository";
 import { changeDiscordNameOfPlayer, sendToPublishedNamesChannel, sendToNamesToVoteOnChannel, resetMemberToNewPlayer } from "../utilities/discord-action.utility";
 import { fetchNamesmithGuildMembers } from "../utilities/discord-fetch.utility";
-import { createMockPlayerService } from "./mock-services";
+import { createMockPlayerService } from "../mocks/mock-services";
 import { PlayerService } from "./player.service";
-
+import { PlayerNotFoundError } from "../utilities/error.utility";
 
 describe('PlayerService', () => {
+	const MOCK_PLAYER = mockPlayers[0];
+
 	let playerService: PlayerService;
 	let db: DatabaseQuerier;
 
@@ -81,20 +83,29 @@ describe('PlayerService', () => {
 
 	describe('resolvePlayer()', () => {
 		it('should resolve a player object to a player object', () => {
-			const player = playerService.playerRepository.getPlayers()[0];
-			const resolvedPlayer = playerService.resolvePlayer(player);
-			expect(resolvedPlayer).toEqual(player);
+			const resolvedPlayer = playerService.resolvePlayer(MOCK_PLAYER);
+			expect(resolvedPlayer).toEqual(MOCK_PLAYER);
 		});
 
 		it('should resolve a player ID to a player object', () => {
-			const player = playerService.playerRepository.getPlayers()[0];
-			const playerID = player.id;
+			const playerID = MOCK_PLAYER.id;
 			const resolvedPlayer = playerService.resolvePlayer(playerID);
-			expect(resolvedPlayer).toEqual(player);
+			expect(resolvedPlayer).toEqual(MOCK_PLAYER);
 		});
 
-		it('should throw an error if the player resolvable is invalid', () => {
-			expect(() => playerService.resolvePlayer(INVALID_PLAYER_ID)).toThrow();
+		it('returns current player object when given an outdated player object', () => {
+			const OUTDATED_PLAYER = {
+				...MOCK_PLAYER,
+				currentName: "OUTDATED",
+				tokens: 12,
+			}
+			const resolvedPlayer = playerService.resolvePlayer(OUTDATED_PLAYER);
+			expect(resolvedPlayer).toEqual(MOCK_PLAYER);
+		});
+
+		it('should throw a PlayerNotFoundError if the player resolvable is invalid', () => {
+			expect(() => playerService.resolvePlayer(INVALID_PLAYER_ID))
+			.toThrow(PlayerNotFoundError);
 		});
 	});
 
@@ -131,6 +142,42 @@ describe('PlayerService', () => {
 			makeSure(playerService.isPlayer(mockPlayers[0])).isTrue();
 		})
 	});
+
+	describe('areSamePlayers()', () => {
+		it('should return false if the player IDs are not the same', () => {
+			makeSure(playerService.areSamePlayers(mockPlayers[0].id, mockPlayers[1].id)).isFalse();
+		});
+
+		it('should return true if the player IDs are the same', () => {
+			makeSure(playerService.areSamePlayers(mockPlayers[0].id, mockPlayers[0].id)).isTrue();
+		});
+
+		it('should return false if the player objects are not the same', () => {
+			makeSure(playerService.areSamePlayers(mockPlayers[0], mockPlayers[1])).isFalse();
+		});
+
+		it('should return true if the player objects are the same', () => {
+			makeSure(playerService.areSamePlayers(mockPlayers[0], mockPlayers[0])).isTrue();
+		});
+
+		it('should work with mismatched player resolvables', () => {
+			makeSure(playerService.areSamePlayers(
+				mockPlayers[0].id, mockPlayers[0]
+			)).isTrue();
+
+			makeSure(playerService.areSamePlayers(
+				mockPlayers[0], mockPlayers[0].id
+			)).isTrue();
+
+			makeSure(playerService.areSamePlayers(
+				mockPlayers[1], mockPlayers[0].id
+			)).isFalse();
+
+			makeSure(playerService.areSamePlayers(
+				mockPlayers[0].id, mockPlayers[1]
+			)).isFalse();
+		})
+	})
 
 	describe('getInventory()', () => {
 		it('should return the inventory of a player', () => {
@@ -325,6 +372,30 @@ describe('PlayerService', () => {
 			makeSure(currentName).is('bch');
 		})
 	})
+
+	describe('transferCharacters()', () => {
+		it('should transfer characters from one player to another', async () => {
+			const player = addMockPlayer(db, {
+				inventory: "abcd",
+				currentName: "ab",
+			});
+			const player2 = addMockPlayer(db, {
+				inventory: "efgh",
+				currentName: "ef",
+			});
+
+			await playerService.transferCharacters(player.id, player2.id, "ad");
+			const player1CurrentName = playerService.getCurrentName(player.id);
+			const player1Inventory = playerService.getInventory(player.id);
+			const player2CurrentName = playerService.getCurrentName(player2.id);
+			const player2Inventory = playerService.getInventory(player2.id);
+
+			makeSure(player1Inventory).is('bc');
+			makeSure(player1CurrentName).is('b');
+			makeSure(player2Inventory).is('efghad');
+			makeSure(player2CurrentName).is('efad');
+		});
+	});
 
 	describe(".getPublishedName()", () => {
 		it("should return the published name of a player", () => {

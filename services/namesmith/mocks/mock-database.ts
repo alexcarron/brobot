@@ -1,14 +1,17 @@
 import { RunResult } from 'better-sqlite3';
-import { applySchemaToDB } from './queries/apply-schema';
-import { addInitialDataToDB } from './static-data/insert-static-data';
+import { applySchemaToDB } from '../database/queries/apply-schema';
+import { addInitialDataToDB } from '../database/static-data/insert-static-data';
 import { InvalidArgumentError } from '../../../utilities/error-utils';
-import { DatabaseQuerier } from './database-querier';
+import { DatabaseQuerier } from '../database/database-querier';
 import { Recipe } from '../types/recipe.types';
-import { AtLeastOne } from '../../../utilities/types/generic-types';
-import { Player } from '../types/player.types';
+import { WithAtLeast, WithAtLeastOne } from '../../../utilities/types/generic-types';
+import { DBPlayer, Player } from '../types/player.types';
 import { PlayerAlreadyExistsError } from '../utilities/error.utility';
 import { createRandomName, createRandomNumericUUID } from '../../../utilities/random-utils';
 import { MysteryBox } from '../types/mystery-box.types';
+import { Trade, TradeStatuses } from '../types/trade.types';
+import { mockPlayers } from './mock-repositories';
+import { toPlayerObject } from '../utilities/player.utility';
 
 /**
  * Creates an in-memory SQLite database with the schema and initial data for Namesmith already populated.
@@ -45,7 +48,7 @@ export const addMockPlayer = (
 		inventory = "",
 		lastClaimedRefillTime = null
 	}:
-	AtLeastOne<Player>
+	WithAtLeastOne<Player>
 ): Player => {
 	if (id === undefined) {
 		id = createRandomNumericUUID();
@@ -77,6 +80,43 @@ export const addMockPlayer = (
 	});
 	return player;
 };
+
+export const editMockPlayer = (
+	db: DatabaseQuerier,
+	editedPlayer: WithAtLeast<Player, "id">
+): Player => {
+	const setQueries: string[] =
+		Object.entries(editedPlayer)
+			.filter(([key, value]) =>
+				key !== "id" &&
+				value !== undefined
+			)
+			.map(([key]) => `${key} = @${key}`);
+
+	if (setQueries.length === 0)
+		throw new InvalidArgumentError("editMockPlayer: No properties to update.");
+
+	const updateQuery = `
+		UPDATE player
+		SET ${setQueries.join(", ")}
+		WHERE id = @id
+	`;
+
+	const result = db.run(updateQuery, { ...editedPlayer });
+
+	if (result.changes === 0)
+		throw new InvalidArgumentError(`editMockPlayer: No player found with ID ${editedPlayer.id}.`);
+
+	const newMockPlayer = db.getRow(
+		"SELECT * FROM player WHERE id = @id",
+		{ id: editedPlayer.id }
+	) as DBPlayer | undefined;
+
+	if (newMockPlayer === undefined)
+		throw new InvalidArgumentError(`editMockPlayer: No player found with ID ${editedPlayer.id}.`);
+
+	return toPlayerObject(newMockPlayer);
+}
 
 /**
  * Adds a vote to the database with the given properties.
@@ -125,7 +165,7 @@ export const addMockRecipe = (
 		id = undefined,
 		inputCharacters = "a",
 		outputCharacters = "a",
-	}: AtLeastOne<Recipe>
+	}: WithAtLeastOne<Recipe>
 ): Recipe => {
 	if (id === undefined) {
 		const runResult = db.run(
@@ -162,7 +202,7 @@ export const addMockMysteryBox = (
 		id = undefined,
     name = undefined,
     tokenCost = 0,
-	}: AtLeastOne<MysteryBox>
+	}: WithAtLeastOne<MysteryBox>
 ): MysteryBox => {
 	if (name === undefined)
 		name = createRandomName();
@@ -185,4 +225,83 @@ export const addMockMysteryBox = (
 		);
 	}
 	return { id, name, tokenCost };
+};
+
+
+/**
+ * Adds a trade to the database with the given properties.
+ * @param db - The in-memory database.
+ * @param tradeData - The trade data to add.
+ * @param tradeData.id - The ID of the trade.
+ * @param tradeData.initiatingPlayerID - The ID of the player who initiated the trade.
+ * @param tradeData.recipientPlayerID - The ID of the player who received the trade.
+ * @param tradeData.offeredCharacters - The characters offered in the trade.
+ * @param tradeData.requestedCharacters - The characters requested in the trade.
+ * @param tradeData.status - The status of the trade.
+ * @returns The added trade with an ID.
+ */
+export const addMockTrade = (
+	db: DatabaseQuerier,
+	{
+		id = undefined,
+		initiatingPlayerID = mockPlayers[0].id,
+		recipientPlayerID = mockPlayers[1].id,
+		offeredCharacters = "abc",
+		requestedCharacters = "edf",
+		status = TradeStatuses.AWAITING_RECIPIENT,
+	}: WithAtLeastOne<Trade>
+): Trade => {
+	if (id === undefined) {
+		const runResult = db.run(
+			`INSERT INTO trade (
+				initiatingPlayerID,
+				recipientPlayerID,
+				offeredCharacters,
+				requestedCharacters,
+				status
+			)
+			VALUES (
+				@initiatingPlayer,
+				@recipientPlayer,
+				@offeredCharacters,
+				@requestedCharacters,
+				@status
+			)`,
+			{ initiatingPlayer: initiatingPlayerID, recipientPlayer: recipientPlayerID, offeredCharacters, requestedCharacters, status }
+		);
+
+		if (typeof runResult.lastInsertRowid !== "number")
+			id = Number(runResult.lastInsertRowid);
+		else
+			id = runResult.lastInsertRowid;
+	}
+	else {
+		db.run(
+			`INSERT INTO trade (
+				id,
+				initiatingPlayerID,
+				recipientPlayerID,
+				offeredCharacters,
+				requestedCharacters,
+				status
+			)
+			VALUES (
+				@id,
+				@initiatingPlayer,
+				@recipientPlayer,
+				@offeredCharacters,
+				@requestedCharacters,
+				@status
+			)`,
+			{
+				id,
+				initiatingPlayer: initiatingPlayerID,
+				recipientPlayer: recipientPlayerID,
+				offeredCharacters,
+				requestedCharacters,
+				status
+			}
+		);
+	}
+	return { id, initiatingPlayerID, recipientPlayerID, offeredCharacters, requestedCharacters, status };
 };

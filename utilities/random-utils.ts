@@ -26,6 +26,36 @@ export const createRandomUUID = () => {
 }
 
 /**
+ * Generates a random number between 0 (inclusive) and max (exclusive).
+ * @param max The maximum value for the random number.
+ * @returns A random number between 0 (inclusive) and max (exclusive)
+ * @throws If max is not between 1 and Number.MAX_SAFE_INTEGER
+ */
+export const getRandomNumber = (
+	max: number = Number.MAX_SAFE_INTEGER
+) => {
+  if (max <= 0 || max > Number.MAX_SAFE_INTEGER) {
+    throw new RangeError('max must be between 1 and Number.MAX_SAFE_INTEGER');
+  }
+
+  // Determine how many bytes are needed
+  const bytesNeeded = Math.ceil(Math.log2(max) / 8);
+  const maxValue = Math.pow(256, bytesNeeded);
+
+  let number;
+  do {
+    const buffer = randomBytes(bytesNeeded);
+    number = 0;
+    for (let index = 0; index < bytesNeeded; index++) {
+      number = (number << 8) + buffer[index];
+    }
+  }
+	while (number >= maxValue - (maxValue % max));
+
+  return number % max;
+}
+
+/**
  * Generates a non-zero random number from 0 to 1
  * @returns A random number between 0 and 1
  */

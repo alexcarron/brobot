@@ -1,10 +1,10 @@
-import { toDateFromTimeString } from "../../../utilities/date-time-utils";
 import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { Override } from "../../../utilities/types/generic-types";
 import { MAX_NAME_LENGTH } from "../constants/namesmith.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { DBPlayer, Player, PlayerID } from "../types/player.types";
 import { PlayerNotFoundError, PlayerAlreadyExistsError } from "../utilities/error.utility";
+import { toPlayerObject } from "../utilities/player.utility";
 
 /**
  * Provides access to the dynamic player data.
@@ -20,25 +20,6 @@ export class PlayerRepository {
 	}
 
 	/**
-	 * Converts a DBPlayer object to a Player object.
-	 * @param dbPlayer - The database player object to convert.
-	 * @returns The converted player object.
-	 */
-	toPlayerObject(dbPlayer: DBPlayer): Player {
-		const dbLastClaimedRefillTime = dbPlayer.lastClaimedRefillTime
-		let lastClaimedRefillTime = null;
-
-		if (dbLastClaimedRefillTime !== null) {
-			lastClaimedRefillTime = toDateFromTimeString(dbLastClaimedRefillTime);
-		}
-
-		return {
-			...dbPlayer,
-			lastClaimedRefillTime
-		};
-	}
-
-	/**
 	 * Returns a list of all player objects in the game.
 	 * @returns An array of player objects.
 	 */
@@ -46,7 +27,7 @@ export class PlayerRepository {
 		const query = `SELECT * FROM player`;
 		const getAllPlayers = this.db.prepare(query);
 		const dbPlayers = getAllPlayers.all() as DBPlayer[];
-		return dbPlayers.map(dbPlayer => this.toPlayerObject(dbPlayer));
+		return dbPlayers.map(dbPlayer => toPlayerObject(dbPlayer));
 	}
 
 	/**
@@ -58,7 +39,22 @@ export class PlayerRepository {
 		const query = `SELECT * FROM player WHERE id = @id`;
 		const getPlayerById = this.db.prepare(query);
 		const player = getPlayerById.get({ id: playerID }) as DBPlayer | undefined;
-		return player ? this.toPlayerObject(player) : null;
+		return player ? toPlayerObject(player) : null;
+	}
+
+	/**
+	 * Retrieves a player by its ID. If the player does not exist, an error is thrown.
+	 * @param playerID - The ID of the player to be retrieved.
+	 * @returns The player object with the given ID.
+	 * @throws {PlayerNotFoundError} - If the player does not exist.
+	 */
+	getPlayerOrThrow(playerID: PlayerID): Player {
+		const player = this.getPlayerByID(playerID);
+
+		if (player === null)
+			throw new PlayerNotFoundError(playerID);
+
+		return player
 	}
 
 	/**
@@ -70,7 +66,7 @@ export class PlayerRepository {
 		const query = `SELECT * FROM player WHERE currentName = @currentName`;
 		const getPlayersByCurrentName = this.db.prepare(query);
 		const dbPlayers = getPlayersByCurrentName.all({ currentName }) as DBPlayer[];
-		return dbPlayers.map(dbPlayer => this.toPlayerObject(dbPlayer));
+		return dbPlayers.map(dbPlayer => toPlayerObject(dbPlayer));
 	}
 
 	/**
@@ -98,7 +94,7 @@ export class PlayerRepository {
 		const dbPlayers = getPlayersWithoutPublishedNames.all() as Override<DBPlayer, {publishedName: null}>[];
 
 		return dbPlayers.map(dbPlayer => ({
-			...this.toPlayerObject(dbPlayer),
+			...toPlayerObject(dbPlayer),
 			publishedName: null
 		}));
 	}
@@ -117,7 +113,7 @@ export class PlayerRepository {
 		>[];
 
 		return dbPlayers.map(dbPlayer => ({
-			...this.toPlayerObject(dbPlayer),
+			...toPlayerObject(dbPlayer),
 			publishedName: dbPlayer.publishedName
 		}));
 	}
@@ -318,7 +314,7 @@ export class PlayerRepository {
 	 * Adds a new player to the game's database.
 	 * @param playerID - The ID of the player to be added.
 	 */
-	addPlayer(playerID: string) {
+	createPlayer(playerID: string) {
 		const query = `
 			INSERT INTO player (id, currentName, publishedName, tokens, role, inventory)
 			VALUES (@id, @currentName, @publishedName, @tokens, @role, @inventory)

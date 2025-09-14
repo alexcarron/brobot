@@ -125,3 +125,30 @@ export function isStringToNumberRecord(
 		value => isNumber(value)
 	);
 }
+
+/**
+ * Checks if an object has a property with the given key.
+ * @param object - The object to check.
+ * @param key - The key to check for.
+ * @returns If the object has a property with the given key.
+ */
+export function hasProperty<
+	ObjectType extends object,
+	KeyType extends string | number | symbol
+>(
+	object: ObjectType,
+	key: KeyType
+): object is ObjectType & Record<KeyType, unknown> {
+	return key in object;
+}
+
+/**
+ * Checks if a given value is an instance of the built-in Error class.
+ * @param value - The value to check.
+ * @returns If the value is an instance of the built-in Error class.
+ */
+export function isError(
+	value: unknown
+): value is Error {
+	return value instanceof Error;
+}

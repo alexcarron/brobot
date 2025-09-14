@@ -574,6 +574,7 @@ export function hasFailed<ReturnType>(
 	promise: Promise<ReturnType>
 ): Promise<boolean>;
 
+
 export function hasFailed<ReturnType>(
 	func: (...args: any[]) => ReturnType,
 	...args: any[]

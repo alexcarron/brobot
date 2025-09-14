@@ -1,5 +1,5 @@
 import { InvalidArgumentError } from "../../../utilities/error-utils";
-import { AtLeastOne } from "../../../utilities/types/generic-types";
+import { WithAtLeastOne } from "../../../utilities/types/generic-types";
 import { DatabaseQuerier } from "../database/database-querier";
 import { DBVote, Vote } from "../types/vote.types";
 import { VoteAlreadyExistsError, VoteNotFoundError } from "../utilities/error.utility";
@@ -40,6 +40,21 @@ export class VoteRepository {
 	}
 
 	/**
+	 * Retrieves a vote by the ID of the user who voted or throws a VoteNotFoundError if it does not exist.
+	 * @param voterID - The ID of the user who voted.
+	 * @returns A vote object if found.
+	 * @throws VoteNotFoundError - If the vote does not exist.
+	 */
+	getVoteOrThrow(voterID: string): Vote {
+		const vote = this.getVoteByVoterID(voterID);
+
+		if (vote === null)
+			throw new VoteNotFoundError(voterID);
+
+		return vote;
+	}
+
+	/**
 	 * Retrieves a list of votes by the ID of the player voted for.
 	 * @param playerVotedForID - The ID of the player voted for.
 	 * @returns A list of vote objects.
@@ -57,7 +72,7 @@ export class VoteRepository {
 	 * @param voteData.playerVotedForID - The ID of the player voted for.
 	 * @returns A promise that resolves with a boolean indicating if the vote exists.
 	 */
-	doesVoteExist({ voterID, playerVotedForID }: AtLeastOne<Vote>): boolean {
+	doesVoteExist({ voterID, playerVotedForID }: WithAtLeastOne<Vote>): boolean {
 		if (voterID === undefined && playerVotedForID === undefined)
 			throw new InvalidArgumentError(`doesVoteExist: Missing voterID and playerVotedForID`);
 

@@ -1,4 +1,5 @@
-import { Player } from "../types/player.types";
+import { toDateFromTimeString } from "../../../utilities/date-time-utils";
+import { DBPlayer, Player } from "../types/player.types";
 
 /**
  * Checks if a given value is an object with the properties of a player.
@@ -27,3 +28,23 @@ export const isPlayer = (value: unknown): value is Player => (
 	'inventory' in value &&
 	typeof value.inventory === 'string'
 );
+
+
+/**
+ * Converts a DBPlayer object to a Player object.
+ * @param dbPlayer - The database player object to convert.
+ * @returns The converted player object.
+ */
+export function toPlayerObject(dbPlayer: DBPlayer): Player {
+	const dbLastClaimedRefillTime = dbPlayer.lastClaimedRefillTime
+	let lastClaimedRefillTime = null;
+
+	if (dbLastClaimedRefillTime !== null) {
+		lastClaimedRefillTime = toDateFromTimeString(dbLastClaimedRefillTime);
+	}
+
+	return {
+		...dbPlayer,
+		lastClaimedRefillTime
+	};
+}
