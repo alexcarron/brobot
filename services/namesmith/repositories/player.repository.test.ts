@@ -1,7 +1,7 @@
 import { INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
-import { addMockPlayer } from "../mocks/mock-database";
-import { createMockPlayerRepo, mockPlayers } from "../mocks/mock-repositories";
+import { addMockPlayer, mockPlayers } from "../mocks/mock-data/mock-players";
+import { createMockPlayerRepo } from "../mocks/mock-repositories";
 import { PlayerRepository } from "./player.repository";
 
 describe('PlayerRepository', () => {

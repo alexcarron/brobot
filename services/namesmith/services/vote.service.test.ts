@@ -1,10 +1,11 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
-import { mockPlayers, mockVotes } from "../mocks/mock-repositories";
 import { VoteRepository } from "../repositories/vote.repository";
 import { createMockVoteService } from "../mocks/mock-services";
 import { PlayerService } from "./player.service";
 import { VoteService } from "./vote.service";
 import { INVALID_PLAYER_ID } from "../constants/test.constants";
+import { mockVotes } from "../mocks/mock-data/mock-votes";
+import { mockPlayers } from "../mocks/mock-data/mock-players";
 
 describe('VoteService', () => {
 	let voteService: VoteService;

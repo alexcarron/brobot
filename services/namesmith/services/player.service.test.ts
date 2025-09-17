@@ -28,14 +28,13 @@ import { makeSure } from "../../../utilities/jest/jest-utils";
 import { REFILL_COOLDOWN_HOURS } from "../constants/namesmith.constants";
 import { INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
-import { addMockPlayer } from "../mocks/mock-database";
-import { createMockPlayerObject, mockPlayers } from "../mocks/mock-repositories";
 import { PlayerRepository } from "../repositories/player.repository";
 import { changeDiscordNameOfPlayer, sendToPublishedNamesChannel, sendToNamesToVoteOnChannel, resetMemberToNewPlayer } from "../utilities/discord-action.utility";
 import { fetchNamesmithGuildMembers } from "../utilities/discord-fetch.utility";
 import { createMockPlayerService } from "../mocks/mock-services";
 import { PlayerService } from "./player.service";
 import { PlayerNotFoundError } from "../utilities/error.utility";
+import { addMockPlayer, createMockPlayerObject, mockPlayers } from "../mocks/mock-data/mock-players";
 
 describe('PlayerService', () => {
 	const MOCK_PLAYER = mockPlayers[0];

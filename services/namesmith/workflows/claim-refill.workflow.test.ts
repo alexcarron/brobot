@@ -8,7 +8,7 @@ import { makeSure } from "../../../utilities/jest/jest-utils";
 import { REFILL_COOLDOWN_HOURS } from "../constants/namesmith.constants";
 import { INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
-import { addMockPlayer } from "../mocks/mock-database";
+import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { setupMockNamesmith } from "../mocks/mock-setup";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PlayerService } from "../services/player.service";

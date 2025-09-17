@@ -42,7 +42,7 @@ export type TypedNamedValue<
  *   linkedIn: string;
  * }>
  */
-export type WithAtLeastOne<ObjectType extends object> = {
+export type WithAtLeastOneProperty<ObjectType extends object> = {
   [RequiredKey in keyof ObjectType]:
 		{ [Key in RequiredKey]: ObjectType[Key] } &
 		Partial<Omit<ObjectType, RequiredKey>>

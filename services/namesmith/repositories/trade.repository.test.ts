@@ -1,11 +1,12 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { INVALID_TRADE_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
-import { addMockTrade } from "../mocks/mock-database";
 import { TradeStatuses } from '../types/trade.types';
 import { CannotCreateTradeError, TradeNotFoundError } from "../utilities/error.utility";
-import { createMockTradeRepo, mockPlayers, mockTrades } from "../mocks/mock-repositories";
+import { createMockTradeRepo } from "../mocks/mock-repositories";
 import { TradeRepository } from "./trade.repository";
+import { addMockTrade, mockTrades } from "../mocks/mock-data/mock-trades";
+import { mockPlayers } from "../mocks/mock-data/mock-players";
 
 describe('TradeRepoistory', () => {
 	let tradeRepository: TradeRepository;

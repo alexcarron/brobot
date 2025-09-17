@@ -6,13 +6,13 @@ jest.mock("../../../utilities/random-utils", () => ({
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
-import { addMockPlayer } from "../mocks/mock-database";
 import { setupMockNamesmith } from "../mocks/mock-setup";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PlayerService } from "../services/player.service";
 import { NonPlayerMinedError } from "../utilities/error.utility";
 import { mineTokens } from "./mine-tokens.workflow";
 import { returnIfNotError } from '../../../utilities/error-utils';
+import { addMockPlayer } from "../mocks/mock-data/mock-players";
 
 describe('mine-tokens.workflow', () => {
 	let services: {

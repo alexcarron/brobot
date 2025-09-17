@@ -44,12 +44,12 @@ jest.mock('cron', () => ({
 
 import { CronJob } from "cron";
 import { GameStateRepository } from "../repositories/game-state.repository";
-import { mockPlayers } from "../mocks/mock-repositories";
 import { GameStateService } from "./game-state.service";
 import { createMockServices } from "../mocks/mock-services";
 import { PlayerService } from "./player.service";
 import { VoteService } from "./vote.service";
 import { DAYS_TO_BUILD_NAME, DAYS_TO_VOTE } from "../constants/namesmith.constants";
+import { mockPlayers } from "../mocks/mock-data/mock-players";
 
 
 describe('GameStateService', () => {

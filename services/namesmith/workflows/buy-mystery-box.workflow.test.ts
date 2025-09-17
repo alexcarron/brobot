@@ -10,12 +10,13 @@ import { MysteryBoxService } from "../services/mystery-box.service";
 import { PlayerService } from "../services/player.service";
 import { MysteryBoxNotFoundError, NotAPlayerError, PlayerCantAffordMysteryBoxError } from "../utilities/error.utility";
 import { INVALID_MYSTERY_BOX_ID, INVALID_PLAYER_ID } from "../constants/test.constants";
-import { addMockMysteryBox, addMockPlayer } from "../mocks/mock-database";
 import { DatabaseQuerier } from "../database/database-querier";
 import { Player } from '../types/player.types';
 import { MysteryBox } from "../types/mystery-box.types";
 import { returnIfNotError } from "../../../utilities/error-utils";
 import { makeSure } from "../../../utilities/jest/jest-utils";
+import { addMockMysteryBox } from "../mocks/mock-data/mock-mystery-boxes";
+import { addMockPlayer } from "../mocks/mock-data/mock-players";
 
 describe('buy-mystery-box.workflow', () => {
 	/**

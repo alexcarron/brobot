@@ -1,6 +1,6 @@
-import { InvalidArgumentError, attempt } from '../../../utilities/error-utils';
+import { attempt } from '../../../utilities/error-utils';
 import { DatabaseQuerier } from "../database/database-querier";
-import { createMockDB, addMockPlayer, addMockVote, addMockTrade } from "./mock-database";
+import { createMockDB } from "./mock-database";
 import { Player } from "../types/player.types";
 import { Vote } from "../types/vote.types";
 import { CharacterRepository } from "../repositories/character.repository";
@@ -8,15 +8,17 @@ import { GameStateRepository } from "../repositories/game-state.repository";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
 import { PlayerRepository } from "../repositories/player.repository";
 import { VoteRepository } from "../repositories/vote.repository";
-import { WithAtLeast } from '../../../utilities/types/generic-types';
 import { Recipe } from "../types/recipe.types";
 import { RecipeRepository } from "../repositories/recipe.repository";
 import { insertRecipesToDB } from "../database/db-inserters";
 import { PlayerAlreadyExistsError } from '../utilities/error.utility';
-import { Trade, TradeStatuses } from '../types/trade.types';
-import { getRandomNumber } from '../../../utilities/random-utils';
+import { Trade } from '../types/trade.types';
 import { TradeRepository } from '../repositories/trade.repository';
 import { NamesmithRepositories } from '../types/namesmith.types';
+import { addMockPlayer, createMockPlayerObject, mockPlayers } from './mock-data/mock-players';
+import { addMockVote, mockVotes } from './mock-data/mock-votes';
+import { mockRecipes } from './mock-data/mock-recipes';
+import { addMockTrade, mockTrades } from './mock-data/mock-trades';
 
 /**
  * Creates a mock character repository instance with an in-memory database for testing purposes.
@@ -55,75 +57,6 @@ export const createMockMysteryBoxRepo =
 }
 
 /**
- * Creates a mock player object with default values for optional properties.
- * @param options - An object with the following properties:
- * @param options.id - The ID of the player.
- * @param options.currentName - The current name of the player.
- * @param options.publishedName - The published name of the player.
- * @param options.tokens - The number of tokens the player has.
- * @param options.role - The role of the player.
- * @param options.inventory - The player's inventory.
- * @param options.lastClaimedRefillTime - The last time the player claimed a refill.
- * @returns A mock player object with the given properties and default values for optional properties.
- */
-export const createMockPlayerObject = ({
-	id,
-	currentName = "",
-	publishedName = null,
-	tokens = 0,
-	role = null,
-	inventory = "",
-	lastClaimedRefillTime = null
-}: WithAtLeast<Player, "id">): Player => {
-	if (id === undefined || typeof id !== "string")
-		throw new InvalidArgumentError(`createMockPlayerObject: player id must be a string, but got ${id}.`);
-
-	return {id, currentName, publishedName, tokens, role, inventory, lastClaimedRefillTime};
-}
-
-/**
- * An array of mock player data for use in tests.
- */
-export const mockPlayers: Player[] = [
-	createMockPlayerObject({
-		id: "1234567890",
-		currentName: "John Doe",
-		publishedName: "John Doe",
-		tokens: 10,
-		role: "magician",
-		inventory: "John Doe",
-		lastClaimedRefillTime: null,
-	}),
-	createMockPlayerObject({
-		id: "1234567891",
-		currentName: "abcdefgh",
-		publishedName: "abcd",
-		tokens: 0,
-		role: "magician",
-		inventory: "abcdefghijklmnopqrstuvwxyz",
-		lastClaimedRefillTime: null,
-	}),
-	createMockPlayerObject({
-		id: "1234567892",
-		currentName: "UNPUBLISHED",
-		publishedName: null,
-		tokens: 0,
-		role: "magician",
-		inventory: "UNPUBLISHED",
-		lastClaimedRefillTime: null,
-	}),
-	createMockPlayerObject({
-		id: "1234567893",
-		currentName: "non-voter",
-		publishedName: "non-voter",
-		tokens: 0,
-		role: "magician",
-		inventory: "non-voter",
-		lastClaimedRefillTime: null,
-	})
-];
-
-/**
  * Creates a mock player repository instance with an in-memory database for testing purposes.
 
  * The mock repository is populated with mock player data from the mockPlayers array.
@@ -146,24 +79,6 @@ export const createMockPlayerRepo =
 	}
 	return new PlayerRepository(mockDB);
 }
-
-/**
- * An array of mock votes for testing purposes.
- */
-export const mockVotes: Vote[] = [
-	{
-		voterID: mockPlayers[0].id,
-		playerVotedForID: mockPlayers[1].id,
-	},
-	{
-		voterID: mockPlayers[1].id,
-		playerVotedForID: mockPlayers[2].id,
-	},
-	{
-		voterID: mockPlayers[2].id,
-		playerVotedForID: mockPlayers[1].id,
-	},
-];
 
 /**
  * Creates a mock vote repository instance with an in-memory database for testing purposes.
@@ -214,29 +129,13 @@ export const createMockVoteRepo = (
 	return new VoteRepository(mockDB);
 }
 
-export const mockRecipes: Recipe[] = [
-	{
-		id: 1,
-		inputCharacters: "nn",
-		outputCharacters: "m",
-	},
-	{
-		id: 2,
-		inputCharacters: "vv",
-		outputCharacters: "w",
-	},
-	{
-		id: 3,
-		inputCharacters: "abc",
-		outputCharacters: "def",
-	},
-	{
-		id: 4,
-		inputCharacters: "nn",
-		outputCharacters: "N",
-	},
-];
-
+/**
+ * Creates a mock recipe repository instance with an in-memory database for testing purposes.
+ * The mock repository is populated with mock recipe data from the mockRecipes array.
+ * @param mockDB - An optional mock database instance.
+ * @param recipes - An optional array of mock recipe data.
+ * @returns A mock instance of the RecipeRepository.
+ */
 export const createMockRecipeRepo = (
 	mockDB?: DatabaseQuerier,
 	recipes?: Recipe[]
@@ -253,41 +152,15 @@ export const createMockRecipeRepo = (
 }
 
 /**
- * Creates a mock trade object with default values for optional properties.
- * @param parameters - An object with optional parameters for the mock trade object.
- * @param parameters.id - The ID of the trade. If not provided, a random number will be generated.
- * @param parameters.initiatingPlayerID - The ID of the player who initiated the trade.
- * @param parameters.recipientPlayerID - The ID of the player who received the trade.
- * @param parameters.offeredCharacters - The characters offered in the trade.
- * @param parameters.requestedCharacters - The characters requested in the trade.
- * @param parameters.status - The status of the trade.
- * @returns A mock trade object with default values for optional properties.
+ * Creates a mock trade repository instance with an in-memory database for testing purposes.
+ * The mock repository is populated with mock trade data from the trades array.
+ * If any of the mock repository parameters are undefined, a default mock repository
+ * instance is created for the respective service.
+ * @param mockDB - An optional mock database instance.
+ * @param trades - An optional array of mock trade data.
+ * @param players - An optional array of mock player data.
+ * @returns A mock instance of the TradeRepository.
  */
-export const createMockTradeObject = ({
-	id = undefined,
-	initiatingPlayerID = mockPlayers[0].id,
-	recipientPlayerID = mockPlayers[1].id,
-	offeredCharacters = "abc",
-	requestedCharacters = "edf",
-	status = TradeStatuses.AWAITING_RECIPIENT,
-}: Partial<Trade>): Trade => {
-	if (id === undefined)
-		id = getRandomNumber();
-
-	return { id, initiatingPlayerID, recipientPlayerID, offeredCharacters, requestedCharacters, status };
-}
-
-export const mockTrades: Trade[] = [
-	createMockTradeObject({
-		id: 1,
-		initiatingPlayerID: mockPlayers[0].id,
-		recipientPlayerID: mockPlayers[1].id,
-		offeredCharacters: "abc",
-		requestedCharacters: "edf",
-		status: TradeStatuses.AWAITING_RECIPIENT,
-	}),
-];
-
 export const createMockTradeRepo = (
 	mockDB?: DatabaseQuerier,
 	trades?: Trade[],

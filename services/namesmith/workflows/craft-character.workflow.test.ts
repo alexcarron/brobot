@@ -4,7 +4,6 @@ jest.mock("../utilities/discord-action.utility", () => ({
 
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { DatabaseQuerier } from "../database/database-querier";
-import { addMockPlayer, addMockRecipe } from "../mocks/mock-database";
 import { setupMockNamesmith } from "../mocks/mock-setup";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PlayerService } from "../services/player.service";
@@ -12,6 +11,8 @@ import { RecipeService } from "../services/recipe.service";
 import { MissingRequiredCharactersError, RecipeNotUnlockedError } from "../utilities/error.utility";
 import { craftCharacter } from "./craft-character.workflow";
 import { returnIfNotError } from '../../../utilities/error-utils';
+import { addMockPlayer } from "../mocks/mock-data/mock-players";
+import { addMockRecipe } from "../mocks/mock-data/mock-recipes";
 
 describe('craft-character.workflow', () => {
 	let recipeService: RecipeService;

@@ -1,7 +1,6 @@
 import { makeSure } from "../../../../utilities/jest/jest-utils";
 import { INVALID_PLAYER_ID, INVALID_TRADE_ID } from "../../constants/test.constants";
 import { DatabaseQuerier } from "../../database/database-querier";
-import { addMockPlayer, addMockTrade } from "../../mocks/mock-database";
 import { setupMockNamesmith } from "../../mocks/mock-setup";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { TradeService } from "../../services/trade.service";
@@ -10,6 +9,8 @@ import { Trade, TradeStatuses } from "../../types/trade.types";
 import { NonPlayerRespondedToTradeError, NonTradeRespondedToError, TradeAlreadyRespondedToError, TradeAwaitingDifferentPlayerError } from "../../utilities/error.utility";
 import { declineTrade } from "./decline-trade.workflow";
 import { returnIfNotError } from '../../../../utilities/error-utils';
+import { addMockTrade } from "../../mocks/mock-data/mock-trades";
+import { addMockPlayer } from "../../mocks/mock-data/mock-players";
 
 describe('decline-trade.workflow.ts', () => {
 	let MOCK_INITIATING_PLAYER: Player;

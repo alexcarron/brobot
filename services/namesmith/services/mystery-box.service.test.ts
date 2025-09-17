@@ -1,11 +1,11 @@
 import { INVALID_MYSTERY_BOX_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
-import { addMockMysteryBox } from "../mocks/mock-database";
 import { CharacterRepository } from "../repositories/character.repository";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
 import { createMockMysteryBoxService } from "../mocks/mock-services";
 import { MysteryBoxService } from "./mystery-box.service";
 import { MysteryBox } from "../types/mystery-box.types";
+import { addMockMysteryBox } from "../mocks/mock-data/mock-mystery-boxes";
 
 describe('MysteryBoxService', () => {
 	let mysteryBoxService: MysteryBoxService;

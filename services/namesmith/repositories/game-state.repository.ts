@@ -1,7 +1,7 @@
 import { DatabaseQuerier } from "../database/database-querier";
 import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { DBGameState, GameState } from "../types/game-state.types";
-import { WithAtLeastOne } from '../../../utilities/types/generic-types';
+import { WithAtLeastOneProperty } from '../../../utilities/types/generic-types';
 import { GameStateInitializationError } from "../utilities/error.utility";
 
 /**
@@ -61,7 +61,7 @@ export class GameStateRepository {
 	 * @param newGameState.timeVoteIsEnding - The time when voting is expected to end.
 	 * @throws If there are no fields provided to update.
 	 */
-	setGameState({ timeStarted, timeEnding, timeVoteIsEnding }: WithAtLeastOne<GameState>) {
+	setGameState({ timeStarted, timeEnding, timeVoteIsEnding }: WithAtLeastOneProperty<GameState>) {
 		const assignmentExpressions: string[] = [];
 		const fieldToValue: Record<string, string> = {};
 

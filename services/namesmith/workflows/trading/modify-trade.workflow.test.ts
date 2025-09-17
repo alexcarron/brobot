@@ -1,7 +1,6 @@
 import { makeSure } from "../../../../utilities/jest/jest-utils";
 import { INVALID_PLAYER_ID, INVALID_TRADE_ID } from "../../constants/test.constants";
 import { DatabaseQuerier } from "../../database/database-querier";
-import { addMockPlayer, addMockTrade, editMockPlayer } from "../../mocks/mock-database";
 import { setupMockNamesmith } from "../../mocks/mock-setup";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { TradeService } from "../../services/trade.service";
@@ -10,6 +9,8 @@ import { Trade, TradeStatuses } from "../../types/trade.types";
 import { MissingOfferedCharactersError, MissingRequestedCharactersError, NonPlayerRespondedToTradeError, NonTradeRespondedToError, TradeAlreadyRespondedToError, TradeAwaitingDifferentPlayerError } from "../../utilities/error.utility";
 import { modifyTrade } from "./modify-trade.workflow";
 import { returnIfNotError } from '../../../../utilities/error-utils';
+import { addMockPlayer, editMockPlayer } from "../../mocks/mock-data/mock-players";
+import { addMockTrade } from "../../mocks/mock-data/mock-trades";
 
 describe('modifyTrade()', () => {
   let MOCK_INITIATING_PLAYER: Player;

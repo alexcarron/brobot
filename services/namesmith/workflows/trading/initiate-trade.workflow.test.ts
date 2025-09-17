@@ -1,7 +1,7 @@
 import { returnIfNotError } from "../../../../utilities/error-utils";
 import { makeSure } from "../../../../utilities/jest/jest-utils";
 import { INVALID_PLAYER_ID } from "../../constants/test.constants";
-import { mockPlayers } from "../../mocks/mock-repositories";
+import { mockPlayers } from "../../mocks/mock-data/mock-players";
 import { setupMockNamesmith } from "../../mocks/mock-setup";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { PlayerService } from "../../services/player.service";

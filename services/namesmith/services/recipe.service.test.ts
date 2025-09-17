@@ -5,13 +5,13 @@ jest.mock("../utilities/discord-action.utility", () => ({
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
-import { addMockPlayer, addMockRecipe } from "../mocks/mock-database";
-import { mockPlayers, mockRecipes } from "../mocks/mock-repositories";
 import { RecipeRepository } from "../repositories/recipe.repository";
 import { PlayerNotFoundError, RecipeNotFoundError } from "../utilities/error.utility";
 import { createMockRecipeService } from "../mocks/mock-services";
 import { RecipeService } from "./recipe.service";
 import { Recipe } from "../types/recipe.types";
+import { addMockRecipe, mockRecipes } from "../mocks/mock-data/mock-recipes";
+import { addMockPlayer, mockPlayers } from "../mocks/mock-data/mock-players";
 
 describe('RecipeService', () => {
 	const MOCK_RECIPE = mockRecipes[0];
@@ -46,7 +46,7 @@ describe('RecipeService', () => {
 				...MOCK_RECIPE,
 				outputCharacters: "OUTDATED"
 			};
-			
+
 			const recipe = recipeService.resolveRecipe(OUTDATED_RECIPE);
 			expect(recipe).toEqual(MOCK_RECIPE);
 		});

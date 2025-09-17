@@ -1,8 +1,10 @@
 import { DatabaseQuerier } from "../database/database-querier";
 import { DBPlayer, Player } from "../types/player.types";
-import { createMockDB, addMockPlayer, addMockVote, editMockPlayer } from "./mock-database";
+import { addMockPlayer, editMockPlayer } from "./mock-data/mock-players";
+import { addMockVote } from "./mock-data/mock-votes";
+import { createMockDB } from "./mock-database";
 
-describe("mock-database", () => {
+describe("Mock Utilities", () => {
   let db: DatabaseQuerier;
 
   beforeEach(() => {

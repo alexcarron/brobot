@@ -1,5 +1,6 @@
 import { INVALID_VOTE_ID } from "../constants/test.constants";
-import { createMockVoteRepo, mockVotes } from "../mocks/mock-repositories";
+import { mockVotes } from "../mocks/mock-data/mock-votes";
+import { createMockVoteRepo } from "../mocks/mock-repositories";
 import { VoteRepository } from "./vote.repository";
 
 describe('VoteRepository', () => {

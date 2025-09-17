@@ -1,12 +1,12 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { INVALID_TRADE_ID } from "../constants/test.constants";
-import { mockPlayers, mockTrades } from "../mocks/mock-repositories";
 import { InvalidStateError, TradeNotFoundError } from "../utilities/error.utility";
 import { createMockTradeService } from "../mocks/mock-services";
 import { TradeService } from "./trade.service";
-import { addMockTrade } from "../mocks/mock-database";
 import { DatabaseQuerier } from "../database/database-querier";
 import { TradeStatuses } from "../types/trade.types";
+import { addMockTrade, mockTrades } from "../mocks/mock-data/mock-trades";
+import { mockPlayers } from "../mocks/mock-data/mock-players";
 
 describe('TradeService', () => {
 	const MOCK_TRADE = mockTrades[0];

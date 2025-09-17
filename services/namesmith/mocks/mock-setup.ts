@@ -1,55 +1,7 @@
 import { createMockDB } from "./mock-database";
 import { createMockMysteryBoxRepo, createMockCharacterRepo, createMockPlayerRepo, createMockGameStateRepo, createMockVoteRepo, createMockRecipeRepo, createMockTradeRepo } from "./mock-repositories";
-import { RecipeRepository } from "../repositories/recipe.repository";
-import { TradeRepository } from "../repositories/trade.repository";
-import { createMockMysteryBoxService, createMockPlayerService, createMockVoteService, createMockGameStateService, createMockCharacterService } from "./mock-services";
-import { RecipeService } from "../services/recipe.service";
-import { TradeService } from "../services/trade.service";
+import { createMockMysteryBoxService, createMockPlayerService, createMockVoteService, createMockGameStateService, createMockCharacterService, createMockRecipeService, createMockTradeService } from "./mock-services";
 import { NamesmithDependencies } from "../types/namesmith.types";
-
-/**
- * Creates all the mock services and repositories needed for testing.
- * @returns An object containing all the mock services and repositories.
- */
-export const createAllMocks = (): NamesmithDependencies => {
-	const mockDB = createMockDB();
-
-	const mysteryBoxRepository = createMockMysteryBoxRepo(mockDB);
-	const characterRepository = createMockCharacterRepo(mockDB);
-	const playerRepository = createMockPlayerRepo(mockDB);
-	const voteRepository = createMockVoteRepo(mockDB);
-	const gameStateRepository = createMockGameStateRepo(mockDB);
-	const recipeRepository = createMockRecipeRepo(mockDB);
-	const tradeRepository = createMockTradeRepo(mockDB);
-
-	const mysteryBoxService = createMockMysteryBoxService(mysteryBoxRepository, characterRepository);
-	const characterService = createMockCharacterService(characterRepository);
-	const playerService = createMockPlayerService(playerRepository);
-	const voteService = createMockVoteService(voteRepository, playerService);
-	const gameStateService = createMockGameStateService(gameStateRepository, playerService, voteService);
-	const recipeService = new RecipeService(recipeRepository, playerService);
-	const tradeService = new TradeService(tradeRepository, playerService);
-
-	return {
-		db: mockDB,
-
-		mysteryBoxRepository,
-		characterRepository,
-		playerRepository,
-		voteRepository,
-		gameStateRepository,
-		recipeRepository,
-		tradeRepository,
-
-		mysteryBoxService,
-		characterService,
-		playerService,
-		voteService,
-		gameStateService,
-		recipeService,
-		tradeService
-	};
-}
 
 /**
  * Sets up a mock Namesmith server with mock repositories and services. This is
@@ -79,10 +31,10 @@ export const setupMockNamesmith = (): NamesmithDependencies => {
 		createMockVoteRepo(mockDB);
 
 	global.namesmith.recipeRepository =
-		new RecipeRepository(mockDB);
+		createMockRecipeRepo(mockDB);
 
 	global.namesmith.tradeRepository =
-		new TradeRepository(mockDB);
+		createMockTradeRepo(mockDB);
 
 	global.namesmith.mysteryBoxService = createMockMysteryBoxService(
 		global.namesmith.mysteryBoxRepository,
@@ -102,12 +54,12 @@ export const setupMockNamesmith = (): NamesmithDependencies => {
 		global.namesmith.playerService,
 	);
 
-	global.namesmith.recipeService = new RecipeService(
+	global.namesmith.recipeService = createMockRecipeService(
 		global.namesmith.recipeRepository,
 		global.namesmith.playerService,
 	);
 
-	global.namesmith.tradeService = new TradeService(
+	global.namesmith.tradeService = createMockTradeService(
 		global.namesmith.tradeRepository,
 		global.namesmith.playerService,
 	);
@@ -120,7 +72,7 @@ export const setupMockNamesmith = (): NamesmithDependencies => {
 
 	return {
 		db: mockDB,
-		
+
 		mysteryBoxRepository: global.namesmith.mysteryBoxRepository,
 		characterRepository: global.namesmith.characterRepository,
 		playerRepository: global.namesmith.playerRepository,
