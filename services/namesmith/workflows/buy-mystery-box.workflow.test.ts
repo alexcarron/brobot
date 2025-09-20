@@ -4,7 +4,6 @@ jest.mock("../utilities/discord-action.utility", () => ({
 
 import { buyMysteryBox } from "./buy-mystery-box.workflow";
 import { setupMockNamesmith } from "../mocks/mock-setup";
-import { changeDiscordNameOfPlayer } from "../utilities/discord-action.utility";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { MysteryBoxService } from "../services/mystery-box.service";
 import { PlayerService } from "../services/player.service";
@@ -17,6 +16,7 @@ import { returnIfNotError } from "../../../utilities/error-utils";
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { addMockMysteryBox } from "../mocks/mock-data/mock-mystery-boxes";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
+import { NamesmithEvents } from "../event-listeners/namesmith-events";
 
 describe('buy-mystery-box.workflow', () => {
 	/**
@@ -79,6 +79,8 @@ describe('buy-mystery-box.workflow', () => {
 		});
 
 		it('should change the player\'s Discord name to their current name plus that recieved character', async () => {
+			const announceNameChangeEvent = jest.spyOn(NamesmithEvents.NameChange, "announce");
+
 			const { recievedCharacter } = returnIfNotError(
 				await buyMysteryBox({
 					...services,
@@ -87,11 +89,12 @@ describe('buy-mystery-box.workflow', () => {
 				})
 			);
 
-			expect(changeDiscordNameOfPlayer).toHaveBeenCalledTimes(1);
-			expect(changeDiscordNameOfPlayer).toHaveBeenCalledWith(
-				richPlayer.id,
-				richPlayer.currentName + recievedCharacter.value
-			)
+			expect(announceNameChangeEvent).toHaveBeenCalledTimes(1);
+			expect(announceNameChangeEvent).toHaveBeenCalledWith({
+				playerID: richPlayer.id,
+				oldName: richPlayer.currentName,
+				newName: richPlayer.currentName + recievedCharacter.value
+			})
 		});
 
 		it('should change the player\'s name to their current name plus that recieved character', async () => {

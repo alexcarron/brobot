@@ -2,7 +2,7 @@ import { logInfo, logSuccess } from "../../../utilities/logging-utils";
 import { setupDatabase } from "../database/setup-database";
 import { regenerateRecipeSelectMenu } from "../interfaces/recipe-select-menu";
 import { regenerateAllTradeMessages } from "../interfaces/trading/trade-message";
-import { regenerateVoteDisplay } from "../interfaces/voting/voting-display";
+import { regenerateVoteDisplay } from "../interfaces/voting/voting-messages";
 import { CharacterRepository } from "../repositories/character.repository";
 import { GameStateRepository } from "../repositories/game-state.repository";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
@@ -19,6 +19,7 @@ import { RecipeService } from "../services/recipe.service";
 import { TradeService } from "../services/trade.service";
 import { VoteService } from "../services/vote.service";
 import { NamesmithDependencies } from "../types/namesmith.types";
+import { setupEventListeners } from "./setup-event-listeners";
 
 /**
  * Initializes all the dependencies required for the Namesmith game to run.
@@ -92,6 +93,8 @@ export const setupNamesmith = async () => {
 
 	const { gameStateService, recipeService, playerService, tradeService } = getNamesmithServices();
 
+	setupEventListeners();
+
 	if (gameStateService.hasStarted()) {
 		gameStateService.scheduleGameEvents();
 
@@ -99,6 +102,7 @@ export const setupNamesmith = async () => {
 		await regenerateVoteDisplay({playerService});
 		await regenerateAllTradeMessages({tradeService, playerService});
 	}
+
 
 	logSuccess("Namesmith set up");
 }

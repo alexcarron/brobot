@@ -30,8 +30,8 @@ jest.mock('../interfaces/recipe-select-menu', () => ({
 	sendRecipeSelectMenu: jest.fn(),
 }));
 
-jest.mock('../interfaces/voting/voting-display', () => ({
-	sendVotingDisplay: jest.fn(),
+jest.mock('../interfaces/voting/voting-messages', () => ({
+	sendVotingMessages: jest.fn(),
 }));
 
 // Mock CronJob

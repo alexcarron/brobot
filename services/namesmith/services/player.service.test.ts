@@ -29,12 +29,13 @@ import { REFILL_COOLDOWN_HOURS } from "../constants/namesmith.constants";
 import { INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { PlayerRepository } from "../repositories/player.repository";
-import { changeDiscordNameOfPlayer, sendToPublishedNamesChannel, sendToNamesToVoteOnChannel, resetMemberToNewPlayer } from "../utilities/discord-action.utility";
+import { sendToPublishedNamesChannel, sendToNamesToVoteOnChannel, resetMemberToNewPlayer } from "../utilities/discord-action.utility";
 import { fetchNamesmithGuildMembers } from "../utilities/discord-fetch.utility";
 import { createMockPlayerService } from "../mocks/mock-services";
 import { PlayerService } from "./player.service";
-import { PlayerNotFoundError } from "../utilities/error.utility";
+import { NameTooLongError, PlayerNotFoundError } from "../utilities/error.utility";
 import { addMockPlayer, createMockPlayerObject, mockPlayers } from "../mocks/mock-data/mock-players";
+import { NamesmithEvents } from "../event-listeners/namesmith-events";
 
 describe('PlayerService', () => {
 	const MOCK_PLAYER = mockPlayers[0];
@@ -201,46 +202,60 @@ describe('PlayerService', () => {
 	});
 
 	describe('changeCurrentName()', () => {
-		it('should change the current name of a player', async () => {
-			await playerService.changeCurrentName(mockPlayers[0].id, "new name");
+		it('should change the current name of a player', () => {
+			const announceNameChangeEvent = jest.spyOn(NamesmithEvents.NameChange, "announce");
+
+			playerService.changeCurrentName(mockPlayers[0].id, "new name");
 			const result = playerService.getCurrentName(mockPlayers[0].id);
 			expect(result).toEqual("new name");
-			expect(changeDiscordNameOfPlayer).toHaveBeenCalledWith(
-				mockPlayers[0].id,
-				"new name"
-			);
+
+			expect(announceNameChangeEvent).toHaveBeenCalledWith({
+				playerID: mockPlayers[0].id,
+				oldName: mockPlayers[0].currentName,
+				newName: "new name"
+			})
 		});
 
-		it('should change the current name to an empty name', async () => {
-			await playerService.changeCurrentName(mockPlayers[0].id, "");
+		it('should change the current name to an empty name', () => {
+			const announceNameChangeEvent = jest.spyOn(NamesmithEvents.NameChange, "announce");
+
+			playerService.changeCurrentName(mockPlayers[0].id, "");
 			const result = playerService.getCurrentName(mockPlayers[0].id);
 			expect(result).toEqual("");
-			expect(changeDiscordNameOfPlayer).toHaveBeenCalledWith(
-				mockPlayers[0].id,
-				""
-			);
+			expect(announceNameChangeEvent).toHaveBeenCalledWith({
+				playerID: mockPlayers[0].id,
+				oldName: mockPlayers[0].currentName,
+				newName: ""
+			});
 		});
 
-		it('should throw an error if the player is not found', async () => {
-			await expect(playerService.changeCurrentName(INVALID_PLAYER_ID, "new name")).rejects.toThrow();
+		it('should throw an error if the player is not found', () => {
+			expect(() =>
+				playerService.changeCurrentName(INVALID_PLAYER_ID, "new name")
+			).toThrow();
 		});
 
-		it('should throw an error if the new name is too long', async () => {
-			await expect(playerService.changeCurrentName(mockPlayers[1].id, "a".repeat(33))).rejects.toThrow();
+		it('should throw an error if the new name is too long', () => {
+			expect(() =>
+				playerService.changeCurrentName(mockPlayers[1].id, "a".repeat(33))
+			).toThrow(NameTooLongError);
 		});
 	});
 
 	describe('giveCharacter()', () => {
 		it('should add a character to the current name of a player', async () => {
+			const announceNameChangeEvent = jest.spyOn(NamesmithEvents.NameChange, "announce");
+
 			await playerService.giveCharacter(mockPlayers[0].id, "a");
 			const currentName = playerService.getCurrentName(mockPlayers[0].id);
 			const inventory = playerService.getInventory(mockPlayers[0].id);
 			expect(currentName).toEqual(mockPlayers[0].currentName + "a");
 			expect(inventory).toEqual(mockPlayers[0].inventory + "a");
-			expect(changeDiscordNameOfPlayer).toHaveBeenCalledWith(
-				mockPlayers[0].id,
-				mockPlayers[0].currentName + "a"
-			);
+			expect(announceNameChangeEvent).toHaveBeenCalledWith({
+				playerID: mockPlayers[0].id,
+				oldName: mockPlayers[0].currentName,
+				newName: mockPlayers[0].currentName + "a"
+			});
 		});
 
 		it('should throw an error if the player is not found', async () => {
@@ -254,6 +269,8 @@ describe('PlayerService', () => {
 
 	describe('giveCharacters()', () => {
 		it('should add characters to the current name of a player', async () => {
+			const announceNameChangeEvent = jest.spyOn(NamesmithEvents.NameChange, "announce");
+
 			const player = addMockPlayer(db, {
 				inventory: "abdegHJlmo",
 				currentName: "Joe",
@@ -266,10 +283,11 @@ describe('PlayerService', () => {
 
 			expect(currentName).toEqual(player.currentName + " Smith");
 			expect(inventory).toEqual(player.inventory + " Smith");
-			expect(changeDiscordNameOfPlayer).toHaveBeenCalledWith(
-				player.id,
-				player.currentName + " Smith"
-			);
+			expect(announceNameChangeEvent).toHaveBeenCalledWith({
+				playerID: player.id,
+				oldName: player.currentName,
+				newName: player.currentName + " Smith"
+			});
 		});
 
 		it('should throw an error if the player is not found', async () => {

@@ -1,4 +1,4 @@
-import { sendWinnerDisplay } from "../interfaces/winner-display";
+import { sendWinnerMessages } from "../interfaces/winner-messages";
 import { PlayerService } from "../services/player.service";
 import { VoteService } from "../services/vote.service";
 import { closeNamesToVoteOnChannel, openTheWinnerChannel } from "../utilities/discord-action.utility";
@@ -11,7 +11,7 @@ import { closeNamesToVoteOnChannel, openTheWinnerChannel } from "../utilities/di
  * @param services.playerService - The player service
  * @param services.voteService - The vote service
  */
-export async function endVoting(
+export async function onVotingEnd(
 	{voteService, playerService}: {
 		voteService: VoteService;
 		playerService: PlayerService;
@@ -28,5 +28,5 @@ export async function endVoting(
 		winningPlayer = playerService.resolvePlayer(winningPlayerID);
 	}
 
-	await sendWinnerDisplay({winningPlayer});
+	await sendWinnerMessages({winningPlayer});
 }

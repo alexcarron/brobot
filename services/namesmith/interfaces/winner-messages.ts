@@ -6,7 +6,7 @@ import { sendToTheWinnerChannel } from "../utilities/discord-action.utility";
  * @param parameters - An object containing the following parameters:
  * @param parameters.winningPlayer - The player that won or null if nobody won
  */
-export async function sendWinnerDisplay({winningPlayer}: {
+export async function sendWinnerMessages({winningPlayer}: {
 	winningPlayer: Player | null;
 }) {
 	if (winningPlayer === null) {

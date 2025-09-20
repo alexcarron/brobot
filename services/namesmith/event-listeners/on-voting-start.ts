@@ -1,4 +1,4 @@
-import { sendVotingDisplay } from '../interfaces/voting/voting-display';
+import { sendVotingMessages } from '../interfaces/voting/voting-messages';
 import { VoteService } from "../services/vote.service";
 import { PlayerService } from "../services/player.service";
 import { closePublishedNamesChannel } from '../utilities/discord-action.utility';
@@ -23,7 +23,7 @@ export async function startVoting(
 
 	await closePublishedNamesChannel();
 
-	await sendVotingDisplay({playerService});
+	await sendVotingMessages({playerService});
 
 	voteService.reset();
 }

@@ -9,7 +9,7 @@ import { DAYS_TO_BUILD_NAME, DAYS_TO_VOTE } from "../constants/namesmith.constan
 import { addDays } from "../../../utilities/date-time-utils";
 import { startVoting } from "../event-listeners/on-voting-start";
 import { getNamesmithServices } from "./get-namesmith-services";
-import { endVoting } from "../event-listeners/on-voting-end";
+import { onVotingEnd } from "../event-listeners/on-voting-end";
 
 /**
  * Provides methods for interacting with the game state.
@@ -98,7 +98,7 @@ export class GameStateService {
 		const voteIsEndingCronJob = new CronJob(
 			voteEndingDate,
 			async () => {
-				await endVoting({...getNamesmithServices()});
+				await onVotingEnd({...getNamesmithServices()});
 			},
 		);
 

@@ -1,4 +1,4 @@
-import { sendToPublishedNamesChannel, isNonPlayer, resetMemberToNewPlayer, changeDiscordNameOfPlayer } from "../utilities/discord-action.utility";
+import { sendToPublishedNamesChannel, isNonPlayer, resetMemberToNewPlayer } from "../utilities/discord-action.utility";
 import { PlayerRepository } from "../repositories/player.repository";
 import { logWarning } from "../../../utilities/logging-utils";
 import { fetchNamesmithGuildMember, fetchNamesmithGuildMembers } from "../utilities/discord-fetch.utility";
@@ -12,6 +12,7 @@ import { MAX_NAME_LENGTH, REFILL_COOLDOWN_HOURS } from "../constants/namesmith.c
 import { ChatInputCommandInteraction } from "discord.js";
 import { addHours } from "../../../utilities/date-time-utils";
 import { fetchUserByUsername } from "../../../utilities/discord-fetch-utils";
+import { NamesmithEvents } from "../event-listeners/namesmith-events";
 
 /**
  * Provides methods for interacting with players.
@@ -176,17 +177,21 @@ export class PlayerService {
 	 * @param  newName - The new name to assign to the player.
 	 * @throws {NameTooLongError} If the new name is too long.
 	 */
-	async changeCurrentName(
+	changeCurrentName(
 		playerResolvable: PlayerResolvable,
 		newName: string
 	) {
 		const playerID = this.resolveID(playerResolvable);
+		const oldName = this.getCurrentName(playerResolvable);
 
 		if (newName.length > MAX_NAME_LENGTH)
 			throw new NameTooLongError(newName, MAX_NAME_LENGTH);
 
 		this.playerRepository.changeCurrentName(playerID, newName);
-		await changeDiscordNameOfPlayer(playerID, newName);
+
+		NamesmithEvents.NameChange.announce({
+			playerID, oldName, newName
+		});
 	}
 
 	/**

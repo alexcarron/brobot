@@ -4,7 +4,7 @@ import { openNamesToVoteOnChannel, sendToNamesToVoteOnChannel } from "../../util
 import { fetchNamesToVoteOnChannel } from "../../utilities/discord-fetch.utility";
 import { regenerateVoteButton, sendVoteButton } from "./vote-button";
 
-export const sendVotingDisplay = async ({playerService}: {
+export const sendVotingMessages = async ({playerService}: {
 	playerService: PlayerService
 }) => {
 	const namesToVoteOnChannel = await fetchNamesToVoteOnChannel();
