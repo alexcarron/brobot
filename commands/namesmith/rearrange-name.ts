@@ -1,7 +1,7 @@
 import { ids } from "../../bot-config/discord-ids";
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getInputFromCreatedTextModal, addButtonToMessageContents, doWhenButtonPressed } from "../../utilities/discord-action-utils";
-import { getCharacterDifferencesInStrings } from "../../utilities/data-structure-utils";
+import { getCharacterDifferences } from "../../utilities/data-structure-utils";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 
 export const command = new SlashCommand({
@@ -27,7 +27,7 @@ export const command = new SlashCommand({
 		}) || "";
 
 		while (!correctlyRearrangedName) {
-			const { extraCharacters } = getCharacterDifferencesInStrings(inventory, newName);
+			const { extraCharacters } = getCharacterDifferences(inventory, newName);
 
 			if (extraCharacters.length === 0) {
 				correctlyRearrangedName = true;

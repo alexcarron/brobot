@@ -46,6 +46,7 @@ module.exports = {
       rules: {
         // TS-specific rules
         '@typescript-eslint/require-await': 'error',
+				'@typescript-eslint/no-empty-object-type': 'off',
         '@typescript-eslint/no-floating-promises': 'error',
 				'@typescript-eslint/no-explicit-any': 'off',
 				'jsdoc/require-param-type': 'off',    // ignore type in @param

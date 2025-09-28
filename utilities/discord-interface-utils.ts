@@ -1,6 +1,6 @@
 import { createRandomUUID } from "./random-utils";
 import { ActionRowBuilder, ButtonBuilder, ComponentBuilder, ModalBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, TextInputBuilder } from "@discordjs/builders";
-import { ButtonInteraction, ButtonStyle, Message, MessageCreateOptions, ModalSubmitInteraction, StringSelectMenuInteraction, TextBasedChannel, TextInputStyle } from "discord.js";
+import { ButtonInteraction, ButtonStyle, Message, MessageCreateOptions, ModalSubmitInteraction, StringSelectMenuInteraction, TextBasedChannel, TextChannel, TextInputStyle } from "discord.js";
 import { InvalidArgumentError, throwIfNotError } from "./error-utils";
 import { doOnButtonPressed } from '../event-listeners/on-button-pressed';
 import { doOnMenuOptionSelected } from "../event-listeners/on-menu-option-selected";
@@ -149,7 +149,7 @@ abstract class DiscordInterface {
 	 * @param channel - The channel to send the interface in.
 	 * @returns The message that is sent.
 	 */
-	async sendIn(channel: TextBasedChannel): Promise<Message> {
+	async sendIn(channel: TextChannel): Promise<Message> {
 		const messageContents = this.getMessageContents();
 		this.channel = channel;
 		this.message = await channel.send(messageContents);
@@ -163,7 +163,7 @@ abstract class DiscordInterface {
 	 * @param channel - The channel to set the message in.
 	 * @returns The message that was set.
 	 */
-	async setIn(channel: TextBasedChannel): Promise<Message> {
+	async setIn(channel: TextChannel): Promise<Message> {
 		const messageContents = this.getMessageContents();
 		this.channel = channel;
 		this.message = await setChannelMessage(channel, messageContents);

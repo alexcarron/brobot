@@ -1,4 +1,4 @@
-import { getCharacterDifferencesInStrings } from '../../../utilities/data-structure-utils';
+import { getCharacterDifferences } from '../../../utilities/data-structure-utils';
 import { CustomError } from '../../../utilities/error-utils';
 import { escapeDiscordMarkdown } from '../../../utilities/string-manipulation-utils';
 import { CharacterID } from '../types/character.types';
@@ -260,7 +260,7 @@ export class MissingRequiredCharactersError extends UserActionError {
 	declare relevantData: { player: Player, recipe: Recipe };
 	constructor(player: Player, recipe: Recipe) {
 		const { missingCharacters } =
-			getCharacterDifferencesInStrings(recipe.inputCharacters, player.inventory);
+			getCharacterDifferences(recipe.inputCharacters, player.inventory);
 
 		const missingCharactersDisplay =
 			escapeDiscordMarkdown(missingCharacters.join(''))

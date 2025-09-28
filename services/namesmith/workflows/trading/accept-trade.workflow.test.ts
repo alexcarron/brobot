@@ -23,7 +23,6 @@ jest.mock("../../../../utilities/discord-action-utils", () => ({
 	addButtonToMessageContents: jest.fn(),
 }));
 
-import { returnIfNotError } from "../../../../utilities/error-utils";
 import { makeSure } from "../../../../utilities/jest/jest-utils";
 import { INVALID_PLAYER_ID, INVALID_TRADE_ID } from "../../constants/test.constants";
 import { DatabaseQuerier } from "../../database/database-querier";
@@ -34,7 +33,7 @@ import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { TradeService } from "../../services/trade.service";
 import { Player } from "../../types/player.types";
 import { Trade, TradeStatuses } from "../../types/trade.types";
-import { MissingOfferedCharactersError, MissingRequestedCharactersError, NonPlayerRespondedToTradeError, NonTradeRespondedToError, TradeAlreadyRespondedToError, TradeAwaitingDifferentPlayerError } from "../../utilities/error.utility";
+import { returnIfNotFailure } from "../workflow-result-creator";
 import { acceptTrade } from "./accept-trade.workflow";
 
 describe('accept-trade.workflow.ts', () => {
@@ -67,7 +66,7 @@ describe('accept-trade.workflow.ts', () => {
 
 	describe('acceptTrade()', () => {
 		it('returns the trade, initiating player, and recipient player', async () => {
-			const result = returnIfNotError(await acceptTrade({
+			const result = returnIfNotFailure(await acceptTrade({
 				...getNamesmithServices(),
 				playerAccepting: MOCK_RECIPIENT_PLAYER,
 				trade: MOCK_TRADE,
@@ -122,45 +121,53 @@ describe('accept-trade.workflow.ts', () => {
 		});
 
 		it('returns a NonPlayerAcceptedTradeError if the user accepting the trade is not a player', async () => {
+			const result = await acceptTrade({
+				...getNamesmithServices(),
+				playerAccepting: INVALID_PLAYER_ID,
+				trade: MOCK_TRADE,
+			});
+
 			makeSure(
-				await acceptTrade({
-					...getNamesmithServices(),
-					playerAccepting: INVALID_PLAYER_ID,
-					trade: MOCK_TRADE,
-				})
-			).isAnInstanceOf(NonPlayerRespondedToTradeError);
+				result.isNonPlayerRespondedToTrade()
+			).isTrue();
 		});
 
 		it('returns a NonTradeAcceptedError if the trade being accepted does not exist', async () => {
+			const result = await acceptTrade({
+				...getNamesmithServices(),
+				playerAccepting: MOCK_RECIPIENT_PLAYER,
+				trade: INVALID_TRADE_ID,
+			});
+
 			makeSure(
-				await acceptTrade({
-					...getNamesmithServices(),
-					playerAccepting: MOCK_RECIPIENT_PLAYER,
-					trade: INVALID_TRADE_ID,
-				})
-			).isAnInstanceOf(NonTradeRespondedToError);
+				result.isNonTradeRespondedTo()
+			).isTrue();
 		});
 
 		it('returns a TradeAlreadyRespondedToError if the trade has already been declined', async () => {
 			tradeService.decline(MOCK_TRADE);
 
+			const result = await acceptTrade({
+				...getNamesmithServices(),
+				playerAccepting: MOCK_INITIATING_PLAYER,
+				trade: MOCK_TRADE,
+			});
+
 			makeSure(
-				await acceptTrade({
-					...getNamesmithServices(),
-					playerAccepting: MOCK_INITIATING_PLAYER,
-					trade: MOCK_TRADE,
-				})
-			).isAnInstanceOf(TradeAlreadyRespondedToError);
+				result.isTradeAlreadyRespondedTo()
+			).isTrue();
 		});
 
 		it('returns a TradeAwaitingDifferentPlayerError if the player accepting the trade is not the recipient while the trade is awaiting the recipient', async () => {
+			const result = await acceptTrade({
+				...getNamesmithServices(),
+				playerAccepting: MOCK_INITIATING_PLAYER,
+				trade: MOCK_TRADE,
+			});
+
 			makeSure(
-				await acceptTrade({
-					...getNamesmithServices(),
-					playerAccepting: MOCK_INITIATING_PLAYER,
-					trade: MOCK_TRADE,
-				})
-			).isAnInstanceOf(TradeAwaitingDifferentPlayerError);
+				result.isTradeAwaitingDifferentPlayer()
+			).isTrue();
 		});
 
 		it('returns a MissingOfferedCharactersError if the initiating player no longer has the characters they are offering', async () => {
@@ -169,13 +176,15 @@ describe('accept-trade.workflow.ts', () => {
 				inventory: "",
 			});
 
+			const result = await acceptTrade({
+				...getNamesmithServices(),
+				playerAccepting: MOCK_RECIPIENT_PLAYER.id,
+				trade: MOCK_TRADE,
+			});
+
 			makeSure(
-				await acceptTrade({
-					...getNamesmithServices(),
-					playerAccepting: MOCK_RECIPIENT_PLAYER.id,
-					trade: MOCK_TRADE,
-				})
-			).isAnInstanceOf(MissingOfferedCharactersError);
+				result.isPlayerMissingCharacters()
+			).isTrue();
 		});
 
 		it('returns a MissingRequestedCharactersError if the recipient player no longer has the characters they are requesting', async () => {
@@ -184,13 +193,15 @@ describe('accept-trade.workflow.ts', () => {
 				inventory: "",
 			});
 
+			const result = await acceptTrade({
+				...getNamesmithServices(),
+				playerAccepting: MOCK_RECIPIENT_PLAYER.id,
+				trade: MOCK_TRADE,
+			});
+
 			makeSure(
-				await acceptTrade({
-					...getNamesmithServices(),
-					playerAccepting: MOCK_RECIPIENT_PLAYER.id,
-					trade: MOCK_TRADE,
-				})
-			).isAnInstanceOf(MissingRequestedCharactersError);
+				result.isPlayerMissingCharacters()
+			).isTrue();
 		});
 	});
 });

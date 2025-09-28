@@ -419,16 +419,13 @@ const getRequiredUserParam = (interaction, nameOrParameter) => {
  * Gets a channel parameter value of a slash command by name.
  * @param {ChatInputCommandInteraction} interaction - The interaction whose reply is being updated.
  * @param {string | Parameter} nameOrParameter - The name of the channel parameter
- * @returns {import("discord.js").TextBasedChannel | undefined} The value of the channel parameter. If the parameter is not provided, or if the channel is not a valid channel, then null is returned.
+ * @returns {import("discord.js").TextChannel | undefined} The value of the channel parameter. If the parameter is not provided, or if the channel is not a valid channel, then null is returned.
  */
 const getChannelParamValue = (interaction, nameOrParameter) => {
 	const name = resolveParameterName(nameOrParameter);
 	const channel = interaction.options.getChannel(name);
 
-  if (
-		channel && 'send' in channel &&
-		typeof channel.send === 'function'
-	) {
+  if (channel instanceof TextChannel) {
     return channel;
   }
 
@@ -439,7 +436,7 @@ const getChannelParamValue = (interaction, nameOrParameter) => {
  * Gets a channel parameter value of a slash command by name, and throws an error if the parameter is not provided.
  * @param {ChatInputCommandInteraction} interaction - The interaction whose reply is being updated.
  * @param {string | Parameter} nameOrParameter - The name of the channel parameter
- * @returns {import("discord.js").TextBasedChannel} The value of the channel parameter
+ * @returns {import("discord.js").TextChannel} The value of the channel parameter
  * @throws {Error} If the parameter is not provided
  */
 const getRequiredChannelParam = (interaction, nameOrParameter) => {
@@ -655,7 +652,11 @@ async function fetchMessageWithComponent({channel, componentID}) {
 
         // Loop through action rows and components
         for (const row of message.components) {
+					if ('components' in row === false) continue;
+
             for (const component of row.components) {
+								if ('customId' in component === false) continue;
+
                 if (component.customId === componentID) {
                     return message; // Found the message
                 }

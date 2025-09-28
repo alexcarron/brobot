@@ -2,7 +2,6 @@ import { ids } from "../../bot-config/discord-ids";
 import { Parameter, ParameterType } from "../../services/command-creation/parameter";
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
-import { NonPlayerBoughtMysteryBoxError, PlayerCantAffordMysteryBoxError } from "../../services/namesmith/utilities/error.utility";
 import { buyMysteryBox } from "../../services/namesmith/workflows/buy-mystery-box.workflow";
 import { deferInteraction, replyToInteraction } from "../../utilities/discord-action-utils";
 import { getRequiredStringParam } from "../../utilities/discord-fetch-utils";
@@ -36,17 +35,18 @@ export const command = new SlashCommand({
 			mysteryBox: parseInt(mysteryBoxID)
 		});
 
-		if (result instanceof NonPlayerBoughtMysteryBoxError) {
+		if (result.isNonPlayerBoughtMysteryBox()) {
 			return await replyToInteraction(interaction,
 				`You're not a player, so you can't buy a mystery box.`
 			);
 		}
-		else if (result instanceof PlayerCantAffordMysteryBoxError) {
-			const error = result;
-			const tokenCost = error.relevantData.mysteryBox.tokenCost;
-			const tokensOwned = error.relevantData.player.tokens;
-			const tokensNeeded = tokenCost - tokensOwned;
-			const mysteryBoxName = error.relevantData.mysteryBox.name;
+		else if (result.isMysteryBoxDoesNotExist()) {
+			return await replyToInteraction(interaction,
+				`The "${mysteryBoxID}" mystery box does not exist.`
+			);
+		}
+		else if (result.isPlayerCantAffordMysteryBox()) {
+			const { mysteryBoxName, tokensNeeded, tokensOwned } = result;
 
 			return await replyToInteraction(interaction,
 				`You need **${tokensNeeded} more ${addSIfPlural('token', tokensNeeded)}** to afford the "${mysteryBoxName}" mystery box\n` +

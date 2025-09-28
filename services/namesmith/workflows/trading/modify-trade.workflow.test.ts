@@ -6,11 +6,10 @@ import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { TradeService } from "../../services/trade.service";
 import { Player } from "../../types/player.types";
 import { Trade, TradeStatuses } from "../../types/trade.types";
-import { MissingOfferedCharactersError, MissingRequestedCharactersError, NonPlayerRespondedToTradeError, NonTradeRespondedToError, TradeAlreadyRespondedToError, TradeAwaitingDifferentPlayerError } from "../../utilities/error.utility";
 import { modifyTrade } from "./modify-trade.workflow";
-import { returnIfNotError } from '../../../../utilities/error-utils';
 import { addMockPlayer, editMockPlayer } from "../../mocks/mock-data/mock-players";
 import { addMockTrade } from "../../mocks/mock-data/mock-trades";
+import { returnIfNotFailure } from "../workflow-result-creator";
 
 describe('modifyTrade()', () => {
   let MOCK_INITIATING_PLAYER: Player;
@@ -43,7 +42,7 @@ describe('modifyTrade()', () => {
 
 	it('returns the trade, initating player, and recipient player in their current states', () => {
 		const { trade, playerModifying, otherPlayer } =
-			returnIfNotError(
+			returnIfNotFailure(
 				modifyTrade({
 					...getNamesmithServices(),
 					playerModifying: MOCK_RECIPIENT_PLAYER,
@@ -82,53 +81,61 @@ describe('modifyTrade()', () => {
 	});
 
   it('returns a NonPlayerRespondedToTradeError if the player modifying the trade is not a player', () => {
+		const result = modifyTrade({
+			...getNamesmithServices(),
+			playerModifying: INVALID_PLAYER_ID,
+			trade: MOCK_TRADE,
+			charactersGiving: "and",
+			charactersReceiving: "dove",
+		});
+
     makeSure(
-      modifyTrade({
-        ...getNamesmithServices(),
-        playerModifying: INVALID_PLAYER_ID,
-        trade: MOCK_TRADE,
-        charactersGiving: "and",
-        charactersReceiving: "dove",
-      })
-    ).isAnInstanceOf(NonPlayerRespondedToTradeError);
+      result.isNonPlayerRespondedToTrade()
+    ).isTrue();
   });
 
   it('returns a NonTradeRespondedToError if the trade being modified does not exist', () => {
+		const result = modifyTrade({
+			...getNamesmithServices(),
+			playerModifying: MOCK_RECIPIENT_PLAYER,
+			trade: INVALID_TRADE_ID,
+			charactersGiving: "and",
+			charactersReceiving: "dove",
+		});
+
     makeSure(
-      modifyTrade({
-        ...getNamesmithServices(),
-        playerModifying: MOCK_RECIPIENT_PLAYER,
-        trade: INVALID_TRADE_ID,
-        charactersGiving: "and",
-        charactersReceiving: "dove",
-      })
-    ).isAnInstanceOf(NonTradeRespondedToError);
+      result.isNonTradeRespondedTo()
+    ).isTrue();
   });
 
   it('returns a TradeAlreadyRespondedToError if the trade has already been accepted', () => {
 		tradeService.accept(MOCK_TRADE);
 
+		const result = modifyTrade({
+			...getNamesmithServices(),
+			playerModifying: MOCK_RECIPIENT_PLAYER,
+			trade: MOCK_TRADE,
+			charactersGiving: "and",
+			charactersReceiving: "dove",
+		});
+
     makeSure(
-      modifyTrade({
-        ...getNamesmithServices(),
-        playerModifying: MOCK_RECIPIENT_PLAYER,
-        trade: MOCK_TRADE,
-        charactersGiving: "and",
-        charactersReceiving: "dove",
-      })
-    ).isAnInstanceOf(TradeAlreadyRespondedToError);
+      result.isTradeAlreadyRespondedTo()
+    ).isTrue();
   });
 
   it('returns a TradeAwaitingDifferentPlayerError if the player modifying the trade is the initiating player but the trade is awaiting the recipient', () => {
+		const result = modifyTrade({
+			...getNamesmithServices(),
+			playerModifying: MOCK_INITIATING_PLAYER,
+			trade: MOCK_TRADE,
+			charactersGiving: "and",
+			charactersReceiving: "dove",
+		});
+
     makeSure(
-      modifyTrade({
-        ...getNamesmithServices(),
-        playerModifying: MOCK_INITIATING_PLAYER,
-        trade: MOCK_TRADE,
-        charactersGiving: "and",
-        charactersReceiving: "dove",
-      })
-    ).isAnInstanceOf(TradeAwaitingDifferentPlayerError);
+      result.isTradeAwaitingDifferentPlayer()
+    ).isTrue();
   });
 
   it('returns a MissingOfferedCharactersError if the initiating player no longer has the characters they are offering', () => {
@@ -137,54 +144,62 @@ describe('modifyTrade()', () => {
       inventory: "",
     });
 
+		const result = modifyTrade({
+			...getNamesmithServices(),
+			playerModifying: MOCK_RECIPIENT_PLAYER,
+			trade: MOCK_TRADE,
+			charactersGiving: "and",
+			charactersReceiving: "dove",
+		});
+
     makeSure(
-      modifyTrade({
-        ...getNamesmithServices(),
-        playerModifying: MOCK_RECIPIENT_PLAYER,
-        trade: MOCK_TRADE,
-        charactersGiving: "and",
-        charactersReceiving: "dove",
-      })
-    ).isAnInstanceOf(MissingOfferedCharactersError);
+      result.isPlayerMissingCharacters()
+    ).isTrue();
   });
 
   it('returns a MissingRequestedCharactersError if the initiating player does not have the characters they are offering', () => {
-    makeSure(
-      modifyTrade({
-        ...getNamesmithServices(),
-        playerModifying: MOCK_RECIPIENT_PLAYER,
-        trade: MOCK_TRADE,
-        charactersGiving: "a ton of characters they do not have",
-        charactersReceiving: "dove",
-      })
-    ).isAnInstanceOf(MissingRequestedCharactersError);
+		const result = modifyTrade({
+			...getNamesmithServices(),
+			playerModifying: MOCK_RECIPIENT_PLAYER,
+			trade: MOCK_TRADE,
+			charactersGiving: "a ton of characters they do not have",
+			charactersReceiving: "dove",
+		});
+
+		makeSure(
+			result.isPlayerMissingCharacters()
+		).isTrue();
   });
 
-	it('returns a MissingRequestedCharactersError if the recipient player no longer has the characters they are requesting', async () => {
+	it('returns a MissingRequestedCharactersError if the recipient player no longer has the characters they are requesting', () => {
 		editMockPlayer(db, {
 			id: MOCK_RECIPIENT_PLAYER.id,
 			inventory: "",
 		});
+		const result = modifyTrade({
+			...getNamesmithServices(),
+			playerModifying: MOCK_RECIPIENT_PLAYER,
+			trade: MOCK_TRADE,
+			charactersGiving: "and",
+			charactersReceiving: "dove",
+		});
+
 		makeSure(
-			await modifyTrade({
-				...getNamesmithServices(),
-				playerModifying: MOCK_RECIPIENT_PLAYER,
-				trade: MOCK_TRADE,
-				charactersGiving: "and",
-				charactersReceiving: "dove",
-			})
-		).isAnInstanceOf(MissingRequestedCharactersError);
+			result.isPlayerMissingCharacters()
+		).isTrue();
 	});
 
-	it('returns a MissingOfferedCharactersError if the recipient player does not have the characters they are requesting', async () => {
+	it('returns a MissingOfferedCharactersError if the recipient player does not have the characters they are requesting', () => {
+		const result = modifyTrade({
+			...getNamesmithServices(),
+			playerModifying: MOCK_RECIPIENT_PLAYER,
+			trade: MOCK_TRADE,
+			charactersGiving: "and",
+			charactersReceiving: "a ton of characters they do not have",
+		});
+
 		makeSure(
-			await modifyTrade({
-				...getNamesmithServices(),
-				playerModifying: MOCK_RECIPIENT_PLAYER,
-				trade: MOCK_TRADE,
-				charactersGiving: "and",
-				charactersReceiving: "a ton of characters they do not have",
-			})
-		).isAnInstanceOf(MissingOfferedCharactersError);
+			result.isPlayerMissingCharacters()
+		).isTrue();
 	});
 });

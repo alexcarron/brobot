@@ -1,4 +1,4 @@
-import { getCharacterDifferencesInStrings } from "./data-structure-utils";
+import { getCharacterDifferences } from "./data-structure-utils";
 import { InvalidArgumentError } from "./error-utils";
 import { getCharacterCounts } from "./string-checks-utils";
 
@@ -365,7 +365,7 @@ export const removeCharactersAsGivenFromEnd = (
 export const removeMissingCharacters = (
 	string: string, availableCharacters: string
 ): string => {
-	const { missingCharacters } = getCharacterDifferencesInStrings(string, availableCharacters);
+	const { missingCharacters } = getCharacterDifferences(string, availableCharacters);
 	return removeCharactersAsGivenFromEnd(string, missingCharacters);
 }
 
@@ -429,4 +429,18 @@ export function addSIfPlural(text: string, amount: number) {
  */
 export function toAmountOfNoun(amount: number, text: string) {
 	return `${amount} ${addSIfPlural(text, amount)}`;
+}
+
+/**
+ * Capitalizes a string by making the first character uppercase and the rest lowercase.
+ * @param {string} text - The string to capitalize.
+ * @returns {string} The capitalized string.
+ * @example
+ * capitalize('hello'); // 'Hello'
+ */
+export function capitalize(text: string) {
+	if (text.length === 0) return text;
+	if (text.length === 1) return text.toUpperCase();
+
+	return text.charAt(0).toUpperCase() + text.slice(1);
 }

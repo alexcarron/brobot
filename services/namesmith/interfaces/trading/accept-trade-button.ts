@@ -4,8 +4,6 @@ import { acceptTrade } from "../../workflows/trading/accept-trade.workflow";
 import { PlayerService } from "../../services/player.service";
 import { TradeService } from "../../services/trade.service";
 import { handleTradeResponseResult } from "./trade-message";
-import { MissingOfferedCharactersError, MissingRequestedCharactersError } from "../../utilities/error.utility";
-import { getCharacterDifferencesInStrings } from "../../../../utilities/data-structure-utils";
 import { replyToInteraction } from "../../../../utilities/discord-action-utils";
 
 /**
@@ -47,21 +45,12 @@ export function createAcceptTradeButton(
 			if (remainingResult === null) return
 			acceptResult = remainingResult;
 
-			if (
-				acceptResult instanceof MissingOfferedCharactersError ||
-				acceptResult instanceof MissingRequestedCharactersError
-			) {
-				const characters =
-					'offeredCharacters'	in acceptResult.relevantData
-						? acceptResult.relevantData.offeredCharacters
-						: acceptResult.relevantData.requestedCharacters;
-
-				const { player } = acceptResult.relevantData;
-				const { missingCharacters } = getCharacterDifferencesInStrings(characters, player.inventory);
+			if (acceptResult.isPlayerMissingCharacters()) {
+				const { player, missingCharacters } = acceptResult;
 
 				return await replyToInteraction(buttonInteraction,
 					`<@${player.id}> no longer has ${missingCharacters.length} characters needed for this trade:\n` +
-					missingCharacters.join('')
+					missingCharacters
 				);
 			}
 

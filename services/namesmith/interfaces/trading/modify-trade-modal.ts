@@ -5,9 +5,7 @@ import { Player } from "../../types/player.types";
 import { TradeService } from "../../services/trade.service";
 import { PlayerService } from "../../services/player.service";
 import { modifyTrade } from "../../workflows/trading/modify-trade.workflow";
-import { MissingOfferedCharactersError, MissingRequestedCharactersError, NonPlayerRespondedToTradeError, NonTradeRespondedToError, TradeAlreadyRespondedToError, TradeAwaitingDifferentPlayerError } from "../../utilities/error.utility";
 import { replyToInteraction } from "../../../../utilities/discord-action-utils";
-import { getCharacterDifferencesInStrings as getCharacterDifferences } from "../../../../utilities/data-structure-utils";
 import { sendTradeMessage } from "./trade-message";
 
 /**
@@ -88,54 +86,43 @@ async function onSubmitModifyTradeModal(
 ) {
 	const modifyResult = modifyTrade({tradeService, playerService, playerModifying, trade, charactersGiving, charactersReceiving});
 
-	if (modifyResult instanceof NonPlayerRespondedToTradeError) {
+	if (modifyResult.isNonPlayerRespondedToTrade()) {
 		return await replyToInteraction(modalSubmitInteraction,
 			`You're not a player, so you can't modify trades.`
 		);
 	}
-	else if (modifyResult instanceof NonTradeRespondedToError) {
+	else if (modifyResult.isNonTradeRespondedTo()) {
 		return await replyToInteraction(modalSubmitInteraction,
 			`You cannot modify a trade that does not exist.`
 		);
 	}
-	else if (modifyResult instanceof TradeAlreadyRespondedToError) {
-		const { trade } = modifyResult.relevantData;
+	else if (modifyResult.isTradeAlreadyRespondedTo()) {
+		const { trade } = modifyResult;
 
 		return await replyToInteraction(modalSubmitInteraction,
 			`You cannot modify a trade that has already been ${trade.status}.`
 		);
 	}
-	else if (modifyResult instanceof TradeAwaitingDifferentPlayerError) {
-		const { playerAwaitingTrade } = modifyResult.relevantData;
+	else if (modifyResult.isTradeAwaitingDifferentPlayer()) {
+		const { playerAwaitingTrade } = modifyResult;
 
 		return await replyToInteraction(modalSubmitInteraction,
 			`This trade is awaiting a response from <@${playerAwaitingTrade.id}>, so you cannot modify it.`
 		);
 	}
-	else if (
-		modifyResult instanceof MissingOfferedCharactersError ||
-		modifyResult instanceof MissingRequestedCharactersError
-	) {
-		const characters =
-			'offeredCharacters'	in modifyResult.relevantData
-				? modifyResult.relevantData.offeredCharacters
-				: modifyResult.relevantData.requestedCharacters;
-
-		const { player } = modifyResult.relevantData;
-		const { missingCharacters } = getCharacterDifferences(
-			characters, player.inventory
-		);
+	else if (modifyResult.isPlayerMissingCharacters()) {
+		const { player, missingCharacters } = modifyResult;
 
 		if (player.id === playerModifying.id) {
 			return await replyToInteraction(modalSubmitInteraction,
 				`You are missing ${missingCharacters.length} required characters for this trade\n` +
-				missingCharacters.join('')
+				missingCharacters
 			);
 		}
 		else {
 			return await replyToInteraction(modalSubmitInteraction,
 				`<@${player.id}> is missing ${missingCharacters.length} required characters for this trade\n` +
-				missingCharacters.join('')
+				missingCharacters
 			);
 		}
 	}

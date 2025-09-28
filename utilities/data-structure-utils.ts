@@ -219,7 +219,7 @@ export const getRandomElement = <ElementType>(array: ElementType[]): ElementType
  * @param differentString The other string to compare against the original.
  * @returns An object containing two arrays: `missingCharacters` (characters present in the original but missing in the modified) and `extraCharacters` (characters present in the modified but not in the original).
  */
-export const getCharacterDifferencesInStrings = (
+export const getCharacterDifferences = (
 	originalString: string,
 	differentString: string
 ) => {

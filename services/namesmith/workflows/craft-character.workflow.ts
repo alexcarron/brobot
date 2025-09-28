@@ -1,8 +1,24 @@
+import { getCharacterDifferences } from "../../../utilities/data-structure-utils";
 import { PlayerService } from "../services/player.service";
 import { RecipeService } from "../services/recipe.service";
-import { PlayerResolvable } from "../types/player.types";
-import { RecipeResolvable } from "../types/recipe.types";
-import { MissingRequiredCharactersError, NonPlayerCraftedError, RecipeNotUnlockedError } from "../utilities/error.utility";
+import { PlayerResolvable } from '../types/player.types';
+import { Recipe, RecipeResolvable } from "../types/recipe.types";
+import { getWorkflowResultCreator, provides } from "./workflow-result-creator";
+
+const result = getWorkflowResultCreator({
+	success: provides<{
+		newInventory: string,
+		craftedCharacter: string,
+		recipeUsed: Recipe,
+	}>(),
+
+	nonPlayerCrafted: provides<{}>(),
+	missingRequiredCharacters: provides<{
+		missingCharacters: string
+	}>(),
+	recipeNotUnlocked: provides<{}>(),
+})
+
 
 /**
  * Crafts a character using a given recipe and player.
@@ -24,23 +40,24 @@ export const craftCharacter = async (
 	}
 ) => {
 	if (!playerService.isPlayer(player)) {
-		return new NonPlayerCraftedError(playerService.resolveID(player));
+		return result.failure.nonPlayerCrafted({});
 	}
 
 	const hasRequiredCharacters = recipeService.playerHasInputCharacters(recipe, player);
 	if (!hasRequiredCharacters) {
-		return new MissingRequiredCharactersError(
-			playerService.resolvePlayer(player),
-			recipeService.resolveRecipe(recipe)
-		);
+		player = playerService.resolvePlayer(player);
+		recipe = recipeService.resolveRecipe(recipe);
+		const { missingCharacters } =
+			getCharacterDifferences(recipe.inputCharacters, player.inventory);
+
+		return result.failure.missingRequiredCharacters({
+			missingCharacters: missingCharacters.join(''),
+		});
 	}
 
 	const isUnlocked = recipeService.isUnlockedForPlayer(recipe, player);
 	if (!isUnlocked) {
-		return new RecipeNotUnlockedError(
-			playerService.resolvePlayer(player),
-			recipeService.resolveRecipe(recipe)
-		);
+		return result.failure.recipeNotUnlocked({});
 	}
 
 	await recipeService.takeInputCharactersFromPlayer(recipe, player);
@@ -49,12 +66,10 @@ export const craftCharacter = async (
 	const newInventory = playerService.getInventory(player);
 	const craftedCharacter = recipeService.getOutputCharacters(recipe);
 	const recipeUsed = recipeService.resolveRecipe(recipe);
-	const playerCrafting = playerService.resolvePlayer(player);
 
-	return {
+	return result.success({
 		newInventory,
 		craftedCharacter,
 		recipeUsed,
-		playerCrafting,
-	};
+	});
 };

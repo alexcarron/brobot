@@ -5,12 +5,14 @@ import { fetchNamesmithChannel } from "../../utilities/discord-fetch.utility";
 import { DiscordButtons } from "../../../../utilities/discord-interface-utils";
 import { PlayerService } from "../../services/player.service";
 import { TradeService } from "../../services/trade.service";
-import {  NonPlayerRespondedToTradeError, NonTradeRespondedToError, TradeAlreadyRespondedToError, TradeAwaitingDifferentPlayerError } from "../../utilities/error.utility";
 import { replyToInteraction } from "../../../../utilities/discord-action-utils";
 import { createAcceptTradeButton } from "./accept-trade-button";
 import { createModifyTradeButton } from "./modify-trade-button";
 import { createDeclineTradeButton } from "./decline-trade-buttons";
 import { attempt } from "../../../../utilities/error-utils";
+import { checkIfPlayerCanModifyTrade } from "../../workflows/trading/modify-trade.workflow";
+import { acceptTrade } from "../../workflows/trading/accept-trade.workflow";
+import { declineTrade } from "../../workflows/trading/decline-trade.workflow";
 
 /**
  * Creates a new trade message with the given properties.
@@ -132,42 +134,52 @@ export async function regenerateAllTradeMessages(
  * @param parameters.responseType The type of response that was attempted.
  * @returns A promise that resolves to an object indicating whether the result was handled and, if not, the result itself.
  */
-export async function handleTradeResponseResult<OtherResultTypes>(
+export async function handleTradeResponseResult<
+	TradeWorkflowResult extends
+		| Awaited<ReturnType<typeof acceptTrade>>
+		| Awaited<ReturnType<typeof declineTrade>>
+		| Awaited<ReturnType<typeof checkIfPlayerCanModifyTrade>>,
+
+	RemainingResults extends TradeWorkflowResult =
+		Exclude<TradeWorkflowResult,
+		| { failureType: "nonPlayerRespondedToTrade" }
+		| { failureType: "nonTradeRespondedTo" }
+		| { failureType: "tradeAlreadyRespondedTo" }
+		| { failureType: "tradeAwaitingDifferentPlayer" }
+	>
+>(
 	{result, buttonInteraction, responseType}: {
-		result:
-			| OtherResultTypes
-			| NonPlayerRespondedToTradeError
-			| NonTradeRespondedToError
-			| TradeAlreadyRespondedToError
-			| TradeAwaitingDifferentPlayerError,
+		result: TradeWorkflowResult,
 		buttonInteraction: ButtonInteraction,
 		responseType: 'accept' | 'decline' | 'modify',
 	}
 ): Promise<
-	null | OtherResultTypes
+	| null
+	| RemainingResults
 > {
-	if (result instanceof NonPlayerRespondedToTradeError) {
+	if (result.isNonPlayerRespondedToTrade()) {
 		await replyToInteraction(buttonInteraction,
 			`You're not a player, so you can't ${responseType} a trade.`
 		);
+
 		return null;
 	}
-	else if (result instanceof NonTradeRespondedToError) {
+	else if (result.isNonTradeRespondedTo()) {
 		await replyToInteraction(buttonInteraction,
 			`You can't ${responseType} a trade that does not exist`
 		);
 		return null;
 	}
-	else if (result instanceof TradeAlreadyRespondedToError) {
-		const { trade } = result.relevantData;
+	else if (result.isTradeAlreadyRespondedTo()) {
+		const { trade } = result;
 
 		await replyToInteraction(buttonInteraction,
 			`This trade is already ${trade.status} so you can't ${responseType} it.`
 		);
 		return null;
 	}
-	else if (result instanceof TradeAwaitingDifferentPlayerError) {
-		const { playerAwaitingTrade } = result.relevantData;
+	else if (result.isTradeAwaitingDifferentPlayer()) {
+		const { playerAwaitingTrade } = result;
 
 		await replyToInteraction(buttonInteraction,
 			`This trade is awaiting <@${playerAwaitingTrade.id}>'s response so you can't ${responseType} it.`
@@ -175,5 +187,5 @@ export async function handleTradeResponseResult<OtherResultTypes>(
 		return null;
 	}
 
-	return result;
+	return result as RemainingResults;
 }

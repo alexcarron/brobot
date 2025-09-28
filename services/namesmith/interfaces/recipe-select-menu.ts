@@ -3,13 +3,11 @@ import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PlayerResolvable } from "../types/player.types";
 import { RecipeResolvable } from "../types/recipe.types";
 import { fetchRecipesChannel } from "../utilities/discord-fetch.utility";
-import { MissingRequiredCharactersError, NonPlayerCraftedError, RecipeNotUnlockedError } from "../utilities/error.utility";
 import { craftCharacter } from "../workflows/craft-character.workflow";
 import { replyToInteraction } from "../../../utilities/discord-action-utils";
 import { escapeDiscordMarkdown } from "../../../utilities/string-manipulation-utils";
 import { RecipeService } from "../services/recipe.service";
 import { DiscordSelectMenu } from "../../../utilities/discord-interface-utils";
-import { getCharacterDifferencesInStrings } from "../../../utilities/data-structure-utils";
 import { attempt } from "../../../utilities/error-utils";
 
 const onRecipeSelected = async (
@@ -17,39 +15,37 @@ const onRecipeSelected = async (
 	recipe: RecipeResolvable,
 	interaction: StringSelectMenuInteraction,
 ) => {
-	const craftingResult = await craftCharacter({
+	const result = await craftCharacter({
 		...getNamesmithServices(),
 		player,
 		recipe
 	});
-	if (craftingResult instanceof NonPlayerCraftedError) {
+
+	if (result.isNonPlayerCrafted()) {
 		await replyToInteraction(interaction,
 			'You\'re not a player, so you can\'t craft a character.'
 		);
 		return;
 	}
-	else if (craftingResult instanceof MissingRequiredCharactersError) {
-		const error = craftingResult;
-		const { player, recipe } = error.relevantData;
-		const { missingCharacters } =
-			getCharacterDifferencesInStrings(recipe.inputCharacters, player.inventory);
+	else if (result.isMissingRequiredCharacters()) {
+		const { missingCharacters } = result;
 
 		const missingCharactersDisplay =
-			escapeDiscordMarkdown(missingCharacters.join(''));
+			escapeDiscordMarkdown(missingCharacters);
 
 		await replyToInteraction(interaction,
 			`You are missing ${missingCharacters.length} required characters for this recipe: ${missingCharactersDisplay}`
 		);
 		return;
 	}
-	else if (craftingResult instanceof RecipeNotUnlockedError) {
+	else if (result.isRecipeNotUnlocked()) {
 		await replyToInteraction(interaction,
 			"You must unlock this recipe before you can use it."
 		);
 		return;
 	}
 
-	const {newInventory, craftedCharacter, recipeUsed} = craftingResult;
+	const {newInventory, craftedCharacter, recipeUsed} = result;
 	await replyToInteraction(interaction, escapeDiscordMarkdown(
 		`Successfully crafted ${craftedCharacter} using ${recipeUsed.inputCharacters}\n` +
 		`Your inventory now contains ${newInventory}`

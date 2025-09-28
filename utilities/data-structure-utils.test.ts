@@ -4,7 +4,7 @@ import {
 	getShuffledArray,
 	arraysHaveSameElements,
 	getRandomElement,
-	getCharacterDifferencesInStrings,
+	getCharacterDifferences,
 	getRandomWeightedElement,
 	mapToObject,
 } from "./data-structure-utils";
@@ -179,11 +179,11 @@ describe('getRandomElement()', () => {
 	});
 });
 
-describe('getCharacterDifferencesInStrings()', () => {
+describe('getCharacterDifferences()', () => {
 	it('should return empty arrays for identical strings', () => {
 		const originalString = 'hello';
 		const modifiedString = 'hello';
-		const result = getCharacterDifferencesInStrings(originalString, modifiedString);
+		const result = getCharacterDifferences(originalString, modifiedString);
 		expect(result).toEqual({
 			missingCharacters: [],
 			extraCharacters: []
@@ -193,7 +193,7 @@ describe('getCharacterDifferencesInStrings()', () => {
 	it('should return extra characters in modified string', () => {
 		const originalString = 'hello';
 		const modifiedString = 'helloo';
-		const result = getCharacterDifferencesInStrings(originalString, modifiedString);
+		const result = getCharacterDifferences(originalString, modifiedString);
 		expect(result).toEqual({
 			missingCharacters: [],
 			extraCharacters: ['o']
@@ -203,7 +203,7 @@ describe('getCharacterDifferencesInStrings()', () => {
 	it('should return missing characters in modified string', () => {
 		const originalString = 'hello';
 		const modifiedString = 'hell';
-		const result = getCharacterDifferencesInStrings(originalString, modifiedString);
+		const result = getCharacterDifferences(originalString, modifiedString);
 		expect(result).toEqual({
 			missingCharacters: ['o'],
 			extraCharacters: []
@@ -213,7 +213,7 @@ describe('getCharacterDifferencesInStrings()', () => {
 	it('should return both extra and missing characters in modified string', () => {
 		const originalString = 'hello';
 		const modifiedString = 'hxlloo';
-		const result = getCharacterDifferencesInStrings(originalString, modifiedString);
+		const result = getCharacterDifferences(originalString, modifiedString);
 		expect(result).toEqual({
 			missingCharacters: ['e'],
 			extraCharacters: ['o', 'x']
@@ -223,7 +223,7 @@ describe('getCharacterDifferencesInStrings()', () => {
 	it('should return empty arrays for empty strings', () => {
 		const originalString = '';
 		const modifiedString = '';
-		const result = getCharacterDifferencesInStrings(originalString, modifiedString);
+		const result = getCharacterDifferences(originalString, modifiedString);
 		expect(result).toEqual({
 			missingCharacters: [],
 			extraCharacters: []
@@ -233,7 +233,7 @@ describe('getCharacterDifferencesInStrings()', () => {
 	it('should return extra character for single character strings', () => {
 		const originalString = 'a';
 		const modifiedString = 'b';
-		const result = getCharacterDifferencesInStrings(originalString, modifiedString);
+		const result = getCharacterDifferences(originalString, modifiedString);
 		expect(result).toEqual({
 			missingCharacters: ['a'],
 			extraCharacters: ['b']
@@ -243,7 +243,7 @@ describe('getCharacterDifferencesInStrings()', () => {
 	it('should return correct differences for strings of different lengths', () => {
 		const originalString = 'hello';
 		const modifiedString = 'hello world';
-		const result = getCharacterDifferencesInStrings(originalString, modifiedString);
+		const result = getCharacterDifferences(originalString, modifiedString);
 		expect(result).toEqual({
 			missingCharacters: [],
 			extraCharacters: [' ', 'd', 'l', 'o', 'r', 'w']
@@ -253,14 +253,14 @@ describe('getCharacterDifferencesInStrings()', () => {
 	it('should return correct differences for strings containing repeated characters', () => {
 		const originalString = 'hello';
 		const modifiedString = 'hellooo';
-		const result = getCharacterDifferencesInStrings(originalString, modifiedString);
+		const result = getCharacterDifferences(originalString, modifiedString);
 		expect(result).toEqual({ missingCharacters: [], extraCharacters: ['o', 'o'] });
 	});
 
 	it('should return correct differences for strings containing special characters', () => {
 		const originalString = 'hello!';
 		const modifiedString = 'hello@';
-		const result = getCharacterDifferencesInStrings(originalString, modifiedString);
+		const result = getCharacterDifferences(originalString, modifiedString);
 		expect(result).toEqual({
 			missingCharacters: ['!'],
 			extraCharacters: ['@']
@@ -270,7 +270,7 @@ describe('getCharacterDifferencesInStrings()', () => {
 	it('should return correct differences for strings containing numbers', () => {
 		const originalString = 'hello123';
 		const modifiedString = 'hello456';
-		const result = getCharacterDifferencesInStrings(originalString, modifiedString);
+		const result = getCharacterDifferences(originalString, modifiedString);
 		expect(result).toEqual({
 			missingCharacters: ['1', '2', '3'],
 			extraCharacters: ['4', '5', '6']

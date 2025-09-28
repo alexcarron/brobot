@@ -7,16 +7,15 @@ import { setupMockNamesmith } from "../mocks/mock-setup";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { MysteryBoxService } from "../services/mystery-box.service";
 import { PlayerService } from "../services/player.service";
-import { MysteryBoxNotFoundError, NotAPlayerError, PlayerCantAffordMysteryBoxError } from "../utilities/error.utility";
 import { INVALID_MYSTERY_BOX_ID, INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { Player } from '../types/player.types';
 import { MysteryBox } from "../types/mystery-box.types";
-import { returnIfNotError } from "../../../utilities/error-utils";
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { addMockMysteryBox } from "../mocks/mock-data/mock-mystery-boxes";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { NamesmithEvents } from "../event-listeners/namesmith-events";
+import { returnIfNotFailure } from "./workflow-result-creator";
 
 describe('buy-mystery-box.workflow', () => {
 	/**
@@ -56,7 +55,7 @@ describe('buy-mystery-box.workflow', () => {
 
 	describe('buyMysteryBox()', () => {
 		it('should return the recieved character, token cost, player and mystery box', async () => {
-			const { recievedCharacter, tokenCost, player, mysteryBox } = returnIfNotError(await buyMysteryBox({
+			const { recievedCharacter, tokenCost, player, mysteryBox } = returnIfNotFailure(await buyMysteryBox({
 				...services,
 				player: richPlayer.id,
 				mysteryBox: defaultMysteryBox.id
@@ -81,7 +80,7 @@ describe('buy-mystery-box.workflow', () => {
 		it('should change the player\'s Discord name to their current name plus that recieved character', async () => {
 			const announceNameChangeEvent = jest.spyOn(NamesmithEvents.NameChange, "announce");
 
-			const { recievedCharacter } = returnIfNotError(
+			const { recievedCharacter } = returnIfNotFailure(
 				await buyMysteryBox({
 					...services,
 					player: richPlayer.id,
@@ -99,7 +98,7 @@ describe('buy-mystery-box.workflow', () => {
 
 		it('should change the player\'s name to their current name plus that recieved character', async () => {
 			const { recievedCharacter } =
-				returnIfNotError(await buyMysteryBox({
+				returnIfNotFailure(await buyMysteryBox({
 					...services,
 					player: richPlayer.id,
 					mysteryBox: defaultMysteryBox.id
@@ -118,27 +117,33 @@ describe('buy-mystery-box.workflow', () => {
 				tokens: 30
 			});
 
-			makeSure(await buyMysteryBox({
+			const result = await buyMysteryBox({
 				...services,
 				player: brokePlayer,
 				mysteryBox: expensiveMysteryBox
-			})).isAnInstanceOf(PlayerCantAffordMysteryBoxError);
+			})
+
+			makeSure(result.isPlayerCantAffordMysteryBox()).isTrue();
 		});
 
 		it('should throw NotAPlayerError error if the user is not a player', async () => {
-			makeSure(await buyMysteryBox({
+			const result = await buyMysteryBox({
 				...services,
 				player: INVALID_PLAYER_ID,
 				mysteryBox: defaultMysteryBox.id
-			})).isAnInstanceOf(NotAPlayerError);
+			})
+
+			makeSure(result.isNonPlayerBoughtMysteryBox()).isTrue();
 		});
 
 		it('should throw an error if no mystery box is found', async () => {
-			await makeSure(buyMysteryBox({
+			const result = await buyMysteryBox({
 				...services,
 				player: richPlayer.id,
 				mysteryBox: INVALID_MYSTERY_BOX_ID
-			})).eventuallyThrows(MysteryBoxNotFoundError);
+			});
+
+			makeSure(result.isMysteryBoxDoesNotExist()).isTrue();
 		});
 	})
 })

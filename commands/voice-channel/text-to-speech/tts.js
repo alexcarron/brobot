@@ -116,6 +116,7 @@ module.exports = new SlashCommand({
 			const voice_connection = joinVoiceChannel({
 				channelId: voice_channel.id,
 				guildId: interaction.guild.id,
+				// @ts-ignore
 				adapterCreator: interaction.guild.voiceAdapterCreator
 			});
 

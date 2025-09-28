@@ -2,7 +2,6 @@ import { ids } from "../../bot-config/discord-ids";
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { deferInteraction, replyToInteraction } from "../../utilities/discord-action-utils";
-import { NonPlayerRefilledError, RefillAlreadyClaimedError } from '../../services/namesmith/utilities/error.utility';
 import { toAmountOfNoun } from "../../utilities/string-manipulation-utils";
 import { claimRefill } from "../../services/namesmith/workflows/claim-refill.workflow";
 import { toUnixTimestamp } from "../../utilities/date-time-utils";
@@ -20,15 +19,15 @@ export const command = new SlashCommand({
 			playerRefilling: interaction.user.id,
 		});
 
-		if (refillResult instanceof NonPlayerRefilledError) {
+		if (refillResult.isNonPlayerRefilled()) {
 			return await replyToInteraction(interaction,
 				`You're not a player, so you can't claim a refill of tokens.`
 			);
 		}
-		else if (refillResult instanceof RefillAlreadyClaimedError) {
+		else if (refillResult.isRefillAlreadyClaimed()) {
 			return await replyToInteraction(interaction,
 				`You've already claimed your refill!\n` +
-				`Don't worry, your next refill is available <t:${toUnixTimestamp(refillResult.relevantData.nextRefillTime)}:R>`
+				`Don't worry, your next refill is available <t:${toUnixTimestamp(refillResult.nextRefillTime)}:R>`
 			);
 		}
 		else {

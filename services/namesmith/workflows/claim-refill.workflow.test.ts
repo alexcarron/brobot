@@ -3,7 +3,6 @@ jest.mock("../../../utilities/random-utils", () => ({
   getAnticipatedRandomNum: jest.fn().mockReturnValue(50),
 }));
 
-import { returnIfNotError } from "../../../utilities/error-utils";
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { REFILL_COOLDOWN_HOURS } from "../constants/namesmith.constants";
 import { INVALID_PLAYER_ID } from "../constants/test.constants";
@@ -12,8 +11,8 @@ import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { setupMockNamesmith } from "../mocks/mock-setup";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PlayerService } from "../services/player.service";
-import { NonPlayerRefilledError, RefillAlreadyClaimedError } from "../utilities/error.utility";
 import { claimRefill } from "./claim-refill.workflow";
+import { returnIfNotFailure } from "./workflow-result-creator";
 
 describe('claim-tokens.workflow', () => {
 	let services: {
@@ -38,7 +37,7 @@ describe('claim-tokens.workflow', () => {
 			});
 
 			const { newTokenCount, tokensEarned, nextRefillTime } =
-				returnIfNotError(claimRefill({
+				returnIfNotFailure(claimRefill({
 					...services,
 					playerRefilling: mockPlayer.id
 				}));
@@ -71,17 +70,21 @@ describe('claim-tokens.workflow', () => {
 				lastClaimedRefillTime: new Date()
 			});
 
-			makeSure(claimRefill({
+			const result = claimRefill({
 				...services,
 				playerRefilling: mockPlayer.id
-			})).isAnInstanceOf(RefillAlreadyClaimedError);
+			})
+
+			makeSure(result.isRefillAlreadyClaimed()).isTrue();
 		})
 
 		it('should throw NonPlayerRefilledError if the provided player is not a valid player', () => {
-			makeSure(claimRefill({
+			const result = claimRefill({
 				...services,
 				playerRefilling: INVALID_PLAYER_ID
-			})).isAnInstanceOf(NonPlayerRefilledError);
+			});
+
+			makeSure(result.isNonPlayerRefilled()).isTrue();
 		});
 	});
 });

@@ -1,4 +1,4 @@
-const { ChannelType, Collection, ChatInputCommandInteraction, InteractionResponse } = require("discord.js");
+const { ChannelType, Collection, ChatInputCommandInteraction, InteractionResponse, TextChannel } = require("discord.js");
 const { ids } = require("../bot-config/discord-ids");
 const { logError, logInfo } = require("../utilities/logging-utils");
 const { replyToInteraction } = require("../utilities/discord-action-utils");
@@ -57,7 +57,11 @@ const onSlashCommandExecuted = async (interaction) => {
 		command.required_permissions &&
 		command.required_permissions.length > 0
 	) {
-		if (interaction.channel === null || interaction.channel.type === ChannelType.DM)
+		if (
+			interaction.channel === null ||
+			interaction.channel.type === ChannelType.DM ||
+			interaction.channel instanceof TextChannel === false
+		)
 			return interaction.reply({
 				content: `You aren't allowed to use this command here.`,
 				ephemeral: true
@@ -114,6 +118,7 @@ const onSlashCommandExecuted = async (interaction) => {
 		(
 			interaction.channel === null ||
 			interaction.channel.type === ChannelType.DM ||
+			interaction.channel instanceof TextChannel === false ||
 			interaction.channel.parent === null ||
 			!command.required_categories.includes(interaction.channel.parent.id)
 		)

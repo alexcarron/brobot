@@ -1,4 +1,3 @@
-import { returnIfNotError } from "../../../../utilities/error-utils";
 import { makeSure } from "../../../../utilities/jest/jest-utils";
 import { INVALID_PLAYER_ID } from "../../constants/test.constants";
 import { mockPlayers } from "../../mocks/mock-data/mock-players";
@@ -7,7 +6,7 @@ import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { PlayerService } from "../../services/player.service";
 import { TradeService } from "../../services/trade.service";
 import { TradeStatuses } from "../../types/trade.types";
-import { MissingOfferedCharactersError, MissingRequestedCharactersError, NonPlayerInitiatedTradeError, NonPlayerReceivedTradeError, TradeBetweenSamePlayersError } from "../../utilities/error.utility";
+import { returnIfNotFailure } from "../workflow-result-creator";
 import { initiateTrade } from "./initiate-trade.workflow";
 
 describe('initiate-trade.workflow.ts', () => {
@@ -31,7 +30,7 @@ describe('initiate-trade.workflow.ts', () => {
 	describe('initiateTrade()', () => {
 		it('successfully initiates a trade between two players', () => {
 			const result =
-				returnIfNotError(
+				returnIfNotFailure(
 					initiateTrade({
 						...services,
 						initiatingPlayer: MOCK_INITIATING_PLAYER,
@@ -55,63 +54,73 @@ describe('initiate-trade.workflow.ts', () => {
 		});
 
 		it('returns NonPlayerInitiatedTradeError if the initiating user is not a player', () => {
+			const result = initiateTrade({
+				...services,
+				initiatingPlayer: INVALID_PLAYER_ID,
+				recipientPlayer: MOCK_RECIPIENT_PLAYER,
+				offeredCharacters: MOCK_INITIATING_PLAYER.inventory,
+				requestedCharacters: MOCK_RECIPIENT_PLAYER.inventory,
+			});
+
 			makeSure(
-				initiateTrade({
-					...services,
-					initiatingPlayer: INVALID_PLAYER_ID,
-					recipientPlayer: MOCK_RECIPIENT_PLAYER,
-					offeredCharacters: MOCK_INITIATING_PLAYER.inventory,
-					requestedCharacters: MOCK_RECIPIENT_PLAYER.inventory,
-				})
-			).isAnInstanceOf(NonPlayerInitiatedTradeError);
+				result.isNonPlayerInitiatedTrade()
+			).isTrue();
 		});
 
 		it('returns NonPlayerReceivedTradeError if the recipient user is not a player', () => {
+			const result = initiateTrade({
+				...services,
+				initiatingPlayer: MOCK_INITIATING_PLAYER,
+				recipientPlayer: INVALID_PLAYER_ID,
+				offeredCharacters: MOCK_INITIATING_PLAYER.inventory,
+				requestedCharacters: MOCK_RECIPIENT_PLAYER.inventory,
+			});
+
 			makeSure(
-				initiateTrade({
-					...services,
-					initiatingPlayer: MOCK_INITIATING_PLAYER,
-					recipientPlayer: INVALID_PLAYER_ID,
-					offeredCharacters: MOCK_INITIATING_PLAYER.inventory,
-					requestedCharacters: MOCK_RECIPIENT_PLAYER.inventory,
-				})
-			).isAnInstanceOf(NonPlayerReceivedTradeError);
+				result.isNonPlayerReceivedTrade()
+			).isTrue();
 		});
 
 		it('returns TradeBetweenSamePlayersError if the initiating player attempts to trade with themselves', () => {
+			const result = initiateTrade({
+				...services,
+				initiatingPlayer: MOCK_INITIATING_PLAYER,
+				recipientPlayer: MOCK_INITIATING_PLAYER,
+				offeredCharacters: MOCK_INITIATING_PLAYER.inventory,
+				requestedCharacters: MOCK_RECIPIENT_PLAYER.inventory,
+			});
+
 			makeSure(
-				initiateTrade({
-					...services,
-					initiatingPlayer: MOCK_INITIATING_PLAYER,
-					recipientPlayer: MOCK_INITIATING_PLAYER,
-					offeredCharacters: MOCK_INITIATING_PLAYER.inventory,
-					requestedCharacters: MOCK_RECIPIENT_PLAYER.inventory,
-				})
-			).isAnInstanceOf(TradeBetweenSamePlayersError);
+				result.isTradeBetweenSamePlayers()
+			).isTrue();
 		});
 
 		it('returns MissingOfferedCharactersError if the initiating player does not have the characters they are offering', () => {
+			const result = initiateTrade({
+				...services,
+				initiatingPlayer: MOCK_INITIATING_PLAYER,
+				recipientPlayer: MOCK_RECIPIENT_PLAYER,
+				offeredCharacters: MOCK_INITIATING_PLAYER.inventory + 'z',
+				requestedCharacters: MOCK_RECIPIENT_PLAYER.inventory,
+			});
+
 			makeSure(
-				initiateTrade({
-					...services,
-					initiatingPlayer: MOCK_INITIATING_PLAYER,
-					recipientPlayer: MOCK_RECIPIENT_PLAYER,
-					offeredCharacters: MOCK_INITIATING_PLAYER.inventory + 'z',
-					requestedCharacters: MOCK_RECIPIENT_PLAYER.inventory,
-				})
-			).isAnInstanceOf(MissingOfferedCharactersError);
+				result.isMissingOfferedCharacters()
+			).isTrue();
 		});
 
 		it('returns MissingRequestedCharactersError if the recipient player does not have the characters they are requesting', () => {
+			const result = initiateTrade({
+				...services,
+				initiatingPlayer: MOCK_INITIATING_PLAYER,
+				recipientPlayer: MOCK_RECIPIENT_PLAYER,
+				offeredCharacters: MOCK_INITIATING_PLAYER.inventory,
+				requestedCharacters: MOCK_RECIPIENT_PLAYER.inventory + 'z',
+			});
+
 			makeSure(
-				initiateTrade({
-					...services,
-					initiatingPlayer: MOCK_INITIATING_PLAYER,
-					recipientPlayer: MOCK_RECIPIENT_PLAYER,
-					offeredCharacters: MOCK_INITIATING_PLAYER.inventory,
-					requestedCharacters: MOCK_RECIPIENT_PLAYER.inventory + 'z',
-				})
-			).isAnInstanceOf(MissingRequestedCharactersError);
+				result.isMissingRequestedCharacters()
+			).isTrue();
 		});
 	})
 });

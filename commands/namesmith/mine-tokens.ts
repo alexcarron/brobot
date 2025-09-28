@@ -3,7 +3,6 @@ import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { mineTokens } from "../../services/namesmith/workflows/mine-tokens.workflow";
 import { deferInteraction, replyToInteraction } from "../../utilities/discord-action-utils";
-import { NonPlayerMinedError } from '../../services/namesmith/utilities/error.utility';
 import { toAmountOfNoun } from "../../utilities/string-manipulation-utils";
 
 export const command = new SlashCommand({
@@ -14,17 +13,17 @@ export const command = new SlashCommand({
 	execute: async function execute(interaction) {
 		await deferInteraction(interaction);
 
-		const mineResult = mineTokens({
+		const result = mineTokens({
 			...getNamesmithServices(),
 			playerMining: interaction.user.id,
 		})
 
-		if (mineResult instanceof NonPlayerMinedError)
+		if (result.isNonPlayerMined())
 			return await replyToInteraction(interaction,
 				`You're not a player, so you can't mine tokens.`
 			);
 
-		const { tokensEarned, newTokenCount } = mineResult;
+		const { tokensEarned, newTokenCount } = result;
 		await replyToInteraction(interaction,
 			`**+${toAmountOfNoun(tokensEarned, 'Token')}** ` + '🪙'.repeat(tokensEarned) + `\n` +
 			`-# You now have ${toAmountOfNoun(newTokenCount, 'token')}\n`

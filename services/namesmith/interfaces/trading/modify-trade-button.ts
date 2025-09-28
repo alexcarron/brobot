@@ -29,12 +29,13 @@ export function createModifyTradeButton(
 		style: ButtonStyle.Secondary,
 		onButtonPressed: async (buttonInteraction: ButtonInteraction) => {
 			const userID = buttonInteraction.user.id;
-			let modifyCheckResult = checkIfPlayerCanModifyTrade({
-				tradeService,
-				playerService,
-				trade,
-				playerModifying: userID
-			});
+			let modifyCheckResult =
+				checkIfPlayerCanModifyTrade({
+					tradeService,
+					playerService,
+					trade,
+					playerModifying: userID
+				});
 
 			const remainingResult = await handleTradeResponseResult({
 				result: modifyCheckResult,

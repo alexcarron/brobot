@@ -1,4 +1,4 @@
-const { Message, MessageType, PermissionsBitField, ChannelType } = require("discord.js");
+const { Message, MessageType, PermissionsBitField, ChannelType, TextChannel } = require("discord.js");
 const TextToSpeechHandler = require("../services/text-to-speech/text-to-speech-handler");
 const { joinVoiceChannel } = require("@discordjs/voice");
 const { ids } = require("../bot-config/discord-ids");
@@ -44,6 +44,7 @@ const onTTSMessageSent = async (message) => {
 	const voiceConnection = joinVoiceChannel({
 		channelId: voiceChannel.id,
 		guildId: message.guild.id,
+		// @ts-ignore
 		adapterCreator: message.guild.voiceAdapterCreator
 	});
 
@@ -123,6 +124,7 @@ const onNormalMessageSent = async (message) => {
 		global.game_manager.player_manager &&
 		global.game_manager.state === GameState.IN_PROGRESS &&
 		message.channel.type !== ChannelType.DM &&
+		message.channel instanceof TextChannel &&
 		message.channel.parentId === ids.rapid_discord_mafia.category.player_action &&
 		message.type === MessageType.Default
 	) {

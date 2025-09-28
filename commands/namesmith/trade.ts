@@ -3,9 +3,7 @@ import { Parameter, ParameterType } from "../../services/command-creation/parame
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { sendTradeMessage } from "../../services/namesmith/interfaces/trading/trade-message";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
-import { MissingOfferedCharactersError, MissingRequestedCharactersError, NonPlayerInitiatedTradeError, NonPlayerReceivedTradeError, TradeBetweenSamePlayersError } from "../../services/namesmith/utilities/error.utility";
 import { initiateTrade } from "../../services/namesmith/workflows/trading/initiate-trade.workflow";
-import { getCharacterDifferencesInStrings as getCharacterDifferences } from "../../utilities/data-structure-utils";
 import { deferInteraction, replyToInteraction } from "../../utilities/discord-action-utils";
 import { getRequiredStringParam, getRequiredUserParam } from "../../utilities/discord-fetch-utils";
 
@@ -56,37 +54,34 @@ export const command = new SlashCommand({
 			requestedCharacters,
 		});
 
-		if (tradeResult instanceof NonPlayerInitiatedTradeError) {
+		if (tradeResult.isNonPlayerInitiatedTrade()) {
 			return await replyToInteraction(interaction,
 				`You're not a player, so you can't initiate a trade.`
 			);
 		}
-		else if (tradeResult instanceof NonPlayerReceivedTradeError) {
+		else if (tradeResult.isNonPlayerReceivedTrade()) {
 			return await replyToInteraction(interaction,
 				`You can only trade with players. <@${recipientPlayerID}> is not a player.`
 			);
 		}
-		else if (tradeResult instanceof TradeBetweenSamePlayersError) {
+		else if (tradeResult.isTradeBetweenSamePlayers()) {
 			return await replyToInteraction(interaction,
 				`You can't trade with yourself.`
 			);
 		}
-		else if (tradeResult instanceof MissingOfferedCharactersError) {
-			const { player, offeredCharacters } = tradeResult.relevantData;
-			const { missingCharacters } = getCharacterDifferences(offeredCharacters, player.inventory);
-
+		else if (tradeResult.isMissingOfferedCharacters()) {
+			const { missingCharacters } = tradeResult;
 			return await replyToInteraction(interaction,
 				`You are missing ${missingCharacters.length} characters you offered for this trade:\n` +
-				missingCharacters.join('')
+				missingCharacters
 			);
 		}
-		else if (tradeResult instanceof MissingRequestedCharactersError) {
-			const { player, requestedCharacters } = tradeResult.relevantData;
-			const { missingCharacters } = getCharacterDifferences(requestedCharacters, player.inventory);
+		else if (tradeResult.isMissingRequestedCharacters()) {
+			const { missingCharacters } = tradeResult;
 
 			return await replyToInteraction(interaction,
-				`<@${player.id}> is missing ${missingCharacters.length} characters you requested for this trade:\n` +
-				missingCharacters.join('')
+				`<@${recipientPlayerID}> is missing ${missingCharacters.length} characters you requested for this trade:\n` +
+				missingCharacters,
 			);
 		}
 

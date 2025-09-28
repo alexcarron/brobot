@@ -1,4 +1,4 @@
-const { User, AutocompleteInteraction, ChatInputCommandInteraction } = require("discord.js");
+const { User, AutocompleteInteraction, ChatInputCommandInteraction, TextChannel } = require("discord.js");
 const { saveObjectToJsonInGitHub, loadObjectFromJsonInGitHub } = require("../../utilities/persistent-storage-utils.js");
 const Viewer = require("./viewer.js");
 
@@ -207,7 +207,7 @@ class LLPointManager {
 		const viewer = await this.getViewerById(user_id);
 
 		if (!viewer) {
-			if (interaction.channel !== null)
+			if (interaction.channel instanceof TextChannel)
 				interaction.channel.send(`You have not been added to the LL Point database yet. You will be added as **${interaction.user.username}**`);
 
 			this.addViewerFromUser(interaction.user);

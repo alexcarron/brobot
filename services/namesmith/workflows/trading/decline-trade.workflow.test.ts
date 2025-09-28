@@ -6,11 +6,10 @@ import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { TradeService } from "../../services/trade.service";
 import { Player } from "../../types/player.types";
 import { Trade, TradeStatuses } from "../../types/trade.types";
-import { NonPlayerRespondedToTradeError, NonTradeRespondedToError, TradeAlreadyRespondedToError, TradeAwaitingDifferentPlayerError } from "../../utilities/error.utility";
 import { declineTrade } from "./decline-trade.workflow";
-import { returnIfNotError } from '../../../../utilities/error-utils';
 import { addMockTrade } from "../../mocks/mock-data/mock-trades";
 import { addMockPlayer } from "../../mocks/mock-data/mock-players";
+import { returnIfNotFailure } from "../workflow-result-creator";
 
 describe('decline-trade.workflow.ts', () => {
 	let MOCK_INITIATING_PLAYER: Player;
@@ -43,7 +42,7 @@ describe('decline-trade.workflow.ts', () => {
 
 	describe('declineTrade()', () => {
 		it('returns the trade, initating player, and recipient player in their current states', () => {
-			const { trade, playerDeclining, playerDeclined } = returnIfNotError(declineTrade({
+			const { trade, playerDeclining, playerDeclined } = returnIfNotFailure(declineTrade({
 				...getNamesmithServices(),
 				playerDeclining: MOCK_RECIPIENT_PLAYER,
 				trade: MOCK_TRADE,
@@ -58,7 +57,7 @@ describe('decline-trade.workflow.ts', () => {
 		});
 
 		it('declines the trade', () => {
-			const { trade } = returnIfNotError(declineTrade({
+			const { trade } = returnIfNotFailure(declineTrade({
 				...getNamesmithServices(),
 				playerDeclining: MOCK_RECIPIENT_PLAYER,
 				trade: MOCK_TRADE,
@@ -70,45 +69,53 @@ describe('decline-trade.workflow.ts', () => {
 		});
 
 		it('returns a NonPlayerRespondedToTradeError if the user declining the trade is not a player', () => {
+			const result = declineTrade({
+				...getNamesmithServices(),
+				playerDeclining: INVALID_PLAYER_ID,
+				trade: MOCK_TRADE,
+			});
+
 			makeSure(
-				declineTrade({
-					...getNamesmithServices(),
-					playerDeclining: INVALID_PLAYER_ID,
-					trade: MOCK_TRADE,
-				})
-			).isAnInstanceOf(NonPlayerRespondedToTradeError);
+				result.isNonPlayerRespondedToTrade()
+			).isTrue();
 		});
 
 		it('returns a NonTradeRespondedToError if the trade being declined does not exist', () => {
+			const result = declineTrade({
+				...getNamesmithServices(),
+				playerDeclining: MOCK_RECIPIENT_PLAYER,
+				trade: INVALID_TRADE_ID,
+			});
+
 			makeSure(
-				declineTrade({
-					...getNamesmithServices(),
-					playerDeclining: MOCK_RECIPIENT_PLAYER,
-					trade: INVALID_TRADE_ID,
-				})
-			).isAnInstanceOf(NonTradeRespondedToError);
+				result.isNonTradeRespondedTo()
+			).isTrue();
 		});
 
 		it('returns a TradeAlreadyRespondedToError if the trade was already ignored', () => {
 			tradeService.ignore(MOCK_TRADE);
 
+			const result = declineTrade({
+				...getNamesmithServices(),
+				playerDeclining: MOCK_INITIATING_PLAYER,
+				trade: MOCK_TRADE,
+			});
+
 			makeSure(
-				declineTrade({
-					...getNamesmithServices(),
-					playerDeclining: MOCK_INITIATING_PLAYER,
-					trade: MOCK_TRADE,
-				})
-			).isAnInstanceOf(TradeAlreadyRespondedToError);
+				result.isTradeAlreadyRespondedTo()
+			).isTrue();
 		});
 
 		it('returns a TradeAwaitingDifferentPlayerError if the player declining the trade is not the recipient while the trade is awaiting the recipient', () => {
+			const result = declineTrade({
+				...getNamesmithServices(),
+				playerDeclining: MOCK_INITIATING_PLAYER,
+				trade: MOCK_TRADE,
+			});
+
 			makeSure(
-				declineTrade({
-					...getNamesmithServices(),
-					playerDeclining: MOCK_INITIATING_PLAYER,
-					trade: MOCK_TRADE,
-				})
-			).isAnInstanceOf(TradeAwaitingDifferentPlayerError);
+				result.isTradeAwaitingDifferentPlayer()
+			).isTrue();
 		});
 	});
 });

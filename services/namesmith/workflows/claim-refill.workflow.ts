@@ -1,10 +1,23 @@
 
 import { PlayerResolvable } from '../types/player.types';
 import { PlayerService } from '../services/player.service';
-import { NonPlayerRefilledError, RefillAlreadyClaimedError } from '../utilities/error.utility';
 import { AVERAGE_TOKENS_FROM_REFILLING, MIN_TOKENS_FROM_REFILLING, REFILL_COOLDOWN_HOURS } from '../constants/namesmith.constants';
 import { getAnticipatedRandomNum } from '../../../utilities/random-utils';
 import { addHours } from '../../../utilities/date-time-utils';
+import { getWorkflowResultCreator, provides } from './workflow-result-creator';
+
+const result = getWorkflowResultCreator({
+	success: provides<{
+		tokensEarned: number,
+		newTokenCount: number,
+		nextRefillTime: Date
+	}>(),
+
+	nonPlayerRefilled: null,
+	refillAlreadyClaimed: provides<{
+		nextRefillTime: Date
+	}>(),
+});
 
 /**
  * gives tokens to a player for refilling.
@@ -22,15 +35,13 @@ export const claimRefill = (
 	}
 ) => {
 	if (!playerService.isPlayer(playerRefilling)) {
-		return new NonPlayerRefilledError(playerService.resolveID(playerRefilling));
+		return result.failure.nonPlayerRefilled();
 	}
 
 	const now = new Date();
 	if (!playerService.canRefill(playerRefilling)) {
-		return new RefillAlreadyClaimedError(
-			playerService.resolvePlayer(playerRefilling),
-			playerService.getNextAvailableRefillTime(playerRefilling)
-		);
+		const nextRefillTime = playerService.getNextAvailableRefillTime(playerRefilling);
+		return result.failure.refillAlreadyClaimed({ nextRefillTime });
 	}
 
 	const tokensEarned = Math.round(getAnticipatedRandomNum({
@@ -43,9 +54,9 @@ export const claimRefill = (
 	const newTokenCount = playerService.getTokens(playerRefilling);
 	const nextRefillTime = addHours(now, REFILL_COOLDOWN_HOURS);
 
-	return {
+	return result.success({
 		tokensEarned,
 		newTokenCount,
 		nextRefillTime,
-	};
+	});
 }

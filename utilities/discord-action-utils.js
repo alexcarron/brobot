@@ -850,7 +850,7 @@ async function deleteAllMessagesInChannel(channel) {
  * Sets the exclusive message in the given channel to the given message.
  * - Clears all other messages in the channel.
  * - Sends the given message.
- * @param {import('discord.js').TextBasedChannel} channel - The channel to set the message in.
+ * @param {import('discord.js').TextChannel} channel - The channel to set the message in.
  * @param {string | import('discord.js').MessageCreateOptions} message - The message to set.
  * @returns {Promise<import('discord.js').Message>} The message that was set.
  */

@@ -46,6 +46,16 @@ export class MysteryBoxService {
 		return mysteryBox.id;
 	}
 
+	isMysteryBox(mysteryBoxResolvable: MysteryBoxResolveable): boolean {
+		try {
+			this.resolveMysteryBox(mysteryBoxResolvable);
+			return true;
+		}
+		catch {
+			return false;
+		}
+	}
+
 	/**
 	 * Returns an array of all mystery box objects with their character odds.
 	 * @returns An array of mystery box objects with their character odds.

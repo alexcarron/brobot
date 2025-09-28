@@ -8,11 +8,10 @@ import { setupMockNamesmith } from "../mocks/mock-setup";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PlayerService } from "../services/player.service";
 import { RecipeService } from "../services/recipe.service";
-import { MissingRequiredCharactersError, RecipeNotUnlockedError } from "../utilities/error.utility";
 import { craftCharacter } from "./craft-character.workflow";
-import { returnIfNotError } from '../../../utilities/error-utils';
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { addMockRecipe } from "../mocks/mock-data/mock-recipes";
+import { returnIfNotFailure } from "./workflow-result-creator";
 
 describe('craft-character.workflow', () => {
 	let recipeService: RecipeService;
@@ -45,7 +44,7 @@ describe('craft-character.workflow', () => {
 				outputCharacters: 'c'
 			});
 
-			const {newInventory, craftedCharacter, recipeUsed, playerCrafting} = returnIfNotError(
+			const {newInventory, craftedCharacter, recipeUsed} = returnIfNotFailure(
 					await craftCharacter({
 					playerService, recipeService, player, recipe
 				})
@@ -54,10 +53,6 @@ describe('craft-character.workflow', () => {
 			makeSure(newInventory).is('accddc');
 			makeSure(craftedCharacter).is('c');
 			makeSure(recipeUsed).is(recipe);
-			makeSure(playerCrafting).is({
-				...playerCrafting,
-				inventory: 'accddc'
-			});
 		});
 
 		it('should craft a character using a given recipe and player.', async () => {
@@ -86,9 +81,11 @@ describe('craft-character.workflow', () => {
 				inputCharacters: 'def'
 			});
 
-			await makeSure(await craftCharacter({
+			const result = await craftCharacter({
 				playerService, recipeService, player, recipe
-			})).isAnInstanceOf(MissingRequiredCharactersError);
+			})
+
+			await makeSure(result.isMissingRequiredCharacters()).isTrue();
 		});
 
 		it('should throw RecipeNotUnlockedError if the recipe is not unlocked for the player.', async () => {
@@ -103,9 +100,11 @@ describe('craft-character.workflow', () => {
 				outputCharacters: 'c'
 			});
 
-			await makeSure(await craftCharacter({
+			const result = await craftCharacter({
 				playerService, recipeService, player, recipe
-			})).isAnInstanceOf(RecipeNotUnlockedError);
+			})
+
+			await makeSure(result.isRecipeNotUnlocked()).isTrue();
 		});
 	});
 });
