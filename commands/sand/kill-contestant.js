@@ -3,12 +3,12 @@ const { ids } = require("../../bot-config/discord-ids");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { deferInteraction, editReplyToInteraction, removePermissionFromChannel } = require("../../utilities/discord-action-utils");
 const { fetchCategoriesOfGuild, fetchTextChannelsInCategory, getRequiredUserParam } = require("../../utilities/discord-fetch-utils");
-const { Parameter, ParameterType } = require("../../services/command-creation/parameter");
+const { Parameter, ParameterTypes } = require("../../services/command-creation/parameter");
 
 
 const Parameters = {
 	Contestant: new Parameter({
-		type: ParameterType.USER,
+		type: ParameterTypes.USER,
 		name: "contestant-removing",
 		description: "A contestant to be removed from all alliances",
 		isRequired: true,

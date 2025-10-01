@@ -1,11 +1,97 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import { Parameter } from "./parameter";
+import { Parameter, ParamNameToType } from "./parameter";
+import { toCamelCase } from "../../utilities/string-manipulation-utils";
+
+/**
+ * Build a parameters object from the interaction and Parameter[] definition.
+ * Returns a value typed as ParamNameToType<Parameters> (asserted).
+ * @param interaction - The interaction that triggered the command
+ * @param parameters - The parameters to collect from the interaction.
+ * @returns A value typed as ParamNameToType<Parameters>.
+ */
+function collectParameters<Parameters extends readonly Parameter[]>(
+  interaction: ChatInputCommandInteraction,
+  parameters: Parameters,
+): any {
+  const out: Record<string, any> = {};
+
+  for (const param of parameters) {
+    const name = param.name;
+		const functionParameterName = toCamelCase(name);
+
+    switch (param.type) {
+      case 'string':
+        out[functionParameterName] = interaction.options.getString(name, param.isRequired);
+        break;
+
+      case 'integer':
+        out[functionParameterName] = interaction.options.getInteger(name, param.isRequired ?? false);
+        break;
+
+      case 'number':
+        out[functionParameterName] = interaction.options.getNumber(name, param.isRequired ?? false);
+        break;
+
+      case 'boolean':
+        out[functionParameterName] = interaction.options.getBoolean(name, param.isRequired ?? false);
+        break;
+
+      case 'user':
+        out[functionParameterName] = interaction.options.getUser(name, param.isRequired ?? false);
+        break;
+
+      case 'role':
+        out[functionParameterName] = interaction.options.getRole(name, param.isRequired ?? false);
+        break;
+
+      case 'channel':
+        out[functionParameterName] = interaction.options.getChannel(name, param.isRequired ?? false);
+        break;
+
+      case 'attachment':
+        out[functionParameterName] = interaction.options.getAttachment(name, param.isRequired ?? false);
+        break;
+
+      case 'mentionable':
+        // returns Role | User | GuildMember
+        out[functionParameterName] = interaction.options.getMentionable(name, param.isRequired ?? false);
+        break;
+
+      case 'subcommand':
+        // If this subcommand was executed, gather its subparameters
+        // getSubcommand(false) returns the subcommand name or throws if not present depending on version.
+        // We'll use try/catch to be safe.
+        try {
+          const sub = interaction.options.getSubcommand(false);
+          if (sub === name) {
+            // recursively collect parameters for the subcommand's options
+            out[functionParameterName] = collectParameters(interaction, param.subparameters as Parameter[]);
+          } else {
+            // if different subcommand was used, skip or leave undefined
+            // (you could also set out[name] = undefined explicitly)
+          }
+        } catch {
+          // no subcommand present at all
+        }
+        break;
+
+      default:
+        // fallback — read as string
+        out[functionParameterName] = interaction.options.getString(name, param.isRequired ?? false);
+        break;
+    }
+  }
+
+  return out;
+}
 
 /**
  * Represents a Discord command.
  * @class
  */
-export class SlashCommand {
+export class SlashCommand<
+	Parameters extends Parameter[] = Parameter[]
+>{
 	/**
 	 * The name of the command
 	 */
@@ -54,7 +140,7 @@ export class SlashCommand {
 	/**
 	 * Parameters that users can enter when running the command
 	 */
-	public readonly parameters: Parameter[];
+	public readonly parameters: Parameters;
 
 	/**
 	 * If the command is still in development.
@@ -84,7 +170,10 @@ export class SlashCommand {
 	/**
 	 * A function which takes a discord.js Interaction that executes when the command is run
 	 */
-	public readonly execute: (interaction: ChatInputCommandInteraction, isTestOrContext?: any, isTest?: any) => Promise<any>;
+	public readonly execute: (
+		interaction: ChatInputCommandInteraction,
+		parameters: ParamNameToType<Parameters>,
+	) => Promise<any>;
 
 	public data: any;
 
@@ -98,7 +187,7 @@ export class SlashCommand {
 		required_categories = [],
 		required_roles = [],
 		required_permissions = [],
-		parameters = [],
+		parameters = [] as unknown as Parameters,
 		execute,
 		autocomplete = async () => {},
 		isInDevelopment = false,
@@ -106,7 +195,10 @@ export class SlashCommand {
 	}: {
 		name: string;
 		description: string;
-		execute: (interaction: ChatInputCommandInteraction, isTestOrContext?: any, isTest?: any) => Promise<any>;
+		execute: (
+			interaction: ChatInputCommandInteraction,
+			parameters: ParamNameToType<Parameters>,
+		) => Promise<any>;
 		cooldown?: number;
 		allowsDMs?: boolean;
 		required_servers?: string[];
@@ -114,7 +206,7 @@ export class SlashCommand {
 		required_categories?: string[];
 		required_roles?: string[] | string[][];
 		required_permissions?: bigint[];
-		parameters?: Parameter[];
+		parameters?: Parameters;
 		autocomplete?: (interaction: AutocompleteInteraction) => Promise<any>;
 		isInDevelopment?: boolean;
 		isInUserTesting?: boolean;
@@ -140,7 +232,7 @@ export class SlashCommand {
 	 * parameters, required permissions, and DM permissions.
 	 * @returns The configured SlashCommand instance.
 	 */
-	getCommand(): SlashCommand {
+	getCommand(): this {
 		const data = new SlashCommandBuilder()
 			.setName(this.name)
 			.setDescription(this.description);
@@ -192,6 +284,11 @@ export class SlashCommand {
 		return this.parameters.find(parameter =>
 			parameter.name.toLowerCase() === name.toLowerCase()
 		);
+	}
+
+	async handleExecution(interaction: ChatInputCommandInteraction): Promise<any> {
+		const params = collectParameters(interaction, this.parameters);
+		await this.execute(interaction, params);
 	}
 }
 

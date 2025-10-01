@@ -1,7 +1,7 @@
 const cron = require("cron");
 const { SlashCommand } = require('../../../services/command-creation/slash-command');
 const { ids } = require("../../../bot-config/discord-ids")
-const { ButtonBuilder, ActionRowBuilder, ModalBuilder, ButtonStyle, TextInputBuilder, TextInputStyle, StringSelectMenuOptionBuilder, StringSelectMenuBuilder, TextChannel, DMChannel, } = require('discord.js');
+const { ButtonBuilder, ActionRowBuilder, ModalBuilder, ButtonStyle, TextInputBuilder, TextInputStyle, StringSelectMenuOptionBuilder, StringSelectMenuBuilder, TextChannel, DMChannel, MessageFlags, } = require('discord.js');
 const { toTitleCase } = require("../../../utilities/string-manipulation-utils");
 const { toUnixTimestamp } = require("../../../utilities/date-time-utils.js");
 const { confirmInteractionWithButtons } = require("../../../utilities/discord-action-utils.js");
@@ -15,7 +15,7 @@ module.exports = new SlashCommand({
 	description: "Host your own custom event on your own",
 	allowsDMs: true,
 	execute: async function(interaction) {
-		await interaction.deferReply({ ephemeral: true });
+		await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
 		await interaction.editReply("Loading...");
 
@@ -271,7 +271,7 @@ module.exports = new SlashCommand({
 
 					await date_time_confirmation_interaction.reply({
 						content: `# ⤵️ Week Day Selected\n>>> ${chosen_week_day}`,
-						ephemeral: true,
+						flags: MessageFlags.Ephemeral,
 					});
 				}
 
@@ -288,7 +288,7 @@ module.exports = new SlashCommand({
 
 					await date_time_confirmation_interaction.reply({
 						content: `# ⤵️ Time Selected\n>>> ${time_name}`,
-						ephemeral: true,
+						flags: MessageFlags.Ephemeral,
 					});
 				}
 			}
@@ -402,17 +402,16 @@ module.exports = new SlashCommand({
 						chosen_ping_names.push(ping_role_names[ping_role]);
 					}
 
-					const confimation_message = {
+					await ping_role_confirmation_interaction.reply({
 						content: `# ⤵️ Ping Roles Selected\n>>> - **${chosen_ping_names.join("**\n- **")}**`,
-						ephemeral: true,
-					};
-					await ping_role_confirmation_interaction.reply(confimation_message);
+						flags: MessageFlags.Ephemeral,
+					});
 				}
 				else if (ping_role_confirmation_interaction.customId === "ConfirmPingRoles") {
 					chosePingRoles = true;
 					await ping_role_confirmation_interaction.reply({
 						content: `# ✅ Ping Roles Selected`,
-						ephemeral: true,
+						flags: MessageFlags.Ephemeral,
 					});
 				}
 			}

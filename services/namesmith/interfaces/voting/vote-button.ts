@@ -1,4 +1,4 @@
-import { ButtonInteraction, ButtonStyle } from "discord.js";
+import { ButtonInteraction, ButtonStyle, MessageFlags } from "discord.js";
 import { DiscordButton } from "../../../../utilities/discord-interface-utils";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { fetchNamesToVoteOnChannel } from "../../utilities/discord-fetch.utility";
@@ -33,12 +33,16 @@ export const onVoteButtonPressed = async (
 			throw error;
 
 		await buttonInteraction.reply({
-			content: error.message, ephemeral: true
+			content: error.message,
+			flags: MessageFlags.Ephemeral
 		});
 		return;
 	}
 
-	await buttonInteraction.reply({ content: feedbackMessage, ephemeral: true });
+	await buttonInteraction.reply({
+		content: feedbackMessage,
+		flags: MessageFlags.Ephemeral
+	});
 }
 
 const getPromptText = (player: Player) => `_ _\n${player.publishedName}`;

@@ -1,6 +1,7 @@
 import { getCharacterDifferences } from "./data-structure-utils";
 import { InvalidArgumentError } from "./error-utils";
 import { getCharacterCounts } from "./string-checks-utils";
+import { ToCamelCase } from './types/casing-types';
 
 /**
  * Converts a given string to title case.
@@ -20,6 +21,48 @@ export const toTitleCase = (string: string): string => {
 			word.substr(1).toLowerCase()
 	);
 };
+
+export function toCamelCase<
+	SpecificString extends string
+>(kebabCaseString: SpecificString): ToCamelCase<SpecificString>;
+
+/**
+ * Convert a kebab-case string to camelCase at runtime.
+ *
+ * Behaviour matches the provided type:
+ *  - "" -> ""
+ *  - "-a--b-" -> "aB"
+ *  - "my-BOX-Name" -> "myBoxName"
+ * @param kebabCaseString kebab-case string
+ * @returns The given string in camelCase
+ */
+export function toCamelCase(kebabCaseString: string) {
+	// Fast path for empty input
+	if (kebabCaseString === '') return '';
+
+	// Split on '-' and ignore empty segments (handles leading/trailing/duplicate '-')
+	const parts = kebabCaseString.split('-').filter(Boolean);
+
+	if (parts.length === 0) return '';
+
+	// Lowercase the whole first segment
+	const head = parts[0].toLowerCase();
+
+	// For the rest: lowercase them fully, then capitalize the first character
+	const rest = parts
+		.slice(1)
+		.map(part => {
+			const lower = part.toLowerCase();
+			return lower.length === 0 ? '' : lower[0].toUpperCase() + lower.slice(1);
+		})
+		.join('');
+
+	const result = head + rest;
+
+	// Assert to match the type-level result when used with string literal generics
+	return result as any;
+}
+
 
 /**
  * Creates a text-based progress bar based on a current value and total value.

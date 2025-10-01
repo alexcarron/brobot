@@ -1,5 +1,5 @@
 const { ChannelType, PermissionFlagsBits, TextChannel } = require("discord.js");
-const { ParameterType, Parameter } = require("../../../services/command-creation/parameter");
+const { ParameterTypes, Parameter } = require("../../../services/command-creation/parameter");
 const { SlashCommand } = require("../../../services/command-creation/slash-command");
 const { deferInteraction, editReplyToInteraction } = require("../../../utilities/discord-action-utils");
 const { fetchChannelsInCategory, getGuildOfInteraction, getRequiredStringParam, fetchCategory, fetchChannelsOfGuild } = require("../../../utilities/discord-fetch-utils");
@@ -7,14 +7,14 @@ const { wait } = require("../../../utilities/realtime-utils");
 
 const Parameters = {
 	Category: new Parameter({
-		type: ParameterType.STRING,
+		type: ParameterTypes.STRING,
 		name: "category",
 		description: "The category with the channels to send the message in",
 		isAutocomplete: true,
 		isRequired: true,
 	}),
 	Message: new Parameter({
-		type: ParameterType.STRING,
+		type: ParameterTypes.STRING,
 		name: "message",
 		description: "The message to send",
 		isRequired: true,

@@ -47,10 +47,13 @@ module.exports = new SlashCommand({
 		Parameters.ForPlayer,
 		Parameters.ForTrialOutcome,
 	],
-	execute: async function execute(interaction, isTest=false) {
+	execute: async function execute(interaction) {
 		await deferInteraction(interaction);
 
 		let voter_player;
+
+		let isTest = false;
+		if ('isTest' in interaction) isTest = true;
 
 		if (isTest) {
 			voter_player = global.game_manager.player_manager.getPlayerFromName(getRequiredStringParam(interaction, "player-voting"));

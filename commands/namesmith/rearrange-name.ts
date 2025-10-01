@@ -3,6 +3,7 @@ import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getInputFromCreatedTextModal, addButtonToMessageContents, doWhenButtonPressed } from "../../utilities/discord-action-utils";
 import { getCharacterDifferences } from "../../utilities/data-structure-utils";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
+import { MessageFlags } from "discord.js";
 
 export const command = new SlashCommand({
 	name: "rearrange-name",
@@ -47,13 +48,11 @@ export const command = new SlashCommand({
 				message +
 				"\n\nClick the button to try to rearrange the characters in your name again";
 
-				const contents = {
-					content: initialMessageText,
-					ephemeral: true
-				}
-
 				const messageContents = addButtonToMessageContents({
-					contents,
+					contents: {
+						content: initialMessageText,
+						flags: MessageFlags.Ephemeral,
+					},
 					buttonID: "rearrange-name",
 					buttonLabel: "Rearrange Name",
 				})
@@ -69,6 +68,6 @@ export const command = new SlashCommand({
 			});
 		}
 
-		await playerService.changeCurrentName(playerID, newName);
+		playerService.changeCurrentName(playerID, newName);
 	}
 });

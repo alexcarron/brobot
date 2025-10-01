@@ -1,15 +1,14 @@
 import { ids } from "../../bot-config/discord-ids";
-import { Parameter, ParameterType } from "../../services/command-creation/parameter";
+import { Parameter, ParameterTypes } from "../../services/command-creation/parameter";
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { buyMysteryBox } from "../../services/namesmith/workflows/buy-mystery-box.workflow";
 import { deferInteraction, replyToInteraction } from "../../utilities/discord-action-utils";
-import { getRequiredStringParam } from "../../utilities/discord-fetch-utils";
 import { addSIfPlural, toAmountOfNoun } from "../../utilities/string-manipulation-utils";
 
 const Parameters = Object.freeze({
 	MYSTERY_BOX: new Parameter({
-		type: ParameterType.STRING,
+		type: ParameterTypes.STRING,
 		name: "mystery-box",
 		description: "The mystery box to buy",
 		isAutocomplete: true,
@@ -24,10 +23,8 @@ export const command = new SlashCommand({
 	],
 	required_servers: [ids.servers.NAMESMITH],
 	required_channels: [ids.namesmith.channels.OPEN_MYSTERY_BOXES],
-	execute: async function execute(interaction) {
+	execute: async function execute(interaction, {mysteryBox: mysteryBoxID}) {
 		await deferInteraction(interaction);
-
-		const mysteryBoxID = getRequiredStringParam(interaction, Parameters.MYSTERY_BOX.name);
 
 		const result = await buyMysteryBox({
 			...getNamesmithServices(),

@@ -22,10 +22,10 @@ module.exports = new SlashCommand({
 			description: "A comma-seperated list of the role identifiers that will be in this game's role list",
 		})
 	],
-	execute: async function execute(interaction, role_identifiers_str) {
+	execute: async function execute(interaction) {
 		await deferInteraction(interaction);
 
-		role_identifiers_str = getRequiredStringParam(interaction, "role-identifiers");
+		const role_identifiers_str = getRequiredStringParam(interaction, "role-identifiers");
 		/**
 		 * @type {string[]}
 		 */

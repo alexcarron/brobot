@@ -1,4 +1,4 @@
-const { ChannelType, Collection, ChatInputCommandInteraction, InteractionResponse, TextChannel } = require("discord.js");
+const { ChannelType, Collection, ChatInputCommandInteraction, InteractionResponse, TextChannel, MessageFlags } = require("discord.js");
 const { ids } = require("../bot-config/discord-ids");
 const { logError, logInfo } = require("../utilities/logging-utils");
 const { replyToInteraction } = require("../utilities/discord-action-utils");
@@ -26,7 +26,7 @@ const onSlashCommandExecuted = async (interaction) => {
 	if (global.botStatus.isSleep && !isUserLL) {
 		interaction.reply({
 			content: "Someone turned me off, so you can't use me right now.",
-			ephemeral: true
+			flags: MessageFlags.Ephemeral
 		});
 		return;
 	}
@@ -41,14 +41,14 @@ const onSlashCommandExecuted = async (interaction) => {
 	)
 		return interaction.reply({
 			content: `You aren't allowed to use this command in DMs.`,
-			ephemeral: true
+			flags: MessageFlags.Ephemeral
 		});
 
 	// Is the command in development
 	if (command.isInDevelopment && !isUserADeveloper) {
 		return interaction.reply({
 			content: `You aren't allowed to use this command since it's in development and you aren't a developer.`,
-			ephemeral: true
+			flags: MessageFlags.Ephemeral
 		});
 	}
 
@@ -64,7 +64,7 @@ const onSlashCommandExecuted = async (interaction) => {
 		)
 			return interaction.reply({
 				content: `You aren't allowed to use this command here.`,
-				ephemeral: true
+				flags: MessageFlags.Ephemeral
 			});
 
 		const userPermissions = interaction.channel.permissionsFor(interaction.user);
@@ -75,7 +75,7 @@ const onSlashCommandExecuted = async (interaction) => {
 		) {
 			return interaction.reply({
 				content: `You don't have the permissions required to use this command.`,
-				ephemeral: true
+				flags: MessageFlags.Ephemeral
 			});
 		}
 	}
@@ -92,7 +92,7 @@ const onSlashCommandExecuted = async (interaction) => {
 	)
 		return interaction.reply({
 			content: `You aren't allowed to use this command in this server.`,
-			ephemeral: true
+			flags: MessageFlags.Ephemeral
 		});
 
 	// Is the command being executed in the required channel?
@@ -107,7 +107,7 @@ const onSlashCommandExecuted = async (interaction) => {
 	) {
 		return interaction.reply({
 			content: `You aren't allowed to use this command in this channel.`,
-			ephemeral: true
+			flags: MessageFlags.Ephemeral
 		});
 	}
 
@@ -125,7 +125,7 @@ const onSlashCommandExecuted = async (interaction) => {
 	)
 		return interaction.reply({
 			content: `You aren't allowed to use this command in this channel category.`,
-			ephemeral: true
+			flags: MessageFlags.Ephemeral
 		});
 
 	// Does the user have the required role(s) to execute the command?
@@ -140,7 +140,7 @@ const onSlashCommandExecuted = async (interaction) => {
 		) {
 			return interaction.reply({
 				content: `You don't have the roles required to use this command.`,
-				ephemeral: true
+				flags: MessageFlags.Ephemeral
 			});
 		}
 
@@ -148,24 +148,30 @@ const onSlashCommandExecuted = async (interaction) => {
 		const userRoleIDs = interaction.member.roles.cache.map(role => role.id);
 
 		if (
-			!command.required_roles.every( role => {
-				if (Array.isArray(role)) {
-					return role.some(role =>
-						userRoleNames.includes(role) ||
-						userRoleIDs.includes(role)
-					);
+			!command.required_roles.every(
+				/**
+				 * @param {string | string[]} role - The role or roles to check.
+				 * @returns {boolean} True if the user has the role or roles, false otherwise.
+				 */
+				role => {
+					if (Array.isArray(role)) {
+						return role.some(role =>
+							userRoleNames.includes(role) ||
+							userRoleIDs.includes(role)
+						);
+					}
+					else {
+						return (
+							userRoleNames.includes(role) ||
+							userRoleIDs.includes(role)
+						);
+					}
 				}
-				else {
-					return (
-						userRoleNames.includes(role) ||
-						userRoleIDs.includes(role)
-					);
-				}
-			})
+			)
 		) {
 			return interaction.reply({
 				content: `You don't have the roles required to use this command.`,
-				ephemeral: true
+				flags: MessageFlags.Ephemeral
 			});
 		}
 	}
@@ -191,7 +197,7 @@ const onSlashCommandExecuted = async (interaction) => {
 
 			return interaction.reply({
 				content: `Please wait, you are on a cooldown for \`/${command.data.name}\`. You can use it again <t:${expired_timestamp}:R>.`,
-				ephemeral: true
+				flags: MessageFlags.Ephemeral
 			});
 		}
 	}
@@ -202,7 +208,7 @@ const onSlashCommandExecuted = async (interaction) => {
 
 	// Execute the command
 	try {
-		await command.execute(interaction);
+		await command.handleExecution(interaction);
 	}
 	catch (error) {
 		if (error instanceof Error === false)
@@ -213,7 +219,7 @@ const onSlashCommandExecuted = async (interaction) => {
 		if (interaction.replied || interaction.deferred) {
 			await interaction.followUp({
 				content: 'There was an error while executing this command!',
-				ephemeral: true
+				flags: MessageFlags.Ephemeral
 			});
 		}
 		else {

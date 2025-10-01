@@ -1,5 +1,6 @@
 const { Parameter } = require('../../../services/command-creation/parameter');
 const { SlashCommand } = require('../../../services/command-creation/slash-command');
+const { deferInteraction } = require('../../../utilities/discord-action-utils');
 const {  getVoiceChannelOfInteraction, getRequiredUserParam } = require('../../../utilities/discord-fetch-utils');
 
 const Parameters = {
@@ -18,9 +19,7 @@ module.exports = new SlashCommand({
 		Parameters.UnmutedMember
 	],
 	execute: async function (interaction) {
-		await interaction.deferReply({
-			ephemeral: true
-		});
+		await deferInteraction(interaction);
 
 		const unmutedMember = getRequiredUserParam(interaction, Parameters.UnmutedMember.name);
 

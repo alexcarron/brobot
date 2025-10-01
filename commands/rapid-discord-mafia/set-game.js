@@ -3,6 +3,7 @@ const { ids } = require(`../../bot-config/discord-ids`);
 const { Parameter } = require('../../services/command-creation/parameter');
 const { PermissionFlagsBits } = require('discord.js');
 const { getRequiredStringParam } = require('../../utilities/discord-fetch-utils');
+const { deferInteraction } = require('../../utilities/discord-action-utils');
 
 const Parameters = {
 	Property: new Parameter({
@@ -27,7 +28,7 @@ module.exports = new SlashCommand({
 		Parameters.Value,
 	],
 	execute: async function execute(interaction) {
-		await interaction.deferReply({ephemeral: true});
+		await deferInteraction(interaction);
 
 		const property = getRequiredStringParam(interaction, Parameters.Property.name);
 		const value = getRequiredStringParam(interaction, Parameters.Value.name);

@@ -1,5 +1,6 @@
 const { Parameter } = require('../../../services/command-creation/parameter');
 const { SlashCommand } = require('../../../services/command-creation/slash-command');
+const { deferInteraction } = require('../../../utilities/discord-action-utils');
 const { getVoiceChannelOfInteraction } = require('../../../utilities/discord-fetch-utils');
 
 const Parameters = {
@@ -18,9 +19,7 @@ module.exports = new SlashCommand({
 		Parameters.Unmute
 	],
 	execute: async function (interaction) {
-		await interaction.deferReply({
-			ephemeral: true
-		});
+		await deferInteraction(interaction);
 
 		const isUnmuting = interaction.options.getBoolean(Parameters.Unmute.name);
 

@@ -5,6 +5,7 @@ const { Parameter } = require('../../services/command-creation/parameter');
 const { GameState } = require("../../services/rapid-discord-mafia/game-state-manager.js");
 const { RDMDiscordRole } = require("../../services/rapid-discord-mafia/discord-service.js");
 const { getRequiredStringParam } = require("../../utilities/discord-fetch-utils.js");
+const { deferInteraction } = require("../../utilities/discord-action-utils");
 
 module.exports = new SlashCommand({
 	name: "rename",
@@ -19,7 +20,7 @@ module.exports = new SlashCommand({
 		}),
 	],
 	execute: async function execute(interaction) {
-		await interaction.deferReply({ephemeral: true});
+		await deferInteraction(interaction);
 
 		let player_id = interaction.user.id;
 		let old_player = global.game_manager.player_manager.getPlayerFromId(player_id);

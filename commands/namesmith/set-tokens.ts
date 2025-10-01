@@ -1,19 +1,18 @@
 import { ids } from "../../bot-config/discord-ids";
-import { Parameter, ParameterType } from "../../services/command-creation/parameter";
+import { Parameter, ParameterTypes } from "../../services/command-creation/parameter";
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { getPlayerFromCommandParameter } from "../../services/namesmith/utilities/discord-action.utility";
 import { deferInteraction, replyToInteraction } from "../../utilities/discord-action-utils";
-import { getRequiredNumberParam } from "../../utilities/discord-fetch-utils";
 
 const Parameters = Object.freeze({
 	TOKENS: new Parameter({
-		type: ParameterType.NUMBER,
+		type: ParameterTypes.NUMBER,
 		name: "tokens",
 		description: "The amount of tokens to set the player's token count to",
 	}),
 	PLAYER: new Parameter({
-		type: ParameterType.STRING,
+		type: ParameterTypes.STRING,
 		name: "player",
 		description: "The player to set the tokens of",
 		isRequired: false,
@@ -29,12 +28,11 @@ export const command = new SlashCommand({
 	],
 	required_servers: [ids.servers.NAMESMITH],
 	isInDevelopment: true,
-	execute: async (interaction) => {
+	execute: async (interaction, {tokens}) => {
 		await deferInteraction(interaction);
 
 		const { playerService } = getNamesmithServices();
 
-		const tokens = getRequiredNumberParam(interaction, Parameters.TOKENS);
 		const playerOrErrorMessage = await getPlayerFromCommandParameter({
 			interaction,
 			parameter: Parameters.PLAYER,

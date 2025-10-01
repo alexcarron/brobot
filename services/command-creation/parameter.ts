@@ -1,7 +1,9 @@
-import { ApplicationCommandOptionBase } from 'discord.js';
+import { ApplicationCommandOptionBase, Attachment, GuildMember, SlashCommandBuilder, SlashCommandSubcommandBuilder, SlashCommandSubcommandGroupBuilder, TextChannel, User } from 'discord.js';
 import { toTitleCase } from '../../utilities/string-manipulation-utils';
+import { Role } from '../rapid-discord-mafia/role';
+import { ToCamelCase } from '../../utilities/types/casing-types';
 
-export const ParameterType = Object.freeze({
+export const ParameterTypes = Object.freeze({
 	SUBCOMMAND: "subcommand",
 	STRING: "string",
 	CHANNEL: "channel",
@@ -14,11 +16,62 @@ export const ParameterType = Object.freeze({
 	USER: "user"
 })
 
+export type ParameterType = typeof ParameterTypes[keyof typeof ParameterTypes];
+
+type TypeOfParam<
+	TypeString extends string,
+	SubCommand extends Parameter[] = []
+> =
+	TypeString extends 'subcommand'
+		? ParamNameToType<SubCommand>
+	: TypeString extends 'string'
+		? string
+	: TypeString extends 'channel'
+		? TextChannel
+	: TypeString extends 'attachment'
+		? Attachment
+	: TypeString extends 'boolean'
+		? boolean
+	: TypeString extends 'mentionable'
+		? NonNullable<GuildMember | Role | User>
+	: TypeString extends 'number'
+		? number
+	: TypeString extends 'integer'
+		? number
+	: TypeString extends 'role'
+		? Role
+	: TypeString extends 'user'
+		? User
+	: any;
+
+export type ParamNameToType<Parameters extends readonly Parameter[]> = {
+  [
+		Param in Parameters[number] as
+			Param extends Parameter<any, any, infer Name>
+				? ToCamelCase<Name>
+				: never
+	]:
+    Param extends Parameter<infer Type, infer Subcommands, string>
+      ? TypeOfParam<Type, Subcommands>
+      : never;
+};
+
+// type ParameterOptions<
+// 	Type extends ParameterType,
+// > =
+//   Type extends 'string'
+
+
 /**
  * Represents a Discord command parameter.
  * @class
  */
-export class Parameter {
+export class Parameter<
+	Type extends ParameterType = ParameterType,
+	Subparameters extends Parameter[] =
+		Parameter<ParameterType, any, string>[],
+	Name extends string = string,
+> {
 	type;
 
 	name;
@@ -37,21 +90,19 @@ export class Parameter {
 
 	subparameters;
 
-	subcommands;
-
 	/**
 	 * Creates a new Parameter.
-	 * @param {object} options - The options to create the Parameter with
-	 * @param {"subcommand" | "string" | "channel" | "attachment" | "boolean" | "mentionable" | "number" | "integer" | "role" | "user"} options.type - The type of the parameter
-	 * @param {string} options.name - The name of the parameter
-	 * @param {string} options.description - The description of the parameter
-	 * @param {boolean} options.isRequired - Whether the parameter is required
-	 * @param {boolean} options.isAutocomplete - Whether the parameter is autocomplete
-	 * @param {{[autocomplete_entry: string]: string}} options.autocomplete - The autocomplete options
-	 * @param {number} options.min_value - The minimum value
-	 * @param {number} options.max_value - The maximum value
-	 * @param {Parameter[]} options.subparameters - The subparameters
-	 * @param {Parameter[]} options.subcommands - The subcommands
+	 * @param options - The options to create the Parameter with
+	 * @param options.type - The type of the parameter
+	 * @param options.name - The name of the parameter
+	 * @param options.description - The description of the parameter
+	 * @param options.isRequired - Whether the parameter is required
+	 * @param options.isAutocomplete - Whether the parameter is autocomplete
+	 * @param options.autocomplete - The autocomplete options
+	 * @param options.min_value - The minimum value
+	 * @param options.max_value - The maximum value
+	 * @param options.subparameters - The subparameters
+	 * @param options.subcommands - The subcommands
 	 */
 	constructor({
 		type,
@@ -62,19 +113,17 @@ export class Parameter {
 		min_value = undefined,
 		max_value = undefined,
 		autocomplete = undefined,
-		subparameters = [],
-		subcommands = [],
+		subparameters = [] as unknown as Subparameters,
 	}: {
-		type: "subcommand" | "string" | "channel" | "attachment" | "boolean" | "mentionable" | "number" | "integer" | "role" | "user";
-		name: string;
+		type: Type;
+		name: Name;
 		description: string;
 		isRequired?: boolean;
 		isAutocomplete?: boolean;
 		min_value?: number;
 		max_value?: number;
 		autocomplete?: {[autocomplete_entry: string]: string};
-		subparameters?: Parameter[];
-		subcommands?: Parameter[];
+		subparameters?: Subparameters;
 	}) {
 		this.type = type;
 		this.name = name;
@@ -85,7 +134,6 @@ export class Parameter {
 		this.max_value = max_value;
 		this.autocomplete = autocomplete;
 		this.subparameters = subparameters;
-		this.subcommands = subcommands;
 	}
 
 	/**
@@ -93,17 +141,26 @@ export class Parameter {
 	 * @param command The command data or subcommand you want the paramter added to.
 	 * @returns The command or subcommand with the added parameter
 	 */
-	addToCommand(command: Record<string, any>) {
+	addToCommand<CommandBuilder extends SlashCommandBuilder | SlashCommandSubcommandGroupBuilder | SlashCommandSubcommandBuilder>(command: CommandBuilder) {
 		const type = toTitleCase(this.type);
 
-		if (type === "Subcommand") {
+		if (
+			type === "Subcommand" &&
+			command instanceof SlashCommandBuilder &&
+			command instanceof SlashCommandSubcommandGroupBuilder
+		) {
 			// @ TODO: run it and Fix this subcommand instance of problem
 			this.addSubcommandToCommand(command);
-		} else if (type === "Subcommandgroup") {
+		}
+		else if (
+			type === "Subcommandgroup" &&
+			command instanceof SlashCommandBuilder
+		) {
 			// @ TODO: run it and Fix this subcommand instance of problem
 			this.addSubcommandGroupToCommand(command);
 		}
 		else {
+			// @ts-ignore
 			command[`add${type}Option`]((option: ApplicationCommandOptionBase) => {
 				option
 					.setName(this.name)
@@ -170,29 +227,30 @@ export class Parameter {
 	 * @param command The command to add the subcommand to.
 	 * @returns The command with the added subcommand.
 	 */
-	addSubcommandToCommand(command: Record<string, any>) {
-		command.addSubcommand( (subcommand: Record<string, any>) => {
-			subcommand
-				.setName(this.name)
-				.setDescription(this.description);
+	addSubcommandToCommand(command: SlashCommandBuilder  | SlashCommandSubcommandGroupBuilder) {
+		command.addSubcommand(
+			(subcommand: SlashCommandSubcommandBuilder) => {
+				subcommand
+					.setName(this.name)
+					.setDescription(this.description);
 
-			this.subparameters.forEach(subparameter => {
-				subcommand = subparameter.addToCommand(subcommand);
-			});
+				this.subparameters.forEach(subparameter => {
+					subcommand = subparameter.addToCommand(subcommand);
+				});
 
-			return subcommand;
-		})
+				return subcommand;
+			})
 
 		return command;
 	}
-	addSubcommandGroupToCommand(command: Record<string, any>) {
-		command.addSubcommandGroup( (subcommand_group: Record<string, any>) => {
+	addSubcommandGroupToCommand(command: SlashCommandBuilder) {
+		command.addSubcommandGroup( (subcommand_group: SlashCommandSubcommandGroupBuilder) => {
 			subcommand_group
 				.setName(this.name)
 				.setDescription(this.description);
 
-			this.subcommands.forEach(subcommand => {
-				subcommand_group = subcommand.addToCommand(subcommand_group);
+			this.subparameters.forEach(subparameter => {
+				subcommand_group = subparameter.addToCommand(subcommand_group);
 			});
 
 			return subcommand_group;

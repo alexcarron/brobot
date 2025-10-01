@@ -426,21 +426,28 @@ describe('PlayerService', () => {
 	});
 
 	describe(".publishName()", () => {
-		it("should publish the player's current name", async () => {
-			await playerService.publishName(mockPlayers[2].id);
+		const announceNamePublishEvent = jest.spyOn(NamesmithEvents.NamePublish, "announce");
+
+		it("should publish the player's current name", () => {
+			playerService.publishName(mockPlayers[2].id);
 
 			const publishedName = playerService.getPublishedName(mockPlayers[2].id);
 			expect(publishedName).toEqual(mockPlayers[2].currentName);
-			expect(sendToPublishedNamesChannel).toHaveBeenCalled();
+			expect(announceNamePublishEvent).toHaveBeenCalledWith({
+				player: {
+					...mockPlayers[2],
+					publishedName: mockPlayers[2].currentName
+				}
+			});
 		});
 
-		it("should throw an error if the player is not found", async () => {
-			await expect(playerService.publishName(INVALID_PLAYER_ID)).rejects.toThrow();
+		it("should throw an error if the player is not found", () => {
+			expect(() => playerService.publishName(INVALID_PLAYER_ID)).toThrow();
 		});
 
-		it("should not publish name if it is an empty string", async () => {
-			await playerService.changeCurrentName(mockPlayers[1].id, "");
-			await playerService.publishName(mockPlayers[1].id);
+		it("should not publish name if it is an empty string", () => {
+			playerService.changeCurrentName(mockPlayers[1].id, "");
+			playerService.publishName(mockPlayers[1].id);
 
 			const publishedName = playerService.getPublishedName(mockPlayers[1].id);
 			expect(publishedName).toEqual(mockPlayers[1].publishedName);

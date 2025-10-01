@@ -3,6 +3,7 @@ const { Parameter } = require('../../services/command-creation/parameter');
 const { createNowUnixTimestamp } = require('../../utilities/date-time-utils.js');
 const Timer = require('../../services/timers/timer.js');
 const { getRequiredStringParam, getIntegerParamValue, getTextChannelOfInteraction } = require('../../utilities/discord-fetch-utils');
+const { deferInteraction } = require('../../utilities/discord-action-utils');
 
 const Parameters = {
 	ReasonForTimer: new Parameter({
@@ -56,7 +57,7 @@ module.exports = new SlashCommand({
 		Parameters.Seconds,
 	],
 	execute: async function(interaction) {
-		await interaction.deferReply({ ephemeral: true });
+		await deferInteraction(interaction);
 		await interaction.editReply("Loading...");
 
 		const reason_for_timer = getRequiredStringParam(interaction, Parameters.ReasonForTimer.name);

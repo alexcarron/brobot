@@ -1,13 +1,13 @@
 const { ChannelType } = require("discord.js");
 const { ids } = require("../../bot-config/discord-ids");
-const { ParameterType, Parameter } = require("../../services/command-creation/parameter");
+const { ParameterTypes, Parameter } = require("../../services/command-creation/parameter");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { deferInteraction, editReplyToInteraction, renameChannel } = require("../../utilities/discord-action-utils");
 const { getRequiredStringParam } = require("../../utilities/discord-fetch-utils");
 
 const Parameters = {
 	Name: new Parameter({
-		type: ParameterType.STRING,
+		type: ParameterTypes.STRING,
 		name: "name",
 		description: "The new name of the alliance",
 		isRequired: true,

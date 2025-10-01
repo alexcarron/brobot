@@ -1,9 +1,15 @@
+import { Player } from "../types/player.types";
+
 export const NamesmithEvents = {
   NameChange: createEventHandler<{
     playerID: string;
     oldName: string;
     newName: string;
   }>(),
+
+	NamePublish: createEventHandler<{
+		player: Player;
+	}>(),
 };
 
 export type RelevantDataOf<

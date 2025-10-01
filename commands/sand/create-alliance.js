@@ -1,5 +1,5 @@
 const { ids } = require("../../bot-config/discord-ids");
-const { ParameterType, Parameter } = require("../../services/command-creation/parameter");
+const { ParameterTypes, Parameter } = require("../../services/command-creation/parameter");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { deferInteraction, createChannel, editReplyToInteraction, createEveryoneDenyViewPermission, addPermissionToChannel, memberHasRole } = require("../../utilities/discord-action-utils");
 const { fetchGuild, getUserParamValue, fetchGuildMember, fetchTextChannel, getRequiredStringParam } = require("../../utilities/discord-fetch-utils");
@@ -8,31 +8,31 @@ const { PermissionNames } = require("../../utilities/constants/discord-permissio
 
 const Parameters = {
 	Name: new Parameter({
-		type: ParameterType.STRING,
+		type: ParameterTypes.STRING,
 		name: "name",
 		description: "The name of the alliance",
 		isRequired: true,
 	}),
 	Contestant1: new Parameter({
-		type: ParameterType.USER,
+		type: ParameterTypes.USER,
 		name: "contestant-1",
 		description: "A contestant to be included in the alliance",
 		isRequired: false,
 	}),
 	Contestant2: new Parameter({
-		type: ParameterType.USER,
+		type: ParameterTypes.USER,
 		name: "contestant-2",
 		description: "A contestant to be included in the alliance",
 		isRequired: false,
 	}),
 	Contestant3: new Parameter({
-		type: ParameterType.USER,
+		type: ParameterTypes.USER,
 		name: "contestant-3",
 		description: "A contestant to be included in the alliance",
 		isRequired: false,
 	}),
 	Contestant4: new Parameter({
-		type: ParameterType.USER,
+		type: ParameterTypes.USER,
 		name: "contestant-4",
 		description: "A contestant to be included in the alliance",
 		isRequired: false,
@@ -59,7 +59,7 @@ module.exports = new SlashCommand({
 		let contestantIDs = [commandUser.id];
 		const allianceName = getRequiredStringParam(interaction, Parameters.Name.name);
 
-		const userParameters = Object.values(Parameters).filter(parameter => parameter.type === ParameterType.USER);
+		const userParameters = Object.values(Parameters).filter(parameter => parameter.type === ParameterTypes.USER);
 		for (const parameter of userParameters) {
 			const contestant = getUserParamValue(interaction, parameter.name);
 			if (!contestant) {

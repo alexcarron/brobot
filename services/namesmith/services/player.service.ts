@@ -1,4 +1,4 @@
-import { sendToPublishedNamesChannel, isNonPlayer, resetMemberToNewPlayer } from "../utilities/discord-action.utility";
+import { isNonPlayer, resetMemberToNewPlayer } from "../utilities/discord-action.utility";
 import { PlayerRepository } from "../repositories/player.repository";
 import { logWarning } from "../../../utilities/logging-utils";
 import { fetchNamesmithGuildMember, fetchNamesmithGuildMembers } from "../utilities/discord-fetch.utility";
@@ -408,9 +408,8 @@ export class PlayerService {
 	 * Publishes a player's current name to the 'Names to Vote On' channel.
 	 * If the player has no current name, logs a warning and does nothing.
 	 * @param playerResolvable - The player resolvable whose name is being published.
-	 * @returns A promise that resolves once the name has been published.
 	 */
-	async publishName(playerResolvable: PlayerResolvable): Promise<void> {
+	publishName(playerResolvable: PlayerResolvable): void {
 		const playerID = this.resolveID(playerResolvable);
 		const currentName = this.getCurrentName(playerResolvable);
 
@@ -424,10 +423,10 @@ export class PlayerService {
 		}
 
 		this.playerRepository.publishName(playerID, currentName);
-		await sendToPublishedNamesChannel(
-			`<@${playerID}> has published their name:\n` +
-			`\`${currentName}\``
-		);
+
+		NamesmithEvents.NamePublish.announce({
+			player: this.resolvePlayer(playerID)
+		});
 	}
 
 	/**

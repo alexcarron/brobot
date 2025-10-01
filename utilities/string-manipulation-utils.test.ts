@@ -14,6 +14,7 @@ import {
 	removeMissingCharacters,
 	addSIfPlural,
 	toAmountOfNoun,
+	toCamelCase,
 } from "./string-manipulation-utils";
 import { createNowUnixTimestamp } from "./date-time-utils";
 import { makeSure } from "./jest/jest-utils";
@@ -52,6 +53,36 @@ describe('string-manipulation-utils', () => {
 			expect(toTitleCase('   hello world   ')).toBe('   Hello World   ');
 		});
 	});
+
+	describe('toCamelCase()', () => {
+		it('should return an empty string for an empty input', () => {
+			expect(toCamelCase('')).toBe('');
+		});
+
+		it('should convert a single word to camel case', () => {
+			expect(toCamelCase('hello')).toBe('hello');
+		});
+
+		it('should convert multiple words to camel case', () => {
+			expect(toCamelCase('hello-world')).toBe('helloWorld');
+		});
+
+		it('should handle words with punctuation', () => {
+			expect(toCamelCase('hello, world!')).toBe('hello, world!');
+		});
+
+		it('should handle words with numbers', () => {
+			expect(toCamelCase('hello123-world-56-numbers')).toBe('hello123World56Numbers');
+		});
+
+		it('should handle leading and trailing dashes', () => {
+			expect(toCamelCase('-hello-world-')).toBe('helloWorld');
+		});
+
+		it('should handle duplicate dashes', () => {
+			expect(toCamelCase('--hello--world--')).toBe('helloWorld');
+		});
+	})
 
 	describe('createTextProgressBar', () => {
 		it('should return an empty progress bar for 0% completion', () => {

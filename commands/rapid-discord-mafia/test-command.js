@@ -107,7 +107,7 @@ module.exports = new SlashCommand({
 			type: "subcommand",
 			name: "vote",
 			description: "Test the /vote command",
-			subcommands : [
+			subparameters: [
 				Parameters.ForPlayer,
 				Parameters.ForTrialOutcome,
 			]
@@ -158,7 +158,14 @@ module.exports = new SlashCommand({
 			// await delete_chnls_command.execute(interaction, ["1031365761320624132"], true);
 
 			for (let player_name of player_names) {
-				join_command.execute(interaction, [ids.users.LL, player_name, true], true);
+				// @ts-ignore
+				interaction.args = [ids.users.LL, player_name, true];
+				// @ts-ignore
+				interaction.isTest = true;
+
+				join_command.execute(interaction, {
+					name: player_name
+				});
 			}
 
 			interaction.editReply("Did fake joins!");
@@ -181,6 +188,7 @@ module.exports = new SlashCommand({
 	autocomplete: async function(interaction) {
 		const focused_param = await interaction.options.getFocused(true);
 
+		// @ts-ignore
 		if ([Subparameters.PlayerVotingFor.name, Subparameters.PlayerVoting.name].includes(focused_param.name)) {
 			return await GameManager.getAlivePlayersAutocomplete(interaction)
 		}

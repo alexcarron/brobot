@@ -1,5 +1,5 @@
 import { ChannelType, PermissionFlagsBits } from "discord.js";
-import { Parameter, ParameterType } from "../../../services/command-creation/parameter";
+import { Parameter, ParameterTypes } from "../../../services/command-creation/parameter";
 import { SlashCommand } from "../../../services/command-creation/slash-command";
 import { deferInteraction, moveChannelToCategory, replyToInteraction } from "../../../utilities/discord-action-utils";
 import { fetchCategory, fetchChannelsOfGuild, fetchGuildChannel, getBooleanParamValue, getGuildOfInteraction, getRequiredStringParam, getStringParamValue } from "../../../utilities/discord-fetch-utils";
@@ -8,21 +8,21 @@ const NO_CATEGORY_STRING = 'no-category';
 
 const Parameters = {
 	CATEGORY_ID: new Parameter({
-		type: ParameterType.STRING,
+		type: ParameterTypes.STRING,
 		name: "category-channel-id",
 		description: "The id of the category you want to move the channel to",
 		isAutocomplete: true,
 		isRequired: true,
 	}),
 	CHANNEL_ID: new Parameter({
-		type: ParameterType.STRING,
+		type: ParameterTypes.STRING,
 		name: "channel-id",
 		description: "The channel you want to move",
 		isAutocomplete: true,
 		isRequired: false,
 	}),
 	INHERIT_PERMISSIONS: new Parameter({
-		type: ParameterType.BOOLEAN,
+		type: ParameterTypes.BOOLEAN,
 		name: "inherit-permissions",
 		description: "Whether to inherit permissions from the category",
 		isAutocomplete: true,

@@ -1,25 +1,24 @@
 import { ids } from "../../bot-config/discord-ids";
-import { Parameter, ParameterType } from "../../services/command-creation/parameter";
+import { Parameter, ParameterTypes } from "../../services/command-creation/parameter";
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { sendTradeMessage } from "../../services/namesmith/interfaces/trading/trade-message";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { initiateTrade } from "../../services/namesmith/workflows/trading/initiate-trade.workflow";
 import { deferInteraction, replyToInteraction } from "../../utilities/discord-action-utils";
-import { getRequiredStringParam, getRequiredUserParam } from "../../utilities/discord-fetch-utils";
 
 const Parameters = Object.freeze({
 	PLAYER_TRADING_WITH: new Parameter({
-		type: ParameterType.USER,
+		type: ParameterTypes.USER,
 		name: "player-trading-with",
 		description: "The player to trade with",
 	}),
 	CHARACTERS_GIVING: new Parameter({
-		type: ParameterType.STRING,
+		type: ParameterTypes.STRING,
 		name: "characters-giving",
 		description: "The characters to give to the player you are trading with",
 	}),
 	CHARACTERS_RECEIVING: new Parameter({
-		type: ParameterType.STRING,
+		type: ParameterTypes.STRING,
 		name: "characters-receiving",
 		description: "The characters to receive from the player you are trading with",
 	}),
@@ -35,16 +34,15 @@ export const command = new SlashCommand({
 		Parameters.CHARACTERS_GIVING,
 		Parameters.CHARACTERS_RECEIVING,
 	],
-	execute: async (interaction) => {
+	execute: async (interaction, {
+		playerTradingWith,
+		charactersGiving: offeredCharacters,
+		charactersReceiving: requestedCharacters,
+	}) => {
 		await deferInteraction(interaction);
 
 		const initiatingPlayerID = interaction.user.id;
-		const recipientPlayerID = getRequiredUserParam(
-			interaction, Parameters.PLAYER_TRADING_WITH.name
-		).id;
-
-		const offeredCharacters = getRequiredStringParam(interaction, Parameters.CHARACTERS_GIVING.name);
-		const requestedCharacters = getRequiredStringParam(interaction, Parameters.CHARACTERS_RECEIVING.name);
+		const recipientPlayerID = playerTradingWith.id;
 
 		const tradeResult = initiateTrade({
 			...getNamesmithServices(),

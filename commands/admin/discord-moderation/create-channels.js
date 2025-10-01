@@ -1,5 +1,5 @@
 const { ChannelType, PermissionFlagsBits, ChatInputCommandInteraction, AutocompleteInteraction } = require("discord.js");
-const { ParameterType, Parameter } = require("../../../services/command-creation/parameter");
+const { ParameterTypes, Parameter } = require("../../../services/command-creation/parameter");
 const { SlashCommand } = require("../../../services/command-creation/slash-command");
 const { deferInteraction, createChannel, editReplyToInteraction } = require("../../../utilities/discord-action-utils");
 const { getStringParamValue, getRequiredIntegerParam, getRequiredStringParam, fetchChannelsOfGuild } = require("../../../utilities/discord-fetch-utils");
@@ -7,26 +7,26 @@ const { incrementEndNumber } = require("../../../utilities/string-manipulation-u
 
 const Parameters = {
 	Name: new Parameter({
-		type: ParameterType.STRING,
+		type: ParameterTypes.STRING,
 		name: "channel-name",
 		description: "The name of the channel",
 		isRequired: true,
 	}),
 	Amount: new Parameter({
-		type: ParameterType.INTEGER,
+		type: ParameterTypes.INTEGER,
 		name: "number-of-channels",
 		description: "The number of channels to create",
 		isRequired: true,
 	}),
 	Category: new Parameter({
-		type: ParameterType.STRING,
+		type: ParameterTypes.STRING,
 		name: "parent-category",
 		description: "The category you want to add the channels to",
 		isAutocomplete: true,
 		isRequired: false,
 	}),
 	Message: new Parameter({
-		type: ParameterType.STRING,
+		type: ParameterTypes.STRING,
 		name: "message",
 		description: "The first message to send in each of the channels",
 		isRequired: false,

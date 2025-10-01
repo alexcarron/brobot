@@ -1,5 +1,5 @@
 const { ids } = require("../../bot-config/discord-ids");
-const { Parameter, ParameterType } = require("../../services/command-creation/parameter");
+const { Parameter, ParameterTypes } = require("../../services/command-creation/parameter");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { deferInteraction, addPermissionToChannel, editReplyToInteraction, memberHasRole } = require("../../utilities/discord-action-utils");
 const { fetchGuild, fetchGuildMember, fetchTextChannel, getCategoryOfInteraction, getRequiredUserParam, getTextChannelOfInteraction } = require("../../utilities/discord-fetch-utils");
@@ -7,7 +7,7 @@ const { PermissionNames } = require("../../utilities/constants/discord-permissio
 
 const Parameters = {
 	Contestant: new Parameter({
-		type: ParameterType.USER,
+		type: ParameterTypes.USER,
 		name: "contestant",
 		description: "The contesant to add to the alliance this command is sent in",
 		isRequired: true,

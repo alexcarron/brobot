@@ -10,6 +10,9 @@ const { Faction } = require("../../services/rapid-discord-mafia/role.js");
 const { AbilityArgType, ArgumentSubtype } = require("../../services/rapid-discord-mafia/arg.js");
 const RDMPlayer = require("../../services/rapid-discord-mafia/player");
 
+/**
+ * @type {Parameter[]}
+ */
 const parameters = [
 	new Parameter({
 		type: "subcommand",

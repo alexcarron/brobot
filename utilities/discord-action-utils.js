@@ -1,4 +1,4 @@
-const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionFlagsBits, CategoryChannel, ChatInputCommandInteraction, Message, GuildChannel, ButtonInteraction, InteractionResponse, CommandInteraction, MessageComponentInteraction, ModalSubmitInteraction, Attachment } = require('discord.js');
+const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionFlagsBits, CategoryChannel, ChatInputCommandInteraction, Message, GuildChannel, ButtonInteraction, InteractionResponse, CommandInteraction, MessageComponentInteraction, ModalSubmitInteraction, Attachment, MessageFlags } = require('discord.js');
 const { Role } = require('../services/rapid-discord-mafia/role');
 const { fetchChannel, fetchChannelsInCategory, getEveryoneRole, fetchAllMessagesInChannel, fetchCategory } = require('./discord-fetch-utils');
 const { incrementEndNumber } = require('./string-manipulation-utils');
@@ -142,7 +142,7 @@ const deferInteraction = async (
 		// Not replied or deferred yet — try to defer ephemerally first
 		else {
       try {
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
       }
 			catch (ephemeralErr) {
         // Failed to defer ephemerally, try to defer normally
@@ -152,7 +152,10 @@ const deferInteraction = async (
 				catch (deferErr) {
           // Both defer attempts failed — try immediate reply as fallback
           try {
-            await interaction.reply({ ...replyContent, ephemeral: true });
+            await interaction.reply({
+							...replyContent,
+							flags: MessageFlags.Ephemeral
+						});
           }
 					catch (replyErr) {
             // If ephemeral reply failed, try non-ephemeral reply as last resort
@@ -197,7 +200,7 @@ const replyToInteraction = async (interaction, messageContent) => {
 		) {
 			return await interaction.reply({
 				content: messageContent,
-				ephemeral: true,
+				flags: MessageFlags.Ephemeral,
 			});
 		}
 
@@ -292,7 +295,7 @@ const getInputFromCreatedTextModal = async ({
 
 	// Acknowledge the interaction but don't update the message
 	await submittedInteraction.deferUpdate();
-	// await submittedInteraction.deferReply({ ephemeral: true });
+	// await submittedInteraction.deferReply({ flags: MessageFlags.Ephemeral });
 
 	return textEntered;
 }
@@ -717,7 +720,7 @@ async function shuffleCategoryChannels(guild, category) {
 /**
  * Adds a button to the components array of an object representing the contents of a Discord message.
  * @param {object} options - Options for adding the button.
- * @param {string | import('discord.js').MessageCreateOptions} options.contents - The contents of the message. Can be a string or an object with a "content" property.
+ * @param {string | import('discord.js').MessageCreateOptions | import('discord.js').InteractionReplyOptions} options.contents - The contents of the message. Can be a string or an object with a "content" property.
  * @param {string} options.buttonID - The custom ID of the button.
  * @param {string} options.buttonLabel - The label of the button.
  * @param {ButtonStyle} [options.buttonStyle] - The style of the button. Optional, defaults to ButtonStyle.Primary.
@@ -752,9 +755,11 @@ const addButtonToMessageContents = ({
 	const actionRow = new ActionRowBuilder()
 		.addComponents(button);
 
-	contents.components = contents.components || [];
-	// @ts-ignore
-	contents.components.push(actionRow);
+	if ('components' in contents) {
+		contents.components = contents.components || [];
+		// @ts-ignore
+		contents.components.push(actionRow);
+	}
 
 	return contents;
 }
