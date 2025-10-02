@@ -10,7 +10,6 @@ const Parameters = {
 		type: ParameterTypes.USER,
 		name: "contestant",
 		description: "The contesant to add to the alliance this command is sent in",
-		isRequired: true,
 	}),
 }
 

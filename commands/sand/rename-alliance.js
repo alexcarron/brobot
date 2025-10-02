@@ -10,7 +10,6 @@ const Parameters = {
 		type: ParameterTypes.STRING,
 		name: "name",
 		description: "The new name of the alliance",
-		isRequired: true,
 	})
 }
 

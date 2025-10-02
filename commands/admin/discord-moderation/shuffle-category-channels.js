@@ -10,7 +10,6 @@ const Parameters = {
 		name: "category",
 		description: "The category with the channels to send the message in",
 		isAutocomplete: true,
-		isRequired: true,
 	}),
 }
 

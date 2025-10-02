@@ -11,7 +11,6 @@ const Parameters = {
 		type: ParameterTypes.STRING,
 		name: "name",
 		description: "The name of the alliance",
-		isRequired: true,
 	}),
 	Contestant1: new Parameter({
 		type: ParameterTypes.USER,

@@ -10,14 +10,12 @@ const Parameters = {
 		type: "string",
 		name: "viewer-name",
 		description: "The name of the viewer whose name you want to change",
-		isRequired: true,
 		isAutocomplete: true,
 	}),
 	NewViewerName: new Parameter({
 		type: "string",
 		name: "new-viewer-name",
 		description: "The new name of the viewer",
-		isRequired: true,
 	}),
 }
 

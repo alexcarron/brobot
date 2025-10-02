@@ -8,7 +8,6 @@ const Parameters = {
 		type: 'user',
 		name: 'unmuted-member',
 		description:'The singular person not to mute',
-		isRequired: true,
 	}),
 }
 

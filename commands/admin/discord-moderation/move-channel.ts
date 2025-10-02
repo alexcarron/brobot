@@ -12,7 +12,6 @@ const Parameters = {
 		name: "category-channel-id",
 		description: "The id of the category you want to move the channel to",
 		isAutocomplete: true,
-		isRequired: true,
 	}),
 	CHANNEL_ID: new Parameter({
 		type: ParameterTypes.STRING,
@@ -25,7 +24,6 @@ const Parameters = {
 		type: ParameterTypes.BOOLEAN,
 		name: "inherit-permissions",
 		description: "Whether to inherit permissions from the category",
-		isAutocomplete: true,
 		isRequired: false,
 	})
 }

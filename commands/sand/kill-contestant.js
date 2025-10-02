@@ -11,7 +11,6 @@ const Parameters = {
 		type: ParameterTypes.USER,
 		name: "contestant-removing",
 		description: "A contestant to be removed from all alliances",
-		isRequired: true,
 	}),
 };
 

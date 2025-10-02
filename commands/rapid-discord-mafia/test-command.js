@@ -64,7 +64,6 @@ module.exports = new SlashCommand({
 					type: "string",
 					name: "player-name",
 					description: "The name you want the player to join with",
-					isRequired: true
 				}),
 				new Parameter({
 					type: "string",

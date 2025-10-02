@@ -56,11 +56,21 @@ export type ParamNameToType<Parameters extends readonly Parameter[]> = {
       : never;
 };
 
-// type ParameterOptions<
-// 	Type extends ParameterType,
-// > =
-//   Type extends 'string'
+type StringParameterOptions = {
+	isAutocomplete?: boolean;
+	autocomplete?: {[autocomplete_entry: string]: string};
+}
 
+type NumberParameterOptions = {
+	min_value?: number;
+	max_value?: number;
+}
+
+type SubcommandParameterOptions<
+	Subparameters extends Parameter[]
+> = {
+	subparameters?: Subparameters;
+}
 
 /**
  * Represents a Discord command parameter.
@@ -88,7 +98,7 @@ export class Parameter<
 
 	autocomplete;
 
-	subparameters;
+	subparameters = [] as unknown as Subparameters;
 
 	/**
 	 * Creates a new Parameter.
@@ -104,36 +114,48 @@ export class Parameter<
 	 * @param options.subparameters - The subparameters
 	 * @param options.subcommands - The subcommands
 	 */
-	constructor({
-		type,
-		name,
-		description,
-		isRequired = true,
-		isAutocomplete = false,
-		min_value = undefined,
-		max_value = undefined,
-		autocomplete = undefined,
-		subparameters = [] as unknown as Subparameters,
-	}: {
-		type: Type;
-		name: Name;
-		description: string;
-		isRequired?: boolean;
-		isAutocomplete?: boolean;
-		min_value?: number;
-		max_value?: number;
-		autocomplete?: {[autocomplete_entry: string]: string};
-		subparameters?: Subparameters;
-	}) {
+	constructor(options:
+		& {
+			type: Type;
+			name: Name;
+			description: string;
+			isRequired?: false;
+			isOptional?: true;
+		}
+		& (Type extends 'string' ? StringParameterOptions : {})
+		& (Type extends 'number' | 'integer' ? NumberParameterOptions : {})
+		& (Type extends 'subcommand' ? SubcommandParameterOptions<Subparameters> : {})
+	) {
+		const {
+			type,
+			name,
+			description,
+			isRequired = true,
+			isOptional = false,
+		} = options;
+
 		this.type = type;
 		this.name = name;
 		this.description = description;
-		this.isRequired = isRequired;
-		this.isAutocomplete = isAutocomplete;
-		this.min_value = min_value;
-		this.max_value = max_value;
-		this.autocomplete = autocomplete;
-		this.subparameters = subparameters;
+		this.isRequired =
+			!isRequired || isOptional ? false : true;
+
+		if (type === 'subcommand') {
+			const { subparameters = [] as unknown as Subparameters } = options as SubcommandParameterOptions<Subparameters>;
+			this.subparameters = subparameters;
+		}
+
+		if (type === 'number' || type === 'integer') {
+			const { min_value, max_value } = options as NumberParameterOptions;
+			this.min_value = min_value;
+			this.max_value = max_value;
+		}
+
+		if (type === 'string') {
+			const { isAutocomplete, autocomplete } = options as StringParameterOptions;
+			this.isAutocomplete = isAutocomplete;
+			this.autocomplete = autocomplete;
+		}
 	}
 
 	/**
@@ -172,7 +194,7 @@ export class Parameter<
 						'setAutocomplete' in option &&
 						typeof option.setAutocomplete === 'function'
 					)
-						option.setAutocomplete(this.isAutocomplete)
+						option.setAutocomplete(this.isAutocomplete ?? false);
 					else
 						throw new Error(`Option ${option.name} does not support autocomplete.`);
 				}

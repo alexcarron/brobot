@@ -10,13 +10,11 @@ const Parameters = {
 		type: ParameterTypes.STRING,
 		name: "channel-name",
 		description: "The name of the channel",
-		isRequired: true,
 	}),
 	Amount: new Parameter({
 		type: ParameterTypes.INTEGER,
 		name: "number-of-channels",
 		description: "The number of channels to create",
-		isRequired: true,
 	}),
 	Category: new Parameter({
 		type: ParameterTypes.STRING,

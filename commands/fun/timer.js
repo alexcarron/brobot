@@ -10,7 +10,6 @@ const Parameters = {
 		type: "string",
 		name: "reason-for-timer",
 		description: "The reason you're making this timer and what Brobot will yell at you when it's over",
-		isRequired: true,
 	}),
 	Days: new Parameter({
 		type: "integer",

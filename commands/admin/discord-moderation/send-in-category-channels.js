@@ -11,13 +11,11 @@ const Parameters = {
 		name: "category",
 		description: "The category with the channels to send the message in",
 		isAutocomplete: true,
-		isRequired: true,
 	}),
 	Message: new Parameter({
 		type: ParameterTypes.STRING,
 		name: "message",
 		description: "The message to send",
-		isRequired: true,
 	}),
 }
 

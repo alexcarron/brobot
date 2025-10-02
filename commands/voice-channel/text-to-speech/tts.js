@@ -22,7 +22,6 @@ const Subparameters = {
 		type: "string",
 		name: "name",
 		description: "Announces your name to avoid confusion on who said what",
-		isRequired: true,
 	}),
 	ReadAllMessages: new Parameter({
 		type: "boolean",
