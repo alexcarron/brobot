@@ -1,5 +1,6 @@
 import { ApplicationCommandOptionChoiceData, AutocompleteInteraction } from "discord.js";
 import { isStrings, isStringToStringRecord } from "../../utilities/types/type-guards";
+import { findStringsContaining } from "../../utilities/string-manipulation-utils";
 
 export type AutocompleteChoicesResolvable =
 	| string[]
@@ -63,4 +64,33 @@ export function toAutocompleteChoices(
 	else {
 		return autocompleteChoicesResolvable;
 	}
+}
+
+/**
+ * Filters an array of autocomplete choices by the entered value.
+ * @param autocompleteChoices The array of autocomplete choices to filter.
+ * @param enteredValue The value that the user has entered.
+ * @returns An array of autocomplete choices that contain the entered value.
+ */
+export function filterAutocompleteByEnteredValue(
+	autocompleteChoices: ApplicationCommandOptionChoiceData[],
+	enteredValue: string
+): ApplicationCommandOptionChoiceData[] {
+	const autocompleteNames = autocompleteChoices.map(choice => choice.name);
+	const filteredAutocompleteNames = findStringsContaining(enteredValue, autocompleteNames);
+	return autocompleteChoices.filter(choice => filteredAutocompleteNames.includes(choice.name));
+}
+
+/**
+ * Limits the number of autocomplete choices to a specified limit.
+ * If the limit is not specified, it defaults to 25.
+ * @param autocompleteChoices The array of autocomplete choices to limit.
+ * @param limit The maximum number of autocomplete choices to return.
+ * @returns An array of autocomplete choices, limited to the specified number.
+ */
+export function limitAutocompleteChoices(
+	autocompleteChoices: ApplicationCommandOptionChoiceData[],
+	limit: number = 25
+): ApplicationCommandOptionChoiceData[] {
+	return autocompleteChoices.slice(0, limit);
 }

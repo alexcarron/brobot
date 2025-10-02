@@ -2,7 +2,7 @@ import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuild
 import { Parameter, ParamNameToType } from "./parameter";
 import { toCamelCase } from "../../utilities/string-manipulation-utils";
 import { isStringToStringRecord, isUndefined } from "../../utilities/types/type-guards";
-import { getEnteredValueOfParameter, toAutocompleteChoices } from "./autocomplete-utils";
+import { filterAutocompleteByEnteredValue, getEnteredValueOfParameter, limitAutocompleteChoices, toAutocompleteChoices } from "./autocomplete-utils";
 
 /**
  * Build a parameters object from the interaction and Parameter[] definition.
@@ -303,8 +303,14 @@ export class SlashCommand<
 
 				const autocompleteChoicesResolvable = await parameter.autocomplete(enteredValue);
 
+				const choices = toAutocompleteChoices(autocompleteChoicesResolvable);
+
 				await interaction.respond(
-					toAutocompleteChoices(autocompleteChoicesResolvable)
+					limitAutocompleteChoices(
+					filterAutocompleteByEnteredValue(
+						choices, enteredValue
+					)
+					)
 				);
 			}
 		}

@@ -173,7 +173,6 @@ export class Parameter<
 	 */
 	addToCommand<CommandBuilder extends SlashCommandBuilder | SlashCommandSubcommandGroupBuilder | SlashCommandSubcommandBuilder>(command: CommandBuilder) {
 		const type = toTitleCase(this.type);
-		console.log({type});
 
 		if (type === "Subcommand") {
 			if (
@@ -188,7 +187,6 @@ export class Parameter<
 				this.addSubcommandGroupToCommand(command);
 		}
 		else {
-			console.log(`add${type}Option`);
 			// @ts-ignore
 			command[`add${type}Option`]((option: ApplicationCommandOptionBase) => {
 				option

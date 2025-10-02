@@ -309,6 +309,31 @@ export const findStringStartingWith = (startingString: string, possibleStrings: 
 }
 
 /**
+ * Finds all strings in a list of possible strings that contain a given string (case-insensitive).
+ * @param containingString - The string to search for
+ * @param possibleStrings - The list of strings to search in
+ * @returns An array of strings that contain the given string, sorted by localeCompare
+ */
+export function findStringsContaining(
+	containingString: string,
+	possibleStrings: string[]
+): string[] {
+	if (containingString.trim() === '') return possibleStrings;
+
+	return possibleStrings
+		.filter(possibleString =>
+			possibleString.toLowerCase().includes(containingString.toLowerCase())
+		)
+		.sort((string1, string2) => {
+      const isStartOfString1 = string1.toLowerCase().startsWith(containingString.toLowerCase());
+      const isStartOfString2 = string2.toLowerCase().startsWith(containingString.toLowerCase());
+      if (isStartOfString1 && !isStartOfString2) return -1;
+      if (!isStartOfString1 && isStartOfString2) return 1;
+      return string1.localeCompare(string2);
+    });
+}
+
+/**
  * Increments the number at the end of a given string by a given amount.
  * @param string - The string to increment
  * @param incrementAmount - The amount to increment the number by
