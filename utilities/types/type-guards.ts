@@ -152,3 +152,28 @@ export function isError(
 ): value is Error {
 	return value instanceof Error;
 }
+
+/**
+ * Checks if a given value is a function.
+ * @param value - The value to check.
+ * @returns If the value is a function.
+ * @example
+ * const add = (a: number, b: number) => number;
+ * expect(isFunction(add)).toBe(true);
+ */
+export function isFunction(
+	value: unknown
+): value is (...args: unknown[]) => unknown {
+	return typeof value === "function";
+}
+
+/**
+ * Checks if a given value is undefined.
+ * @param value - The value to check.
+ * @returns If the value is undefined.
+ */
+export function isUndefined(
+	value: unknown
+): value is undefined {
+	return value === undefined;
+}

@@ -1,0 +1,66 @@
+import { ApplicationCommandOptionChoiceData, AutocompleteInteraction } from "discord.js";
+import { isStrings, isStringToStringRecord } from "../../utilities/types/type-guards";
+
+export type AutocompleteChoicesResolvable =
+	| string[]
+	| {[name: string]: string}
+	| {name: string; value: string}[]
+
+
+/**
+ * Returns the value that the user has entered for the focused parameter in an autocomplete interaction.
+ * @param interaction The autocomplete interaction to get the entered value from.
+ * @returns The value that the user has entered for the focused parameter.
+ */
+export function getEnteredValue(interaction: AutocompleteInteraction): string {
+	const focusedParameter = interaction.options.getFocused(true);
+	return focusedParameter.value;
+}
+
+/**
+ * Returns the value that the user has entered for the specified parameter in an autocomplete interaction.
+ * If the user is not currently focused on the specified parameter, an empty string is returned.
+ * @param interaction The autocomplete interaction to get the entered value from.
+ * @param parameterName The name of the parameter to get the entered value for.
+ * @returns The value that the user has entered for the specified parameter.
+ */
+export function getEnteredValueOfParameter(
+	interaction: AutocompleteInteraction,
+	parameterName: string
+): string {
+	const focusedParameter = interaction.options.getFocused(true);
+	if (focusedParameter.name !== parameterName) return "";
+	return focusedParameter.value;
+}
+
+/**
+ * Converts an AutocompleteChoicesResolvable into an array of ApplicationCommandOptionChoiceData.
+ * If the input is an array of strings, each string is converted into an ApplicationCommandOptionChoiceData with the name and value being the same string.
+ * If the input is an object with string keys and string values, each key-value pair is converted into an ApplicationCommandOptionChoiceData with the name being the key and the value being the value.
+ * If the input is neither an array of strings nor an object with string keys and string values, it is returned unchanged.
+ * @param autocompleteChoicesResolvable The value to convert into an array of ApplicationCommandOptionChoiceData.
+ * @returns An array of ApplicationCommandOptionChoiceData, or the input if it is not an array of strings or an object with string keys and string values.
+ */
+export function toAutocompleteChoices(
+	autocompleteChoicesResolvable: AutocompleteChoicesResolvable
+): ApplicationCommandOptionChoiceData[] {
+	if (isStrings(autocompleteChoicesResolvable)) {
+		const autocompleteValues = autocompleteChoicesResolvable;
+		return autocompleteValues.map(value => ({
+			name: value,
+			value: value
+		}));
+	}
+	else if (isStringToStringRecord(autocompleteChoicesResolvable)) {
+		const autocompleteNameToValue = autocompleteChoicesResolvable;
+		return Object.entries(autocompleteNameToValue).map(
+			([name, value]) => ({
+				name: name,
+				value: value
+			})
+		);
+	}
+	else {
+		return autocompleteChoicesResolvable;
+	}
+}

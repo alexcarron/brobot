@@ -14,8 +14,9 @@ const onSlashCommandAutocomplete = async function(interaction) {
 	}
 
 	try {
-		await command.autocomplete(interaction);
-	} catch (error) {
+		await command.handleAutocomplete(interaction);
+	}
+	catch (error) {
 		console.error(error);
 	}
 }

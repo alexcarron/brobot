@@ -11,7 +11,19 @@ const Parameters = Object.freeze({
 		type: ParameterTypes.STRING,
 		name: "mystery-box",
 		description: "The mystery box to buy",
-		isAutocomplete: true,
+		autocomplete: () => {
+			const { mysteryBoxService } = getNamesmithServices()
+			const mysteryBoxes = mysteryBoxService.getMysteryBoxes();
+			return mysteryBoxes.map(mysteryBox => {
+				const {id, tokenCost, name, characterOdds} = mysteryBox;
+				const characters = Object.keys(characterOdds);
+
+				return {
+					name: `$${tokenCost} - ${name}: ${characters.sort().join("")}`,
+					value: id.toString()
+				}
+			});
+		}
 	}),
 });
 
@@ -63,20 +75,5 @@ export const command = new SlashCommand({
 			`-# You now have ${toAmountOfNoun(newTokenCount, 'token')}\n` +
 			`-# Your inventory now contains: ${newInventory}`
 		);
-	},
-	autocomplete: async function autocomplete(interaction) {
-		const { mysteryBoxService } = getNamesmithServices()
-		const mysteryBoxes = mysteryBoxService.getMysteryBoxes();
-		const autocompleteValues = mysteryBoxes.map(mysteryBox => {
-			const {id, tokenCost, name, characterOdds} = mysteryBox;
-			const characters = Object.keys(characterOdds);
-
-			return {
-				name: `$${tokenCost} - ${name}: ${characters.sort().join("")}`,
-				value: id.toString()
-			}
-		});
-
-		await interaction.respond(autocompleteValues)
-	},
+	}
 });

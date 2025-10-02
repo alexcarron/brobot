@@ -2,6 +2,8 @@ import { ApplicationCommandOptionBase, Attachment, GuildMember, SlashCommandBuil
 import { toTitleCase } from '../../utilities/string-manipulation-utils';
 import { Role } from '../rapid-discord-mafia/role';
 import { ToCamelCase } from '../../utilities/types/casing-types';
+import { isStringToStringRecord } from '../../utilities/types/type-guards';
+import { AutocompleteChoicesResolvable } from './autocomplete-utils';
 
 export const ParameterTypes = Object.freeze({
 	SUBCOMMAND: "subcommand",
@@ -56,9 +58,12 @@ export type ParamNameToType<Parameters extends readonly Parameter[]> = {
       : never;
 };
 
+
 type StringParameterOptions = {
 	isAutocomplete?: boolean;
-	autocomplete?: {[autocomplete_entry: string]: string};
+	autocomplete?:
+		| ((enteredValue: string) => Promise<AutocompleteChoicesResolvable> | AutocompleteChoicesResolvable)
+		| {[autocomplete_entry: string]: string};
 }
 
 type NumberParameterOptions = {
@@ -96,7 +101,10 @@ export class Parameter<
 
 	max_value;
 
-	autocomplete;
+	autocomplete:
+		| ((enteredValue: string) => Promise<AutocompleteChoicesResolvable> | AutocompleteChoicesResolvable)
+		| {[autocomplete_entry: string]: string}
+		| undefined;
 
 	subparameters = [] as unknown as Subparameters;
 
@@ -165,23 +173,22 @@ export class Parameter<
 	 */
 	addToCommand<CommandBuilder extends SlashCommandBuilder | SlashCommandSubcommandGroupBuilder | SlashCommandSubcommandBuilder>(command: CommandBuilder) {
 		const type = toTitleCase(this.type);
+		console.log({type});
 
-		if (
-			type === "Subcommand" &&
-			command instanceof SlashCommandBuilder &&
-			command instanceof SlashCommandSubcommandGroupBuilder
-		) {
-			// @ TODO: run it and Fix this subcommand instance of problem
-			this.addSubcommandToCommand(command);
+		if (type === "Subcommand") {
+			if (
+				command instanceof SlashCommandBuilder &&
+				command instanceof SlashCommandSubcommandGroupBuilder
+			) {
+				this.addSubcommandToCommand(command);
+			}
 		}
-		else if (
-			type === "Subcommandgroup" &&
-			command instanceof SlashCommandBuilder
-		) {
-			// @ TODO: run it and Fix this subcommand instance of problem
-			this.addSubcommandGroupToCommand(command);
+		else if (type === "Subcommandgroup") {
+			if (command instanceof SlashCommandBuilder)
+				this.addSubcommandGroupToCommand(command);
 		}
 		else {
+			console.log(`add${type}Option`);
 			// @ts-ignore
 			command[`add${type}Option`]((option: ApplicationCommandOptionBase) => {
 				option
@@ -194,7 +201,10 @@ export class Parameter<
 						'setAutocomplete' in option &&
 						typeof option.setAutocomplete === 'function'
 					)
-						option.setAutocomplete(this.isAutocomplete ?? false);
+						option.setAutocomplete(
+							(this.isAutocomplete ?? false) ||
+							(this.autocomplete !== undefined)
+						);
 					else
 						throw new Error(`Option ${option.name} does not support autocomplete.`);
 				}
@@ -219,7 +229,10 @@ export class Parameter<
 						throw new Error(`Option ${option.name} does not support max_value.`);
 				}
 
-				if (this.autocomplete) {
+				if (
+					this.autocomplete &&
+					isStringToStringRecord(this.autocomplete)
+				) {
 					if (
 						'addChoices' in option &&
 						typeof option.addChoices === 'function'

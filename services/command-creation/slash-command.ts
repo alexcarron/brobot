@@ -1,6 +1,8 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { Parameter, ParamNameToType } from "./parameter";
 import { toCamelCase } from "../../utilities/string-manipulation-utils";
+import { isStringToStringRecord, isUndefined } from "../../utilities/types/type-guards";
+import { getEnteredValueOfParameter, toAutocompleteChoices } from "./autocomplete-utils";
 
 /**
  * Build a parameters object from the interaction and Parameter[] definition.
@@ -289,6 +291,24 @@ export class SlashCommand<
 	async handleExecution(interaction: ChatInputCommandInteraction): Promise<any> {
 		const params = collectParameters(interaction, this.parameters);
 		await this.execute(interaction, params);
+	}
+
+	async handleAutocomplete(interaction: AutocompleteInteraction): Promise<void> {
+		for (const parameter of this.parameters) {
+			if (
+				!isUndefined(parameter.autocomplete) &&
+				!isStringToStringRecord(parameter.autocomplete)
+			) {
+				const enteredValue = getEnteredValueOfParameter(interaction, parameter.name);
+
+				const autocompleteChoicesResolvable = await parameter.autocomplete(enteredValue);
+
+				await interaction.respond(
+					toAutocompleteChoices(autocompleteChoicesResolvable)
+				);
+			}
+		}
+		await this.autocomplete(interaction);
 	}
 }
 
