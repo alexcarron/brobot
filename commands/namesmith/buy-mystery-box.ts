@@ -3,7 +3,6 @@ import { Parameter, ParameterTypes } from "../../services/command-creation/param
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { buyMysteryBox } from "../../services/namesmith/workflows/buy-mystery-box.workflow";
-import { replyToInteraction } from "../../utilities/discord-action-utils";
 import { addSIfPlural, toAmountOfNoun } from "../../utilities/string-manipulation-utils";
 
 const Parameters = Object.freeze({
@@ -45,19 +44,15 @@ export const command = new SlashCommand({
 		});
 
 		if (result.isNonPlayerBoughtMysteryBox()) {
-			return await replyToInteraction(interaction,
-				`You're not a player, so you can't buy a mystery box.`
-			);
+			return `You're not a player, so you can't buy a mystery box.`;
 		}
 		else if (result.isMysteryBoxDoesNotExist()) {
-			return await replyToInteraction(interaction,
-				`The "${mysteryBoxID}" mystery box does not exist.`
-			);
+			return `The "${mysteryBoxID}" mystery box does not exist.`;
 		}
 		else if (result.isPlayerCantAffordMysteryBox()) {
 			const { mysteryBoxName, tokensNeeded, tokensOwned } = result;
 
-			return await replyToInteraction(interaction,
+			return (
 				`You need **${tokensNeeded} more ${addSIfPlural('token', tokensNeeded)}** to afford the "${mysteryBoxName}" mystery box\n` +
 				`-# You only have **${toAmountOfNoun(tokensOwned, 'token')}**\n` +
 				`-# <#${ids.namesmith.channels.MINE_TOKENS}> and <#${ids.namesmith.channels.CLAIM_REFILL}> to get more \n`
@@ -69,7 +64,7 @@ export const command = new SlashCommand({
 		const newTokenCount = player.tokens;
 		const newInventory = player.inventory;
 
-		await replyToInteraction(interaction,
+		return (
 			`You opened a ${mysteryBox.name} mystery box and received:\n` +
 			`\`\`\`${characterValue}\`\`\`\n` +
 			`-# You now have ${toAmountOfNoun(newTokenCount, 'token')}\n` +

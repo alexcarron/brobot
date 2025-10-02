@@ -1,9 +1,9 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { Parameter, ParamNameToType } from "./parameter";
 import { toCamelCase } from "../../utilities/string-manipulation-utils";
-import { isStringToStringRecord, isUndefined } from "../../utilities/types/type-guards";
+import { isString, isStringToStringRecord, isUndefined } from "../../utilities/types/type-guards";
 import { filterAutocompleteByEnteredValue, getEnteredValueOfParameter, limitAutocompleteChoices, toAutocompleteChoices } from "./autocomplete-utils";
-import { deferInteraction } from "../../utilities/discord-action-utils";
+import { deferInteraction, editReplyToInteraction } from "../../utilities/discord-action-utils";
 import { attempt } from "../../utilities/error-utils";
 
 /**
@@ -296,7 +296,11 @@ export class SlashCommand<
 			.execute();
 
 		const params = collectParameters(interaction, this.parameters);
-		await this.execute(interaction, params);
+
+		const result = await this.execute(interaction, params);
+
+		if (isString(result))
+			await editReplyToInteraction(interaction, result);
 	}
 
 	async handleAutocomplete(interaction: AutocompleteInteraction): Promise<void> {
