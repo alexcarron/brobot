@@ -3,6 +3,8 @@ import { Parameter, ParamNameToType } from "./parameter";
 import { toCamelCase } from "../../utilities/string-manipulation-utils";
 import { isStringToStringRecord, isUndefined } from "../../utilities/types/type-guards";
 import { filterAutocompleteByEnteredValue, getEnteredValueOfParameter, limitAutocompleteChoices, toAutocompleteChoices } from "./autocomplete-utils";
+import { deferInteraction } from "../../utilities/discord-action-utils";
+import { attempt } from "../../utilities/error-utils";
 
 /**
  * Build a parameters object from the interaction and Parameter[] definition.
@@ -289,6 +291,10 @@ export class SlashCommand<
 	}
 
 	async handleExecution(interaction: ChatInputCommandInteraction): Promise<any> {
+		await attempt(deferInteraction(interaction))
+			.ignoreError()
+			.execute();
+
 		const params = collectParameters(interaction, this.parameters);
 		await this.execute(interaction, params);
 	}

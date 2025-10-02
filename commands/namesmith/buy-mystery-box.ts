@@ -3,7 +3,7 @@ import { Parameter, ParameterTypes } from "../../services/command-creation/param
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { buyMysteryBox } from "../../services/namesmith/workflows/buy-mystery-box.workflow";
-import { deferInteraction, replyToInteraction } from "../../utilities/discord-action-utils";
+import { replyToInteraction } from "../../utilities/discord-action-utils";
 import { addSIfPlural, toAmountOfNoun } from "../../utilities/string-manipulation-utils";
 
 const Parameters = Object.freeze({
@@ -36,7 +36,7 @@ export const command = new SlashCommand({
 	required_servers: [ids.servers.NAMESMITH],
 	required_channels: [ids.namesmith.channels.OPEN_MYSTERY_BOXES],
 	execute: async function execute(interaction, {mysteryBox: mysteryBoxID}) {
-		await deferInteraction(interaction);
+		// await deferInteraction(interaction);
 
 		const result = await buyMysteryBox({
 			...getNamesmithServices(),
