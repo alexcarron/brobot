@@ -2,8 +2,7 @@ import { ids } from "../../bot-config/discord-ids";
 import { Parameter, ParameterTypes } from "../../services/command-creation/parameter";
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
-import { getPlayerFromCommandParameter } from "../../services/namesmith/utilities/discord-action.utility";
-import { deferInteraction, replyToInteraction } from "../../utilities/discord-action-utils";
+import { resolveTargetPlayer } from "../../services/namesmith/utilities/interface.utility";
 
 const Parameters = Object.freeze({
 	TOKENS: new Parameter({
@@ -28,28 +27,23 @@ export const command = new SlashCommand({
 	],
 	required_servers: [ids.servers.NAMESMITH],
 	isInDevelopment: true,
-	execute: async (interaction, {tokens}) => {
-		await deferInteraction(interaction);
-
+	execute: async (interaction, {tokens, player: playerResolvable}) => {
 		const { playerService } = getNamesmithServices();
 
-		const playerOrErrorMessage = await getPlayerFromCommandParameter({
+		const maybePlayer = await resolveTargetPlayer({
+			playerService,
 			interaction,
-			parameter: Parameters.PLAYER,
-			playerService
+			givenPlayerResolvable: playerResolvable,
 		});
 
-		if (typeof playerOrErrorMessage === "string") {
-			const errorMessage = playerOrErrorMessage;
-			return await replyToInteraction(interaction, errorMessage);
+		if (maybePlayer === null) {
+			return `Could not find player. Given player identifier was an invalid name, username, or ID, and/or you are not a player.`;
 		}
 
-		const player = playerOrErrorMessage;
+		const player = maybePlayer;
 
 		playerService.playerRepository.setTokens(player.id, tokens);
 
-		return await replyToInteraction(interaction,
-			`${playerOrErrorMessage.currentName}'s tokens have been set to: ${tokens}`
-		);
+		return `${maybePlayer.currentName}'s tokens have been set to: ${tokens}`;
 	}
 })

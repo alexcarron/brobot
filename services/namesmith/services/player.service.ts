@@ -9,9 +9,7 @@ import { Inventory, Player, PlayerID, PlayerResolvable } from '../types/player.t
 import { removeCharactersAsGivenFromEnd, removeMissingCharacters } from "../../../utilities/string-manipulation-utils";
 import { areCharactersInString } from "../../../utilities/string-checks-utils";
 import { MAX_NAME_LENGTH, REFILL_COOLDOWN_HOURS } from "../constants/namesmith.constants";
-import { ChatInputCommandInteraction } from "discord.js";
 import { addHours } from "../../../utilities/date-time-utils";
-import { fetchUserByUsername } from "../../../utilities/discord-fetch-utils";
 import { NamesmithEvents } from "../event-listeners/namesmith-events";
 
 /**
@@ -43,7 +41,7 @@ export class PlayerService {
 	 * Resolves a player from the given resolvable.
 	 * @param playerResolvable - The player resolvable to resolve.
 	 * @returns The resolved player object.
-	 * @throws {Error} If the player resolvable is invalid or the player is not found.
+	 * @throws {PlayerNotFoundError} If the player resolvable is invalid or the player is not found.
 	 */
 	resolvePlayer(playerResolvable: PlayerResolvable): Player {
 		const playerID: PlayerID =
@@ -53,32 +51,6 @@ export class PlayerService {
 
 		return this.playerRepository.getPlayerOrThrow(playerID);
 	}
-
-	/**
-	 * Resolves a player from a given name, username, or ID.
-	 * @param playerString - The name, username, or ID of the player to resolve.
-	 * @returns The resolved player, or null if the player is not found.
-	 * @throws {Error} If the player is not found.
-	 */
-	async resolvePlayerFromString(
-		playerString: string
-	): Promise<Player | null> {
-		const playerById = this.playerRepository.getPlayerByID(playerString);
-		if (playerById) return playerById;
-
-		const user = await fetchUserByUsername(playerString);
-		if (user) {
-			const playerByUserId = this.playerRepository.getPlayerByID(user.id);
-			if (playerByUserId) return playerByUserId;
-		}
-
-		// 3) Try players with a matching display name
-		const playerByName = this.playerRepository.getPlayersByCurrentName(playerString)[0];
-		if (playerByName) return playerByName;
-
-		return null;
-	}
-
 	/**
 	 * Resolves a player resolvable to a player ID.
 	 * @param playerResolvable - The player resolvable to resolve.
@@ -116,17 +88,6 @@ export class PlayerService {
 	 */
 	getPlayersWithPublishedName(){
 		return this.playerRepository.getPlayersWithPublishedNames();
-	}
-
-	/**
-	 * Retrieves the player running a command from the interaction, if it exists.
-	 * @param interaction - The interaction to get the player from.
-	 * @returns The player running the command, or null if no player is found.
-	 */
-	getPlayerRunningCommand(interaction: ChatInputCommandInteraction): Player | null {
-		const userID = interaction.user.id;
-		const player = this.playerRepository.getPlayerByID(userID);
-		return player;
 	}
 
 	/**

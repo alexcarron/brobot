@@ -3,7 +3,7 @@ import { Parameter, ParamNameToType } from "./parameter";
 import { toCamelCase } from "../../utilities/string-manipulation-utils";
 import { isString, isStringToStringRecord, isUndefined } from "../../utilities/types/type-guards";
 import { filterAutocompleteByEnteredValue, getEnteredValueOfParameter, limitAutocompleteChoices, toAutocompleteChoices } from "./autocomplete-utils";
-import { deferInteraction, editReplyToInteraction } from "../../utilities/discord-action-utils";
+import { deferInteraction, replyToInteraction } from "../../utilities/discord-action-utils";
 import { attempt } from "../../utilities/error-utils";
 
 /**
@@ -177,7 +177,7 @@ export class SlashCommand<
 	public readonly execute: (
 		interaction: ChatInputCommandInteraction,
 		parameters: ParamNameToType<Parameters>,
-	) => Promise<any>;
+	) => Promise<unknown> | unknown;
 
 	public data: any;
 
@@ -202,7 +202,7 @@ export class SlashCommand<
 		execute: (
 			interaction: ChatInputCommandInteraction,
 			parameters: ParamNameToType<Parameters>,
-		) => Promise<any>;
+		) => Promise<unknown> | unknown;
 		cooldown?: number;
 		allowsDMs?: boolean;
 		required_servers?: string[];
@@ -300,7 +300,7 @@ export class SlashCommand<
 		const result = await this.execute(interaction, params);
 
 		if (isString(result))
-			await editReplyToInteraction(interaction, result);
+			await replyToInteraction(interaction, result);
 	}
 
 	async handleAutocomplete(interaction: AutocompleteInteraction): Promise<void> {

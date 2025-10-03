@@ -629,11 +629,11 @@ export function hasFailed<ReturnType>(
 	}
 }
 
-export function toNullOnFailure<ReturnType>(
+export function toNullOnError<ReturnType>(
 	promise: Promise<ReturnType>
 ): Promise<ReturnType | null>;
 
-export function toNullOnFailure<ReturnType>(
+export function toNullOnError<ReturnType>(
 	func: (...args: any[]) => ReturnType,
 	...args: any[]
 ): ReturnType | null;
@@ -645,7 +645,7 @@ export function toNullOnFailure<ReturnType>(
  * @param args - The arguments to pass to the function if it is synchronous.
  * @returns The return value of the function or promise, or null if an error was thrown or encountered.
  */
-export function toNullOnFailure<ReturnType>(
+export function toNullOnError<ReturnType>(
 	functionOrPromise:
 		| Promise<ReturnType>
 		| ((...args: any[]) => ReturnType),

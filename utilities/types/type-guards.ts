@@ -133,13 +133,19 @@ export function isStringToNumberRecord(
  * @returns If the object has a property with the given key.
  */
 export function hasProperty<
-	ObjectType extends object,
+	ObjectType,
 	KeyType extends string | number | symbol
 >(
 	object: ObjectType,
 	key: KeyType
-): object is ObjectType & Record<KeyType, unknown> {
-	return key in object;
+): object is ObjectType extends object
+	? ObjectType & Record<KeyType, unknown>
+	: never
+{
+	return (
+		isObject(object) &&
+		key in object
+	);
 }
 
 /**

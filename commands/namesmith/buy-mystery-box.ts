@@ -35,8 +35,6 @@ export const command = new SlashCommand({
 	required_servers: [ids.servers.NAMESMITH],
 	required_channels: [ids.namesmith.channels.OPEN_MYSTERY_BOXES],
 	execute: async function execute(interaction, {mysteryBox: mysteryBoxID}) {
-		// await deferInteraction(interaction);
-
 		const result = await buyMysteryBox({
 			...getNamesmithServices(),
 			player: interaction.user.id,

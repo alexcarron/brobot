@@ -16,8 +16,8 @@ export const command = new SlashCommand({
 		const playerID = interaction.user.id;
 
 		const { playerService } = getNamesmithServices();
-		const currentName = await playerService.getCurrentName(playerID);
-		const inventory = await playerService.getInventory(playerID);
+		const currentName = playerService.getCurrentName(playerID);
+		const inventory = playerService.getInventory(playerID);
 
 		let correctlyRearrangedName = false;
 		let initialMessageText = "Click the button to rearrange the characters in your name";

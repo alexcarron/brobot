@@ -2,8 +2,7 @@ import { ids } from "../../bot-config/discord-ids";
 import { Parameter, ParameterTypes } from "../../services/command-creation/parameter";
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
-import { Player } from "../../services/namesmith/types/player.types";
-import { deferInteraction, replyToInteraction } from "../../utilities/discord-action-utils";
+import { resolveTargetPlayer } from "../../services/namesmith/utilities/interface.utility";
 
 const Parameters = Object.freeze({
 	INVENTORY: new Parameter({
@@ -28,38 +27,23 @@ export const command = new SlashCommand({
 	],
 	required_servers: [ids.servers.NAMESMITH],
 	isInDevelopment: true,
-	execute: async (interaction, {inventory, player: playerNameOrUsernameOrID}) => {
-		await deferInteraction(interaction);
-
+	execute: async (interaction, {inventory, player: playerResolvable}) => {
 		const { playerService } = getNamesmithServices();
 
-		const playerParamGiven = playerNameOrUsernameOrID !== null;
-		let player: Player | null;
+		const maybePlayer = await resolveTargetPlayer({
+			playerService,
+			interaction,
+			givenPlayerResolvable: playerResolvable,
+		});
 
-		if (playerParamGiven) {
-			player = await playerService.resolvePlayerFromString(playerNameOrUsernameOrID);
-
-
-			if (player === null) {
-				return await replyToInteraction(interaction,
-					`The given player was not found: ${playerNameOrUsernameOrID}`
-				);
-			}
+		if (maybePlayer === null) {
+			return `Could not find player. Given player identifier was an invalid name, username, or ID, and/or you are not a player.`;
 		}
-		else {
-			player = playerService.getPlayerRunningCommand(interaction);
 
-			if (player === null) {
-				return await replyToInteraction(interaction,
-					`You must be be a player or specify a player to give the inventory to.`
-				)
-			}
-		}
+		const player = maybePlayer;
 
 		playerService.setInventory(player.id, inventory);
 
-		return await replyToInteraction(interaction,
-			`${player.currentName}'s inventory has been set to: ${inventory}`
-		);
+		return `${player.currentName}'s inventory has been set to: ${inventory}`;
 	}
 })

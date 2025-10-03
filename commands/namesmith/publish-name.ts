@@ -1,7 +1,7 @@
 import { ids } from "../../bot-config/discord-ids";
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
-import { confirmInteractionWithButtons, deferInteraction } from "../../utilities/discord-action-utils";
+import { confirmInteractionWithButtons } from "../../utilities/discord-action-utils";
 
 export const command = new SlashCommand({
 	name: "publish-name",
@@ -11,8 +11,6 @@ export const command = new SlashCommand({
 		[ids.namesmith.roles.namesmither, ids.namesmith.roles.noName, ids.namesmith.roles.smithedName],
 	],
 	execute: async function execute(interaction) {
-		await deferInteraction(interaction);
-
 		const { playerService } = getNamesmithServices();
 
 		const playerID = interaction.user.id;
@@ -37,6 +35,6 @@ export const command = new SlashCommand({
 		if (!didConfirmAction)
 			return;
 
-		await playerService.publishName(playerID);
+		playerService.publishName(playerID);
 	}
 });

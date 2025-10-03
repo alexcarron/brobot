@@ -4,7 +4,7 @@ import { SlashCommand } from "../../services/command-creation/slash-command";
 import { sendTradeMessage } from "../../services/namesmith/interfaces/trading/trade-message";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { initiateTrade } from "../../services/namesmith/workflows/trading/initiate-trade.workflow";
-import { deferInteraction, replyToInteraction } from "../../utilities/discord-action-utils";
+import { replyToInteraction } from "../../utilities/discord-action-utils";
 
 const Parameters = Object.freeze({
 	PLAYER_TRADING_WITH: new Parameter({
@@ -39,8 +39,6 @@ export const command = new SlashCommand({
 		charactersGiving: offeredCharacters,
 		charactersReceiving: requestedCharacters,
 	}) => {
-		await deferInteraction(interaction);
-
 		const initiatingPlayerID = interaction.user.id;
 		const recipientPlayerID = playerTradingWith.id;
 
@@ -53,23 +51,17 @@ export const command = new SlashCommand({
 		});
 
 		if (tradeResult.isNonPlayerInitiatedTrade()) {
-			return await replyToInteraction(interaction,
-				`You're not a player, so you can't initiate a trade.`
-			);
+			return `You're not a player, so you can't initiate a trade.`;
 		}
 		else if (tradeResult.isNonPlayerReceivedTrade()) {
-			return await replyToInteraction(interaction,
-				`You can only trade with players. <@${recipientPlayerID}> is not a player.`
-			);
+			return `You can only trade with players. <@${recipientPlayerID}> is not a player.`;
 		}
 		else if (tradeResult.isTradeBetweenSamePlayers()) {
-			return await replyToInteraction(interaction,
-				`You can't trade with yourself.`
-			);
+			return `You can't trade with yourself.`;
 		}
 		else if (tradeResult.isMissingOfferedCharacters()) {
 			const { missingCharacters } = tradeResult;
-			return await replyToInteraction(interaction,
+			return (
 				`You are missing ${missingCharacters.length} characters you offered for this trade:\n` +
 				missingCharacters
 			);
@@ -77,9 +69,9 @@ export const command = new SlashCommand({
 		else if (tradeResult.isMissingRequestedCharacters()) {
 			const { missingCharacters } = tradeResult;
 
-			return await replyToInteraction(interaction,
+			return (
 				`<@${recipientPlayerID}> is missing ${missingCharacters.length} characters you requested for this trade:\n` +
-				missingCharacters,
+				missingCharacters
 			);
 		}
 
