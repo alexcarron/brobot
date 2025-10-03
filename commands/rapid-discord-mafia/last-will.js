@@ -42,7 +42,6 @@ module.exports = new SlashCommand({
 			const contents = await getInputFromCreatedTextModal({
 				interaction,
 				modalTitle: "Last Will",
-				initialMessageText: "Click the button to edit your last will",
 				showModalButtonText: "Edit Last Will",
 				placeholder: player.last_will,
 			});

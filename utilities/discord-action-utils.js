@@ -236,7 +236,6 @@ const editReplyToInteraction = async (interaction, newMessageContents) => {
  * @param {ChatInputCommandInteraction | ButtonInteraction} options.interaction The interaction that triggered the modal.
  * @param {string} [options.modalTitle] The title of the modal.
  * @param {string} [options.showModalButtonText] The text of the button which shows the modal.
- * @param {string} [options.initialMessageText] The text to send to the user when prompting them to press the button.
  * @param {string} [options.placeholder] The placeholder text for the text input field in the modal.
  * @returns {Promise<string | undefined>} The text entered by the user.
  */
@@ -760,6 +759,10 @@ const addButtonToMessageContents = ({
 		// @ts-ignore
 		contents.components.push(actionRow);
 	}
+	else {
+		// @ts-ignore
+		contents.components = [actionRow];
+	}
 
 	return contents;
 }
@@ -771,7 +774,7 @@ const addButtonToMessageContents = ({
  * @param {(buttonInteraction: ButtonInteraction) => Promise<void>} onButtonPressed - The function to run when the button is pressed.
  * @returns {Promise<void>} A promise that resolves when the user has clicked a button.
  */
-const doWhenButtonPressed = async (messsageWithButton, buttonID, onButtonPressed) => {
+const waitForButtonPressThen = async (messsageWithButton, buttonID, onButtonPressed) => {
 	if (!(messsageWithButton instanceof Message))
 		throw new Error("Message must be an instance of Message");
 
@@ -935,7 +938,7 @@ module.exports = {
 	renameChannel,
 	setNicknameOfMember,
 	addButtonToMessageContents,
-	doWhenButtonPressed,
+	waitForButtonPressThen,
 	shuffleCategoryChannels,
 	setChannelMessage,
 	toMessageEditFromCreateOptions,

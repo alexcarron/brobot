@@ -167,6 +167,11 @@ export class SlashCommand<
 	public readonly isInUserTesting: boolean = false;
 
 	/**
+	 * If the command should automatically defer the command interaction.
+	 */
+	public readonly isAutoDeffered: boolean = true;
+
+	/**
 	 * A function which takes a discord.js Interaction that executes when the command is autocompleted
 	 */
 	public readonly autocomplete: (interaction: AutocompleteInteraction) => Promise<any>;
@@ -196,6 +201,7 @@ export class SlashCommand<
 		autocomplete = async () => {},
 		isInDevelopment = false,
 		isInUserTesting = false,
+		disableAutoDefer = false,
 	}: {
 		name: string;
 		description: string;
@@ -214,6 +220,7 @@ export class SlashCommand<
 		autocomplete?: (interaction: AutocompleteInteraction) => Promise<any>;
 		isInDevelopment?: boolean;
 		isInUserTesting?: boolean;
+		disableAutoDefer?: boolean;
 	}) {
 		this.name = name;
 		this.description = description;
@@ -229,6 +236,7 @@ export class SlashCommand<
 		this.autocomplete = autocomplete;
 		this.isInDevelopment = isInDevelopment;
 		this.isInUserTesting = isInUserTesting;
+		this.isAutoDeffered = !disableAutoDefer;
 	}
 
 	/**
@@ -291,9 +299,11 @@ export class SlashCommand<
 	}
 
 	async handleExecution(interaction: ChatInputCommandInteraction): Promise<any> {
-		await attempt(deferInteraction(interaction))
-			.ignoreError()
-			.execute();
+		if (this.isAutoDeffered) {
+			await attempt(deferInteraction(interaction))
+				.ignoreError()
+				.execute();
+		}
 
 		const params = collectParameters(interaction, this.parameters);
 

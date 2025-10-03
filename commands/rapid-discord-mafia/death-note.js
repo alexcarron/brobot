@@ -42,7 +42,6 @@ module.exports = new SlashCommand({
 			const contents = await getInputFromCreatedTextModal({
 				interaction,
 				modalTitle: "Death Note",
-				initialMessageText: "Click the button to edit your death note",
 				showModalButtonText: "Edit Death Note",
 				placeholder: player.death_note,
 			});
