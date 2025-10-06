@@ -34,8 +34,7 @@ export function createTradeMessage(
 	const messageContents =
 		`## <@${recipientPlayerID}>, <@${initiatingPlayerID}> wants to trade with you!\n` +
 		`:arrow_right: **You give them** ${requestedCharacters}\n` +
-		`:arrow_left: **You receive** ${offeredCharacters}\n\n` +
-		`-# This request expires in 2 days.`;
+		`:arrow_left: **You receive** ${offeredCharacters}\n\n`
 
 	const acceptButton = createAcceptTradeButton({
 		tradeService, playerService, trade
