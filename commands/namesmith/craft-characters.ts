@@ -10,7 +10,10 @@ import { isIntegerString } from "../../utilities/string-checks-utils";
 
 /**
  * Returns the display string for a recipe option in the autocomplete menu.
- * @param {recipeService, recipe, playerID} - The recipe service, the recipe, and the player ID.
+ * @param parameters - The parameters for the function
+ * @param parameters.recipeService - The recipe service
+ * @param parameters.recipe - The recipe object
+ * @param parameters.playerID - The ID of the player
  * @returns The display string for the recipe option.
  */
 function getRecipeOptionDisplayName(
@@ -28,9 +31,6 @@ function getRecipeOptionDisplayName(
 }
 
 export const command = new SlashCommand({
-	// TODO: Remove this when the command is no longer in development
-	isInDevelopment: true,
-
 	name: "craft-characters",
 	description: "Craft characters using a recipe",
 	required_servers: [ids.servers.NAMESMITH],

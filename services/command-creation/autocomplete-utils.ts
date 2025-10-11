@@ -8,6 +8,12 @@ export type AutocompleteChoicesResolvable =
 	| {[name: string]: string}
 	| {name: string; value: string}[]
 
+/**
+ * Checks if the autocomplete interaction is focused on the specified parameter.
+ * @param autocompleteInteraction The autocomplete interaction to check.
+ * @param parameter The parameter to check if the autocomplete interaction is focused on.
+ * @returns True if the autocomplete interaction is focused on the specified parameter, false otherwise.
+ */
 export function isAutocompleteForParameter(
 	autocompleteInteraction: AutocompleteInteraction,
 	parameter: Parameter,
