@@ -62,7 +62,7 @@ export type ParamNameToType<Parameters extends readonly Parameter[]> = {
 type StringParameterOptions = {
 	isAutocomplete?: boolean;
 	autocomplete?:
-		| ((enteredValue: string) => Promise<AutocompleteChoicesResolvable> | AutocompleteChoicesResolvable)
+		| ((enteredValue: string, user: User, enteredValueByParameter: Record<string, string>) => Promise<AutocompleteChoicesResolvable> | AutocompleteChoicesResolvable)
 		| {[autocomplete_entry: string]: string};
 }
 
@@ -102,7 +102,7 @@ export class Parameter<
 	max_value;
 
 	autocomplete:
-		| ((enteredValue: string) => Promise<AutocompleteChoicesResolvable> | AutocompleteChoicesResolvable)
+		| ((enteredValue: string, user: User, enteredValueByParameter: Record<string, string>) => Promise<AutocompleteChoicesResolvable> | AutocompleteChoicesResolvable)
 		| {[autocomplete_entry: string]: string}
 		| undefined;
 

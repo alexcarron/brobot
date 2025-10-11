@@ -1,5 +1,5 @@
 import { makeSure } from "./jest/jest-utils";
-import { areCharactersInString, getCharacterCounts } from "./string-checks-utils";
+import { areCharactersInString, getCharacterCounts, isIntegerString } from "./string-checks-utils";
 
 describe('string-checks-utils', () => {
 	describe('areCharactersInString()', () => {
@@ -150,6 +150,123 @@ describe('string-checks-utils', () => {
 			const input = '';
 			const expectedOutput = new Map();
 			expect(getCharacterCounts(input)).toEqual(expectedOutput);
+		});
+	});
+	describe('isIntegerString()', () => {
+		it('returns true for a positive integer string', () => {
+			const result = isIntegerString('42');
+			makeSure(result).is(true);
+		});
+
+		it('returns true for a negative integer string', () => {
+			const result = isIntegerString('-10');
+			makeSure(result).is(true);
+		});
+
+		it('returns true for zero', () => {
+			const result = isIntegerString('0');
+			makeSure(result).is(true);
+		});
+
+		it('returns true for integer with surrounding whitespace (trimmed)', () => {
+			const result = isIntegerString(' 42 ');
+			makeSure(result).is(true);
+		});
+
+		it('returns false for an empty string', () => {
+			const result = isIntegerString('');
+			makeSure(result).is(false);
+		});
+
+		it('returns false for a whitespace-only string', () => {
+			const result = isIntegerString('   ');
+			makeSure(result).is(false);
+		});
+
+		it('returns false for a decimal string', () => {
+			const result = isIntegerString('3.14');
+			makeSure(result).is(false);
+		});
+
+		it('returns false for a string with trailing non-numeric characters', () => {
+			const result = isIntegerString('42abc');
+			makeSure(result).is(false);
+		});
+
+		it('returns false for a string with leading zeros ("0012")', () => {
+			const result = isIntegerString('0012');
+			makeSure(result).is(false);
+		});
+
+		it('returns false for a string with a plus sign prefix ("+5")', () => {
+			const result = isIntegerString('+5');
+			makeSure(result).is(false);
+		});
+
+		it('returns false for "-0" (strict canonicalization)', () => {
+			const result = isIntegerString('-0');
+			makeSure(result).is(false);
+		});
+
+		it('returns false for scientific notation ("1e3")', () => {
+			const result = isIntegerString('1e3');
+			makeSure(result).is(false);
+		});
+
+		it('returns false for hex literal string ("0x10")', () => {
+			const result = isIntegerString('0x10');
+			makeSure(result).is(false);
+		});
+
+		it('returns false for "Infinity" and "NaN"', () => {
+			makeSure(isIntegerString('Infinity')).is(false);
+			makeSure(isIntegerString('NaN')).is(false);
+		});
+
+		it('returns false for unicode numerals or special numeric glyphs', () => {
+			makeSure(isIntegerString('②')).is(false);
+		});
+
+		it('returns false for very large numeric strings that are not canonical', () => {
+			const result = isIntegerString(Number.MAX_SAFE_INTEGER.toString() + '1'); // >
+			makeSure(result).is(false);
+		});
+
+		it('returns false for strings with internal spaces', () => {
+			const result = isIntegerString('4 2');
+			makeSure(result).is(false);
+		});
+
+		it('returns false for strings containing underscores or commas', () => {
+			makeSure(isIntegerString('1_000')).is(false);
+			makeSure(isIntegerString('1,000')).is(false);
+		});
+
+		it('returns false when given non-digit characters', () => {
+			const cases = ['abc', '123a', 'a123', '12-3'];
+			for (const c of cases) {
+				makeSure(isIntegerString(c)).is(false);
+			}
+		});
+
+		it('accepts canonical negative large integers within canonical string form', () => {
+			// Pick a canonical integer string where number.toString() equals the trimmed input.
+			const result = isIntegerString('-123456');
+			makeSure(result).is(true);
+		});
+
+		it('rejects a plus sign alone or minus sign alone', () => {
+			makeSure(isIntegerString('+')).is(false);
+			makeSure(isIntegerString('-')).is(false);
+		});
+
+		it('rejects inputs with leading plus zero ("+0")', () => {
+			makeSure(isIntegerString('+0')).is(false);
+		});
+
+		it('is strict about canonical representation: "12" passes, "012" fails', () => {
+			makeSure(isIntegerString('12')).is(true);
+			makeSure(isIntegerString('012')).is(false);
 		});
 	});
 });

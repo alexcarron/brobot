@@ -3,7 +3,7 @@ import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PlayerResolvable } from "../types/player.types";
 import { RecipeResolvable } from "../types/recipe.types";
 import { fetchRecipesChannel } from "../utilities/discord-fetch.utility";
-import { craftCharacter } from "../workflows/craft-character.workflow";
+import { craftCharacters } from "../workflows/craft-characters.workflow";
 import { replyToInteraction } from "../../../utilities/discord-action-utils";
 import { escapeDiscordMarkdown } from "../../../utilities/string-manipulation-utils";
 import { RecipeService } from "../services/recipe.service";
@@ -15,7 +15,7 @@ const onRecipeSelected = async (
 	recipe: RecipeResolvable,
 	interaction: StringSelectMenuInteraction,
 ) => {
-	const result = await craftCharacter({
+	const result = await craftCharacters({
 		...getNamesmithServices(),
 		player,
 		recipe
@@ -45,7 +45,7 @@ const onRecipeSelected = async (
 		return;
 	}
 
-	const {newInventory, craftedCharacter, recipeUsed} = result;
+	const {newInventory, craftedCharacters: craftedCharacter, recipeUsed} = result;
 	await replyToInteraction(interaction, escapeDiscordMarkdown(
 		`Successfully crafted ${craftedCharacter} using ${recipeUsed.inputCharacters}\n` +
 		`Your inventory now contains ${newInventory}`

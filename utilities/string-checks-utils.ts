@@ -62,3 +62,20 @@ export const areCharactersInString = (
 	}
 	return true;
 }
+
+/**
+ * Checks if a given string is a valid integer string.
+ * A valid integer string is a string that is not empty or whitespace-only, and can be parsed to a number using the Number() constructor.
+ * The string must also be equal to the string representation of the parsed number.
+ * @param string - The string to check.
+ * @returns True if the string is a valid integer string, false otherwise.
+ */
+export function isIntegerString(string: string): boolean {
+  if (string.trim() === '') return false;
+
+  const number = Number(string);
+  return (
+		Number.isInteger(number) &&
+		string.trim() === number.toString()
+	);
+}
