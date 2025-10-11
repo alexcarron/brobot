@@ -8,7 +8,7 @@ import { setupMockNamesmith } from "../mocks/mock-setup";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PlayerService } from "../services/player.service";
 import { RecipeService } from "../services/recipe.service";
-import { craftCharacter } from "./craft-character.workflow";
+import { craftCharacters } from "./craft-characters.workflow";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { addMockRecipe } from "../mocks/mock-data/mock-recipes";
 import { returnIfNotFailure } from "./workflow-result-creator";
@@ -44,8 +44,8 @@ describe('craft-character.workflow', () => {
 				outputCharacters: 'c'
 			});
 
-			const {newInventory, craftedCharacter, recipeUsed} = returnIfNotFailure(
-					await craftCharacter({
+			const {newInventory, craftedCharacters: craftedCharacter, recipeUsed} = returnIfNotFailure(
+					await craftCharacters({
 					playerService, recipeService, player, recipe
 				})
 			);
@@ -64,7 +64,7 @@ describe('craft-character.workflow', () => {
 				outputCharacters: 'c'
 			});
 
-			await craftCharacter({
+			await craftCharacters({
 				playerService, recipeService, player, recipe
 			});
 
@@ -81,7 +81,7 @@ describe('craft-character.workflow', () => {
 				inputCharacters: 'def'
 			});
 
-			const result = await craftCharacter({
+			const result = await craftCharacters({
 				playerService, recipeService, player, recipe
 			})
 
@@ -100,7 +100,7 @@ describe('craft-character.workflow', () => {
 				outputCharacters: 'c'
 			});
 
-			const result = await craftCharacter({
+			const result = await craftCharacters({
 				playerService, recipeService, player, recipe
 			})
 

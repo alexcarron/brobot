@@ -2,7 +2,7 @@ import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuild
 import { Parameter, ParamNameToType } from "./parameter";
 import { toCamelCase } from "../../utilities/string-manipulation-utils";
 import { isString, isStringToStringRecord, isUndefined } from "../../utilities/types/type-guards";
-import { filterAutocompleteByEnteredValue, getEnteredValueOfParameter, limitAutocompleteChoices, toAutocompleteChoices } from "./autocomplete-utils";
+import { filterAutocompleteByEnteredValue, getEnteredValueOfParameter, getEnteredValueOfParameters, isAutocompleteForParameter, limitAutocompleteChoices, toAutocompleteChoices } from "./autocomplete-utils";
 import { deferInteraction, replyToInteraction } from "../../utilities/discord-action-utils";
 import { attempt } from "../../utilities/error-utils";
 
@@ -319,9 +319,14 @@ export class SlashCommand<
 				!isUndefined(parameter.autocomplete) &&
 				!isStringToStringRecord(parameter.autocomplete)
 			) {
-				const enteredValue = getEnteredValueOfParameter(interaction, parameter.name);
+				if (!isAutocompleteForParameter(interaction, parameter))
+					continue;
 
-				const autocompleteChoicesResolvable = await parameter.autocomplete(enteredValue);
+				const enteredValue = getEnteredValueOfParameter(interaction, parameter.name);
+				const user = interaction.user;
+				const enteredValueByParameter = getEnteredValueOfParameters(interaction);
+				
+				const autocompleteChoicesResolvable = await parameter.autocomplete(enteredValue, user, enteredValueByParameter);
 
 				const choices = toAutocompleteChoices(autocompleteChoicesResolvable);
 

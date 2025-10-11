@@ -129,4 +129,43 @@ export class RecipeService {
 		const outputCharacters = recipe.outputCharacters;
 		await this.playerService.giveCharacters(playerResolvable, outputCharacters);
 	}
+
+	/**
+	 * Sorts recipes by whether or not a player can craft them.
+	 * @param recipes - The recipes to sort.
+	 * @param playerResolvable - The player to check if they can craft the recipes.
+	 * @param options - Options for sorting
+	 * @param options.uncraftableFirst - Whether to sort uncraftable recipes first.
+	 * @returns The sorted recipes.
+	 */
+	sortByCraftableByPlayer(
+		recipes: Recipe[],
+		playerResolvable: PlayerResolvable,
+		options: { uncraftableFirst?: boolean } = {}
+	): Recipe[] {
+		const { uncraftableFirst = false } = options;
+
+		const playerCanCraft = (recipe: Recipe): boolean =>
+			this.playerHasInputCharacters(recipe.id, playerResolvable);
+
+		const craftableRecipes: Recipe[] = [];
+		const uncraftableRecipes: Recipe[] = [];
+
+		for (const recipe of recipes) {
+			if (playerCanCraft(recipe)) {
+				craftableRecipes.push(recipe);
+			}
+			else {
+				uncraftableRecipes.push(recipe);
+			}
+		}
+
+		if (uncraftableFirst) {
+			return [...uncraftableRecipes, ...craftableRecipes];
+		}
+		else {
+			return [...craftableRecipes, ...uncraftableRecipes];
+		}
+
+	}
 }

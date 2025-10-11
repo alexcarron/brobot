@@ -1,12 +1,20 @@
 import { ApplicationCommandOptionChoiceData, AutocompleteInteraction } from "discord.js";
 import { isStrings, isStringToStringRecord } from "../../utilities/types/type-guards";
 import { findStringsContaining } from "../../utilities/string-manipulation-utils";
+import { Parameter } from "./parameter";
 
 export type AutocompleteChoicesResolvable =
 	| string[]
 	| {[name: string]: string}
 	| {name: string; value: string}[]
 
+export function isAutocompleteForParameter(
+	autocompleteInteraction: AutocompleteInteraction,
+	parameter: Parameter,
+): boolean {
+	const focusedParameter = autocompleteInteraction.options.getFocused(true);
+	return focusedParameter.name === parameter.name;
+}
 
 /**
  * Returns the value that the user has entered for the focused parameter in an autocomplete interaction.
@@ -32,6 +40,24 @@ export function getEnteredValueOfParameter(
 	const focusedParameter = interaction.options.getFocused(true);
 	if (focusedParameter.name !== parameterName) return "";
 	return focusedParameter.value;
+}
+
+/**
+ * Returns an object with the name of each parameter as a key and its entered value as a value.
+ * If the user has not entered a value for a parameter, the value for that parameter will be an empty string.
+ * @param interaction The autocomplete interaction to get the entered values from.
+ * @returns An object with parameter names as keys and entered values as values.
+ */
+export function getEnteredValueOfParameters(
+	interaction: AutocompleteInteraction
+): Record<string, string> {
+	const parameters = interaction.options.data;
+	const enteredValues: Record<string, string> = {};
+	for (const parameter of parameters) {
+		const name = parameter.name;
+		enteredValues[name] = parameter.value?.toString() ?? '';
+	}
+	return enteredValues;
 }
 
 /**
