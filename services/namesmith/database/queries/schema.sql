@@ -49,8 +49,15 @@ CREATE TABLE IF NOT EXISTS player (
 -- Player Perks table
 CREATE TABLE IF NOT EXISTS playerPerk (
 	playerID TEXT NOT NULL REFERENCES player(id) ON DELETE CASCADE,
-	perk TEXT NOT NULL,
-	PRIMARY KEY (playerID, perk)
+	perkID INTEGER NOT NULL REFERENCES perk(id) ON DELETE CASCADE,
+	PRIMARY KEY (playerID, perkID)
+);
+
+-- Perks table
+CREATE TABLE IF NOT EXISTS perk (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	name TEXT NOT NULL UNIQUE,
+	description TEXT NOT NULL
 );
 
 -- Votes table
@@ -80,7 +87,6 @@ CREATE TABLE IF NOT EXISTS trade (
 		('awaitingRecipient', 'awaitingInitiator', 'accepted', 'declined', 'ignored')
 	) DEFAULT 'awaitingRecipient'
 );
-
 
 -- Optional index for performance
 CREATE INDEX IF NOT EXISTS characterIDIndex ON character (id);

@@ -2,6 +2,7 @@ import { InvalidArgumentError, validateArguments } from "../../../utilities/erro
 import { WithOptional } from "../../../utilities/types/generic-types";
 import { CharacterWithTags } from "../types/character.types";
 import { MysteryBoxWithOdds } from "../types/mystery-box.types";
+import { Perk } from "../types/perk.types";
 import { Recipe } from "../types/recipe.types";
 import { getIDfromCharacterValue, getCharacterValueFromID } from "../utilities/character.utility";
 import { ForeignKeyConstraintError } from "../utilities/error.utility";
@@ -149,4 +150,40 @@ export const insertRecipesToDB = (
 	});
 
 	insertRecipes(recipes);
+}
+
+/**
+ * Inserts a list of perks into the database.
+ * @param db - The database querier used to execute queries.
+ * @param perks - An array of perk objects to be inserted. Each perk can optionally include an 'id'. If 'id' is not provided, it will be auto-generated.
+ */
+export function insertPerksToDB(
+	db: DatabaseQuerier,
+	perks: WithOptional<Perk, "id">[]
+) {
+	const insertPerkIntoDB = db.getQuery("INSERT INTO perk (name, description) VALUES (@name, @description)");
+	const insertPerkIntoDBWithID = db.getQuery("INSERT INTO perk (id, name, description) VALUES (@id, @name, @description)");
+
+	const insertPerks = db.getTransaction((perks: WithOptional<Perk, "id">[]) => {
+		db.run("DELETE FROM perk");
+
+		// SET AUTO INCREMENT TO 1
+		db.run("UPDATE sqlite_sequence SET seq = 0 WHERE name = 'perk'");
+
+		for (const perk of perks) {
+			if (perk.id === undefined)
+				insertPerkIntoDB.run({
+					name: perk.name,
+					description: perk.description
+				});
+			else
+				insertPerkIntoDBWithID.run({
+					id: perk.id,
+					name: perk.name,
+					description: perk.description
+				});
+		}
+	});
+
+	insertPerks(perks);
 }

@@ -3,6 +3,7 @@ import { CustomError } from '../../../utilities/error-utils';
 import { escapeDiscordMarkdown } from '../../../utilities/string-manipulation-utils';
 import { CharacterID } from '../types/character.types';
 import { MysteryBox, MysteryBoxID } from '../types/mystery-box.types';
+import { PerkID } from '../types/perk.types';
 import { Player } from '../types/player.types';
 import { Recipe, RecipeID } from '../types/recipe.types';
 import { Trade, TradeID, TradeResolveable } from '../types/trade.types';
@@ -167,6 +168,19 @@ export class TradeNotFoundError extends ResourceNotFoundError {
 		super({
 			message: `Trade with ID ${tradeID} not found.`,
 			relevantData: { tradeID }
+		})
+	}
+}
+
+/**
+ * Error thrown when a requested namesmith perk is not found.
+ */
+export class PerkNotFoundError extends ResourceNotFoundError {
+	declare relevantData: { perkID: PerkID }
+	constructor(perkID: PerkID) {
+		super({
+			message: `Perk with ID ${perkID} not found.`,
+			relevantData: { perkID }
 		})
 	}
 }

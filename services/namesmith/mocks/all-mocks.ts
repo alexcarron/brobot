@@ -1,6 +1,6 @@
 import { NamesmithDependencies } from "../types/namesmith.types";
 import { createMockDB } from "./mock-database";
-import { createMockCharacterRepo, createMockGameStateRepo, createMockMysteryBoxRepo, createMockPlayerRepo, createMockRecipeRepo, createMockTradeRepo, createMockVoteRepo } from "./mock-repositories";
+import { createMockCharacterRepo, createMockGameStateRepo, createMockMysteryBoxRepo, createMockPerkRepo, createMockPlayerRepo, createMockRecipeRepo, createMockTradeRepo, createMockVoteRepo } from "./mock-repositories";
 import { createMockCharacterService, createMockGameStateService, createMockMysteryBoxService, createMockPlayerService, createMockRecipeService, createMockTradeService, createMockVoteService } from "./mock-services";
 
 /**
@@ -17,6 +17,7 @@ export const createAllMocks = (): NamesmithDependencies => {
 	const gameStateRepository = createMockGameStateRepo(mockDB);
 	const recipeRepository = createMockRecipeRepo(mockDB);
 	const tradeRepository = createMockTradeRepo(mockDB);
+	const perkRepository = createMockPerkRepo(mockDB);
 
 	const mysteryBoxService = createMockMysteryBoxService(mysteryBoxRepository, characterRepository);
 	const characterService = createMockCharacterService(characterRepository);
@@ -36,6 +37,7 @@ export const createAllMocks = (): NamesmithDependencies => {
 		gameStateRepository,
 		recipeRepository,
 		tradeRepository,
+		perkRepository,
 
 		mysteryBoxService,
 		characterService,

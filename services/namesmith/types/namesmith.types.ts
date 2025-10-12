@@ -3,6 +3,7 @@ import { DatabaseQuerier } from "../database/database-querier";
 import { CharacterRepository } from "../repositories/character.repository";
 import { GameStateRepository } from "../repositories/game-state.repository";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
+import { PerkRepository } from "../repositories/perk.repository";
 import { PlayerRepository } from "../repositories/player.repository";
 import { RecipeRepository } from "../repositories/recipe.repository";
 import { TradeRepository } from "../repositories/trade.repository";
@@ -33,6 +34,7 @@ export type NamesmithRepositories = Expand<{
 	voteRepository: VoteRepository,
 	recipeRepository: RecipeRepository,
 	tradeRepository: TradeRepository,
+	perkRepository: PerkRepository,
 }>;
 
 /**

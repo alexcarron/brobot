@@ -4,6 +4,7 @@
  */
 
 import { Class, ErrorClass } from "../types/generic-types";
+import { isArray, isObject } from "../types/type-guards";
 
 
 /**
@@ -107,6 +108,33 @@ export function makeSure(actualValue: unknown) {
 		},
 
 		/**
+		 * Asserts that the actual value is not undefined.
+		 * @example
+		 * makeSure(actualResultValue).isNotUndefined();
+		 */
+		isNotUndefined(): void {
+			baseExpect.not.toBe(undefined);
+		},
+
+		/**
+		 * Asserts that the actual value is null.
+		 * @example
+		 * makeSure(actualResultValue).isNull();
+		 */
+		isNull(): void {
+			baseExpect.toBe(null);
+		},
+
+		/**
+		 * Asserts that the actual value is not null.
+		 * @example
+		 * makeSure(actualResultValue).isNotNull();
+		 */
+		isNotNull(): void {
+			baseExpect.not.toBe(null);
+		},
+
+		/**
 		 * Asserts that the actual value is true.
 		 * @example
 		 * makeSure(actualResultValue).isTrue();
@@ -171,6 +199,17 @@ export function makeSure(actualValue: unknown) {
 		},
 
 		/**
+		 * Asserts that the actual value is an array.
+		 * @example
+		 * makeSure([1, 2, 3]).isArray();
+		 */
+		isAnArray(): void {
+			if (!Array.isArray(actualValue)) {
+				throw new Error(`Expected actual value to be an array, but got: ${actualValue}`);
+			}
+		},
+
+		/**
 		 * Asserts that the actual array or string has the expected length.
 		 * @param expectedLength - The expected length of the actual array or string.
 		 * @example
@@ -196,13 +235,66 @@ export function makeSure(actualValue: unknown) {
 		},
 
 		/**
-		 * Asserts that the actual array or string contains the expected value.
-		 * @param expectedValue - The value that the actual array or string should contain.
+		 * Asserts that the actual array or string is not empty.
 		 * @example
-		 * makeSure([1, 2, 3]).contains(2);
+		 * makeSure([1, 2, 3]).isNotEmpty();
 		 */
-		contains(expectedValue: unknown): void {
-			baseExpect.toContainEqual(expectedValue);
+		isNotEmpty(): void {
+			if (typeof actualValue === 'number') {
+				throw Error(
+					`makeSure(${actualValue}).isNotEmpty() was called with a number.\n` +
+					`Instead, call it with an array or anything with a length property.`
+				);
+			}
+
+			baseExpect.not.toHaveLength(0);
+		},
+
+		/**
+		 * Asserts that the actual array contains all of the expected values.
+		 * @param expectedValues - The values that the actual array should contain.
+		 * @example
+		 * makeSure([1, 2, 3]).contains(2, 3);
+		 */
+		contains(...expectedValues: unknown[]): void {
+			for (const expectedValue of expectedValues) {
+				baseExpect.toContainEqual(expectedValue);
+			}
+		},
+
+		/**
+		 * Asserts that each item in the array has the given properties.
+		 * @param propertyNames - The names of the properties that each item in the array should have.
+		 * @example
+		 * makeSure([{ id: 1 }, { id: 2 }]).hasProperties('id');
+		 */
+		hasProperties(...propertyNames: string[]): void {
+			if (!isObject(actualValue))
+				throw new Error(`Expected each item in the array to be an object, but got: ${actualValue}`);
+
+			propertyNames.forEach(propertyName => {
+				expect(actualValue).toHaveProperty(propertyName);
+			});
+		},
+
+		/**
+		 * Asserts that the actual array contains objects that have the given properties.
+		 * @param propertyNames - The names of the properties that each object should have.
+		 * @example
+		 * makeSure([{ id: 1 }, { id: 2 }]).haveProperties('id');
+		 */
+		haveProperties(...propertyNames: string[]): void {
+			if (!isArray(actualValue))
+				throw new Error(`Expected actual value to be an array, but got: ${actualValue}`);
+
+			actualValue.forEach(object => {
+				if (!isObject(object))
+					throw new Error(`Expected each item in the array to be an object, but got: ${object}`);
+
+				propertyNames.forEach(propertyName => {
+					expect(object).toHaveProperty(propertyName);
+				});
+			});
 		},
 
 		/**

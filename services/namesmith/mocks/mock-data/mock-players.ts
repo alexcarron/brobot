@@ -1,7 +1,9 @@
 import { InvalidArgumentError } from "../../../../utilities/error-utils";
 import { createRandomNumericUUID } from "../../../../utilities/random-utils";
 import { WithAtLeast, WithAtLeastOneProperty } from "../../../../utilities/types/generic-types";
+import { isNumber, isObject, isString } from "../../../../utilities/types/type-guards";
 import { DatabaseQuerier } from "../../database/database-querier";
+import { PerkResolvable } from "../../types/perk.types";
 import { DBPlayer, Player } from "../../types/player.types";
 import { PlayerAlreadyExistsError } from "../../utilities/error.utility";
 import { toPlayerObject } from "../../utilities/player.utility";
@@ -86,7 +88,15 @@ export const createMockPlayerObject = ({
  * @param playerData.role - The role of the player.
  * @param playerData.inventory - The player's inventory.
  * @param playerData.lastClaimedRefillTime - The last time the player claimed a refill.
+ * @param playerData.perks - An array of perks to give the player. Each perk can be a Perk object, ID, or name.
  * @returns The player object that was added to the database.
+ * @example
+ * const db = new DatabaseQuerier(":memory:");
+ * addMockPlayer(db, {
+ *   currentName: "John Doe",
+ *   tokens: 10,
+ *   perks: ["Mine Bonus"]
+ * });
  */
 export const addMockPlayer = (
 	db: DatabaseQuerier,
@@ -97,9 +107,13 @@ export const addMockPlayer = (
 		tokens = 0,
 		role = null,
 		inventory = "",
-		lastClaimedRefillTime = null
+		lastClaimedRefillTime = null,
+		perks = []
 	}:
-	WithAtLeastOneProperty<Player>
+	WithAtLeastOneProperty<
+		& Player
+		& { perks: PerkResolvable[] }
+	>
 ): Player => {
 	if (id === undefined) {
 		id = createRandomNumericUUID();
@@ -129,6 +143,32 @@ export const addMockPlayer = (
 				? null
 				: lastClaimedRefillTime.getTime()
 	});
+
+	const givePlayerPerk = db.prepare(`
+		INSERT INTO playerPerk (playerID, perkID)
+		VALUES (@playerID, @perkID)
+	`);
+
+	for (const perk of perks) {
+		if (isNumber(perk)) {
+			givePlayerPerk.run({ playerID: id, perkID: perk });
+		}
+		else if (isString(perk)) {
+			const getPerkByName = db.prepare("SELECT * FROM perk WHERE name = @name");
+			const dbPerk = getPerkByName.get({ name: perk }) as DBPlayer | undefined;
+
+			if (dbPerk === undefined) {
+				throw new InvalidArgumentError(`addMockPlayer: No perk found with name ${perk}.`);
+			}
+
+			givePlayerPerk.run({ playerID: id, perkID: dbPerk.id });
+		}
+		else if (isObject(perk)) {
+			const perkID = perk.id;
+			givePlayerPerk.run({ playerID: id, perkID: perkID });
+		}
+	}
+
 	return player;
 };
 

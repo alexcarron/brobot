@@ -3,3 +3,4 @@ export const INVALID_CHARACTER_ID = 381181320518;
 export const INVALID_PLAYER_ID = "1612132518";
 export const INVALID_VOTE_ID = "2215205";
 export const INVALID_TRADE_ID = 2018145;
+export const INVALID_PERK_ID = 1651811;

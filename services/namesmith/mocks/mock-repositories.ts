@@ -19,6 +19,7 @@ import { addMockPlayer, createMockPlayerObject, mockPlayers } from './mock-data/
 import { addMockVote, mockVotes } from './mock-data/mock-votes';
 import { mockRecipes } from './mock-data/mock-recipes';
 import { addMockTrade, mockTrades } from './mock-data/mock-trades';
+import { PerkRepository } from '../repositories/perk.repository';
 
 /**
  * Creates a mock character repository instance with an in-memory database for testing purposes.
@@ -210,6 +211,22 @@ export const createMockTradeRepo = (
 }
 
 /**
+ * Creates a mock perk repository instance with an in-memory database for testing purposes.
+ * If the mockDB parameter is undefined, a default mock database instance is created.
+ * @param mockDB - An optional mock database instance.
+ * @returns A mock instance of the PerkRepository.
+ */
+export const createMockPerkRepo = (
+	mockDB?: DatabaseQuerier,
+): PerkRepository => {
+	mockDB =
+		mockDB
+		?? createMockDB();
+
+	return new PerkRepository(mockDB);
+}
+
+/**
  * Creates an object containing mock instances of the repositories and the in-memory database for testing purposes.
  * The returned object contains the following properties:
  * - db: The mock database instance.
@@ -246,5 +263,6 @@ export function createMockRepositories(
 		voteRepository: createMockVoteRepo(mockDB, players, votes),
 		recipeRepository: createMockRecipeRepo(mockDB, recipes),
 		tradeRepository: createMockTradeRepo(mockDB, trades),
+		perkRepository: createMockPerkRepo(mockDB),
 	}
 }

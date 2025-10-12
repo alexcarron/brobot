@@ -6,6 +6,7 @@ import { regenerateVoteDisplay } from "../interfaces/voting/voting-messages";
 import { CharacterRepository } from "../repositories/character.repository";
 import { GameStateRepository } from "../repositories/game-state.repository";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
+import { PerkRepository } from "../repositories/perk.repository";
 import { PlayerRepository } from "../repositories/player.repository";
 import { RecipeRepository } from "../repositories/recipe.repository";
 import { TradeRepository } from "../repositories/trade.repository";
@@ -37,6 +38,7 @@ export const initializeDependencies = async (): Promise<NamesmithDependencies> =
 	const voteRepository = new VoteRepository(db);
 	const recipeRepository = new RecipeRepository(db);
 	const tradeRepository = new TradeRepository(db);
+	const perkRepository = new PerkRepository(db);
 
 	const mysteryBoxService = new MysteryBoxService(
 		mysteryBoxRepository,
@@ -75,7 +77,7 @@ export const initializeDependencies = async (): Promise<NamesmithDependencies> =
 
 	const namesmithDependencies: NamesmithDependencies = {
 		db,
-		mysteryBoxRepository, characterRepository, playerRepository, gameStateRepository, voteRepository, recipeRepository, tradeRepository,
+		mysteryBoxRepository, characterRepository, playerRepository, gameStateRepository, voteRepository, recipeRepository, tradeRepository, perkRepository,
 		mysteryBoxService, characterService, playerService, voteService, recipeService, tradeService, gameStateService
 	};
 
