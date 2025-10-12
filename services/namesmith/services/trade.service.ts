@@ -1,5 +1,5 @@
 import { TradeRepository } from "../repositories/trade.repository";
-import { PlayerResolvable } from "../types/player.types";
+import { Player, PlayerResolvable } from "../types/player.types";
 import { Trade, TradeID, TradeResolveable, TradeStatuses } from "../types/trade.types";
 import { InvalidStateError } from "../utilities/error.utility";
 import { isTrade } from "../utilities/trade.utility";
@@ -175,18 +175,64 @@ export class TradeService {
 	): boolean {
 		trade = this.resolveTrade(trade);
 		const playerID = this.playerService.resolveID(player);
+		const playerAwaitingResponseFrom = this.getPlayerAwaitingResponseFrom(trade);
+
+		if (playerAwaitingResponseFrom === null)
+			return false;
+
+		if (playerAwaitingResponseFrom.id === playerID)
+			return true;
+		else
+			return false;
+	}
+
+	/**
+	 * Returns the player that is waiting for a response from the otjher player in the trade.
+	 * Returns null if the trade is already been responded to.
+	 * @param trade - The trade to check.
+	 * @returns The player that is waiting for a response, or null if the trade has already been responded to.
+	 */
+	getPlayerWaitingForResponse(trade: TradeResolveable): Player | null {
+		trade = this.resolveTrade(trade);
 
 		switch (trade.status) {
-			case TradeStatuses.AWAITING_RECIPIENT:
-				return trade.recipientPlayerID === playerID;
-
 			case TradeStatuses.AWAITING_INITIATOR:
-				return trade.initiatingPlayerID === playerID;
+				return this.playerService.resolvePlayer(trade.recipientPlayerID);
+
+			case TradeStatuses.AWAITING_RECIPIENT:
+				return this.playerService.resolvePlayer(trade.initiatingPlayerID);
 
 			case TradeStatuses.ACCEPTED:
 			case TradeStatuses.DECLINED:
 			default:
-				return false;
+				return null;
+		}
+	}
+
+	/**
+	 * Gets the player that is awaiting a response from the given trade.
+	 * If the trade has already been responded to, returns null.
+	 * @param trade - The trade to check.
+	 * @returns The player that is awaiting a response, or null if the trade has already been responded to.
+	 */
+	getPlayerAwaitingResponseFrom(trade: TradeResolveable): Player | null {
+		trade = this.resolveTrade(trade);
+
+		switch (trade.status) {
+			case TradeStatuses.AWAITING_RECIPIENT:
+				return this.playerService.resolvePlayer(
+					trade.recipientPlayerID
+				);
+
+			case TradeStatuses.AWAITING_INITIATOR:
+				return this.playerService.resolvePlayer(
+					trade.initiatingPlayerID
+				);
+
+			case TradeStatuses.ACCEPTED:
+			case TradeStatuses.DECLINED:
+			default:
+				return null;
 		}
 	}
 

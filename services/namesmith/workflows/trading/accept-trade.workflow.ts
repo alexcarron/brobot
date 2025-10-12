@@ -62,8 +62,13 @@ export const acceptTrade = async (
 
 	// Is this trade awaiting this player?
 	if (!tradeService.canPlayerRespond(trade, playerAccepting)) {
-		const player = playerService.resolvePlayer(playerAccepting);
-		return result.failure.tradeAwaitingDifferentPlayer({playerAwaitingTrade: player});
+		const playerAwaitingTrade = tradeService.getPlayerAwaitingResponseFrom(trade);
+
+		if (playerAwaitingTrade === null) {
+			throw new Error('Trade is not awaiting a response from any player, but it is also not responded to. This should never happen.');
+		}
+
+		return result.failure.tradeAwaitingDifferentPlayer({playerAwaitingTrade});
 	}
 
 	// Does the initating player have the characters they are offering?

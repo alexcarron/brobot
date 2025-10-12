@@ -57,8 +57,13 @@ export const declineTrade = (
 
 	// Is this trade awaiting this player?
 	if (!tradeService.canPlayerRespond(trade, playerDeclining)) {
-		const player = playerService.resolvePlayer(playerDeclining);
-		return result.failure.tradeAwaitingDifferentPlayer({playerAwaitingTrade: player});
+		const playerAwaitingTrade = tradeService.getPlayerAwaitingResponseFrom(trade);
+
+		if (playerAwaitingTrade === null) {
+			throw new Error('Trade is not awaiting a response from any player, but it is also not responded to. This should never happen.');
+		}
+
+		return result.failure.tradeAwaitingDifferentPlayer({playerAwaitingTrade});
 	}
 
 	tradeService.decline(trade);

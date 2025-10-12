@@ -29,10 +29,13 @@ export function createTradeMessage(
 		trade: Trade,
 	}
 ): DiscordButtons {
-	const { initiatingPlayerID, recipientPlayerID, offeredCharacters, requestedCharacters } = trade;
+	const { offeredCharacters, requestedCharacters } = trade;
+
+	const playerWaitingForResponse = tradeService.getPlayerWaitingForResponse(trade)!;
+	const playerAwaitingResponseFrom = tradeService.getPlayerAwaitingResponseFrom(trade)!;
 
 	const messageContents =
-		`## <@${recipientPlayerID}>, <@${initiatingPlayerID}> wants to trade with you!\n` +
+		`## <@${playerAwaitingResponseFrom.id}>, <@${playerWaitingForResponse.id}> has requested the following trade:\n` +
 		`:arrow_right: **You give them** ${requestedCharacters}\n` +
 		`:arrow_left: **You receive** ${offeredCharacters}\n\n`
 

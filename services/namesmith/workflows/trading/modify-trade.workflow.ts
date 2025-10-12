@@ -53,8 +53,13 @@ export const checkIfPlayerCanModifyTrade = (
 
 	// Is this trade awaiting this player?
 	if (!tradeService.canPlayerRespond(trade, playerModifying)) {
-		const player = playerService.resolvePlayer(playerModifying);
-		return result.failure.tradeAwaitingDifferentPlayer({playerAwaitingTrade: player});
+		const playerAwaitingTrade = tradeService.getPlayerAwaitingResponseFrom(trade);
+
+		if (playerAwaitingTrade === null) {
+			throw new Error('Trade is not awaiting a response from any player, but it is also not responded to. This should never happen.');
+		}
+
+		return result.failure.tradeAwaitingDifferentPlayer({playerAwaitingTrade});
 	}
 
 	const otherPlayerID =
