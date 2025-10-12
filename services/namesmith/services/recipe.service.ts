@@ -130,6 +130,20 @@ export class RecipeService {
 		await this.playerService.giveCharacters(playerResolvable, outputCharacters);
 	}
 
+	giveOutputAndTakeInputCharactersFromPlayer(
+		recipeResolvable: RecipeResolvable,
+		playerResolvable: PlayerResolvable
+	): void {
+		const recipe = this.resolveRecipe(recipeResolvable);
+		const inputCharacters = recipe.inputCharacters;
+		const outputCharacters = recipe.outputCharacters;
+		
+		this.playerService.giveAndTakeCharacters(playerResolvable, {
+			charactersGiving: outputCharacters,
+			charactersRemoving: inputCharacters,
+		});
+	}
+
 	/**
 	 * Sorts recipes by whether or not a player can craft them.
 	 * @param recipes - The recipes to sort.

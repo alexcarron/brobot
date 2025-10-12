@@ -3,7 +3,7 @@ import { PlayerRepository } from "../repositories/player.repository";
 import { logWarning } from "../../../utilities/logging-utils";
 import { fetchNamesmithGuildMember, fetchNamesmithGuildMembers } from "../utilities/discord-fetch.utility";
 import { isPlayer } from "../utilities/player.utility";
-import { attempt, InvalidArgumentError } from "../../../utilities/error-utils";
+import { attempt, ignoreError, InvalidArgumentError } from "../../../utilities/error-utils";
 import { PlayerAlreadyExistsError, NameTooLongError } from "../utilities/error.utility";
 import { Inventory, Player, PlayerID, PlayerResolvable } from '../types/player.types';
 import { removeCharactersAsGivenFromEnd, removeMissingCharacters } from "../../../utilities/string-manipulation-utils";
@@ -134,6 +134,8 @@ export class PlayerService {
 
 	/**
 	 * Changes the current name of a player.
+	 * - Should not be called in succession, as it will result in a race condition.
+	 * - Only call after all changes to the current name have been made.
 	 * @param playerResolvable - The player resolvable whose current name is being changed.
 	 * @param  newName - The new name to assign to the player.
 	 * @throws {NameTooLongError} If the new name is too long.
@@ -157,48 +159,51 @@ export class PlayerService {
 
 	/**
 	 * Adds a character to the end of the current name of a player.
+	 * - Do not call as a part of a larger change to the same player's name. This will result in a race condition.
 	 * @param playerResolvable - The player whose name to add a character to.
 	 * @param character - The character to add to the current name.
 	 * @throws {NameTooLongError} If the new name is too long.
 	 */
-	private async addCharacterToName(
+	private addCharacterToName(
 		playerResolvable: PlayerResolvable,
 		character: string
-	): Promise<void> {
+	): void {
 		const currentName = this.getCurrentName(playerResolvable);
 		const newName = currentName + character;
-		await this.changeCurrentName(playerResolvable, newName);
+		this.changeCurrentName(playerResolvable, newName);
 	}
 
 	/**
 	 * Adds characters to the end of the current name of a player.
+	 * - Do not call as a part of a larger change to the same player's name. This will result in a race condition.
 	 * @param playerResolvable - The player whose name to add characters to.
 	 * @param characters - The character(s) to add to the current name.
 	 * @throws {NameTooLongError} If the new name is too long.
 	 */
-	private async addCharactersToName(
+	private addCharactersToName(
 		playerResolvable: PlayerResolvable,
 		characters: string | string[]
-	): Promise<void> {
+	): void {
 		const currentName = this.getCurrentName(playerResolvable);
 		const newName = currentName + characters;
-		await this.changeCurrentName(playerResolvable, newName);
+		this.changeCurrentName(playerResolvable, newName);
 	}
 
 	/**
 	 * Removes characters from the current name of a player, from the end of the string.
 	 * If the characters to remove exceed the length of the current name, the current name is cleared.
+	 * - Do not call as a part of a larger change to the same player's name. This will result in a race condition.
 	 * @param playerResolvable - The player resolvable whose name to remove characters from.
 	 * @returns The new current name of the player.
 	 */
-	private async removeMissingCharactersFromName(
+	private removeMissingCharactersFromName(
 		playerResolvable: PlayerResolvable
-	): Promise<string> {
+	): string {
 		const currentName = this.getCurrentName(playerResolvable);
 		const inventory = this.getInventory(playerResolvable);
 		const fixedName = removeMissingCharacters(currentName, inventory);
 
-		await this.changeCurrentName(playerResolvable, fixedName);
+		this.changeCurrentName(playerResolvable, fixedName);
 		return fixedName;
 	}
 
@@ -276,16 +281,17 @@ export class PlayerService {
 
 	/**
 	 * Gives a character to a player, adding it to their inventory and name if possible.
+	 * - Do not call as a part of a larger change to the same player's name. This will result in a race condition.
 	 * @param player - The player whose name is being modified.
 	 * @param character - The character to give to the player.
 	 */
-	async giveCharacter(
+	giveCharacter(
 		player: PlayerResolvable,
 		character: string
-	): Promise<void> {
+	): void {
 		this.addCharacterToInventory(player, character);
 
-		await attempt(this.addCharacterToName(player, character))
+		attempt(() => this.addCharacterToName(player, character))
 			// Don't update name if it is at max length
 			.ignoreError(NameTooLongError)
 			.execute();
@@ -293,16 +299,17 @@ export class PlayerService {
 
 	/**
 	 * Gives characters to a player, adding them to their inventory and name if possible.
+	 * - Do not call as a part of a larger change to the same player's name. This will result in a race condition.
 	 * @param player - The player whose name is being modified.
 	 * @param characters - The characters to give to the player.
 	 */
-	async giveCharacters(
+	giveCharacters(
 		player: PlayerResolvable,
 		characters: string | string[]
-	): Promise<void> {
+	): void {
 		this.addCharactersToInventory(player, characters);
 
-		await attempt(this.addCharactersToName(player, characters))
+		attempt(() => this.addCharactersToName(player, characters))
 			// Don't update name if it is at max length
 			.ignoreError(NameTooLongError)
 			.execute();
@@ -310,31 +317,60 @@ export class PlayerService {
 
 	/**
 	 * Removes characters from the inventory and current name of a player.
-	 * @param playerResolvable - The player resolvable whose inventory and name to remove characters from.
+	 * - Do not call as a part of a larger change to the same player's name. This will result in a race condition.
+	 * @param player - The player resolvable whose inventory and name to remove characters from.
 	 * @param characters - The characters to remove from the inventory and name.
 	 * If `characters` is an array, it is joined together with no separator.
 	 */
-	async removeCharacters(
-		playerResolvable: PlayerResolvable,
+	removeCharacters(
+		player: PlayerResolvable,
 		characters: string | string[]
-	): Promise<void> {
-		this.removeCharactersFromInventory(playerResolvable, characters);
-		await this.removeMissingCharactersFromName(playerResolvable);
+	): void {
+		this.removeCharactersFromInventory(player, characters);
+		this.removeMissingCharactersFromName(player);
+	}
+
+	/**
+	 * Removes characters from the inventory and current name of a player, and adds other characters to the inventory and name.
+	 * - Do not call as a part of a larger change to the same player's name. This will result in a race condition.
+	 * @param player - The player resolvable whose inventory and name to modify.
+	 * @param parameters - An object containing
+	 * @param parameters.charactersRemoving - The characters to remove from the inventory and name.
+	 * @param parameters.charactersGiving - The characters to add to the inventory and name.
+	 * If `charactersRemoving` or `charactersGiving` is an array, it is joined together with no separator.
+	 */
+	giveAndTakeCharacters(
+		player: PlayerResolvable,
+		{ charactersRemoving, charactersGiving }: {
+			charactersRemoving: string | string[],
+			charactersGiving: string | string[]
+		}
+	): void {
+		this.removeCharactersFromInventory(player, charactersRemoving);
+		const currentName = this.getCurrentName(player);
+		const inventory = this.getInventory(player);
+		const nameWithRemovedCharacters = removeMissingCharacters(currentName, inventory);
+
+		this.addCharactersToInventory(player, charactersGiving);
+		const newName = nameWithRemovedCharacters + charactersGiving;
+
+		ignoreError(() => this.changeCurrentName(player, newName));
 	}
 
 	/**
 	 * Transfers characters from one player to another, removing them from the first player's inventory and name, and adding them to the second player's inventory and name if possible.
+	 * - Do not call as a part of a larger change to the same player's name. This will result in a race condition.
 	 * @param fromPlayer - The player whose characters are being transferred.
 	 * @param toPlayer - The player whose characters are being transferred to.
 	 * @param characters - The characters to transfer from one player to another.
 	 */
-	async transferCharacters(
+	transferCharacters(
 		fromPlayer: PlayerResolvable,
 		toPlayer: PlayerResolvable,
 		characters: string | string[]
-	): Promise<void> {
-		await this.removeCharacters(fromPlayer, characters);
-		await this.giveCharacters(toPlayer, characters);
+	): void {
+		this.removeCharacters(fromPlayer, characters);
+		this.giveCharacters(toPlayer, characters);
 	}
 
 	/**

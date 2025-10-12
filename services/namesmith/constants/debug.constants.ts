@@ -1,0 +1,1 @@
+export const RAPID_CALLS_THRESHOLD = 100; // 1/10 of a second

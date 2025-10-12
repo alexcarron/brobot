@@ -200,4 +200,29 @@ describe('RecipeService', () => {
 			).eventuallyThrows(RecipeNotFoundError);
 		});
 	});
+
+	describe('giveOutputAndTakeInputCharactersFromPlayer()', () => {
+		it('should give the output characters and take the input characters from the player', () => {
+			const giveAndTakeCharacters = jest.spyOn(
+				recipeService.playerService,
+				'giveAndTakeCharacters'
+			);
+
+			const player = addMockPlayer(db, {
+				inventory: 'abcdefgh',
+			});
+			const recipe = addMockRecipe(db, {
+				inputCharacters: 'abc',
+				outputCharacters: 'xyz',
+			});
+
+			recipeService.giveOutputAndTakeInputCharactersFromPlayer(recipe.id, player.id);
+
+			expect(giveAndTakeCharacters)
+				.toHaveBeenCalledWith(player.id, {
+					charactersGiving: 'xyz',
+					charactersRemoving: 'abc',
+				});
+		});
+	});
 });

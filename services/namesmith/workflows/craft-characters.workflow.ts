@@ -31,7 +31,7 @@ const result = getWorkflowResultCreator({
  * - MissingRequiredCharactersError if the player does not have all the required characters to craft the character.
  * - RecipeNotUnlockedError if the recipe is not unlocked for the player.
  */
-export const craftCharacters = async (
+export const craftCharacters = (
 	{playerService, recipeService, player, recipe}: {
 		playerService: PlayerService;
 		recipeService: RecipeService;
@@ -60,8 +60,7 @@ export const craftCharacters = async (
 		return result.failure.recipeNotUnlocked({});
 	}
 
-	await recipeService.takeInputCharactersFromPlayer(recipe, player);
-	await recipeService.giveOutputCharacterToPlayer(recipe, player);
+	recipeService.giveOutputAndTakeInputCharactersFromPlayer(recipe, player);
 
 	const newInventory = playerService.getInventory(player);
 	const craftedCharacters = recipeService.getOutputCharacters(recipe);

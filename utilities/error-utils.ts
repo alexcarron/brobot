@@ -674,3 +674,49 @@ export function toNullOnError<ReturnType>(
 		return null;
 	}
 }
+
+export function ignoreError(
+	originalFunction: (...args: any[]) => any,
+	...args: any[]
+): void;
+
+export function ignoreError(
+	promise: Promise<any>
+): Promise<void>;
+
+/**
+ * Runs a function or a promise whose return value is ignored and does nothing if an error is thrown or encountered.
+ * If the function or promise returns a value, that value is ignored.
+ * @param functionOrPromise - The function or promise to run.
+ * @param args - The arguments to pass to the function if it is synchronous.
+ * @returns A promise that resolves or rejects without doing anything.
+ */
+export function ignoreError(
+	functionOrPromise:
+		| Promise<any>
+		| ((...args: any[]) => any),
+	...args: any[]
+) {
+	const isPromise = functionOrPromise instanceof Promise;
+
+	if (isPromise) {
+		const promise = functionOrPromise as Promise<any>;
+		if (args.length !== 0)
+			throw new InvalidArgumentError("Asynchronous functions cannot have arguments.");
+
+		return new Promise<void>((resolve) =>
+			promise
+				.then(() => resolve())
+				.catch(() => resolve())
+		);
+	}
+
+	const func = functionOrPromise as (...args: any[]) => any;
+
+	try {
+		func(...args);
+	}
+	catch {
+		// Do nothing
+	}
+}
