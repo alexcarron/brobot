@@ -2,6 +2,7 @@ import { toNullOnError } from "../../../utilities/error-utils";
 import { DatabaseQuerier } from "../database/database-querier";
 import { DBPerk, Perk, PerkID } from "../types/perk.types";
 import { PlayerID } from "../types/player.types";
+import { RoleID } from "../types/role.types";
 import { PerkNotFoundError } from "../utilities/error.utility";
 
 /**
@@ -29,16 +30,11 @@ export class PerkRepository {
 	}
 
 	/**
-	 * Retrieves a perk by its ID.
+	 * Retrieves a perk by its ID. If the perk does not exist, an error will be thrown.
 	 * @param perkID - The ID of the perk to be retrieved.
-	 * @returns The perk object if found, otherwise null.
+	 * @returns The perk object if found.
+	 * @throws PerkNotFoundError - If the perk does not exist.
 	 */
-	getPerkByID(perkID: PerkID): Perk | null {
-		return toNullOnError(() =>
-			this.getPerkOrThrow(perkID)
-		);
-	}
-
 	getPerkOrThrow(perkID: PerkID): Perk {
 		const query = `SELECT * FROM perk WHERE id = @id`;
 		const getPerkByID = this.db.prepare(query);
@@ -48,6 +44,17 @@ export class PerkRepository {
 			throw new PerkNotFoundError(perkID);
 
 		return perk;
+	}
+
+	/**
+	 * Retrieves a perk by its ID.
+	 * @param perkID - The ID of the perk to be retrieved.
+	 * @returns The perk object if found, otherwise null.
+	 */
+	getPerkByID(perkID: PerkID): Perk | null {
+		return toNullOnError(() =>
+			this.getPerkOrThrow(perkID)
+		);
 	}
 
 	/**
@@ -70,13 +77,23 @@ export class PerkRepository {
 	 * @param playerID - The ID of the player to be retrieved.
 	 * @returns An array of perk IDs that the player with the given ID has.
 	 */
-	getPerkIDsOfPlayerID(playerID: PlayerID): number[] {
+	getPerkIDsOfPlayerID(playerID: PlayerID): PerkID[] {
 		const query = `
 			SELECT perkID FROM playerPerk
 			WHERE playerID = @playerID
 		`;
 		const getPerksOfPlayer = this.db.prepare(query);
 		const rows = getPerksOfPlayer.all({ playerID }) as { perkID: number }[];
+		return rows.map(row => row.perkID);
+	}
+
+	getPerkIDsOfRoleID(roleID: RoleID): PerkID[] {
+		const query = `
+			SELECT perkID FROM rolePerk
+			WHERE roleID = @roleID
+		`;
+		const getPerksOfRole = this.db.prepare(query);
+		const rows = getPerksOfRole.all({ roleID }) as { perkID: number }[];
 		return rows.map(row => row.perkID);
 	}
 }

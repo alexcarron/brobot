@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { insertCharactersToDB, insertMysteryBoxesToDB, insertPerksToDB, insertRecipesToDB } from "../db-inserters";
+import { insertCharactersToDB, insertMysteryBoxesToDB, insertPerksToDB, insertRecipesToDB, insertRolesToDB } from "../db-inserters";
 import { DatabaseQuerier } from '../database-querier';
 
 const currDir = __dirname;
@@ -16,6 +16,9 @@ const recipes = JSON.parse(fs.readFileSync(recipesPath, 'utf8'));
 const perksPath = path.join(currDir, 'perks.json');
 const perks = JSON.parse(fs.readFileSync(perksPath, 'utf8'));
 
+const rolesPath = path.join(currDir, 'roles.json');
+const roles = JSON.parse(fs.readFileSync(rolesPath, 'utf8'));
+
 /**
  * Adds the initial data to the database.
  * @param db - The database querier instance used for executing SQL statements.
@@ -28,4 +31,5 @@ export const addInitialDataToDB = (db: DatabaseQuerier) => {
 	insertMysteryBoxesToDB(db, mysteryBoxes);
 	insertRecipesToDB(db, recipes);
 	insertPerksToDB(db, perks);
+	insertRolesToDB(db, roles);
 }

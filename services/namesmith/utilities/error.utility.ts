@@ -6,6 +6,7 @@ import { MysteryBox, MysteryBoxID } from '../types/mystery-box.types';
 import { PerkID } from '../types/perk.types';
 import { Player } from '../types/player.types';
 import { Recipe, RecipeID } from '../types/recipe.types';
+import { RoleID } from '../types/role.types';
 import { Trade, TradeID, TradeResolveable } from '../types/trade.types';
 import { VoteID } from '../types/vote.types';
 
@@ -181,6 +182,19 @@ export class PerkNotFoundError extends ResourceNotFoundError {
 		super({
 			message: `Perk with ID ${perkID} not found.`,
 			relevantData: { perkID }
+		})
+	}
+}
+
+/**
+ * Error thrown when a requested namesmith role is not found.
+ */
+export class RoleNotFoundError extends ResourceNotFoundError {
+	declare relevantData: { roleID: RoleID }
+	constructor(roleID: RoleID) {
+		super({
+			message: `Role with ID ${roleID} not found.`,
+			relevantData: { roleID }
 		})
 	}
 }

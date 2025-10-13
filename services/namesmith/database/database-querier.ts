@@ -2,6 +2,7 @@ import DatabasePkg, { Database, PragmaOptions, RunResult, Statement, Transaction
 import { ForeignKeyConstraintError, MultiStatementQueryError, QueryUsageError } from "../utilities/error.utility";
 import { AnyFunction } from "../../../utilities/types/generic-types";
 import { attempt } from '../../../utilities/error-utils';
+import { isArray, isObject } from "../../../utilities/types/type-guards";
 
 /**
  * A utility class for preparing and executing SQL queries using a better-sqlite3 database instance.
@@ -108,6 +109,22 @@ export class DatabaseQuerier {
 					params
 				);
 			},
+			getValue: (...params: unknown[]): unknown => {
+				const row = executeMethod(
+					queryStatement.get,
+					queryStatement,
+					params
+				);
+
+				if (isArray(row))
+					return row[0];
+				else if (isObject(row) && Object.keys(row).length !== 0) {
+					return Object.values(row)[0];
+				}
+				else {
+					throw new QueryUsageError("Query must return a row to retrieve a value from", sqlQuery, params);
+				}
+			},
       getRow: (...params: unknown[]): unknown => {
 				return executeMethod(
 					queryStatement.get,
@@ -172,6 +189,33 @@ export class DatabaseQuerier {
 		}
   }
 
+	/**
+	 * Runs a single read query and returns the first value of the first row of the result set
+	 * @param sqlQuery - The SQL query to run
+	 * @param params - The parameters to pass to the query
+	 * @returns The first value of the first row of the result set
+	 * @throws {QueryUsageError} If the query does not return a row
+	 */
+	getValue(sqlQuery: string, params?: object | unknown[]): unknown {
+		const queryStatement = this.getQuery(sqlQuery);
+		let row;
+
+		if (params === undefined) {
+			row = queryStatement.getRow()
+		}
+		else {
+			row = queryStatement.getRow(params)
+		}
+
+		if (isArray(row))
+			return row[0];
+		else if (isObject(row) && Object.keys(row).length !== 0) {
+			return Object.values(row)[0];
+		}
+		else {
+			throw new QueryUsageError("Query must return a row to retrieve a value from", sqlQuery, params);
+		}
+	}
 
   /**
    * Runs a single read query and returns a single row

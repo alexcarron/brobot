@@ -1,7 +1,7 @@
 import { getRandomWeightedElement } from "../../../utilities/data-structure-utils";
 import { CharacterRepository } from "../repositories/character.repository";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
-import { Character } from "../types/character.types";
+import { MinimalCharacter } from "../types/character.types";
 import { MysteryBoxID, MysteryBoxResolveable, MysteryBoxWithOdds } from "../types/mystery-box.types";
 
 /**
@@ -79,7 +79,7 @@ export class MysteryBoxService {
 	 * @param mysteryBoxResolvable - The mystery box from which to retrieve a character.
 	 * @returns The character retrieved from the mystery box.
 	 */
-	openBox(mysteryBoxResolvable: MysteryBoxResolveable): Character {
+	openBox(mysteryBoxResolvable: MysteryBoxResolveable): MinimalCharacter {
 		const mysteryBox = this.resolveMysteryBox(mysteryBoxResolvable);
 		const characterOdds = mysteryBox.characterOdds;
 

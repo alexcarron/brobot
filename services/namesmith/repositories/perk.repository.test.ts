@@ -12,6 +12,7 @@ describe('PerkRepository', () => {
 	let db: DatabaseQuerier;
 
 	const MINE_BONUS_PERK_ID = 1;
+	const MINE_BONUS_ROLE_ID = 1;
 
 	beforeEach(() => {
 		perkRepository = createMockPerkRepo();
@@ -37,6 +38,7 @@ describe('PerkRepository', () => {
 
 			makeSure(perk).isNotNull();
 			makeSure(perk).hasProperties('id', 'name', 'description');
+			makeSure(perk?.id).is(RANDOM_PERK.id);
 		});
 
 		it('returns null when given an invalid ID', () => {
@@ -54,6 +56,7 @@ describe('PerkRepository', () => {
 
 			makeSure(perk).isNotNull();
 			makeSure(perk).hasProperties('id', 'name', 'description');
+			makeSure(perk.id).is(RANDOM_PERK.id);
 		});
 
 		it('throws an error when given an invalid ID', () => {
@@ -119,6 +122,23 @@ describe('PerkRepository', () => {
 				perks: []
 			});
 			const perkIDs = perkRepository.getPerkIDsOfPlayerID(player.id);
+
+			makeSure(perkIDs).isAnArray();
+			makeSure(perkIDs).isEmpty();
+		});
+	});
+
+	describe('getPerkIDsOfRoleID()', () => {
+		it('returns an array of perk IDs that the role has', () => {
+			const perkIDs = perkRepository.getPerkIDsOfRoleID(MINE_BONUS_ROLE_ID);
+
+			makeSure(perkIDs).isAnArray();
+			makeSure(perkIDs).isNotEmpty();
+			makeSure(perkIDs).contains(MINE_BONUS_PERK_ID);
+		});
+
+		it('returns an empty array when the role has no perks', () => {
+			const perkIDs = perkRepository.getPerkIDsOfRoleID(INVALID_PERK_ID);
 
 			makeSure(perkIDs).isAnArray();
 			makeSure(perkIDs).isEmpty();

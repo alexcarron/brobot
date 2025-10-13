@@ -2,7 +2,7 @@ import { DatabaseQuerier } from "./database-querier";
 import { insertCharactersToDB, insertMysteryBoxesToDB, insertRecipesToDB } from "./db-inserters";
 import { applySchemaToDB } from "./queries/apply-schema";
 import { getIDfromCharacterValue } from "../utilities/character.utility";
-import { CharacterWithTags } from "../types/character.types";
+import { Character } from "../types/character.types";
 import { MysteryBoxWithOdds } from "../types/mystery-box.types";
 import { Recipe } from "../types/recipe.types";
 import { WithOptional } from '../../../utilities/types/generic-types';
@@ -12,7 +12,7 @@ const bracketID = getIDfromCharacterValue(']');
 
 describe('db-inserters.js', () => {
 	let db: DatabaseQuerier;
-  let characters: CharacterWithTags[];
+  let characters: Character[];
   let mysteryBoxes: MysteryBoxWithOdds[];
 	let recipes: WithOptional<Recipe, "id">[];
 

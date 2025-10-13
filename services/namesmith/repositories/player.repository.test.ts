@@ -240,6 +240,35 @@ describe('PlayerRepository', () => {
 		it('throws an error if the player is not found', () => {
 			expect(() => playerRepository.setLastClaimedRefillTime(INVALID_PLAYER_ID, new Date())).toThrow();
 		})
+	});
+
+	describe('getRoleID()', () => {
+		it('returns the role ID of a player', () => {
+			const result = playerRepository.getRoleID(mockPlayers[0].id);
+			expect(result).toEqual(mockPlayers[0].role);
+		});
+
+		it('throws an error if the player is not found', () => {
+			expect(() => playerRepository.getRoleID(INVALID_PLAYER_ID)).toThrow();
+		});
+	});
+
+	describe('setRoleID()', () => {
+		it('sets the role ID of a player', () => {
+			playerRepository.setRoleID(mockPlayers[0].id, 1);
+			const result = playerRepository.getRoleID(mockPlayers[0].id);
+			expect(result).toEqual(1);
+		});
+
+		it('sets the role ID of a player to null', () => {
+			playerRepository.setRoleID(mockPlayers[0].id, null);
+			const result = playerRepository.getRoleID(mockPlayers[0].id);
+			expect(result).toBeNull();
+		});
+
+		it('throws an error if the player is not found', () => {
+			expect(() => playerRepository.setRoleID(INVALID_PLAYER_ID, 1)).toThrow();
+		});
 	})
 
 	describe('addPlayer()', () => {

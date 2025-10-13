@@ -1,11 +1,11 @@
 import { INVALID_CHARACTER_ID } from "../constants/test.constants";
 import { createMockCharacterService } from "../mocks/mock-services";
-import { Character, CharacterID, CharacterValue } from "../types/character.types";
+import { MinimalCharacter, CharacterID, CharacterValue } from "../types/character.types";
 import { CharacterNotFoundError } from "../utilities/error.utility";
 import { CharacterService } from "./character.service";
 
 describe('CharacterService', () => {
-	let CHARACTER_A: Character;
+	let CHARACTER_A: MinimalCharacter;
 	let CHARACTER_A_ID: CharacterID;
 	let CHARACTER_A_VALUE: CharacterValue;
 

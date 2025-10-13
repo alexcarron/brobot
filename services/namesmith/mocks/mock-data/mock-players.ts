@@ -4,20 +4,20 @@ import { WithAtLeast, WithAtLeastOneProperty } from "../../../../utilities/types
 import { isNumber, isObject, isString } from "../../../../utilities/types/type-guards";
 import { DatabaseQuerier } from "../../database/database-querier";
 import { PerkResolvable } from "../../types/perk.types";
-import { DBPlayer, Player } from "../../types/player.types";
+import { DBPlayer, Player, PlayerDefinition } from "../../types/player.types";
 import { PlayerAlreadyExistsError } from "../../utilities/error.utility";
 import { toPlayerObject } from "../../utilities/player.utility";
 
 /**
  * An array of mock player data for use in tests.
  */
-export const mockPlayers: Player[] = [
+export const mockPlayers: PlayerDefinition[] = [
 	{
 		id: "1234567890",
 		currentName: "John Doe",
 		publishedName: "John Doe",
 		tokens: 10,
-		role: "magician",
+		role: null,
 		inventory: "John Doe",
 		lastClaimedRefillTime: null,
 	},
@@ -26,7 +26,7 @@ export const mockPlayers: Player[] = [
 		currentName: "abcdefgh",
 		publishedName: "abcd",
 		tokens: 0,
-		role: "magician",
+		role: null,
 		inventory: "abcdefghijklmnopqrstuvwxyz",
 		lastClaimedRefillTime: null,
 	},
@@ -35,7 +35,7 @@ export const mockPlayers: Player[] = [
 		currentName: "UNPUBLISHED",
 		publishedName: null,
 		tokens: 0,
-		role: "magician",
+		role: null,
 		inventory: "UNPUBLISHED",
 		lastClaimedRefillTime: null,
 	},
@@ -44,7 +44,7 @@ export const mockPlayers: Player[] = [
 		currentName: "non-voter",
 		publishedName: "non-voter",
 		tokens: 0,
-		role: "magician",
+		role: null,
 		inventory: "non-voter",
 		lastClaimedRefillTime: null,
 	}
@@ -111,7 +111,7 @@ export const addMockPlayer = (
 		perks = []
 	}:
 	WithAtLeastOneProperty<
-		& Player
+		& PlayerDefinition
 		& { perks: PerkResolvable[] }
 	>
 ): Player => {

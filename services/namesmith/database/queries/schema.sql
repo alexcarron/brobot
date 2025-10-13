@@ -35,13 +35,34 @@ CREATE TABLE IF NOT EXISTS mysteryBoxCharacterOdds (
 	PRIMARY KEY (mysteryBoxID, characterID)
 );
 
+-- Perks table
+CREATE TABLE IF NOT EXISTS perk (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	name TEXT NOT NULL UNIQUE,
+	description TEXT NOT NULL
+);
+
+-- Role table
+CREATE TABLE IF NOT EXISTS role (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	name TEXT NOT NULL UNIQUE,
+	description TEXT NOT NULL
+);
+
+-- Role Perks table
+CREATE TABLE IF NOT EXISTS rolePerk (
+	roleID INTEGER NOT NULL REFERENCES role(id) ON DELETE CASCADE,
+	perkID INTEGER NOT NULL REFERENCES perk(id) ON DELETE CASCADE,
+	PRIMARY KEY (roleID, perkID)
+);
+
 -- Players table
 CREATE TABLE IF NOT EXISTS player (
 	id TEXT PRIMARY KEY,
 	currentName TEXT NOT NULL,
 	publishedName TEXT,
 	tokens INTEGER NOT NULL,
-	role TEXT,
+	role INTEGER REFERENCES role(id),
 	inventory TEXT,
 	lastClaimedRefillTime TEXT
 );
@@ -51,13 +72,6 @@ CREATE TABLE IF NOT EXISTS playerPerk (
 	playerID TEXT NOT NULL REFERENCES player(id) ON DELETE CASCADE,
 	perkID INTEGER NOT NULL REFERENCES perk(id) ON DELETE CASCADE,
 	PRIMARY KEY (playerID, perkID)
-);
-
--- Perks table
-CREATE TABLE IF NOT EXISTS perk (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	name TEXT NOT NULL UNIQUE,
-	description TEXT NOT NULL
 );
 
 -- Votes table

@@ -1,7 +1,7 @@
 import { attempt } from '../../../utilities/error-utils';
 import { DatabaseQuerier } from "../database/database-querier";
 import { createMockDB } from "./mock-database";
-import { Player } from "../types/player.types";
+import { PlayerDefinition } from "../types/player.types";
 import { Vote } from "../types/vote.types";
 import { CharacterRepository } from "../repositories/character.repository";
 import { GameStateRepository } from "../repositories/game-state.repository";
@@ -20,6 +20,7 @@ import { addMockVote, mockVotes } from './mock-data/mock-votes';
 import { mockRecipes } from './mock-data/mock-recipes';
 import { addMockTrade, mockTrades } from './mock-data/mock-trades';
 import { PerkRepository } from '../repositories/perk.repository';
+import { RoleRepository } from '../repositories/role.repository';
 
 /**
  * Creates a mock character repository instance with an in-memory database for testing purposes.
@@ -66,7 +67,7 @@ export const createMockMysteryBoxRepo =
  * @returns A mock instance of the PlayerRepository.
  */
 export const createMockPlayerRepo =
-(mockDB?: DatabaseQuerier, players?: Player[]): PlayerRepository => {
+(mockDB?: DatabaseQuerier, players?: PlayerDefinition[]): PlayerRepository => {
 	if (mockDB === undefined || !(mockDB instanceof DatabaseQuerier))
 		mockDB = createMockDB();
 
@@ -92,7 +93,7 @@ export const createMockPlayerRepo =
  */
 export const createMockVoteRepo = (
 	mockDB?: DatabaseQuerier,
-	players?: Player[],
+	players?: PlayerDefinition[],
 	votes?: Vote[]
 ): VoteRepository => {
 	if (mockDB === undefined || !(mockDB instanceof DatabaseQuerier))
@@ -165,7 +166,7 @@ export const createMockRecipeRepo = (
 export const createMockTradeRepo = (
 	mockDB?: DatabaseQuerier,
 	trades?: Trade[],
-	players?: Player[]
+	players?: PlayerDefinition[]
 ): TradeRepository => {
 	mockDB =
 		mockDB
@@ -227,6 +228,22 @@ export const createMockPerkRepo = (
 }
 
 /**
+ * Creates a mock role repository instance with an in-memory database for testing purposes.
+ * If the mockDB parameter is undefined, a default mock database instance is created.
+ * @param mockDB - An optional mock database instance.
+ * @returns A mock instance of the RoleRepository.
+ */
+export const crateMockRoleRepo = (
+	mockDB?: DatabaseQuerier,
+): RoleRepository => {
+	mockDB =
+		mockDB
+		?? createMockDB();
+
+	return new RoleRepository(mockDB);
+}
+
+/**
  * Creates an object containing mock instances of the repositories and the in-memory database for testing purposes.
  * The returned object contains the following properties:
  * - db: The mock database instance.
@@ -246,7 +263,7 @@ export const createMockPerkRepo = (
 export function createMockRepositories(
 	mockDB?: DatabaseQuerier,
 	{players, votes, recipes, trades}: {
-		players?: Player[],
+		players?: PlayerDefinition[],
 		votes?: Vote[],
 		recipes?: Recipe[],
 		trades?: Trade[],
@@ -264,5 +281,6 @@ export function createMockRepositories(
 		recipeRepository: createMockRecipeRepo(mockDB, recipes),
 		tradeRepository: createMockTradeRepo(mockDB, trades),
 		perkRepository: createMockPerkRepo(mockDB),
+		roleRepository: crateMockRoleRepo(mockDB),
 	}
 }

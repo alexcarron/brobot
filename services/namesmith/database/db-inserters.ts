@@ -1,9 +1,10 @@
 import { InvalidArgumentError, validateArguments } from "../../../utilities/error-utils";
 import { WithOptional } from "../../../utilities/types/generic-types";
-import { CharacterWithTags } from "../types/character.types";
+import { Character } from "../types/character.types";
 import { MysteryBoxWithOdds } from "../types/mystery-box.types";
 import { Perk } from "../types/perk.types";
 import { Recipe } from "../types/recipe.types";
+import { RoleDefinition } from "../types/role.types";
 import { getIDfromCharacterValue, getCharacterValueFromID } from "../utilities/character.utility";
 import { ForeignKeyConstraintError } from "../utilities/error.utility";
 import { DatabaseQuerier } from "./database-querier";
@@ -15,7 +16,7 @@ import { DatabaseQuerier } from "./database-querier";
  * @param db - The database querier instance used for executing SQL statements.
  * @param characters - An array of character objects to be inserted.
  */
-export const insertCharactersToDB = (db: DatabaseQuerier, characters: CharacterWithTags[]) => {
+export const insertCharactersToDB = (db: DatabaseQuerier, characters: Character[]) => {
 	validateArguments("insertCharactersToDB",
 		{db, type: DatabaseQuerier},
 		{characters, type: "Array"},
@@ -24,7 +25,7 @@ export const insertCharactersToDB = (db: DatabaseQuerier, characters: CharacterW
 	const insertCharacter = db.getQuery("INSERT OR IGNORE INTO character (id, value, rarity) VALUES (@id, @value, @rarity)");
 	const insertTag = db.getQuery("INSERT OR IGNORE INTO characterTag (characterID, tag) VALUES (@characterID, @tag)");
 
-	const insertCharacters = db.getTransaction((characters: CharacterWithTags[]) => {
+	const insertCharacters = db.getTransaction((characters: Character[]) => {
 		for (const character of characters) {
 			if (character.value.length !== 1)
 				throw new InvalidArgumentError("insertCharactersToDB: character value must be a single character.");
@@ -98,7 +99,7 @@ export const insertMysteryBoxesToDB = (db: DatabaseQuerier, mysteryBoxes: Myster
 					if (!(error instanceof ForeignKeyConstraintError))
 						throw error;
 
-					const character: CharacterWithTags = {
+					const character: Character = {
 						id: characterID,
 						value: characterValue,
 						rarity: weight,
@@ -186,4 +187,63 @@ export function insertPerksToDB(
 	});
 
 	insertPerks(perks);
+}
+
+/**
+ * Inserts a list of roles into the database.
+ * @param db - The database querier used to execute queries.
+ * @param roles - An array of role objects to be inserted. Each role can optionally include an 'id'. If 'id' is not provided, it will be auto-generated.
+ * Each role object must have a 'name', 'description', and 'perks' properties. The 'perks' property should be an array of perk names.
+ * This function will delete all existing roles and role-perk relationships before inserting the new ones.
+ */
+export function insertRolesToDB(
+	db: DatabaseQuerier,
+	roles: WithOptional<RoleDefinition, "id">[]
+) {
+	const insertRoleIntoDB = db.getQuery("INSERT INTO role (name, description) VALUES (@name, @description)");
+	const insertRoleIntoDBWithID = db.getQuery("INSERT INTO role (id, name, description) VALUES (@id, @name, @description)");
+
+	const insertRolePerkIntoDB = db.getQuery("INSERT INTO rolePerk (roleID, perkID) VALUES (@roleID, @perkID)");
+
+	const insertRoles = db.getTransaction((roles: WithOptional<RoleDefinition, "id">[]) => {
+		db.run("DELETE FROM role");
+		db.run("DELETE FROM rolePerk");
+
+		// SET AUTO INCREMENT TO 1
+		db.run("UPDATE sqlite_sequence SET seq = 0 WHERE name = 'role'");
+
+		for (const role of roles) {
+			if (role.id === undefined) {
+				const result = insertRoleIntoDB.run({
+					name: role.name,
+					description: role.description
+				});
+				role.id = result.lastInsertRowid as number;
+			}
+			else {
+				insertRoleIntoDBWithID.run({
+					id: role.id,
+					name: role.name,
+					description: role.description
+				});
+			}
+
+			for (const perkName of role.perks) {
+				const perkID = db.getValue(
+					"SELECT id FROM perk WHERE name = ?",
+					[perkName]
+				);
+
+				if (perkID === undefined) {
+					throw new InvalidArgumentError(`insertRolesToDB: perk with name ${perkName} does not exist.`);
+				}
+				insertRolePerkIntoDB.run({
+					roleID: role.id,
+					perkID: perkID,
+				});
+			}
+		}
+	});
+
+	insertRoles(roles);
 }

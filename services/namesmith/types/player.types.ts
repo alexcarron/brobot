@@ -1,11 +1,12 @@
 import { Override } from "../../../utilities/types/generic-types";
+import { Role } from "./role.types";
 
 export type Player = {
 	id: string;
 	currentName: string;
 	publishedName: string | null;
 	tokens: number;
-	role: string | null;
+	role: Role | null;
 	inventory: string;
 	lastClaimedRefillTime: Date | null;
 }
@@ -16,6 +17,10 @@ export type Player = {
  */
 export type DBPlayer = Override<Player, {
 	lastClaimedRefillTime: string | null
+}>;
+
+export type PlayerDefinition = Override<Player, {
+	role: null,
 }>;
 
 export type PlayerID = Player["id"];

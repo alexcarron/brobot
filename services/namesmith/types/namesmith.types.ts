@@ -6,6 +6,7 @@ import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
 import { PerkRepository } from "../repositories/perk.repository";
 import { PlayerRepository } from "../repositories/player.repository";
 import { RecipeRepository } from "../repositories/recipe.repository";
+import { RoleRepository } from "../repositories/role.repository";
 import { TradeRepository } from "../repositories/trade.repository";
 import { VoteRepository } from "../repositories/vote.repository";
 import { CharacterService } from "../services/character.service";
@@ -35,6 +36,7 @@ export type NamesmithRepositories = Expand<{
 	recipeRepository: RecipeRepository,
 	tradeRepository: TradeRepository,
 	perkRepository: PerkRepository,
+	roleRepository: RoleRepository,
 }>;
 
 /**

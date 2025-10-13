@@ -1,5 +1,5 @@
 import { DatabaseQuerier } from "../database/database-querier";
-import { Character, DBCharacter, DBCharacterWithTags, CharacterWithTags, CharacterID } from "../types/character.types";
+import { MinimalCharacter, DBCharacter, DBCharacterWithTags, Character, CharacterID } from "../types/character.types";
 import { getIDfromCharacterValue } from "../utilities/character.utility";
 import { CharacterNotFoundError } from "../utilities/error.utility";
 
@@ -16,7 +16,7 @@ export class CharacterRepository {
 	 * Returns an array of all character objects.
 	 * @returns An array of character objects.
 	 */
-	getCharacters(): Character[] {
+	getCharacters(): MinimalCharacter[] {
 		const query = `SELECT DISTINCT * FROM character`;
 		const getAllCharacters = this.db.prepare(query);
 		return getAllCharacters.all() as DBCharacter[];
@@ -26,7 +26,7 @@ export class CharacterRepository {
 	 * Returns an array of all character objects with a list of tags
 	 * @returns An array of character objects with a list of tags
 	 */
-	getCharactersWithTags(): CharacterWithTags[] {
+	getCharactersWithTags(): Character[] {
 		const query = `
 			SELECT DISTINCT
 				character.*,
@@ -53,7 +53,7 @@ export class CharacterRepository {
 	 * @param id - The ID of the character to retrieve.
 	 * @returns The character with the given ID, or null if no such character exists.
 	 */
-	getCharacterByID(id: number): Character | null {
+	getCharacterByID(id: number): MinimalCharacter | null {
 		const getCharacterByID = this.db.prepare(`SELECT * FROM character WHERE id = @id`);
 		const character = getCharacterByID.get({ id }) as DBCharacter | undefined;
 		return character ?? null;
@@ -64,7 +64,7 @@ export class CharacterRepository {
 	 * @param value - The value of the character to retrieve.
 	 * @returns The character with the given value
 	 */
-	getCharacterByValue(value: string): Character {
+	getCharacterByValue(value: string): MinimalCharacter {
 		const id = getIDfromCharacterValue(value);
 		const character = this.getCharacterByID(id);
 		if (character === null)
@@ -80,7 +80,7 @@ export class CharacterRepository {
 	 * @returns The character with the given ID.
 	 * @throws {CharacterNotFoundError} If no character with the given ID is found.
 	 */
-	getCharacterOrThrow(id: CharacterID): Character {
+	getCharacterOrThrow(id: CharacterID): MinimalCharacter {
 		const character = this.getCharacterByID(id);
 
 		if (character === null)
@@ -94,7 +94,7 @@ export class CharacterRepository {
 	 * @param id - The ID of the character to retrieve.
 	 * @returns The character with the given ID and its tags, or null if no such character exists.
 	 */
-	getCharacterWithTags(id: number): CharacterWithTags | null {
+	getCharacterWithTags(id: number): Character | null {
 		const query = `
 			SELECT
 				character.*,

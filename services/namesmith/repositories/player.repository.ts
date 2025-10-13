@@ -311,6 +311,47 @@ export class PlayerRepository {
 	}
 
 	/**
+	 * Retrieves the role ID of a player from the namesmith database.
+	 * @param playerID - The ID of the player whose role ID is being retrieved.
+	 * @returns The role ID of the player, or null if the player does not exist.
+	 * @throws {PlayerNotFoundError} - If the player with the specified ID is not found.
+	 */
+	getRoleID(playerID: PlayerID): number | null {
+		try {
+			const roleID = this.db.getValue(
+				"SELECT role FROM player WHERE id = @id",
+				{ id: playerID }
+			);
+			return roleID as number | null;
+		}
+		catch {
+			throw new PlayerNotFoundError(playerID);
+		}
+	}
+
+	/**
+	 * Sets the role ID of a player in the namesmith database.
+	 * @param playerID - The ID of the player whose role ID is being set.
+	 * @param roleID - The role ID to assign to the player, or null to remove the role ID.
+	 * @throws {PlayerNotFoundError} - If the player with the specified ID is not found.
+	 */
+	setRoleID(playerID: PlayerID, roleID: number | null) {
+		const query = `
+			UPDATE player
+			SET role = @role
+			WHERE id = @id
+		`;
+
+		const result = this.db.run(query, {
+			role: roleID,
+			id: playerID
+		});
+
+		if (result.changes === 0)
+			throw new PlayerNotFoundError(playerID);
+	}
+
+	/**
 	 * Adds a new player to the game's database.
 	 * @param playerID - The ID of the player to be added.
 	 */

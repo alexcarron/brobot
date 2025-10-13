@@ -40,6 +40,27 @@ describe('DatabaseQuerier', () => {
       const query = 'INVALID QUERY';
       expect(() => dbQuerier.getQuery(query)).toThrow(QueryUsageError);
     });
+
+		describe('.getValue()', () => {
+			it('runs a single read query and returns the first value of the first row', () => {
+				const query = 'SELECT value FROM character WHERE id = ?';
+				const params = [1];
+				const result = dbQuerier.getQuery(query).getValue(params);
+				expect(result).toEqual('character1');
+			});
+
+			it('throws an error if no rows are found', () => {
+				const query = 'SELECT value FROM character WHERE id = ?';
+				const params = [999];
+				expect(() => dbQuerier.getQuery(query).getValue(params)).toThrow(QueryUsageError);
+			});
+
+			it('gets only the first value of the first row when multiple rows are returned', () => {
+				const query = 'SELECT id, value FROM character';
+				const result = dbQuerier.getQuery(query).getValue();
+				expect(result).toEqual(1);
+			});
+		});
   });
 
   describe('.run()', () => {
@@ -84,6 +105,27 @@ describe('DatabaseQuerier', () => {
 			expect(result).toHaveProperty('lastInsertRowid', expect.any(Number));
 		});
   });
+
+	describe('getValue()', () => {
+		it('runs a single read query and returns the first value of the first row', () => {
+			const query = 'SELECT value FROM character WHERE id = ?';
+			const params = [1];
+			const result = dbQuerier.getValue(query, params);
+			expect(result).toEqual('character1');
+		});
+
+		it('throws an error if no rows are found', () => {
+			const query = 'SELECT value FROM character WHERE id = ?';
+			const params = [999];
+			expect(() => dbQuerier.getValue(query, params)).toThrow(QueryUsageError);
+		});
+
+		it('gets only the first value of the first row when multiple rows are returned', () => {
+			const query = 'SELECT id, value FROM character';
+			const result = dbQuerier.getValue(query);
+			expect(result).toEqual(1);
+		});
+	});
 
   describe('.getRow()', () => {
     it('runs a single read query and returns a single row', () => {

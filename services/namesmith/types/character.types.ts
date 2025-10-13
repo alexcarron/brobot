@@ -1,29 +1,32 @@
+import { Without } from "../../../utilities/types/generic-types";
+
 export interface Character {
   id: number;
   value: string;
   rarity: number;
+	tags: string[];
 }
 
-export interface CharacterWithTags extends Character {
-  tags: string[];
-}
-
+/**
+ * A character without its subentities.
+ */
+export type MinimalCharacter = Without<Character, "tags">;
 
 /**
  * DBCharacter represents a Character stored in the database.
  * Currently identical to Character but kept for semantic clarity.
  */
-export type DBCharacter = Character
+export type DBCharacter = MinimalCharacter
 
 export interface DBCharacterWithTags extends DBCharacter {
 	tags: string | null;
 }
 
-export type CharacterID = Character["id"];
-export type CharacterValue = Character["value"];
+export type CharacterID = MinimalCharacter["id"];
+export type CharacterValue = MinimalCharacter["value"];
 
 export type CharacterResolvable =
+	| MinimalCharacter
 	| Character
-	| CharacterWithTags
 	| CharacterID
 	| CharacterValue;
