@@ -1,11 +1,11 @@
 import { INVALID_CHARACTER_ID } from "../constants/test.constants";
 import { createMockCharacterService } from "../mocks/mock-services";
-import { MinimalCharacter, CharacterID, CharacterValue } from "../types/character.types";
+import { Character, CharacterID, CharacterValue } from "../types/character.types";
 import { CharacterNotFoundError } from "../utilities/error.utility";
 import { CharacterService } from "./character.service";
 
 describe('CharacterService', () => {
-	let CHARACTER_A: MinimalCharacter;
+	let CHARACTER_A: Character;
 	let CHARACTER_A_ID: CharacterID;
 	let CHARACTER_A_VALUE: CharacterValue;
 
@@ -30,17 +30,6 @@ describe('CharacterService', () => {
 	describe('resolveCharacter()', () => {
 		it('returns a character when given a character object', () => {
 			const result = characterService.resolveCharacter(CHARACTER_A);
-			expect(result).toEqual(CHARACTER_A);
-		});
-
-		it('returns a character without tags when given a character with tags object', () => {
-			const CHARACTER_A_WITH_TAGS = characterService.characterRepository.getCharacterWithTags(CHARACTER_A_ID);
-
-			if (!CHARACTER_A_WITH_TAGS) {
-				throw new Error('Character with tags not found');
-			}
-
-			const result = characterService.resolveCharacter(CHARACTER_A_WITH_TAGS);
 			expect(result).toEqual(CHARACTER_A);
 		});
 

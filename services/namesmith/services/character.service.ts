@@ -1,5 +1,5 @@
 import { CharacterRepository } from "../repositories/character.repository";
-import { MinimalCharacter, CharacterID, CharacterResolvable } from "../types/character.types";
+import { Character, CharacterID, CharacterResolvable } from "../types/character.types";
 import { getIDfromCharacterValue } from "../utilities/character.utility";
 
 /**
@@ -16,7 +16,7 @@ export class CharacterService {
 	 * @returns The resolved character object.
 	 * @throws {Error} If the character resolvable is invalid or the character is not found.
 	 */
-	resolveCharacter(characterResolvable: CharacterResolvable): MinimalCharacter {
+	resolveCharacter(characterResolvable: CharacterResolvable): Character {
 		let characterID: CharacterID;
 
 		if (typeof characterResolvable === "number") {

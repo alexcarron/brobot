@@ -23,7 +23,6 @@ export const insertCharactersToDB = (db: DatabaseQuerier, characters: Character[
 	);
 
 	const insertCharacter = db.getQuery("INSERT OR IGNORE INTO character (id, value, rarity) VALUES (@id, @value, @rarity)");
-	const insertTag = db.getQuery("INSERT OR IGNORE INTO characterTag (characterID, tag) VALUES (@characterID, @tag)");
 
 	const insertCharacters = db.getTransaction((characters: Character[]) => {
 		for (const character of characters) {
@@ -42,9 +41,6 @@ export const insertCharactersToDB = (db: DatabaseQuerier, characters: Character[
 				value: character.value,
 				rarity: character.rarity
 			});
-			for (const tag of character.tags) {
-				insertTag.run({ characterID: character.id, tag });
-			}
 		}
 	});
 
@@ -103,7 +99,6 @@ export const insertMysteryBoxesToDB = (db: DatabaseQuerier, mysteryBoxes: Myster
 						id: characterID,
 						value: characterValue,
 						rarity: weight,
-						tags: []
 					};
 
 					insertCharactersToDB(db, [character]);

@@ -26,11 +26,8 @@ describe("Mock Utilities", () => {
 			const expectedTables = [
 				"gameState",
 				"character",
-				"characterTag",
 				"mysteryBox",
-				"mysteryBoxCharacterOdds",
 				"player",
-				"playerPerk",
 				"vote"
 			];
 

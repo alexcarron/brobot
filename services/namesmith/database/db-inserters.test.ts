@@ -24,14 +24,12 @@ describe('db-inserters.js', () => {
       {
         id: astrickID,
         value: '*',
-        rarity: 3,
-        tags: ['tag1', 'tag2']
+        rarity: 3
       },
       {
         id: bracketID,
         value: ']',
-        rarity: 12,
-        tags: ['tag3', 'tag4']
+        rarity: 12
       }
     ];
     mysteryBoxes = [
@@ -74,17 +72,6 @@ describe('db-inserters.js', () => {
       expect(result).toEqual([
 				{ id: astrickID, value: '*', rarity: 3 },
 				{ id: bracketID, value: ']', rarity: 12 }
-      ]);
-    });
-
-    it('inserts tags into the database', () => {
-      insertCharactersToDB(db, characters);
-      const result = db.getRows('SELECT * FROM characterTag');
-      expect(result).toEqual([
-				{ characterID: astrickID, tag: 'tag1' },
-				{ characterID: astrickID, tag: 'tag2' },
-				{ characterID: bracketID, tag: 'tag3' },
-				{ characterID: bracketID, tag: 'tag4' }
       ]);
     });
   });

@@ -13,13 +13,6 @@ CREATE TABLE IF NOT EXISTS character (
 	rarity INTEGER NOT NULL
 );
 
--- Character Tags table
-CREATE TABLE IF NOT EXISTS characterTag (
-	characterID INTEGER NOT NULL REFERENCES character(id) ON DELETE CASCADE,
-	tag TEXT NOT NULL,
-	PRIMARY KEY (characterID, tag)
-);
-
 -- Mystery Boxes table
 CREATE TABLE IF NOT EXISTS mysteryBox (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -105,8 +98,6 @@ CREATE TABLE IF NOT EXISTS trade (
 -- Optional index for performance
 CREATE INDEX IF NOT EXISTS characterIDIndex ON character (id);
 CREATE INDEX IF NOT EXISTS characterValueIndex ON character (value);
-CREATE INDEX IF NOT EXISTS characterTagIDIndex ON characterTag (characterID);
-CREATE INDEX IF NOT EXISTS characterTagTagIndex ON characterTag (tag);
 CREATE INDEX IF NOT EXISTS mysteryBoxIDIndex ON mysteryBoxCharacterOdds (mysteryBoxID);
 CREATE INDEX IF NOT EXISTS mysteryBoxCharacterIDIndex ON mysteryBoxCharacterOdds (characterID);
 CREATE INDEX IF NOT EXISTS playerIDIndex ON vote (playerVotedForID);
