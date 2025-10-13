@@ -4,20 +4,20 @@ import { CharacterRepository } from "../repositories/character.repository";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
 import { createMockMysteryBoxService } from "../mocks/mock-services";
 import { MysteryBoxService } from "./mystery-box.service";
-import { MysteryBox } from "../types/mystery-box.types";
+import { MinimalMysteryBox } from "../types/mystery-box.types";
 import { addMockMysteryBox } from "../mocks/mock-data/mock-mystery-boxes";
 
 describe('MysteryBoxService', () => {
 	let mysteryBoxService: MysteryBoxService;
 	let db: DatabaseQuerier;
 
-	let MOCK_MYSTERY_BOX: MysteryBox;
+	let MOCK_MYSTERY_BOX: MinimalMysteryBox;
 
 	beforeEach(() => {
 		mysteryBoxService = createMockMysteryBoxService();
 		db = mysteryBoxService.mysteryBoxRepository.db;
 
-		MOCK_MYSTERY_BOX = mysteryBoxService.mysteryBoxRepository.getMysteryBoxesWithOdds()[0];
+		MOCK_MYSTERY_BOX = mysteryBoxService.mysteryBoxRepository.getMysteryBoxes()[0];
 	});
 
 	afterEach(() => {

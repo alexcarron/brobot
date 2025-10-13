@@ -2,7 +2,7 @@ import { getCharacterDifferences } from '../../../utilities/data-structure-utils
 import { CustomError } from '../../../utilities/error-utils';
 import { escapeDiscordMarkdown } from '../../../utilities/string-manipulation-utils';
 import { CharacterID } from '../types/character.types';
-import { MysteryBox, MysteryBoxID } from '../types/mystery-box.types';
+import { MinimalMysteryBox, MysteryBoxID } from '../types/mystery-box.types';
 import { PerkID } from '../types/perk.types';
 import { Player } from '../types/player.types';
 import { Recipe, RecipeID } from '../types/recipe.types';
@@ -459,8 +459,8 @@ export class RefillAlreadyClaimedError extends UserActionError {
  * Error thrown when a player attempts to buy a mystery box that is too expensive
  */
 export class PlayerCantAffordMysteryBoxError extends UserActionError {
-	declare relevantData: { mysteryBox: MysteryBox, player: Player };
-	constructor(mysteryBox: MysteryBox, player: Player) {
+	declare relevantData: { mysteryBox: MinimalMysteryBox, player: Player };
+	constructor(mysteryBox: MinimalMysteryBox, player: Player) {
 		super({
 			message: `Player ${player.currentName} attempted to buy the mystery box ${mysteryBox.name} but they cannot afford it.`,
 			userFriendlyMessage:

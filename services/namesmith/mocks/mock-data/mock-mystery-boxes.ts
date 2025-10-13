@@ -1,7 +1,7 @@
 import { createRandomName } from "../../../../utilities/random-utils";
 import { WithAtLeastOneProperty } from "../../../../utilities/types/generic-types";
 import { DatabaseQuerier } from "../../database/database-querier";
-import { MysteryBox } from "../../types/mystery-box.types";
+import { MinimalMysteryBox } from "../../types/mystery-box.types";
 
 
 /**
@@ -19,8 +19,8 @@ export const addMockMysteryBox = (
 		id = undefined,
     name = undefined,
     tokenCost = 0,
-	}: WithAtLeastOneProperty<MysteryBox>
-): MysteryBox => {
+	}: WithAtLeastOneProperty<MinimalMysteryBox>
+): MinimalMysteryBox => {
 	if (name === undefined)
 		name = createRandomName();
 

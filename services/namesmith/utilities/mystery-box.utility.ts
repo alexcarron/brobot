@@ -1,5 +1,5 @@
 import { isObject, isStringToNumberRecord } from "../../../utilities/types/type-guards";
-import { CharacterOdds, MysteryBox, MysteryBoxWithOdds } from "../types/mystery-box.types";
+import { CharacterOdds, MinimalMysteryBox, MysteryBox } from "../types/mystery-box.types";
 
 /**
  * Checks if a given value is an object where each key is a character and each value is a number representing the odds of the character being in a mystery box.
@@ -17,7 +17,7 @@ export const isCharacterOdds = (value: unknown): value is CharacterOdds => (
  * @param value - The value to check.
  * @returns If the value is a mystery box object with the given properties.
  */
-export const isMysteryBox = (value: unknown): value is MysteryBox => (
+export const isMysteryBox = (value: unknown): value is MinimalMysteryBox => (
 	value !== null &&
 	typeof value === 'object' &&
 	'id' in value &&
@@ -35,7 +35,7 @@ export const isMysteryBox = (value: unknown): value is MysteryBox => (
  * @param value - The value to check.
  * @returns If the value is a mystery box object with character odds.
  */
-export const isMysteryBoxWithOdds = (value: unknown): value is MysteryBoxWithOdds => {
+export const isMysteryBoxWithOdds = (value: unknown): value is MysteryBox => {
 	return (
 		isMysteryBox(value) &&
 		'characterOdds' in value &&

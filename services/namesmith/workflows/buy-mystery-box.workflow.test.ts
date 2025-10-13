@@ -10,7 +10,7 @@ import { PlayerService } from "../services/player.service";
 import { INVALID_MYSTERY_BOX_ID, INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { Player } from '../types/player.types';
-import { MysteryBox } from "../types/mystery-box.types";
+import { MinimalMysteryBox } from "../types/mystery-box.types";
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { addMockMysteryBox } from "../mocks/mock-data/mock-mystery-boxes";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
@@ -28,7 +28,7 @@ describe('buy-mystery-box.workflow', () => {
 
 	let db: DatabaseQuerier;
 	let richPlayer: Player;
-	let defaultMysteryBox: MysteryBox;
+	let defaultMysteryBox: MinimalMysteryBox;
 
 	beforeEach(() => {
 		setupMockNamesmith();

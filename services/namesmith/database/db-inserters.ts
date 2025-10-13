@@ -1,7 +1,7 @@
 import { InvalidArgumentError, validateArguments } from "../../../utilities/error-utils";
 import { WithOptional } from "../../../utilities/types/generic-types";
 import { Character } from "../types/character.types";
-import { MysteryBoxWithOdds } from "../types/mystery-box.types";
+import { MysteryBox } from "../types/mystery-box.types";
 import { Perk } from "../types/perk.types";
 import { Recipe } from "../types/recipe.types";
 import { RoleDefinition } from "../types/role.types";
@@ -55,7 +55,7 @@ export const insertCharactersToDB = (db: DatabaseQuerier, characters: Character[
  * @param db - The database querier instance used for executing SQL statements.
  * @param mysteryBoxes - An array of mystery box objects to be inserted.
  */
-export const insertMysteryBoxesToDB = (db: DatabaseQuerier, mysteryBoxes: MysteryBoxWithOdds[]) => {
+export const insertMysteryBoxesToDB = (db: DatabaseQuerier, mysteryBoxes: MysteryBox[]) => {
 	if (!Array.isArray(mysteryBoxes))
 		throw new InvalidArgumentError("insertMysteryBoxesToDB: mysteryBoxes must be an array.");
 
@@ -65,7 +65,7 @@ export const insertMysteryBoxesToDB = (db: DatabaseQuerier, mysteryBoxes: Myster
 	const insertMysteryBox = db.getQuery("INSERT OR IGNORE INTO mysteryBox (name, tokenCost) VALUES (@name, @tokenCost)");
 	const insertMysteryBoxCharacterOdds = db.getQuery("INSERT OR IGNORE INTO mysteryBoxCharacterOdds (mysteryBoxID, characterID, weight) VALUES (@mysteryBoxID, @characterID, @weight)");
 
-	const insertMysteryBoxes = db.getTransaction((mysteryBoxes: MysteryBoxWithOdds[]) => {
+	const insertMysteryBoxes = db.getTransaction((mysteryBoxes: MysteryBox[]) => {
 		db.run("DELETE FROM mysteryBoxCharacterOdds");
 		db.run("DELETE FROM mysteryBox");
 

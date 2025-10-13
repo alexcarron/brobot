@@ -5,13 +5,13 @@
  */
 export type CharacterOdds = Record<string, number>;
 
-export type MysteryBox = {
+export type MinimalMysteryBox = {
 	id: number;
 	name: string;
 	tokenCost: number;
 }
 
-export type MysteryBoxWithOdds = MysteryBox & {
+export type MysteryBox = MinimalMysteryBox & {
 	characterOdds: CharacterOdds;
 }
 
@@ -19,7 +19,7 @@ export type MysteryBoxWithOdds = MysteryBox & {
  * DBMysteryBox represents a Mystery Box stored in the database.
  * Currently identical to MysteryBox but kept for semantic clarity.
  */
-export type DBMysteryBox = MysteryBox
+export type DBMysteryBox = MinimalMysteryBox;
 
 export interface DBCharacterOddsRow {
 	mysteryBoxID: number;
@@ -27,8 +27,8 @@ export interface DBCharacterOddsRow {
 	weight: number;
 }
 
-export type MysteryBoxID = MysteryBox["id"];
-export type MysteryBoxName = MysteryBox["name"];
+export type MysteryBoxID = MinimalMysteryBox["id"];
+export type MysteryBoxName = MinimalMysteryBox["name"];
 
 export type MysteryBoxResolveable =
-	MysteryBox | MysteryBoxWithOdds | MysteryBoxID;
+	MinimalMysteryBox | MysteryBox | MysteryBoxID;

@@ -2,7 +2,7 @@ import { getRandomWeightedElement } from "../../../utilities/data-structure-util
 import { CharacterRepository } from "../repositories/character.repository";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
 import { Character } from "../types/character.types";
-import { MysteryBoxID, MysteryBoxResolveable, MysteryBoxWithOdds } from "../types/mystery-box.types";
+import { MysteryBoxID, MysteryBoxResolveable, MysteryBox } from "../types/mystery-box.types";
 
 /**
  * Provides methods for interacting with mystery boxes.
@@ -27,13 +27,13 @@ export class MysteryBoxService {
 	 */
 	resolveMysteryBox(
 		mysteryBoxResolvable: MysteryBoxResolveable
-	): MysteryBoxWithOdds {
+	): MysteryBox {
 		const mysteryBoxID: MysteryBoxID =
 			typeof mysteryBoxResolvable === 'object'
 				? mysteryBoxResolvable.id
 				: mysteryBoxResolvable;
 
-		return this.mysteryBoxRepository.getMysteryBoxWithOddsOrThrow(mysteryBoxID);
+		return this.mysteryBoxRepository.getMysteryBoxOrThrow(mysteryBoxID);
 	}
 
 	/**
@@ -60,8 +60,8 @@ export class MysteryBoxService {
 	 * Returns an array of all mystery box objects with their character odds.
 	 * @returns An array of mystery box objects with their character odds.
 	 */
-	getMysteryBoxes(): MysteryBoxWithOdds[] {
-		return this.mysteryBoxRepository.getMysteryBoxesWithOdds();
+	getMysteryBoxes(): MysteryBox[] {
+		return this.mysteryBoxRepository.getMysteryBoxes();
 	}
 
 	/**

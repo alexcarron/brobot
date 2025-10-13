@@ -1,14 +1,14 @@
 import { MysteryBoxService } from "../services/mystery-box.service";
 import { PlayerService } from "../services/player.service";
 import { Character } from "../types/character.types";
-import { MysteryBox, MysteryBoxResolveable } from '../types/mystery-box.types';
+import { MinimalMysteryBox, MysteryBoxResolveable } from '../types/mystery-box.types';
 import { Player, PlayerResolvable } from "../types/player.types";
 import { getWorkflowResultCreator, provides } from "./workflow-result-creator";
 
 const result = getWorkflowResultCreator({
 	success: provides<{
 		player: Player,
-		mysteryBox: MysteryBox,
+		mysteryBox: MinimalMysteryBox,
 		tokenCost: number,
 		recievedCharacter: Character,
 	}>(),
