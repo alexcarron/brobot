@@ -2,9 +2,10 @@ import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { Override } from "../../../utilities/types/generic-types";
 import { MAX_NAME_LENGTH } from "../constants/namesmith.constants";
 import { DatabaseQuerier } from "../database/database-querier";
-import { DBPlayer, Player, PlayerID } from "../types/player.types";
+import { DBPerk, DBPlayerPerk } from "../types/perk.types";
+import { DBPlayer, MinimalPlayer, Player, PlayerID } from "../types/player.types";
 import { PlayerNotFoundError, PlayerAlreadyExistsError } from "../utilities/error.utility";
-import { toPlayerObject } from "../utilities/player.utility";
+import { toMinimalPlayerObject } from "../utilities/player.utility";
 
 /**
  * Provides access to the dynamic player data.
@@ -19,15 +20,63 @@ export class PlayerRepository {
 		this.db = db;
 	}
 
+
+	/**
+	 * Retrieves a list of all minimal player objects in the game.
+	 * @returns An array of minimal player objects.
+	 */
+	private getMinimalPlayers(): MinimalPlayer[] {
+		const query = `SELECT * FROM player`;
+		const dbPlayers = this.db.getRows(query) as DBPlayer[];
+		return dbPlayers.map(dbPlayer => toMinimalPlayerObject(dbPlayer));
+	}
+
+	/**
+	 * Maps an array of minimal player objects to an array of player objects, including each player's perks.
+	 * @param minimalPlayers - An array of minimal player objects.
+	 * @returns An array of player objects.
+	 */
+	private addPerksToPlayers(minimalPlayers: MinimalPlayer[]): Player[] {
+		const playerPerks = this.db.getRows(
+			`SELECT playerID, perkID, id, name, description
+				FROM playerPerk
+				JOIN perk ON playerPerk.perkID = perk.id`
+		) as Array<DBPlayerPerk & DBPerk>;
+
+		return minimalPlayers.map(minimalPlayer => {
+			const perks = playerPerks
+				.filter(playerPerk => playerPerk.playerID === minimalPlayer.id)
+				.map(playerPerk => ({
+					id: playerPerk.id,
+					name: playerPerk.name,
+					description: playerPerk.description
+				}));
+
+			return {
+				...minimalPlayer,
+				role: null,
+				perks
+			}
+		});
+	}
+
 	/**
 	 * Returns a list of all player objects in the game.
 	 * @returns An array of player objects.
 	 */
 	getPlayers(): Player[] {
-		const query = `SELECT * FROM player`;
-		const getAllPlayers = this.db.prepare(query);
-		const dbPlayers = getAllPlayers.all() as DBPlayer[];
-		return dbPlayers.map(dbPlayer => toPlayerObject(dbPlayer));
+		const minimalPlayers = this.getMinimalPlayers();
+		return this.addPerksToPlayers(minimalPlayers);
+	}
+
+	getMinimalPlayerByID(playerID: PlayerID): MinimalPlayer | null {
+		const query = `SELECT * FROM player WHERE id = @id`;
+		const player = this.db.getRow(query, { id: playerID }) as DBPlayer | undefined;
+
+		if (player === undefined)
+			return null;
+
+		return toMinimalPlayerObject(player);
 	}
 
 	/**
@@ -36,10 +85,23 @@ export class PlayerRepository {
 	 * @returns The player object if found, otherwise null.
 	 */
 	getPlayerByID(playerID: string): Player | null {
-		const query = `SELECT * FROM player WHERE id = @id`;
-		const getPlayerById = this.db.prepare(query);
-		const player = getPlayerById.get({ id: playerID }) as DBPlayer | undefined;
-		return player ? toPlayerObject(player) : null;
+		const minimalPlayer = this.getMinimalPlayerByID(playerID);
+		if (minimalPlayer === null)
+			return null;
+
+		const dbPerks = this.db.getRows(
+			`SELECT id, name, description
+				FROM playerPerk
+				JOIN perk ON playerPerk.perkID = perk.id
+				WHERE playerID = @playerID`,
+			{ playerID }
+		) as Array<DBPerk>;
+
+		return {
+			...minimalPlayer,
+			role: null,
+			perks: dbPerks,
+		};
 	}
 
 	/**
@@ -58,15 +120,26 @@ export class PlayerRepository {
 	}
 
 	/**
+	 * Retrieves a list of minimal player objects with the given current name.
+	 * @param currentName - The current name to search for.
+	 * @returns An array of minimal player objects with the given current name.
+	 */
+	private getMinimalPlayersByCurrentName(currentName: string): MinimalPlayer[] {
+		const query = `SELECT * FROM player WHERE currentName = @currentName`;
+
+		const player = this.db.getRows(query, { currentName }) as DBPlayer[];
+
+		return player.map(dbPlayer => toMinimalPlayerObject(dbPlayer));
+	}
+
+	/**
 	 * Retrieves a list of all player objects with the given current name.
 	 * @param currentName - The current name to search for.
 	 * @returns An array of player objects with the given current name.
 	 */
 	getPlayersByCurrentName(currentName: string): Player[] {
-		const query = `SELECT * FROM player WHERE currentName = @currentName`;
-		const getPlayersByCurrentName = this.db.prepare(query);
-		const dbPlayers = getPlayersByCurrentName.all({ currentName }) as DBPlayer[];
-		return dbPlayers.map(dbPlayer => toPlayerObject(dbPlayer));
+		const minimalPlayers = this.getMinimalPlayersByCurrentName(currentName);
+		return this.addPerksToPlayers(minimalPlayers);
 	}
 
 	/**
@@ -82,6 +155,17 @@ export class PlayerRepository {
 		return true;
 	}
 
+	private getMinimalPlayersWithoutPublishedNames(): Override<MinimalPlayer, {
+		publishedName: null
+	}>[]  {
+		const query = `SELECT * FROM player WHERE publishedName IS NULL`;
+		const dbPlayers = this.db.getRows(query) as DBPlayer[];
+		return dbPlayers.map(dbPlayer => ({
+			...toMinimalPlayerObject(dbPlayer),
+			publishedName: null
+		}));
+	}
+
 	/**
 	 * Retrieves a list of players without published names.
 	 * @returns An array of player objects without a published name.
@@ -89,13 +173,22 @@ export class PlayerRepository {
 	getPlayersWithoutPublishedNames(): Override<Player, {
 		publishedName: null
 	}>[] {
-		const query = `SELECT * FROM player WHERE publishedName IS NULL`;
-		const getPlayersWithoutPublishedNames = this.db.prepare(query);
-		const dbPlayers = getPlayersWithoutPublishedNames.all() as Override<DBPlayer, {publishedName: null}>[];
+		const minimalPlayers = this.getMinimalPlayersWithoutPublishedNames();
+		return this.addPerksToPlayers(minimalPlayers) as any;
+	}
 
+	/**
+	 * Retrieves a list of players with published names.
+	 * @returns An array of minimal player objects with published names.
+	 */
+	private getMinimalPlayersWithPublishedNames(): Override<MinimalPlayer, {
+		publishedName: string
+	}>[]  {
+		const query = `SELECT * FROM player WHERE publishedName IS NOT NULL`;
+		const dbPlayers = this.db.getRows(query) as DBPlayer[];
 		return dbPlayers.map(dbPlayer => ({
-			...toPlayerObject(dbPlayer),
-			publishedName: null
+			...toMinimalPlayerObject(dbPlayer),
+			publishedName: dbPlayer.publishedName!
 		}));
 	}
 
@@ -106,16 +199,8 @@ export class PlayerRepository {
 	getPlayersWithPublishedNames(): Override<Player,
 		{publishedName: string}
 	>[] {
-		const query = `SELECT * FROM player WHERE publishedName IS NOT NULL`;
-		const getPlayersWithPublishedNames = this.db.prepare(query);
-		const dbPlayers = getPlayersWithPublishedNames.all() as Override<DBPlayer,
-			{publishedName: string}
-		>[];
-
-		return dbPlayers.map(dbPlayer => ({
-			...toPlayerObject(dbPlayer),
-			publishedName: dbPlayer.publishedName
-		}));
+		const minimalPlayers = this.getMinimalPlayersWithPublishedNames();
+		return this.addPerksToPlayers(minimalPlayers) as any;
 	}
 
 	/**

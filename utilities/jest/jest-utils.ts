@@ -204,8 +204,14 @@ export function makeSure(actualValue: unknown) {
 		 * makeSure([1, 2, 3]).isArray();
 		 */
 		isAnArray(): void {
-			if (!Array.isArray(actualValue)) {
+			if (!isArray(actualValue)) {
 				throw new Error(`Expected actual value to be an array, but got: ${actualValue}`);
+			}
+		},
+
+		isAnObject(): void {
+			if (!isObject(actualValue)) {
+				throw new Error(`Expected actual value to be an object, but got: ${actualValue}`);
 			}
 		},
 

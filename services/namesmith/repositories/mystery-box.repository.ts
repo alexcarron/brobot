@@ -21,7 +21,7 @@ export class MysteryBoxRepository {
 	 * Returns a list of all mystery box objects in the game without their character odds.
 	 * @returns An array of mystery box objects with minimal fields.
 	 */
-	getMinimalMysteryBoxes(): MinimalMysteryBox[] {
+	private getMinimalMysteryBoxes(): MinimalMysteryBox[] {
 		const query = `SELECT DISTINCT * FROM mysteryBox`;
 		const getAllMysteryBoxes = this.db.prepare(query);
 		return getAllMysteryBoxes.all() as DBMysteryBox[];
@@ -57,7 +57,7 @@ export class MysteryBoxRepository {
 	 * @param id - The id of the mystery box to return.
 	 * @returns The mystery box object with the given id or null if no such object exists.
 	 */
-	getMinimalMysteryBoxByID(id: number): MinimalMysteryBox | null {
+	private getMinimalMysteryBoxByID(id: number): MinimalMysteryBox | null {
 		if (!id)
 			throw new InvalidArgumentError('getMysteryBoxByID: Mystery box id must be provided.');
 
@@ -136,6 +136,7 @@ export class MysteryBoxRepository {
 	 */
 	getTokenCost(mysteryBoxID: number): number {
 		const mysteryBox = this.getMinimalMysteryBoxByID(mysteryBoxID);
+
 		if (mysteryBox === null)
 			throw new MysteryBoxNotFoundError(mysteryBoxID);
 

@@ -10,24 +10,7 @@ describe('MysteryBoxRepository', () => {
 		mysteryBoxRepo = createMockMysteryBoxRepo();
 	});
 
-  describe('getMysteryBoxes', () => {
-    it('returns a non-empty array', () => {
-      const result = mysteryBoxRepo.getMinimalMysteryBoxes();
-			expect(Array.isArray(result)).toBe(true);
-      expect(result.length).toBeGreaterThan(0);
-    });
-
-    it('each mystery box object has the expected properties', () => {
-      const result = mysteryBoxRepo.getMinimalMysteryBoxes();
-      result.forEach((mysteryBox) => {
-        expect(mysteryBox).toHaveProperty('id', expect.any(Number));
-        expect(mysteryBox).toHaveProperty('name', expect.any(String));
-        expect(mysteryBox).toHaveProperty('tokenCost', expect.any(Number));
-      });
-    });
-  });
-
-	describe('getMysteryBoxesWithOdds()', () => {
+	describe('getMysteryBoxes()', () => {
 		it('returns a non-empty array', () => {
 			const result = mysteryBoxRepo.getMysteryBoxes();
 			expect(Array.isArray(result)).toBe(true);
@@ -52,16 +35,7 @@ describe('MysteryBoxRepository', () => {
 		});
 	});
 
-	describe('getMysteryBoxByID()', () => {
-		it('returns a non-empty object', () => {
-			const result = mysteryBoxRepo.getMinimalMysteryBoxByID(1);
-			expect(result).toHaveProperty('id', 1);
-			expect(result).toHaveProperty('name', expect.any(String));
-			expect(result).toHaveProperty('tokenCost', expect.any(Number));
-		});
-	});
-
-	describe('getMysteryBoxWithOdds()', () => {
+	describe('getMysteryBox()', () => {
 		it('returns a non-empty object', () => {
 			const result = mysteryBoxRepo.getMysteryBox(1);
 			expect(result).toHaveProperty('id', 1);

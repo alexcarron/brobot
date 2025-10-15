@@ -1,12 +1,12 @@
 import { InvalidArgumentError } from "../../../../utilities/error-utils";
 import { createRandomNumericUUID } from "../../../../utilities/random-utils";
 import { WithAtLeast, WithAtLeastOneProperty } from "../../../../utilities/types/generic-types";
-import { isNumber, isObject, isString } from "../../../../utilities/types/type-guards";
+import { isNumber } from "../../../../utilities/types/type-guards";
 import { DatabaseQuerier } from "../../database/database-querier";
-import { PerkResolvable } from "../../types/perk.types";
-import { DBPlayer, Player, PlayerDefinition } from "../../types/player.types";
+import { DBPerk, Perk } from "../../types/perk.types";
+import { DBPlayer, MinimalPlayer, Player, PlayerDefinition } from "../../types/player.types";
 import { PlayerAlreadyExistsError } from "../../utilities/error.utility";
-import { toPlayerObject } from "../../utilities/player.utility";
+import { toMinimalPlayerObject } from "../../utilities/player.utility";
 
 /**
  * An array of mock player data for use in tests.
@@ -18,6 +18,7 @@ export const mockPlayers: PlayerDefinition[] = [
 		publishedName: "John Doe",
 		tokens: 10,
 		role: null,
+		perks: [],
 		inventory: "John Doe",
 		lastClaimedRefillTime: null,
 	},
@@ -27,6 +28,7 @@ export const mockPlayers: PlayerDefinition[] = [
 		publishedName: "abcd",
 		tokens: 0,
 		role: null,
+		perks: [],
 		inventory: "abcdefghijklmnopqrstuvwxyz",
 		lastClaimedRefillTime: null,
 	},
@@ -36,6 +38,7 @@ export const mockPlayers: PlayerDefinition[] = [
 		publishedName: null,
 		tokens: 0,
 		role: null,
+		perks: [],
 		inventory: "UNPUBLISHED",
 		lastClaimedRefillTime: null,
 	},
@@ -45,6 +48,7 @@ export const mockPlayers: PlayerDefinition[] = [
 		publishedName: "non-voter",
 		tokens: 0,
 		role: null,
+		perks: [],
 		inventory: "non-voter",
 		lastClaimedRefillTime: null,
 	}
@@ -58,6 +62,7 @@ export const mockPlayers: PlayerDefinition[] = [
  * @param options.publishedName - The published name of the player.
  * @param options.tokens - The number of tokens the player has.
  * @param options.role - The role of the player.
+ * @param options.perks - The perks the player has.
  * @param options.inventory - The player's inventory.
  * @param options.lastClaimedRefillTime - The last time the player claimed a refill.
  * @returns A mock player object with the given properties and default values for optional properties.
@@ -68,13 +73,14 @@ export const createMockPlayerObject = ({
 	publishedName = null,
 	tokens = 0,
 	role = null,
+	perks = [],
 	inventory = "",
 	lastClaimedRefillTime = null
 }: WithAtLeast<Player, "id">): Player => {
 	if (id === undefined || typeof id !== "string")
 		throw new InvalidArgumentError(`createMockPlayerObject: player id must be a string, but got ${id}.`);
 
-	return {id, currentName, publishedName, tokens, role, inventory, lastClaimedRefillTime};
+	return {id, currentName, publishedName, tokens, role, perks, inventory, lastClaimedRefillTime};
 }
 
 /**
@@ -106,14 +112,11 @@ export const addMockPlayer = (
 		publishedName = null,
 		tokens = 0,
 		role = null,
+		perks = [],
 		inventory = "",
 		lastClaimedRefillTime = null,
-		perks = []
 	}:
-	WithAtLeastOneProperty<
-		& PlayerDefinition
-		& { perks: PerkResolvable[] }
-	>
+	WithAtLeastOneProperty<PlayerDefinition>
 ): Player => {
 	if (id === undefined) {
 		id = createRandomNumericUUID();
@@ -149,33 +152,48 @@ export const addMockPlayer = (
 		VALUES (@playerID, @perkID)
 	`);
 
-	for (const perk of perks) {
-		if (isNumber(perk)) {
-			givePlayerPerk.run({ playerID: id, perkID: perk });
+	const actualPerks: Perk[] = [];
+	for (const perkResolvable of perks) {
+		if (isNumber(perkResolvable)) {
+			const perkID = perkResolvable;
+			givePlayerPerk.run({ playerID: id, perkID });
+
+			const perk = db.getRow(
+				"SELECT * FROM perk WHERE id = ?",
+				[perkID]
+			) as DBPerk | undefined;
+
+			if (perk === undefined) {
+				throw new InvalidArgumentError(`addMockPlayer: No perk found with ID ${perkID}.`);
+			}
+
+			actualPerks.push(perk);
 		}
-		else if (isString(perk)) {
+		else {
+			const perkName = perkResolvable;
 			const getPerkByName = db.prepare("SELECT * FROM perk WHERE name = @name");
-			const dbPerk = getPerkByName.get({ name: perk }) as DBPlayer | undefined;
+			const dbPerk = getPerkByName.get({ name: perkName }) as DBPerk | undefined;
 
 			if (dbPerk === undefined) {
-				throw new InvalidArgumentError(`addMockPlayer: No perk found with name ${perk}.`);
+				throw new InvalidArgumentError(`addMockPlayer: No perk found with name ${perkName}.`);
 			}
 
 			givePlayerPerk.run({ playerID: id, perkID: dbPerk.id });
-		}
-		else if (isObject(perk)) {
-			const perkID = perk.id;
-			givePlayerPerk.run({ playerID: id, perkID: perkID });
+
+			actualPerks.push(dbPerk);
 		}
 	}
 
-	return player;
+	return {
+		...player,
+		perks: actualPerks,
+	};
 };
 
 export const editMockPlayer = (
 	db: DatabaseQuerier,
-	editedPlayer: WithAtLeast<Player, "id">
-): Player => {
+	editedPlayer: WithAtLeast<DBPlayer, "id">
+): MinimalPlayer => {
 	const setQueries: string[] =
 		Object.entries(editedPlayer)
 			.filter(([key, value]) =>
@@ -206,5 +224,5 @@ export const editMockPlayer = (
 	if (newMockPlayer === undefined)
 		throw new InvalidArgumentError(`editMockPlayer: No player found with ID ${editedPlayer.id}.`);
 
-	return toPlayerObject(newMockPlayer);
+	return toMinimalPlayerObject(newMockPlayer);
 }

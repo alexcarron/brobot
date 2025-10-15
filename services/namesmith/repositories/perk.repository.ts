@@ -58,6 +58,20 @@ export class PerkRepository {
 	}
 
 	/**
+	 * Retrieves a perk by its name.
+	 * @param name - The name of the perk to be retrieved.
+	 * @returns The perk object if found, otherwise null.
+	 */
+	getPerkByName(name: string): Perk | null {
+		const perk = this.db.getRow(
+			"SELECT * FROM perk WHERE name = @name",
+			{ name }
+		) as DBPerk | undefined;
+
+		return perk ?? null;
+	}
+
+	/**
 	 * Retrieves a list of player IDs that have a perk with the given ID.
 	 * @param perkID - The ID of the perk to be retrieved.
 	 * @returns An array of player IDs that have the perk with the given ID.
@@ -85,6 +99,19 @@ export class PerkRepository {
 		const getPerksOfPlayer = this.db.prepare(query);
 		const rows = getPerksOfPlayer.all({ playerID }) as { perkID: number }[];
 		return rows.map(row => row.perkID);
+	}
+
+	/**
+	 * Adds a perk ID to a player ID in the database.
+	 * @param perkID - The ID of the perk to be added.
+	 * @param playerID - The ID of the player to have the perk added.
+	 */
+	addPerkIDToPlayer(perkID: PerkID, playerID: PlayerID) {
+		const query = `
+			INSERT INTO playerPerk (playerID, perkID)
+			VALUES (@playerID, @perkID)
+		`;
+		this.db.run(query, { playerID, perkID });
 	}
 
 	getPerkIDsOfRoleID(roleID: RoleID): PerkID[] {

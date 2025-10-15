@@ -1,7 +1,7 @@
 import { createMockDB } from "./mock-database";
 import { CharacterRepository } from "../repositories/character.repository";
 import { GameStateRepository } from "../repositories/game-state.repository";
-import { createMockPlayerRepo, createMockVoteRepo, createMockMysteryBoxRepo, createMockCharacterRepo, createMockGameStateRepo, createMockRecipeRepo, createMockTradeRepo } from "./mock-repositories";
+import { createMockPlayerRepo, createMockVoteRepo, createMockMysteryBoxRepo, createMockCharacterRepo, createMockGameStateRepo, createMockRecipeRepo, createMockTradeRepo, createMockPerkRepo } from "./mock-repositories";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
 import { PlayerRepository } from "../repositories/player.repository";
 import { RecipeRepository } from "../repositories/recipe.repository";
@@ -15,6 +15,8 @@ import { TradeService } from "../services/trade.service";
 import { VoteService } from "../services/vote.service";
 import { NamesmithServices } from "../types/namesmith.types";
 import { CharacterService } from "../services/character.service";
+import { PerkRepository } from "../repositories/perk.repository";
+import { PerkService } from "../services/perk.service";
 
 /**
  * Creates a mock GameStateService instance for testing purposes.
@@ -198,6 +200,26 @@ export const createMockCharacterService = (
 	return new CharacterService(characterRepository);
 }
 
+export const createMockPerkService = (
+	mockPerkRepository?: PerkRepository,
+	mockPlayerService?: PlayerService,
+) => {
+	const sharedDB =
+		mockPerkRepository?.db ??
+		mockPlayerService?.playerRepository.db ??
+		createMockDB();
+
+	const perkRepository =
+		mockPerkRepository ??
+		createMockPerkRepo(sharedDB);
+
+	const playerService =
+		mockPlayerService ??
+		createMockPlayerService(createMockPlayerRepo(sharedDB));
+
+	return new PerkService(perkRepository, playerService);
+}
+
 /**
  * Creates mock service instances for testing purposes.
 
@@ -211,6 +233,7 @@ export const createMockCharacterService = (
  * @param options.mockRecipeRepo - The mock recipe repository to use.
  * @param options.mockGameStateRepo - The mock game state repository to use.
  * @param options.mockTradeRepo - The mock trade repository to use.
+ * @param options.mockPerkRepo - The mock perk repository to use.
  * @returns An object with the created mock service instances.
  */
 export const createMockServices = ({
@@ -220,7 +243,8 @@ export const createMockServices = ({
 	mockCharacterRepo,
 	mockRecipeRepo,
 	mockGameStateRepo,
-	mockTradeRepo
+	mockTradeRepo,
+	mockPerkRepo,
 }: {
 	mockPlayerRepo?: PlayerRepository,
 	mockVoteRepo?: VoteRepository,
@@ -228,7 +252,8 @@ export const createMockServices = ({
 	mockCharacterRepo?: CharacterRepository,
 	mockRecipeRepo?: RecipeRepository,
 	mockGameStateRepo?: GameStateRepository,
-	mockTradeRepo?: TradeRepository
+	mockTradeRepo?: TradeRepository,
+	mockPerkRepo?: PerkRepository,
 } = {}): NamesmithServices => {
 	const sharedDB =
 		mockPlayerRepo?.db ??
@@ -237,6 +262,8 @@ export const createMockServices = ({
 		mockCharacterRepo?.db ??
 		mockRecipeRepo?.db ??
 		mockGameStateRepo?.db ??
+		mockTradeRepo?.db ??
+		mockPerkRepo?.db ??
 		createMockDB();
 
 	const playerRepo =
@@ -267,6 +294,10 @@ export const createMockServices = ({
 		mockTradeRepo ??
 		createMockTradeRepo(sharedDB);
 
+	const perkRepo =
+		mockPerkRepo ??
+		createMockPerkRepo(sharedDB);
+
 	const playerService = createMockPlayerService(playerRepo);
 	const voteService = createMockVoteService(
 		voteRepo, playerService
@@ -286,6 +317,9 @@ export const createMockServices = ({
 	const characterService = createMockCharacterService(
 		characterRepo
 	);
+	const perkService = createMockPerkService(
+		perkRepo, playerService
+	);
 
 	return {
 		playerService: playerService,
@@ -295,5 +329,6 @@ export const createMockServices = ({
 		gameStateService: gameStateService,
 		tradeService: tradeService,
 		characterService: characterService,
+		perkService: perkService,
 	}
 };

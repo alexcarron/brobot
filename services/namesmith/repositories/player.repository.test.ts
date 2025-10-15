@@ -283,6 +283,7 @@ describe('PlayerRepository', () => {
 				publishedName: null,
 				tokens: 0,
 				role: null,
+				perks: [],
 				inventory: "",
 				lastClaimedRefillTime: null
 			});

@@ -10,6 +10,14 @@ export interface Perk {
  */
 export type DBPerk = Perk;
 
+export type PerkDefintion = Perk;
+
 export type PerkID = Perk["id"];
 export type PerkName = Perk["name"];
 export type PerkResolvable = Perk | PerkID | PerkName;
+
+
+export type DBPlayerPerk = {
+	playerID: string;
+	perkID: number;
+}

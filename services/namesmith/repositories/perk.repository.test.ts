@@ -1,5 +1,6 @@
 import { getRandomElement } from "../../../utilities/data-structure-utils";
 import { makeSure } from "../../../utilities/jest/jest-utils";
+import { Perks } from "../constants/perks.constants";
 import { INVALID_PERK_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
@@ -11,7 +12,6 @@ describe('PerkRepository', () => {
 	let perkRepository: PerkRepository;
 	let db: DatabaseQuerier;
 
-	const MINE_BONUS_PERK_ID = 1;
 	const MINE_BONUS_ROLE_ID = 1;
 
 	beforeEach(() => {
@@ -67,16 +67,16 @@ describe('PerkRepository', () => {
 	describe('getIDsofPlayersWithPerkID()', () => {
 		it('returns an array of the only player ID that has the perk with the given ID', () => {
 			const player = addMockPlayer(db, {
-				perks: [MINE_BONUS_PERK_ID]
+				perks: [Perks.MINE_BONUS.id]
 			});
-			const playerIDs = perkRepository.getIDsofPlayersWithPerkID(MINE_BONUS_PERK_ID);
+			const playerIDs = perkRepository.getIDsofPlayersWithPerkID(Perks.MINE_BONUS.id);
 
 			makeSure(playerIDs).isAnArray();
 			makeSure(playerIDs).contains(player.id);
 		});
 
 		it('returns an empty array when no players have the perk with the given ID', () => {
-			const playerIDs = perkRepository.getIDsofPlayersWithPerkID(MINE_BONUS_PERK_ID);
+			const playerIDs = perkRepository.getIDsofPlayersWithPerkID(Perks.MINE_BONUS.id);
 
 			makeSure(playerIDs).isAnArray();
 			makeSure(playerIDs).isEmpty();
@@ -84,15 +84,15 @@ describe('PerkRepository', () => {
 
 		it('returns an array of multiple player IDs that have the perk with the given ID', () => {
 			const player1 = addMockPlayer(db, {
-				perks: [MINE_BONUS_PERK_ID]
+				perks: [Perks.MINE_BONUS.id]
 			});
 			const player2 = addMockPlayer(db, {
-				perks: [MINE_BONUS_PERK_ID]
+				perks: [Perks.MINE_BONUS.id]
 			});
 			const player3 = addMockPlayer(db, {
-				perks: [MINE_BONUS_PERK_ID]
+				perks: [Perks.MINE_BONUS.id]
 			});
-			const playerIDs = perkRepository.getIDsofPlayersWithPerkID(MINE_BONUS_PERK_ID);
+			const playerIDs = perkRepository.getIDsofPlayersWithPerkID(Perks.MINE_BONUS.id);
 
 			makeSure(playerIDs).isAnArray();
 			makeSure(playerIDs).contains(player1.id, player2.id, player3.id);
@@ -109,12 +109,12 @@ describe('PerkRepository', () => {
 	describe('getPerkIDsOfPlayerID()', () => {
 		it('returns an array of the only perk ID that the player has', () => {
 			const player = addMockPlayer(db, {
-				perks: [MINE_BONUS_PERK_ID]
+				perks: [Perks.MINE_BONUS.id]
 			});
 			const perkIDs = perkRepository.getPerkIDsOfPlayerID(player.id);
 
 			makeSure(perkIDs).isAnArray();
-			makeSure(perkIDs).contains(MINE_BONUS_PERK_ID);
+			makeSure(perkIDs).contains(Perks.MINE_BONUS.id);
 		});
 
 		it('returns an empty array when the player has no perks', () => {
@@ -128,13 +128,26 @@ describe('PerkRepository', () => {
 		});
 	});
 
+	describe('addPerkIDToPlayer()', () => {
+		it('adds the given perk ID to the player', () => {
+			const player = addMockPlayer(db, {
+				perks: []
+			});
+			perkRepository.addPerkIDToPlayer(Perks.MINE_BONUS.id, player.id);
+
+			const perkIDs = perkRepository.getPerkIDsOfPlayerID(player.id);
+			makeSure(perkIDs).isAnArray();
+			makeSure(perkIDs).contains(Perks.MINE_BONUS.id);
+		});
+	})
+
 	describe('getPerkIDsOfRoleID()', () => {
 		it('returns an array of perk IDs that the role has', () => {
 			const perkIDs = perkRepository.getPerkIDsOfRoleID(MINE_BONUS_ROLE_ID);
 
 			makeSure(perkIDs).isAnArray();
 			makeSure(perkIDs).isNotEmpty();
-			makeSure(perkIDs).contains(MINE_BONUS_PERK_ID);
+			makeSure(perkIDs).contains(Perks.MINE_BONUS.id);
 		});
 
 		it('returns an empty array when the role has no perks', () => {

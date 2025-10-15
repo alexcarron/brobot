@@ -55,7 +55,12 @@ export const insertCharactersToDB = (db: DatabaseQuerier, characters: Character[
  * @param db - The database querier instance used for executing SQL statements.
  * @param mysteryBoxes - An array of mystery box objects to be inserted.
  */
-export const insertMysteryBoxesToDB = (db: DatabaseQuerier, mysteryBoxes: MysteryBox[]) => {
+export const insertMysteryBoxesToDB = (
+	db: DatabaseQuerier,
+	mysteryBoxes: Array<
+		WithOptional<MysteryBox, "id">
+	>
+) => {
 	if (!Array.isArray(mysteryBoxes))
 		throw new InvalidArgumentError("insertMysteryBoxesToDB: mysteryBoxes must be an array.");
 
@@ -155,7 +160,7 @@ export const insertRecipesToDB = (
  */
 export function insertPerksToDB(
 	db: DatabaseQuerier,
-	perks: WithOptional<Perk, "id">[]
+	perks: readonly WithOptional<Perk, "id">[]
 ) {
 	const insertPerkIntoDB = db.getQuery("INSERT INTO perk (name, description) VALUES (@name, @description)");
 	const insertPerkIntoDBWithID = db.getQuery("INSERT INTO perk (id, name, description) VALUES (@id, @name, @description)");

@@ -2,7 +2,6 @@ import { isNonPlayer, resetMemberToNewPlayer } from "../utilities/discord-action
 import { PlayerRepository } from "../repositories/player.repository";
 import { logWarning } from "../../../utilities/logging-utils";
 import { fetchNamesmithGuildMember, fetchNamesmithGuildMembers } from "../utilities/discord-fetch.utility";
-import { isPlayer } from "../utilities/player.utility";
 import { attempt, ignoreError, InvalidArgumentError } from "../../../utilities/error-utils";
 import { PlayerAlreadyExistsError, NameTooLongError } from "../utilities/error.utility";
 import { Inventory, Player, PlayerID, PlayerResolvable } from '../types/player.types';
@@ -11,6 +10,7 @@ import { areCharactersInString } from "../../../utilities/string-checks-utils";
 import { MAX_NAME_LENGTH, REFILL_COOLDOWN_HOURS } from "../constants/namesmith.constants";
 import { addHours } from "../../../utilities/date-time-utils";
 import { NamesmithEvents } from "../event-listeners/namesmith-events";
+import { isString } from "../../../utilities/types/type-guards";
 
 /**
  * Provides methods for interacting with players.
@@ -21,7 +21,7 @@ export class PlayerService {
 	 * @param playerRepository - The repository used for accessing players.
 	 */
 	constructor(
-		public playerRepository: PlayerRepository
+		public playerRepository: PlayerRepository,
 	) {}
 
 	/**
@@ -30,11 +30,11 @@ export class PlayerService {
 	 * @returns The retrieved player object, or null if the player is not found.
 	 */
 	getPlayer(playerResolvable: PlayerResolvable): Player | null {
-		if (isPlayer(playerResolvable)) {
-			return playerResolvable;
+		if (isString(playerResolvable)) {
+			return this.playerRepository.getPlayerByID(playerResolvable);
 		}
 
-		return this.playerRepository.getPlayerByID(playerResolvable);
+		return playerResolvable;
 	}
 
 	/**
@@ -45,9 +45,9 @@ export class PlayerService {
 	 */
 	resolvePlayer(playerResolvable: PlayerResolvable): Player {
 		const playerID: PlayerID =
-			isPlayer(playerResolvable)
-				? playerResolvable.id
-				: playerResolvable;
+			isString(playerResolvable)
+				? playerResolvable
+				: playerResolvable.id;
 
 		return this.playerRepository.getPlayerOrThrow(playerID);
 	}
@@ -58,19 +58,17 @@ export class PlayerService {
 	 * @throws {Error} If the player resolvable is invalid or the player is not found.
 	 */
 	resolveID(playerResolvable: PlayerResolvable): PlayerID {
-		if (isPlayer(playerResolvable)) {
-			const player = playerResolvable;
-			return player.id;
-		}
-		else if (typeof playerResolvable === "string") {
+		if (isString(playerResolvable)) {
 			const playerID = playerResolvable;
 			if (/^\d+$/.test(playerID))
 				return playerID;
 
 			throw new InvalidArgumentError(`resolvePlayerID: Invalid player ID ${playerID}. Expected a number as a string.`);
 		}
-
-		throw new InvalidArgumentError(`resolvePlayerID: Invalid player resolvable ${playerResolvable}`);
+		else {
+			const player = playerResolvable;
+			return player.id;
+		}
 	}
 
 	/**

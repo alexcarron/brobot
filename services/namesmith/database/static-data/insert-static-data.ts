@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { insertCharactersToDB, insertMysteryBoxesToDB, insertPerksToDB, insertRecipesToDB, insertRolesToDB } from "../db-inserters";
 import { DatabaseQuerier } from '../database-querier';
+import { perks } from './perks';
 
 const currDir = __dirname;
 const charactersPath = path.join(currDir, 'characters.json');
@@ -12,9 +13,6 @@ const mysteryBoxes = JSON.parse(fs.readFileSync(mysteryBoxesPath, 'utf8'));
 
 const recipesPath = path.join(currDir, 'recipes.json');
 const recipes = JSON.parse(fs.readFileSync(recipesPath, 'utf8'));
-
-const perksPath = path.join(currDir, 'perks.json');
-const perks = JSON.parse(fs.readFileSync(perksPath, 'utf8'));
 
 const rolesPath = path.join(currDir, 'roles.json');
 const roles = JSON.parse(fs.readFileSync(rolesPath, 'utf8'));

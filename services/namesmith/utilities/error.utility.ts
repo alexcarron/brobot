@@ -1,9 +1,10 @@
 import { getCharacterDifferences } from '../../../utilities/data-structure-utils';
 import { CustomError } from '../../../utilities/error-utils';
 import { escapeDiscordMarkdown } from '../../../utilities/string-manipulation-utils';
+import { isNumber } from '../../../utilities/types/type-guards';
 import { CharacterID } from '../types/character.types';
 import { MinimalMysteryBox, MysteryBoxID } from '../types/mystery-box.types';
-import { PerkID } from '../types/perk.types';
+import { PerkID, PerkName } from '../types/perk.types';
 import { Player } from '../types/player.types';
 import { Recipe, RecipeID } from '../types/recipe.types';
 import { RoleID } from '../types/role.types';
@@ -177,12 +178,25 @@ export class TradeNotFoundError extends ResourceNotFoundError {
  * Error thrown when a requested namesmith perk is not found.
  */
 export class PerkNotFoundError extends ResourceNotFoundError {
-	declare relevantData: { perkID: PerkID }
-	constructor(perkID: PerkID) {
-		super({
-			message: `Perk with ID ${perkID} not found.`,
-			relevantData: { perkID }
-		})
+	declare relevantData: {
+		perkID?: PerkID
+		perkName?: PerkName
+	}
+	constructor(perkIDOrName: PerkID | PerkName) {
+		const isID = isNumber(perkIDOrName);
+
+		if (isID) {
+			super({
+				message: `Perk with ID ${perkIDOrName} not found.`,
+				relevantData: { perkID: perkIDOrName }
+			})
+		}
+		else {
+			super({
+				message: `Perk with name "${perkIDOrName}" not found.`,
+				relevantData: { perkName: perkIDOrName }
+			})
+		}
 	}
 }
 

@@ -1,7 +1,7 @@
 import { NamesmithDependencies } from "../types/namesmith.types";
 import { createMockDB } from "./mock-database";
 import { crateMockRoleRepo, createMockCharacterRepo, createMockGameStateRepo, createMockMysteryBoxRepo, createMockPerkRepo, createMockPlayerRepo, createMockRecipeRepo, createMockTradeRepo, createMockVoteRepo } from "./mock-repositories";
-import { createMockCharacterService, createMockGameStateService, createMockMysteryBoxService, createMockPlayerService, createMockRecipeService, createMockTradeService, createMockVoteService } from "./mock-services";
+import { createMockCharacterService, createMockGameStateService, createMockMysteryBoxService, createMockPerkService, createMockPlayerService, createMockRecipeService, createMockTradeService, createMockVoteService } from "./mock-services";
 
 /**
  * Creates all the mock services and repositories needed for testing.
@@ -27,6 +27,7 @@ export const createAllMocks = (): NamesmithDependencies => {
 	const recipeService = createMockRecipeService(recipeRepository, playerService);
 	const tradeService = createMockTradeService(tradeRepository, playerService);
 	const gameStateService = createMockGameStateService(gameStateRepository, playerService, voteService);
+	const perkService = createMockPerkService(perkRepository, playerService);
 
 	return {
 		db: mockDB,
@@ -47,6 +48,7 @@ export const createAllMocks = (): NamesmithDependencies => {
 		voteService,
 		gameStateService,
 		recipeService,
-		tradeService
+		tradeService,
+		perkService,
 	};
 }

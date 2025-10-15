@@ -44,8 +44,6 @@ describe('PlayerService', () => {
   let db: DatabaseQuerier;
 
   beforeEach(() => {
-    console.log("Node version:", process.version);
-
     playerService = createMockPlayerService();
     db = playerService.playerRepository.db;
   });
@@ -85,8 +83,10 @@ describe('PlayerService', () => {
 
   describe('resolvePlayer()', () => {
     it('should resolve a player object to a player object', () => {
-      const resolvedPlayer = playerService.resolvePlayer(MOCK_PLAYER);
-      expect(resolvedPlayer).toEqual(MOCK_PLAYER);
+			const player = playerService.playerRepository.getPlayers()[0];
+
+      const resolvedPlayer = playerService.resolvePlayer(player);
+      expect(resolvedPlayer).toEqual(player);
     });
 
     it('should resolve a player ID to a player object', () => {
@@ -96,13 +96,14 @@ describe('PlayerService', () => {
     });
 
     it('returns current player object when given an outdated player object', () => {
+			const player = playerService.playerRepository.getPlayers()[0];
       const OUTDATED_PLAYER = {
-        ...MOCK_PLAYER,
+        ...player,
         currentName: "OUTDATED",
         tokens: 12,
       }
       const resolvedPlayer = playerService.resolvePlayer(OUTDATED_PLAYER);
-      expect(resolvedPlayer).toEqual(MOCK_PLAYER);
+      expect(resolvedPlayer).toEqual(player);
     });
 
     it('should throw a PlayerNotFoundError if the player resolvable is invalid', () => {
@@ -141,7 +142,8 @@ describe('PlayerService', () => {
     });
 
     it('should return true if the player object\'s ID is found', () => {
-      makeSure(playerService.isPlayer(mockPlayers[0])).isTrue();
+			const player = playerService.playerRepository.getPlayers()[0];
+      makeSure(playerService.isPlayer(player)).isTrue();
     })
   });
 
@@ -155,28 +157,34 @@ describe('PlayerService', () => {
     });
 
     it('should return false if the player objects are not the same', () => {
-      makeSure(playerService.areSamePlayers(mockPlayers[0], mockPlayers[1])).isFalse();
+			const player1 = playerService.playerRepository.getPlayers()[0];
+			const player2 = playerService.playerRepository.getPlayers()[1];
+      makeSure(playerService.areSamePlayers(player1, player2)).isFalse();
     });
 
     it('should return true if the player objects are the same', () => {
-      makeSure(playerService.areSamePlayers(mockPlayers[0], mockPlayers[0])).isTrue();
+			const player = playerService.playerRepository.getPlayers()[0];
+      makeSure(playerService.areSamePlayers(player, player)).isTrue();
     });
 
     it('should work with mismatched player resolvables', () => {
+			const player1 = playerService.playerRepository.getPlayers()[0];
+			const player2 = playerService.playerRepository.getPlayers()[1];
+
       makeSure(playerService.areSamePlayers(
-        mockPlayers[0].id, mockPlayers[0]
+        player1.id, player1
       )).isTrue();
 
       makeSure(playerService.areSamePlayers(
-        mockPlayers[0], mockPlayers[0].id
+        player1, player1.id
       )).isTrue();
 
       makeSure(playerService.areSamePlayers(
-        mockPlayers[1], mockPlayers[0].id
+        player2, player1.id
       )).isFalse();
 
       makeSure(playerService.areSamePlayers(
-        mockPlayers[0].id, mockPlayers[1]
+        player1.id, player2
       )).isFalse();
     })
   })

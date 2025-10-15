@@ -129,7 +129,10 @@ describe("Mock Utilities", () => {
 			) as DBPlayer | undefined;
 
 			expect(player).toBeDefined();
-			expect(player).toEqual({
+			expect({
+				...player,
+				perks: [],
+			}).toEqual({
 				...ORIGINAL_PLAYER,
 				currentName: "Jane Doe",
 				tokens: 200,

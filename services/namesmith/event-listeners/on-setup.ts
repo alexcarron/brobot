@@ -16,6 +16,7 @@ import { CharacterService } from "../services/character.service";
 import { GameStateService } from "../services/game-state.service";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { MysteryBoxService } from "../services/mystery-box.service";
+import { PerkService } from "../services/perk.service";
 import { PlayerService } from "../services/player.service";
 import { RecipeService } from "../services/recipe.service";
 import { TradeService } from "../services/trade.service";
@@ -77,10 +78,15 @@ export const initializeDependencies = async (): Promise<NamesmithDependencies> =
 		recipeService
 	);
 
+	const perkService = new PerkService(
+		perkRepository,
+		playerService,
+	);
+
 	const namesmithDependencies: NamesmithDependencies = {
 		db,
 		mysteryBoxRepository, characterRepository, playerRepository, gameStateRepository, voteRepository, recipeRepository, tradeRepository, perkRepository, roleRepository,
-		mysteryBoxService, characterService, playerService, voteService, recipeService, tradeService, gameStateService
+		mysteryBoxService, characterService, playerService, voteService, recipeService, tradeService, gameStateService, perkService,
 	};
 
 	global.namesmith = namesmithDependencies;

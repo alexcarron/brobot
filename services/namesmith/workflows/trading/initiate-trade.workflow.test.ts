@@ -1,17 +1,17 @@
 import { makeSure } from "../../../../utilities/jest/jest-utils";
 import { INVALID_PLAYER_ID } from "../../constants/test.constants";
-import { mockPlayers } from "../../mocks/mock-data/mock-players";
 import { setupMockNamesmith } from "../../mocks/mock-setup";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { PlayerService } from "../../services/player.service";
 import { TradeService } from "../../services/trade.service";
+import { Player } from "../../types/player.types";
 import { TradeStatuses } from "../../types/trade.types";
 import { returnIfNotFailure } from "../workflow-result-creator";
 import { initiateTrade } from "./initiate-trade.workflow";
 
 describe('initiate-trade.workflow.ts', () => {
-	const MOCK_INITIATING_PLAYER = mockPlayers[0];
-	const MOCK_RECIPIENT_PLAYER = mockPlayers[1];
+	let MOCK_INITIATING_PLAYER: Player;
+	let MOCK_RECIPIENT_PLAYER: Player;
 
 	let services: {
 		tradeService: TradeService,
@@ -25,6 +25,10 @@ describe('initiate-trade.workflow.ts', () => {
 			tradeService,
 			playerService
 		};
+
+		const players = playerService.playerRepository.getPlayers();
+		MOCK_INITIATING_PLAYER = players[0];
+		MOCK_RECIPIENT_PLAYER = players[1];
 	})
 
 	describe('initiateTrade()', () => {

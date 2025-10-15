@@ -7,11 +7,12 @@ import { DatabaseQuerier } from "../database/database-querier";
 import { TradeStatuses } from "../types/trade.types";
 import { addMockTrade, mockTrades } from "../mocks/mock-data/mock-trades";
 import { mockPlayers } from "../mocks/mock-data/mock-players";
+import { Player } from "../types/player.types";
 
 describe('TradeService', () => {
 	const MOCK_TRADE = mockTrades[0];
-	const MOCK_INITIATING_PLAYER = mockPlayers[0];
-	const MOCK_RECIPIENT_PLAYER = mockPlayers[1];
+	let MOCK_INITIATING_PLAYER: Player;
+	let MOCK_RECIPIENT_PLAYER: Player;
 
 	let tradeService: TradeService;
 	let db: DatabaseQuerier;
@@ -19,6 +20,10 @@ describe('TradeService', () => {
 	beforeEach(() => {
 		tradeService = createMockTradeService();
 		db = tradeService.tradeRepository.db;
+
+		const players = tradeService.playerService.playerRepository.getPlayers();
+		MOCK_INITIATING_PLAYER = players[0];
+		MOCK_RECIPIENT_PLAYER = players[1];
 	});
 
 	describe('resolveTrade()', () => {
@@ -53,7 +58,7 @@ describe('TradeService', () => {
 	describe('createTradeRequest()', () => {
 		it('creates and returns a new trade object', () => {
 			const newTrade = tradeService.createTradeRequest({
-				initiatingPlayer: mockPlayers[2],
+				initiatingPlayer: mockPlayers[2].id,
 				recipientPlayer: mockPlayers[3].id,
 				offeredCharacters: "xyz",
 				requestedCharacters: "abc"

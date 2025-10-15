@@ -18,9 +18,19 @@ export const command = new SlashCommand({
 		if (result.isNonPlayerMined())
 			return `You're not a player, so you can't mine tokens.`;
 
-		const { tokensEarned, newTokenCount } = result;
+		const { tokensEarned, newTokenCount, hasMineBonusPerk } = result;
+
+		let baseMessage = `**+${toAmountOfNoun(tokensEarned, 'Token')}** ` + '🪙'.repeat(tokensEarned) + `\n`
+
+		if (hasMineBonusPerk) {
+			const baseTokensEarned = tokensEarned - 1;
+			baseMessage =
+				`**+${toAmountOfNoun(baseTokensEarned, 'Token')}** ` + '🪙'.repeat(baseTokensEarned) + `\n` +
+				'+1 Bonus Token 🪙\n';
+		}
+
 		return (
-			`**+${toAmountOfNoun(tokensEarned, 'Token')}** ` + '🪙'.repeat(tokensEarned) + `\n` +
+			baseMessage +
 			`-# You now have ${toAmountOfNoun(newTokenCount, 'token')}\n`
 		);
 	}
