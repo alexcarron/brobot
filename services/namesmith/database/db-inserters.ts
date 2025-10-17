@@ -198,7 +198,7 @@ export function insertPerksToDB(
  */
 export function insertRolesToDB(
 	db: DatabaseQuerier,
-	roles: WithOptional<RoleDefinition, "id">[]
+	roles: Readonly<WithOptional<RoleDefinition, "id">[]>
 ) {
 	const insertRoleIntoDB = db.getQuery("INSERT INTO role (name, description) VALUES (@name, @description)");
 	const insertRoleIntoDBWithID = db.getQuery("INSERT INTO role (id, name, description) VALUES (@id, @name, @description)");

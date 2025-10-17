@@ -1,7 +1,7 @@
 import { createMockDB } from "./mock-database";
 import { CharacterRepository } from "../repositories/character.repository";
 import { GameStateRepository } from "../repositories/game-state.repository";
-import { createMockPlayerRepo, createMockVoteRepo, createMockMysteryBoxRepo, createMockCharacterRepo, createMockGameStateRepo, createMockRecipeRepo, createMockTradeRepo, createMockPerkRepo } from "./mock-repositories";
+import { createMockPlayerRepo, createMockVoteRepo, createMockMysteryBoxRepo, createMockCharacterRepo, createMockGameStateRepo, createMockRecipeRepo, createMockTradeRepo, createMockPerkRepo, crateMockRoleRepo } from "./mock-repositories";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
 import { PlayerRepository } from "../repositories/player.repository";
 import { RecipeRepository } from "../repositories/recipe.repository";
@@ -17,6 +17,8 @@ import { NamesmithServices } from "../types/namesmith.types";
 import { CharacterService } from "../services/character.service";
 import { PerkRepository } from "../repositories/perk.repository";
 import { PerkService } from "../services/perk.service";
+import { RoleRepository } from "../repositories/role.repository";
+import { RoleService } from "../services/role.service";
 
 /**
  * Creates a mock GameStateService instance for testing purposes.
@@ -202,6 +204,7 @@ export const createMockCharacterService = (
 
 export const createMockPerkService = (
 	mockPerkRepository?: PerkRepository,
+	mockRoleRepository?: RoleRepository,
 	mockPlayerService?: PlayerService,
 ) => {
 	const sharedDB =
@@ -213,11 +216,35 @@ export const createMockPerkService = (
 		mockPerkRepository ??
 		createMockPerkRepo(sharedDB);
 
+	const roleRepository =
+		mockRoleRepository ??
+		crateMockRoleRepo(sharedDB);
+
 	const playerService =
 		mockPlayerService ??
 		createMockPlayerService(createMockPlayerRepo(sharedDB));
 
-	return new PerkService(perkRepository, playerService);
+	return new PerkService(perkRepository, roleRepository, playerService);
+}
+
+export const createMockRoleService = (
+	mockRoleRepository?: RoleRepository,
+	mockPlayerService?: PlayerService,
+) => {
+	const sharedDB =
+		mockRoleRepository?.db ??
+		mockPlayerService?.playerRepository.db ??
+		createMockDB();
+
+	const roleRepository =
+		mockRoleRepository ??
+		crateMockRoleRepo(sharedDB);
+
+	const playerService =
+		mockPlayerService ??
+		createMockPlayerService(createMockPlayerRepo(sharedDB));
+
+	return new RoleService(roleRepository, playerService);
 }
 
 /**
@@ -234,6 +261,7 @@ export const createMockPerkService = (
  * @param options.mockGameStateRepo - The mock game state repository to use.
  * @param options.mockTradeRepo - The mock trade repository to use.
  * @param options.mockPerkRepo - The mock perk repository to use.
+ * @param options.mockRoleRepo - The mock role repository to use.
  * @returns An object with the created mock service instances.
  */
 export const createMockServices = ({
@@ -245,6 +273,7 @@ export const createMockServices = ({
 	mockGameStateRepo,
 	mockTradeRepo,
 	mockPerkRepo,
+	mockRoleRepo,
 }: {
 	mockPlayerRepo?: PlayerRepository,
 	mockVoteRepo?: VoteRepository,
@@ -254,6 +283,7 @@ export const createMockServices = ({
 	mockGameStateRepo?: GameStateRepository,
 	mockTradeRepo?: TradeRepository,
 	mockPerkRepo?: PerkRepository,
+	mockRoleRepo?: RoleRepository
 } = {}): NamesmithServices => {
 	const sharedDB =
 		mockPlayerRepo?.db ??
@@ -298,6 +328,10 @@ export const createMockServices = ({
 		mockPerkRepo ??
 		createMockPerkRepo(sharedDB);
 
+	const roleRepo =
+		mockRoleRepo ??
+		crateMockRoleRepo(sharedDB);
+
 	const playerService = createMockPlayerService(playerRepo);
 	const voteService = createMockVoteService(
 		voteRepo, playerService
@@ -318,7 +352,10 @@ export const createMockServices = ({
 		characterRepo
 	);
 	const perkService = createMockPerkService(
-		perkRepo, playerService
+		perkRepo, roleRepo, playerService
+	);
+	const roleService = createMockRoleService(
+		roleRepo, playerService
 	);
 
 	return {
@@ -330,5 +367,6 @@ export const createMockServices = ({
 		tradeService: tradeService,
 		characterService: characterService,
 		perkService: perkService,
+		roleService: roleService,
 	}
 };

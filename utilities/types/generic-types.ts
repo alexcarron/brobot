@@ -118,3 +118,36 @@ export type Expand<Type> =
 	Type extends infer Object
 		? { [Key in keyof Object]: Object[Key] }
 		: never;
+
+
+/**
+ * Converts a type to a readonly type including any nested types
+ * @example
+ * type ComplexType = {
+ * 	name: string;
+ * 	roles: Array<{
+ * 		name: string;
+ * 		description: string;
+ * 		perks: Array<{
+ * 			name: string;
+ * 			description: string;
+ * 		}>
+ * 	}>
+ * }
+ *
+ * type ReadonlyComplexType = Readonly<ComplexType>
+ */
+export type Readonly<GivenType> =
+	// If the type is a function,
+  GivenType extends (...args: any[]) => any
+		// Leave it as is
+		? GivenType
+	// If the type is a non-function object,
+	: GivenType extends object
+		// Make all indexes and elements readonly
+		? {
+			readonly [Key in keyof GivenType]:
+				Readonly<GivenType[Key]>
+		}
+		// Else, leave it as is
+		: GivenType;

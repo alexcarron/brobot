@@ -1,8 +1,9 @@
-import { InvalidArgumentError } from "../../../../utilities/error-utils";
+import { InvalidArgumentError, throwIfNull } from "../../../../utilities/error-utils";
 import { createRandomNumericUUID } from "../../../../utilities/random-utils";
 import { WithAtLeast, WithAtLeastOneProperty } from "../../../../utilities/types/generic-types";
-import { isNumber } from "../../../../utilities/types/type-guards";
+import { isNumber, isString } from "../../../../utilities/types/type-guards";
 import { DatabaseQuerier } from "../../database/database-querier";
+import { RoleRepository } from "../../repositories/role.repository";
 import { DBPerk, Perk } from "../../types/perk.types";
 import { DBPlayer, MinimalPlayer, Player, PlayerDefinition } from "../../types/player.types";
 import { PlayerAlreadyExistsError } from "../../utilities/error.utility";
@@ -134,13 +135,31 @@ export const addMockPlayer = (
 		throw new PlayerAlreadyExistsError(id);
 	}
 
+
+	const roleRepository = new RoleRepository(db);
+	if (isNumber(role)) {
+		role = roleRepository.getRoleOrThrow(role);
+	}
+	else if (isString(role)) {
+		role = roleRepository.getRoleByName(role);
+		throwIfNull(role)
+	}
+	else if (role !== null) {
+		role = roleRepository.getRoleOrThrow(role.id);
+	}
+
 	const player = { id, currentName, publishedName, tokens, role, inventory, lastClaimedRefillTime};
 	const insertPlayer = db.prepare(`
 		INSERT INTO player (id, currentName, publishedName, tokens, role, inventory, lastClaimedRefillTime)
 		VALUES (@id, @currentName, @publishedName, @tokens, @role, @inventory, @lastClaimedRefillTime)
 	`);
 	insertPlayer.run({
-		...player,
+		id: id,
+		currentName: currentName,
+		publishedName: publishedName,
+		tokens: tokens,
+		role: role?.id ?? null,
+		inventory: inventory,
 		lastClaimedRefillTime:
 			lastClaimedRefillTime === null
 				? null
@@ -186,6 +205,7 @@ export const addMockPlayer = (
 
 	return {
 		...player,
+		role: role,
 		perks: actualPerks,
 	};
 };

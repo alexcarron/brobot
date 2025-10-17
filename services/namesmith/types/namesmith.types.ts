@@ -15,6 +15,7 @@ import { MysteryBoxService } from "../services/mystery-box.service";
 import { PerkService } from "../services/perk.service";
 import { PlayerService } from "../services/player.service";
 import { RecipeService } from "../services/recipe.service";
+import { RoleService } from "../services/role.service";
 import { TradeService } from "../services/trade.service";
 import { VoteService } from "../services/vote.service";
 
@@ -52,6 +53,7 @@ export type NamesmithServices = Expand<{
 	recipeService: RecipeService,
 	tradeService: TradeService,
 	perkService: PerkService,
+	roleService: RoleService,
 }>;
 
 /**

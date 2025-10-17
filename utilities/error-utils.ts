@@ -720,3 +720,21 @@ export function ignoreError(
 		// Do nothing
 	}
 }
+
+/**
+ * Throws an error if the given value is null.
+ * @param unknownValue - The value to check.
+ * @param customMessage - The custom message to pass to the error constructor.
+ * @throws {Error} - Throws an error if the given value is null.
+ */
+export function throwIfNull<
+	UnknownType
+>(
+	unknownValue: UnknownType,
+	customMessage?: string
+): asserts unknownValue is Exclude<UnknownType, null> {
+	if (unknownValue === null)
+		throw new Error(
+			customMessage ?? "Expected value to not be null, but got null."
+	);
+}

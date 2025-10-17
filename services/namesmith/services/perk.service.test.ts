@@ -1,5 +1,6 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { Perks } from "../constants/perks.constants";
+import { Roles } from "../constants/roles.constants";
 import { INVALID_PERK_ID, INVALID_PERK_NAME } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
@@ -98,7 +99,16 @@ describe('PerkService', () => {
 			const doesNotHavePerk = perkService.doesPlayerHave(Perks.MINE_BONUS, perklessPlayer);
 			makeSure(doesNotHavePerk).is(false);
 
-		})
+		});
+
+		it('should return true if perk is in role', () => {
+			const player = addMockPlayer(db, {
+				role: Roles.MINE_BONUS_ROLE
+			});
+
+			const hasPerk = perkService.doesPlayerHave(Perks.MINE_BONUS, player);
+			makeSure(hasPerk).is(true);
+		});
 	});
 
 	describe('doIfPlayerHas()', () => {

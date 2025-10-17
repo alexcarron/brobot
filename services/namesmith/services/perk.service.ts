@@ -1,5 +1,6 @@
 import { isNumber, isString } from "../../../utilities/types/type-guards";
 import { PerkRepository } from "../repositories/perk.repository";
+import { RoleRepository } from "../repositories/role.repository";
 import { Perk, PerkResolvable } from "../types/perk.types";
 import { Player, PlayerResolvable } from "../types/player.types";
 import { PerkNotFoundError } from "../utilities/error.utility";
@@ -11,6 +12,7 @@ import { PlayerService } from "./player.service";
 export class PerkService {
 	constructor (
 		public perkRepository: PerkRepository,
+		public roleRepoistory: RoleRepository,
 		public playerService: PlayerService,
 	) {}
 
@@ -20,7 +22,7 @@ export class PerkService {
 	 * @throws PerkNotFoundError - If the provided perkResolvable is a string that does not correspond to a perk in the database.
 	 * @returns The resolved perk object.
 	 */
-	resolvePerk(perkResolvable: PerkResolvable) {
+	resolvePerk(perkResolvable: PerkResolvable): Perk {
 		if (isNumber(perkResolvable)) {
 			const perkID = perkResolvable;
 			return this.perkRepository.getPerkOrThrow(perkID);
@@ -73,6 +75,15 @@ export class PerkService {
 		const playerID = this.playerService.resolveID(player);
 
 		const playerPerkIDs = this.perkRepository.getPerkIDsOfPlayerID(playerID);
+
+		const roleID = this.roleRepoistory.getRoleIDOfPlayerID(playerID);
+
+		if (roleID !== null) {
+			const rolePerkIDs = this.perkRepository.getPerkIDsOfRoleID(roleID);
+
+			playerPerkIDs.push(...rolePerkIDs);
+		}
+
 		return playerPerkIDs.includes(perkID);
 	}
 

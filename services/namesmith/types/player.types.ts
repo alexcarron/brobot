@@ -1,6 +1,6 @@
 import { Override, Without } from "../../../utilities/types/generic-types";
 import { Perk, PerkID, PerkName } from "./perk.types";
-import { Role } from "./role.types";
+import { Role, RoleResolvable } from "./role.types";
 
 export type Player = {
 	id: string;
@@ -25,7 +25,7 @@ export type DBPlayer = Override<Player, {
 }>;
 
 export type PlayerDefinition = Override<Player, {
-	role: null,
+	role: RoleResolvable | null,
 	perks: Array<PerkID | PerkName>;
 }>;
 

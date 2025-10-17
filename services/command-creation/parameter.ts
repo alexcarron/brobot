@@ -1,6 +1,5 @@
-import { ApplicationCommandOptionBase, Attachment, GuildMember, SlashCommandBuilder, SlashCommandSubcommandBuilder, SlashCommandSubcommandGroupBuilder, TextChannel, User } from 'discord.js';
+import { ApplicationCommandOptionBase, Attachment, GuildMember, Role, SlashCommandBuilder, SlashCommandSubcommandBuilder, SlashCommandSubcommandGroupBuilder, TextChannel, User } from 'discord.js';
 import { toTitleCase } from '../../utilities/string-manipulation-utils';
-import { Role } from '../rapid-discord-mafia/role';
 import { ToCamelCase } from '../../utilities/types/casing-types';
 import { isStringToStringRecord } from '../../utilities/types/type-guards';
 import { AutocompleteChoicesResolvable } from './autocomplete-utils';

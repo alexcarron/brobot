@@ -34,6 +34,9 @@ export const getNamesmithServices = (): NamesmithServices => {
 	if (!global.namesmith.perkService)
 		throw new InitializationError("getNamesmithServices: PerkService is not set up yet.");
 
+	if (!global.namesmith.roleService)
+		throw new InitializationError("getNamesmithServices: RoleService is not set up yet.");
+
 	return {
 		mysteryBoxService: global.namesmith.mysteryBoxService,
 		characterService: global.namesmith.characterService,
@@ -43,5 +46,6 @@ export const getNamesmithServices = (): NamesmithServices => {
 		recipeService: global.namesmith.recipeService,
 		tradeService: global.namesmith.tradeService,
 		perkService: global.namesmith.perkService,
+		roleService: global.namesmith.roleService,
 	}
 }
