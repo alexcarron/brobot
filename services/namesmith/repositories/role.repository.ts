@@ -18,17 +18,6 @@ export class RoleRepository {
 		this.db = db;
 	}
 
-	/**
-	 * Returns a list of all role objects in the game without any sub-entities.
-	 * @returns An array of role objects with minimal fields.
-	 */
-	getMinimalRoles(): MinimalRole[] {
-		const minimalRoles = this.db.getRows(
-			"SELECT * FROM role"
-		) as DBRole[];
-		return minimalRoles;
-	}
-
 	private addPerksToMinimalRole(minimalRole: MinimalRole): Role {
 		const dbRolePerks = this.db.getRows(
 			"SELECT * FROM rolePerk WHERE roleID = @roleID",
@@ -51,6 +40,28 @@ export class RoleRepository {
 			...minimalRole,
 			perks
 		}
+	}
+
+	/**
+	 * Returns a list of all role objects in the game without any sub-entities.
+	 * @returns An array of role objects with minimal fields.
+	 */
+	getMinimalRoles(): MinimalRole[] {
+		const minimalRoles = this.db.getRows(
+			"SELECT * FROM role"
+		) as DBRole[];
+		return minimalRoles;
+	}
+
+	/**
+	 * Returns a list of all role objects in the game.
+	 * @returns An array of role objects.
+	 */
+	getRoles(): Role[] {
+		const minimalRoles = this.getMinimalRoles();
+		return minimalRoles.map(minimalRole =>
+			this.addPerksToMinimalRole(minimalRole)
+		);
 	}
 
 	/**

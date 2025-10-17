@@ -52,9 +52,9 @@ const createVoteButton = ({playerVotingFor}: {
 }): DiscordButton => {
 	return new DiscordButton({
 		promptText: getPromptText(playerVotingFor),
-		buttonLabel: 'Vote as Favorite Name',
-		buttonID: `vote-button-${playerVotingFor.publishedName}`,
-		buttonStyle: ButtonStyle.Secondary,
+		label: 'Vote as Favorite Name',
+		id: `vote-button-${playerVotingFor.publishedName}`,
+		style: ButtonStyle.Secondary,
 		onButtonPressed: (buttonInteraction) => onVoteButtonPressed({
 			buttonInteraction,
 			playerVotedForID: playerVotingFor.id

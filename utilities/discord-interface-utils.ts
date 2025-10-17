@@ -458,6 +458,13 @@ export class DiscordSelectMenu extends DiscordInterface {
 	}
 }
 
+export type DiscordButtonDefinition = {
+	id: string;
+	label: string;
+	style: ButtonStyle;
+	onButtonPressed: (buttonInteraction: ButtonInteraction) => any;
+}
+
 /**
  * Represents an interface with a message and one button that can be created, sent to a channel, regenerated, and deleted.
  */
@@ -465,21 +472,19 @@ export class DiscordButton extends DiscordInterface {
 	private promptText: string;
 	private buttonLabel: string;
 	private buttonStyle: ButtonStyle;
-	private onButtonPressed: (buttonInteraction: ButtonInteraction) => Promise<void>;
+	private onButtonPressed: (buttonInteraction: ButtonInteraction) => any;
 
-  constructor({
-    promptText,
-    buttonLabel,
-    buttonStyle = ButtonStyle.Primary,
-    buttonID,
-		onButtonPressed,
-  }: {
-    promptText: string;
-    buttonLabel: string;
-    buttonStyle?: ButtonStyle; // optional
-    buttonID: string;
-		onButtonPressed: (buttonInteraction: ButtonInteraction) => Promise<void>;
-  }) {
+  constructor(
+		{
+			promptText,
+			label: buttonLabel,
+			style: buttonStyle = ButtonStyle.Primary,
+			id: buttonID,
+			onButtonPressed,
+		}:
+			& {promptText: string}
+			& DiscordButtonDefinition
+	) {
 		super({
 			id: buttonID
 		});
@@ -518,24 +523,14 @@ export class DiscordButton extends DiscordInterface {
  */
 export class DiscordButtons extends DiscordInterface {
 	private promptText: string;
-	private buttons: Array<{
-		id: string;
-		label: string;
-		style: ButtonStyle;
-		onButtonPressed: (buttonInteraction: ButtonInteraction) => Promise<unknown>;
-	}>;
+	private buttons: Array<DiscordButtonDefinition>;
 
 	constructor({
 		promptText,
 		buttons,
 	}: {
 		promptText: string;
-		buttons: Array<{
-			id: string;
-			label: string;
-			style: ButtonStyle;
-			onButtonPressed: (buttonInteraction: ButtonInteraction) => Promise<unknown>;
-		}>;
+		buttons: Array<DiscordButtonDefinition>;
 	}) {
 		if (buttons.length === 0)
 			throw new InvalidArgumentError('DiscordButtons must have at least one button');

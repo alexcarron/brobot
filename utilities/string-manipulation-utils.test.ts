@@ -15,6 +15,7 @@ import {
 	addSIfPlural,
 	toAmountOfNoun,
 	toCamelCase,
+	joinLines,
 } from "./string-manipulation-utils";
 import { createNowUnixTimestamp } from "./date-time-utils";
 import { makeSure } from "./jest/jest-utils";
@@ -548,5 +549,45 @@ describe('string-manipulation-utils', () => {
 		it('should add an "s" if the amount is 2', () => {
 			makeSure(toAmountOfNoun(2, 'cat')).is('2 cats');
 		});
-	})
+	});
+
+	describe('joinLines()', () => {
+		it('should join array of lines with a newline', () => {
+			const result = joinLines(['line 1', 'line 2', 'line 3']);
+
+			makeSure(result).is('line 1\nline 2\nline 3');
+		});
+
+		it('should join parameters with a newline', () => {
+			const result = joinLines('line 1', 'line 2', 'line 3');
+
+			makeSure(result).is('line 1\nline 2\nline 3');
+		});
+
+		it('should ignore undefined lines', () => {
+			const result = joinLines('line 1', undefined, 'line 3');
+
+			makeSure(result).is('line 1\nline 3');
+		});
+
+		it('should ignore null lines', () => {
+			const result = joinLines('line 1', null, 'line 3');
+
+			makeSure(result).is('line 1\nline 3');
+		});
+
+		it('should join a mix of strings, array strings, undefined, and null', () => {
+			const result = joinLines(
+				'line 1',
+				['line 2', 'line 3'],
+				undefined,
+				null,
+				'line 4',
+				['line 5', 'line 6'],
+				['line 7', 'line 8']
+			);
+
+			makeSure(result).is('line 1\nline 2\nline 3\nline 4\nline 5\nline 6\nline 7\nline 8');
+		});
+	});
 });

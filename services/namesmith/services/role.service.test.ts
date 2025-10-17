@@ -1,6 +1,7 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { Perks } from "../constants/perks.constants";
 import { Roles } from "../constants/roles.constants";
+import { INVALID_ROLE_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { createMockRoleService } from "../mocks/mock-services";
@@ -87,6 +88,29 @@ describe('RoleService', () => {
 		});
 	});
 
+	describe('isRole()', () => {
+		it('should return true if the given value is a role', () => {
+			const role = roleService.resolveRole(Roles.MINE_BONUS_ROLE);
+			const isRole = roleService.isRole(role);
+			makeSure(isRole).isTrue();
+		});
+
+		it('should return true if the given value is a role ID', () => {
+			const isRole = roleService.isRole(Roles.MINE_BONUS_ROLE.id);
+			makeSure(isRole).isTrue();
+		});
+
+		it('should return true if the given value is a role name', () => {
+			const isRole = roleService.isRole(Roles.MINE_BONUS_ROLE.name);
+			makeSure(isRole).isTrue();
+		});
+
+		it('should return false if the given value is not resolvable to a role', () => {
+			const isRole = roleService.isRole(INVALID_ROLE_ID);
+			makeSure(isRole).isFalse();
+		});
+	});
+
 	describe('doesPlayerHave()', () => {
 		it('should return true if the player has the role', () => {
 			const player = addMockPlayer(db, {
@@ -115,13 +139,13 @@ describe('RoleService', () => {
 		});
 	})
 
-	describe('giveToPlayer()', () => {
+	describe('setPlayerRole()', () => {
 		it('should assign a role to a player', () => {
 			const player = addMockPlayer(db, {
 				role: null
 			});
 
-			roleService.giveToPlayer(Roles.MINE_BONUS_ROLE, player);
+			roleService.setPlayerRole(Roles.MINE_BONUS_ROLE, player);
 
 			const hasRole = roleService.doesPlayerHave(
 				Roles.MINE_BONUS_ROLE,
@@ -129,6 +153,29 @@ describe('RoleService', () => {
 			);
 
 			makeSure(hasRole).isTrue();
+		});
+	});
+
+	describe('getRoleOfPlayer()', () => {
+		it('should return the role of a player if they have one', () => {
+			const player = addMockPlayer(db, {
+				role: Roles.MINE_BONUS_ROLE
+			});
+
+			const role = roleService.getRoleOfPlayer(player);
+
+			makeSure(role).isNotNull();
+			makeSure(role!.id).is(Roles.MINE_BONUS_ROLE.id);
+		});
+
+		it('should return null if the player has no role', () => {
+			const player = addMockPlayer(db, {
+				role: null
+			});
+
+			const role = roleService.getRoleOfPlayer(player);
+
+			makeSure(role).isNull();
 		});
 	});
 });

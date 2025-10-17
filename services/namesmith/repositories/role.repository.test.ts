@@ -28,6 +28,17 @@ describe('RoleRepository', () => {
 		});
 	});
 
+	describe('getRoles()', () => {
+		it('returns an array of all role objects', () => {
+			const roles = roleRepository.getRoles();
+
+			makeSure(roles).isAnArray();
+			makeSure(roles).isNotEmpty();
+			makeSure(roles).haveProperties('id', 'name', 'description', 'perks');
+			makeSure(roles[0].perks).haveProperties('id', 'name', 'description');
+		});
+	});
+
 	describe('getMinimalRoleOrThrow()', () => {
 		it('returns the correct role object when given a valid ID', () => {
 			const ALL_ROLES = roleRepository.getMinimalRoles();

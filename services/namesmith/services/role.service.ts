@@ -55,6 +55,25 @@ export class RoleService {
 	}
 
 	/**
+	 * Checks if a role with the given ID, name, or role object exists.
+	 * @param roleResolvable - The role to check. Can be a number (the role's ID), a string (the role's name), or a role object.
+	 * @returns true if a role with the given ID or name exists, false otherwise.
+	 */
+	isRole(roleResolvable: RoleResolvable): boolean {
+		const roleID = this.resolveID(roleResolvable);
+		const role = this.roleRepository.getMinimalRoleByID(roleID);
+		return role !== null;
+	}
+
+	/**
+	 * Retrieves all roles from the database.
+	 * @returns An array of all roles in the database.
+	 */
+	getRoles(): Role[] {
+		return this.roleRepository.getRoles();
+	}
+
+	/**
 	 * Checks if a player has a given role.
 	 * @param role - The role to check. Can be a number (the role's ID), a string (the role's name), or a role object.
 	 * @param player - The player to check. Can be a number (the player's ID), a string (the player's name), or a player object.
@@ -74,12 +93,28 @@ export class RoleService {
 	 * @param role - The role to assign. Can be a number (the role's ID), a string (the role's name), or a role object.
 	 * @param player - The player to assign the role to. Can be a number (the player's ID), a string (the player's name), or a player object.
 	 */
-	giveToPlayer(
+	setPlayerRole(
 		role: RoleResolvable,
 		player: PlayerResolvable,
 	): void {
 		const roleID = this.resolveID(role);
 		const playerID = this.playerService.resolveID(player);
 		this.roleRepository.addRoleIDToPlayer(roleID, playerID);
+	}
+
+	/**
+	 * Retrieves the role of a player.
+	 * @param player - The player to retrieve the role of. Can be a number (the player's ID), a string (the player's name), or a player object.
+	 * @returns The role of the player, or null if the player does not have a role.
+	 */
+	getRoleOfPlayer(
+		player: PlayerResolvable,
+	): Role | null {
+		const playerID = this.playerService.resolveID(player);
+		const roleID = this.roleRepository.getRoleIDOfPlayerID(playerID);
+
+		if (roleID === null) return null;
+
+		return this.roleRepository.getRoleOrThrow(roleID);
 	}
 }

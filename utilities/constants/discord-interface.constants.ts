@@ -1,5 +1,8 @@
 import { APIMessageComponentEmoji, ButtonInteraction, ChatInputCommandInteraction, ContextMenuCommandInteraction, MessageContextMenuCommandInteraction, SelectMenuInteraction, UserContextMenuCommandInteraction} from "discord.js";
 
+export const EMPTY = '_ _';
+export const EMPTY_LINE = EMPTY + '\n';
+
 export type DiscordSelectMenuOption = {
     /**
      * The user-facing name of the option (max 100 chars)

@@ -512,3 +512,24 @@ export function capitalize(text: string) {
 
 	return text.charAt(0).toUpperCase() + text.slice(1);
 }
+
+/**
+ * Joins an array of strings or arrays of strings into a single string, with each element separated by a newline.
+ * If any of the elements are undefined or null, they are ignored.
+ * @example
+ * joinLines('hello', 'world'); // 'hello\nworld'
+ * joinLines(['hello', 'world'], ['goodbye']); // 'hello\nworld\ngoodbye'
+ * joinLines(undefined, 'hello', null, 'world'); // 'hello\nworld'
+ * @param lines - An array of strings or arrays of strings to join.
+ * @returns - A single string with each element separated by a newline.
+ */
+export function joinLines(
+	...lines: Array<string | string[] | undefined | null>
+) {
+	const flattenedLines = lines.flat();
+	const filteredLines = flattenedLines.filter(line =>
+		line !== undefined && line !== null
+	);
+	const joinedLines = filteredLines.join('\n');
+	return joinedLines;
+}

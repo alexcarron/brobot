@@ -187,7 +187,7 @@ const deferInteraction = async (
 
 /**
  * Replies to an interaction with the provided message content.
- * @param {CommandInteraction | MessageComponentInteraction | ModalSubmitInteraction} interaction - The interaction to reply to.
+ * @param {CommandInteraction | MessageComponentInteraction | ModalSubmitInteraction | ButtonInteraction} interaction - The interaction to reply to.
  * @param {string} messageContent - The content of the message to reply with.
  * @returns {Promise<InteractionResponse | Message>} A promise that resolves when the message is sent.
  */

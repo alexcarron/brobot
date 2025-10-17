@@ -326,7 +326,13 @@ export const ids = {
 					development: "1386449685761228821",
 					production: "1384681948156399727",
 				});
-			}
+			},
+			get CHOOSE_A_ROLE() {
+				return chooseByEnv({
+					development: "1428831757398052895",
+					production: "1428831590833979442",
+				});
+			},
 		},
 	},
 
