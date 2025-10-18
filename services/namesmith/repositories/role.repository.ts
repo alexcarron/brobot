@@ -4,6 +4,7 @@ import { DBPerk, Perk } from "../types/perk.types";
 import { PlayerID } from "../types/player.types";
 import { DBRole, DBRolePerk, MinimalRole, Role, RoleID, RoleName } from "../types/role.types";
 import { PlayerNotFoundError, RoleNotFoundError } from "../utilities/error.utility";
+import { toPerk } from "../utilities/perk.utility";
 
 /**
  * Provides access to the dynamic role data.
@@ -33,7 +34,7 @@ export class RoleRepository {
 				{ id: perkID }
 			) as DBPerk;
 
-			perks.push(perk);
+			perks.push(toPerk(perk));
 		}
 
 		return {

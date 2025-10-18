@@ -5,6 +5,7 @@ import { DatabaseQuerier } from "../database/database-querier";
 import { DBPerk, DBPlayerPerk } from "../types/perk.types";
 import { DBPlayer, MinimalPlayer, Player, PlayerID } from "../types/player.types";
 import { PlayerNotFoundError, PlayerAlreadyExistsError } from "../utilities/error.utility";
+import { toPerk } from "../utilities/perk.utility";
 import { toMinimalPlayerObject } from "../utilities/player.utility";
 
 /**
@@ -38,7 +39,7 @@ export class PlayerRepository {
 	 */
 	private addPerksToPlayers(minimalPlayers: MinimalPlayer[]): Player[] {
 		const playerPerks = this.db.getRows(
-			`SELECT playerID, perkID, id, name, description
+			`SELECT playerID, perkID, id, name, description, wasOffered
 				FROM playerPerk
 				JOIN perk ON playerPerk.perkID = perk.id`
 		) as Array<DBPlayerPerk & DBPerk>;
@@ -46,11 +47,7 @@ export class PlayerRepository {
 		return minimalPlayers.map(minimalPlayer => {
 			const perks = playerPerks
 				.filter(playerPerk => playerPerk.playerID === minimalPlayer.id)
-				.map(playerPerk => ({
-					id: playerPerk.id,
-					name: playerPerk.name,
-					description: playerPerk.description
-				}));
+				.map(playerPerk => toPerk(playerPerk));
 
 			return {
 				...minimalPlayer,
@@ -100,7 +97,7 @@ export class PlayerRepository {
 		return {
 			...minimalPlayer,
 			role: null,
-			perks: dbPerks,
+			perks: dbPerks.map(toPerk),
 		};
 	}
 

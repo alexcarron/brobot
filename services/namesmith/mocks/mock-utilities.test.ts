@@ -1,5 +1,7 @@
+import { makeSure } from "../../../utilities/jest/jest-utils";
 import { DatabaseQuerier } from "../database/database-querier";
 import { DBPlayer, Player } from "../types/player.types";
+import { addMockPerk } from "./mock-data/mock-perks";
 import { addMockPlayer, editMockPlayer } from "./mock-data/mock-players";
 import { addMockVote } from "./mock-data/mock-votes";
 import { createMockDB } from "./mock-database";
@@ -145,6 +147,93 @@ describe("Mock Utilities", () => {
 
 		it("throws if no player is found on update", () => {
 			expect(() => editMockPlayer(db, { id: "456" })).toThrow();
+		});
+	});
+
+	describe('addMockPerk()', () => {
+		it('returns the added perk', () => {
+			const perk = addMockPerk(db, {
+				id: 123,
+				name: "Test Perk",
+				description: "This is a test perk",
+				wasOffered: false,
+			});
+
+			makeSure(perk).is({
+				id: 123,
+				name: "Test Perk",
+				description: "This is a test perk",
+				wasOffered: false
+			});
+		});
+
+		it('adds the perk to the database', () => {
+			addMockPerk(db, {
+				id: 123,
+				name: "Test Perk",
+				description: "This is a test perk",
+				wasOffered: false,
+			});
+
+			const perks = db.getRows("SELECT * FROM perk");
+			makeSure(perks).contains({
+				id: 123,
+				name: "Test Perk",
+				description: "This is a test perk",
+				wasOffered: 0,
+			});
+		});
+
+		it('throws if the perk already exists', () => {
+			addMockPerk(db, {
+				id: 123,
+				name: "Test Perk",
+				description: "This is a test perk",
+				wasOffered: false,
+			});
+
+			expect(() => addMockPerk(db, {
+				id: 123,
+				name: "Test Perk",
+				description: "This is a test perk",
+				wasOffered: false,
+			})).toThrow();
+		});
+
+		it('creates its own ID when none is provided', () => {
+			const perk = addMockPerk(db, {
+				name: "Test Perk",
+				description: "This is a test perk",
+				wasOffered: false,
+			});
+
+			makeSure(perk).is({
+				id: expect.any(Number),
+				name: "Test Perk",
+				description: "This is a test perk",
+				wasOffered: false
+			});
+		});
+
+		it('works when only a name is provided', () => {
+			const perk = addMockPerk(db, {
+				name: "Test Perk",
+			});
+
+			makeSure(perk).is({
+				id: expect.any(Number),
+				name: "Test Perk",
+				description: "",
+				wasOffered: false
+			});
+
+			const perks = db.getRows("SELECT * FROM perk");
+			makeSure(perks).contains({
+				id: perk.id,
+				name: "Test Perk",
+				description: "",
+				wasOffered: 0,
+			});
 		});
 	});
 });

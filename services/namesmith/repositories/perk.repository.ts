@@ -1,9 +1,11 @@
 import { toNullOnError } from "../../../utilities/error-utils";
+import { Override } from "../../../utilities/types/generic-types";
 import { DatabaseQuerier } from "../database/database-querier";
 import { DBPerk, Perk, PerkID } from "../types/perk.types";
 import { PlayerID } from "../types/player.types";
 import { RoleID } from "../types/role.types";
 import { PerkNotFoundError } from "../utilities/error.utility";
+import { toPerk } from "../utilities/perk.utility";
 
 /**
  * Provides access to the dynamic perk data.
@@ -26,7 +28,7 @@ export class PerkRepository {
 		const query = `SELECT * FROM perk`;
 		const getAllPerks = this.db.prepare(query);
 		const dbPerks = getAllPerks.all() as DBPerk[];
-		return dbPerks;
+		return dbPerks.map(toPerk);
 	}
 
 	/**
@@ -43,7 +45,7 @@ export class PerkRepository {
 		if (perk === undefined)
 			throw new PerkNotFoundError(perkID);
 
-		return perk;
+		return toPerk(perk);
 	}
 
 	/**
@@ -68,7 +70,10 @@ export class PerkRepository {
 			{ name }
 		) as DBPerk | undefined;
 
-		return perk ?? null;
+		if (perk === undefined)
+			return null;
+
+		return toPerk(perk);
 	}
 
 	/**
@@ -114,6 +119,19 @@ export class PerkRepository {
 		this.db.run(query, { playerID, perkID });
 	}
 
+	/**
+	 * Removes a perk ID from a player ID in the database.
+	 * @param perkID - The ID of the perk to be removed.
+	 * @param playerID - The ID of the player to have the perk removed.
+	 */
+	removePerkIDFromPlayer(perkID: PerkID, playerID: PlayerID) {
+		const query = `
+			DELETE FROM playerPerk
+			WHERE playerID = @playerID AND perkID = @perkID
+		`;
+		this.db.run(query, { playerID, perkID });
+	}
+
 	getPerkIDsOfRoleID(roleID: RoleID): PerkID[] {
 		const query = `
 			SELECT perkID FROM rolePerk
@@ -122,5 +140,62 @@ export class PerkRepository {
 		const getPerksOfRole = this.db.prepare(query);
 		const rows = getPerksOfRole.all({ roleID }) as { perkID: number }[];
 		return rows.map(row => row.perkID);
+	}
+
+	/**
+	 * Retrieves whether a perk with the given ID was offered.
+	 * @param perkID - The ID of the perk to be retrieved.
+	 * @returns A boolean indicating whether the perk with the given ID was offered.
+	 */
+	getWasOffered(perkID: PerkID): boolean {
+		const perk = this.getPerkOrThrow(perkID);
+		return perk.wasOffered;
+	}
+
+	/**
+	 * Sets whether a perk with the given ID was offered.
+	 * @param perkID - The ID of the perk to be updated.
+	 * @param wasOffered - A boolean indicating whether the perk with the given ID was offered.
+	 * @throws PerkNotFoundError - If the perk does not exist.
+	 */
+	setWasOffered(perkID: PerkID, wasOffered: boolean) {
+		const query = `
+			UPDATE perk
+			SET wasOffered = @wasOffered
+			WHERE id = @id
+		`;
+
+		const runResult = this.db.run(query, {
+			wasOffered: wasOffered ? 1 : 0,
+			id: perkID
+		});
+
+		if (runResult.changes === 0)
+			throw new PerkNotFoundError(perkID);
+	}
+
+	/**
+	 * Retrieves a list of perk objects that have not been offered yet.
+	 * @returns An array of perk objects that have not been offered yet.
+	 */
+	getPerksNotYetOffered(): Override<Perk, { wasOffered: false }>[] {
+		const rows = this.db.getRows(
+			`SELECT * FROM perk
+			WHERE wasOffered = 0`
+		) as DBPerk[];
+
+		return rows.map(toPerk) as Override<Perk, { wasOffered: false }>[];
+	}
+
+	/**
+	 * Sets whether all perks have been offered.
+	 * @param wasOffered - A boolean indicating whether all perks have been offered.
+	 */
+	setWasOfferedForAllPerks(wasOffered: boolean) {
+		const query = `
+			UPDATE perk
+			SET wasOffered = @wasOffered
+		`;
+		this.db.run(query, { wasOffered: wasOffered ? 1 : 0 });
 	}
 }

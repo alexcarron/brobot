@@ -32,7 +32,8 @@ CREATE TABLE IF NOT EXISTS mysteryBoxCharacterOdds (
 CREATE TABLE IF NOT EXISTS perk (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	name TEXT NOT NULL UNIQUE,
-	description TEXT NOT NULL
+	description TEXT NOT NULL,
+	wasOffered BOOLEAN NOT NULL DEFAULT 0
 );
 
 -- Role table

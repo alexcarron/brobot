@@ -1,4 +1,4 @@
-import { createRandomUUID } from "./random-utils";
+import { getRandomUUID } from "./random-utils";
 import { ActionRowBuilder, ButtonBuilder, ComponentBuilder, ModalBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, TextInputBuilder } from "@discordjs/builders";
 import { ButtonInteraction, ButtonStyle, Message, MessageCreateOptions, ModalSubmitInteraction, StringSelectMenuInteraction, TextBasedChannel, TextChannel, TextInputStyle } from "discord.js";
 import { InvalidArgumentError, throwIfNotError } from "./error-utils";
@@ -43,7 +43,7 @@ export async function showModalWithTextInputs<
 		timeout?: number;
 	}
 ) {
-	const modalID = id ?? `modal-${createRandomUUID()}`;
+	const modalID = id ?? `modal-${getRandomUUID()}`;
 	if (title.length > 45)
 		title = title.substring(0, 45);
 

@@ -3,7 +3,7 @@
  * @description Centralized test utility functions to make writing Jest unit tests easier, more consistent, and discoverable—especially for new developers.
  */
 
-import { Class, ErrorClass } from "../types/generic-types";
+import { Class, ElementOfArray, ErrorClass } from "../types/generic-types";
 import { isArray, isObject } from "../types/type-guards";
 
 
@@ -15,7 +15,9 @@ import { isArray, isObject } from "../types/type-guards";
  * @example
  * makeSure(actualResultValue).is(expectedValue);
  */
-export function makeSure(actualValue: unknown) {
+export function makeSure<
+	ActualType
+>(actualValue: ActualType) {
 	// eslint-disable-next-line jest/valid-expect
 	const baseExpect = expect(actualValue);
 
@@ -269,6 +271,80 @@ export function makeSure(actualValue: unknown) {
 		},
 
 		/**
+		 * Asserts that the actual array does not contain any of the given values.
+		 * @param unexpectedValues - The values that the actual array should not contain.
+		 * @example
+		 * makeSure([1, 2, 3]).doesNotContain(4);
+		 */
+		doesNotContain(...unexpectedValues: unknown[]): void {
+			for (const unexpectedValue of unexpectedValues) {
+				baseExpect.not.toContainEqual(unexpectedValue);
+			}
+		},
+
+		/**
+		 * Asserts that all values in the array are different.
+		 * @example
+		 * makeSure([1, 2, 3]).areAllDifferent();
+		 */
+		areAllDifferent(): void {
+			if (!isArray(actualValue))
+				throw new Error(`Expected actual value to be an array, but got: ${actualValue}`);
+
+			const uniqueValues = new Set(actualValue);
+			if (uniqueValues.size !== actualValue.length) {
+				throw new Error(`Expected all values in the array to be different, but got: ${actualValue}`);
+			}
+		},
+
+		/**
+		 * Asserts that the actual array does not contain any of the given values.
+		 * @param unexpectedValue - The value that the actual array should not contain.
+		 * @example
+		 * makeSure([1, 2, 3]).areAllNot(4);
+		 */
+		areAllNot(unexpectedValue: unknown): void {
+			baseExpect.not.toContain(unexpectedValue);
+		},
+
+		/**
+		 * Asserts that at least one item in the array satisfies the given predicate.
+		 * @param predicate - A function that takes an item from the array and returns true or false.
+		 * @example
+		 * makeSure([1, 2, 3]).hasAnItemWhere(item => item % 2 === 0);
+		 */
+		hasAnItemWhere(predicate: (item: ElementOfArray<ActualType>) => boolean): void {
+			if (!isArray(actualValue))
+				throw new Error(`Expected actual value to be an array, but got: ${actualValue}`);
+
+			if (actualValue.length === 0)
+				throw new Error(`Expected at least one item in the array, but got an empty array`);
+
+			for (const item of actualValue) {
+				if (predicate(item as ElementOfArray<ActualType>))
+					return;
+			}
+
+			throw new Error(`Expected at least one item in the array to satisfy the predicate, but got: ${actualValue}`);
+		},
+
+		/**
+		 * Asserts that no items in the array satisfy the given predicate.
+		 * @param predicate - A function that takes an item from the array and returns true or false.
+		 * @example
+		 * makeSure([1, 2, 3]).hasNoItemsWhere(item => item % 2 === 0);
+		 */
+		hasNoItemsWhere(predicate: (item: ElementOfArray<ActualType>) => boolean): void {
+			if (!isArray(actualValue))
+				throw new Error(`Expected actual value to be an array, but got: ${actualValue}`);
+
+			for (const item of actualValue) {
+				if (predicate(item as ElementOfArray<ActualType>))
+					throw new Error(`Expected no items in the array to satisfy the predicate, but got: ${actualValue}`);
+			}
+		},
+
+		/**
 		 * Asserts that each item in the array has the given properties.
 		 * @param propertyNames - The names of the properties that each item in the array should have.
 		 * @example
@@ -281,6 +357,18 @@ export function makeSure(actualValue: unknown) {
 			propertyNames.forEach(propertyName => {
 				expect(actualValue).toHaveProperty(propertyName);
 			});
+		},
+
+	/**
+	 * Asserts that the actual value has a property with the given name and optional value.
+	 * @param propertyName - The name of the property that the actual value should have.
+	 * @param value - The value that the actual value's property should have.
+	 * @example
+	 * makeSure({ name: 'John' }).hasProperty('name');
+	 * makeSure({ id: 1 }).hasProperty('id', 1);
+	 */
+		hasProperty(propertyName: string, value?: unknown): void {
+			expect(actualValue).toHaveProperty(propertyName, value);
 		},
 
 		/**
@@ -300,6 +388,23 @@ export function makeSure(actualValue: unknown) {
 				propertyNames.forEach(propertyName => {
 					expect(object).toHaveProperty(propertyName);
 				});
+			});
+		},
+
+		/**
+		 * Asserts that each item in the array has a property with the given name and optional value.
+		 * @param propertyName - The name of the property that each item in the array should have.
+		 * @param value - The value that each item in the array's property should have.
+		 * @example
+		 * makeSure([{ id: 1 }, { id: 2 }]).haveProperty('id');
+		 * makeSure([{ id: 1 }, { id: 2 }]).haveProperty('id', 1);
+		 */
+		haveProperty(propertyName: string, value?: unknown): void {
+			if (!isArray(actualValue))
+				throw new Error(`Expected actual value to be an array, but got: ${actualValue}`);
+
+			actualValue.forEach(object => {
+				expect(object).toHaveProperty(propertyName, value);
 			});
 		},
 

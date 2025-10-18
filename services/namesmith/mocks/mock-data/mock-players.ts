@@ -8,6 +8,7 @@ import { DBPerk, Perk } from "../../types/perk.types";
 import { DBPlayer, MinimalPlayer, Player, PlayerDefinition } from "../../types/player.types";
 import { PlayerAlreadyExistsError } from "../../utilities/error.utility";
 import { toMinimalPlayerObject } from "../../utilities/player.utility";
+import { toPerk } from '../../utilities/perk.utility';
 
 /**
  * An array of mock player data for use in tests.
@@ -177,16 +178,16 @@ export const addMockPlayer = (
 			const perkID = perkResolvable;
 			givePlayerPerk.run({ playerID: id, perkID });
 
-			const perk = db.getRow(
+			const dbPerk = db.getRow(
 				"SELECT * FROM perk WHERE id = ?",
 				[perkID]
 			) as DBPerk | undefined;
 
-			if (perk === undefined) {
+			if (dbPerk === undefined) {
 				throw new InvalidArgumentError(`addMockPlayer: No perk found with ID ${perkID}.`);
 			}
 
-			actualPerks.push(perk);
+			actualPerks.push(toPerk(dbPerk));
 		}
 		else {
 			const perkName = perkResolvable;
@@ -199,7 +200,7 @@ export const addMockPlayer = (
 
 			givePlayerPerk.run({ playerID: id, perkID: dbPerk.id });
 
-			actualPerks.push(dbPerk);
+			actualPerks.push(toPerk(dbPerk));
 		}
 	}
 

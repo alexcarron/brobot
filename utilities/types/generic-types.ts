@@ -33,7 +33,25 @@ export type TypedNamedValue<
 	{ [PossibleProperty in Name]: ValueType; } &
 	{ type: TypeType; };
 
-/**l
+/**
+ * Remove all properties from an object type that are not given
+ * @example
+ * type Player = {
+ *   id: number;
+ *   name: string;
+ *   currentName: string;
+ * }
+ *
+ * type PlayerIdentifier = WithOnly<Player, "id" | "currentName">
+ * type PlayerName = WithOnly<Player, "name">
+ */
+export type WithOnly<
+	ObjectType extends object,
+	RequiredKeys extends keyof ObjectType
+> =
+	Pick<ObjectType, RequiredKeys>;
+
+/**
  * Requires at least one property to be defined of a given object type
  * @example
  * type ContactInfo = AtLeastOne<{
@@ -42,11 +60,13 @@ export type TypedNamedValue<
  *   linkedIn: string;
  * }>
  */
-export type WithAtLeastOneProperty<ObjectType extends object> = {
-  [RequiredKey in keyof ObjectType]:
-		{ [Key in RequiredKey]: ObjectType[Key] } &
-		Partial<Omit<ObjectType, RequiredKey>>
-}[keyof ObjectType];
+export type WithAtLeastOneProperty<ObjectType extends object> =
+& Partial<ObjectType>
+& {
+  [Key in keyof ObjectType]:
+      & Required<WithOnly<ObjectType, Key>>
+			& Partial<Without<ObjectType, Key>>
+  }[keyof ObjectType];
 
 /**
  * Requires at least one or more given properties to be defined of a given object type
@@ -151,3 +171,12 @@ export type Readonly<GivenType> =
 		}
 		// Else, leave it as is
 		: GivenType;
+
+/**
+ * Returns the type of the elements of an array type
+ * @example
+ * type Strings = string[];
+ * const modifyItem: (item: ElementOfArray<Strings>) => string =
+ *   (item: string) => item.toUpperCase();
+ */
+export type ElementOfArray<T> = T extends (infer U)[] ? U : never;

@@ -646,3 +646,14 @@ export class NameTooLongError extends InvalidNameError {
 		})
 	}
 }
+
+/**
+ * Error thrown when not enough perks exist in the database
+ */
+export class NotEnoughPerksError extends NamesmithError {
+	constructor() {
+		super({
+			message: 'There is not enough perks in the database offer three random perks to the player.',
+		})
+	}
+}

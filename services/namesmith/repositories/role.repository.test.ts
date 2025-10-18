@@ -82,7 +82,9 @@ describe('RoleRepository', () => {
 			makeSure(role).isNotNull();
 			makeSure(role).hasProperties('id', 'name', 'description', 'perks');
 			makeSure(role.id).is(Roles.MINE_BONUS_ROLE.id);
-			makeSure(role.perks).contains(Perks.MINE_BONUS);
+			makeSure(role.perks).hasAnItemWhere(perk =>
+				perk.id === Perks.MINE_BONUS.id
+			);
 		});
 
 		it('throws an error when given an invalid ID', () => {
@@ -113,7 +115,9 @@ describe('RoleRepository', () => {
 			makeSure(role).isNotNull();
 			makeSure(role).hasProperties('id', 'name', 'description', 'perks');
 			makeSure(role!.id).is(Roles.MINE_BONUS_ROLE.id);
-			makeSure(role!.perks).contains(Perks.MINE_BONUS);
+			makeSure(role!.perks).hasAnItemWhere(perk =>
+				perk.id === Perks.MINE_BONUS.id
+			);
 		});
 
 		it('returns null when given an invalid name', () => {

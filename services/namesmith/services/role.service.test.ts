@@ -52,7 +52,9 @@ describe('RoleService', () => {
 			makeSure(resolvedRole.name).is(Roles.MINE_BONUS_ROLE.name);
 			makeSure(resolvedRole).hasProperties('id', 'name', 'description', 'perks');
 			makeSure(resolvedRole.description).is(Roles.MINE_BONUS_ROLE.description);
-			makeSure(resolvedRole.perks).contains(Perks.MINE_BONUS);
+			makeSure(resolvedRole.perks).hasAnItemWhere(perk =>
+				perk.id === Perks.MINE_BONUS.id
+			);
 		});
 
 		it('should reoslve a Role Defintion object to a role object', () => {

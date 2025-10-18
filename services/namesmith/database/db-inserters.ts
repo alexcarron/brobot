@@ -2,7 +2,7 @@ import { InvalidArgumentError, validateArguments } from "../../../utilities/erro
 import { WithOptional } from "../../../utilities/types/generic-types";
 import { Character } from "../types/character.types";
 import { MysteryBox } from "../types/mystery-box.types";
-import { Perk } from "../types/perk.types";
+import { Perk, PerkDefintion } from "../types/perk.types";
 import { Recipe } from "../types/recipe.types";
 import { RoleDefinition } from "../types/role.types";
 import { getIDfromCharacterValue, getCharacterValueFromID } from "../utilities/character.utility";
@@ -160,7 +160,7 @@ export const insertRecipesToDB = (
  */
 export function insertPerksToDB(
 	db: DatabaseQuerier,
-	perks: readonly WithOptional<Perk, "id">[]
+	perks: Readonly<WithOptional<PerkDefintion, "id">[]>
 ) {
 	const insertPerkIntoDB = db.getQuery("INSERT INTO perk (name, description) VALUES (@name, @description)");
 	const insertPerkIntoDBWithID = db.getQuery("INSERT INTO perk (id, name, description) VALUES (@id, @name, @description)");

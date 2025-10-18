@@ -20,7 +20,7 @@ export const createRandomNumericUUID = () => {
  * @example
  * const uuid = createRandomUUID(); // e.g. "a1a819b8356eae7a33d3f79d2f879e9d"
  */
-export const createRandomUUID = () => {
+export const getRandomUUID = () => {
 	const buffer = randomBytes(16);
 	return buffer.toString('hex');
 }
@@ -235,7 +235,7 @@ function getBetween(min: number, max: number) {
  * The first letter is always uppercase.
  * @returns {string} A random name.
  */
-export const createRandomName = () => {
+export const getRandomName = () => {
 	const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
 	const firstLetter = getRandomElement(letters).toUpperCase();
 	let name = firstLetter;

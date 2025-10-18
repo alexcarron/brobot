@@ -1,5 +1,7 @@
 import { logInfo, logSuccess } from "../../../utilities/logging-utils";
 import { setupDatabase } from "../database/setup-database";
+import { regenerateChooseARoleMessage } from "../interfaces/choose-a-role-message";
+import { regeneratePickAPerkMessage } from "../interfaces/pick-a-perk-message";
 import { regenerateRecipeSelectMenu } from "../interfaces/recipe-select-menu";
 import { regenerateAllTradeMessages } from "../interfaces/trading/trade-message";
 import { regenerateVoteDisplay } from "../interfaces/voting/voting-messages";
@@ -108,7 +110,7 @@ export const setupNamesmith = async () => {
 	logInfo("Setting up Namesmith...");
 	await initializeDependencies();
 
-	const { gameStateService, recipeService, playerService, tradeService } = getNamesmithServices();
+	const { gameStateService, recipeService, playerService, tradeService, roleService, perkService } = getNamesmithServices();
 
 	setupEventListeners();
 
@@ -118,8 +120,9 @@ export const setupNamesmith = async () => {
 		await regenerateRecipeSelectMenu({recipeService});
 		await regenerateVoteDisplay({playerService});
 		await regenerateAllTradeMessages({tradeService, playerService});
+		await regenerateChooseARoleMessage({playerService, roleService});
+		await regeneratePickAPerkMessage({playerService, perkService});
 	}
-
 
 	logSuccess("Namesmith set up");
 }

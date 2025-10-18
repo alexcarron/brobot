@@ -139,6 +139,19 @@ describe('PerkRepository', () => {
 			makeSure(perkIDs).isAnArray();
 			makeSure(perkIDs).contains(Perks.MINE_BONUS.id);
 		});
+	});
+
+	describe('removePerkIDFromPlayer()', () => {
+		it('removes the given perk ID from the player', () => {
+			const player = addMockPlayer(db, {
+				perks: [Perks.MINE_BONUS.id]
+			});
+			perkRepository.removePerkIDFromPlayer(Perks.MINE_BONUS.id, player.id);
+
+			const perkIDs = perkRepository.getPerkIDsOfPlayerID(player.id);
+			makeSure(perkIDs).isAnArray();
+			makeSure(perkIDs).isEmpty();
+		});
 	})
 
 	describe('getPerkIDsOfRoleID()', () => {
@@ -155,6 +168,75 @@ describe('PerkRepository', () => {
 
 			makeSure(perkIDs).isAnArray();
 			makeSure(perkIDs).isEmpty();
+		});
+	});
+
+	describe('setWasOffered()', () => {
+		it('sets the wasOffered field of a perk to true', () => {
+			perkRepository.setWasOffered(Perks.MINE_BONUS.id, true);
+
+			const wasOffered = perkRepository.getWasOffered(Perks.MINE_BONUS.id);
+
+			makeSure(wasOffered).isTrue();
+		});
+
+		it('sets the wasOffered field of a perk to false', () => {
+			perkRepository.setWasOffered(Perks.MINE_BONUS.id, true);
+			perkRepository.setWasOffered(Perks.MINE_BONUS.id, false);
+
+			const wasOffered = perkRepository.getWasOffered(Perks.MINE_BONUS.id);
+
+			makeSure(wasOffered).isFalse();
+		});
+	})
+
+	describe('getWasOffered()', () => {
+		it('returns false when the perk was not offered yet', () => {
+			const wasOffered = perkRepository.getWasOffered(Perks.MINE_BONUS.id);
+			makeSure(wasOffered).isFalse();
+		});
+
+		it('returns true when the perk was offered', () => {
+			perkRepository.setWasOffered(Perks.MINE_BONUS.id, true);
+
+			const wasOffered = perkRepository.getWasOffered(Perks.MINE_BONUS.id);
+
+			makeSure(wasOffered).isTrue();
+		});
+	});
+
+	describe('getPerksNotYetOffered()', () => {
+		it('returns an array of perks that have not been offered yet', () => {
+			const perks = perkRepository.getPerksNotYetOffered();
+
+			makeSure(perks).isAnArray();
+			makeSure(perks).isNotEmpty();
+			makeSure(perks).haveProperty('wasOffered', false);
+		});
+	});
+
+	describe('setWasOfferedForAllPerks()', () => {
+		it('sets the wasOffered field of all perks to true', () => {
+			perkRepository.setWasOfferedForAllPerks(true);
+
+			const wasOffered = perkRepository.getWasOffered(Perks.MINE_BONUS.id);
+
+			makeSure(wasOffered).isTrue();
+
+			const perks = perkRepository.getPerks();
+			makeSure(perks).haveProperty('wasOffered', true);
+		});
+
+		it('sets the wasOffered field of all perks to false', () => {
+			perkRepository.setWasOfferedForAllPerks(true);
+			perkRepository.setWasOfferedForAllPerks(false);
+
+			const wasOffered = perkRepository.getWasOffered(Perks.MINE_BONUS.id);
+
+			makeSure(wasOffered).isFalse();
+
+			const perks = perkRepository.getPerks();
+			makeSure(perks).haveProperty('wasOffered', false);
 		});
 	});
 });

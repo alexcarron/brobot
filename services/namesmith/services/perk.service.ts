@@ -3,7 +3,7 @@ import { PerkRepository } from "../repositories/perk.repository";
 import { RoleRepository } from "../repositories/role.repository";
 import { Perk, PerkResolvable } from "../types/perk.types";
 import { Player, PlayerResolvable } from "../types/player.types";
-import { PerkNotFoundError } from "../utilities/error.utility";
+import { NotEnoughPerksError, PerkNotFoundError } from "../utilities/error.utility";
 import { PlayerService } from "./player.service";
 
 /**
@@ -62,6 +62,21 @@ export class PerkService {
 	}
 
 	/**
+	 * Checks if a perk with the given ID exists in the database.
+	 * @param perkResolvable - The perk to be checked for.
+	 * @returns A boolean indicating if the perk exists in the database.
+	 */
+	isPerk(perkResolvable: PerkResolvable): boolean {
+		try {
+			const perkID = this.resolveID(perkResolvable);
+			return this.perkRepository.getPerkByID(perkID) !== null;
+		}
+		catch {
+			return false;
+		}
+	}
+
+	/**
 	 * Checks if a player has a given perk.
 	 * @param perk - The perk to be checked for.
 	 * @param player - The player to be checked.
@@ -102,9 +117,9 @@ export class PerkService {
 		const playerHasPerk = this.doesPlayerHave(perk, player);
 
 		if (playerHasPerk) {
-			perk = this.resolvePerk(perk);
+			const perkObj = this.resolvePerk(perk);
 			player = this.playerService.resolvePlayer(player);
-			onPlayerHasPerk(perk, player);
+			onPlayerHasPerk(perkObj, player);
 		}
 
 		return playerHasPerk;
@@ -122,5 +137,53 @@ export class PerkService {
 		const perkID = this.resolveID(perk);
 		const playerID = this.playerService.resolveID(player);
 		this.perkRepository.addPerkIDToPlayer(perkID, playerID);
+	}
+
+	/**
+	 * Removes a perk from a player if the player has the perk.
+	 * @param perk - The perk to be removed from the player.
+	 * @param player - The player to have the perk removed.
+	 * @returns A boolean indicating if the player had the given perk.
+	 */
+	removeIfPlayerHas(
+		perk: PerkResolvable,
+		player: PlayerResolvable,
+	): boolean {
+		return this.doIfPlayerHas(perk, player, (perk, player) => {
+			this.perkRepository.removePerkIDFromPlayer(perk.id, player.id);
+		});
+	}
+
+	/**
+	 * Retrieves three random perks that have not been offered yet.
+	 * If there are no more perks to be offered, it will reset the wasOffered flag for all perks.
+	 * @returns An array of three perk objects that have not been offered yet.
+	 */
+	offerThreeRandomNewPerks(): [Perk, Perk, Perk] {
+		const threeRandomPerks: Perk[] = [];
+		let perks = this.perkRepository.getPerksNotYetOffered();
+
+		for (let numPerk = 1; numPerk <= 3; numPerk++) {
+			if (perks.length === 0)
+				throw new NotEnoughPerksError();
+
+			const randomIndex = Math.floor(Math.random() * perks.length);
+			const offeredPerk = perks[randomIndex];
+			this.perkRepository.setWasOffered(offeredPerk.id, true);
+			threeRandomPerks.push({
+				...offeredPerk,
+				wasOffered: true,
+			});
+
+			perks.splice(randomIndex, 1);
+
+			if (perks.length === 0) {
+				this.perkRepository.setWasOfferedForAllPerks(false);
+				perks = this.perkRepository.getPerksNotYetOffered()
+				perks = perks.filter(perk =>  perk.id !== offeredPerk.id);
+			}
+		}
+
+		return threeRandomPerks as [Perk, Perk, Perk];
 	}
 }

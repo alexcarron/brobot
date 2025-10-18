@@ -60,9 +60,14 @@ export class RoleService {
 	 * @returns true if a role with the given ID or name exists, false otherwise.
 	 */
 	isRole(roleResolvable: RoleResolvable): boolean {
-		const roleID = this.resolveID(roleResolvable);
-		const role = this.roleRepository.getMinimalRoleByID(roleID);
-		return role !== null;
+		try {
+			const roleID = this.resolveID(roleResolvable);
+			const role = this.roleRepository.getMinimalRoleByID(roleID);
+			return role !== null;
+		}
+		catch {
+			return false;
+		}
 	}
 
 	/**
