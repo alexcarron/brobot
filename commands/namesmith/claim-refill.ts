@@ -1,7 +1,7 @@
 import { ids } from "../../bot-config/discord-ids";
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
-import { toAmountOfNoun } from "../../utilities/string-manipulation-utils";
+import { joinLines, toAmountOfNoun } from "../../utilities/string-manipulation-utils";
 import { claimRefill } from "../../services/namesmith/workflows/claim-refill.workflow";
 import { toUnixTimestamp } from "../../utilities/date-time-utils";
 
@@ -26,13 +26,28 @@ export const command = new SlashCommand({
 			);
 		}
 
-		const { tokensEarned, newTokenCount, nextRefillTime } = refillResult;
-		return (
-			`**+${toAmountOfNoun(tokensEarned, 'Token')}**\n` +
-			`${'🪙'.repeat(tokensEarned)}\n` +
-			`\n` +
-			`-# You now have ${toAmountOfNoun(newTokenCount, 'token')}\n` +
-			`-# Claim your next refill of tokens <t:${toUnixTimestamp(nextRefillTime)}:R>\n`
+		const { baseTokensEarned, newTokenCount, nextRefillTime, tokensFromRefillBonus, } = refillResult;
+
+
+		const baseTokensLine = joinLines(
+			`**+${toAmountOfNoun(baseTokensEarned, 'Token')}**`,
+			`${'🪙'.repeat(baseTokensEarned)}`,
+		)
+
+		const refillBonusLine = (tokensFromRefillBonus > 0)
+			? joinLines(
+				'',
+				`+${toAmountOfNoun(tokensFromRefillBonus, 'Refill Bonus Token')}`,
+				`${'🪙'.repeat(tokensFromRefillBonus)}`,
+			)
+			: null;
+
+		return joinLines(
+			baseTokensLine,
+			refillBonusLine,
+			``,
+			`-# You now have ${toAmountOfNoun(newTokenCount, 'token')}`,
+			`-# Claim your next refill of tokens <t:${toUnixTimestamp(nextRefillTime)}:R>`,
 		);
 	},
 });

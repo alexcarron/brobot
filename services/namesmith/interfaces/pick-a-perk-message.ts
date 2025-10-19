@@ -1,7 +1,6 @@
 import { ButtonStyle } from "discord.js";
 import { ids } from "../../../bot-config/discord-ids";
 import { DiscordButtonDefinition, DiscordButtons } from "../../../utilities/discord-interface-utils";
-import { getRandomUUID } from "../../../utilities/random-utils";
 import { joinLines } from "../../../utilities/string-manipulation-utils";
 import { PerkService } from "../services/perk.service";
 import { PlayerService } from "../services/player.service";
@@ -64,7 +63,7 @@ export function toPerkButton(
 	}
 ): DiscordButtonDefinition {
 	return {
-		id: `pick-a-perk-button-${getRandomUUID()}`,
+		id: `pick-a-perk-button-${perk.id}`,
 		label: `Get ${perk.name} Perk`,
 		style: ButtonStyle.Secondary,
 		onButtonPressed: async (buttonInteraction) => {

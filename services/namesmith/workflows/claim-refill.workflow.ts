@@ -5,12 +5,15 @@ import { AVERAGE_TOKENS_FROM_REFILLING, MIN_TOKENS_FROM_REFILLING, REFILL_COOLDO
 import { getAnticipatedRandomNum } from '../../../utilities/random-utils';
 import { addHours } from '../../../utilities/date-time-utils';
 import { getWorkflowResultCreator, provides } from './workflow-result-creator';
+import { PerkService } from '../services/perk.service';
+import { Perks } from '../constants/perks.constants';
 
 const result = getWorkflowResultCreator({
 	success: provides<{
-		tokensEarned: number,
+		baseTokensEarned: number,
 		newTokenCount: number,
-		nextRefillTime: Date
+		nextRefillTime: Date,
+		tokensFromRefillBonus: number,
 	}>(),
 
 	nonPlayerRefilled: null,
@@ -23,14 +26,16 @@ const result = getWorkflowResultCreator({
  * gives tokens to a player for refilling.
  * @param params - The parameters for the function.
  * @param params.playerService The player service.
+ * @param params.perkService The perk service.
  * @param params.playerRefilling The player that is refilling.
  * @returns An object containing the amount of tokens earned and the new token count of the player.
  * - RefillAlreadyClaimedError if the player has already claimed a refill.
  * - NonPlayerRefilledError if the provided player is not a valid player.
  */
 export const claimRefill = (
-	{playerService, playerRefilling}: {
+	{playerService, perkService, playerRefilling}: {
 		playerService: PlayerService,
+		perkService: PerkService,
 		playerRefilling: PlayerResolvable,
 	}
 ) => {
@@ -38,25 +43,53 @@ export const claimRefill = (
 		return result.failure.nonPlayerRefilled();
 	}
 
-	const now = new Date();
+	let newLastRefillTime = new Date();
 	if (!playerService.canRefill(playerRefilling)) {
 		const nextRefillTime = playerService.getNextAvailableRefillTime(playerRefilling);
 		return result.failure.refillAlreadyClaimed({ nextRefillTime });
 	}
 
-	const tokensEarned = Math.round(getAnticipatedRandomNum({
+	// Calculate tokens earned from refill
+	let totalTokensEarned = 0;
+	let baseTokensEarned = Math.round(getAnticipatedRandomNum({
 		expectedValue: AVERAGE_TOKENS_FROM_REFILLING,
 		minimumValue: MIN_TOKENS_FROM_REFILLING
 	}));
-	playerService.giveTokens(playerRefilling, tokensEarned);
-	playerService.setLastRefillTime(playerRefilling, now);
+
+	// Handle Refill Interest perk
+	perkService.doIfPlayerHas(Perks.REFILL_INTEREST, playerRefilling, () => {
+		const currentTokenCount = playerService.getTokens(playerRefilling);
+
+		baseTokensEarned = Math.round(getAnticipatedRandomNum({
+			expectedValue: currentTokenCount * 0.10,
+		}))
+	});
+
+	totalTokensEarned += baseTokensEarned;
+
+	// Handle Refill Bonus perk
+	let tokensFromRefillBonus = 0;
+	perkService.doIfPlayerHas(Perks.REFILL_BONUS, playerRefilling, () => {
+		tokensFromRefillBonus = Math.floor(baseTokensEarned * 0.25);
+		totalTokensEarned += tokensFromRefillBonus;
+	});
+
+	playerService.giveTokens(playerRefilling, totalTokensEarned);
+
+	// Set new last refill time
+	perkService.doIfPlayerHas(Perks.FASTER_REFILL, playerRefilling, () => {
+		newLastRefillTime = addHours(newLastRefillTime, -1);
+	})
+
+	playerService.setLastRefillTime(playerRefilling, newLastRefillTime);
 
 	const newTokenCount = playerService.getTokens(playerRefilling);
-	const nextRefillTime = addHours(now, REFILL_COOLDOWN_HOURS);
+	const nextRefillTime = addHours(newLastRefillTime, REFILL_COOLDOWN_HOURS);
 
 	return result.success({
-		tokensEarned,
+		baseTokensEarned,
 		newTokenCount,
 		nextRefillTime,
+		tokensFromRefillBonus,
 	});
 }

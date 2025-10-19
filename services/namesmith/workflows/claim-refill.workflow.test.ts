@@ -1,10 +1,12 @@
 jest.mock("../../../utilities/random-utils", () => ({
   ...jest.requireActual("../../../utilities/random-utils"),
-  getAnticipatedRandomNum: jest.fn().mockReturnValue(50),
+  getAnticipatedRandomNum: jest.fn(({expectedValue}) => expectedValue),
 }));
 
+import { addHours } from "../../../utilities/date-time-utils";
 import { makeSure } from "../../../utilities/jest/jest-utils";
-import { REFILL_COOLDOWN_HOURS } from "../constants/namesmith.constants";
+import { AVERAGE_TOKENS_FROM_REFILLING, REFILL_COOLDOWN_HOURS } from "../constants/namesmith.constants";
+import { Perks } from "../constants/perks.constants";
 import { INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
@@ -31,22 +33,23 @@ describe('claim-tokens.workflow', () => {
 	});
 
 	describe('refillTokens()', () => {
-		it('should return the correct newTokenCount, tokensEarned, and nextRefillTime', () => {
+		it('should return the correct newTokenCount, tokensEarned, hasRefillBonusPerk, and nextRefillTime', () => {
 			const mockPlayer = addMockPlayer(db, {
 				tokens: 10
 			});
 
-			const { newTokenCount, tokensEarned, nextRefillTime } =
+			const { newTokenCount, baseTokensEarned, nextRefillTime, tokensFromRefillBonus } =
 				returnIfNotFailure(claimRefill({
-					...services,
+					...getNamesmithServices(),
 					playerRefilling: mockPlayer.id
 				}));
 
-			makeSure(newTokenCount).is(mockPlayer.tokens + 50);
-			makeSure(tokensEarned).is(50);
+			makeSure(newTokenCount).is(mockPlayer.tokens + AVERAGE_TOKENS_FROM_REFILLING);
+			makeSure(baseTokensEarned).is(AVERAGE_TOKENS_FROM_REFILLING);
 
-			const expectedDate = new Date(new Date().getTime() + REFILL_COOLDOWN_HOURS * 60 * 60 * 1000);
+			const expectedDate = addHours(new Date(), REFILL_COOLDOWN_HOURS);
 			makeSure(nextRefillTime).isCloseToDate(expectedDate);
+			makeSure(tokensFromRefillBonus).is(0);
 		});
 
 		it('should give the player tokens for refilling', () => {
@@ -55,14 +58,82 @@ describe('claim-tokens.workflow', () => {
 			});
 
 			claimRefill({
-				...services,
+				...getNamesmithServices(),
 				playerRefilling: mockPlayer.id
 			});
 
 			const { playerService } = services;
 			const player = playerService.resolvePlayer(mockPlayer.id);
 
-			makeSure(player.tokens).is(mockPlayer.tokens + 50);
+			makeSure(player.tokens).is(mockPlayer.tokens + AVERAGE_TOKENS_FROM_REFILLING);
+		});
+
+		it('should give +25% tokens if the player has the refill bonus perk', () => {
+			const mockPlayer = addMockPlayer(db, {
+				tokens: 10,
+				perks: [Perks.REFILL_BONUS.name]
+			});
+
+			const result = returnIfNotFailure(
+				claimRefill({
+					...getNamesmithServices(),
+					playerRefilling: mockPlayer.id
+				})
+		);
+
+			const { playerService } = services;
+			const player = playerService.resolvePlayer(mockPlayer.id);
+
+			makeSure(player.tokens).is(mockPlayer.tokens +
+				Math.floor(AVERAGE_TOKENS_FROM_REFILLING * 1.25)
+			);
+			makeSure(result.baseTokensEarned).is(AVERAGE_TOKENS_FROM_REFILLING);
+			makeSure(result.tokensFromRefillBonus).is(
+				Math.floor(AVERAGE_TOKENS_FROM_REFILLING * 0.25)
+			);
+		});
+
+		it('should reduce refill cooldown by 1 hour if the player has the faster refill perk', () => {
+			const mockPlayer = addMockPlayer(db, {
+				tokens: 10,
+				perks: [Perks.FASTER_REFILL.name]
+			});
+
+			const result = returnIfNotFailure(
+				claimRefill({
+					...getNamesmithServices(),
+					playerRefilling: mockPlayer.id
+				})
+			);
+
+			const { playerService } = services;
+			const player = playerService.resolvePlayer(mockPlayer.id);
+
+			const oneHourBeforeNow = addHours(new Date(), -1);
+			makeSure(player.lastClaimedRefillTime).isCloseToDate(oneHourBeforeNow);
+
+			const oneHourAfterNow = addHours(new Date(), 1);
+			makeSure(result.nextRefillTime).isCloseToDate(oneHourAfterNow);
+		});
+
+		it('should give player around 10% of their current token count if the player has the refill interest perk', () => {
+			const mockPlayer = addMockPlayer(db, {
+				tokens: 10,
+				perks: [Perks.REFILL_INTEREST.name]
+			});
+
+			const result = returnIfNotFailure(
+				claimRefill({
+					...getNamesmithServices(),
+					playerRefilling: mockPlayer.id
+				})
+			);
+
+			const { playerService } = services;
+			const player = playerService.resolvePlayer(mockPlayer.id);
+
+			makeSure(player.tokens).is(mockPlayer.tokens + 1);
+			makeSure(result.baseTokensEarned).is(1);
 		});
 
 		it('should throw RefillAlreadyClaimedError if the player has already claimed a refill', () => {
@@ -71,7 +142,7 @@ describe('claim-tokens.workflow', () => {
 			});
 
 			const result = claimRefill({
-				...services,
+				...getNamesmithServices(),
 				playerRefilling: mockPlayer.id
 			})
 
@@ -80,7 +151,7 @@ describe('claim-tokens.workflow', () => {
 
 		it('should throw NonPlayerRefilledError if the provided player is not a valid player', () => {
 			const result = claimRefill({
-				...services,
+				...getNamesmithServices(),
 				playerRefilling: INVALID_PLAYER_ID
 			});
 

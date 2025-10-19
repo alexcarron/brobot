@@ -174,7 +174,7 @@ export function makeSure<
 
 			if (timeDifference > toleranceMs) {
 				throw new Error(
-					`Expected ${baseExpect} to be within ${toleranceMs}ms of ${expectedDate}, but difference was ${timeDifference}ms.`
+					`Expected ${actualValue} to be within ${toleranceMs}ms of ${expectedDate}, but difference was ${timeDifference}ms.`
 				);
 			}
 		},
