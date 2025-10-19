@@ -65,6 +65,12 @@ export const claimRefill = (
 		}))
 	});
 
+	// Handle Refill Inventory Override perk
+	perkService.doIfPlayerHas(Perks.REFILL_INVENTORY_OVERRIDE, playerRefilling, () => {
+		const inventory = playerService.getInventory(playerRefilling);
+		baseTokensEarned = inventory.length;
+	});
+
 	totalTokensEarned += baseTokensEarned;
 
 	// Handle Refill Bonus perk

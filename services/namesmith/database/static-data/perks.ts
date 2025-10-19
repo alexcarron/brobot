@@ -22,7 +22,7 @@ export const perks = [
 	{
 		id: 5,
 		name: "Refill Inventory Override",
-		description: "Earn as many tokens as the amount of characters in your inventory from refills (Overrides all other perks)."
+		description: "Earn as many tokens as the amount of characters in your inventory from refills (Overrides Refill Interest perk)."
 	},
 	{
 		id: 6,

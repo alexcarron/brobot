@@ -136,6 +136,27 @@ describe('claim-tokens.workflow', () => {
 			makeSure(result.baseTokensEarned).is(1);
 		});
 
+		it('should give player number of tokens equal to size of inventory if the player has the refill inventory override perk', () => {
+			const mockPlayer = addMockPlayer(db, {
+				tokens: 10,
+				perks: [Perks.REFILL_INVENTORY_OVERRIDE.name],
+				inventory: "abcdefghij",
+			});
+
+			const result = returnIfNotFailure(
+				claimRefill({
+					...getNamesmithServices(),
+					playerRefilling: mockPlayer.id
+				})
+			);
+
+			const { playerService } = services;
+			const player = playerService.resolvePlayer(mockPlayer.id);
+
+			makeSure(player.tokens).is(20);
+			makeSure(result.baseTokensEarned).is(10);
+		});
+
 		it('should throw RefillAlreadyClaimedError if the player has already claimed a refill', () => {
 			const mockPlayer = addMockPlayer(db, {
 				lastClaimedRefillTime: new Date()
