@@ -64,23 +64,30 @@ export const command = new SlashCommand({
 			);
 		}
 
-		const {recievedCharacter, mysteryBox, tokenCost, player, wasRefunded} = result;
-		const characterValue = recievedCharacter.value;
+		const { recievedCharacterValues, mysteryBox, tokenCost, player, wasRefunded, gotDuplicate } = result;
 		const newTokenCount = player.tokens;
 		const newInventory = player.inventory;
 
 		const luckyRefundLine = (wasRefunded)
 			? joinLines(
 				`**Lucky Refund!** You also get your ${toAmountOfNoun(tokenCost, 'token')} back.`,
-				'🪙'.repeat(tokenCost)
+				'🪙'.repeat(tokenCost),
+				'',
+			)
+			: null;
+
+		const luckyDuplicateLine = (gotDuplicate)
+			? joinLines(
+				'**Lucky Duplicate!** The character you received was duplicated.',
+				''
 			)
 			: null;
 
 		return joinLines(
 			`You opened a ${mysteryBox.name} mystery box and received:`,
-			`\`\`\`${characterValue}\`\`\``,
+			`\`\`\`${recievedCharacterValues}\`\`\``,
+			luckyDuplicateLine,
 			luckyRefundLine,
-			'',
 			`-# You now have ${toAmountOfNoun(newTokenCount, 'token')}`,
 			`-# Your inventory now contains: ${newInventory}`,
 		);

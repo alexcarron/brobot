@@ -3,7 +3,6 @@ import { Perks } from "../constants/perks.constants";
 import { MysteryBoxService } from "../services/mystery-box.service";
 import { PerkService } from "../services/perk.service";
 import { PlayerService } from "../services/player.service";
-import { Character } from "../types/character.types";
 import { MinimalMysteryBox, MysteryBoxResolveable } from '../types/mystery-box.types';
 import { Player, PlayerResolvable } from "../types/player.types";
 import { getWorkflowResultCreator, provides } from "./workflow-result-creator";
@@ -13,8 +12,9 @@ const result = getWorkflowResultCreator({
 		player: Player,
 		mysteryBox: MinimalMysteryBox,
 		tokenCost: number,
-		recievedCharacter: Character,
+		recievedCharacterValues: string,
 		wasRefunded: boolean,
+		gotDuplicate: boolean,
 	}>(),
 
 	nonPlayerBoughtMysteryBox: null,
@@ -81,10 +81,21 @@ export const buyMysteryBox = (
 
 	const recievedCharacter = mysteryBoxService.openBox(mysteryBox);
 	const characterValue = recievedCharacter.value;
+	let recievedCharacterValues = characterValue;
 
 	playerService.giveCharacter(player, characterValue);
 
-	// Handle Lucky Refund
+	// Handle Lucky Duplicate Characters perk
+	let gotDuplicate = false;
+	perkService.doIfPlayerHas(Perks.LUCKY_DUPLICATE_CHARACTERS, player, () => {
+		if (getRandomBoolean(0.10)) {
+			gotDuplicate = true;
+			recievedCharacterValues += characterValue;
+			playerService.giveCharacter(player, characterValue);
+		}
+	})
+
+	// Handle Lucky Refund perk
 	let wasRefunded = false;
 	perkService.doIfPlayerHas(Perks.LUCKY_REFUND, player, () => {
 		if (getRandomBoolean(0.10)) {
@@ -97,7 +108,8 @@ export const buyMysteryBox = (
 		player: playerService.resolvePlayer(player),
 		mysteryBox: mysteryBoxService.resolveMysteryBox(mysteryBox),
 		tokenCost,
-		recievedCharacter,
+		recievedCharacterValues,
 		wasRefunded,
+		gotDuplicate,
 	});
 };

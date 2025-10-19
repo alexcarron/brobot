@@ -64,7 +64,7 @@ describe('buy-mystery-box.workflow', () => {
 
 	describe('buyMysteryBox()', () => {
 		it('should return the recieved character, token cost, player and mystery box', () => {
-			const { recievedCharacter, tokenCost, player, mysteryBox } = returnIfNotFailure(
+			const result = returnIfNotFailure(
 				buyMysteryBox({
 					...getNamesmithServices(),
 					player: richPlayer.id,
@@ -72,26 +72,23 @@ describe('buy-mystery-box.workflow', () => {
 				})
 			);
 
-			expect(recievedCharacter).toHaveProperty('id', expect.any(Number));
-			expect(recievedCharacter).toHaveProperty('value', expect.any(String));
-			expect(recievedCharacter).toHaveProperty('rarity', expect.any(Number));
-
-			expect(tokenCost).toBe(25);
-
-			expect(player).toEqual({
+			makeSure(result.recievedCharacterValues).hasLengthOf(1);
+			makeSure(result.tokenCost).is(25);
+			makeSure(result.player).is({
 				...richPlayer,
-				tokens: richPlayer.tokens - tokenCost,
-				currentName: richPlayer.currentName + recievedCharacter.value,
-				inventory: richPlayer.inventory + recievedCharacter.value
+				tokens: richPlayer.tokens - result.tokenCost,
+				currentName: richPlayer.currentName + result.recievedCharacterValues,
+				inventory: richPlayer.inventory + result.recievedCharacterValues
 			});
-
-			expect(mysteryBox).toEqual(defaultMysteryBox);
+			makeSure(result.mysteryBox).is(defaultMysteryBox);
+			makeSure(result.wasRefunded).isFalse();
+			makeSure(result.gotDuplicate).isFalse();
 		});
 
 		it('should change the player\'s Discord name to their current name plus that recieved character', () => {
 			const announceNameChangeEvent = jest.spyOn(NamesmithEvents.NameChange, "announce");
 
-			const { recievedCharacter } = returnIfNotFailure(
+			const { recievedCharacterValues } = returnIfNotFailure(
 				buyMysteryBox({
 				...getNamesmithServices(),
 					player: richPlayer.id,
@@ -103,12 +100,12 @@ describe('buy-mystery-box.workflow', () => {
 			expect(announceNameChangeEvent).toHaveBeenCalledWith({
 				playerID: richPlayer.id,
 				oldName: richPlayer.currentName,
-				newName: richPlayer.currentName + recievedCharacter.value
+				newName: richPlayer.currentName + recievedCharacterValues
 			})
 		});
 
 		it('should change the player\'s name to their current name plus that recieved character', () => {
-			const { recievedCharacter } =
+			const { recievedCharacterValues } =
 				returnIfNotFailure(
 					buyMysteryBox({
 						...getNamesmithServices(),
@@ -118,7 +115,7 @@ describe('buy-mystery-box.workflow', () => {
 				);
 
 			const newCurrentName = services.playerService.getCurrentName(richPlayer.id);
-			expect(newCurrentName).toEqual(richPlayer.currentName + recievedCharacter.value);
+			expect(newCurrentName).toEqual(richPlayer.currentName + recievedCharacterValues);
 		});
 
 		it('should cost 10% less if the player has the discount perk', () => {
@@ -160,6 +157,27 @@ describe('buy-mystery-box.workflow', () => {
 			makeSure(player.tokens).is(200);
 			makeSure(wasRefunded).isTrue();
 		});
+
+		it('should give player two of the same character 10% of the time if they have the Lucky Duplicate Character perk', () => {
+			const playerWithPerk = addMockPlayer(db, {
+				tokens: 200,
+				perks: [Perks.LUCKY_DUPLICATE_CHARACTERS.name]
+			});
+
+			const result = returnIfNotFailure(
+				buyMysteryBox({
+					...getNamesmithServices(),
+					player: playerWithPerk,
+					mysteryBox: defaultMysteryBox.id
+				})
+			);
+
+			makeSure(result.recievedCharacterValues).hasLengthOf(2);
+			makeSure(result.recievedCharacterValues[0]).is(result.recievedCharacterValues[1]);
+			makeSure(result.player.inventory).is(
+				playerWithPerk.inventory + result.recievedCharacterValues
+			);
+		})
 
 		it('should throw PlayerCantAffordMysteryBoxError error if the player does not have enough tokens to buy the mystery box', () => {
 			const expensiveMysteryBox = addMockMysteryBox(db, {
