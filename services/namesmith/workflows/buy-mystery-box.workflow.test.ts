@@ -2,6 +2,14 @@ jest.mock("../utilities/discord-action.utility", () => ({
 	changeDiscordNameOfPlayer: jest.fn(),
 }));
 
+jest.mock("../../../utilities/random-utils", () => {
+	const actual = jest.requireActual("../../../utilities/random-utils");
+	return {
+		...actual,
+		getRandomBoolean: jest.fn().mockReturnValue(true),
+	};
+});
+
 import { buyMysteryBox } from "./buy-mystery-box.workflow";
 import { setupMockNamesmith } from "../mocks/mock-setup";
 import { getNamesmithServices } from "../services/get-namesmith-services";
@@ -133,6 +141,24 @@ describe('buy-mystery-box.workflow', () => {
 
 			makeSure(player.tokens).is(0);
 			makeSure(tokenCost).is(90);
+		});
+
+		it('should refund the player 10% of the time if they have the Lucky Refund perk', () => {
+			const playerWithPerk = addMockPlayer(db, {
+				tokens: 200,
+				perks: [Perks.LUCKY_REFUND.name]
+			});
+
+			const { player, wasRefunded } = returnIfNotFailure(
+				buyMysteryBox({
+					...getNamesmithServices(),
+					player: playerWithPerk,
+					mysteryBox: defaultMysteryBox.id
+				})
+			);
+
+			makeSure(player.tokens).is(200);
+			makeSure(wasRefunded).isTrue();
 		});
 
 		it('should throw PlayerCantAffordMysteryBoxError error if the player does not have enough tokens to buy the mystery box', () => {

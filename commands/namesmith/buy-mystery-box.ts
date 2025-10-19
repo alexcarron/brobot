@@ -5,7 +5,7 @@ import { SlashCommand } from "../../services/command-creation/slash-command";
 import { Perks } from "../../services/namesmith/constants/perks.constants";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { buyMysteryBox } from "../../services/namesmith/workflows/buy-mystery-box.workflow";
-import { addSIfPlural, toAmountOfNoun } from "../../utilities/string-manipulation-utils";
+import { addSIfPlural, joinLines, toAmountOfNoun } from "../../utilities/string-manipulation-utils";
 
 const Parameters = Object.freeze({
 	MYSTERY_BOX: new Parameter({
@@ -64,16 +64,25 @@ export const command = new SlashCommand({
 			);
 		}
 
-		const {recievedCharacter, mysteryBox, player} = result;
+		const {recievedCharacter, mysteryBox, tokenCost, player, wasRefunded} = result;
 		const characterValue = recievedCharacter.value;
 		const newTokenCount = player.tokens;
 		const newInventory = player.inventory;
 
-		return (
-			`You opened a ${mysteryBox.name} mystery box and received:\n` +
-			`\`\`\`${characterValue}\`\`\`\n` +
-			`-# You now have ${toAmountOfNoun(newTokenCount, 'token')}\n` +
-			`-# Your inventory now contains: ${newInventory}`
+		const luckyRefundLine = (wasRefunded)
+			? joinLines(
+				`**Lucky Refund!** You also get your ${toAmountOfNoun(tokenCost, 'token')} back.`,
+				'🪙'.repeat(tokenCost)
+			)
+			: null;
+
+		return joinLines(
+			`You opened a ${mysteryBox.name} mystery box and received:`,
+			`\`\`\`${characterValue}\`\`\``,
+			luckyRefundLine,
+			'',
+			`-# You now have ${toAmountOfNoun(newTokenCount, 'token')}`,
+			`-# Your inventory now contains: ${newInventory}`,
 		);
 	}
 });

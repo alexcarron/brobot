@@ -1,3 +1,4 @@
+import { getRandomBoolean } from "../../../utilities/random-utils";
 import { Perks } from "../constants/perks.constants";
 import { MysteryBoxService } from "../services/mystery-box.service";
 import { PerkService } from "../services/perk.service";
@@ -13,6 +14,7 @@ const result = getWorkflowResultCreator({
 		mysteryBox: MinimalMysteryBox,
 		tokenCost: number,
 		recievedCharacter: Character,
+		wasRefunded: boolean,
 	}>(),
 
 	nonPlayerBoughtMysteryBox: null,
@@ -82,10 +84,20 @@ export const buyMysteryBox = (
 
 	playerService.giveCharacter(player, characterValue);
 
+	// Handle Lucky Refund
+	let wasRefunded = false;
+	perkService.doIfPlayerHas(Perks.LUCKY_REFUND, player, () => {
+		if (getRandomBoolean(0.10)) {
+			wasRefunded = true;
+			playerService.giveTokens(player, tokenCost);
+		}
+	});
+
 	return result.success({
 		player: playerService.resolvePlayer(player),
 		mysteryBox: mysteryBoxService.resolveMysteryBox(mysteryBox),
 		tokenCost,
 		recievedCharacter,
+		wasRefunded,
 	});
 };
