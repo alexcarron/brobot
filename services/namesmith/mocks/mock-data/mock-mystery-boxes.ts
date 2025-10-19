@@ -2,6 +2,7 @@ import { getRandomName } from "../../../../utilities/random-utils";
 import { WithAtLeastOneProperty } from "../../../../utilities/types/generic-types";
 import { DatabaseQuerier } from "../../database/database-querier";
 import { MinimalMysteryBox } from "../../types/mystery-box.types";
+import { getIDfromCharacterValue } from "../../utilities/character.utility";
 
 
 /**
@@ -41,5 +42,15 @@ export const addMockMysteryBox = (
 			{ id, name, tokenCost }
 		);
 	}
+
+	db.run(
+		`INSERT INTO mysteryBoxCharacterOdds (mysteryBoxID, characterID, weight)
+		VALUES (@mysteryBoxID, @characterID, @weight);`,
+		{
+			mysteryBoxID: id,
+			characterID: getIDfromCharacterValue("a"),
+			weight: 1
+		}
+	)
 	return { id, name, tokenCost };
 };

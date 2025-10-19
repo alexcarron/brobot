@@ -1,6 +1,8 @@
+import { User } from "discord.js";
 import { ids } from "../../bot-config/discord-ids";
 import { Parameter, ParameterTypes } from "../../services/command-creation/parameter";
 import { SlashCommand } from "../../services/command-creation/slash-command";
+import { Perks } from "../../services/namesmith/constants/perks.constants";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { buyMysteryBox } from "../../services/namesmith/workflows/buy-mystery-box.workflow";
 import { addSIfPlural, toAmountOfNoun } from "../../utilities/string-manipulation-utils";
@@ -10,12 +12,17 @@ const Parameters = Object.freeze({
 		type: ParameterTypes.STRING,
 		name: "mystery-box",
 		description: "The mystery box to buy",
-		autocomplete: () => {
-			const { mysteryBoxService } = getNamesmithServices()
+		autocomplete: (enteredValue: string, user: User) => {
+			const { mysteryBoxService, perkService } = getNamesmithServices()
 			const mysteryBoxes = mysteryBoxService.getMysteryBoxes();
 			return mysteryBoxes.map(mysteryBox => {
-				const {id, tokenCost, name, characterOdds} = mysteryBox;
+				const {id, name, characterOdds} = mysteryBox;
+				let {tokenCost} = mysteryBox;
 				const characters = Object.keys(characterOdds);
+
+				perkService.doIfPlayerHas(Perks.DISCOUNT, user.id, () => {
+					tokenCost = Math.ceil(tokenCost * 0.9);
+				});
 
 				return {
 					name: `$${tokenCost} - ${name}: ${characters.sort().join("")}`,

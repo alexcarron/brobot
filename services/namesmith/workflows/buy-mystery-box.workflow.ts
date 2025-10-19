@@ -1,4 +1,6 @@
+import { Perks } from "../constants/perks.constants";
 import { MysteryBoxService } from "../services/mystery-box.service";
+import { PerkService } from "../services/perk.service";
 import { PlayerService } from "../services/player.service";
 import { Character } from "../types/character.types";
 import { MinimalMysteryBox, MysteryBoxResolveable } from '../types/mystery-box.types';
@@ -28,6 +30,7 @@ const result = getWorkflowResultCreator({
  * Opens a mystery box and adds a character to the player's name.
  * @param options - The options for opening the mystery box.
  * @param options.mysteryBoxService - The service for opening the mystery box.
+ * @param options.perkService - The service for applying perks to the player.
  * @param options.playerService - The service for adding a character to the player's name.
  * @param options.player - The player who is opening the mystery box.
  * @param options.mysteryBox - The mystery box to open.
@@ -35,14 +38,15 @@ const result = getWorkflowResultCreator({
  * - NonPlayerBoughtMysteryBoxError if the player is not a player.
  * - PlayerCantAffordMysteryBoxError if the player does not have enough tokens to buy the mystery box.
  */
-export const buyMysteryBox = async (
+export const buyMysteryBox = (
 	{
-		mysteryBoxService, playerService,
+		mysteryBoxService, playerService, perkService,
 		player,
 		mysteryBox = 1
 	}: {
 		mysteryBoxService: MysteryBoxService,
 		playerService: PlayerService,
+		perkService: PerkService,
 		player: PlayerResolvable,
 		mysteryBox?: MysteryBoxResolveable
 	}
@@ -55,7 +59,11 @@ export const buyMysteryBox = async (
 		return result.failure.mysteryBoxDoesNotExist();
 	}
 
-	const tokenCost = mysteryBoxService.getCost(mysteryBox);
+	let tokenCost = mysteryBoxService.getCost(mysteryBox);
+	perkService.doIfPlayerHas(Perks.DISCOUNT, player, () => {
+		tokenCost = Math.ceil(tokenCost * 0.90);
+	});
+
 	if (!playerService.hasTokens(player, tokenCost)) {
 		mysteryBox = mysteryBoxService.resolveMysteryBox(mysteryBox);
 		player = playerService.resolvePlayer(player);
@@ -72,7 +80,7 @@ export const buyMysteryBox = async (
 	const recievedCharacter = mysteryBoxService.openBox(mysteryBox);
 	const characterValue = recievedCharacter.value;
 
-	await playerService.giveCharacter(player, characterValue);
+	playerService.giveCharacter(player, characterValue);
 
 	return result.success({
 		player: playerService.resolvePlayer(player),
