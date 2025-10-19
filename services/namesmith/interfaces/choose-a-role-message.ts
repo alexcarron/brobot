@@ -31,7 +31,7 @@ export function getChooseARoleMessage(
 	const message = joinLines(
 		'# Choose Your Role!',
 		'Choose one of the three roles below to define your Namesmith journey. Each role gives you unique, permanent perks that enhance different parts of the game. Pick the one that best matches your playstyle!',
-		roles.map(toRoleMessage)
+		...roles.map(toRoleMessage)
 	);
 
 	return new DiscordButtons({
@@ -45,7 +45,7 @@ const toRoleMessage = (role: Role) => joinLines(
 	`## ${role.name}`,
 	`${role.description}`,
 	role.perks.map(toPerkBulletPoint)
-) + '\n';
+);
 
 /**
  * Converts a role into a Discord button definition that, when pressed, assigns the role to the user who pressed it.

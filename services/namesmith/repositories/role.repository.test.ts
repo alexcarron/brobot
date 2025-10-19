@@ -13,6 +13,8 @@ describe('RoleRepository', () => {
 	let roleRepository: RoleRepository;
 	let db: DatabaseQuerier;
 
+	const SOME_ROLE = Roles.PROSPECTOR;
+
 	beforeEach(() => {
 		roleRepository = crateMockRoleRepo();
 		db = roleRepository.db;
@@ -77,11 +79,11 @@ describe('RoleRepository', () => {
 
 	describe('getRoleOrThrow()', () => {
 		it('returns the correct role object when given a valid ID', () => {
-			const role = roleRepository.getRoleOrThrow(Roles.MINE_BONUS_ROLE.id);
+			const role = roleRepository.getRoleOrThrow(SOME_ROLE.id);
 
 			makeSure(role).isNotNull();
 			makeSure(role).hasProperties('id', 'name', 'description', 'perks');
-			makeSure(role.id).is(Roles.MINE_BONUS_ROLE.id);
+			makeSure(role.id).is(SOME_ROLE.id);
 			makeSure(role.perks).hasAnItemWhere(perk =>
 				perk.id === Perks.MINE_BONUS.id
 			);
@@ -94,11 +96,11 @@ describe('RoleRepository', () => {
 
 	describe('getMinimalRoleByName()', () => {
 		it('returns the correct role object when given a valid name', () => {
-			const role = roleRepository.getMinimalRoleByName(Roles.MINE_BONUS_ROLE.name);
+			const role = roleRepository.getMinimalRoleByName(SOME_ROLE.name);
 
 			makeSure(role).isNotNull();
 			makeSure(role).hasProperties('id', 'name', 'description');
-			makeSure(role!.id).is(Roles.MINE_BONUS_ROLE.id);
+			makeSure(role!.id).is(SOME_ROLE.id);
 		});
 
 		it('returns null when given an invalid name', () => {
@@ -110,11 +112,11 @@ describe('RoleRepository', () => {
 
 	describe('getRoleByName()', () => {
 		it('returns the correct role object when given a valid name', () => {
-			const role = roleRepository.getRoleByName(Roles.MINE_BONUS_ROLE.name);
+			const role = roleRepository.getRoleByName(SOME_ROLE.name);
 
 			makeSure(role).isNotNull();
 			makeSure(role).hasProperties('id', 'name', 'description', 'perks');
-			makeSure(role!.id).is(Roles.MINE_BONUS_ROLE.id);
+			makeSure(role!.id).is(SOME_ROLE.id);
 			makeSure(role!.perks).hasAnItemWhere(perk =>
 				perk.id === Perks.MINE_BONUS.id
 			);
@@ -130,12 +132,12 @@ describe('RoleRepository', () => {
 	describe('getRoleIDOfPlayerID()', () => {
 		it('returns the correct role ID when given a valid player ID', () => {
 			const player = addMockPlayer(db, {
-				role: Roles.MINE_BONUS_ROLE
+				role: SOME_ROLE
 			});
 
 			const roleID = roleRepository.getRoleIDOfPlayerID(player.id);
 
-			makeSure(roleID).is(Roles.MINE_BONUS_ROLE.id);
+			makeSure(roleID).is(SOME_ROLE.id);
 		});
 
 		it('throws when given an invalid player ID', () => {
@@ -159,11 +161,11 @@ describe('RoleRepository', () => {
 				role: null
 			});
 
-			roleRepository.addRoleIDToPlayer(Roles.MINE_BONUS_ROLE.id, player.id);
+			roleRepository.addRoleIDToPlayer(SOME_ROLE.id, player.id);
 
 			const roleID = roleRepository.getRoleIDOfPlayerID(player.id);
 
-			makeSure(roleID).is(Roles.MINE_BONUS_ROLE.id);
+			makeSure(roleID).is(SOME_ROLE.id);
 		});
 	});
 });

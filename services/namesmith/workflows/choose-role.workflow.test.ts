@@ -16,7 +16,7 @@ describe('choose-role.workflow', () => {
 	let db: DatabaseQuerier;
 
 	let NO_ROLE_PLAYER: Player;
-	const SOME_ROLE_ID: RoleID = Roles.MINE_BONUS_ROLE.id;
+	const SOME_ROLE_ID: RoleID = Roles.PROSPECTOR.id;
 
 	beforeEach(() => {
 		const dependencies = setupMockNamesmith();

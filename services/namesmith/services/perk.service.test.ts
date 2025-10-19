@@ -132,7 +132,7 @@ describe('PerkService', () => {
 
 		it('should return true if perk is in role', () => {
 			const player = addMockPlayer(db, {
-				role: Roles.MINE_BONUS_ROLE
+				role: Roles.PROSPECTOR
 			});
 
 			const hasPerk = perkService.doesPlayerHave(Perks.MINE_BONUS, player);
