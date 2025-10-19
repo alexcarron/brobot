@@ -77,7 +77,7 @@ describe('pick-perk.workflow', () => {
 			makeSure(hasRefillBonus).is(false);
 		});
 
-		it('should return any previously picked perks', () => {
+		it('should return any previously picked perks and any free tokens earned', () => {
 			const result = returnIfNotFailure(
 				pickPerk({
 					...getNamesmithServices(),
@@ -88,7 +88,8 @@ describe('pick-perk.workflow', () => {
 			);
 
 			makeSure(result.isFailure()).isFalse();
-			makeSure(result.perkAlreadyPicked).isNull();
+			makeSure(result.perkBeingReplaced).isNull();
+			makeSure(result.freeTokensEarned).is(0);
 
 			const result2 = returnIfNotFailure(
 				pickPerk({
@@ -102,8 +103,55 @@ describe('pick-perk.workflow', () => {
 			const mineBonusPerk = perkService.resolvePerk(Perks.MINE_BONUS.id);
 
 			makeSure(result2.isFailure()).isFalse();
-			makeSure(result2.perkAlreadyPicked).is(mineBonusPerk);
+			makeSure(result2.perkBeingReplaced).is(mineBonusPerk);
 		});
+
+		it('should give free token if player choose the free tokens perk', () => {
+			const result = returnIfNotFailure(
+				pickPerk({
+					...getNamesmithServices(),
+					player: NO_PERKS_PLAYER,
+					pickedPerk: Perks.FREE_TOKENS,
+					perksPickingFrom: PERKS_PICKING_FROM,
+				})
+			);
+
+			const player = playerService.resolvePlayer(NO_PERKS_PLAYER.id);
+
+			makeSure(result.isFailure()).isFalse();
+			makeSure(result.perkBeingReplaced).isNull();
+			makeSure(result.freeTokensEarned).is(500);
+			makeSure(player.tokens).is(500);
+		});
+
+		it('should remove free tokens if player is replacing the free tokens perk', () => {
+			pickPerk({
+				...getNamesmithServices(),
+				player: NO_PERKS_PLAYER,
+				pickedPerk: Perks.FREE_TOKENS,
+				perksPickingFrom: PERKS_PICKING_FROM,
+			});
+
+			let player = playerService.resolvePlayer(NO_PERKS_PLAYER.id);
+			makeSure(player.tokens).is(500);
+
+			const result = returnIfNotFailure(
+				pickPerk({
+					...getNamesmithServices(),
+					player: NO_PERKS_PLAYER,
+					pickedPerk: Perks.MINE_BONUS,
+					perksPickingFrom: PERKS_PICKING_FROM,
+				})
+			);
+
+			player = playerService.resolvePlayer(NO_PERKS_PLAYER.id);
+
+			makeSure(result.isFailure()).isFalse();
+			makeSure(result.perkBeingReplaced).isNotNull();
+			makeSure(result.perkBeingReplaced!.id).is(Perks.FREE_TOKENS.id);
+			makeSure(result.freeTokensEarned).is(-500);
+			makeSure(player.tokens).is(0);
+		})
 
 		it('should return nonPlayer failure if the player does not exist', () => {
 			const result =

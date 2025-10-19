@@ -1,7 +1,7 @@
 const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionFlagsBits, CategoryChannel, ChatInputCommandInteraction, Message, GuildChannel, ButtonInteraction, InteractionResponse, CommandInteraction, MessageComponentInteraction, ModalSubmitInteraction, Attachment, MessageFlags } = require('discord.js');
 const { Role } = require('../services/rapid-discord-mafia/role');
 const { fetchChannel, fetchChannelsInCategory, getEveryoneRole, fetchAllMessagesInChannel, fetchCategory } = require('./discord-fetch-utils');
-const { incrementEndNumber } = require('./string-manipulation-utils');
+const { incrementEndNumber, joinLines } = require('./string-manipulation-utils');
 const { logInfo, logError, logWarning } = require('./logging-utils');
 const { getShuffledArray } = require('./data-structure-utils');
 const { InvalidArgumentTypeError } = require('./error-utils');
@@ -188,10 +188,12 @@ const deferInteraction = async (
 /**
  * Replies to an interaction with the provided message content.
  * @param {CommandInteraction | MessageComponentInteraction | ModalSubmitInteraction | ButtonInteraction} interaction - The interaction to reply to.
- * @param {string} messageContent - The content of the message to reply with.
+ * @param {(string | string[] | null | undefined)[]} lines - The content of the message to reply with.
  * @returns {Promise<InteractionResponse | Message>} A promise that resolves when the message is sent.
  */
-const replyToInteraction = async (interaction, messageContent) => {
+const replyToInteraction = async (interaction, ...lines) => {
+	const messageContent = joinLines(...lines);
+
 	try {
 		if (
 			interaction &&

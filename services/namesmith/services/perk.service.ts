@@ -186,4 +186,12 @@ export class PerkService {
 
 		return threeRandomPerks as [Perk, Perk, Perk];
 	}
+
+	/**
+	 * Resets the wasOffered flag for all perks to false.
+	 * This is useful for when you want to start a new game or session.
+	 */
+	reset(): void {
+		this.perkRepository.setWasOfferedForAllPerks(false);
+	}
 }

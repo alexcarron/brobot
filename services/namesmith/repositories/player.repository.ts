@@ -341,9 +341,6 @@ export class PlayerRepository {
 	 * @throws {InvalidArgumentError} - If the number of tokens is negative.
 	 */
 	setTokens(playerID: string, tokens: number) {
-		if (tokens < 0)
-			throw new InvalidArgumentError(`setTokens: tokens must be a non-negative integer, received ${tokens}.`);
-
 		const query = `
 			UPDATE player
 			SET tokens = @tokens

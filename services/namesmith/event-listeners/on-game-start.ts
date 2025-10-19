@@ -45,6 +45,9 @@ export async function startGame(
 	playerService.reset();
 	await playerService.addEveryoneInServer();
 
+	// Set up the perks
+	perkService.reset();
+
 	// Send the recipe select menu in the recipes channel
 	await sendRecipeSelectMenu({recipeService});
 

@@ -200,8 +200,8 @@ describe('PlayerRepository', () => {
 			expect(result).toEqual(500);
 		});
 
-		it('throws error if the number of tokens is negative', () => {
-			expect(() => playerRepository.setTokens(mockPlayers[0].id, -500)).toThrow();
+		it('should not throw error if the number of tokens is negative', () => {
+			expect(() => playerRepository.setTokens(mockPlayers[0].id, -500)).not.toThrow();
 		});
 
 		it('throws an error if the player is not found', () => {

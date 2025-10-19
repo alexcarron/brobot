@@ -1,7 +1,7 @@
 import { ButtonStyle } from "discord.js";
 import { ids } from "../../../bot-config/discord-ids";
 import { DiscordButtonDefinition, DiscordButtons } from "../../../utilities/discord-interface-utils";
-import { joinLines } from "../../../utilities/string-manipulation-utils";
+import { joinLines, toAmountOfNoun } from "../../../utilities/string-manipulation-utils";
 import { PerkService } from "../services/perk.service";
 import { PlayerService } from "../services/player.service";
 import { Perk } from "../types/perk.types";
@@ -90,15 +90,25 @@ export function toPerkButton(
 					`You already picked the "${perk.name}" perk!`
 				);
 
-			const {perkAlreadyPicked} = result;
+			const {perkBeingReplaced, freeTokensEarned} = result;
 
-			if (perkAlreadyPicked === null)
+			const lostTokensLine = (freeTokensEarned < 0)
+				? `**-${toAmountOfNoun(-freeTokensEarned, 'Token')}**`
+				: null;
+
+			if (freeTokensEarned > 0)
 				return await replyToInteraction(buttonInteraction,
+					`**+${toAmountOfNoun(freeTokensEarned, 'Token')}**`, '🪙'.repeat(freeTokensEarned)
+				);
+			else if (perkBeingReplaced === null)
+				return await replyToInteraction(buttonInteraction,
+					lostTokensLine,
 					`You now have the "${perk.name}" perk!`
 				);
 			else
 				return await replyToInteraction(buttonInteraction,
-					`You have replaced the "${perkAlreadyPicked.name}" perk with the "${perk.name}" perk.`
+					lostTokensLine,
+					`You have replaced the "${perkBeingReplaced.name}" perk with the "${perk.name}" perk.`
 				);
 		},
 	};

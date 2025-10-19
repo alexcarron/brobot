@@ -618,9 +618,11 @@ describe('PlayerService', () => {
       makeSure(() => playerService.takeTokens(mockPlayers[0].id, -10)).throwsAnError();
     });
 
-    it('should throw an error if the player does not have enough tokens', () => {
+    it('should allow tokens to go negative', () => {
       const mockPlayer = addMockPlayer(db, { tokens: 10 });
-      makeSure(() => playerService.takeTokens(mockPlayer.id, 20)).throwsAnError();
+			playerService.takeTokens(mockPlayer.id, 20);
+			const tokens = playerService.playerRepository.getTokens(mockPlayer.id);
+			expect(tokens).toBe(-10);
     });
 
     it('should throw an error if the player is not found', () => {
