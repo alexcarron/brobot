@@ -122,7 +122,7 @@ export class DatabaseQuerier {
 					return Object.values(row)[0];
 				}
 				else {
-					throw new QueryUsageError("Query must return a row to retrieve a value from", sqlQuery, params);
+					return undefined;
 				}
 			},
       getRow: (...params: unknown[]): unknown => {
@@ -213,7 +213,7 @@ export class DatabaseQuerier {
 			return Object.values(row)[0];
 		}
 		else {
-			throw new QueryUsageError("Query must return a row to retrieve a value from", sqlQuery, params);
+			return undefined;
 		}
 	}
 

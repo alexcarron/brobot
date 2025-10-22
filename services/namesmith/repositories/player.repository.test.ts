@@ -1,12 +1,17 @@
+import { makeSure } from "../../../utilities/jest/jest-utils";
+import { Roles } from "../constants/roles.constants";
 import { INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer, mockPlayers } from "../mocks/mock-data/mock-players";
 import { createMockPlayerRepo } from "../mocks/mock-repositories";
+import { PlayerNotFoundError } from "../utilities/error.utility";
 import { PlayerRepository } from "./player.repository";
 
 describe('PlayerRepository', () => {
 	let playerRepository: PlayerRepository;
 	let db: DatabaseQuerier;
+
+	const SOME_ROLE = Roles.PROSPECTOR;
 
 	beforeEach(() => {
 		playerRepository = createMockPlayerRepo();
@@ -205,7 +210,7 @@ describe('PlayerRepository', () => {
 		});
 
 		it('throws an error if the player is not found', () => {
-			expect(() => playerRepository.setTokens(INVALID_PLAYER_ID, 500)).toThrow();
+			makeSure(() => playerRepository.setTokens(INVALID_PLAYER_ID, 500)).throws(PlayerNotFoundError);
 		});
 	});
 
@@ -244,12 +249,21 @@ describe('PlayerRepository', () => {
 
 	describe('getRoleID()', () => {
 		it('returns the role ID of a player', () => {
+			const player = addMockPlayer(db, {
+				role: SOME_ROLE.id,
+			});
+
+			const result = playerRepository.getRoleID(player.id);
+			expect(result).toEqual(SOME_ROLE.id);
+		});
+
+		it('returns the null role ID of a player', () => {
 			const result = playerRepository.getRoleID(mockPlayers[0].id);
-			expect(result).toEqual(mockPlayers[0].role);
+			expect(result).toBeNull();
 		});
 
 		it('throws an error if the player is not found', () => {
-			expect(() => playerRepository.getRoleID(INVALID_PLAYER_ID)).toThrow();
+			expect(() => playerRepository.getRoleID(INVALID_PLAYER_ID)).toThrow(PlayerNotFoundError);
 		});
 	});
 

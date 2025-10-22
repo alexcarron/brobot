@@ -49,10 +49,11 @@ describe('DatabaseQuerier', () => {
 				expect(result).toEqual('character1');
 			});
 
-			it('throws an error if no rows are found', () => {
+			it('return undefined if no rows are found', () => {
 				const query = 'SELECT value FROM character WHERE id = ?';
 				const params = [999];
-				expect(() => dbQuerier.getQuery(query).getValue(params)).toThrow(QueryUsageError);
+				const result = dbQuerier.getQuery(query).getValue(params);
+				expect(result).toBeUndefined();
 			});
 
 			it('gets only the first value of the first row when multiple rows are returned', () => {
@@ -114,10 +115,11 @@ describe('DatabaseQuerier', () => {
 			expect(result).toEqual('character1');
 		});
 
-		it('throws an error if no rows are found', () => {
+		it('returns undefined if no rows are found', () => {
 			const query = 'SELECT value FROM character WHERE id = ?';
 			const params = [999];
-			expect(() => dbQuerier.getValue(query, params)).toThrow(QueryUsageError);
+			const result = dbQuerier.getValue(query, params);
+			expect(result).toBeUndefined();
 		});
 
 		it('gets only the first value of the first row when multiple rows are returned', () => {

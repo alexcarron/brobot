@@ -121,6 +121,8 @@ export async function regenerateAllTradeMessages(
 }) {
 	const trades = tradeService.getTrades();
 	for (const trade of trades) {
+		if (tradeService.hasBeenRespondedTo(trade)) continue;
+		
 		await regenerateTradeMessage({tradeService, playerService, trade});
 	}
 }

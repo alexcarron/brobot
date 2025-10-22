@@ -396,16 +396,15 @@ export class PlayerRepository {
 	 * @throws {PlayerNotFoundError} - If the player with the specified ID is not found.
 	 */
 	getRoleID(playerID: PlayerID): number | null {
-		try {
-			const roleID = this.db.getValue(
-				"SELECT role FROM player WHERE id = @id",
-				{ id: playerID }
-			);
-			return roleID as number | null;
-		}
-		catch {
+		const roleID = this.db.getValue(
+			"SELECT role FROM player WHERE id = @id",
+			{ id: playerID }
+		);
+
+		if (roleID === undefined)
 			throw new PlayerNotFoundError(playerID);
-		}
+
+		return roleID as number | null;
 	}
 
 	/**

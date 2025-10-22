@@ -4,7 +4,7 @@ import { Character } from "../types/character.types";
 import { MysteryBox } from "../types/mystery-box.types";
 import { Perk, PerkDefintion } from "../types/perk.types";
 import { Recipe } from "../types/recipe.types";
-import { RoleDefinition } from "../types/role.types";
+import { RoleDefinition, RoleID } from "../types/role.types";
 import { getIDfromCharacterValue, getCharacterValueFromID } from "../utilities/character.utility";
 import { ForeignKeyConstraintError } from "../utilities/error.utility";
 import { DatabaseQuerier } from "./database-querier";
@@ -206,28 +206,40 @@ export function insertRolesToDB(
 	const insertRolePerkIntoDB = db.getQuery("INSERT INTO rolePerk (roleID, perkID) VALUES (@roleID, @perkID)");
 
 	const insertRoles = db.getTransaction((roles: WithOptional<RoleDefinition, "id">[]) => {
-		db.run("DELETE FROM role");
-		db.run("DELETE FROM rolePerk");
-
-		// SET AUTO INCREMENT TO 1
-		db.run("UPDATE sqlite_sequence SET seq = 0 WHERE name = 'role'");
-
 		for (const role of roles) {
-			if (role.id === undefined) {
-				const result = insertRoleIntoDB.run({
-					name: role.name,
-					description: role.description
-				});
-				role.id = result.lastInsertRowid as number;
+			// Check if role already exists (by name or ID)
+			const existingRole = db.getRow(
+				`SELECT id FROM role
+				WHERE id = @id OR name = @name`,
+				{ id: role.id, name: role.name }
+			) as {id: RoleID} | undefined;
+
+			let roleID: RoleID;
+
+			if (existingRole) {
+				roleID = existingRole.id;
 			}
 			else {
-				insertRoleIntoDBWithID.run({
-					id: role.id,
-					name: role.name,
-					description: role.description
-				});
+				// Insert new role
+				if (role.id === undefined) {
+					const result = insertRoleIntoDB.run({
+						name: role.name,
+						description: role.description,
+					});
+
+					roleID = result.lastInsertRowid as number;
+				}
+				else {
+					insertRoleIntoDBWithID.run({
+						id: role.id,
+						name: role.name,
+						description: role.description,
+					});
+					roleID = role.id;
+				}
 			}
 
+			// Insert perks if they don't already exist
 			for (const perkName of role.perks) {
 				const perkID = db.getValue(
 					"SELECT id FROM perk WHERE name = ?",
@@ -235,12 +247,23 @@ export function insertRolesToDB(
 				);
 
 				if (perkID === undefined) {
-					throw new InvalidArgumentError(`insertRolesToDB: perk with name ${perkName} does not exist.`);
+					throw new InvalidArgumentError(
+						`insertRolesToDB: perk with name ${perkName} does not exist.`
+					);
 				}
-				insertRolePerkIntoDB.run({
-					roleID: role.id,
-					perkID: perkID,
-				});
+
+				// Avoid duplicate role-perk entries
+				const existingRolePerk = db.getValue(
+					"SELECT 1 FROM rolePerk WHERE roleID = ? AND perkID = ?",
+					[roleID, perkID]
+				);
+
+				if (!existingRolePerk) {
+					insertRolePerkIntoDB.run({
+						roleID,
+						perkID,
+					});
+				}
 			}
 		}
 	});
