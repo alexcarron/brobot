@@ -37,7 +37,7 @@ export const perks = [
 	{
 		id: 8,
 		name: "Lucky Double",
-		description: "Have a 2% chance to double your token count when claiming refills."
+		description: "Have a 2% chance to double the amount of tokens you currently have anytime you claim refills."
 	},
 	{
 		id: 9,
