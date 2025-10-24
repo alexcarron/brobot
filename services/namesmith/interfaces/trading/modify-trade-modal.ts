@@ -1,5 +1,5 @@
 import { ButtonInteraction, ModalSubmitInteraction } from "discord.js";
-import { showModalWithTextInputs } from "../../../../utilities/discord-interface-utils";
+import { showModalWithTextInputs } from "../../../../utilities/discord-interfaces/discord-interface-utils";
 import { Trade, TradeStatuses } from "../../types/trade.types";
 import { Player } from "../../types/player.types";
 import { TradeService } from "../../services/trade.service";

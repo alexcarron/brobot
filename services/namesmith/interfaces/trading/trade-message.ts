@@ -2,7 +2,6 @@ import { ButtonInteraction } from "discord.js";
 import { ids } from "../../../../bot-config/discord-ids";
 import { Trade } from "../../types/trade.types";
 import { fetchNamesmithChannel } from "../../utilities/discord-fetch.utility";
-import { DiscordButtons } from "../../../../utilities/discord-interface-utils";
 import { PlayerService } from "../../services/player.service";
 import { TradeService } from "../../services/trade.service";
 import { replyToInteraction } from "../../../../utilities/discord-action-utils";
@@ -13,6 +12,7 @@ import { attempt } from "../../../../utilities/error-utils";
 import { checkIfPlayerCanModifyTrade } from "../../workflows/trading/modify-trade.workflow";
 import { acceptTrade } from "../../workflows/trading/accept-trade.workflow";
 import { declineTrade } from "../../workflows/trading/decline-trade.workflow";
+import { DiscordButtons } from "../../../../utilities/discord-interfaces/discord-buttons";
 
 /**
  * Creates a new trade message with the given properties.
@@ -122,7 +122,7 @@ export async function regenerateAllTradeMessages(
 	const trades = tradeService.getTrades();
 	for (const trade of trades) {
 		if (tradeService.hasBeenRespondedTo(trade)) continue;
-		
+
 		await regenerateTradeMessage({tradeService, playerService, trade});
 	}
 }

@@ -44,7 +44,6 @@ export function withRapidCallDetector<
 		onRapidCall = ({timeSinceLastCall, numConsecutiveCalls, currentArgs, lastArgs}) =>
 			logWarning(`Rapid call detected. The last call was ${timeSinceLastCall}ms ago, and ${numConsecutiveCalls} calls have been made in rapid succession in total. Last call args: ${JSON.stringify(lastArgs)}, current call args: ${JSON.stringify(currentArgs)}`),
 		isSameCall = () => true,
-
 	} = options;
 
 	let lastCallTime: number | null = null;

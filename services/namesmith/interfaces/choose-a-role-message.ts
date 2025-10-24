@@ -1,7 +1,6 @@
 import { ButtonStyle } from "discord.js";
 import { ids } from "../../../bot-config/discord-ids";
 import { EMPTY } from "../../../utilities/constants/discord-interface.constants";
-import { DiscordButtonDefinition, DiscordButtons } from "../../../utilities/discord-interface-utils";
 import { joinLines } from "../../../utilities/string-manipulation-utils";
 import { RoleService } from "../services/role.service";
 import { Role } from "../types/role.types";
@@ -11,6 +10,8 @@ import { replyToInteraction } from "../../../utilities/discord-action-utils";
 import { fetchNamesmithChannel } from "../utilities/discord-fetch.utility";
 import { toPerkBulletPoint } from "./pick-a-perk-message";
 import { ignoreError } from "../../../utilities/error-utils";
+import { DiscordButtonDefinition } from "../../../utilities/discord-interfaces/discord-button";
+import { DiscordButtons } from "../../../utilities/discord-interfaces/discord-buttons";
 
 /**
  * Generates a message that asks the user to choose one of the given roles.

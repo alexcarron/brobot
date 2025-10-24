@@ -7,8 +7,8 @@ import { craftCharacters } from "../workflows/craft-characters.workflow";
 import { replyToInteraction } from "../../../utilities/discord-action-utils";
 import { escapeDiscordMarkdown } from "../../../utilities/string-manipulation-utils";
 import { RecipeService } from "../services/recipe.service";
-import { DiscordSelectMenu } from "../../../utilities/discord-interface-utils";
 import { attempt } from "../../../utilities/error-utils";
+import { DiscordSelectMenu } from '../../../utilities/discord-interfaces/discord-select-menu';
 
 const onRecipeSelected = async (
 	player: PlayerResolvable,

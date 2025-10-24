@@ -1,9 +1,9 @@
 import { ButtonInteraction, ButtonStyle, MessageFlags } from "discord.js";
-import { DiscordButton } from "../../../../utilities/discord-interface-utils";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { fetchNamesToVoteOnChannel } from "../../utilities/discord-fetch.utility";
 import { Player, PlayerID } from "../../types/player.types";
 import { attempt } from '../../../../utilities/error-utils';
+import { DiscordButton } from "../../../../utilities/discord-interfaces/discord-button";
 
 
 /**
