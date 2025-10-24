@@ -1,19 +1,10 @@
-import * as fs from 'fs';
-import * as path from 'path';
 import { insertCharactersToDB, insertMysteryBoxesToDB, insertPerksToDB, insertRecipesToDB, insertRolesToDB } from "../db-inserters";
 import { DatabaseQuerier } from '../database-querier';
 import { perks } from './perks';
 import { roles } from './roles';
-
-const currDir = __dirname;
-const charactersPath = path.join(currDir, 'characters.json');
-const characters = JSON.parse(fs.readFileSync(charactersPath, 'utf8'));
-
-const mysteryBoxesPath = path.join(currDir, 'mystery-boxes.json');
-const mysteryBoxes = JSON.parse(fs.readFileSync(mysteryBoxesPath, 'utf8'));
-
-const recipesPath = path.join(currDir, 'recipes.json');
-const recipes = JSON.parse(fs.readFileSync(recipesPath, 'utf8'));
+import { characters } from './characters';
+import { mysteryBoxes } from './mystery-boxes';
+import { recipes } from './recipes';
 
 /**
  * Adds the initial data to the database.

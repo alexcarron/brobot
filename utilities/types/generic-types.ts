@@ -155,9 +155,9 @@ export type Expand<Type> =
  * 	}>
  * }
  *
- * type ReadonlyComplexType = Readonly<ComplexType>
+ * type ReadonlyComplexType = DeepReadonly<ComplexType>
  */
-export type Readonly<GivenType> =
+export type DeepReadonly<GivenType> =
 	// If the type is a function,
   GivenType extends (...args: any[]) => any
 		// Leave it as is
@@ -167,7 +167,7 @@ export type Readonly<GivenType> =
 		// Make all indexes and elements readonly
 		? {
 			readonly [Key in keyof GivenType]:
-				Readonly<GivenType[Key]>
+				DeepReadonly<GivenType[Key]>
 		}
 		// Else, leave it as is
 		: GivenType;

@@ -1,0 +1,630 @@
+export const recipes = [
+	{
+		inputCharacters: "α",
+		outputCharacters: "a"
+	},
+	{
+		inputCharacters: "∂",
+		outputCharacters: "a"
+	},
+	{
+		inputCharacters: "/-\\",
+		outputCharacters: "A"
+	},
+	{
+		inputCharacters: "Iↄ",
+		outputCharacters: "b"
+	},
+	{
+		inputCharacters: "6",
+		outputCharacters: "b"
+	},
+	{
+		inputCharacters: "I3",
+		outputCharacters: "B"
+	},
+	{
+		inputCharacters: "8",
+		outputCharacters: "B"
+	},
+	{
+		inputCharacters: "β",
+		outputCharacters: "B"
+	},
+	{
+		inputCharacters: "cI",
+		outputCharacters: "d"
+	},
+	{
+		inputCharacters: "I≡",
+		outputCharacters: "E"
+	},
+	{
+		inputCharacters: "9",
+		outputCharacters: "g"
+	},
+	{
+		inputCharacters: "I-I",
+		outputCharacters: "H"
+	},
+	{
+		inputCharacters: "l",
+		outputCharacters: "I"
+	},
+	{
+		inputCharacters: "I<",
+		outputCharacters: "k"
+	},
+	{
+		inputCharacters: "I<",
+		outputCharacters: "K"
+	},
+	{
+		inputCharacters: "κ",
+		outputCharacters: "K"
+	},
+	{
+		inputCharacters: "I",
+		outputCharacters: "l"
+	},
+	{
+		inputCharacters: "I_",
+		outputCharacters: "L"
+	},
+	{
+		inputCharacters: "nn",
+		outputCharacters: "m"
+	},
+	{
+		inputCharacters: "/\\/\\",
+		outputCharacters: "M"
+	},
+	{
+		inputCharacters: "I\\/I",
+		outputCharacters: "M"
+	},
+	{
+		inputCharacters: "∩",
+		outputCharacters: "n"
+	},
+	{
+		inputCharacters: "I\\I",
+		outputCharacters: "N"
+	},
+	{
+		inputCharacters: "()",
+		outputCharacters: "O"
+	},
+	{
+		inputCharacters: "ρ",
+		outputCharacters: "p"
+	},
+	{
+		inputCharacters: "O,",
+		outputCharacters: "Q"
+	},
+	{
+		inputCharacters: "5",
+		outputCharacters: "S"
+	},
+	{
+		inputCharacters: "+",
+		outputCharacters: "t"
+	},
+	{
+		inputCharacters: "‾I‾",
+		outputCharacters: "T"
+	},
+	{
+		inputCharacters: "‾Γ",
+		outputCharacters: "T"
+	},
+	{
+		inputCharacters: "I_I",
+		outputCharacters: "U"
+	},
+	{
+		inputCharacters: "ν",
+		outputCharacters: "v"
+	},
+	{
+		inputCharacters: "∨",
+		outputCharacters: "v"
+	},
+	{
+		inputCharacters: "\\/",
+		outputCharacters: "V"
+	},
+	{
+		inputCharacters: "vv",
+		outputCharacters: "w"
+	},
+	{
+		inputCharacters: "VV",
+		outputCharacters: "W"
+	},
+	{
+		inputCharacters: "\\/\\/",
+		outputCharacters: "W"
+	},
+	{
+		inputCharacters: "><",
+		outputCharacters: "x"
+	},
+	{
+		inputCharacters: "×",
+		outputCharacters: "x"
+	},
+	{
+		inputCharacters: "χ",
+		outputCharacters: "X"
+	},
+	{
+		inputCharacters: "4",
+		outputCharacters: "y"
+	},
+	{
+		inputCharacters: "γ",
+		outputCharacters: "y"
+	},
+	{
+		inputCharacters: "‾/_",
+		outputCharacters: "Z"
+	},
+	{
+		inputCharacters: "()",
+		outputCharacters: "0"
+	},
+	{
+		inputCharacters: "I",
+		outputCharacters: "1"
+	},
+	{
+		inputCharacters: "y",
+		outputCharacters: "4"
+	},
+	{
+		inputCharacters: "S",
+		outputCharacters: "5"
+	},
+	{
+		inputCharacters: "b",
+		outputCharacters: "6"
+	},
+	{
+		inputCharacters: "(ↄ",
+		outputCharacters: "6"
+	},
+	{
+		inputCharacters: "‾/",
+		outputCharacters: "7"
+	},
+	{
+		inputCharacters: "B",
+		outputCharacters: "8"
+	},
+	{
+		inputCharacters: "g",
+		outputCharacters: "9"
+	},
+	{
+		inputCharacters: "1/2",
+		outputCharacters: "½"
+	},
+	{
+		inputCharacters: "0/3",
+		outputCharacters: "↉"
+	},
+	{
+		inputCharacters: "1/3",
+		outputCharacters: "⅓"
+	},
+	{
+		inputCharacters: "2/3",
+		outputCharacters: "⅔"
+	},
+	{
+		inputCharacters: "1/4",
+		outputCharacters: "¼"
+	},
+	{
+		inputCharacters: "3/4",
+		outputCharacters: "¾"
+	},
+	{
+		inputCharacters: "1/5",
+		outputCharacters: "⅕"
+	},
+	{
+		inputCharacters: "2/5",
+		outputCharacters: "⅖"
+	},
+	{
+		inputCharacters: "3/5",
+		outputCharacters: "⅗"
+	},
+	{
+		inputCharacters: "4/5",
+		outputCharacters: "⅘"
+	},
+	{
+		inputCharacters: "1/6",
+		outputCharacters: "⅙"
+	},
+	{
+		inputCharacters: "5/6",
+		outputCharacters: "⅚"
+	},
+	{
+		inputCharacters: "1/7",
+		outputCharacters: "⅐"
+	},
+	{
+		inputCharacters: "1/8",
+		outputCharacters: "⅛"
+	},
+	{
+		inputCharacters: "3/8",
+		outputCharacters: "⅜"
+	},
+	{
+		inputCharacters: "5/8",
+		outputCharacters: "⅝"
+	},
+	{
+		inputCharacters: "7/8",
+		outputCharacters: "⅞"
+	},
+	{
+		inputCharacters: "1/9",
+		outputCharacters: "⅑"
+	},
+	{
+		inputCharacters: "1/10",
+		outputCharacters: "⅒"
+	},
+	{
+		inputCharacters: "1/",
+		outputCharacters: "⅟"
+	},
+	{
+		inputCharacters: "n",
+		outputCharacters: "π"
+	},
+	{
+		inputCharacters: "3.14",
+		outputCharacters: "π"
+	},
+	{
+		inputCharacters: "pi",
+		outputCharacters: "π"
+	},
+	{
+		inputCharacters: "I‾I",
+		outputCharacters: "Π"
+	},
+	{
+		inputCharacters: "ΓI",
+		outputCharacters: "Π"
+	},
+	{
+		inputCharacters: "a",
+		outputCharacters: "α"
+	},
+	{
+		inputCharacters: "oc",
+		outputCharacters: "α"
+	},
+	{
+		inputCharacters: "cx",
+		outputCharacters: "α"
+	},
+	{
+		inputCharacters: "B",
+		outputCharacters: "β"
+	},
+	{
+		inputCharacters: "y",
+		outputCharacters: "γ"
+	},
+	{
+		inputCharacters: "I‾",
+		outputCharacters: "Γ"
+	},
+	{
+		inputCharacters: "/_\\",
+		outputCharacters: "Δ"
+	},
+	{
+		inputCharacters: "ε",
+		outputCharacters: "ϵ"
+	},
+	{
+		inputCharacters: "(-)",
+		outputCharacters: "θ"
+	},
+	{
+		inputCharacters: "/\\",
+		outputCharacters: "Λ"
+	},
+	{
+		inputCharacters: "o-",
+		outputCharacters: "σ"
+	},
+	{
+		inputCharacters: "∑",
+		outputCharacters: "Σ"
+	},
+	{
+		inputCharacters: "αↄ",
+		outputCharacters: "∞"
+	},
+	{
+		inputCharacters: "∝ↄ",
+		outputCharacters: "∞"
+	},
+	{
+		inputCharacters: "oo",
+		outputCharacters: "∞"
+	},
+	{
+		inputCharacters: "cp",
+		outputCharacters: "ϕ"
+	},
+	{
+		inputCharacters: "Ψ",
+		outputCharacters: "ψ"
+	},
+	{
+		inputCharacters: "w",
+		outputCharacters: "ω"
+	},
+	{
+		inputCharacters: "uu",
+		outputCharacters: "ω"
+	},
+	{
+		inputCharacters: "_O_",
+		outputCharacters: "Ω"
+	},
+	{
+		inputCharacters: "_∩_",
+		outputCharacters: "Ω"
+	},
+	{
+		inputCharacters: "S2",
+		outputCharacters: "Ω"
+	},
+	{
+		inputCharacters: "\\‾/",
+		outputCharacters: "∇"
+	},
+	{
+		inputCharacters: "\\7",
+		outputCharacters: "∇"
+	},
+	{
+		inputCharacters: "J‾",
+		outputCharacters: "∫"
+	},
+	{
+		inputCharacters: "∫∫",
+		outputCharacters: "∬"
+	},
+	{
+		inputCharacters: "oc",
+		outputCharacters: "∝"
+	},
+	{
+		inputCharacters: "cx",
+		outputCharacters: "∝"
+	},
+	{
+		inputCharacters: "α",
+		outputCharacters: "∝"
+	},
+	{
+		inputCharacters: "t",
+		outputCharacters: "+"
+	},
+	{
+		inputCharacters: "x",
+		outputCharacters: "×"
+	},
+	{
+		inputCharacters: "∧",
+		outputCharacters: "^"
+	},
+	{
+		inputCharacters: "n",
+		outputCharacters: "∩"
+	},
+	{
+		inputCharacters: "u",
+		outputCharacters: "∪"
+	},
+	{
+		inputCharacters: "^",
+		outputCharacters: "∧"
+	},
+	{
+		inputCharacters: "v",
+		outputCharacters: "∨"
+	},
+	{
+		inputCharacters: "‾'",
+		outputCharacters: "¬"
+	},
+	{
+		inputCharacters: "!?",
+		outputCharacters: "⁉"
+	},
+	{
+		inputCharacters: "?!",
+		outputCharacters: "⁈"
+	},
+	{
+		inputCharacters: "!!",
+		outputCharacters: "‼"
+	},
+	{
+		inputCharacters: "??",
+		outputCharacters: "⁇"
+	},
+	{
+		inputCharacters: "...",
+		outputCharacters: "…"
+	},
+	{
+		inputCharacters: "''",
+		outputCharacters: "\""
+	},
+	{
+		inputCharacters: "‹‹",
+		outputCharacters: "«"
+	},
+	{
+		inputCharacters: "››",
+		outputCharacters: "»"
+	},
+	{
+		inputCharacters: "-[",
+		outputCharacters: "{"
+	},
+	{
+		inputCharacters: "]-",
+		outputCharacters: "}"
+	},
+	{
+		inputCharacters: "(a)",
+		outputCharacters: "@"
+	},
+	{
+		inputCharacters: "8<",
+		outputCharacters: "&"
+	},
+	{
+		inputCharacters: ":)",
+		outputCharacters: "🙂"
+	},
+	{
+		inputCharacters: ":D",
+		outputCharacters: "😃"
+	},
+	{
+		inputCharacters: "=D",
+		outputCharacters: "😃"
+	},
+	{
+		inputCharacters: "^u^",
+		outputCharacters: "😄"
+	},
+	{
+		inputCharacters: "^‿^",
+		outputCharacters: "😊"
+	},
+	{
+		inputCharacters: "^‿^",
+		outputCharacters: "☺️"
+	},
+	{
+		inputCharacters: ";)",
+		outputCharacters: "😉"
+	},
+	{
+		inputCharacters: ":P",
+		outputCharacters: "😛"
+	},
+	{
+		inputCharacters: "B)",
+		outputCharacters: "😎"
+	},
+	{
+		inputCharacters: "XD",
+		outputCharacters: "😆"
+	},
+	{
+		inputCharacters: "^3^",
+		outputCharacters: "😙"
+	},
+	{
+		inputCharacters: "•3•",
+		outputCharacters: "😗"
+	},
+	{
+		inputCharacters: ":')",
+		outputCharacters: "🥲"
+	},
+	{
+		inputCharacters: "🌢",
+		outputCharacters: "💧"
+	},
+	{
+		inputCharacters: "<3",
+		outputCharacters: "❤️"
+	},
+	{
+		inputCharacters: "!",
+		outputCharacters: "❕"
+	},
+	{
+		inputCharacters: "!",
+		outputCharacters: "❗"
+	},
+	{
+		inputCharacters: "!!",
+		outputCharacters: "‼️"
+	},
+	{
+		inputCharacters: "@",
+		outputCharacters: "ⓐ"
+	},
+	{
+		inputCharacters: "(C)",
+		outputCharacters: "©"
+	},
+	{
+		inputCharacters: "(R)",
+		outputCharacters: "®"
+	},
+	{
+		inputCharacters: "[]",
+		outputCharacters: "▢"
+	},
+	{
+		inputCharacters: "-I-",
+		outputCharacters: "†"
+	},
+	{
+		inputCharacters: "*",
+		outputCharacters: "×"
+	},
+	{
+		inputCharacters: "--",
+		outputCharacters: "–"
+	},
+	{
+		inputCharacters: "---",
+		outputCharacters: "—"
+	},
+	{
+		inputCharacters: "<-",
+		outputCharacters: "←"
+	},
+	{
+		inputCharacters: "->",
+		outputCharacters: "→"
+	},
+	{
+		inputCharacters: "<=",
+		outputCharacters: "⇐"
+	},
+	{
+		inputCharacters: "=>",
+		outputCharacters: "⇒"
+	},
+	{
+		inputCharacters: "↓↑",
+		outputCharacters: "⇵"
+	}
+] as const;

@@ -16,7 +16,10 @@ import { DatabaseQuerier } from "./database-querier";
  * @param db - The database querier instance used for executing SQL statements.
  * @param characters - An array of character objects to be inserted.
  */
-export const insertCharactersToDB = (db: DatabaseQuerier, characters: Character[]) => {
+export const insertCharactersToDB = (
+	db: DatabaseQuerier,
+	characters: Readonly<Character[]>
+) => {
 	validateArguments("insertCharactersToDB",
 		{db, type: DatabaseQuerier},
 		{characters, type: "Array"},
@@ -57,8 +60,8 @@ export const insertCharactersToDB = (db: DatabaseQuerier, characters: Character[
  */
 export const insertMysteryBoxesToDB = (
 	db: DatabaseQuerier,
-	mysteryBoxes: Array<
-		WithOptional<MysteryBox, "id">
+	mysteryBoxes: Readonly<
+		WithOptional<MysteryBox, "id">[]
 	>
 ) => {
 	if (!Array.isArray(mysteryBoxes))
@@ -123,7 +126,9 @@ export const insertMysteryBoxesToDB = (
  */
 export const insertRecipesToDB = (
 	db: DatabaseQuerier,
-	recipes: WithOptional<Recipe, "id">[]
+	recipes: Readonly<
+		WithOptional<Recipe, "id">[]
+	>
 ) => {
 	const insertRecipeIntoDB = db.getQuery("INSERT INTO recipe (inputCharacters, outputCharacters) VALUES (@inputCharacters, @outputCharacters)");
 

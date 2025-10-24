@@ -1,4 +1,4 @@
-[
+export const mysteryBoxes = [
   {
     "name": "All Characters",
     "tokenCost": 25,
@@ -112,4 +112,4 @@
 			"\\": 4
 		}
   }
-]
+] as const;
