@@ -263,7 +263,7 @@ const getInputFromCreatedTextModal = async ({
 		.setMaxLength(1_900)
 		.setPlaceholder(placeholder)
 		.setValue(placeholder)
-		.setRequired(true)
+		.setRequired(false)
 		.setStyle(TextInputStyle.Paragraph);
 
 	// Create the action row with the text input field

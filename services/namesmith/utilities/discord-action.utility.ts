@@ -35,12 +35,17 @@ export const changeDiscordNameOfPlayer = async (playerID: string, newName: strin
 	const guildMember = await fetchNamesmithGuildMember(playerID);
 
 	const hasNoNameRole = await memberHasRole(guildMember, ids.namesmith.roles.noName);
-	if (hasNoNameRole && newName.length > 0) {
+	const hasBlankName = newName.trim().length <= 0;
+
+	if (hasBlankName) {
+		newName = DISCORD_NICKNAME_FOR_NO_NAME;
+	}
+
+	if (hasNoNameRole && !hasBlankName) {
 		await removeRoleFromMember(guildMember, ids.namesmith.roles.noName);
 		await addRoleToMember(guildMember, ids.namesmith.roles.smithedName);
 	}
-	else if (!hasNoNameRole && newName.length <= 0) {
-		newName = DISCORD_NICKNAME_FOR_NO_NAME;
+	else if (!hasNoNameRole && hasBlankName) {
 		await removeRoleFromMember(guildMember, ids.namesmith.roles.smithedName);
 		await addRoleToMember(guildMember, ids.namesmith.roles.noName);
 	}
