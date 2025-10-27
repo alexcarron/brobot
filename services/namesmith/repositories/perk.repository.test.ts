@@ -239,4 +239,122 @@ describe('PerkRepository', () => {
 			makeSure(perks).haveProperty('wasOffered', false);
 		});
 	});
+
+	describe('addPerk()', () => {
+		it('adds a new perk to the database with an ID', () => {
+			const perk = perkRepository.addPerk({
+				id: 1001,
+				name: 'Perk Name',
+				description: 'Perk Description',
+				wasOffered: false
+			});
+
+			makeSure(perk).hasProperty('id', 1001);
+			makeSure(perk).hasProperty('name', 'Perk Name');
+			makeSure(perk).hasProperty('description', 'Perk Description');
+			makeSure(perk).hasProperty('wasOffered', false);
+
+			const retrievedPerk = perkRepository.getPerkOrThrow(1001);
+			makeSure(retrievedPerk).hasProperty('id', 1001);
+			makeSure(retrievedPerk).hasProperty('name', 'Perk Name');
+			makeSure(retrievedPerk).hasProperty('description', 'Perk Description');
+			makeSure(retrievedPerk).hasProperty('wasOffered', false);
+		});
+
+		it('adds a new perk to the database without giving an ID', () => {
+			const perk = perkRepository.addPerk({
+				name: 'Perk Name',
+				description: 'Perk Description',
+				wasOffered: false
+			});
+
+			makeSure(perk).hasProperty('id');
+			makeSure(perk).hasProperty('name', 'Perk Name');
+			makeSure(perk).hasProperty('description', 'Perk Description');
+			makeSure(perk).hasProperty('wasOffered', false);
+
+			const retrievedPerk = perkRepository.getPerkOrThrow(perk.id);
+			makeSure(retrievedPerk).hasProperty('id');
+			makeSure(retrievedPerk).hasProperty('name', 'Perk Name');
+			makeSure(retrievedPerk).hasProperty('description', 'Perk Description');
+			makeSure(retrievedPerk).hasProperty('wasOffered', false);
+		});
+	});
+
+	describe('updatePerk()', () => {
+		it('updates a perk by ID with all new information', () => {
+			const perk = perkRepository.addPerk({
+				name: 'Perk Name',
+				description: 'Perk Description',
+				wasOffered: false
+			});
+
+			const updatedPerk = perkRepository.updatePerk({
+				id: perk.id,
+				name: 'New Perk Name',
+				description: 'New Perk Description',
+				wasOffered: true
+			});
+
+			makeSure(updatedPerk).hasProperty('id', perk.id);
+			makeSure(updatedPerk).hasProperty('name', 'New Perk Name');
+			makeSure(updatedPerk).hasProperty('description', 'New Perk Description');
+			makeSure(updatedPerk).hasProperty('wasOffered', true);
+
+			const retrievedPerk = perkRepository.getPerkOrThrow(perk.id);
+			makeSure(retrievedPerk).hasProperty('id', perk.id);
+			makeSure(retrievedPerk).hasProperty('name', 'New Perk Name');
+			makeSure(retrievedPerk).hasProperty('description', 'New Perk Description');
+			makeSure(retrievedPerk).hasProperty('wasOffered', true);
+		});
+
+		it('updates only a perk\'s name', () => {
+			const perk = perkRepository.addPerk({
+				name: 'Perk Name',
+				description: 'Perk Description',
+				wasOffered: false
+			});
+
+			const updatedPerk = perkRepository.updatePerk({
+				id: perk.id,
+				name: 'New Perk Name'
+			});
+
+			makeSure(updatedPerk).hasProperty('id', perk.id);
+			makeSure(updatedPerk).hasProperty('name', 'New Perk Name');
+			makeSure(updatedPerk).hasProperty('description', 'Perk Description');
+			makeSure(updatedPerk).hasProperty('wasOffered', false);
+
+			const retrievedPerk = perkRepository.getPerkOrThrow(perk.id);
+			makeSure(retrievedPerk).hasProperty('id', perk.id);
+			makeSure(retrievedPerk).hasProperty('name', 'New Perk Name');
+			makeSure(retrievedPerk).hasProperty('description', 'Perk Description');
+			makeSure(retrievedPerk).hasProperty('wasOffered', false);
+		});
+
+		it('updates a perk by name with all new information', () => {
+			const perk = perkRepository.addPerk({
+				name: 'Perk Name',
+				description: 'Perk Description',
+				wasOffered: false
+			});
+
+			const updatedPerk = perkRepository.updatePerk({
+				name: 'Perk Name',
+				description: 'New Perk Description',
+				wasOffered: true
+			});
+
+			makeSure(updatedPerk).hasProperty('id', perk.id);
+			makeSure(updatedPerk).hasProperty('name', 'Perk Name');
+			makeSure(updatedPerk).hasProperty('description', 'New Perk Description');
+			makeSure(updatedPerk).hasProperty('wasOffered', true);
+
+			const retrievedPerk = perkRepository.getPerkOrThrow(perk.id);
+			makeSure(retrievedPerk).hasProperty('id', perk.id);
+			makeSure(retrievedPerk).hasProperty('name', 'Perk Name');
+			makeSure(retrievedPerk).hasProperty('description', 'New Perk Description');
+			makeSure(retrievedPerk).hasProperty('wasOffered', true);
+		});
+	});
 });

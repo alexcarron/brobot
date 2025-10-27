@@ -180,3 +180,18 @@ export type DeepReadonly<GivenType> =
  *   (item: string) => item.toUpperCase();
  */
 export type ElementOfArray<T> = T extends (infer U)[] ? U : never;
+
+/**
+ * A union of all possible keys in an array of objects
+ * @example
+ * type PlayerKeys = KeysOf<[
+ * 	{ id: string, name: string },
+ * 	{ email: string, name: string }
+ * ]>
+ * // 'id' | 'name' | 'email'
+ */
+export type KeysOf<
+	SpecificArray extends Record<string, unknown>[]
+> = {
+	[Index in keyof SpecificArray]: keyof SpecificArray[Index]
+}[number];

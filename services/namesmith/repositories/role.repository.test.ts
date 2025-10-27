@@ -168,4 +168,158 @@ describe('RoleRepository', () => {
 			makeSure(roleID).is(SOME_ROLE.id);
 		});
 	});
+
+	describe('addRole()', () => {
+		it('adds a role to the database without an ID', () => {
+			const role = roleRepository.addRole({
+				name: 'New Role',
+				description: 'New description'
+			});
+
+			makeSure(role.name).is('New Role');
+			makeSure(role.description).is('New description');
+			makeSure(role.perks).isEmpty();
+
+			const retrievedRole = roleRepository.getRoleOrThrow(role.id);
+
+			makeSure(retrievedRole.name).is('New Role');
+			makeSure(retrievedRole.description).is('New description');
+			makeSure(retrievedRole.perks).isEmpty();
+		});
+
+		it('adds a role to the database with a specified ID', () => {
+			const role = roleRepository.addRole({
+				id: 230,
+				name: 'New Role',
+				description: 'New description'
+			});
+
+			makeSure(role.name).is('New Role');
+			makeSure(role.description).is('New description');
+			makeSure(role.id).is(230);
+			makeSure(role.perks).isEmpty();
+
+			const retrievedRole = roleRepository.getRoleOrThrow(role.id);
+
+			makeSure(retrievedRole.name).is('New Role');
+			makeSure(retrievedRole.description).is('New description');
+			makeSure(retrievedRole.id).is(230);
+			makeSure(retrievedRole.perks).isEmpty();
+		});
+
+		it('adds a role with perks to the database', () => {
+			const role = roleRepository.addRole({
+				name: 'New Role',
+				description: 'New description',
+				perks: [Perks.DISCOUNT.name, Perks.FASTER_REFILL.name]
+			});
+
+			makeSure(role.name).is('New Role');
+			makeSure(role.description).is('New description');
+			makeSure(role.perks).hasAnItemWhere(perk =>
+				perk.id === Perks.DISCOUNT.id
+			);
+			makeSure(role.perks).hasAnItemWhere(perk =>
+				perk.id === Perks.FASTER_REFILL.id
+			);
+
+			const retrievedRole = roleRepository.getRoleOrThrow(role.id);
+
+			makeSure(retrievedRole.name).is('New Role');
+			makeSure(retrievedRole.description).is('New description');
+			makeSure(retrievedRole.perks).hasAnItemWhere(perk =>
+				perk.id === Perks.DISCOUNT.id
+			);
+			makeSure(retrievedRole.perks).hasAnItemWhere(perk =>
+				perk.id === Perks.FASTER_REFILL.id
+			);
+		});
+	});
+
+
+	describe('updateRole', () => {
+		it('updates a role with a new description based on ID', () => {
+			roleRepository.updateRole({
+				id: SOME_ROLE.id,
+				description: 'New description'
+			});
+
+			const role = roleRepository.getRoleOrThrow(SOME_ROLE.id);
+
+			makeSure(role.name).is(SOME_ROLE.name);
+			makeSure(role.description).is('New description');
+		});
+
+		it('updates a role with a new description based on name', () => {
+			roleRepository.updateRole({
+				id: INVALID_ROLE_ID,
+				name: SOME_ROLE.name,
+				description: 'New description'
+			});
+
+			const role = roleRepository.getRoleOrThrow(SOME_ROLE.id);
+
+			makeSure(role.name).is(SOME_ROLE.name);
+			makeSure(role.description).is('New description');
+		});
+
+		it('updates a role with a new name based on id', () => {
+			roleRepository.updateRole({
+				id: SOME_ROLE.id,
+				name: 'New Name'
+			});
+
+			const role = roleRepository.getRoleOrThrow(SOME_ROLE.id);
+
+			makeSure(role.name).is('New Name');
+			makeSure(role.description).is(SOME_ROLE.description);
+		});
+
+		it('updates a role with a new perks based on id', () => {
+			roleRepository.updateRole({
+				id: SOME_ROLE.id,
+				perks: [Perks.DISCOUNT.name, Perks.MINE_BONUS.name]
+			});
+
+			const role = roleRepository.getRoleOrThrow(SOME_ROLE.id);
+
+			makeSure(role.perks).hasAnItemWhere(perk =>
+				perk.id === Perks.DISCOUNT.id
+			);
+			makeSure(role.perks).hasAnItemWhere(perk =>
+				perk.id === Perks.MINE_BONUS.id
+			);
+		});
+
+		it('updates a role with a new name and description based on id', () => {
+			roleRepository.updateRole({
+				id: SOME_ROLE.id,
+				name: 'New Name',
+				description: 'New description'
+			});
+
+			const role = roleRepository.getRoleOrThrow(SOME_ROLE.id);
+
+			makeSure(role.name).is('New Name');
+			makeSure(role.description).is('New description');
+		});
+
+		it('throws RoleNotFoundError with given invalid role id', () => {
+			makeSure(() =>
+				roleRepository.updateRole({
+					id: INVALID_ROLE_ID,
+					description: 'New description',
+				})
+			).throws(RoleNotFoundError);
+		});
+
+		it('throws RoleNotFoundError with given invalid role name', () => {
+			makeSure(() =>
+				roleRepository.updateRole({
+					name: INVALID_ROLE_NAME,
+					description: 'New description',
+				})
+			).throws(RoleNotFoundError);
+		});
+	});
 });

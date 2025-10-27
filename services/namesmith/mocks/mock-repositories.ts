@@ -10,7 +10,6 @@ import { PlayerRepository } from "../repositories/player.repository";
 import { VoteRepository } from "../repositories/vote.repository";
 import { Recipe } from "../types/recipe.types";
 import { RecipeRepository } from "../repositories/recipe.repository";
-import { insertRecipesToDB } from "../database/db-inserters";
 import { PlayerAlreadyExistsError } from '../utilities/error.utility';
 import { Trade } from '../types/trade.types';
 import { TradeRepository } from '../repositories/trade.repository';
@@ -21,6 +20,7 @@ import { mockRecipes } from './mock-data/mock-recipes';
 import { addMockTrade, mockTrades } from './mock-data/mock-trades';
 import { PerkRepository } from '../repositories/perk.repository';
 import { RoleRepository } from '../repositories/role.repository';
+import { syncRecipesToDB } from '../database/static-data-synchronizers/sync-recipes';
 
 /**
  * Creates a mock character repository instance with an in-memory database for testing purposes.
@@ -148,7 +148,7 @@ export const createMockRecipeRepo = (
 	if (recipes === undefined)
 		recipes = mockRecipes;
 
-	insertRecipesToDB(mockDB, recipes);
+	syncRecipesToDB(mockDB, recipes);
 
 	return new RecipeRepository(mockDB);
 }

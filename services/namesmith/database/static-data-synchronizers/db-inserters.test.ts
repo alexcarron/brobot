@@ -1,11 +1,13 @@
-import { DatabaseQuerier } from "./database-querier";
-import { insertCharactersToDB, insertMysteryBoxesToDB, insertRecipesToDB } from "./db-inserters";
-import { applySchemaToDB } from "./queries/apply-schema";
-import { getIDfromCharacterValue } from "../utilities/character.utility";
-import { Character } from "../types/character.types";
-import { MysteryBox } from "../types/mystery-box.types";
-import { Recipe } from "../types/recipe.types";
-import { WithOptional } from '../../../utilities/types/generic-types';
+import { DatabaseQuerier } from "../database-querier";
+import { applySchemaToDB } from "../queries/apply-schema";
+import { getIDfromCharacterValue } from "../../utilities/character.utility";
+import { Character } from "../../types/character.types";
+import { MysteryBox } from "../../types/mystery-box.types";
+import { Recipe } from "../../types/recipe.types";
+import { WithOptional } from '../../../../utilities/types/generic-types';
+import { syncCharactersToDB } from "./sync-characters";
+import { syncMysteryBoxesToDB } from "./sync-mystery-boxes";
+import { syncRecipesToDB } from "./sync-recipes";
 
 const astrickID = getIDfromCharacterValue('*');
 const bracketID = getIDfromCharacterValue(']');
@@ -67,7 +69,7 @@ describe('db-inserters.js', () => {
 
   describe('insertCharactersToDB()', () => {
     it('inserts characters into the database', () => {
-      insertCharactersToDB(db, characters);
+      syncCharactersToDB(db, characters);
       const result = db.getRows('SELECT * FROM character');
       expect(result).toEqual([
 				{ id: astrickID, value: '*', rarity: 3 },
@@ -78,11 +80,11 @@ describe('db-inserters.js', () => {
 
   describe('insertMysteryBoxesToDB()', () => {
 		beforeEach(() => {
-      insertCharactersToDB(db, characters);
+      syncCharactersToDB(db, characters);
 		});
 
     it('inserts mystery boxes into the database', () => {
-      insertMysteryBoxesToDB(db, mysteryBoxes);
+      syncMysteryBoxesToDB(db, mysteryBoxes);
       const result = db.getRows('SELECT * FROM mysteryBox');
       expect(result).toEqual([
 				{ id: 1, name: 'mysteryBox1', tokenCost: 10 },
@@ -91,7 +93,7 @@ describe('db-inserters.js', () => {
     });
 
     it('inserts character odds into the database', () => {
-      insertMysteryBoxesToDB(db, mysteryBoxes);
+      syncMysteryBoxesToDB(db, mysteryBoxes);
       const result = db.getRows('SELECT * FROM mysteryBoxCharacterOdds');
       expect(result).toEqual([
 				{ mysteryBoxID: 1, characterID: astrickID, weight: 0.5 },
@@ -104,7 +106,7 @@ describe('db-inserters.js', () => {
 
 	describe('insertRecipesToDB()', () => {
 		it('inserts recipes with and without IDs into the database', () => {
-			insertRecipesToDB(db, recipes);
+			syncRecipesToDB(db, recipes);
 			const result = db.getRows('SELECT * FROM recipe');
 			expect(result).toEqual([
 				{ id: 1, inputCharacters: 'oo', outputCharacters: '∞' },

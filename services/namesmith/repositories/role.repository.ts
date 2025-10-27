@@ -1,10 +1,12 @@
-import { toNullOnError } from "../../../utilities/error-utils";
-import { DatabaseQuerier } from "../database/database-querier";
+import { InvalidArgumentError, toNullOnError } from "../../../utilities/error-utils";
+import { DatabaseQuerier, toAssignmentsPlaceholder } from "../database/database-querier";
 import { DBPerk, Perk } from "../types/perk.types";
 import { PlayerID } from "../types/player.types";
-import { DBRole, DBRolePerk, MinimalRole, Role, RoleID, RoleName } from "../types/role.types";
-import { PlayerNotFoundError, RoleNotFoundError } from "../utilities/error.utility";
+import { DBRole, DBRolePerk, MinimalRole, Role, RoleDefinition, RoleID, RoleName } from "../types/role.types";
+import { PerkNotFoundError, PlayerNotFoundError, RoleNotFoundError } from "../utilities/error.utility";
 import { toPerk } from "../utilities/perk.utility";
+import { WithAtLeast, WithOptional } from '../../../utilities/types/generic-types';
+import { PerkRepository } from "./perk.repository";
 
 /**
  * Provides access to the dynamic role data.
@@ -115,6 +117,21 @@ export class RoleRepository {
 	}
 
 	/**
+	 * Retrieves a role from the database by its name, throwing a RoleNotFoundError if no role is found with the given name.
+	 * @param name - The name of the role to retrieve.
+	 * @returns The role with the given name.
+	 * @throws {RoleNotFoundError} If no role with the given name is found.
+	 */
+	getMinimalRoleByNameOrThrow(name: RoleName): MinimalRole {
+		const role = this.getMinimalRoleByName(name);
+
+		if (role === null)
+			throw new RoleNotFoundError(name);
+
+		return role;
+	}
+
+	/**
 	 * Retrieves a role from the database by its name, returning null if no role is found with the given name.
 	 * @param name - The name of the role to retrieve.
 	 * @returns The role with the given name, or null if no role with the given name is found.
@@ -166,5 +183,161 @@ export class RoleRepository {
 			role: roleID,
 			id: playerID
 		});
+	}
+
+	/**
+	 * Adds a minimal role to the database.
+	 * If an ID is not provided, one will be automatically generated.
+	 * @param minimalRole - The minimal role object to add.
+	 * @param minimalRole.id - The ID of the role to add.
+	 * @param minimalRole.name - The name of the role to add.
+	 * @param minimalRole.description - The description of the role to add.
+	 * @returns The added minimal role.
+	 */
+	private addMinimalRole(
+		{ id, name, description }: WithOptional<MinimalRole, 'id'>
+	): MinimalRole {
+		if (id === undefined) {
+			const result = this.db.run(
+				`INSERT INTO role (name, description)
+				VALUES (@name, @description)`,
+				{ name, description }
+			)
+			id = Number(result.lastInsertRowid);
+		}
+		else {
+			this.db.run(
+				`INSERT INTO role (id, name, description)
+				VALUES (@id, @name, @description)`,
+				{ id, name, description }
+			)
+		}
+
+		return { id, name, description };
+	}
+
+	addRole(
+		{ id, name, description, perks: perkNames = [] }:
+			WithOptional<RoleDefinition, 'id' | 'perks'>
+	): Role {
+		const minimalRole = this.addMinimalRole({ id, name, description });
+
+		const perks = [];
+		for (const perkName of perkNames) {
+			const perkRepository = new PerkRepository(this.db);
+			const perk = perkRepository.getPerkByName(perkName);
+
+			if (perk === null)
+				throw new PerkNotFoundError(perkName);
+
+			perks.push(perk);
+			this.db.run(
+				`INSERT INTO rolePerk (roleID, perkID)
+				VALUES (@roleID, @perkID)`,
+				{ roleID: minimalRole.id, perkID: perk.id }
+			);
+		}
+
+		return {
+			...minimalRole,
+			perks
+		};
+	}
+
+	/**
+	 * Updates a minimal role object in the database.
+	 * @param roleToUpdate - The role object to update.
+	 * @param roleToUpdate.id - The ID of the role to update.
+	 * @param roleToUpdate.name - The name of the role to update.
+	 * @param roleToUpdate.description - The description of the role to update.
+	 * @returns The updated role object.
+	 * @throws {RoleNotFoundError} If the role with the given ID or name is not found.
+	 * @throws {InvalidArgumentError} If neither an ID nor a name is provided.
+	 */
+	private updateMinimalRole(
+		{id, name, description}:
+			| WithAtLeast<MinimalRole, 'id'>
+			| WithAtLeast<MinimalRole, 'name'>
+	): MinimalRole {
+		if (name !== undefined || description !== undefined) {
+			const updateQuery = `
+				UPDATE role
+				SET ${toAssignmentsPlaceholder({ name, description })}
+				WHERE
+					id = @id
+					OR name = @name
+			`;
+
+			const result = this.db.run(updateQuery, {id, name, description});
+
+			if (result.changes === 0) {
+				if (id !== undefined)
+					throw new RoleNotFoundError(id);
+				else if (name !== undefined)
+					throw new RoleNotFoundError(name);
+				else
+					throw new InvalidArgumentError("updateMinimalRole: An ID or name must be provided.");
+			}
+		}
+
+		let minimalRole = null;
+		if (id !== undefined)
+			minimalRole = this.getMinimalRoleByID(id);
+
+		if (minimalRole === null && name !== undefined)
+			minimalRole = this.getMinimalRoleByName(name);
+
+		if (minimalRole === null)
+			throw new InvalidArgumentError("updateMinimalRole: An ID or name must be provided.");
+
+		return minimalRole;
+	}
+
+	/**
+	 * Updates a role object in the database.
+	 * @param roleToUpdate - The role object to update.
+	 * @param roleToUpdate.id - The ID of the role to update. If not provided, the role with the given name will be updated.
+	 * @param roleToUpdate.name - The name of the role to update. If not provided, the role with the given ID will be updated.
+	 * @param roleToUpdate.description - The description of the role to update.
+	 * @param roleToUpdate.perks - An array of perk names to assign to the role. If not provided, the role's current perks will be kept.
+	 * @returns The updated role object.
+	 * @throws {RoleNotFoundError} If the role with the given ID or name is not found.
+	 * @throws {InvalidArgumentError} If neither an ID nor a name is provided.
+	 */
+	updateRole(
+		{id, name, description, perks: perkNames}:
+			| WithAtLeast<RoleDefinition, 'id'>
+			| WithAtLeast<RoleDefinition, 'name'>
+	): Role {
+		const minimalRole = this.updateMinimalRole({id: id!, name, description});
+
+		const perks = [];
+		if (perkNames !== undefined) {
+			this.db.run(
+				`DELETE FROM rolePerk
+				WHERE roleID = @roleID`,
+				{ roleID: minimalRole.id }
+			);
+
+			for (const perkName of perkNames) {
+				const perkRepository = new PerkRepository(this.db);
+				const perk = perkRepository.getPerkByName(perkName);
+
+				if (perk === null)
+					throw new PerkNotFoundError(perkName);
+
+				perks.push(perk);
+				this.db.run(
+					`INSERT INTO rolePerk (roleID, perkID)
+					VALUES (@roleID, @perkID)`,
+					{ roleID: minimalRole.id, perkID: perk.id }
+				);
+			}
+		}
+
+		return {
+			...minimalRole,
+			perks
+		}
 	}
 }

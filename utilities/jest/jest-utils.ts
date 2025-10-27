@@ -367,8 +367,14 @@ export function makeSure<
 	 * makeSure({ name: 'John' }).hasProperty('name');
 	 * makeSure({ id: 1 }).hasProperty('id', 1);
 	 */
-		hasProperty(propertyName: string, value?: unknown): void {
-			expect(actualValue).toHaveProperty(propertyName, value);
+		hasProperty(
+			propertyName: string,
+			value?: unknown
+		): void {
+			if (value === undefined)
+				expect(actualValue).toHaveProperty(propertyName);
+			else
+				expect(actualValue).toHaveProperty(propertyName, value);
 		},
 
 		/**

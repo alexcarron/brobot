@@ -52,7 +52,7 @@ export type EnumObject = Record<string, string>;
  * const Fruits = {APPLE: 'apple', BANANA: 'banana'};
  * type FruitsKeys = KeysOf<typeof Fruits>; // 'APPLE' | 'BANANA'
  */
-export type KeysOf<
+export type KeysOfEnum<
 	Enum extends Record<string, string>
 > =
 	keyof Enum
@@ -66,7 +66,7 @@ export type KeysOf<
  */
 export type ValuesOf<
 	Enum extends EnumObject
-> = Enum[KeysOf<Enum>]
+> = Enum[KeysOfEnum<Enum>]
 
 /**
  * Checks if a value is part of an enum
@@ -96,7 +96,7 @@ export function isKeyInEnum<
 >(
 	enumObject: Enum,
 	key: string | number | symbol
-): key is KeysOf<Enum> {
+): key is KeysOfEnum<Enum> {
 	return Object.keys(enumObject).includes(key as any);
 }
 

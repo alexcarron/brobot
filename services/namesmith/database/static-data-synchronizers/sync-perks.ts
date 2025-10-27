@@ -1,0 +1,66 @@
+import { toPropertyValues } from "../../../../utilities/data-structure-utils";
+import { WithOptional } from "../../../../utilities/types/generic-types";
+import { isNotUndefined } from "../../../../utilities/types/type-guards";
+import { PerkRepository } from "../../repositories/perk.repository";
+import { PerkDefintion, Perk, DBPerk } from "../../types/perk.types";
+import { DatabaseQuerier, toListPlaceholder } from "../database-querier";
+
+/**
+ * Syncronizes the database to match a list of data defintions of perks without breaking existing data.
+ * @param db - The database querier used to execute queries.
+ * @param perks - An array of perk objects to be inserted. Each perk can optionally include an 'id'. If 'id' is not provided, it will be auto-generated.
+ */
+export function syncPerksToDB(
+	db: DatabaseQuerier,
+	perks: Readonly<WithOptional<PerkDefintion, "id">[]>
+) {
+	const perkRepository = new PerkRepository(db);
+
+	const perkIDs = toPropertyValues([...perks], "id").filter(isNotUndefined);
+	const perkNames = toPropertyValues([...perks], "name").filter(isNotUndefined);
+
+	const runDBTransaction = db.getTransaction((perkDefinitions: WithOptional<Perk, "id">[]) => {
+		const deletePerksNotDefined = db.getQuery(`
+			DELETE FROM perk
+			WHERE
+				id NOT IN ${toListPlaceholder(perkIDs)}
+				AND name NOT IN ${toListPlaceholder(perkNames)}
+		`);
+		deletePerksNotDefined.run(...perkIDs, ...perkNames);
+
+		const findExistingPerks = db.getQuery(`
+			SELECT * FROM perk
+			WHERE
+				id IN ${toListPlaceholder(perkIDs)}
+				OR name IN ${toListPlaceholder(perkNames)}
+		`);
+		const existingDBPerks = findExistingPerks.getRows(
+			...perkIDs, ...perkNames
+		) as DBPerk[];
+
+		for (const dbPerk of existingDBPerks) {
+			const perkDefintion = perkDefinitions.find(perk =>
+				perk.id === dbPerk.id ||
+				perk.name === dbPerk.name
+			);
+
+			if (perkDefintion === undefined)
+				continue;
+
+			perkRepository.updatePerk(perkDefintion);
+		}
+
+		const newPerkDefinitions = perkDefinitions.filter(perk =>
+			!existingDBPerks.find(dbPerk =>
+				dbPerk.id === perk.id ||
+				dbPerk.name === perk.name
+			)
+		);
+
+		for (const perkDefintion of newPerkDefinitions) {
+			perkRepository.addPerk(perkDefintion);
+		}
+	});
+
+	runDBTransaction(perks);
+}

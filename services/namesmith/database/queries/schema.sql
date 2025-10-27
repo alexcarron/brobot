@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS player (
 	currentName TEXT NOT NULL,
 	publishedName TEXT,
 	tokens INTEGER NOT NULL,
-	role INTEGER REFERENCES role(id),
+	role INTEGER REFERENCES role(id) ON DELETE SET NULL,
 	inventory TEXT,
 	lastClaimedRefillTime TEXT
 );

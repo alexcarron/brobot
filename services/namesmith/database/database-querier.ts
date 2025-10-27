@@ -5,6 +5,42 @@ import { attempt } from '../../../utilities/error-utils';
 import { isArray, isObject } from "../../../utilities/types/type-guards";
 
 /**
+ * Converts an array of values into a parenthesized list of SQLite placeholders (`?`) for use in parameterized queries.
+ * Useful when you want to safely query for multiple values using `IN (...)` without manually constructing the placeholders string.
+ * @param array - The array of values to convert into a placeholder list.
+ * @returns A string like "(?, ?, ?)" suitable for use in a parameterized query.
+ * @example
+ * const playerIDs = [1, 2, 3];
+ * const players = db.all(
+ *   `SELECT * FROM players WHERE id IN ${toPlaceholders(playerIDs)}`,
+ *   ...playerIDs
+ * );
+ */
+export function toListPlaceholder(array: unknown[]): string {
+	return '(' + array.map( () => '?' ).join(', ') + ')';
+}
+
+/**
+ * Converts a record of column/field names of a database entity to the updated values for that entity into a string of assignment expressions suitable for use in a parameterized update query.
+ * @param fieldToUpdatedValue - A record of column/field names of a database entity to the updated values for that entity.
+ * @returns A string like "age = @age, tokens = @tokens" suitable for use in a parameterized update query.
+ * @example
+ * const playerToUpdate = { name: "John Doe", age: 21 };
+ * const updatedPlayer = db.run(
+ *   `UPDATE players SET ${toAssignmentsPlaceholder(playerToUpdate)}`,
+ *   playerToUpdate
+ * );
+ */
+export function toAssignmentsPlaceholder(
+	fieldToUpdatedValue: Record<string, unknown>
+): string {
+	return Object.entries(fieldToUpdatedValue)
+		.filter(([, value]) => value !== undefined)
+		.map(([key]) => `${key} = @${key}`)
+		.join(", ");
+}
+
+/**
  * A utility class for preparing and executing SQL queries using a better-sqlite3 database instance.
  * Provides methods for running single queries, retrieving results, and performing transactions.
  */
@@ -12,6 +48,8 @@ export class DatabaseQuerier {
 	db: Database;
 
 	/**
+	 * If no parameters given, creates a new in-memory database instance.
+	 * If options is provided, creates a new database instance based on the provided options.
 	 * @param options - An object with optional parameters for the database instance.
 	 * @param options.inMemory - A boolean indicating whether to use an in-memory database.
 	 * @param options.path - The path to the database file for a disk-backed database.

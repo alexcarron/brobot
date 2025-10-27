@@ -183,3 +183,20 @@ export function isUndefined(
 ): value is undefined {
 	return value === undefined;
 }
+
+/**
+ * Checks if a given value is not undefined.
+ * @param value - The value to check.
+ * @returns If the value is not undefined.
+ * @example
+ * expect(isNotUndefined(undefined)).toBe(false);
+ * expect(isNotUndefined(null)).toBe(false);
+ * expect(isNotUndefined(0)).toBe(true);
+ */
+export function isNotUndefined<
+  TypeOrUndefined
+>(
+	value: TypeOrUndefined
+): value is Exclude<TypeOrUndefined, undefined> {
+	return !isUndefined(value);
+}
