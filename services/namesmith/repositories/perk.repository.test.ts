@@ -357,4 +357,89 @@ describe('PerkRepository', () => {
 			makeSure(retrievedPerk).hasProperty('wasOffered', true);
 		});
 	});
+
+	describe('setPerkAsCurrentlyOffered()', () => {
+		it('marks a perk as currently offered', () => {
+			const perk = perkRepository.addPerk({
+				name: 'Perk Name',
+				description: 'Perk Description',
+				wasOffered: false
+			});
+
+			perkRepository.setPerkAsCurrentlyOffered(perk.id);
+
+			const isCurrentlyOffered = perkRepository.isCurrentlyOfferedPerk(perk.id);
+
+			makeSure(isCurrentlyOffered).is(true);
+		});
+	});
+
+	describe('unsetAllPerksAsCurrentlyOffered()', () => {
+		it('marks a perk as not currently offered', () => {
+			const perk = perkRepository.addPerk({
+				name: 'Perk Name',
+				description: 'Perk Description',
+				wasOffered: false
+			});
+
+			perkRepository.setPerkAsCurrentlyOffered(perk.id);
+			perkRepository.unsetAllPerksAsCurrentlyOffered();
+
+			const isCurrentlyOffered = perkRepository.isCurrentlyOfferedPerk(perk.id);
+
+			makeSure(isCurrentlyOffered).is(false);
+		});
+	});
+
+	describe('isCurrentlyOfferedPerk()', () => {
+		it('returns false when the perk is not currently offered', () => {
+			const perk = perkRepository.addPerk({
+				name: 'Perk Name',
+				description: 'Perk Description',
+				wasOffered: false
+			});
+
+			const isCurrentlyOffered = perkRepository.isCurrentlyOfferedPerk(perk.id);
+
+			makeSure(isCurrentlyOffered).is(false);
+		});
+
+		it('returns true when the perk is currently offered', () => {
+			const perk = perkRepository.addPerk({
+				name: 'Perk Name',
+				description: 'Perk Description',
+				wasOffered: false
+			});
+
+			perkRepository.setPerkAsCurrentlyOffered(perk.id);
+			const isCurrentlyOffered = perkRepository.isCurrentlyOfferedPerk(perk.id);
+
+			makeSure(isCurrentlyOffered).is(true);
+		});
+	});
+
+	describe('getCurrentlyOfferedPerks()', () => {
+		it('returns an empty array when no perks are currently offered', () => {
+			const perks = perkRepository.getCurrentlyOfferedPerks();
+
+			makeSure(perks).isEmpty();
+		});
+
+		it('returns an array of perks that are currently offered', () => {
+			const perk = perkRepository.addPerk({
+				name: 'Perk Name',
+				description: 'Perk Description',
+				wasOffered: false
+			});
+
+			perkRepository.setPerkAsCurrentlyOffered(perk.id);
+			const perks = perkRepository.getCurrentlyOfferedPerks();
+
+			makeSure(perks).hasLengthOf(1);
+			makeSure(perks[0]).hasProperty('id', perk.id);
+			makeSure(perks[0]).hasProperty('name', 'Perk Name');
+			makeSure(perks[0]).hasProperty('description', 'Perk Description');
+			makeSure(perks[0]).hasProperty('wasOffered', false);
+		});
+	});
 });

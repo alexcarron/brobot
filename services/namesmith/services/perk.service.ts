@@ -161,30 +161,44 @@ export class PerkService {
 	 */
 	offerThreeRandomNewPerks(): [Perk, Perk, Perk] {
 		const threeRandomPerks: Perk[] = [];
-		let perks = this.perkRepository.getPerksNotYetOffered();
+		let availablePerks = this.perkRepository.getPerksNotYetOffered();
+		this.perkRepository.unsetAllPerksAsCurrentlyOffered();
 
 		for (let numPerk = 1; numPerk <= 3; numPerk++) {
-			if (perks.length === 0)
+			if (availablePerks.length === 0)
 				throw new NotEnoughPerksError();
 
-			const randomIndex = Math.floor(Math.random() * perks.length);
-			const offeredPerk = perks[randomIndex];
+			const randomIndex = Math.floor(Math.random() * availablePerks.length);
+			const offeredPerk = availablePerks[randomIndex];
 			this.perkRepository.setWasOffered(offeredPerk.id, true);
+			this.perkRepository.setPerkAsCurrentlyOffered(offeredPerk.id);
 			threeRandomPerks.push({
 				...offeredPerk,
 				wasOffered: true,
 			});
 
-			perks.splice(randomIndex, 1);
+			availablePerks.splice(randomIndex, 1);
 
-			if (perks.length === 0) {
+			if (availablePerks.length === 0) {
 				this.perkRepository.setWasOfferedForAllPerks(false);
-				perks = this.perkRepository.getPerksNotYetOffered()
-				perks = perks.filter(perk =>  perk.id !== offeredPerk.id);
+				availablePerks = this.perkRepository.getPerksNotYetOffered();
+				availablePerks = availablePerks.filter(possiblePerk =>
+					!threeRandomPerks.some(chosenPerk =>
+						chosenPerk.id === possiblePerk.id
+					),
+				);
 			}
 		}
 
 		return threeRandomPerks as [Perk, Perk, Perk];
+	}
+
+	/**
+	 * Retrieves a list of perks that are currently offered.
+	 * @returns An array of perk objects that are currently offered.
+	 */
+	getCurrentlyOfferedPerks(): Perk[] {
+		return this.perkRepository.getCurrentlyOfferedPerks();
 	}
 
 	/**

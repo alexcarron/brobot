@@ -286,7 +286,40 @@ describe('PerkService', () => {
 			}
 		});
 
+		it('should mark perks as currently offered', () => {
+			const perks = perkService.offerThreeRandomNewPerks();
+
+			for (const perk of perks) {
+				const isCurrentlyOffered = perkService.perkRepository.isCurrentlyOfferedPerk(perk.id);
+				makeSure(isCurrentlyOffered).is(true);
+			}
+
+			const otherPerks = perkService.offerThreeRandomNewPerks();
+
+			for (const perk of perks) {
+				if (otherPerks.some(otherPerk => otherPerk.id === perk.id))
+					continue;
+
+				const isCurrentlyOffered = perkService.perkRepository.isCurrentlyOfferedPerk(perk.id);
+				makeSure(isCurrentlyOffered).is(false);
+			}
+			for (const perk of otherPerks) {
+				const isCurrentlyOffered = perkService.perkRepository.isCurrentlyOfferedPerk(perk.id);
+				makeSure(isCurrentlyOffered).is(true);
+			}
+		});
+
 		it('should refresh the wasOffered flag for all perks after offerring every perk', () => {
+			perkService.offerThreeRandomNewPerks();
+			perkService.offerThreeRandomNewPerks();
+			perkService.offerThreeRandomNewPerks();
+			perkService.offerThreeRandomNewPerks();
+			perkService.offerThreeRandomNewPerks();
+			perkService.offerThreeRandomNewPerks();
+			perkService.offerThreeRandomNewPerks();
+			perkService.offerThreeRandomNewPerks();
+			perkService.offerThreeRandomNewPerks();
+			perkService.offerThreeRandomNewPerks();
 			perkService.offerThreeRandomNewPerks();
 			perkService.offerThreeRandomNewPerks();
 

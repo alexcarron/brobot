@@ -96,6 +96,11 @@ CREATE TABLE IF NOT EXISTS trade (
 	) DEFAULT 'awaitingRecipient'
 );
 
+CREATE TABLE IF NOT EXISTS currentlyOfferedPerk (
+	id INTEGER NOT NULL REFERENCES perk(id) ON DELETE CASCADE,
+	PRIMARY KEY (id)
+);
+
 -- Optional index for performance
 CREATE INDEX IF NOT EXISTS characterIDIndex ON character (id);
 CREATE INDEX IF NOT EXISTS characterValueIndex ON character (value);

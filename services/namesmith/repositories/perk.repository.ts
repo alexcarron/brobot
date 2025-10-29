@@ -292,4 +292,56 @@ export class PerkRepository {
 
 		return perk;
 	}
+
+	/**
+	 * Marks a perk as currently offered.
+	 * @param perkID - The ID of the perk to be marked as currently offered.
+	 * @throws PerkNotFoundError - If the perk with the given ID does not exist.
+	 */
+	setPerkAsCurrentlyOffered(perkID: PerkID) {
+		const result = this.db.run(
+			"INSERT INTO currentlyOfferedPerk (id) VALUES (@perkID)",
+			{ perkID }
+		);
+
+		if (result.changes === 0)
+			throw new PerkNotFoundError(perkID);
+	}
+
+	/**
+	 * Unmarks all perks as currently offered.
+	 */
+	unsetAllPerksAsCurrentlyOffered() {
+		this.db.run(
+			"DELETE FROM currentlyOfferedPerk"
+		);
+	}
+
+	/**
+	 * Checks if a perk with the given ID is currently offered.
+	 * @param perkID - The ID of the perk to be checked for.
+	 * @returns A boolean indicating if the perk with the given ID is currently offered.
+	 */
+	isCurrentlyOfferedPerk(perkID: PerkID): boolean {
+		const foundPerkID = this.db.getValue(
+			`SELECT * FROM currentlyOfferedPerk WHERE id = @perkID`,
+			{ perkID }
+		) as PerkID | undefined;
+
+		return foundPerkID !== undefined;
+	}
+
+	/**
+	 * Retrieves a list of perks that are currently offered.
+	 * @returns An array of perk objects that are currently offered.
+	 */
+	getCurrentlyOfferedPerks(): Perk[] {
+		const dbPerks = this.db.getRows(
+			`SELECT id, name, description, wasOffered FROM currentlyOfferedPerk
+			JOIN perk USING (id)
+			ORDER BY id ASC`
+		) as DBPerk[];
+
+		return dbPerks.map(toPerk);
+	}
 }
