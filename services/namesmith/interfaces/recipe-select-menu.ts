@@ -6,7 +6,6 @@ import { fetchRecipesChannel } from "../utilities/discord-fetch.utility";
 import { craftCharacters } from "../workflows/craft-characters.workflow";
 import { replyToInteraction } from "../../../utilities/discord-action-utils";
 import { escapeDiscordMarkdown } from "../../../utilities/string-manipulation-utils";
-import { RecipeService } from "../services/recipe.service";
 import { attempt } from "../../../utilities/error-utils";
 import { DiscordSelectMenu } from '../../../utilities/discord-interfaces/discord-select-menu';
 
@@ -52,9 +51,8 @@ const onRecipeSelected = async (
 	));
 }
 
-export const createRecipeSelectMenu = (
-	{recipeService}: {recipeService: RecipeService},
-): DiscordSelectMenu => {
+export const createRecipeSelectMenu = (): DiscordSelectMenu => {
+	const {recipeService} = getNamesmithServices();
 	const allRecipes = recipeService.getRecipes();
 	const options = allRecipes.map(recipe => ({
 			label: recipeService.getDisplayName(recipe),
@@ -79,18 +77,14 @@ export const createRecipeSelectMenu = (
 	return recipeSelectMenu;
 }
 
-export const sendRecipeSelectMenu = async (
-	{recipeService}: {recipeService: RecipeService},
-) => {
-	const recipeSelectMenu = createRecipeSelectMenu({recipeService});
+export const sendRecipeSelectMenu = async () => {
+	const recipeSelectMenu = createRecipeSelectMenu();
 	const recipeChannel = await fetchRecipesChannel();
 	await recipeSelectMenu.setIn(recipeChannel);
 }
 
-export const regenerateRecipeSelectMenu = async (
-	{recipeService}: {recipeService: RecipeService},
-) => {
-	const recipeSelectMenu = createRecipeSelectMenu({recipeService});
+export const regenerateRecipeSelectMenu = async () => {
+	const recipeSelectMenu = createRecipeSelectMenu();
 	const recipeChannel = await fetchRecipesChannel();
 	await attempt(
 		recipeSelectMenu.regenerate({channel: recipeChannel})

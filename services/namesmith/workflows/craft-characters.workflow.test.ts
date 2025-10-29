@@ -35,7 +35,7 @@ describe('craft-character.workflow', () => {
 	});
 
 	describe('craftCharacter()', () => {
-		it('should return the player and recipe in the correct state.', async () => {
+		it('should return the player and recipe in the correct state.', () => {
 			const player = addMockPlayer(db, {
 				inventory: 'aabbccdd'
 			});
@@ -45,8 +45,8 @@ describe('craft-character.workflow', () => {
 			});
 
 			const {newInventory, craftedCharacters: craftedCharacter, recipeUsed} = returnIfNotFailure(
-					await craftCharacters({
-					playerService, recipeService, player, recipe
+				craftCharacters({
+					player, recipe
 				})
 			);
 
@@ -55,7 +55,7 @@ describe('craft-character.workflow', () => {
 			makeSure(recipeUsed).is(recipe);
 		});
 
-		it('should craft a character using a given recipe and player.', async () => {
+		it('should craft a character using a given recipe and player.', () => {
 			const player = addMockPlayer(db, {
 				inventory: 'aabbccdd'
 			});
@@ -64,8 +64,8 @@ describe('craft-character.workflow', () => {
 				outputCharacters: 'c'
 			});
 
-			await craftCharacters({
-				playerService, recipeService, player, recipe
+			craftCharacters({
+				player, recipe
 			});
 
 			const inventoryAfter = playerService.getInventory(player);
@@ -73,7 +73,7 @@ describe('craft-character.workflow', () => {
 			makeSure(inventoryAfter).is('accddc');
 		});
 
-		it('should throw MissingRequiredCharactersError if the player does not have all the required characters to craft the character.', async () => {
+		it('should throw MissingRequiredCharactersError if the player does not have all the required characters to craft the character.', () => {
 			const player = addMockPlayer(db, {
 				inventory: 'abc'
 			});
@@ -81,14 +81,14 @@ describe('craft-character.workflow', () => {
 				inputCharacters: 'def'
 			});
 
-			const result = await craftCharacters({
-				playerService, recipeService, player, recipe
+			const result = craftCharacters({
+				player, recipe
 			})
 
-			await makeSure(result.isMissingRequiredCharacters()).isTrue();
+			makeSure(result.isMissingRequiredCharacters()).isTrue();
 		});
 
-		it('should throw RecipeNotUnlockedError if the recipe is not unlocked for the player.', async () => {
+		it('should throw RecipeNotUnlockedError if the recipe is not unlocked for the player.', () => {
 			const isUnlockedForPlayer = jest.spyOn(recipeService, 'isUnlockedForPlayer');
 			isUnlockedForPlayer.mockReturnValue(false);
 
@@ -100,11 +100,11 @@ describe('craft-character.workflow', () => {
 				outputCharacters: 'c'
 			});
 
-			const result = await craftCharacters({
-				playerService, recipeService, player, recipe
+			const result = craftCharacters({
+				player, recipe
 			})
 
-			await makeSure(result.isRecipeNotUnlocked()).isTrue();
+			makeSure(result.isRecipeNotUnlocked()).isTrue();
 		});
 	});
 });

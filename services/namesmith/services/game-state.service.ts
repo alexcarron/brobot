@@ -8,7 +8,6 @@ import { RecipeService } from "./recipe.service";
 import { DAYS_TO_BUILD_NAME, DAYS_TO_VOTE } from "../constants/namesmith.constants";
 import { addDays } from "../../../utilities/date-time-utils";
 import { startVoting } from "../event-listeners/on-voting-start";
-import { getNamesmithServices } from "./get-namesmith-services";
 import { onVotingEnd } from "../event-listeners/on-voting-end";
 
 /**
@@ -67,7 +66,8 @@ export class GameStateService {
 		const endGameCronJob = new CronJob(
 			endDate,
 			async () => {
-				await startVoting({...getNamesmithServices()});
+				// TODO: Convert to event
+				await startVoting();
 			},
 		);
 
@@ -98,7 +98,8 @@ export class GameStateService {
 		const voteIsEndingCronJob = new CronJob(
 			voteEndingDate,
 			async () => {
-				await onVotingEnd({...getNamesmithServices()});
+				// TODO: Convert to event
+				await onVotingEnd();
 			},
 		);
 

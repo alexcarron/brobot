@@ -1,12 +1,11 @@
 
 import { PlayerResolvable } from '../types/player.types';
-import { PlayerService } from '../services/player.service';
 import { AVERAGE_TOKENS_FROM_REFILLING, MIN_TOKENS_FROM_REFILLING, REFILL_COOLDOWN_HOURS } from '../constants/namesmith.constants';
 import { getAnticipatedRandomNum } from '../../../utilities/random-utils';
 import { addHours } from '../../../utilities/date-time-utils';
 import { getWorkflowResultCreator, provides } from './workflow-result-creator';
-import { PerkService } from '../services/perk.service';
 import { Perks } from '../constants/perks.constants';
+import { getNamesmithServices } from '../services/get-namesmith-services';
 
 const result = getWorkflowResultCreator({
 	success: provides<{
@@ -33,12 +32,12 @@ const result = getWorkflowResultCreator({
  * - NonPlayerRefilledError if the provided player is not a valid player.
  */
 export const claimRefill = (
-	{playerService, perkService, playerRefilling}: {
-		playerService: PlayerService,
-		perkService: PerkService,
+	{playerRefilling}: {
 		playerRefilling: PlayerResolvable,
 	}
 ) => {
+	const {playerService, perkService} = getNamesmithServices();
+
 	if (!playerService.isPlayer(playerRefilling)) {
 		return result.failure.nonPlayerRefilled();
 	}

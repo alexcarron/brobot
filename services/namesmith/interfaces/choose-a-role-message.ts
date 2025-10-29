@@ -2,31 +2,24 @@ import { ButtonStyle } from "discord.js";
 import { ids } from "../../../bot-config/discord-ids";
 import { EMPTY } from "../../../utilities/constants/discord-interface.constants";
 import { joinLines } from "../../../utilities/string-manipulation-utils";
-import { RoleService } from "../services/role.service";
 import { Role } from "../types/role.types";
 import { chooseRole } from "../workflows/choose-role.workflow";
-import { PlayerService } from "../services/player.service";
 import { replyToInteraction } from "../../../utilities/discord-action-utils";
 import { fetchNamesmithChannel } from "../utilities/discord-fetch.utility";
 import { toPerkBulletPoint } from "./pick-a-perk-message";
 import { ignoreError } from "../../../utilities/error-utils";
 import { DiscordButtonDefinition } from "../../../utilities/discord-interfaces/discord-button";
 import { DiscordButtons } from "../../../utilities/discord-interfaces/discord-buttons";
+import { getNamesmithServices } from "../services/get-namesmith-services";
 
 /**
  * Generates a message that asks the user to choose one of the given roles.
  * The message lists the roles and describes the benefits of choosing one.
- * @param services - The services to use to get the roles.
- * @param services.playerService - The player service to use to get the player.
- * @param services.roleService - The role service to use to get the roles.
  * @returns A message that asks the user to choose one of the given roles.
  */
-export function getChooseARoleMessage(
-	{playerService, roleService}: {
-		playerService: PlayerService,
-		roleService: RoleService
-	},
-): DiscordButtons {
+export function getChooseARoleMessage(): DiscordButtons {
+	const {roleService} = getNamesmithServices();
+
 	const roles = roleService.getRoles();
 
 	const message = joinLines(
@@ -37,7 +30,7 @@ export function getChooseARoleMessage(
 
 	return new DiscordButtons({
 		promptText: message,
-		buttons: roles.map(role => toRoleButton({playerService, roleService, role}))
+		buttons: roles.map(role => toRoleButton({role}))
 	})
 }
 
@@ -57,9 +50,7 @@ const toRoleMessage = (role: Role) => joinLines(
  * @returns A Discord button definition that, when pressed, assigns the role to the user who pressed it.
  */
 export function toRoleButton(
-	{playerService, roleService, role}: {
-		playerService: PlayerService,
-		roleService: RoleService,
+	{role}: {
 		role: Role
 	},
 ): DiscordButtonDefinition {
@@ -69,8 +60,6 @@ export function toRoleButton(
 		style: ButtonStyle.Primary,
 		onButtonPressed: async (buttonInteraction) => {
 			const result = chooseRole({
-				playerService,
-				roleService,
 				player: buttonInteraction.user.id,
 				role
 			});
@@ -106,35 +95,20 @@ export function toRoleButton(
 /**
  * Sends a message to the 'Names to Vote On' channel asking the user to choose one of the given roles.
  * The message lists the roles and describes the benefits of choosing one.
- * @param services - The services to use to get the roles.
- * @param services.playerService - The player service to use to get the player.
- * @param services.roleService - The role service to use to get the roles.
  * @returns A promise that resolves once the message has been sent.
  */
-export async function sendChooseARoleMessage(
-	services: {
-		playerService: PlayerService,
-		roleService: RoleService
-	},
-): Promise<void> {
-	const chooseARoleMessage = getChooseARoleMessage(services);
+export async function sendChooseARoleMessage(): Promise<void> {
+	const chooseARoleMessage = getChooseARoleMessage();
 	const channel = await fetchNamesmithChannel(ids.namesmith.channels.CHOOSE_A_ROLE);
 	await chooseARoleMessage.setIn(channel);
 }
 
 /**
  * Regenerates the choose-a-role message in the 'choose-a-role' channel.
- * @param services - An object containing the necessary services to regenerate the message.
- * @param services.playerService - The player service to use to get the player.
- * @param services.roleService - The role service to use to get the roles.
  * @returns A promise that resolves once the message has been regenerated.
  */
-export async function regenerateChooseARoleMessage(
-	services: {
-		playerService: PlayerService,
-		roleService: RoleService
-}) {
-	const chooseARoleMessage = getChooseARoleMessage(services);
+export async function regenerateChooseARoleMessage() {
+	const chooseARoleMessage = getChooseARoleMessage();
 	const channel = await fetchNamesmithChannel(ids.namesmith.channels.CHOOSE_A_ROLE);
 
 	await ignoreError(chooseARoleMessage.regenerate({channel}))

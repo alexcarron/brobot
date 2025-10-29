@@ -1,8 +1,7 @@
 import { getAnticipatedRandomNum } from "../../../utilities/random-utils";
 import { MIN_TOKENS_FOR_MINING as MIN_TOKENS_FROM_MINING, MINING_EXPECTED_VALUE as AVERAGE_TOKENS_FROM_MINING } from "../constants/namesmith.constants";
 import { Perks } from "../constants/perks.constants";
-import { PerkService } from "../services/perk.service";
-import { PlayerService } from "../services/player.service";
+import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PlayerResolvable } from "../types/player.types";
 import { getWorkflowResultCreator, provides } from "./workflow-result-creator";
 
@@ -26,12 +25,12 @@ const result = getWorkflowResultCreator({
  * - NonPlayerMined failure object if the provided player is not a valid player.
  */
 export const mineTokens = (
-	{playerService, perkService, playerMining}: {
-		playerService: PlayerService,
-		perkService: PerkService,
+	{playerMining}: {
 		playerMining: PlayerResolvable,
 	}
 ) => {
+	const {playerService, perkService} = getNamesmithServices();
+
 	if (!playerService.isPlayer(playerMining)) {
 		return result.failure.nonPlayerMined();
 	}

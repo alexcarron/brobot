@@ -1,8 +1,6 @@
 import { ButtonStyle } from "discord.js";
 import { ids } from "../../../bot-config/discord-ids";
 import { joinLines, toAmountOfNoun } from "../../../utilities/string-manipulation-utils";
-import { PerkService } from "../services/perk.service";
-import { PlayerService } from "../services/player.service";
 import { Perk } from "../types/perk.types";
 import { fetchNamesmithChannel } from "../utilities/discord-fetch.utility";
 import { pickPerk } from "../workflows/pick-perk.workflow";
@@ -10,19 +8,17 @@ import { replyToInteraction } from "../../../utilities/discord-action-utils";
 import { DiscordButtons } from "../../../utilities/discord-interfaces/discord-buttons";
 import { DiscordButtonDefinition } from '../../../utilities/discord-interfaces/discord-button';
 import { ignoreError } from "../../../utilities/error-utils";
+import { getNamesmithServices } from "../services/get-namesmith-services";
 
 /**
  * Generates a messaeg that prompts the user to pick a perk.
  * @param services - An object containing the necessary services to generate the message.
- * @param services.playerService - The player service to use to get the player.
- * @param services.perkService - The perk service to use to get the perks.
+ * @param services.threePerks - The perks to be displayed in the message.
  * @returns A DiscordButtons object with the prompt text and empty buttons.
  */
 export function getPickAPerkMessage(
-	{threePerks, playerService, perkService}: {
+	{threePerks}: {
 		threePerks: Perk[],
-		playerService: PlayerService,
-		perkService: PerkService
 	},
 ): DiscordButtons {
 	const message = joinLines(
@@ -35,7 +31,7 @@ export function getPickAPerkMessage(
 		promptText: message,
 		buttons: threePerks.map(perk =>
 			toPerkButton({
-				playerService, perkService, perk,
+				perk,
 				perksPickingFrom: threePerks
 			})
 		),
@@ -55,9 +51,7 @@ export const toPerkBulletPoint = (perk: Perk) =>
  * @returns A DiscordButtonDefinition with the specified properties.
  */
 export function toPerkButton(
-	{playerService, perkService, perk, perksPickingFrom}: {
-		playerService: PlayerService,
-		perkService: PerkService,
+	{perk, perksPickingFrom}: {
 		perk: Perk,
 		perksPickingFrom: Perk[],
 	}
@@ -68,8 +62,6 @@ export function toPerkButton(
 		style: ButtonStyle.Secondary,
 		onButtonPressed: async (buttonInteraction) => {
 			const result = pickPerk({
-				playerService,
-				perkService,
 				player: buttonInteraction.user.id,
 				pickedPerk: perk,
 				perksPickingFrom
@@ -117,22 +109,13 @@ export function toPerkButton(
 /**
  * Sends a message to the 'Pick A Perk' channel asking the user to choose one of the given perks.
  * The message lists the perks and describes the benefits of choosing one.
- * @param services - The services to use to get the perks.
- * @param services.playerService - The player service to use to get the player.
- * @param services.perkService - The perk service to use to get the perks.
  * @returns A promise that resolves once the message has been sent.
  */
-export async function sendPickAPerkMessage(
-	services: {
-		playerService: PlayerService,
-		perkService: PerkService
-	},
-): Promise<void> {
-	const threePerks = services.perkService.offerThreeRandomNewPerks();
-	const pickAPerkMessage = getPickAPerkMessage({
-		...services,
-		threePerks
-	});
+export async function sendPickAPerkMessage(): Promise<void> {
+	const {perkService} = getNamesmithServices();
+
+	const threePerks = perkService.offerThreeRandomNewPerks();
+	const pickAPerkMessage = getPickAPerkMessage({threePerks});
 	const channel = await fetchNamesmithChannel(ids.namesmith.channels.PICK_A_PERK);
 	await pickAPerkMessage.setIn(channel);
 }
@@ -140,24 +123,14 @@ export async function sendPickAPerkMessage(
 /**
  * Regenerates the 'Pick A Perk' message in the 'Pick A Perk' channel.
  * The message lists the currently offered perks and describes the benefits of choosing one.
- * @param services - The services to use to get the perks.
- * @param services.playerService - The player service to use to get the player.
- * @param services.perkService - The perk service to use to get the currently offered perks.
  * @returns A promise that resolves once the message has been regenerated.
  */
-export async function regeneratePickAPerkMessage(
-	services: {
-		playerService: PlayerService,
-		perkService: PerkService
-	}
-): Promise<void> {
-	const threePerks = services.perkService.getCurrentlyOfferedPerks();
+export async function regeneratePickAPerkMessage(): Promise<void> {
+	const {perkService} = getNamesmithServices();
+	const threePerks = perkService.getCurrentlyOfferedPerks();
 	if (threePerks.length < 3) return;
 
-	const pickAPerkMessage = getPickAPerkMessage({
-		...services,
-		threePerks
-	});
+	const pickAPerkMessage = getPickAPerkMessage({threePerks});
 	const channel = await fetchNamesmithChannel(ids.namesmith.channels.PICK_A_PERK);
 	await ignoreError(pickAPerkMessage.regenerate({channel}))
 }

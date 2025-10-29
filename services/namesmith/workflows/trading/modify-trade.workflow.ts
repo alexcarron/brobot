@@ -1,9 +1,8 @@
-import { TradeService } from '../../services/trade.service';
-import { PlayerService } from '../../services/player.service';
 import { Trade, TradeResolveable, TradeStatuses } from '../../types/trade.types';
 import { Player, PlayerResolvable } from '../../types/player.types';
 import { getWorkflowResultCreator, provides } from '../workflow-result-creator';
 import { getCharacterDifferences } from '../../../../utilities/data-structure-utils';
+import { getNamesmithServices } from '../../services/get-namesmith-services';
 
 const result = getWorkflowResultCreator({
 	success: provides<{
@@ -27,13 +26,13 @@ const result = getWorkflowResultCreator({
 })
 
 export const checkIfPlayerCanModifyTrade = (
-	{tradeService, playerService, playerModifying, trade}: {
-		tradeService: TradeService,
-		playerService: PlayerService,
+	{playerModifying, trade}: {
 		playerModifying: PlayerResolvable,
 		trade: TradeResolveable,
 	}
 ) => {
+	const {tradeService, playerService} = getNamesmithServices();
+
 	// Is the user who is modifying the trade a player?
 	if (!playerService.isPlayer(playerModifying)) {
 		return result.failure.nonPlayerRespondedToTrade();
@@ -86,17 +85,17 @@ export const checkIfPlayerCanModifyTrade = (
  * @returns An object containing the trade that was modified, the initiating player, and the recipient player.
  */
 export const modifyTrade = (
-	{tradeService, playerService, playerModifying, trade, charactersGiving, charactersReceiving}: {
-		tradeService: TradeService,
-		playerService: PlayerService,
+	{playerModifying, trade, charactersGiving, charactersReceiving}: {
 		playerModifying: PlayerResolvable,
 		trade: TradeResolveable,
 		charactersGiving: string,
 		charactersReceiving: string,
 	}
 ) => {
+	const {tradeService, playerService} = getNamesmithServices();
+
 	const checkResult = checkIfPlayerCanModifyTrade({
-		tradeService, playerService, playerModifying, trade
+		playerModifying, trade
 	});
 	if (checkResult.isFailure()) return checkResult;
 	trade = checkResult.trade;

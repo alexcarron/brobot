@@ -1,6 +1,6 @@
 import { getCharacterDifferences } from "../../../../utilities/data-structure-utils";
+import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { PlayerService } from "../../services/player.service";
-import { TradeService } from "../../services/trade.service"
 import { Player, PlayerResolvable } from "../../types/player.types"
 import { Trade } from "../../types/trade.types";
 import { getWorkflowResultCreator, provides } from "../workflow-result-creator";
@@ -35,15 +35,15 @@ const result = getWorkflowResultCreator({
  * @returns {object} An object containing the initiating player, recipient player, and the trade that was initiated.
  */
 export const initiateTrade = (
-	{tradeService, playerService, initiatingPlayer, recipientPlayer, offeredCharacters, requestedCharacters}: {
-		tradeService: TradeService,
-		playerService: PlayerService,
+	{initiatingPlayer, recipientPlayer, offeredCharacters, requestedCharacters}: {
 		initiatingPlayer: PlayerResolvable,
 		recipientPlayer: PlayerResolvable,
 		offeredCharacters: string,
 		requestedCharacters: string
 	}
 ) => {
+	const {tradeService, playerService} = getNamesmithServices();
+
 	// Is the initiating user a player?
 	if (!playerService.isPlayer(initiatingPlayer)) {
 		return result.failure.nonPlayerInitiatedTrade();

@@ -1,6 +1,5 @@
 import { Perks } from "../constants/perks.constants";
-import { PerkService } from "../services/perk.service";
-import { PlayerService } from "../services/player.service";
+import { getNamesmithServices } from "../services/get-namesmith-services";
 import { Perk, PerkResolvable } from "../types/perk.types";
 import { PlayerResolvable } from "../types/player.types";
 import { getWorkflowResultCreator, provides } from "./workflow-result-creator";
@@ -27,14 +26,14 @@ const result = getWorkflowResultCreator({
  * @returns A result indicating if the perk was successfully picked or not.
  */
 export function pickPerk(
-	{playerService, perkService, player, pickedPerk, perksPickingFrom}: {
-		playerService: PlayerService,
-		perkService: PerkService,
+	{player, pickedPerk, perksPickingFrom}: {
 		player: PlayerResolvable,
 		pickedPerk: PerkResolvable,
 		perksPickingFrom: PerkResolvable[],
 	}
 ) {
+	const {playerService, perkService} = getNamesmithServices();
+
 	if (!playerService.isPlayer(player)) {
 		return result.failure.nonPlayer();
 	}

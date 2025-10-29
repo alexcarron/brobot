@@ -1,9 +1,8 @@
-import { TradeService } from '../../services/trade.service';
-import { PlayerService } from '../../services/player.service';
 import { Trade, TradeResolveable } from '../../types/trade.types';
 import { Player, PlayerResolvable } from '../../types/player.types';
 import { getWorkflowResultCreator, provides } from '../workflow-result-creator';
 import { getCharacterDifferences } from '../../../../utilities/data-structure-utils';
+import { getNamesmithServices } from '../../services/get-namesmith-services';
 
 const result = getWorkflowResultCreator({
 	success: provides<{
@@ -36,13 +35,13 @@ const result = getWorkflowResultCreator({
  * @returns An object containing the trade that was accepted, the initiating player, and the recipient player.
  */
 export const acceptTrade = async (
-	{tradeService, playerService, playerAccepting, trade}: {
-		tradeService: TradeService,
-		playerService: PlayerService,
+	{playerAccepting, trade}: {
 		playerAccepting: PlayerResolvable,
 		trade: TradeResolveable,
 	}
 ) => {
+	const {tradeService, playerService} = getNamesmithServices();
+	
 	// Is the user who accepting the trade a player?
 	if (!playerService.isPlayer(playerAccepting)) {
 		return result.failure.nonPlayerRespondedToTrade();

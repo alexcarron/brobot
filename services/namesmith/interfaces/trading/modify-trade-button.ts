@@ -1,7 +1,5 @@
 import { ButtonInteraction, ButtonStyle } from "discord.js";
 import { Trade } from "../../types/trade.types";
-import { PlayerService } from "../../services/player.service";
-import { TradeService } from "../../services/trade.service";
 import { handleTradeResponseResult } from "./trade-message";
 import { checkIfPlayerCanModifyTrade } from "../../workflows/trading/modify-trade.workflow";
 import { showModifyTradeModal } from "./modify-trade-modal";
@@ -15,9 +13,7 @@ import { showModifyTradeModal } from "./modify-trade-modal";
  * @returns An object containing the button's id, label, style, and a function to handle the button being pressed.
  */
 export function createModifyTradeButton(
-	{tradeService, playerService, trade}: {
-		tradeService: TradeService,
-		playerService: PlayerService,
+	{trade}: {
 		trade: Trade
 	}
 ) {
@@ -31,8 +27,6 @@ export function createModifyTradeButton(
 			const userID = buttonInteraction.user.id;
 			let modifyCheckResult =
 				checkIfPlayerCanModifyTrade({
-					tradeService,
-					playerService,
 					trade,
 					playerModifying: userID
 				});
@@ -51,8 +45,6 @@ export function createModifyTradeButton(
 
 			await showModifyTradeModal({
 				buttonInteraction,
-				tradeService,
-				playerService,
 				trade,
 				playerModifying,
 				otherPlayer,

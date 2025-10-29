@@ -1,12 +1,12 @@
 import { deleteAllMessagesInChannel } from "../../../../utilities/discord-action-utils";
-import { PlayerService } from "../../services/player.service"
+import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { openNamesToVoteOnChannel, sendToNamesToVoteOnChannel } from "../../utilities/discord-action.utility";
 import { fetchNamesToVoteOnChannel } from "../../utilities/discord-fetch.utility";
 import { regenerateVoteButton, sendVoteButton } from "./vote-button";
 
-export const sendVotingMessages = async ({playerService}: {
-	playerService: PlayerService
-}) => {
+export const sendVotingMessages = async () => {
+	const {playerService} = getNamesmithServices();
+
 	const namesToVoteOnChannel = await fetchNamesToVoteOnChannel();
 	await deleteAllMessagesInChannel(namesToVoteOnChannel);
 	await openNamesToVoteOnChannel();
@@ -22,9 +22,8 @@ export const sendVotingMessages = async ({playerService}: {
 	}
 }
 
-export const regenerateVoteDisplay = async ({playerService}: {
-	playerService: PlayerService
-}) => {
+export const regenerateVoteDisplay = async () => {
+	const {playerService} = getNamesmithServices();
 	const players = playerService.getPlayersWithPublishedName();
 
 	for (const player of players) {

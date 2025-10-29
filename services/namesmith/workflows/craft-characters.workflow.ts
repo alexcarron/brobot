@@ -1,6 +1,5 @@
 import { getCharacterDifferences } from "../../../utilities/data-structure-utils";
-import { PlayerService } from "../services/player.service";
-import { RecipeService } from "../services/recipe.service";
+import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PlayerResolvable } from '../types/player.types';
 import { Recipe, RecipeResolvable } from "../types/recipe.types";
 import { getWorkflowResultCreator, provides } from "./workflow-result-creator";
@@ -32,13 +31,13 @@ const result = getWorkflowResultCreator({
  * - RecipeNotUnlockedError if the recipe is not unlocked for the player.
  */
 export const craftCharacters = (
-	{playerService, recipeService, player, recipe}: {
-		playerService: PlayerService;
-		recipeService: RecipeService;
+	{player, recipe}: {
 		player: PlayerResolvable;
 		recipe: RecipeResolvable;
 	}
 ) => {
+	const {playerService, recipeService} = getNamesmithServices();
+
 	if (!playerService.isPlayer(player)) {
 		return result.failure.nonPlayerCrafted({});
 	}

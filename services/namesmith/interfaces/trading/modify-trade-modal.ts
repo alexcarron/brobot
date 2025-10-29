@@ -2,8 +2,6 @@ import { ButtonInteraction, ModalSubmitInteraction } from "discord.js";
 import { showModalWithTextInputs } from "../../../../utilities/discord-interfaces/discord-interface-utils";
 import { Trade, TradeStatuses } from "../../types/trade.types";
 import { Player } from "../../types/player.types";
-import { TradeService } from "../../services/trade.service";
-import { PlayerService } from "../../services/player.service";
 import { modifyTrade } from "../../workflows/trading/modify-trade.workflow";
 import { replyToInteraction } from "../../../../utilities/discord-action-utils";
 import { sendTradeMessage } from "./trade-message";
@@ -19,10 +17,8 @@ import { sendTradeMessage } from "./trade-message";
  * @param parameters.otherPlayer - The player who is the recipient of the trade.
  */
 export async function showModifyTradeModal(
-	{buttonInteraction, tradeService, playerService, trade, playerModifying, otherPlayer}: {
+	{buttonInteraction, trade, playerModifying, otherPlayer}: {
 		buttonInteraction: ButtonInteraction,
-		tradeService: TradeService,
-		playerService: PlayerService,
 		trade: Trade,
 		playerModifying: Player,
     otherPlayer: Player,
@@ -50,8 +46,6 @@ export async function showModifyTradeModal(
 		onModalSubmitted: async ({interaction, givenCharactersValue, receivedCharactersValue}) => {
 			await onSubmitModifyTradeModal({
 				modalSubmitInteraction: interaction,
-				tradeService,
-				playerService,
 				playerModifying,
 				trade,
 				charactersGiving: givenCharactersValue,
@@ -74,17 +68,15 @@ export async function showModifyTradeModal(
  * @returns A promise that resolves to void.
  */
 async function onSubmitModifyTradeModal(
-	{modalSubmitInteraction, tradeService, playerService, playerModifying, trade, charactersGiving, charactersReceiving}: {
+	{modalSubmitInteraction, playerModifying, trade, charactersGiving, charactersReceiving}: {
 		modalSubmitInteraction: ModalSubmitInteraction,
-		tradeService: TradeService,
-		playerService: PlayerService,
 		playerModifying: Player,
 		trade: Trade,
 		charactersGiving: string,
 		charactersReceiving: string
 	}
 ) {
-	const modifyResult = modifyTrade({tradeService, playerService, playerModifying, trade, charactersGiving, charactersReceiving});
+	const modifyResult = modifyTrade({playerModifying, trade, charactersGiving, charactersReceiving});
 
 	if (modifyResult.isNonPlayerRespondedToTrade()) {
 		return await replyToInteraction(modalSubmitInteraction,
@@ -133,9 +125,5 @@ async function onSubmitModifyTradeModal(
 	await replyToInteraction(modalSubmitInteraction,
 		`You modified <@${otherPlayer.id}>'s trade request to the following trade.`
 	);
-	await sendTradeMessage({
-		tradeService,
-		playerService,
-		trade
-	})
+	await sendTradeMessage({trade})
 }

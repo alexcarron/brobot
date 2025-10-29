@@ -1,8 +1,6 @@
 import { ButtonInteraction, ButtonStyle } from "discord.js";
 import { Trade } from "../../types/trade.types";
 import { acceptTrade } from "../../workflows/trading/accept-trade.workflow";
-import { PlayerService } from "../../services/player.service";
-import { TradeService } from "../../services/trade.service";
 import { handleTradeResponseResult } from "./trade-message";
 import { replyToInteraction } from "../../../../utilities/discord-action-utils";
 
@@ -15,9 +13,7 @@ import { replyToInteraction } from "../../../../utilities/discord-action-utils";
  * @returns An object containing the button's id, label, style, and a function to handle the button being pressed.
  */
 export function createAcceptTradeButton(
-	{tradeService, playerService, trade}: {
-		tradeService: TradeService,
-		playerService: PlayerService,
+	{trade}: {
 		trade: Trade
 	}
 ) {
@@ -30,8 +26,6 @@ export function createAcceptTradeButton(
 		onButtonPressed: async (buttonInteraction: ButtonInteraction) => {
 			const userID = buttonInteraction.user.id;
 			let acceptResult = await acceptTrade({
-				tradeService,
-				playerService,
 				trade,
 				playerAccepting: userID
 			});

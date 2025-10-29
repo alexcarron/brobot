@@ -1,11 +1,7 @@
 import { sendChooseARoleMessage } from '../interfaces/choose-a-role-message';
 import { sendPickAPerkMessage } from '../interfaces/pick-a-perk-message';
 import { sendRecipeSelectMenu } from '../interfaces/recipe-select-menu';
-import { GameStateService } from '../services/game-state.service';
-import { PerkService } from '../services/perk.service';
-import { PlayerService } from '../services/player.service';
-import { RecipeService } from '../services/recipe.service';
-import { RoleService } from '../services/role.service';
+import { getNamesmithServices } from '../services/get-namesmith-services';
 import { clearNamesToVoteOnChannel, clearPublishedNamesChannel, clearTheWinnerChannel, closeNamesToVoteOnChannel, closeTheWinnerChannel, openPublishedNamesChannel } from '../utilities/discord-action.utility';
 
 /**
@@ -15,22 +11,10 @@ import { clearNamesToVoteOnChannel, clearPublishedNamesChannel, clearTheWinnerCh
  * - Sending the recipe select menu
  * - Setting the game start and end times
  * - Starting the cron jobs to end the game and end voting at the times stored in the game state
- * @param services - The services to use
- * @param services.gameStateService - The game state service
- * @param services.playerService - The player service
- * @param services.recipeService - The recipe service
- * @param services.roleService - The role service
- * @param services.perkService - The perk service
  */
-export async function startGame(
-	{ gameStateService, playerService, recipeService, roleService, perkService }: {
-		gameStateService: GameStateService;
-		playerService: PlayerService;
-		recipeService: RecipeService;
-		roleService: RoleService;
-		perkService: PerkService;
-	}
-): Promise<void> {
+export async function startGame(): Promise<void> {
+	const { gameStateService, playerService, perkService } = getNamesmithServices();
+
 	// Reset the channel permissions
 	await closeNamesToVoteOnChannel();
 	await clearNamesToVoteOnChannel();
@@ -49,10 +33,10 @@ export async function startGame(
 	perkService.reset();
 
 	// Send the recipe select menu in the recipes channel
-	await sendRecipeSelectMenu({recipeService});
+	await sendRecipeSelectMenu();
 
-	await sendChooseARoleMessage({playerService, roleService});
-	await sendPickAPerkMessage({playerService, perkService});
+	await sendChooseARoleMessage();
+	await sendPickAPerkMessage();
 
 	// Set the game start and end times
 	const now = new Date();

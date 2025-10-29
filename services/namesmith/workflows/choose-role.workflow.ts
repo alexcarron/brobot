@@ -1,5 +1,4 @@
-import { PlayerService } from "../services/player.service";
-import { RoleService } from "../services/role.service";
+import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PlayerResolvable } from "../types/player.types";
 import { RoleResolvable } from "../types/role.types";
 import { getWorkflowResultCreator, provides } from "./workflow-result-creator";
@@ -24,13 +23,13 @@ const result = getWorkflowResultCreator({
  * @returns A workflow success object if the role was assigned successfully, or a workflow failure object if the role was not assigned successfully.
  */
 export function chooseRole(
-	{playerService, roleService, player, role}: {
-		playerService: PlayerService,
-		roleService: RoleService,
+	{player, role}: {
 		player: PlayerResolvable,
 		role: RoleResolvable
 	}
 ) {
+	const {playerService, roleService} = getNamesmithServices();
+
 	if (!playerService.isPlayer(player)) {
 		return result.failure.nonPlayer();
 	}

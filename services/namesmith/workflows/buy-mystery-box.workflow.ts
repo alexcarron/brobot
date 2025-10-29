@@ -1,8 +1,6 @@
 import { getRandomBoolean } from "../../../utilities/random-utils";
 import { Perks } from "../constants/perks.constants";
-import { MysteryBoxService } from "../services/mystery-box.service";
-import { PerkService } from "../services/perk.service";
-import { PlayerService } from "../services/player.service";
+import { getNamesmithServices } from "../services/get-namesmith-services";
 import { MinimalMysteryBox, MysteryBoxResolveable } from '../types/mystery-box.types';
 import { Player, PlayerResolvable } from "../types/player.types";
 import { getWorkflowResultCreator, provides } from "./workflow-result-creator";
@@ -42,17 +40,15 @@ const result = getWorkflowResultCreator({
  */
 export const buyMysteryBox = (
 	{
-		mysteryBoxService, playerService, perkService,
 		player,
 		mysteryBox = 1
 	}: {
-		mysteryBoxService: MysteryBoxService,
-		playerService: PlayerService,
-		perkService: PerkService,
 		player: PlayerResolvable,
 		mysteryBox?: MysteryBoxResolveable
 	}
 ) => {
+	const {mysteryBoxService, playerService, perkService} = getNamesmithServices();
+
 	if (!playerService.isPlayer(player)) {
 		return result.failure.nonPlayerBoughtMysteryBox();
 	}

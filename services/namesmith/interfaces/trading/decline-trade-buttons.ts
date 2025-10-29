@@ -1,7 +1,5 @@
 import { ButtonInteraction, ButtonStyle } from "discord.js";
 import { Trade } from "../../types/trade.types";
-import { PlayerService } from "../../services/player.service";
-import { TradeService } from "../../services/trade.service";
 import { handleTradeResponseResult } from "./trade-message";
 import { declineTrade } from "../../workflows/trading/decline-trade.workflow";
 
@@ -14,9 +12,7 @@ import { declineTrade } from "../../workflows/trading/decline-trade.workflow";
  * @returns An object containing the button's id, label, style, and a function to handle the button being pressed.
  */
 export function createDeclineTradeButton(
-	{tradeService, playerService, trade}: {
-		tradeService: TradeService,
-		playerService: PlayerService,
+	{trade}: {
 		trade: Trade
 	}
 ) {
@@ -29,8 +25,6 @@ export function createDeclineTradeButton(
 		onButtonPressed: async (buttonInteraction: ButtonInteraction) => {
 			const userID = buttonInteraction.user.id;
 			let declineResult = declineTrade({
-				tradeService,
-				playerService,
 				trade,
 				playerDeclining: userID
 			});

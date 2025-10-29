@@ -1,29 +1,22 @@
 import { sendVotingMessages } from '../interfaces/voting/voting-messages';
-import { VoteService } from "../services/vote.service";
-import { PlayerService } from "../services/player.service";
 import { closePublishedNamesChannel } from '../utilities/discord-action.utility';
+import { getNamesmithServices } from '../services/get-namesmith-services';
 
 /**
  * Starts the voting phase of the game by doing the following:
  * - Publishing any names that have not yet been published
  * - Sending the voting display
  * - Resetting the vote service
- * @param services - The services to use
- * @param services.playerService - The player service
- * @param services.voteService - The vote service
  */
-export async function startVoting(
-	{ playerService, voteService }: {
-		playerService: PlayerService;
-		voteService: VoteService;
-	}
-) {
+export async function startVoting() {
+	const { playerService, voteService } = getNamesmithServices();
+
 	await playerService.publishUnpublishedNames();
 	await playerService.finalizeAllNames();
 
 	await closePublishedNamesChannel();
 
-	await sendVotingMessages({playerService});
+	await sendVotingMessages();
 
 	voteService.reset();
 }

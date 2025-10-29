@@ -2,8 +2,6 @@ import { ButtonInteraction } from "discord.js";
 import { ids } from "../../../../bot-config/discord-ids";
 import { Trade } from "../../types/trade.types";
 import { fetchNamesmithChannel } from "../../utilities/discord-fetch.utility";
-import { PlayerService } from "../../services/player.service";
-import { TradeService } from "../../services/trade.service";
 import { replyToInteraction } from "../../../../utilities/discord-action-utils";
 import { createAcceptTradeButton } from "./accept-trade-button";
 import { createModifyTradeButton } from "./modify-trade-button";
@@ -13,6 +11,7 @@ import { checkIfPlayerCanModifyTrade } from "../../workflows/trading/modify-trad
 import { acceptTrade } from "../../workflows/trading/accept-trade.workflow";
 import { declineTrade } from "../../workflows/trading/decline-trade.workflow";
 import { DiscordButtons } from "../../../../utilities/discord-interfaces/discord-buttons";
+import { getNamesmithServices } from "../../services/get-namesmith-services";
 
 /**
  * Creates a new trade message with the given properties.
@@ -23,13 +22,12 @@ import { DiscordButtons } from "../../../../utilities/discord-interfaces/discord
  * @returns A new trade message interface object.
  */
 export function createTradeMessage(
-	{tradeService, playerService, trade}: {
-		tradeService: TradeService,
-		playerService: PlayerService,
+	{trade}: {
 		trade: Trade,
 	}
 ): DiscordButtons {
 	const { offeredCharacters, requestedCharacters } = trade;
+	const { tradeService } = getNamesmithServices();
 
 	const playerWaitingForResponse = tradeService.getPlayerWaitingForResponse(trade)!;
 	const playerAwaitingResponseFrom = tradeService.getPlayerAwaitingResponseFrom(trade)!;
@@ -39,17 +37,9 @@ export function createTradeMessage(
 		`:arrow_right: **You give them** ${requestedCharacters}\n` +
 		`:arrow_left: **You receive** ${offeredCharacters}\n\n`
 
-	const acceptButton = createAcceptTradeButton({
-		tradeService, playerService, trade
-	});
-
-	const declineButton =  createDeclineTradeButton({
-		tradeService, playerService, trade
-	})
-
-	const modifyButton = createModifyTradeButton({
-		tradeService, playerService, trade
-	})
+	const acceptButton = createAcceptTradeButton({trade});
+	const declineButton =  createDeclineTradeButton({trade})
+	const modifyButton = createModifyTradeButton({trade})
 
 
 	const tradeInterface = new DiscordButtons({
@@ -72,15 +62,13 @@ export function createTradeMessage(
  * @param parameters.trade - The trade to send.
  */
 export async function sendTradeMessage(
-	{tradeService, playerService, trade}: {
-		tradeService: TradeService,
-		playerService: PlayerService,
+	{trade}: {
 		trade: Trade,
 	}
 ) {
 	const tradeChannel = await fetchNamesmithChannel(ids.namesmith.channels.TRADE_CHARACTERS);
 
-	const tradeInterface = createTradeMessage({tradeService, playerService, trade});
+	const tradeInterface = createTradeMessage({trade});
 
 	await tradeInterface.sendIn(tradeChannel);
 }
@@ -93,15 +81,13 @@ export async function sendTradeMessage(
  * @param parameters.trade - The trade to regenerate.
  */
 async function regenerateTradeMessage(
-	{tradeService, playerService, trade}: {
-		tradeService: TradeService,
-		playerService: PlayerService,
+	{trade}: {
 		trade: Trade,
 	}
 ) {
 	const tradeChannel = await fetchNamesmithChannel(ids.namesmith.channels.TRADE_CHARACTERS);
 
-	const tradeInterface = createTradeMessage({tradeService, playerService, trade});
+	const tradeInterface = createTradeMessage({trade});
 
 	await attempt(
 		tradeInterface.regenerate({channel: tradeChannel})
@@ -110,20 +96,14 @@ async function regenerateTradeMessage(
 
 /**
  * Regenerates all trade messages for every trade in the trade service.
- * @param parameters - An object containing the trade service and player service.
- * @param parameters.tradeService - The trade service.
- * @param parameters.playerService - The player service.
  */
-export async function regenerateAllTradeMessages(
-	{tradeService, playerService}: {
-		tradeService: TradeService,
-		playerService: PlayerService
-}) {
+export async function regenerateAllTradeMessages() {
+	const { tradeService } = getNamesmithServices();
 	const trades = tradeService.getTrades();
 	for (const trade of trades) {
 		if (tradeService.hasBeenRespondedTo(trade)) continue;
 
-		await regenerateTradeMessage({tradeService, playerService, trade});
+		await regenerateTradeMessage({trade});
 	}
 }
 

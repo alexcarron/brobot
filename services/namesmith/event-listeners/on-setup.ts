@@ -110,18 +110,18 @@ export const setupNamesmith = async () => {
 	logInfo("Setting up Namesmith...");
 	await initializeDependencies();
 
-	const { gameStateService, recipeService, playerService, tradeService, roleService, perkService } = getNamesmithServices();
+	const { gameStateService } = getNamesmithServices();
 
 	setupEventListeners();
 
 	if (gameStateService.hasStarted()) {
 		gameStateService.scheduleGameEvents();
 
-		await regenerateRecipeSelectMenu({recipeService});
-		await regenerateVoteDisplay({playerService});
-		await regenerateAllTradeMessages({tradeService, playerService});
-		await regenerateChooseARoleMessage({playerService, roleService});
-		await regeneratePickAPerkMessage({playerService, perkService});
+		await regenerateRecipeSelectMenu();
+		await regenerateVoteDisplay();
+		await regenerateAllTradeMessages();
+		await regenerateChooseARoleMessage();
+		await regeneratePickAPerkMessage();
 	}
 
 	logSuccess("Namesmith set up");
