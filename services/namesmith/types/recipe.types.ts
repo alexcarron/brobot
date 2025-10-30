@@ -11,4 +11,6 @@ export interface Recipe {
 export type DBRecipe = Recipe;
 
 export type RecipeID = Recipe["id"];
-export type RecipeResolvable = Recipe | RecipeID;
+export type RecipeResolvable =
+	| {id: RecipeID}
+	| RecipeID;

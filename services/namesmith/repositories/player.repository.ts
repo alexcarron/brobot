@@ -32,12 +32,30 @@ export class PlayerRepository {
 		return dbPlayers.map(dbPlayer => toMinimalPlayerObject(dbPlayer));
 	}
 
+	private attachExistingPerksToPlayer(
+		minimalPlayer: MinimalPlayer
+	): Player {
+		const dbPerks = this.db.getRows(
+			`SELECT id, name, description
+				FROM playerPerk
+				JOIN perk ON playerPerk.perkID = perk.id
+				WHERE playerID = @playerID`,
+			{ playerID: minimalPlayer.id }
+		) as Array<DBPerk>;
+
+		return {
+			...minimalPlayer,
+			role: null,
+			perks: dbPerks.map(toPerk),
+		};
+	}
+
 	/**
 	 * Maps an array of minimal player objects to an array of player objects, including each player's perks.
 	 * @param minimalPlayers - An array of minimal player objects.
 	 * @returns An array of player objects.
 	 */
-	private addPerksToPlayers(minimalPlayers: MinimalPlayer[]): Player[] {
+	private attachExistingPerksToPlayers(minimalPlayers: MinimalPlayer[]): Player[] {
 		const playerPerks = this.db.getRows(
 			`SELECT playerID, perkID, id, name, description, wasOffered
 				FROM playerPerk
@@ -63,7 +81,7 @@ export class PlayerRepository {
 	 */
 	getPlayers(): Player[] {
 		const minimalPlayers = this.getMinimalPlayers();
-		return this.addPerksToPlayers(minimalPlayers);
+		return this.attachExistingPerksToPlayers(minimalPlayers);
 	}
 
 	getMinimalPlayerByID(playerID: PlayerID): MinimalPlayer | null {
@@ -86,19 +104,7 @@ export class PlayerRepository {
 		if (minimalPlayer === null)
 			return null;
 
-		const dbPerks = this.db.getRows(
-			`SELECT id, name, description
-				FROM playerPerk
-				JOIN perk ON playerPerk.perkID = perk.id
-				WHERE playerID = @playerID`,
-			{ playerID }
-		) as Array<DBPerk>;
-
-		return {
-			...minimalPlayer,
-			role: null,
-			perks: dbPerks.map(toPerk),
-		};
+		return this.attachExistingPerksToPlayer(minimalPlayer);
 	}
 
 	/**
@@ -136,7 +142,7 @@ export class PlayerRepository {
 	 */
 	getPlayersByCurrentName(currentName: string): Player[] {
 		const minimalPlayers = this.getMinimalPlayersByCurrentName(currentName);
-		return this.addPerksToPlayers(minimalPlayers);
+		return this.attachExistingPerksToPlayers(minimalPlayers);
 	}
 
 	/**
@@ -171,7 +177,7 @@ export class PlayerRepository {
 		publishedName: null
 	}>[] {
 		const minimalPlayers = this.getMinimalPlayersWithoutPublishedNames();
-		return this.addPerksToPlayers(minimalPlayers) as any;
+		return this.attachExistingPerksToPlayers(minimalPlayers) as any;
 	}
 
 	/**
@@ -197,7 +203,7 @@ export class PlayerRepository {
 		{publishedName: string}
 	>[] {
 		const minimalPlayers = this.getMinimalPlayersWithPublishedNames();
-		return this.addPerksToPlayers(minimalPlayers) as any;
+		return this.attachExistingPerksToPlayers(minimalPlayers) as any;
 	}
 
 	/**

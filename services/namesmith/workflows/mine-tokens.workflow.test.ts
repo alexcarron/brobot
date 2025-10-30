@@ -77,7 +77,7 @@ describe('mine-tokens.workflow', () => {
 				playerMining: mockPlayer.id
 			});
 
-			const updatedPlayer = services.playerService.getPlayer(mockPlayer.id);
+			const updatedPlayer = services.playerService.resolvePlayer(mockPlayer.id);
 
 			makeSure(updatedPlayer).is({
 				...mockPlayer,

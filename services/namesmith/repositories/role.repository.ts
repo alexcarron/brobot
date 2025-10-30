@@ -21,7 +21,7 @@ export class RoleRepository {
 		this.db = db;
 	}
 
-	private addPerksToMinimalRole(minimalRole: MinimalRole): Role {
+	private attachExistingPerksToRole(minimalRole: MinimalRole): Role {
 		const dbRolePerks = this.db.getRows(
 			"SELECT * FROM rolePerk WHERE roleID = @roleID",
 			{ roleID: minimalRole.id }
@@ -63,7 +63,7 @@ export class RoleRepository {
 	getRoles(): Role[] {
 		const minimalRoles = this.getMinimalRoles();
 		return minimalRoles.map(minimalRole =>
-			this.addPerksToMinimalRole(minimalRole)
+			this.attachExistingPerksToRole(minimalRole)
 		);
 	}
 
@@ -88,7 +88,7 @@ export class RoleRepository {
 
 	getRoleOrThrow(roleID: RoleID): Role {
 		const minimalRole = this.getMinimalRoleOrThrow(roleID);
-		return this.addPerksToMinimalRole(minimalRole);
+		return this.attachExistingPerksToRole(minimalRole);
 	}
 
 	/**
@@ -141,7 +141,7 @@ export class RoleRepository {
 		if (minimalRole === null)
 			return null;
 
-		return this.addPerksToMinimalRole(minimalRole);
+		return this.attachExistingPerksToRole(minimalRole);
 	}
 
 	/**

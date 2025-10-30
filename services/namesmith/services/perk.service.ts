@@ -104,22 +104,22 @@ export class PerkService {
 
 	/**
 	 * Executes a given function if the given player has the given perk.
-	 * @param perk - The perk to be checked for.
-	 * @param player - The player to be checked.
+	 * @param perkResolvable - The perk to be checked for.
+	 * @param playerResolvable - The player to be checked.
 	 * @param onPlayerHasPerk - The function to be executed if the player has the given perk.
 	 * @returns A boolean indicating if the player has the given perk.
 	 */
 	doIfPlayerHas(
-		perk: PerkResolvable,
-		player: PlayerResolvable,
+		perkResolvable: PerkResolvable,
+		playerResolvable: PlayerResolvable,
 		onPlayerHasPerk: (perk: Perk, player: Player) => any,
 	): boolean {
-		const playerHasPerk = this.doesPlayerHave(perk, player);
+		const playerHasPerk = this.doesPlayerHave(perkResolvable, playerResolvable);
 
 		if (playerHasPerk) {
-			const perkObj = this.resolvePerk(perk);
-			player = this.playerService.resolvePlayer(player);
-			onPlayerHasPerk(perkObj, player);
+			const perk = this.resolvePerk(perkResolvable);
+			const resolvedPlayer = this.playerService.resolvePlayer(playerResolvable);
+			onPlayerHasPerk(perk, resolvedPlayer);
 		}
 
 		return playerHasPerk;

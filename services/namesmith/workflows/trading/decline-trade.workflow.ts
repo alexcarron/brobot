@@ -30,7 +30,7 @@ const result = getWorkflowResultCreator({
  * @returns An object containing the declined trade and the initiating and recipient players.
  */
 export const declineTrade = (
-	{playerDeclining, trade}: {
+	{playerDeclining, trade: tradeResolvable}: {
 		playerDeclining: PlayerResolvable,
 		trade: TradeResolveable,
 	}
@@ -43,20 +43,20 @@ export const declineTrade = (
 	}
 
 	// Does this trade actually exist?
-	if (!tradeService.isTrade(trade)) {
+	if (!tradeService.isTrade(tradeResolvable)) {
 		return result.failure.nonTradeRespondedTo();
 	}
-	trade = tradeService.resolveTrade(trade);
+	const trade = tradeService.resolveTrade(tradeResolvable);
 
 	// Is this trade already responded to?
-	if (tradeService.hasBeenRespondedTo(trade)) {
-		trade = tradeService.resolveTrade(trade);
+	if (tradeService.hasBeenRespondedTo(tradeResolvable)) {
+		const trade = tradeService.resolveTrade(tradeResolvable);
 		return result.failure.tradeAlreadyRespondedTo({trade});
 	}
 
 	// Is this trade awaiting this player?
-	if (!tradeService.canPlayerRespond(trade, playerDeclining)) {
-		const playerAwaitingTrade = tradeService.getPlayerAwaitingResponseFrom(trade);
+	if (!tradeService.canPlayerRespond(tradeResolvable, playerDeclining)) {
+		const playerAwaitingTrade = tradeService.getPlayerAwaitingResponseFrom(tradeResolvable);
 
 		if (playerAwaitingTrade === null) {
 			throw new Error('Trade is not awaiting a response from any player, but it is also not responded to. This should never happen.');
@@ -65,7 +65,7 @@ export const declineTrade = (
 		return result.failure.tradeAwaitingDifferentPlayer({playerAwaitingTrade});
 	}
 
-	tradeService.decline(trade);
+	tradeService.decline(tradeResolvable);
 
 	const playerDeclinedID =
 		trade.status === TradeStatuses.AWAITING_INITIATOR

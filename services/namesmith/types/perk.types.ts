@@ -19,8 +19,7 @@ export type PerkDefintion = WithOptional<Perk, 'wasOffered'>;
 export type PerkID = Perk["id"];
 export type PerkName = Perk["name"];
 export type PerkResolvable =
-	| Perk
-	| PerkDefintion
+	| {id: PerkID}
 	| PerkID
 	| PerkName;
 

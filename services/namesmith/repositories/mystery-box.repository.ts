@@ -57,7 +57,7 @@ export class MysteryBoxRepository {
 	 * @param id - The id of the mystery box to return.
 	 * @returns The mystery box object with the given id or null if no such object exists.
 	 */
-	private getMinimalMysteryBoxByID(id: number): MinimalMysteryBox | null {
+	private getMinimalMysteryBoxByID(id: MysteryBoxID): MinimalMysteryBox | null {
 		if (!id)
 			throw new InvalidArgumentError('getMysteryBoxByID: Mystery box id must be provided.');
 
@@ -116,7 +116,7 @@ export class MysteryBoxRepository {
 	 * @param mysteryBoxID - The id of the mystery box to return the character odds for.
 	 * @returns An object with character IDs as keys and the weight of the character in the mystery box as the value.
 	 */
-	getCharacterOdds(mysteryBoxID: number): CharacterOdds {
+	getCharacterOdds(mysteryBoxID: MysteryBoxID): CharacterOdds {
 		const query = `SELECT characterID, weight FROM mysteryBoxCharacterOdds WHERE mysteryBoxID = @mysteryBoxID`;
 		const getCharacterOdds = this.db.prepare(query);
 		const characterOddsRows = getCharacterOdds.all({ mysteryBoxID }) as DBCharacterOddsRow[];
@@ -134,7 +134,7 @@ export class MysteryBoxRepository {
 	 * @returns The token cost of the mystery box.
 	 * @throws {MysteryBoxNotFoundError} If a mystery box with the given ID does not exist.
 	 */
-	getTokenCost(mysteryBoxID: number): number {
+	getTokenCost(mysteryBoxID: MysteryBoxID): number {
 		const mysteryBox = this.getMinimalMysteryBoxByID(mysteryBoxID);
 
 		if (mysteryBox === null)

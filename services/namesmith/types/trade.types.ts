@@ -32,4 +32,6 @@ export type DBTrade = Trade
 
 export type TradeID = Trade['id'];
 
-export type TradeResolveable = Trade | TradeID
+export type TradeResolveable =
+	| { id: TradeID }
+	| TradeID;

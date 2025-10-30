@@ -26,7 +26,7 @@ const result = getWorkflowResultCreator({
 })
 
 export const checkIfPlayerCanModifyTrade = (
-	{playerModifying, trade}: {
+	{playerModifying, trade: tradeResolvable}: {
 		playerModifying: PlayerResolvable,
 		trade: TradeResolveable,
 	}
@@ -39,14 +39,14 @@ export const checkIfPlayerCanModifyTrade = (
 	}
 
 	// Does this trade actually exist?
-	if (!tradeService.isTrade(trade)) {
+	if (!tradeService.isTrade(tradeResolvable)) {
 		return result.failure.nonTradeRespondedTo();
 	}
-	trade = tradeService.resolveTrade(trade);
+	const trade = tradeService.resolveTrade(tradeResolvable);
 
 	// Is this trade already responded to?
 	if (tradeService.hasBeenRespondedTo(trade)) {
-		trade = tradeService.resolveTrade(trade);
+		const trade = tradeService.resolveTrade(tradeResolvable);
 		return result.failure.tradeAlreadyRespondedTo({trade});
 	}
 
@@ -85,7 +85,7 @@ export const checkIfPlayerCanModifyTrade = (
  * @returns An object containing the trade that was modified, the initiating player, and the recipient player.
  */
 export const modifyTrade = (
-	{playerModifying, trade, charactersGiving, charactersReceiving}: {
+	{playerModifying, trade: tradeResolvable, charactersGiving, charactersReceiving}: {
 		playerModifying: PlayerResolvable,
 		trade: TradeResolveable,
 		charactersGiving: string,
@@ -95,10 +95,10 @@ export const modifyTrade = (
 	const {tradeService, playerService} = getNamesmithServices();
 
 	const checkResult = checkIfPlayerCanModifyTrade({
-		playerModifying, trade
+		playerModifying, trade: tradeResolvable
 	});
 	if (checkResult.isFailure()) return checkResult;
-	trade = checkResult.trade;
+	const trade = checkResult.trade;
 
 	let newOfferedCharacters, newRequestedCharacters;
 	if (trade.status === TradeStatuses.AWAITING_RECIPIENT) {

@@ -25,19 +25,6 @@ export class PlayerService {
 	) {}
 
 	/**
-	 * Retrieves a player from the repository.
-	 * @param playerResolvable - The player resolvable to retrieve.
-	 * @returns The retrieved player object, or null if the player is not found.
-	 */
-	getPlayer(playerResolvable: PlayerResolvable): Player | null {
-		if (isString(playerResolvable)) {
-			return this.playerRepository.getPlayerByID(playerResolvable);
-		}
-
-		return playerResolvable;
-	}
-
-	/**
 	 * Resolves a player from the given resolvable.
 	 * @param playerResolvable - The player resolvable to resolve.
 	 * @returns The resolved player object.

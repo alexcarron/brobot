@@ -34,4 +34,5 @@ export type DBMysteryBox = MinimalMysteryBox;
 export type MysteryBoxID = MinimalMysteryBox["id"];
 export type MysteryBoxName = MinimalMysteryBox["name"];
 export type MysteryBoxResolveable =
-	MinimalMysteryBox | MysteryBox | MysteryBoxID;
+	| {id: MysteryBoxID}
+	| MysteryBoxID;

@@ -40,8 +40,8 @@ const result = getWorkflowResultCreator({
  */
 export const buyMysteryBox = (
 	{
-		player,
-		mysteryBox = 1
+		player: playerResolvable,
+		mysteryBox: mysteryBoxResolvable = 1
 	}: {
 		player: PlayerResolvable,
 		mysteryBox?: MysteryBoxResolveable
@@ -49,22 +49,22 @@ export const buyMysteryBox = (
 ) => {
 	const {mysteryBoxService, playerService, perkService} = getNamesmithServices();
 
-	if (!playerService.isPlayer(player)) {
+	if (!playerService.isPlayer(playerResolvable)) {
 		return result.failure.nonPlayerBoughtMysteryBox();
 	}
 
-	if (!mysteryBoxService.isMysteryBox(mysteryBox)) {
+	if (!mysteryBoxService.isMysteryBox(mysteryBoxResolvable)) {
 		return result.failure.mysteryBoxDoesNotExist();
 	}
 
-	let tokenCost = mysteryBoxService.getCost(mysteryBox);
-	perkService.doIfPlayerHas(Perks.DISCOUNT, player, () => {
+	let tokenCost = mysteryBoxService.getCost(mysteryBoxResolvable);
+	perkService.doIfPlayerHas(Perks.DISCOUNT, playerResolvable, () => {
 		tokenCost = Math.ceil(tokenCost * 0.90);
 	});
 
-	if (!playerService.hasTokens(player, tokenCost)) {
-		mysteryBox = mysteryBoxService.resolveMysteryBox(mysteryBox);
-		player = playerService.resolvePlayer(player);
+	if (!playerService.hasTokens(playerResolvable, tokenCost)) {
+		const mysteryBox = mysteryBoxService.resolveMysteryBox(mysteryBoxResolvable);
+		const player = playerService.resolvePlayer(playerResolvable);
 
 		return result.failure.playerCantAffordMysteryBox({
 			mysteryBoxName: mysteryBox.name,
@@ -73,36 +73,36 @@ export const buyMysteryBox = (
 		});
 	}
 
-	playerService.takeTokens(player, tokenCost);
+	playerService.takeTokens(playerResolvable, tokenCost);
 
-	const recievedCharacter = mysteryBoxService.openBox(mysteryBox);
+	const recievedCharacter = mysteryBoxService.openBox(mysteryBoxResolvable);
 	const characterValue = recievedCharacter.value;
 	let recievedCharacterValues = characterValue;
 
-	playerService.giveCharacter(player, characterValue);
+	playerService.giveCharacter(playerResolvable, characterValue);
 
 	// Handle Lucky Duplicate Characters perk
 	let gotDuplicate = false;
-	perkService.doIfPlayerHas(Perks.LUCKY_DUPLICATE_CHARACTERS, player, () => {
+	perkService.doIfPlayerHas(Perks.LUCKY_DUPLICATE_CHARACTERS, playerResolvable, () => {
 		if (getRandomBoolean(0.10)) {
 			gotDuplicate = true;
 			recievedCharacterValues += characterValue;
-			playerService.giveCharacter(player, characterValue);
+			playerService.giveCharacter(playerResolvable, characterValue);
 		}
 	})
 
 	// Handle Lucky Refund perk
 	let wasRefunded = false;
-	perkService.doIfPlayerHas(Perks.LUCKY_REFUND, player, () => {
+	perkService.doIfPlayerHas(Perks.LUCKY_REFUND, playerResolvable, () => {
 		if (getRandomBoolean(0.10)) {
 			wasRefunded = true;
-			playerService.giveTokens(player, tokenCost);
+			playerService.giveTokens(playerResolvable, tokenCost);
 		}
 	});
 
 	return result.success({
-		player: playerService.resolvePlayer(player),
-		mysteryBox: mysteryBoxService.resolveMysteryBox(mysteryBox),
+		player: playerService.resolvePlayer(playerResolvable),
+		mysteryBox: mysteryBoxService.resolveMysteryBox(mysteryBoxResolvable),
 		tokenCost,
 		recievedCharacterValues,
 		wasRefunded,

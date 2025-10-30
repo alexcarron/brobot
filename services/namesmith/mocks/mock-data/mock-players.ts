@@ -1,4 +1,4 @@
-import { InvalidArgumentError, throwIfNull } from "../../../../utilities/error-utils";
+import { InvalidArgumentError, returnIfNotNull } from "../../../../utilities/error-utils";
 import { createRandomNumericUUID } from "../../../../utilities/random-utils";
 import { WithAtLeast, WithAtLeastOneProperty } from "../../../../utilities/types/generic-types";
 import { isNumber, isString } from "../../../../utilities/types/type-guards";
@@ -9,6 +9,7 @@ import { DBPlayer, MinimalPlayer, Player, PlayerDefinition } from "../../types/p
 import { PlayerAlreadyExistsError } from "../../utilities/error.utility";
 import { toMinimalPlayerObject } from "../../utilities/player.utility";
 import { toPerk } from '../../utilities/perk.utility';
+import { Role } from "../../types/role.types";
 
 /**
  * An array of mock player data for use in tests.
@@ -113,7 +114,7 @@ export const addMockPlayer = (
 		currentName = "",
 		publishedName = null,
 		tokens = 0,
-		role = null,
+		role: roleResolvable = null,
 		perks = [],
 		inventory = "",
 		lastClaimedRefillTime = null,
@@ -136,17 +137,19 @@ export const addMockPlayer = (
 		throw new PlayerAlreadyExistsError(id);
 	}
 
-
+	let role: Role | null = null;
 	const roleRepository = new RoleRepository(db);
-	if (isNumber(role)) {
-		role = roleRepository.getRoleOrThrow(role);
+	if (isNumber(roleResolvable)) {
+		role = roleRepository.getRoleOrThrow(roleResolvable);
 	}
-	else if (isString(role)) {
-		role = roleRepository.getRoleByName(role);
-		throwIfNull(role)
+	else if (isString(roleResolvable)) {
+		role = returnIfNotNull(
+			roleRepository.getRoleByName(roleResolvable)
+		);
+
 	}
-	else if (role !== null) {
-		role = roleRepository.getRoleOrThrow(role.id);
+	else if (roleResolvable !== null) {
+		role = roleRepository.getRoleOrThrow(roleResolvable.id);
 	}
 
 	const player = { id, currentName, publishedName, tokens, role, inventory, lastClaimedRefillTime};

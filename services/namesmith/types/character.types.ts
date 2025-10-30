@@ -14,6 +14,6 @@ export type CharacterID = Character["id"];
 export type CharacterValue = Character["value"];
 export type CharacterResolvable =
 	| Character
-	| Character
+	| {id: CharacterID}
 	| CharacterID
 	| CharacterValue;

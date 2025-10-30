@@ -570,6 +570,25 @@ export function returnIfNotError<GivenType>(
 	return valueOrError as Exclude<GivenType, Error>;
 }
 
+
+/**
+ * Returns the given value if it is not null. If the given value is null, it is thrown as an error.
+ * @param valueOrError - The value to check.
+ * @returns The given value if it is not null.
+ * @throws {Error} - Throws the value if it's null.
+ * @example
+ * const maybeMoney: number | null = calculateMoney();
+ * const money: number = returnIfNotNull(maybeMoney); // throws if maybeMoney is null
+ */
+export function returnIfNotNull<GivenType>(
+	valueOrError: GivenType
+): Exclude<GivenType, null> {
+	if (valueOrError === null)
+		throw new Error("Expected value to not be null, but got null.");
+
+	return valueOrError as Exclude<GivenType, null>;
+}
+
 export function hasFailed<ReturnType>(
 	promise: Promise<ReturnType>
 ): Promise<boolean>;

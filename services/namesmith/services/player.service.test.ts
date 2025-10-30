@@ -63,24 +63,6 @@ describe('PlayerService', () => {
     });
   });
 
-  describe('getPlayer()', () => {
-    it('should return a player object when given a player ID', () => {
-      const player = playerService.playerRepository.getPlayers()[0];
-      const resolvedPlayer = playerService.getPlayer(player.id);
-      expect(resolvedPlayer).toEqual(player);
-    });
-
-    it('should return a player object when given a player object', () => {
-      const player = playerService.playerRepository.getPlayers()[0];
-      const resolvedPlayer = playerService.getPlayer(player);
-      expect(resolvedPlayer).toEqual(player);
-    });
-
-    it('should return null if the player is not found', () => {
-      expect(playerService.getPlayer(INVALID_PLAYER_ID)).toBeNull();
-    });
-  })
-
   describe('resolvePlayer()', () => {
     it('should resolve a player object to a player object', () => {
 			const player = playerService.playerRepository.getPlayers()[0];

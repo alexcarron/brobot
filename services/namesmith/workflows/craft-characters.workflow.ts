@@ -31,21 +31,21 @@ const result = getWorkflowResultCreator({
  * - RecipeNotUnlockedError if the recipe is not unlocked for the player.
  */
 export const craftCharacters = (
-	{player, recipe}: {
+	{player: playerResolvable, recipe: recipeResolvable}: {
 		player: PlayerResolvable;
 		recipe: RecipeResolvable;
 	}
 ) => {
 	const {playerService, recipeService} = getNamesmithServices();
 
-	if (!playerService.isPlayer(player)) {
+	if (!playerService.isPlayer(playerResolvable)) {
 		return result.failure.nonPlayerCrafted({});
 	}
 
-	const hasRequiredCharacters = recipeService.playerHasInputCharacters(recipe, player);
+	const hasRequiredCharacters = recipeService.playerHasInputCharacters(recipeResolvable, playerResolvable);
 	if (!hasRequiredCharacters) {
-		player = playerService.resolvePlayer(player);
-		recipe = recipeService.resolveRecipe(recipe);
+		const player = playerService.resolvePlayer(playerResolvable);
+		const recipe = recipeService.resolveRecipe(recipeResolvable);
 		const { missingCharacters } =
 			getCharacterDifferences(recipe.inputCharacters, player.inventory);
 
@@ -54,16 +54,16 @@ export const craftCharacters = (
 		});
 	}
 
-	const isUnlocked = recipeService.isUnlockedForPlayer(recipe, player);
+	const isUnlocked = recipeService.isUnlockedForPlayer(recipeResolvable, playerResolvable);
 	if (!isUnlocked) {
 		return result.failure.recipeNotUnlocked({});
 	}
 
-	recipeService.giveOutputAndTakeInputCharactersFromPlayer(recipe, player);
+	recipeService.giveOutputAndTakeInputCharactersFromPlayer(recipeResolvable, playerResolvable);
 
-	const newInventory = playerService.getInventory(player);
-	const craftedCharacters = recipeService.getOutputCharacters(recipe);
-	const recipeUsed = recipeService.resolveRecipe(recipe);
+	const newInventory = playerService.getInventory(playerResolvable);
+	const craftedCharacters = recipeService.getOutputCharacters(recipeResolvable);
+	const recipeUsed = recipeService.resolveRecipe(recipeResolvable);
 
 	return result.success({
 		newInventory,

@@ -27,8 +27,7 @@ export type RoleName = Role["name"];
 export type RoleResolvable =
 	| RoleID
 	| RoleName
-	| RoleDefinition
-	| Role;
+	| { id: RoleID };
 
 
 export type DBRolePerk = {

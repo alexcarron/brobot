@@ -35,33 +35,33 @@ const result = getWorkflowResultCreator({
  * @returns An object containing the trade that was accepted, the initiating player, and the recipient player.
  */
 export const acceptTrade = async (
-	{playerAccepting, trade}: {
+	{playerAccepting, trade: tradeResolvable}: {
 		playerAccepting: PlayerResolvable,
 		trade: TradeResolveable,
 	}
 ) => {
 	const {tradeService, playerService} = getNamesmithServices();
-	
+
 	// Is the user who accepting the trade a player?
 	if (!playerService.isPlayer(playerAccepting)) {
 		return result.failure.nonPlayerRespondedToTrade();
 	}
 
 	// Does this trade actually exist?
-	if (!tradeService.isTrade(trade)) {
+	if (!tradeService.isTrade(tradeResolvable)) {
 		return result.failure.nonTradeRespondedTo();
 	}
-	trade = tradeService.resolveTrade(trade);
+	const trade = tradeService.resolveTrade(tradeResolvable);
 
 	// Is this trade already responded to?
-	if (tradeService.hasBeenRespondedTo(trade)) {
-		trade = tradeService.resolveTrade(trade);
+	if (tradeService.hasBeenRespondedTo(tradeResolvable)) {
+		const trade = tradeService.resolveTrade(tradeResolvable);
 		return result.failure.tradeAlreadyRespondedTo({trade});
 	}
 
 	// Is this trade awaiting this player?
-	if (!tradeService.canPlayerRespond(trade, playerAccepting)) {
-		const playerAwaitingTrade = tradeService.getPlayerAwaitingResponseFrom(trade);
+	if (!tradeService.canPlayerRespond(tradeResolvable, playerAccepting)) {
+		const playerAwaitingTrade = tradeService.getPlayerAwaitingResponseFrom(tradeResolvable);
 
 		if (playerAwaitingTrade === null) {
 			throw new Error('Trade is not awaiting a response from any player, but it is also not responded to. This should never happen.');
