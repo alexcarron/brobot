@@ -5,6 +5,34 @@ import { attempt } from '../../../utilities/error-utils';
 import { isArray, isObject } from "../../../utilities/types/type-guards";
 
 /**
+ * A union type representing a set of possible values that can be used as the rest parameter of a DatabaseQuerier query function.
+ */
+type RestSQLParams =
+	| unknown[]
+	| [unknown[]]
+	| [object]
+
+/**
+ * The possible types for the `params` argument of a SQLite query function.
+ */
+type SQLParams =
+  | undefined
+	| unknown[]
+	| object
+
+/**
+ * Converts the rest parameter of a DatabaseQuerier query function into a format that can be used as the `params` argument of a SQLite query function.
+ * @param restSQLParams - The rest parameter of a DatabaseQuerier query function.
+ * @returns The converted `params` argument of a SQLite query function.
+ */
+function toSQLParams(restSQLParams: RestSQLParams): SQLParams {
+	if (restSQLParams.length === 0) return undefined;
+	if (isArray(restSQLParams[0])) return restSQLParams[0];
+	if (isObject(restSQLParams[0])) return restSQLParams[0];
+	return restSQLParams;
+}
+
+/**
  * Converts an array of values into a parenthesized list of SQLite placeholders (`?`) for use in parameterized queries.
  * Useful when you want to safely query for multiple values using `IN (...)` without manually constructing the placeholders string.
  * @param array - The array of values to convert into a placeholder list.
@@ -200,10 +228,15 @@ export class DatabaseQuerier {
    * - changes: The total number of rows that were inserted, updated, or deleted by this operation
    * - lastInsertRowid: The rowid of the last row inserted into the database
    * @param sqlQuery - The SQL query to run
-   * @param params - The parameters to pass to the query
+   * @param restParams - The parameters to pass to the query
    * @returns The result of the query
    */
-  run(sqlQuery: string, params?: object | unknown[]): RunResult {
+  run(
+		sqlQuery: string,
+		...restParams: RestSQLParams
+	): RunResult {
+		const params = toSQLParams(restParams);
+
 		try {
 			const queryStatement = this.getQuery(sqlQuery);
 
@@ -230,11 +263,15 @@ export class DatabaseQuerier {
 	/**
 	 * Runs a single read query and returns the first value of the first row of the result set
 	 * @param sqlQuery - The SQL query to run
-	 * @param params - The parameters to pass to the query
+	 * @param restParams - The parameters to pass to the query
 	 * @returns The first value of the first row of the result set
 	 * @throws {QueryUsageError} If the query does not return a row
 	 */
-	getValue(sqlQuery: string, params?: object | unknown[]): unknown {
+	getValue(
+		sqlQuery: string,
+		...restParams: RestSQLParams
+	): unknown {
+		const params = toSQLParams(restParams);
 		const queryStatement = this.getQuery(sqlQuery);
 		let row;
 
@@ -258,10 +295,15 @@ export class DatabaseQuerier {
   /**
    * Runs a single read query and returns a single row
    * @param sqlQuery - The SQL query to run
-   * @param params - The parameters to pass to the query
+   * @param restParams - The parameters to pass to the query
    * @returns The first row of the result set or undefined if no row is found
    */
-  getRow(sqlQuery: string, params?: object | unknown[]): unknown | undefined {
+  getRow(
+		sqlQuery: string,
+		...restParams: RestSQLParams
+	): unknown | undefined {
+		const params = toSQLParams(restParams);
+
     const queryStatement = this.getQuery(sqlQuery);
 
 		if (params === undefined)
@@ -273,10 +315,14 @@ export class DatabaseQuerier {
   /**
    * Runs a single read query and returns all rows of the result set
    * @param sqlQuery - The SQL query to run
-   * @param params - The parameters to pass to the query
+   * @param restParams - The parameters to pass to the query
    * @returns An Array of all rows of the result set
    */
-  getRows(sqlQuery: string, params?: object | unknown[]): unknown[] {
+  getRows(
+		sqlQuery: string,
+		...restParams: RestSQLParams
+	): unknown[] {
+		const params = toSQLParams(restParams);
     const queryStatement = this.getQuery(sqlQuery);
 
 		if (params === undefined)
@@ -288,10 +334,14 @@ export class DatabaseQuerier {
   /**
    * Runs a single read query and returns an iterator over the result set
    * @param sqlQuery - The SQL query to run
-   * @param params - The parameters to pass to the query
+   * @param restParams - The parameters to pass to the query
    * @returns An iterator over all rows of the result set
    */
-  getIterator(sqlQuery: string, params?: object | unknown[]): Iterator<unknown> {
+  getIterator(
+		sqlQuery: string,
+		...restParams: RestSQLParams
+	): Iterator<unknown> {
+		const params = toSQLParams(restParams);
     const queryStatement = this.getQuery(sqlQuery);
 
 		if (params === undefined)
@@ -316,7 +366,10 @@ export class DatabaseQuerier {
    * @param params - Parameters to pass to the transaction function
    * @returns The result of the transaction
    */
-  runTransaction(multiQueryFunction: AnyFunction, ...params: unknown[]): unknown {
+  runTransaction(
+		multiQueryFunction: AnyFunction,
+		...params: unknown[]
+	): unknown {
     const transactionFunction = this.getTransaction(multiQueryFunction);
     return transactionFunction(...params);
   }
@@ -370,17 +423,4 @@ export class DatabaseQuerier {
 	close(): Database {
 		return this.db.close();
 	}
-
-	/**
-	 * Wrap a function in a single transaction to speed up multiple writes (for in-memory testing)
-	 * @param fn - The function to wrap in a transaction
-	 * @returns The wrapped function
-	 */
-  wrapInTransaction(fn: AnyFunction): AnyFunction {
-    if (!this.db.inTransaction) {
-      const txn = this.db.transaction(fn);
-      return (...args: unknown[]) => txn(...args);
-    }
-    return fn;
-  }
 }

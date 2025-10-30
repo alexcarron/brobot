@@ -73,6 +73,13 @@ describe('DatabaseQuerier', () => {
       expect(result).toHaveProperty('lastInsertRowid', expect.any(Number));
     });
 
+    it('runs a query with rest parameters', () => {
+      const query = 'INSERT INTO character (value, rarity) VALUES (?, ?)';
+      const result = dbQuerier.run(query, 'character3', 'legendary');
+      expect(result).toHaveProperty('changes', expect.any(Number));
+      expect(result).toHaveProperty('lastInsertRowid', expect.any(Number));
+    });
+
 		it('runs multiple queries and returns the results with negative one', () => {
 			const queries = `
 				INSERT INTO character (value, rarity) VALUES ('character3', 'legendary');
@@ -127,6 +134,22 @@ describe('DatabaseQuerier', () => {
 			const result = dbQuerier.getValue(query);
 			expect(result).toEqual(1);
 		});
+
+		it('works with rest parameters', () => {
+			const query = `
+				SELECT value FROM character
+				WHERE id = ? AND rarity = ?
+			`;
+			const result = dbQuerier.getValue(query, 1, 'common');
+			expect(result).toEqual('character1');
+		});
+
+		it('works with named parameters', () => {
+			const query = 'SELECT value FROM character WHERE id = @id';
+			const params = { id: 1 };
+			const result = dbQuerier.getValue(query, params);
+			expect(result).toEqual('character1');
+		})
 	});
 
   describe('.getRow()', () => {
@@ -143,6 +166,15 @@ describe('DatabaseQuerier', () => {
       const result = dbQuerier.getRow(query, params);
       expect(result).toBe(undefined);
     });
+
+		it('works with rest parameters', () => {
+			const query = `
+				SELECT * FROM character
+				WHERE id = ? AND rarity = ?
+			`;
+			const result = dbQuerier.getRow(query, 1, 'common');
+			expect(result).toEqual({ id: 1, value: 'character1', rarity: 'common' });
+		});
 
 		it('works with named parameters', () => {
 			const query = 'SELECT * FROM character WHERE id = @id';
@@ -168,6 +200,15 @@ describe('DatabaseQuerier', () => {
       const result = dbQuerier.getRows(query, params);
       expect(result).toEqual([]);
     });
+
+		it('works with rest parameters', () => {
+			const query = `
+				SELECT * FROM character
+				WHERE id = ? AND rarity = ?
+			`;
+			const result = dbQuerier.getRows(query, 1, 'common');
+			expect(result).toEqual([{ id: 1, value: 'character1', rarity: 'common' }]);
+		})
 
 		it('works with named parameters', () => {
 			const query = 'SELECT * FROM character WHERE id = @id';
