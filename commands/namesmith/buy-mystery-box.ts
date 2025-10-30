@@ -1,4 +1,3 @@
-import { User } from "discord.js";
 import { ids } from "../../bot-config/discord-ids";
 import { Parameter, ParameterTypes } from "../../services/command-creation/parameter";
 import { SlashCommand } from "../../services/command-creation/slash-command";
@@ -12,7 +11,7 @@ const Parameters = Object.freeze({
 		type: ParameterTypes.STRING,
 		name: "mystery-box",
 		description: "The mystery box to buy",
-		autocomplete: (enteredValue: string, user: User) => {
+		autocomplete: ({user}) => {
 			const { mysteryBoxService, perkService } = getNamesmithServices()
 			const mysteryBoxes = mysteryBoxService.getMysteryBoxes();
 			return mysteryBoxes.map(mysteryBox => {

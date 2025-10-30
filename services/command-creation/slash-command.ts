@@ -325,8 +325,8 @@ export class SlashCommand<
 				const enteredValue = getEnteredValueOfParameter(interaction, parameter.name);
 				const user = interaction.user;
 				const enteredValueByParameter = getEnteredValueOfParameters(interaction);
-				
-				const autocompleteChoicesResolvable = await parameter.autocomplete(enteredValue, user, enteredValueByParameter);
+
+				const autocompleteChoicesResolvable = await parameter.autocomplete({enteredValue, user, enteredValueByParameter});
 
 				const choices = toAutocompleteChoices(autocompleteChoicesResolvable);
 

@@ -40,7 +40,7 @@ export const command = new SlashCommand({
 			type: ParameterTypes.STRING,
 			name: "input",
 			description: "The characters consumed in the crafting recipe",
-			autocomplete: (enteredValue, user, enteredValueByParameter) => {
+			autocomplete: ({enteredValue, user, enteredValueByParameter}) => {
 				const { recipeService } = getNamesmithServices();
 
 				const recipes = recipeService.getRecipes();
@@ -104,7 +104,7 @@ export const command = new SlashCommand({
 			type: ParameterTypes.STRING,
 			name: "output",
 			description: "The characters produced by the crafting recipe",
-			autocomplete: (enteredValue, user, enteredValueByParameter) => {
+			autocomplete: ({enteredValue, user, enteredValueByParameter}) => {
 				const { recipeService } = getNamesmithServices();
 
 				const recipes = recipeService.getRecipes();
