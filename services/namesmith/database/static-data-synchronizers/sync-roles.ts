@@ -10,8 +10,6 @@ import { DatabaseQuerier, toListPlaceholder } from "../database-querier";
  * Syncronizes the database to match a list of role data defintions without breaking existing data.
  * @param db - The database querier used to execute queries.
  * @param roles - An array of role objects to be inserted. Each role can optionally include an 'id'. If 'id' is not provided, it will be auto-generated.
- * Each role object must have a 'name', 'description', and 'perks' properties. The 'perks' property should be an array of perk names.
- * This function will delete all existing roles and role-perk relationships before inserting the new ones.
  */
 export function syncRolesToDB(
 	db: DatabaseQuerier,
@@ -43,16 +41,19 @@ export function syncRolesToDB(
 			...roleIDs, ...roleNames
 		) as DBRole[];
 
-		for (const dbRole of existingDBRoles) {
+		for (const existingDBRole of existingDBRoles) {
 			const roleDefinition = roleDefinitions.find(role =>
-				role.id === dbRole.id ||
-				role.name === dbRole.name
+				role.id === existingDBRole.id ||
+				role.name === existingDBRole.name
 			);
 
 			if (roleDefinition === undefined)
 				continue;
 
-			roleRepository.updateRole(roleDefinition);
+			roleRepository.updateRole({
+				...roleDefinition,
+				id: existingDBRole.id,
+			});
 		}
 
 		const newRoleDefintions = roleDefinitions.filter(roleDef =>

@@ -382,3 +382,26 @@ export function toPropertyValues<
 	return object
 		.map(object => object[propertyName as string]) as any;
 }
+
+/**
+ * Maps an array of objects to an array of their property values, excluding undefined values.
+ * @template SpecificObject - The type of the objects in the array.
+ * @template PropertyName - The name of the property to extract from each object.
+ * @param object - The array of objects to map.
+ * @param propertyName - The name of the property to extract.
+ * @returns An array of the property values, excluding undefined values.
+ */
+export function toDefinedPropertyValues<
+	SpecificObjects extends Record<string, unknown>[],
+	PropertyName extends keyof SpecificObjects[number]
+>(
+	object: SpecificObjects,
+	propertyName: PropertyName
+): {
+	[Index in keyof SpecificObjects]:
+		SpecificObjects[Index][PropertyName]
+} {
+	return object
+		.map(object => object[propertyName as string])
+		.filter(value => value !== undefined) as any;
+}

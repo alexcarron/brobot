@@ -1,39 +1,88 @@
+import { toPropertyValues } from "../../../../utilities/data-structure-utils";
 import { InvalidArgumentError } from "../../../../utilities/error-utils";
-import { Character } from "../../types/character.types";
+import { isOneSymbol } from "../../../../utilities/string-checks-utils";
+import { isNotUndefined } from "../../../../utilities/types/type-guards";
+import { CharacterRepository } from "../../repositories/character.repository";
+import { CharacterDefintion, DBCharacter } from '../../types/character.types';
 import { getCharacterValueFromID, getIDfromCharacterValue } from "../../utilities/character.utility";
-import { DatabaseQuerier } from "../database-querier";
+import { DatabaseQuerier, toListPlaceholder } from "../database-querier";
 
 
 /**
  * Syncronizes the database to match a list of characters without breaking existing data.
  * @param db - The database querier instance used for executing SQL statements.
- * @param characters - An array of character objects to be inserted.
+ * @param characterDefintions - An array of character objects to be inserted.
  */
 export const syncCharactersToDB = (
 	db: DatabaseQuerier,
-	characters: Readonly<Character[]>
+	characterDefintions: Readonly<CharacterDefintion[]>
 ) => {
-	const insertCharacter = db.getQuery("INSERT OR IGNORE INTO character (id, value, rarity) VALUES (@id, @value, @rarity)");
+	const characterRepository = new CharacterRepository(db);
 
-	const insertCharacters = db.getTransaction((characters: Character[]) => {
-		for (const character of characters) {
-			if (character.value.length !== 1)
+	const characterIDs = toPropertyValues([...characterDefintions], 'id').filter(isNotUndefined);
+	const characterValues = toPropertyValues([...characterDefintions], 'value').filter(isNotUndefined);
+
+	db.runTransaction(() => {
+		const deleteCharactersNotDefined = db.getQuery(
+			`DELETE FROM character
+			WHERE
+				id NOT IN ${toListPlaceholder(characterIDs)}
+				AND value NOT IN ${toListPlaceholder(characterValues)}`,
+		);
+		deleteCharactersNotDefined.run(...characterIDs, ...characterValues);
+
+		const findExistingCharacters = db.getQuery(
+			`SELECT * FROM character
+			WHERE
+				id IN ${toListPlaceholder(characterIDs)}
+				OR value IN ${toListPlaceholder(characterValues)}`,
+		);
+		const existingDBCharacters = findExistingCharacters.getRows(
+			...characterIDs, ...characterValues
+		) as DBCharacter[];
+
+		const existingCharacterDefinitions: CharacterDefintion[] = [];
+		const newCharacterDefinitions: CharacterDefintion[] = [];
+
+		for (const characterDefintion of characterDefintions) {
+			if (!isOneSymbol(characterDefintion.value))
 				throw new InvalidArgumentError("insertCharactersToDB: character value must be a single character.");
 
-			if (getIDfromCharacterValue(character.value) !== character.id)
-				throw new InvalidArgumentError(`insertCharactersToDB: character id ${character.id} does not match character value ${character.value}.`);
+			if (
+				characterDefintion.value !== undefined &&
+				characterDefintion.id !== undefined
+			) {
+				if (getIDfromCharacterValue(characterDefintion.value) !== characterDefintion.id)
+					throw new InvalidArgumentError(`insertCharactersToDB: character id ${characterDefintion.id} does not match character value ${characterDefintion.value}.`);
 
-			if (getCharacterValueFromID(character.id) !== character.value)
-				throw new InvalidArgumentError(`insertCharactersToDB: character value ${character.value} does not match character id ${character.id}.`);
+				if (getCharacterValueFromID(characterDefintion.id) !== characterDefintion.value)
+					throw new InvalidArgumentError(`insertCharactersToDB: character value ${characterDefintion.value} does not match character id ${characterDefintion.id}.`);
+			}
 
+			if (existingDBCharacters.some(existingCharacter =>
+				existingCharacter.id === characterDefintion.id ||
+				existingCharacter.value === characterDefintion.value
+			)) {
+				existingCharacterDefinitions.push(characterDefintion);
+			}
+			else {
+				newCharacterDefinitions.push(characterDefintion);
+			}
+		}
 
-			insertCharacter.run({
-				id: character.id,
-				value: character.value,
-				rarity: character.rarity
+		for (const characterDefintion of existingCharacterDefinitions) {
+			let id = characterDefintion.id;
+			if (id === undefined)
+				id = getIDfromCharacterValue(characterDefintion.value);
+
+			characterRepository.updateCharacter({
+				id,
+				...characterDefintion
 			});
 		}
-	});
 
-	insertCharacters(characters);
+		for (const newCharacterDefinition of newCharacterDefinitions) {
+			characterRepository.addCharacter(newCharacterDefinition);
+		}
+	});
 }

@@ -132,6 +132,18 @@ export type WithOptional<
 export type AnyFunction = (...args: any[]) => any;
 
 /**
+ * Requires one or more properties to be defined of a given object type
+ * @example
+ * type IdentifiedPlayer = WithRequired<Player, "id" | "currentName">
+ */
+export type WithRequired<
+	ObjectType extends object,
+	RequiredPropertyNames extends keyof ObjectType
+> =
+	Required<Pick<ObjectType, RequiredPropertyNames>> &
+	Without<ObjectType, RequiredPropertyNames>;
+
+/**
  * Require identifier(s) and at least one other property for update-style params.
  * @example
  * type PlayerUpdate = WithRequiredAndOneOther<Player, "id">

@@ -1,4 +1,5 @@
 import { InvalidArgumentError } from "../../../utilities/error-utils";
+import { isOneSymbol } from "../../../utilities/string-checks-utils";
 
 /**
  * Retrieves the Unicode code point value of a given character.
@@ -7,7 +8,7 @@ import { InvalidArgumentError } from "../../../utilities/error-utils";
  * @throws {Error} If the input is not a string or not a single character.
  */
 export const getIDfromCharacterValue = (characterValue: string): number => {
-	if (characterValue.length !== 1) {
+	if (!isOneSymbol(characterValue)) {
 		throw new InvalidArgumentError('getIDofCharacter: character must be a single character.');
 	}
 

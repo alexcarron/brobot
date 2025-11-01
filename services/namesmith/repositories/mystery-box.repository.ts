@@ -1,9 +1,10 @@
-import { InvalidArgumentError, returnIfNotNull } from "../../../utilities/error-utils";
+import { ignoreError, InvalidArgumentError, returnIfNotNull } from "../../../utilities/error-utils";
 import { WithRequiredAndOneOther } from "../../../utilities/types/generic-types";
 import { DatabaseQuerier, toAssignmentsPlaceholder } from "../database/database-querier";
 import { CharacterOdds, DBCharacterOddsRow, DBMysteryBox, MinimalMysteryBox, MysteryBoxID, MysteryBox, MysteryBoxDefinition, MinimalMysteryBoxDefinition } from "../types/mystery-box.types";
 import { getCharacterValueFromID, getIDfromCharacterValue } from "../utilities/character.utility";
 import { MysteryBoxAlreadyExistsError, MysteryBoxNotFoundError } from "../utilities/error.utility";
+import { CharacterRepository } from "./character.repository";
 
 /**
  * Provides access to the static mystery box data.
@@ -198,6 +199,14 @@ export class MysteryBoxRepository {
 		for (const characterValue in characterOdds) {
 			const weight = characterOdds[characterValue];
 			const characterID = getIDfromCharacterValue(characterValue);
+
+			ignoreError(() =>
+				new CharacterRepository(this.db).addCharacter({
+					id: characterID,
+					value: characterValue,
+					rarity: weight
+				})
+			);
 
 			this.db.run(
 				`INSERT INTO mysteryBoxCharacterOdds (mysteryBoxID, characterID, weight)

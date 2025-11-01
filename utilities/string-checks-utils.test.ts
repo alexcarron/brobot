@@ -1,5 +1,5 @@
 import { makeSure } from "./jest/jest-utils";
-import { areCharactersInString, getCharacterCounts, isIntegerString } from "./string-checks-utils";
+import { areCharactersInString, getCharacterCounts, isIntegerString, isOneSymbol } from "./string-checks-utils";
 
 describe('string-checks-utils', () => {
 	describe('areCharactersInString()', () => {
@@ -267,6 +267,113 @@ describe('string-checks-utils', () => {
 		it('is strict about canonical representation: "12" passes, "012" fails', () => {
 			makeSure(isIntegerString('12')).is(true);
 			makeSure(isIntegerString('012')).is(false);
+		});
+	});
+
+	describe('isOneSymbol()', () => {
+		it('returns true for a single character string', () => {
+			makeSure(isOneSymbol('a')).is(true);
+		});
+
+		it('returns false for an empty string', () => {
+			makeSure(isOneSymbol('')).is(false);
+		});
+
+		it('returns false for a string with more than one character', () => {
+			makeSure(isOneSymbol('ab')).is(false);
+		});
+
+		it('returns false for a string with leading or trailing whitespace', () => {
+			makeSure(isOneSymbol(' a')).is(false);
+			makeSure(isOneSymbol('a ')).is(false);
+		});
+
+		it('returns false for a string with a newline', () => {
+			makeSure(isOneSymbol('a\n')).is(false);
+		});
+
+		it('returns true for a precomposed accented character (é)', () => {
+			makeSure(isOneSymbol('é')).is(true);
+		});
+
+		it('returns true for a single non-BMP symbol (musical G clef U+1D11E)', () => {
+			makeSure(isOneSymbol('𝄞')).is(true);
+		});
+
+		it('returns true for a simple emoji (😀)', () => {
+			makeSure(isOneSymbol('😀')).is(true);
+		});
+
+		it('returns false for two simple emojis (😀😀)', () => {
+			makeSure(isOneSymbol('😀😀')).is(false);
+		});
+
+		it('returns true for a thumbs up emoji (👍)', () => {
+			makeSure(isOneSymbol('👍')).is(true);
+		});
+
+		it('returns true for an emoji with skin-tone modifier (👍🏻)', () => {
+			makeSure(isOneSymbol('👍🏻')).is(true);
+		});
+
+		it('returns false for emoji with trailing character (👍🏻a)', () => {
+			makeSure(isOneSymbol('👍🏻a')).is(false);
+		});
+
+		it('returns true for a ZWJ family emoji (👩‍👩‍👧‍👦)', () => {
+			makeSure(isOneSymbol('👩‍👩‍👧‍👦')).is(true);
+		});
+
+		it('returns true for a complex ZWJ emoji with skin tones (example)', () => {
+			makeSure(isOneSymbol('👩🏽‍👩🏾‍👦🏿‍👦🏻')).is(true);
+		});
+
+		it('returns false for two emoji where second is not joined by ZWJ (👩‍👩‍👧‍👦👨)', () => {
+			makeSure(isOneSymbol('👩‍👩‍👧‍👦👨')).is(false);
+		});
+
+		it('returns true for a flag (🇺🇸)', () => {
+			makeSure(isOneSymbol('🇺🇸')).is(true);
+		});
+
+		it('returns false for two flags (🇺🇸🇨🇦)', () => {
+			makeSure(isOneSymbol('🇺🇸🇨🇦')).is(false);
+		});
+
+		it('returns true for a keycap emoji (1️⃣)', () => {
+			makeSure(isOneSymbol('1️⃣')).is(true);
+		});
+
+		it('returns true for a text-symbol with variation selector (♥️)', () => {
+			makeSure(isOneSymbol('♥️')).is(true);
+		});
+
+		it('returns true for the same symbol without VS16 (♥)', () => {
+			makeSure(isOneSymbol('♥')).is(true);
+		});
+
+		it('returns true for a single space character', () => {
+			makeSure(isOneSymbol(' ')).is(true);
+		});
+
+		it('returns false for two spaces', () => {
+			makeSure(isOneSymbol('  ')).is(false);
+		});
+
+		it('returns true for a single digit', () => {
+			makeSure(isOneSymbol('7')).is(true);
+		});
+
+		it('returns false for digit + digit', () => {
+			makeSure(isOneSymbol('12')).is(false);
+		});
+
+		it('returns false for a sequence of emoji separated by ZERO WIDTH JOINER AND SPACE (two visible glyphs)', () => {
+			makeSure(isOneSymbol('👩‍💻 👨‍💻')).is(false);
+		});
+
+		it('returns false for repeated long ZWJ emoji (same sequence twice)', () => {
+			makeSure(isOneSymbol('👩🏽‍👩🏾‍👦🏿‍👦🏻👩🏽‍👩🏾‍👦🏿‍👦🏻')).is(false);
 		});
 	});
 });

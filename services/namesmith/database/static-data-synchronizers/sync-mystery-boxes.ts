@@ -1,67 +1,61 @@
-import { WithOptional } from "../../../../utilities/types/generic-types";
-import { Character } from "../../types/character.types";
-import { MysteryBox } from "../../types/mystery-box.types";
-import { getIDfromCharacterValue } from "../../utilities/character.utility";
-import { ForeignKeyConstraintError } from "../../utilities/error.utility";
-import { DatabaseQuerier } from "../database-querier";
-import { syncCharactersToDB } from "./sync-characters";
+import { toDefinedPropertyValues } from "../../../../utilities/data-structure-utils";
+import { WithOptional, WithRequired } from "../../../../utilities/types/generic-types";
+import { MysteryBoxRepository } from "../../repositories/mystery-box.repository";
+import { DBMysteryBox, MysteryBoxDefinition } from "../../types/mystery-box.types";
+import { DatabaseQuerier, toListPlaceholder } from "../database-querier";
 
 /**
  * Syncronizes the database to match a list of data defintions of mystery boxes without breaking existing data.
  * @param db - The database querier instance used for executing SQL statements.
- * @param mysteryBoxes - An array of mystery box objects to be inserted.
+ * @param mysteryBoxDefinitions - An array of mystery box objects to be inserted.
  */
 export const syncMysteryBoxesToDB = (
 	db: DatabaseQuerier,
-	mysteryBoxes: Readonly<
-		WithOptional<MysteryBox, "id">[]
+	mysteryBoxDefinitions: Readonly<
+		WithOptional<MysteryBoxDefinition, "id">[]
 	>
 ) => {
-	const insertMysteryBox = db.getQuery("INSERT OR IGNORE INTO mysteryBox (name, tokenCost) VALUES (@name, @tokenCost)");
-	const insertMysteryBoxCharacterOdds = db.getQuery("INSERT OR IGNORE INTO mysteryBoxCharacterOdds (mysteryBoxID, characterID, weight) VALUES (@mysteryBoxID, @characterID, @weight)");
+	const mysteryBoxRepository = new MysteryBoxRepository(db);
 
-	const insertMysteryBoxes = db.getTransaction((mysteryBoxes: MysteryBox[]) => {
-		db.run("DELETE FROM mysteryBoxCharacterOdds");
-		db.run("DELETE FROM mysteryBox");
+	const mysertyBoxIDs = toDefinedPropertyValues([...mysteryBoxDefinitions], "id");
 
-		// SET AUTO INCREMENT TO 1
-		db.run("UPDATE sqlite_sequence SET seq = 0 WHERE name = 'mysteryBox'");
+	db.runTransaction(() => {
+		db.run(
+			`DELETE FROM mysteryBox
+			WHERE id NOT IN ${toListPlaceholder(mysertyBoxIDs)}`,
+			...mysertyBoxIDs
+		);
 
-		for (const mysteryBox of mysteryBoxes) {
-			const result = insertMysteryBox.run({
-				name: mysteryBox.name,
-				tokenCost: mysteryBox.tokenCost
-			});
-			const newId = result.lastInsertRowid;
+		const existingDBMysteryBoxes = db.getRows(
+			`SELECT id FROM mysteryBox
+			WHERE id IN ${toListPlaceholder(mysertyBoxIDs)}`,
+			...mysertyBoxIDs
+		) as DBMysteryBox[];
 
-			for (const [characterValue, weight] of Object.entries(mysteryBox.characterOdds)) {
-				const characterID = getIDfromCharacterValue(characterValue);
-				const insertCharacterOdds = () =>
-					insertMysteryBoxCharacterOdds.run({
-						mysteryBoxID: newId,
-						characterID,
-						weight
-					});
+		const existingMysteryBoxDefinitions: WithRequired<MysteryBoxDefinition, 'id'>[] = [];
+		const newMysteryBoxDefinitions: MysteryBoxDefinition[] = [];
 
-				try {
-					insertCharacterOdds();
-				}
-				catch (error) {
-					if (!(error instanceof ForeignKeyConstraintError))
-						throw error;
+		for (const mysteryBoxDefinition of mysteryBoxDefinitions) {
+			const existingDBMysteryBox = existingDBMysteryBoxes
+				.find(({id}) => id === mysteryBoxDefinition.id);
 
-					const character: Character = {
-						id: characterID,
-						value: characterValue,
-						rarity: weight,
-					};
-
-					syncCharactersToDB(db, [character]);
-					insertCharacterOdds();
-				}
+			if (existingDBMysteryBox) {
+				existingMysteryBoxDefinitions.push({
+					...mysteryBoxDefinition,
+					id: existingDBMysteryBox.id,
+				});
+			}
+			else {
+				newMysteryBoxDefinitions.push(mysteryBoxDefinition);
 			}
 		}
-	});
 
-	insertMysteryBoxes(mysteryBoxes);
+		for (const mysteryBoxDefinition of existingMysteryBoxDefinitions) {
+			mysteryBoxRepository.updateMysteryBox(mysteryBoxDefinition);
+		}
+
+		for (const mysteryBoxDefinition of newMysteryBoxDefinitions) {
+			mysteryBoxRepository.addMysteryBox(mysteryBoxDefinition);
+		}
+	});
 }
