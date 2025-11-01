@@ -1,3 +1,4 @@
+import { WithOptional } from "../../../utilities/types/generic-types";
 import { PlayerID } from "./player.types";
 
 export type TradeStatus =
@@ -24,14 +25,10 @@ export type Trade = {
 	status: TradeStatus;
 }
 
-/**
- * DBTrade represents a trade stored in the database.
- * Currently identical to Trade but kept for semantic clarity.
- */
 export type DBTrade = Trade
+export type TradeDefintion = WithOptional<Trade, "id">
 
 export type TradeID = Trade['id'];
-
 export type TradeResolveable =
 	| { id: TradeID }
 	| TradeID;

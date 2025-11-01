@@ -415,6 +415,18 @@ export function makeSure<
 		},
 
 		/**
+		 * Asserts that the actual object contains the expected object subset in it.
+		 * @param expectedObjectSubset - The expected object subset that the actual object should contain.
+		 * @example
+		 * makeSure({id: 1, name: 'John Doe', age: 30}).includesObject({ id: 1 });
+		 */
+		includesObject(expectedObjectSubset: Partial<ActualType>): void {
+			expect(actualValue).toEqual(
+				expect.objectContaining(expectedObjectSubset)
+			);
+		},
+
+		/**
 		 * Asserts that the actual function throws an error.
 		 * @example
 		 * makeSure(() => { throw new Error('Error!'); }).throwsAnError();

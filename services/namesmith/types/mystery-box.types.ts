@@ -1,4 +1,4 @@
-import { Without } from "../../../utilities/types/generic-types";
+import { WithOptional, Without } from "../../../utilities/types/generic-types";
 
 /**
  * An object mapping character values to their weights.
@@ -23,13 +23,16 @@ export type MysteryBox = {
 	characterOdds: CharacterOdds;
 }
 
-export type MinimalMysteryBox = Without<MysteryBox, "characterOdds">;
+export type MinimalMysteryBox =
+	Without<MysteryBox, "characterOdds">;
 
-/**
- * DBMysteryBox represents a Mystery Box stored in the database.
- * Currently identical to MinimalMysteryBox but kept for semantic clarity.
- */
+export type MinimalMysteryBoxDefinition =
+	WithOptional<MinimalMysteryBox, 'id'>;
+
 export type DBMysteryBox = MinimalMysteryBox;
+
+export type MysteryBoxDefinition =
+	WithOptional<MysteryBox, 'id'>;
 
 export type MysteryBoxID = MinimalMysteryBox["id"];
 export type MysteryBoxName = MinimalMysteryBox["name"];

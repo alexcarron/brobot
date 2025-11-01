@@ -57,7 +57,7 @@ export class VoteService {
 				return `You already voted for this name as your favorite!`;
 
 			const oldNameVotingFor = this.playerService.getPublishedName(vote.playerVotedForID);
-			this.voteRepository.changeVote({
+			this.voteRepository.updateVote({
 				voterID,
 				playerVotedForID
 			});

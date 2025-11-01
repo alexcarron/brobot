@@ -1,7 +1,8 @@
 import { InvalidArgumentError } from "../../../utilities/error-utils";
-import { DatabaseQuerier } from "../database/database-querier";
-import { DBRecipe, Recipe, RecipeID } from "../types/recipe.types";
-import { RecipeNotFoundError } from "../utilities/error.utility";
+import { WithRequiredAndOneOther } from "../../../utilities/types/generic-types";
+import { DatabaseQuerier, toAssignmentsPlaceholder } from "../database/database-querier";
+import { DBRecipe, Recipe, RecipeDefinition, RecipeID } from "../types/recipe.types";
+import { RecipeAlreadyExistsError, RecipeNotFoundError } from "../utilities/error.utility";
 
 /**
  * Provides access to all static recipe data.
@@ -67,5 +68,90 @@ export class RecipeRepository {
 	getRecipesWithOutputs(outputCharacters: string): Recipe[] {
 		const query = "SELECT * FROM recipe WHERE outputCharacters = @outputCharacters";
 		return this.db.getRows(query, { outputCharacters }) as DBRecipe[];
+	}
+
+	/**
+	 * Checks if a recipe exists by its ID.
+	 * @param id - The unique identifier of the recipe to check for existence.
+	 * @returns A boolean indicating if the recipe exists.
+	 */
+	doesRecipeExist(id: RecipeID): boolean {
+		const recipeID = this.db.getValue(
+			`SELECT id FROM recipe
+			WHERE id = @id`,
+			{ id }
+		) as number | undefined;
+
+		return recipeID !== undefined;
+	}
+
+	/**
+	 * Adds a recipe to the database with the given ID, input characters, and output characters.
+	 * @param recipeDefintion - The recipe definition containing the ID, input characters, and output characters.
+	 * @param recipeDefintion.id - The unique identifier of the recipe.
+	 * @param recipeDefintion.inputCharacters - The input characters for the recipe.
+	 * @param recipeDefintion.outputCharacters - The output characters for the recipe.
+	 * @returns The recipe object that was added to the database.
+	 */
+	addRecipe({ id, inputCharacters, outputCharacters }: RecipeDefinition): Recipe {
+		if (id !== undefined) {
+			if (this.doesRecipeExist(id))
+				throw new RecipeAlreadyExistsError(id);
+
+			this.db.run(
+				`INSERT INTO recipe (id, inputCharacters, outputCharacters)
+				VALUES (@id, @inputCharacters, @outputCharacters)`,
+				{ id, inputCharacters, outputCharacters }
+			);
+		}
+		else {
+			const result = this.db.run(
+				`INSERT INTO recipe (inputCharacters, outputCharacters)
+				VALUES (@inputCharacters, @outputCharacters)`,
+				{ inputCharacters, outputCharacters }
+			);
+
+			id = Number(result.lastInsertRowid);
+		}
+
+		return { id, inputCharacters, outputCharacters };
+	}
+
+	/**
+	 * Updates a recipe in the database with the given ID, input characters, and output characters.
+	 * @param recipeDefintion - The recipe definition containing the ID, input characters, and output characters.
+	 * @param recipeDefintion.id - The unique identifier of the recipe.
+	 * @param recipeDefintion.inputCharacters - The input characters for the recipe.
+	 * @param recipeDefintion.outputCharacters - The output characters for the recipe.
+	 * @returns The recipe object that was updated in the database.
+	 */
+	updateRecipe({ id, inputCharacters, outputCharacters }:
+		WithRequiredAndOneOther<RecipeDefinition, 'id'>
+	) {
+		if (!this.doesRecipeExist(id))
+			throw new RecipeNotFoundError(id);
+
+		this.db.run(
+			`UPDATE recipe
+			SET ${toAssignmentsPlaceholder({ inputCharacters, outputCharacters })}
+			WHERE id = @id`,
+			{ id, inputCharacters, outputCharacters }
+		);
+
+		return this.getRecipeOrThrow(id);
+	}
+
+	/**
+	 * Removes a recipe by its ID.
+	 * @param id - The unique identifier of the recipe to remove.
+	 * @throws {RecipeNotFoundError} If no recipe with the given ID exists.
+	 */
+	removeRecipe(id: RecipeID) {
+		const result = this.db.run(
+			'DELETE FROM recipe WHERE id = ?', id
+		);
+
+		if (result.changes === 0)
+			throw new RecipeNotFoundError(id);
 	}
 }

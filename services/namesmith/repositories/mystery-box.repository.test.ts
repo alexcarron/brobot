@@ -1,7 +1,9 @@
 import { INVALID_MYSTERY_BOX_ID } from "../constants/test.constants";
-import { MysteryBoxNotFoundError } from "../utilities/error.utility";
+import { MysteryBoxAlreadyExistsError, MysteryBoxNotFoundError } from "../utilities/error.utility";
 import { createMockMysteryBoxRepo } from "../mocks/mock-repositories";
 import { MysteryBoxRepository } from "./mystery-box.repository";
+import { makeSure } from "../../../utilities/jest/jest-utils";
+import { MysteryBoxes } from "../constants/mystery-boxes.constants";
 
 describe('MysteryBoxRepository', () => {
 	let mysteryBoxRepo: MysteryBoxRepository;
@@ -61,6 +63,141 @@ describe('MysteryBoxRepository', () => {
 
 		it('should throw an error if the mystery box with the given ID does not exist', () => {
 			expect(() => mysteryBoxRepo.getTokenCost(INVALID_MYSTERY_BOX_ID)).toThrow(MysteryBoxNotFoundError);
+		});
+	});
+
+	describe('addMysteryBox()', () => {
+		it('should add a new mystery box with the given properties', () => {
+			const mysteryBoxDefinition = {
+				id: 1001,
+				name: 'Test Box',
+				tokenCost: 50,
+				characterOdds: {
+					'A': 50,
+					'B': 50
+				}
+			}
+			const newMysteryBox = mysteryBoxRepo.addMysteryBox(mysteryBoxDefinition);
+			makeSure(newMysteryBox).is(mysteryBoxDefinition);
+
+			const resolvedMysteryBox = mysteryBoxRepo.getMysteryBox(newMysteryBox.id);
+			makeSure(resolvedMysteryBox).is(newMysteryBox);
+		});
+
+		it('should generate a new ID if no ID is provided', () => {
+			const mysteryBoxDefinition = {
+				name: 'Test Box',
+				tokenCost: 50,
+				characterOdds: {
+					'A': 50,
+					'B': 50
+				}
+			}
+			const newMysteryBox = mysteryBoxRepo.addMysteryBox(mysteryBoxDefinition);
+			expect(newMysteryBox.id).toBeGreaterThan(0);
+
+			const resolvedMysteryBox = mysteryBoxRepo.getMysteryBox(newMysteryBox.id);
+			makeSure(resolvedMysteryBox).is(newMysteryBox);
+		});
+
+		it('should throw MysteryBoxAlreadyExistsError if the mystery box with the given ID already exists', () => {
+			const mysteryBoxDefinition = {
+				id: 1,
+				name: 'Test Box',
+				tokenCost: 50,
+				characterOdds: {
+					'A': 50,
+					'B': 50
+				}
+			}
+			makeSure(() =>
+				mysteryBoxRepo.addMysteryBox(mysteryBoxDefinition)
+			).throws(MysteryBoxAlreadyExistsError);
+		});
+	});
+
+	describe('updateMysteryBox()', () => {
+		it('should update the mystery box with the given properties', () => {
+			const mysteryBoxDefinition = {
+				id: 1,
+				name: 'Test Box',
+				tokenCost: 50,
+				characterOdds: {
+					'A': 50,
+					'B': 50
+				}
+			}
+			const updatedMysteryBox = mysteryBoxRepo.updateMysteryBox(mysteryBoxDefinition);
+			makeSure(updatedMysteryBox).is(mysteryBoxDefinition);
+
+			const resolvedMysteryBox = mysteryBoxRepo.getMysteryBox(updatedMysteryBox.id);
+			makeSure(resolvedMysteryBox).is(updatedMysteryBox);
+		});
+
+		it('should handle only minimal updates', () => {
+			const mysteryBoxDefinition = {
+				id: 1,
+				name: 'Test Box',
+				tokenCost: 50
+			}
+			const updatedMysteryBox = mysteryBoxRepo.updateMysteryBox(mysteryBoxDefinition);
+			makeSure(updatedMysteryBox).is({
+				...mysteryBoxDefinition,
+				characterOdds: MysteryBoxes.ALL_CHARACTERS.characterOdds
+			});
+
+
+			const resolvedMysteryBox = mysteryBoxRepo.getMysteryBox(updatedMysteryBox.id);
+			makeSure(resolvedMysteryBox).is(updatedMysteryBox);
+		});
+
+		it('should handle only character odds updates', () => {
+			const mysteryBoxDefinition = {
+				id: 1,
+				characterOdds: {
+					'A': 50,
+					'B': 50
+				}
+			}
+			const updatedMysteryBox = mysteryBoxRepo.updateMysteryBox(mysteryBoxDefinition);
+			makeSure(updatedMysteryBox).is({
+				...mysteryBoxDefinition,
+				name: MysteryBoxes.ALL_CHARACTERS.name,
+				tokenCost: MysteryBoxes.ALL_CHARACTERS.tokenCost
+			});
+
+
+			const resolvedMysteryBox = mysteryBoxRepo.getMysteryBox(updatedMysteryBox.id);
+			makeSure(resolvedMysteryBox).is(updatedMysteryBox);
+		});
+
+		it('should throw MysteryBoxNotFoundError if the mystery box with the given ID does not exist', () => {
+			const mysteryBoxDefinition = {
+				id: INVALID_MYSTERY_BOX_ID,
+				name: 'Test Box',
+				tokenCost: 50,
+				characterOdds: {
+					'A': 50,
+					'B': 50
+				}
+			}
+			makeSure(() =>
+				mysteryBoxRepo.updateMysteryBox(mysteryBoxDefinition)
+			).throws(MysteryBoxNotFoundError);
+		});
+	});
+
+	describe('removeMysteryBox()', () => {
+		it('should remove the mystery box with the given ID', () => {
+			mysteryBoxRepo.removeMysteryBox(1);
+			const result = mysteryBoxRepo.getMysteryBox(1);
+			makeSure(result).isNull();
+		});
+
+		it('should throw an error if the mystery box with the given ID does not exist', () => {
+			makeSure(() =>
+				mysteryBoxRepo.removeMysteryBox(INVALID_MYSTERY_BOX_ID)
+			).throws(MysteryBoxNotFoundError);
 		});
 	});
 });

@@ -1,6 +1,8 @@
+import { makeSure } from "../../../utilities/jest/jest-utils";
 import { INVALID_VOTE_ID } from "../constants/test.constants";
 import { mockVotes } from "../mocks/mock-data/mock-votes";
 import { createMockVoteRepo } from "../mocks/mock-repositories";
+import { VoteNotFoundError } from "../utilities/error.utility";
 import { VoteRepository } from "./vote.repository";
 
 describe('VoteRepository', () => {
@@ -116,30 +118,32 @@ describe('VoteRepository', () => {
 		});
 	});
 
-	describe('changeVote()', () => {
+	describe('updateVote()', () => {
 		it('changes the vote of a user', () => {
-			voteRepository.changeVote({
+			const vote = voteRepository.updateVote({
 				voterID: "1234567890",
 				playerVotedForID: "1234567892",
 			});
 
-			const result = voteRepository.getVoteByVoterID("1234567890");
-
-			expect(result).toEqual({
+			makeSure(vote).is({
 				voterID: "1234567890",
 				playerVotedForID: "1234567892",
 			});
+
+			const resolvedVote = voteRepository.getVoteByVoterID("1234567890");
+
+			makeSure(resolvedVote).is(vote);
 		});
 
 		it('throws an error if the voter ID does not exist', () => {
-			expect(() => voteRepository.changeVote({
+			makeSure(() => voteRepository.updateVote({
 				voterID: INVALID_VOTE_ID,
 				playerVotedForID: "1234567892",
-			})).toThrow();
+			})).throws(VoteNotFoundError);
 		});
 
 		it('throws an error if the player ID does not exist', () => {
-			expect(() => voteRepository.changeVote({
+			expect(() => voteRepository.updateVote({
 				voterID: "1234567890",
 				playerVotedForID: INVALID_VOTE_ID,
 			})).toThrow();

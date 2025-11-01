@@ -1,10 +1,11 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
+import { Perks } from "../constants/perks.constants";
 import { Roles } from "../constants/roles.constants";
 import { INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer, mockPlayers } from "../mocks/mock-data/mock-players";
 import { createMockPlayerRepo } from "../mocks/mock-repositories";
-import { PlayerNotFoundError } from "../utilities/error.utility";
+import { PlayerAlreadyExistsError, PlayerNotFoundError } from "../utilities/error.utility";
 import { PlayerRepository } from "./player.repository";
 
 describe('PlayerRepository', () => {
@@ -285,7 +286,7 @@ describe('PlayerRepository', () => {
 		});
 	})
 
-	describe('addPlayer()', () => {
+	describe('createPlayer()', () => {
 		it('adds a new player to the database', () => {
 			playerRepository.createPlayer("new-player-id");
 
@@ -332,5 +333,176 @@ describe('PlayerRepository', () => {
 		it('throws an error if the character is too long', () => {
 			expect(() => playerRepository.addCharacterToInventory(mockPlayers[1].id, "aa")).toThrow();
 		});
-	})
+	});
+
+	describe('removePlayer()', () => {
+		it('removes a player from the database', () => {
+			playerRepository.removePlayer(mockPlayers[0].id);
+			const maybePlayer = playerRepository.getPlayerByID(mockPlayers[0].id);
+			makeSure(maybePlayer).isNull();
+		});
+
+		it('throws a PlayerNotFoundError if the player is not found', () => {
+			makeSure(() =>
+				playerRepository.removePlayer(INVALID_PLAYER_ID)
+			).throws(PlayerNotFoundError);
+		});
+	});
+
+	describe('addPlayer()', () => {
+		it('adds a player with minimal fields', () => {
+			const player = playerRepository.addPlayer({
+				id: "new-player-id",
+				currentName: "test",
+				publishedName: "test",
+				tokens: 0,
+				inventory: "",
+				lastClaimedRefillTime: null,
+				role: null,
+				perks: [],
+			});
+
+			makeSure(player).toEqual({
+				id: "new-player-id",
+				currentName: "test",
+				publishedName: "test",
+				tokens: 0,
+				inventory: "",
+				lastClaimedRefillTime: null,
+				role: null,
+				perks: [],
+			});
+
+			const resolvedPlayer = playerRepository.getPlayerOrThrow("new-player-id");
+			makeSure(resolvedPlayer).is(player);
+		});
+
+		it('adds player with complex values for all fields', () => {
+			const player = playerRepository.addPlayer({
+				id: "new-player-id",
+				currentName: "currentName",
+				publishedName: "publishedName",
+				tokens: 100,
+				inventory: "currentNameAndInventory",
+				lastClaimedRefillTime: new Date('2023-01-01T00:00:00.000Z'),
+				role: Roles.FORTUNE_SEEKER,
+				perks: [Perks.DISCOUNT.id, Perks.FASTER_REFILL.name],
+			});
+
+			makeSure(player).includesObject({
+				id: "new-player-id",
+				currentName: "currentName",
+				publishedName: "publishedName",
+				tokens: 100,
+				inventory: "currentNameAndInventory",
+				lastClaimedRefillTime: new Date('2023-01-01T00:00:00.000Z')
+			});
+
+			makeSure(player.role?.id).is(Roles.FORTUNE_SEEKER.id);
+			makeSure(player.perks).hasAnItemWhere(perk =>
+				perk.id === Perks.DISCOUNT.id
+			);
+			makeSure(player.perks).hasAnItemWhere(perk =>
+				perk.id === Perks.FASTER_REFILL.id
+			);
+
+			const resolvedPlayer = playerRepository.getPlayerOrThrow("new-player-id");
+			makeSure(resolvedPlayer).is(player);
+		})
+
+		it('generated an id if not provided', () => {
+			const player = playerRepository.addPlayer({
+				currentName: "test",
+				publishedName: "test",
+				tokens: 0,
+				inventory: "",
+				lastClaimedRefillTime: null,
+				role: null,
+				perks: [],
+			});
+
+			const resolvedPlayer = playerRepository.getPlayerOrThrow(player.id);
+			makeSure(resolvedPlayer).is(player);
+		});
+
+		it('throws a PlayerAlreadyExistsError if the player already exists', () => {
+			makeSure(() =>
+				playerRepository.addPlayer({
+					id: mockPlayers[0].id,
+					currentName: "test",
+					publishedName: "test",
+					tokens: 0,
+					inventory: "",
+					lastClaimedRefillTime: null,
+					role: null,
+					perks: [],
+				})
+			).throws(PlayerAlreadyExistsError);
+		});
+	});
+
+	describe('updatePlayer()', () => {
+		it('updates a player in the database with minimal fields', () => {
+			const player = playerRepository.updatePlayer({
+				id: mockPlayers[0].id,
+				currentName: "test",
+			});
+
+			makeSure(player).toEqual({
+				id: mockPlayers[0].id,
+				currentName: "test",
+				publishedName: mockPlayers[0].publishedName,
+				tokens: mockPlayers[0].tokens,
+				inventory: mockPlayers[0].inventory,
+				lastClaimedRefillTime: mockPlayers[0].lastClaimedRefillTime,
+				role: mockPlayers[0].role,
+				perks: mockPlayers[0].perks,
+			});
+
+			const resolvedPlayer = playerRepository.getPlayerOrThrow(mockPlayers[0].id);
+			makeSure(resolvedPlayer).is(player);
+		});
+
+		it('updates a player in the database with complex values for all fields', () => {
+			const player = playerRepository.updatePlayer({
+				id: mockPlayers[0].id,
+				currentName: "currentName",
+				publishedName: "publishedName",
+				tokens: 100,
+				inventory: "currentNameAndInventory",
+				lastClaimedRefillTime: new Date('2023-01-01T00:00:00.000Z'),
+				role: Roles.FORTUNE_SEEKER,
+				perks: [Perks.DISCOUNT.id, Perks.FASTER_REFILL.name],
+			});
+
+			makeSure(player).includesObject({
+				id: mockPlayers[0].id,
+				currentName: "currentName",
+				publishedName: "publishedName",
+				tokens: 100,
+				inventory: "currentNameAndInventory",
+				lastClaimedRefillTime: new Date('2023-01-01T00:00:00.000Z')
+			});
+
+			makeSure(player.role?.id).is(Roles.FORTUNE_SEEKER.id);
+			makeSure(player.perks).hasAnItemWhere(perk =>
+				perk.id === Perks.DISCOUNT.id
+			);
+			makeSure(player.perks).hasAnItemWhere(perk =>
+				perk.id === Perks.FASTER_REFILL.id
+			);
+
+			const resolvedPlayer = playerRepository.getPlayerOrThrow(mockPlayers[0].id);
+			makeSure(resolvedPlayer).is(player);
+		});
+
+		it('throws a PlayerNotFoundError if the player does not exist', () => {
+			makeSure(() =>
+				playerRepository.updatePlayer({
+					id: INVALID_PLAYER_ID,
+					currentName: "test",
+				})
+			).throws(PlayerNotFoundError);
+		});
+	});
 });

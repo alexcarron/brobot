@@ -7,10 +7,10 @@ export type Player = {
 	currentName: string;
 	publishedName: string | null;
 	tokens: number;
-	role: Role | null;
-	perks: Perk[];
 	inventory: string;
 	lastClaimedRefillTime: Date | null;
+	role: Role | null;
+	perks: Perk[];
 }
 
 export type MinimalPlayer = Without<Player, "role" | "perks">;

@@ -573,20 +573,26 @@ export function returnIfNotError<GivenType>(
 
 /**
  * Returns the given value if it is not null. If the given value is null, it is thrown as an error.
- * @param valueOrError - The value to check.
+ * @param value - The value to check.
+ * @param errorToThrow - The error to throw if the value is null.
  * @returns The given value if it is not null.
  * @throws {Error} - Throws the value if it's null.
  * @example
  * const maybeMoney: number | null = calculateMoney();
  * const money: number = returnIfNotNull(maybeMoney); // throws if maybeMoney is null
  */
-export function returnIfNotNull<GivenType>(
-	valueOrError: GivenType
+export function returnIfNotNull<GivenType, ErrorType extends Error>(
+	value: GivenType,
+	errorToThrow?: ErrorType
 ): Exclude<GivenType, null> {
-	if (valueOrError === null)
-		throw new Error("Expected value to not be null, but got null.");
+	if (value === null) {
+		if (errorToThrow === undefined)
+			throw new Error("Expected value to not be null, but got null.");
 
-	return valueOrError as Exclude<GivenType, null>;
+		throw errorToThrow;
+	}
+
+	return value as Exclude<GivenType, null>;
 }
 
 export function hasFailed<ReturnType>(
@@ -740,20 +746,114 @@ export function ignoreError(
 	}
 }
 
+export function doOnError<ReturnType, ErrorType extends Error>(
+	originalFunction: (...args: any[]) => ReturnType,
+	errorType: new (...args: any[]) => ErrorType,
+	handleError: (error: ErrorType) => any | Promise<any>,
+): ReturnType;
+
+export function doOnError<ReturnType, ErrorType extends Error>(
+	promise: Promise<ReturnType>,
+	errorType: new (...args: any[]) => ErrorType,
+	handleError: (error: ErrorType) => any | Promise<any>,
+): Promise<ReturnType>;
+
+/**
+ * Runs a function or a promise and if an error of the given type is thrown or encountered, it will be handled by the given handler.
+ * If the function or promise returns a value, that value will be returned.
+ * @param functionOrPromise - The function or promise to run.
+ * @param errorType - The error type to handle.
+ * @param handleError - A function that handles the error. It receives the error as an argument.
+ * @returns A promise that resolves or rejects with the return value of the function or promise, or the result of the error handler if an error is thrown or encountered.
+ */
+export function doOnError<ReturnType, ErrorType extends Error>(
+	functionOrPromise:
+		| Promise<ReturnType>
+		| ((...args: any[]) => ReturnType),
+	errorType: new (...args: any[]) => ErrorType,
+	handleError: (error: ErrorType) => any | Promise<any>,
+) {
+	const isPromise = functionOrPromise instanceof Promise;
+
+	if (isPromise) {
+		const promise = functionOrPromise as Promise<ReturnType>;
+
+		return new Promise<ReturnType>((resolve, reject) =>
+			promise
+				.then((result) => resolve(result))
+				.catch(async (error) => {
+					if (error instanceof errorType) {
+						const result = await handleError(error);
+						resolve(result);
+						return;
+					}
+					reject(error);
+				})
+		);
+	}
+
+	const func = functionOrPromise as (...args: any[]) => ReturnType;
+
+	try {
+		const result = func();
+		if (result instanceof Promise) {
+			return result.catch(async (error) => {
+				if (error instanceof errorType)
+					return await handleError(error);
+				throw error;
+			});
+    }
+    return result;
+	}
+	catch (error) {
+		if (error instanceof errorType)
+			handleError(error);
+
+		throw error;
+	}
+}
+
+/**
+ * Throws a given error instead of the error that is thrown by the given function or promise.
+ * @param functionOrPromise - The function or promise to check.
+ * @param errorToThrowInstead - The error to throw instead of the error that is thrown by the given function or promise.
+ * @returns A new promise that throws the given error instead of the error that is thrown by the given function or promise.
+ * @example
+ * const result = throwInsteadOnError(someAsyncFunction(), new TypeError('Error!'));
+ */
+export function throwInsteadOnError(
+	functionOrPromise:
+		| Promise<any>
+		| ((...args: any[]) => any),
+	errorToThrowInstead: Error
+) {
+	if (functionOrPromise instanceof Promise)
+		return doOnError(functionOrPromise, Error, () => {
+			throw errorToThrowInstead;
+		});
+	else
+		return doOnError(functionOrPromise, Error, () => {
+			throw errorToThrowInstead;
+		});
+}
+
 /**
  * Throws an error if the given value is null.
  * @param unknownValue - The value to check.
- * @param customMessage - The custom message to pass to the error constructor.
- * @throws {Error} - Throws an error if the given value is null.
+ * @param error - The error to throw.
  */
 export function throwIfNull<
-	UnknownType
+	UnknownType,
+	ErrorType extends Error
 >(
 	unknownValue: UnknownType,
-	customMessage?: string
+	error?: ErrorType
 ): asserts unknownValue is Exclude<UnknownType, null> {
-	if (unknownValue === null)
-		throw new Error(
-			customMessage ?? "Expected value to not be null, but got null."
-	);
+	if (unknownValue === null) {
+		if (error === undefined) {
+			throw new Error("Expected value to not be null, but got null.");
+		}
+
+		throw error;
+	}
 }

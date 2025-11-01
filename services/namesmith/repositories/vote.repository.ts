@@ -1,5 +1,5 @@
 import { InvalidArgumentError } from "../../../utilities/error-utils";
-import { WithAtLeastOneProperty } from "../../../utilities/types/generic-types";
+import { WithAtLeastOneProperty, WithRequiredAndOneOther } from '../../../utilities/types/generic-types';
 import { DatabaseQuerier } from "../database/database-querier";
 import { DBVote, Vote } from "../types/vote.types";
 import { VoteAlreadyExistsError, VoteNotFoundError } from "../utilities/error.utility";
@@ -122,22 +122,23 @@ export class VoteRepository {
 	 * @param vote - The vote object with the new player ID.
 	 * @param vote.voterID - The ID of the user who voted.
 	 * @param vote.playerVotedForID - The ID of the player voted for.
+	 * @returns The updated vote object.
 	 */
-	changeVote({ voterID, playerVotedForID }: Vote) {
-		if (!voterID)
-			throw new InvalidArgumentError("changeVote: Missing voterID");
-
-		if (!playerVotedForID)
-			throw new InvalidArgumentError("changeVote: Missing playerVotedForID");
+	updateVote({ voterID, playerVotedForID }:
+		WithRequiredAndOneOther<Vote, 'voterID'>
+	): Vote {
+		if (!this.doesVoteExist({ voterID: voterID })) {
+			throw new VoteNotFoundError(voterID);
+		}
 
 		const query = `
 			UPDATE vote
 			SET playerVotedForID = @playerVotedForID
 			WHERE voterID = @voterID
 		`;
-		const vote = this.db.run(query, { voterID, playerVotedForID });
-		if (vote.changes === 0)
-			throw new VoteNotFoundError(voterID);
+		this.db.run(query, { voterID, playerVotedForID });
+
+		return this.getVoteOrThrow(voterID);
 	}
 
 	/**

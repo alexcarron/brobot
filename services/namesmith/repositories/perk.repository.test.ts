@@ -358,6 +358,24 @@ describe('PerkRepository', () => {
 		});
 	});
 
+	describe('removePerk()', () => {
+		it('removes a perk by ID', () => {
+			const perk = perkRepository.addPerk({
+				name: 'Perk Name',
+				description: 'Perk Description',
+				wasOffered: false
+			});
+
+			perkRepository.removePerk(perk.id);
+			const retrievedPerk = perkRepository.getPerkByID(perk.id);
+			makeSure(retrievedPerk).isNull();
+		});
+
+		it('throws a PerkNotFoundError if the perk does not exist', () => {
+			makeSure(() => perkRepository.removePerk(INVALID_PERK_ID)).throws(PerkNotFoundError);
+		});
+	});
+
 	describe('setPerkAsCurrentlyOffered()', () => {
 		it('marks a perk as currently offered', () => {
 			const perk = perkRepository.addPerk({

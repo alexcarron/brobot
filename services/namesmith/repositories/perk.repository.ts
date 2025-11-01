@@ -77,6 +77,113 @@ export class PerkRepository {
 	}
 
 	/**
+	 * Adds a perk to the database.
+	 * If the perk does not have an ID, a new perk is created and its ID is returned.
+	 * If the perk does have an ID, it is updated with the given information.
+	 * @param perk - The perk to be added to the database.
+	 * @param perk.id - The ID of the perk to be added to the database.
+	 * @param perk.name - The name of the perk to be added to the database.
+	 * @param perk.description - The description of the perk to be added to the database.
+	 * @param perk.wasOffered - A boolean indicating whether the perk was offered.
+	 * @returns The added perk object.
+	 */
+	addPerk(
+		{ id, name, description, wasOffered }:
+			WithOptional<PerkDefintion, 'id'>
+	): Perk {
+		if (id === undefined) {
+			const result = this.db.run(
+				"INSERT INTO perk (name, description, wasOffered) VALUES (@name, @description, @wasOffered)",
+				{ name, description, wasOffered: wasOffered ? 1 : 0 }
+			);
+			id = Number(result.lastInsertRowid);
+		}
+		else {
+			this.db.run(
+				"INSERT INTO perk (id, name, description, wasOffered) VALUES (@id, @name, @description, @wasOffered)",
+				{ id, name, description, wasOffered: wasOffered ? 1 : 0 }
+			);
+		}
+
+		return {
+			id, name, description,
+			wasOffered: wasOffered ?? false
+		};
+	}
+
+	/**
+	 * Updates a perk in the database.
+	 * If the perk does not have an ID, an error will be thrown.
+	 * If the perk does have an ID, it is updated with the given information.
+	 * If the perk does not have a name, an error will be thrown.
+	 * If the perk does have a name, it is updated with the given information.
+	 * @param {WithAtLeast<PerkDefintion, 'id'> | WithAtLeast<PerkDefintion, 'name'>} perk - The perk to be updated in the database.
+	 * @param {number} perk.id - The ID of the perk to be updated in the database.
+	 * @param {string} perk.name - The name of the perk to be updated in the database.
+	 * @param {string} perk.description - The description of the perk to be updated in the database.
+	 * @param {boolean} perk.wasOffered - A boolean indicating whether the perk was offered.
+	 * @throws PerkNotFoundError - If the perk does not exist.
+	 * @throws InvalidArgumentError - If an ID or name must be provided.
+	 * @returns The updated perk object.
+	 */
+	updatePerk(
+		{ id, name, description, wasOffered }:
+			| WithAtLeast<PerkDefintion, 'id'>
+			| WithAtLeast<PerkDefintion, 'name'>
+	): Perk {
+		if (name !== undefined || description !== undefined || wasOffered !== undefined) {
+			const updateQuery = `
+				UPDATE perk
+				SET ${toAssignmentsPlaceholder({ name, description, wasOffered })}
+				WHERE
+					id = @id
+					OR name = @name
+			`;
+
+			const result = this.db.run(updateQuery, {
+				id,
+				name,
+				description,
+				wasOffered: wasOffered ? 1 : 0
+			});
+
+			if (result.changes === 0) {
+				if (id !== undefined)
+					throw new PerkNotFoundError(id);
+				else if (name !== undefined)
+					throw new PerkNotFoundError(name);
+				else
+					throw new InvalidArgumentError("updatePerk: An ID or name must be provided.");
+			}
+		}
+
+		let perk = null;
+		if (id !== undefined)
+			perk = this.getPerkByID(id);
+
+		if (perk === null && name !== undefined)
+			perk = this.getPerkByName(name);
+
+		if (perk === null)
+			throw new InvalidArgumentError("updatePerk: An ID or name must be provided.");
+
+		return perk;
+	}
+
+	/**
+	 * Removes a perk from the database.
+	 * If the perk does not exist, an error will be thrown.
+	 * @param {PerkID} id - The ID of the perk to be removed.
+	 * @throws PerkNotFoundError - If the perk does not exist.
+	 */
+	removePerk(id: PerkID) {
+		const result = this.db.run("DELETE FROM perk WHERE id = ?", id);
+
+		if (result.changes === 0)
+			throw new PerkNotFoundError(id);
+	}
+
+	/**
 	 * Retrieves a list of player IDs that have a perk with the given ID.
 	 * @param perkID - The ID of the perk to be retrieved.
 	 * @returns An array of player IDs that have the perk with the given ID.
@@ -197,100 +304,6 @@ export class PerkRepository {
 			SET wasOffered = @wasOffered
 		`;
 		this.db.run(query, { wasOffered: wasOffered ? 1 : 0 });
-	}
-
-	/**
-	 * Adds a perk to the database.
-	 * If the perk does not have an ID, a new perk is created and its ID is returned.
-	 * If the perk does have an ID, it is updated with the given information.
-	 * @param perk - The perk to be added to the database.
-	 * @param perk.id - The ID of the perk to be added to the database.
-	 * @param perk.name - The name of the perk to be added to the database.
-	 * @param perk.description - The description of the perk to be added to the database.
-	 * @param perk.wasOffered - A boolean indicating whether the perk was offered.
-	 * @returns The added perk object.
-	 */
-	addPerk(
-		{ id, name, description, wasOffered }:
-			WithOptional<PerkDefintion, 'id'>
-	): Perk {
-		if (id === undefined) {
-			const result = this.db.run(
-				"INSERT INTO perk (name, description, wasOffered) VALUES (@name, @description, @wasOffered)",
-				{ name, description, wasOffered: wasOffered ? 1 : 0 }
-			);
-			id = Number(result.lastInsertRowid);
-		}
-		else {
-			this.db.run(
-				"INSERT INTO perk (id, name, description, wasOffered) VALUES (@id, @name, @description, @wasOffered)",
-				{ id, name, description, wasOffered: wasOffered ? 1 : 0 }
-			);
-		}
-
-		return {
-			id, name, description,
-			wasOffered: wasOffered ?? false
-		};
-	}
-
-	/**
-	 * Updates a perk in the database.
-	 * If the perk does not have an ID, an error will be thrown.
-	 * If the perk does have an ID, it is updated with the given information.
-	 * If the perk does not have a name, an error will be thrown.
-	 * If the perk does have a name, it is updated with the given information.
-	 * @param {WithAtLeast<PerkDefintion, 'id'> | WithAtLeast<PerkDefintion, 'name'>} perk - The perk to be updated in the database.
-	 * @param {number} perk.id - The ID of the perk to be updated in the database.
-	 * @param {string} perk.name - The name of the perk to be updated in the database.
-	 * @param {string} perk.description - The description of the perk to be updated in the database.
-	 * @param {boolean} perk.wasOffered - A boolean indicating whether the perk was offered.
-	 * @throws PerkNotFoundError - If the perk does not exist.
-	 * @throws InvalidArgumentError - If an ID or name must be provided.
-	 * @returns The updated perk object.
-	 */
-	updatePerk(
-		{ id, name, description, wasOffered }:
-			| WithAtLeast<PerkDefintion, 'id'>
-			| WithAtLeast<PerkDefintion, 'name'>
-	): Perk {
-		if (name !== undefined || description !== undefined || wasOffered !== undefined) {
-			const updateQuery = `
-				UPDATE perk
-				SET ${toAssignmentsPlaceholder({ name, description, wasOffered })}
-				WHERE
-					id = @id
-					OR name = @name
-			`;
-
-			const result = this.db.run(updateQuery, {
-				id,
-				name,
-				description,
-				wasOffered: wasOffered ? 1 : 0
-			});
-
-			if (result.changes === 0) {
-				if (id !== undefined)
-					throw new PerkNotFoundError(id);
-				else if (name !== undefined)
-					throw new PerkNotFoundError(name);
-				else
-					throw new InvalidArgumentError("updatePerk: An ID or name must be provided.");
-			}
-		}
-
-		let perk = null;
-		if (id !== undefined)
-			perk = this.getPerkByID(id);
-
-		if (perk === null && name !== undefined)
-			perk = this.getPerkByName(name);
-
-		if (perk === null)
-			throw new InvalidArgumentError("updatePerk: An ID or name must be provided.");
-
-		return perk;
 	}
 
 	/**

@@ -1,14 +1,12 @@
+import { WithOptional } from '../../../utilities/types/generic-types';
 export interface Character {
   id: number;
   value: string;
   rarity: number;
 }
 
-/**
- * DBCharacter represents a Character stored in the database.
- * Currently identical to Character but kept for semantic clarity.
- */
 export type DBCharacter = Character;
+export type CharacterDefintion = WithOptional<Character, "id">;
 
 export type CharacterID = Character["id"];
 export type CharacterValue = Character["value"];

@@ -132,6 +132,27 @@ export type WithOptional<
 export type AnyFunction = (...args: any[]) => any;
 
 /**
+ * Require identifier(s) and at least one other property for update-style params.
+ * @example
+ * type PlayerUpdate = WithRequiredAndOneOther<Player, "id">
+ * const playerUpdate: PlayerUpdate = { id: 1, name: "John Doe" };
+ */
+export type WithRequiredAndOneOther<
+  ObjectType extends object,
+  Identifier extends keyof ObjectType
+> =
+  // If there are no other keys besides the identifier(s) -> just require the identifier(s)
+  Exclude<keyof ObjectType, Identifier> extends never
+    ? Required<Pick<ObjectType, Identifier>>
+    // Otherwise: require identifier(s) + require at least one property from the remaining keys
+    : Required<Pick<ObjectType, Identifier>> &
+        WithAtLeastOneProperty<
+					Pick<ObjectType, Exclude<keyof ObjectType, Identifier>>
+				>;
+
+console.log(test);
+
+/**
  * Expands a type to include all of its properties
  */
 export type Expand<Type> =

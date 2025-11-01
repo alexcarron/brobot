@@ -1,8 +1,9 @@
-import { DatabaseQuerier } from "../database/database-querier";
+import { DatabaseQuerier, toAssignmentsPlaceholder } from "../database/database-querier";
 import { PlayerID } from "../types/player.types";
-import { DBTrade, Trade, TradeID, TradeStatus } from "../types/trade.types";
-import { CannotCreateTradeError, TradeNotFoundError } from "../utilities/error.utility";
+import { DBTrade, Trade, TradeDefintion, TradeID, TradeStatus } from "../types/trade.types";
+import { CannotCreateTradeError, TradeAlreadyExistsError, TradeNotFoundError } from "../utilities/error.utility";
 import { throwIfNotTrade, throwIfNotTrades } from "../utilities/trade.utility";
+import { WithRequiredAndOneOther } from '../../../utilities/types/generic-types';
 
 /**
  * Provides access to the dynamic trading data
@@ -210,6 +211,88 @@ export class TradeRepository {
 		});
 
 		if (runResult.changes === 0)
+			throw new TradeNotFoundError(tradeID);
+	}
+
+	/**
+	 * Adds a new trade to the database with the given properties.
+	 * If the `id` property is provided and the trade already exists, a `TradeAlreadyExistsError` is thrown.
+	 * @param tradeDefinition - The data for the new trade.
+	 * @param tradeDefinition.id - The ID of the trade (optional).
+	 * @param tradeDefinition.initiatingPlayerID - The ID of the player who is initiating the trade.
+	 * @param tradeDefinition.recipientPlayerID - The ID of the player who is receiving the trade.
+	 * @param tradeDefinition.offeredCharacters - The characters being offered in the trade.
+	 * @param tradeDefinition.requestedCharacters - The characters being requested in the trade.
+	 * @param tradeDefinition.status - The status of the trade.
+	 * @returns The newly added trade.
+	 * @throws {TradeAlreadyExistsError} - If the trade already exists.
+	 */
+	addTrade({id, initiatingPlayerID, recipientPlayerID, offeredCharacters, requestedCharacters, status}: TradeDefintion) {
+		if (id !== undefined) {
+			if (this.doesTradeExist(id))
+				throw new TradeAlreadyExistsError(id);
+
+			this.db.run(
+				`INSERT INTO trade (id, initiatingPlayerID, recipientPlayerID, offeredCharacters, requestedCharacters, status)
+				VALUES (@id, @initiatingPlayerID, @recipientPlayerID, @offeredCharacters, @requestedCharacters, @status)`,
+				{id, initiatingPlayerID, recipientPlayerID, offeredCharacters, requestedCharacters, status}
+			)
+		}
+		else {
+			const result = this.db.run(
+				`INSERT INTO trade (initiatingPlayerID, recipientPlayerID, offeredCharacters, requestedCharacters, status)
+				VALUES (@initiatingPlayerID, @recipientPlayerID, @offeredCharacters, @requestedCharacters, @status)`,
+				{initiatingPlayerID, recipientPlayerID, offeredCharacters, requestedCharacters, status}
+			);
+
+			id = Number(result.lastInsertRowid);
+		}
+
+		return { id, initiatingPlayerID, recipientPlayerID, offeredCharacters, requestedCharacters, status };
+	}
+
+	/**
+	 * Updates the trade with the given ID with the given properties.
+	 * The `id` property is required.
+	 * At least one of the other properties must also be provided.
+	 * If the trade does not exist, a `TradeNotFoundError` is thrown.
+	 * @param tradeDefinition - The data for the trade to be updated.
+	 * @param tradeDefinition.id - The ID of the trade.
+	 * @param tradeDefinition.initiatingPlayerID - The ID of the player who is initiating the trade (optional).
+	 * @param tradeDefinition.recipientPlayerID - The ID of the player who is receiving the trade (optional).
+	 * @param tradeDefinition.offeredCharacters - The characters being offered in the trade (optional).
+	 * @param tradeDefinition.requestedCharacters - The characters being requested in the trade (optional).
+	 * @param tradeDefinition.status - The status of the trade (optional).
+	 * @returns The updated trade.
+	 * @throws {TradeNotFoundError} - If the trade does not exist.
+	 */
+	updateTrade({id, initiatingPlayerID, recipientPlayerID, offeredCharacters, requestedCharacters, status}:
+		WithRequiredAndOneOther<TradeDefintion, 'id'>
+	) {
+		if (!this.doesTradeExist(id))
+			throw new TradeNotFoundError(id);
+
+		this.db.run(
+			`UPDATE trade
+			SET ${toAssignmentsPlaceholder({ initiatingPlayerID, recipientPlayerID, offeredCharacters, requestedCharacters, status })}
+			WHERE id = @id`,
+			{ id, initiatingPlayerID, recipientPlayerID, offeredCharacters, requestedCharacters, status }
+		);
+
+		return this.getTradeOrThrow(id);
+	}
+
+	/**
+	 * Removes the trade with the given ID from the database.
+	 * @param tradeID - The ID of the trade to be removed.
+	 * @throws {TradeNotFoundError} - If the trade does not exist.
+	 */
+	removeTrade(tradeID: TradeID) {
+		const result = this.db.run(
+			`DELETE FROM trade WHERE id = ?`, tradeID
+		);
+
+		if (result.changes === 0)
 			throw new TradeNotFoundError(tradeID);
 	}
 }

@@ -1,8 +1,9 @@
-import { InvalidArgumentError } from "../../../utilities/error-utils";
-import { DatabaseQuerier } from "../database/database-querier";
-import { CharacterOdds, DBCharacterOddsRow, DBMysteryBox, MinimalMysteryBox, MysteryBoxID, MysteryBox } from "../types/mystery-box.types";
-import { getCharacterValueFromID } from "../utilities/character.utility";
-import { MysteryBoxNotFoundError } from "../utilities/error.utility";
+import { InvalidArgumentError, returnIfNotNull } from "../../../utilities/error-utils";
+import { WithRequiredAndOneOther } from "../../../utilities/types/generic-types";
+import { DatabaseQuerier, toAssignmentsPlaceholder } from "../database/database-querier";
+import { CharacterOdds, DBCharacterOddsRow, DBMysteryBox, MinimalMysteryBox, MysteryBoxID, MysteryBox, MysteryBoxDefinition, MinimalMysteryBoxDefinition } from "../types/mystery-box.types";
+import { getCharacterValueFromID, getIDfromCharacterValue } from "../utilities/character.utility";
+import { MysteryBoxAlreadyExistsError, MysteryBoxNotFoundError } from "../utilities/error.utility";
 
 /**
  * Provides access to the static mystery box data.
@@ -57,7 +58,7 @@ export class MysteryBoxRepository {
 	 * @param id - The id of the mystery box to return.
 	 * @returns The mystery box object with the given id or null if no such object exists.
 	 */
-	private getMinimalMysteryBoxByID(id: MysteryBoxID): MinimalMysteryBox | null {
+	private getMinimalMysteryBox(id: MysteryBoxID): MinimalMysteryBox | null {
 		if (!id)
 			throw new InvalidArgumentError('getMysteryBoxByID: Mystery box id must be provided.');
 
@@ -76,7 +77,7 @@ export class MysteryBoxRepository {
 	 * @returns The mystery box object with the given id and its character odds or null if no such object exists.
 	 */
 	getMysteryBox(id: number): MysteryBox | null {
-		const mysteryBox = this.getMinimalMysteryBoxByID(id);
+		const mysteryBox = this.getMinimalMysteryBox(id);
 		if (mysteryBox === null) return null;
 
 		const characterOddsRows = this.db.prepare(`
@@ -96,12 +97,12 @@ export class MysteryBoxRepository {
 		};
 	}
 
-	/**
-	 * Given a mystery box id, returns the corresponding mystery box object with its character odds or throws a MysteryBoxNotFoundError if no such object exists.
-	 * @param id - The id of the mystery box to return.
-	 * @returns The mystery box object with the given id and its character odds.
-	 * @throws {MysteryBoxNotFoundError} If no mystery box object with the given id exists.
-	 */
+	getMinimalMysteryBoxOrThrow (id: MysteryBoxID): MinimalMysteryBox {
+		return returnIfNotNull(this.getMinimalMysteryBox(id),
+			new MysteryBoxNotFoundError(id)
+		);
+	}
+
 	getMysteryBoxOrThrow(id: MysteryBoxID): MysteryBox {
 		const mysteryBox = this.getMysteryBox(id);
 
@@ -135,11 +136,160 @@ export class MysteryBoxRepository {
 	 * @throws {MysteryBoxNotFoundError} If a mystery box with the given ID does not exist.
 	 */
 	getTokenCost(mysteryBoxID: MysteryBoxID): number {
-		const mysteryBox = this.getMinimalMysteryBoxByID(mysteryBoxID);
+		const mysteryBox = this.getMinimalMysteryBox(mysteryBoxID);
 
 		if (mysteryBox === null)
 			throw new MysteryBoxNotFoundError(mysteryBoxID);
 
 		return mysteryBox.tokenCost;
+	}
+
+	/**
+	 * Adds a mystery box to the database with the given properties.
+	 * If the mystery box id is provided, it will be used to insert the mystery box into the database.
+	 * If the mystery box id is not provided, the database will generate an id for the mystery box.
+	 * @param mysteryBox - The mystery box data to add.
+	 * @param mysteryBox.id - The ID of the mystery box.
+	 * @param mysteryBox.name - The name of the mystery box.
+	 * @param mysteryBox.tokenCost - The number of tokens to purchase the mystery box.
+	 * @returns The added mystery box with an ID.
+	 * @throws {MysteryBoxAlreadyExistsError} If the mystery box with the given ID already exists.
+	 */
+	private addMinimalMysteryBox(
+		{id, name, tokenCost}: MinimalMysteryBoxDefinition
+	): MinimalMysteryBox {
+		if (id !== undefined) {
+			const result = this.db.run(
+				`INSERT OR IGNORE INTO mysteryBox (id, name, tokenCost)
+				VALUES (@id, @name, @tokenCost)`,
+				{ id, name, tokenCost }
+			);
+
+			if (result.changes === 0)
+				throw new MysteryBoxAlreadyExistsError(id);
+		}
+		else {
+			const result = this.db.run(
+				`INSERT INTO mysteryBox (name, tokenCost)
+				VALUES (@name, @tokenCost)`,
+				{ name, tokenCost }
+			);
+			id = Number(result.lastInsertRowid);
+		}
+
+		return { id, name, tokenCost };
+	}
+
+	/**
+	 * Adds a mystery box to the database with the given properties.
+	 * @param mysteryBoxDefinition - The mystery box data to add.
+	 * @param mysteryBoxDefinition.id - The ID of the mystery box.
+	 * @param mysteryBoxDefinition.name - The name of the mystery box.
+	 * @param mysteryBoxDefinition.tokenCost - The number of tokens to purchase the mystery box.
+	 * @param mysteryBoxDefinition.characterOdds - The character odds of the mystery box.
+	 * @returns The added mystery box with an ID.
+	 * @throws {MysteryBoxAlreadyExistsError} If the mystery box with the given ID already exists.
+	 */
+	addMysteryBox(
+		{id, name, tokenCost, characterOdds}: MysteryBoxDefinition
+	): MysteryBox {
+		const minimalMysteryBox = this.addMinimalMysteryBox({ id, name, tokenCost });
+
+		for (const characterValue in characterOdds) {
+			const weight = characterOdds[characterValue];
+			const characterID = getIDfromCharacterValue(characterValue);
+
+			this.db.run(
+				`INSERT INTO mysteryBoxCharacterOdds (mysteryBoxID, characterID, weight)
+				VALUES (@mysteryBoxID, @characterID, @weight)`,
+				{
+					mysteryBoxID: minimalMysteryBox.id,
+					characterID,
+					weight
+				}
+			);
+		}
+
+		return {
+			...minimalMysteryBox,
+			characterOdds
+		};
+	}
+
+	/**
+	 * Updates a minimal mystery box in the database with the given properties.
+	 * @param mysteryBoxDefintion - The mystery box data to update.
+	 * @param mysteryBoxDefintion.id - The ID of the mystery box.
+	 * @param mysteryBoxDefintion.name - The name of the mystery box.
+	 * @param mysteryBoxDefintion.tokenCost - The number of tokens to purchase the mystery box.
+	 * @returns The updated mystery box object or a MysteryBoxNotFoundError if the mystery box with the given ID does not exist.
+	 */
+	updateMinimalMysteryBox({ id, name, tokenCost }:
+			WithRequiredAndOneOther<MinimalMysteryBoxDefinition, 'id'>
+	) {
+		this.db.run(
+			`UPDATE mysteryBox
+			SET ${toAssignmentsPlaceholder({ name, tokenCost })}
+			WHERE id = @id`,
+			{ id, name, tokenCost }
+		);
+
+		return this.getMinimalMysteryBoxOrThrow(id);
+	}
+
+	/**
+	 * Updates a mystery box in the database with the given properties.
+	 * @param mysteryBoxDefinition - The mystery box data to update.
+	 * @param mysteryBoxDefinition.id - The ID of the mystery box.
+	 * @param mysteryBoxDefinition.name - The name of the mystery box.
+	 * @param mysteryBoxDefinition.tokenCost - The number of tokens to purchase the mystery box.
+	 * @param mysteryBoxDefinition.characterOdds - The character odds of the mystery box.
+	 * @returns The updated mystery box object or a MysteryBoxNotFoundError if the mystery box with the given ID does not exist.
+	 * @throws {MysteryBoxNotFoundError} If no mystery box with the given ID exists.
+	 */
+	updateMysteryBox({ id, name, tokenCost, characterOdds }:
+		WithRequiredAndOneOther<MysteryBoxDefinition, 'id'>
+	): MysteryBox {
+		if (name !== undefined || tokenCost !== undefined)
+			this.updateMinimalMysteryBox({ id, name: name!, tokenCost });
+
+		if (characterOdds !== undefined) {
+			this.db.run(
+				`DELETE FROM mysteryBoxCharacterOdds
+				WHERE mysteryBoxID = @mysteryBoxID`,
+				{ mysteryBoxID: id }
+			);
+
+			for (const characterValue in characterOdds) {
+				const weight = characterOdds[characterValue];
+				const characterID = getIDfromCharacterValue(characterValue);
+
+				this.db.run(
+					`INSERT INTO mysteryBoxCharacterOdds (mysteryBoxID, characterID, weight)
+					VALUES (@mysteryBoxID, @characterID, @weight)`,
+					{
+						mysteryBoxID: id,
+						characterID,
+						weight
+					}
+				);
+			}
+		}
+
+		return this.getMysteryBoxOrThrow(id);
+	}
+
+	/**
+	 * Removes a mystery box with the given ID.
+	 * @param id - The ID of the mystery box to remove.
+	 * @throws {MysteryBoxNotFoundError} If no mystery box with the given ID exists.
+	 */
+	removeMysteryBox(id: MysteryBoxID) {
+		const result = this.db.run(
+			`DELETE FROM mysteryBox WHERE id = ?`, id
+		);
+
+		if (result.changes === 0)
+			throw new MysteryBoxNotFoundError(id);
 	}
 }

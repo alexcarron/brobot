@@ -7,3 +7,4 @@ export const INVALID_PERK_ID = 1651811;
 export const INVALID_PERK_NAME = "Invalid Perk Name";
 export const INVALID_ROLE_ID = 1815125;
 export const INVALID_ROLE_NAME = "Invalid Role Name";
+export const INVALID_RECIPE_ID = 1853916519;

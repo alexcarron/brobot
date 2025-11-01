@@ -232,6 +232,54 @@ export class RoleNotFoundError extends ResourceNotFoundError {
 export class ResourceAlreadyExistsError extends ResourceError {}
 
 /**
+ * Error thrown when a requested namesmith trade already exists.
+ */
+export class TradeAlreadyExistsError extends ResourceAlreadyExistsError {
+	constructor(tradeID: TradeID) {
+		super({
+			message: `Cannot add trade. Trade with ID ${tradeID} already exists.`,
+			relevantData: { tradeID }
+		})
+	}
+}
+
+/**
+ * Error thrown when a requested namesmith recipe already exists.
+ */
+export class RecipeAlreadyExistsError extends ResourceAlreadyExistsError {
+	constructor(recipeID: RecipeID) {
+		super({
+			message: `Cannot add recipe. Recipe with ID ${recipeID} already exists.`,
+			relevantData: { recipeID }
+		})
+	}
+}
+
+/**
+ * Error thrown when a requested namesmith character already exists.
+ */
+export class CharacterAlreadyExistsError extends ResourceAlreadyExistsError {
+	constructor(characterID: CharacterID) {
+		super({
+			message: `Cannot add character. Character with ID ${characterID} already exists.`,
+			relevantData: { characterID }
+		})
+	}
+}
+
+/**
+ * Error thrown when a requested namesmith mystery box already exists.
+ */
+export class MysteryBoxAlreadyExistsError extends ResourceAlreadyExistsError {
+	constructor(mysteryBoxID: MysteryBoxID) {
+		super({
+			message: `Cannot add mystery box. Mystery box with ID ${mysteryBoxID} already exists.`,
+			relevantData: { mysteryBoxID }
+		})
+	}
+}
+
+/**
  * Error thrown when a requested namesmith player already exists.
  */
 export class PlayerAlreadyExistsError extends ResourceAlreadyExistsError {
