@@ -1,5 +1,5 @@
 import { Override, Without } from "../../../utilities/types/generic-types";
-import { Perk, PerkID, PerkName } from "./perk.types";
+import { Perk, PerkResolvable } from "./perk.types";
 import { Role, RoleResolvable } from "./role.types";
 
 export type Player = {
@@ -15,24 +15,20 @@ export type Player = {
 
 export type MinimalPlayer = Without<Player, "role" | "perks">;
 
-/**
- * DBPlayer represents a Player stored in the database.
- * Currently identical to Player but kept for semantic clarity.
- */
 export type DBPlayer = Override<Player, {
 	lastClaimedRefillTime: string | null,
 	perks: undefined,
 }>;
 
 export type PlayerDefinition = Override<Player, {
+	id?: string,
 	role: RoleResolvable | null,
-	perks: Array<PerkID | PerkName>;
+	perks: PerkResolvable[];
 }>;
 
 export type PlayerID = Player["id"];
 export type PlayerName = Player["currentName"];
 export type Inventory = Player["inventory"];
-
 export type PlayerResolvable =
 	| {id: PlayerID}
 	| PlayerID;

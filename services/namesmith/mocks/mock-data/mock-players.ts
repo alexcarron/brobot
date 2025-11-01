@@ -1,6 +1,6 @@
 import { InvalidArgumentError, returnIfNotNull } from "../../../../utilities/error-utils";
 import { createRandomNumericUUID } from "../../../../utilities/random-utils";
-import { WithAtLeast, WithAtLeastOneProperty } from "../../../../utilities/types/generic-types";
+import { WithAtLeast, WithAtLeastOneProperty, WithID } from "../../../../utilities/types/generic-types";
 import { isNumber, isString } from "../../../../utilities/types/type-guards";
 import { DatabaseQuerier } from "../../database/database-querier";
 import { RoleRepository } from "../../repositories/role.repository";
@@ -14,7 +14,7 @@ import { Role } from "../../types/role.types";
 /**
  * An array of mock player data for use in tests.
  */
-export const mockPlayers: PlayerDefinition[] = [
+export const mockPlayers: WithID<PlayerDefinition>[] = [
 	{
 		id: "1234567890",
 		currentName: "John Doe",

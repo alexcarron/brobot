@@ -12,7 +12,7 @@ import { DatabaseQuerier, toListPlaceholder } from "../database-querier";
  */
 export function syncPerksToDB(
 	db: DatabaseQuerier,
-	perks: Readonly<WithOptional<PerkDefintion, "id">[]>
+	perks: Readonly<PerkDefintion[]>
 ) {
 	const perkRepository = new PerkRepository(db);
 

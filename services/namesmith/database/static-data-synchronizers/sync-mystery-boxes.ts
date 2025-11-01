@@ -1,5 +1,5 @@
 import { toDefinedPropertyValues } from "../../../../utilities/data-structure-utils";
-import { WithOptional, WithRequired } from "../../../../utilities/types/generic-types";
+import { WithRequired } from "../../../../utilities/types/generic-types";
 import { MysteryBoxRepository } from "../../repositories/mystery-box.repository";
 import { DBMysteryBox, MysteryBoxDefinition } from "../../types/mystery-box.types";
 import { DatabaseQuerier, toListPlaceholder } from "../database-querier";
@@ -12,7 +12,7 @@ import { DatabaseQuerier, toListPlaceholder } from "../database-querier";
 export const syncMysteryBoxesToDB = (
 	db: DatabaseQuerier,
 	mysteryBoxDefinitions: Readonly<
-		WithOptional<MysteryBoxDefinition, "id">[]
+		MysteryBoxDefinition[]
 	>
 ) => {
 	const mysteryBoxRepository = new MysteryBoxRepository(db);

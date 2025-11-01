@@ -144,6 +144,15 @@ export type WithRequired<
 	Without<ObjectType, RequiredPropertyNames>;
 
 /**
+ * Requires an object type to have its id property
+ * @example
+ * type IdentifiedPlayer = WithID<Player>
+ */
+export type WithID<
+	ObjectType extends { id?: unknown }
+> = WithRequired<ObjectType, "id">;
+
+/**
  * Require identifier(s) and at least one other property for update-style params.
  * @example
  * type PlayerUpdate = WithRequiredAndOneOther<Player, "id">

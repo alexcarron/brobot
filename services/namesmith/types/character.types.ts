@@ -1,5 +1,5 @@
 import { WithOptional } from '../../../utilities/types/generic-types';
-export interface Character {
+export type Character = {
   id: number;
   value: string;
   rarity: number;

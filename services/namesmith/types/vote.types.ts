@@ -3,11 +3,9 @@ export interface Vote {
 	playerVotedForID: string;
 }
 
-/**
- * DBVote represents a Vote stored in the database.
- * Currently identical to Vote but kept for semantic clarity.
- */
 export type DBVote = Vote;
+
+export type VoteDefinition = Vote;
 
 export type VoteID = Vote["voterID"];
 export type VoteResolvable =

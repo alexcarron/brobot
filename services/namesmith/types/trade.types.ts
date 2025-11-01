@@ -25,8 +25,9 @@ export type Trade = {
 	status: TradeStatus;
 }
 
-export type DBTrade = Trade
-export type TradeDefintion = WithOptional<Trade, "id">
+export type DBTrade = Trade;
+
+export type TradeDefintion = WithOptional<Trade, "id">;
 
 export type TradeID = Trade['id'];
 export type TradeResolveable =

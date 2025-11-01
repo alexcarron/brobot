@@ -1,5 +1,5 @@
 import { toPropertyValues } from "../../../../utilities/data-structure-utils";
-import { WithOptional } from "../../../../utilities/types/generic-types";
+import { DeepReadonly } from "../../../../utilities/types/generic-types";
 import { isNotUndefined } from "../../../../utilities/types/type-guards";
 import { RoleRepository } from "../../repositories/role.repository";
 import { DBRole, RoleDefinition } from "../../types/role.types";
@@ -13,7 +13,7 @@ import { DatabaseQuerier, toListPlaceholder } from "../database-querier";
  */
 export function syncRolesToDB(
 	db: DatabaseQuerier,
-	roles: Readonly<WithOptional<RoleDefinition, "id">[]>
+	roles: DeepReadonly<RoleDefinition[]>
 ) {
 	const roleRepository = new RoleRepository(db);
 
@@ -21,7 +21,7 @@ export function syncRolesToDB(
 	const roleNames = toPropertyValues([...roles], "name").filter(isNotUndefined);
 
 	const runTransaction = db.getTransaction((
-		roleDefinitions: WithOptional<RoleDefinition, "id">[]
+		roleDefinitions: RoleDefinition[]
 	) => {
 		const deleteRolesNotDefined = db.getQuery(`
 			DELETE FROM role

@@ -7,8 +7,7 @@ export interface Recipe {
 }
 
 export type DBRecipe = Recipe;
-export type RecipeDefinition =
-	WithOptional<Recipe, "id">;
+export type RecipeDefinition = WithOptional<Recipe, "id">;
 
 export type RecipeID = Recipe["id"];
 export type RecipeResolvable =

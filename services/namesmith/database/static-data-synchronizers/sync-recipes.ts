@@ -1,5 +1,5 @@
 import { toDefinedPropertyValues } from "../../../../utilities/data-structure-utils";
-import { WithOptional, WithRequired } from "../../../../utilities/types/generic-types";
+import { WithRequired } from "../../../../utilities/types/generic-types";
 import { RecipeRepository } from "../../repositories/recipe.repository";
 import { DBRecipe, RecipeDefinition } from "../../types/recipe.types";
 import { DatabaseQuerier, toListPlaceholder } from "../database-querier";
@@ -12,7 +12,7 @@ import { DatabaseQuerier, toListPlaceholder } from "../database-querier";
 export const syncRecipesToDB = (
 	db: DatabaseQuerier,
 	recipeDefinitions: Readonly<
-		WithOptional<RecipeDefinition, "id">[]
+		RecipeDefinition[]
 	>
 ) => {
 	const recipeRepository = new RecipeRepository(db);

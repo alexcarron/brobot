@@ -547,9 +547,7 @@ export class PlayerRepository {
 	 * @throws {PerkNotFoundError} - If the perk with the given name does not exist.
 	 * @returns The player object with the given properties and the generated ID.
 	 */
-	addPlayer({id, currentName, publishedName, tokens, inventory, lastClaimedRefillTime, role, perks}:
-		WithOptional<PlayerDefinition, 'id'>
-	) {
+	addPlayer({id, currentName, publishedName, tokens, inventory, lastClaimedRefillTime, role, perks}: PlayerDefinition) {
 		const minimalPlayer = this.addMinimalPlayer({id, currentName, publishedName, tokens, inventory, lastClaimedRefillTime});
 
 		let roleID: RoleID | null = null;
@@ -597,8 +595,11 @@ export class PlayerRepository {
 
 				perkID = maybePerkID;
 			}
-			else {
+			else if (isNumber(perk)) {
 				perkID = perk;
+			}
+			else {
+				perkID = perk.id;
 			}
 
 			const result = this.db.run(
@@ -704,8 +705,11 @@ export class PlayerRepository {
 
 					perkID = maybePerkID;
 				}
-				else {
+				else if (isNumber(perk)) {
 					perkID = perk;
+				}
+				else {
+					perkID = perk.id;
 				}
 
 				this.db.run(

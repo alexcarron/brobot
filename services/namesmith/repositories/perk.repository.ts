@@ -1,5 +1,5 @@
 import { InvalidArgumentError, toNullOnError } from "../../../utilities/error-utils";
-import { Override, WithAtLeast, WithOptional } from "../../../utilities/types/generic-types";
+import { Override, WithAtLeast } from "../../../utilities/types/generic-types";
 import { DatabaseQuerier, toAssignmentsPlaceholder } from "../database/database-querier";
 import { DBPerk, Perk, PerkDefintion, PerkID } from "../types/perk.types";
 import { PlayerID } from "../types/player.types";
@@ -88,8 +88,7 @@ export class PerkRepository {
 	 * @returns The added perk object.
 	 */
 	addPerk(
-		{ id, name, description, wasOffered }:
-			WithOptional<PerkDefintion, 'id'>
+		{ id, name, description, wasOffered }: PerkDefintion
 	): Perk {
 		if (id === undefined) {
 			const result = this.db.run(
@@ -117,11 +116,11 @@ export class PerkRepository {
 	 * If the perk does have an ID, it is updated with the given information.
 	 * If the perk does not have a name, an error will be thrown.
 	 * If the perk does have a name, it is updated with the given information.
-	 * @param {WithAtLeast<PerkDefintion, 'id'> | WithAtLeast<PerkDefintion, 'name'>} perk - The perk to be updated in the database.
-	 * @param {number} perk.id - The ID of the perk to be updated in the database.
-	 * @param {string} perk.name - The name of the perk to be updated in the database.
-	 * @param {string} perk.description - The description of the perk to be updated in the database.
-	 * @param {boolean} perk.wasOffered - A boolean indicating whether the perk was offered.
+	 * @param perk - The perk to be updated in the database.
+	 * @param perk.id - The ID of the perk to be updated in the database.
+	 * @param perk.name - The name of the perk to be updated in the database.
+	 * @param perk.description - The description of the perk to be updated in the database.
+	 * @param perk.wasOffered - A boolean indicating whether the perk was offered.
 	 * @throws PerkNotFoundError - If the perk does not exist.
 	 * @throws InvalidArgumentError - If an ID or name must be provided.
 	 * @returns The updated perk object.
