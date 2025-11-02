@@ -232,6 +232,30 @@ export class RoleNotFoundError extends ResourceNotFoundError {
 export class ResourceAlreadyExistsError extends ResourceError {}
 
 /**
+ * Error thrown when a requested namesmith perk already exists.
+ */
+export class PerkAlreadyExistsError extends ResourceAlreadyExistsError {
+	constructor(perkID: PerkID) {
+		super({
+			message: `Cannot add perk. Perk with ID ${perkID} already exists.`,
+			relevantData: { perkID }
+		})
+	}
+}
+
+/**
+ * Error thrown when a requested namesmith role already exists.
+ */
+export class RoleAlreadyExistsError extends ResourceAlreadyExistsError {
+	constructor(roleID: RoleID) {
+		super({
+			message: `Cannot add role. Role with ID ${roleID} already exists.`,
+			relevantData: { roleID }
+		})
+	}
+}
+
+/**
  * Error thrown when a requested namesmith trade already exists.
  */
 export class TradeAlreadyExistsError extends ResourceAlreadyExistsError {

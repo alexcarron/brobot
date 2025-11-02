@@ -1,17 +1,13 @@
 import { attempt } from '../../../utilities/error-utils';
 import { DatabaseQuerier } from "../database/database-querier";
 import { createMockDB } from "./mock-database";
-import { PlayerDefinition } from "../types/player.types";
-import { Vote } from "../types/vote.types";
 import { CharacterRepository } from "../repositories/character.repository";
 import { GameStateRepository } from "../repositories/game-state.repository";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
 import { PlayerRepository } from "../repositories/player.repository";
 import { VoteRepository } from "../repositories/vote.repository";
-import { Recipe } from "../types/recipe.types";
 import { RecipeRepository } from "../repositories/recipe.repository";
 import { PlayerAlreadyExistsError } from '../utilities/error.utility';
-import { Trade } from '../types/trade.types';
 import { TradeRepository } from '../repositories/trade.repository';
 import { NamesmithRepositories } from '../types/namesmith.types';
 import { addMockPlayer, createMockPlayerObject, mockPlayers } from './mock-data/mock-players';
@@ -63,23 +59,30 @@ export const createMockMysteryBoxRepo =
 
  * The mock repository is populated with mock player data from the mockPlayers array.
  * @param mockDB - An optional mock database instance.
- * @param players - An optional array of mock player data.
+ * @param mockRoleRepo - An optional mock role repository instance.
+ * @param mockPerkRepo - An optional mock perk repository instance.
  * @returns A mock instance of the PlayerRepository.
  */
-export const createMockPlayerRepo =
-(mockDB?: DatabaseQuerier, players?: PlayerDefinition[]): PlayerRepository => {
-	if (mockDB === undefined || !(mockDB instanceof DatabaseQuerier))
-		mockDB = createMockDB();
+export const createMockPlayerRepo = (
+	mockDB?: DatabaseQuerier,
+	mockRoleRepo?: RoleRepository,
+	mockPerkRepo?: PerkRepository,
+): PlayerRepository => {
+	const sharedDB =
+		mockDB ??
+		mockRoleRepo?.db ??
+		mockPerkRepo?.db ??
+		createMockDB();
 
-	if (players === undefined || !Array.isArray(players))
-		players = mockPlayers;
+	mockPerkRepo = mockPerkRepo ?? createMockPerkRepo(sharedDB);
+	mockRoleRepo = mockRoleRepo ?? createMockRoleRepo(sharedDB, mockPerkRepo);
 
-	for (const player of players) {
-		attempt(() => addMockPlayer(mockDB, player))
+	for (const player of mockPlayers) {
+		attempt(() => addMockPlayer(sharedDB, player))
 			.ignoreError(PlayerAlreadyExistsError)
 			.execute();
 	}
-	return new PlayerRepository(mockDB);
+	return new PlayerRepository(sharedDB, mockRoleRepo, mockPerkRepo);
 }
 
 /**
@@ -87,30 +90,20 @@ export const createMockPlayerRepo =
 
  * The mock repository is populated with mock vote data from the mockVotes array.
  * @param mockDB - An optional mock database instance.
- * @param players - An optional array of mock player data.
- * @param votes - An optional array of mock vote data.
  * @returns A mock instance of the VoteRepository.
  */
 export const createMockVoteRepo = (
 	mockDB?: DatabaseQuerier,
-	players?: PlayerDefinition[],
-	votes?: Vote[]
 ): VoteRepository => {
 	if (mockDB === undefined || !(mockDB instanceof DatabaseQuerier))
 		mockDB = createMockDB();
 
-	if (votes === undefined || !Array.isArray(votes))
-		votes = mockVotes;
-
-	if (players === undefined || !Array.isArray(players))
-		players = mockPlayers;
-
 		// Get a list of unique player IDs used in votes
 	const requiredPlayerIDs = [
-		...new Set(votes.map(v => v.playerVotedForID))
+		...new Set(mockVotes.map(vote => vote.playerVotedForID))
 	];
 
-	for (const player of players) {
+	for (const player of mockPlayers) {
 		attempt(() => addMockPlayer(mockDB, player))
 			.ignoreError(PlayerAlreadyExistsError)
 			.execute();
@@ -125,7 +118,7 @@ export const createMockVoteRepo = (
 			.execute();
 	}
 
-	for (const vote of votes) {
+	for (const vote of mockVotes) {
 		addMockVote(mockDB, vote);
 	}
 	return new VoteRepository(mockDB);
@@ -135,20 +128,15 @@ export const createMockVoteRepo = (
  * Creates a mock recipe repository instance with an in-memory database for testing purposes.
  * The mock repository is populated with mock recipe data from the mockRecipes array.
  * @param mockDB - An optional mock database instance.
- * @param recipes - An optional array of mock recipe data.
  * @returns A mock instance of the RecipeRepository.
  */
 export const createMockRecipeRepo = (
 	mockDB?: DatabaseQuerier,
-	recipes?: Recipe[]
 ): RecipeRepository => {
 	if (mockDB === undefined)
 		mockDB = createMockDB();
 
-	if (recipes === undefined)
-		recipes = mockRecipes;
-
-	syncRecipesToDB(mockDB, recipes);
+	syncRecipesToDB(mockDB, mockRecipes);
 
 	return new RecipeRepository(mockDB);
 }
@@ -159,36 +147,24 @@ export const createMockRecipeRepo = (
  * If any of the mock repository parameters are undefined, a default mock repository
  * instance is created for the respective service.
  * @param mockDB - An optional mock database instance.
- * @param trades - An optional array of mock trade data.
- * @param players - An optional array of mock player data.
  * @returns A mock instance of the TradeRepository.
  */
 export const createMockTradeRepo = (
 	mockDB?: DatabaseQuerier,
-	trades?: Trade[],
-	players?: PlayerDefinition[]
 ): TradeRepository => {
 	mockDB =
 		mockDB
 		?? createMockDB();
 
-	trades =
-		trades
-		?? mockTrades;
-
-	players =
-		players
-		?? mockPlayers;
-
 	// Get a list of unique player IDs used in votes
 	const requiredPlayerIDs = [
 		...new Set([
-			...trades.map(trade => trade.initiatingPlayerID),
-			...trades.map(trade => trade.recipientPlayerID)
+			...mockTrades.map(trade => trade.initiatingPlayerID),
+			...mockTrades.map(trade => trade.recipientPlayerID)
 		])
 	];
 
-	for (const player of players) {
+	for (const player of mockPlayers) {
 		attempt(() => addMockPlayer(mockDB, player))
 			.ignoreError(PlayerAlreadyExistsError)
 			.execute();
@@ -204,7 +180,7 @@ export const createMockTradeRepo = (
 	}
 
 
-	for (const trade of trades) {
+	for (const trade of mockTrades) {
 		addMockTrade(mockDB, trade);
 	}
 
@@ -231,16 +207,22 @@ export const createMockPerkRepo = (
  * Creates a mock role repository instance with an in-memory database for testing purposes.
  * If the mockDB parameter is undefined, a default mock database instance is created.
  * @param mockDB - An optional mock database instance.
+ * @param mockPerkRepo - An optional mock perk repository instance.
  * @returns A mock instance of the RoleRepository.
  */
-export const crateMockRoleRepo = (
+export const createMockRoleRepo = (
 	mockDB?: DatabaseQuerier,
+	mockPerkRepo?: PerkRepository
 ): RoleRepository => {
 	mockDB =
 		mockDB
 		?? createMockDB();
 
-	return new RoleRepository(mockDB);
+	mockPerkRepo =
+		mockPerkRepo
+		?? createMockPerkRepo(mockDB);
+
+	return new RoleRepository(mockDB, mockPerkRepo);
 }
 
 /**
@@ -253,34 +235,33 @@ export const crateMockRoleRepo = (
  * - playerRepository: A mock instance of the PlayerRepository.
  * - voteRepository: A mock instance of the VoteRepository.
  * @param mockDB - An optional mock database instance.
- * @param options - An object containing optional parameters.
- * @param options.players - An optional array of mock player data.
- * @param options.votes - An optional array of mock vote data.
- * @param options.recipes - An optional array of mock recipe data.
- * @param options.trades - An optional array of mock trade data.
  * @returns A mock instance of the repositories and the in-memory database.
  */
 export function createMockRepositories(
-	mockDB?: DatabaseQuerier,
-	{players, votes, recipes, trades}: {
-		players?: PlayerDefinition[],
-		votes?: Vote[],
-		recipes?: Recipe[],
-		trades?: Trade[],
-	} = {}
+	mockDB?: DatabaseQuerier
 ): NamesmithRepositories {
 	if (mockDB === undefined || !(mockDB instanceof DatabaseQuerier))
 		mockDB = createMockDB();
 
+	const characterRepository = createMockCharacterRepo(mockDB);
+	const gameStateRepository = createMockGameStateRepo(mockDB);
+	const mysteryBoxRepository = createMockMysteryBoxRepo(mockDB);
+	const voteRepository = createMockVoteRepo(mockDB);
+	const recipeRepository = createMockRecipeRepo(mockDB);
+	const tradeRepository = createMockTradeRepo(mockDB);
+	const perkRepository = createMockPerkRepo(mockDB);
+	const roleRepository = createMockRoleRepo(mockDB, perkRepository);
+	const playerRepository = createMockPlayerRepo(mockDB, roleRepository, perkRepository);
+
 	return {
-		characterRepository: createMockCharacterRepo(mockDB),
-		gameStateRepository: createMockGameStateRepo(mockDB),
-		mysteryBoxRepository: createMockMysteryBoxRepo(mockDB),
-		playerRepository: createMockPlayerRepo(mockDB, players),
-		voteRepository: createMockVoteRepo(mockDB, players, votes),
-		recipeRepository: createMockRecipeRepo(mockDB, recipes),
-		tradeRepository: createMockTradeRepo(mockDB, trades),
-		perkRepository: createMockPerkRepo(mockDB),
-		roleRepository: crateMockRoleRepo(mockDB),
+		characterRepository,
+		gameStateRepository,
+		mysteryBoxRepository,
+		voteRepository,
+		recipeRepository,
+		tradeRepository,
+		perkRepository,
+		roleRepository,
+		playerRepository,
 	}
 }

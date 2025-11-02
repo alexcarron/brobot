@@ -1,14 +1,15 @@
-import { randomBytes } from 'node:crypto';
+import { randomBytes, randomFillSync } from 'node:crypto';
 
 const UINT32_MAX_PLUS_ONE = 0x100000000;
+const globalBuffer = new Uint32Array(1);
 
 /**
  * Creates a random numeric UUID as a string of base-10 digits to be used as a unique identifier.
  * @returns {string} A random numeric UUID
  * @example
- * const uuid = createRandomNumericUUID(); // e.g. "13484298014512289543"
+ * const uuid = getRandomNumericUUID(); // e.g. "13484298014512289543"
  */
-export const createRandomNumericUUID = () => {
+export const getRandomNumericUUID = () => {
 	const buffer = randomBytes(8);
 	const bigInt = BigInt('0x' + buffer.toString('hex'));
 	return bigInt.toString();
@@ -18,11 +19,20 @@ export const createRandomNumericUUID = () => {
  * Creates a random UUID as a string of 32 hexadecimal digits to be used as a unique identifier.
  * @returns {string} A random UUID
  * @example
- * const uuid = createRandomUUID(); // e.g. "a1a819b8356eae7a33d3f79d2f879e9d"
+ * const uuid = getRandomUUID(); // e.g. "a1a819b8356eae7a33d3f79d2f879e9d"
  */
 export const getRandomUUID = () => {
 	const buffer = randomBytes(16);
 	return buffer.toString('hex');
+}
+
+/**
+ * Generates a random integer between 0 (inclusive) and 2^32 - 1 (exclusive).
+ * @returns A random integer between 0 and 2^32 - 1.
+ */
+export function getRandomInteger() {
+	randomFillSync(globalBuffer);
+  return globalBuffer[0]; // integer between 0 and 2^32 - 1
 }
 
 /**
@@ -215,19 +225,21 @@ export function getAnticipatedRandomNum(
  * @param {ElementType[]} array - The array to get a random element from.
  * @returns {ElementType} A random element from the array.
  */
-function getRandomElement<ElementType>(array: ElementType[]): ElementType {
+export function getRandomElement<ElementType>(array: ElementType[]): ElementType {
 	const randomIndex = Math.floor(getRandom() * array.length);
 	return array[randomIndex];
 }
 
 /**
  * Generates a random integer between the given min and max values.
- * @param {number} min - The minimum value of the range to generate a random number from.
- * @param {number} max - The maximum value of the range to generate a random number from.
- * @returns {number} A random integer between min and max (inclusive).
+ * @param min - The minimum value of the range to generate a random number from.
+ * @param max - The maximum value of the range to generate a random number from.
+ * @returns A random integer between min and max (inclusive).
  */
 function getBetween(min: number, max: number) {
-	return Math.floor(getRandom() * (max - min + 1)) + min;
+  const range = max - min + 1;
+  const randomInteger = getRandomInteger();
+  return min + (randomInteger % range);
 }
 
 /**
@@ -236,15 +248,34 @@ function getBetween(min: number, max: number) {
  * @returns {string} A random name.
  */
 export const getRandomName = () => {
-	const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
-	const firstLetter = getRandomElement(letters).toUpperCase();
-	let name = firstLetter;
+	const LETTERS = 'abcdefghijklmnopqrstuvwxyz';
+	const NUM_LETTERS = 26;
+	const MIN_LENGTH = 32;
+	const MAX_LENGTH = 128;
 
-	const length = getBetween(32, 128);
+	const length = getBetween(MIN_LENGTH, MAX_LENGTH);
 
-	for (let index = 1; index < length; index++) {
-		name += getRandomElement(letters);
-	}
+  const name: string[] = new Array(length);
+  const acceptLimit = 256 - (256 % NUM_LETTERS);
+  let numFilledLetters = 0;
 
-	return name;
+  while (numFilledLetters < length) {
+    const chunkSize = Math.max(16, length - numFilledLetters);
+    const buffer = randomBytes(chunkSize);
+    for (
+			let index = 0;
+			index < buffer.length && numFilledLetters < length;
+			index++
+		) {
+      const randomByte = buffer[index];
+      if (randomByte < acceptLimit) {
+        name[numFilledLetters] = LETTERS[randomByte % NUM_LETTERS];
+				numFilledLetters += 1;
+      }
+    }
+  }
+
+  name[0] = name[0].toUpperCase();
+
+	return name.join('');
 }

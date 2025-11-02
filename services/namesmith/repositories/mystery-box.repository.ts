@@ -35,20 +35,24 @@ export class MysteryBoxRepository {
 	 * @returns An array of mystery box objects with their character odds.
 	 */
 	getMysteryBoxes(): MysteryBox[] {
-		const mysteryBoxes = this.getMinimalMysteryBoxes();
+		const minimalMysteryBoxes = this.getMinimalMysteryBoxes();
 		const characterOddsRows =
-			this.db.prepare(`SELECT mysteryBoxID, characterID, weight FROM mysteryBoxCharacterOdds`)
-			.all() as DBCharacterOddsRow[];
+			this.db.getRows(
+				`SELECT mysteryBoxID, characterID, weight
+				FROM mysteryBoxCharacterOdds`
+			) as DBCharacterOddsRow[];
 
-		return mysteryBoxes.map(mysteryBox => {
+		return minimalMysteryBoxes.map(minimalMysteryBox => {
 			const characterOdds = characterOddsRows
-				.filter(row => row.mysteryBoxID === mysteryBox.id)
+				.filter(row => row.mysteryBoxID === minimalMysteryBox.id)
 				.reduce<CharacterOdds>((characterOdds, oddsRow) => {
-					characterOdds[getCharacterValueFromID(oddsRow.characterID)] = oddsRow.weight;
+					const character = getCharacterValueFromID(oddsRow.characterID);
+					characterOdds[character] = oddsRow.weight;
 					return characterOdds;
 				}, {});
+
 			return {
-				...mysteryBox,
+				...minimalMysteryBox,
 				characterOdds
 			};
 		});
@@ -81,10 +85,11 @@ export class MysteryBoxRepository {
 		const mysteryBox = this.getMinimalMysteryBox(id);
 		if (mysteryBox === null) return null;
 
-		const characterOddsRows = this.db.prepare(`
-			SELECT characterID, weight FROM mysteryBoxCharacterOdds
-			WHERE mysteryBoxID = @id
-		`).all({ id }) as DBCharacterOddsRow[];
+		const characterOddsRows = this.db.getRows(
+			`SELECT characterID, weight FROM mysteryBoxCharacterOdds
+			WHERE mysteryBoxID = @id`,
+			{ id }
+		) as DBCharacterOddsRow[];
 
 		const characterOdds = characterOddsRows
 			.reduce<CharacterOdds>((characterOdds, oddsRow) => {
@@ -99,18 +104,17 @@ export class MysteryBoxRepository {
 	}
 
 	getMinimalMysteryBoxOrThrow (id: MysteryBoxID): MinimalMysteryBox {
-		return returnIfNotNull(this.getMinimalMysteryBox(id),
+		return returnIfNotNull(
+			this.getMinimalMysteryBox(id),
 			new MysteryBoxNotFoundError(id)
 		);
 	}
 
 	getMysteryBoxOrThrow(id: MysteryBoxID): MysteryBox {
-		const mysteryBox = this.getMysteryBox(id);
-
-		if (mysteryBox === null)
-			throw new MysteryBoxNotFoundError(id);
-
-		return mysteryBox;
+		return returnIfNotNull(
+			this.getMysteryBox(id),
+			new MysteryBoxNotFoundError(id)
+		);
 	}
 
 	/**

@@ -1,6 +1,6 @@
 import { NamesmithDependencies } from "../types/namesmith.types";
 import { createMockDB } from "./mock-database";
-import { crateMockRoleRepo, createMockCharacterRepo, createMockGameStateRepo, createMockMysteryBoxRepo, createMockPerkRepo, createMockPlayerRepo, createMockRecipeRepo, createMockTradeRepo, createMockVoteRepo } from "./mock-repositories";
+import { createMockRoleRepo, createMockCharacterRepo, createMockGameStateRepo, createMockMysteryBoxRepo, createMockPerkRepo, createMockPlayerRepo, createMockRecipeRepo, createMockTradeRepo, createMockVoteRepo } from "./mock-repositories";
 import { createMockCharacterService, createMockGameStateService, createMockMysteryBoxService, createMockPerkService, createMockPlayerService, createMockRecipeService, createMockRoleService, createMockTradeService, createMockVoteService } from "./mock-services";
 
 /**
@@ -12,13 +12,13 @@ export const createAllMocks = (): NamesmithDependencies => {
 
 	const mysteryBoxRepository = createMockMysteryBoxRepo(mockDB);
 	const characterRepository = createMockCharacterRepo(mockDB);
-	const playerRepository = createMockPlayerRepo(mockDB);
 	const voteRepository = createMockVoteRepo(mockDB);
 	const gameStateRepository = createMockGameStateRepo(mockDB);
 	const recipeRepository = createMockRecipeRepo(mockDB);
 	const tradeRepository = createMockTradeRepo(mockDB);
 	const perkRepository = createMockPerkRepo(mockDB);
-	const roleRepository = crateMockRoleRepo(mockDB);
+	const roleRepository = createMockRoleRepo(mockDB, perkRepository);
+	const playerRepository = createMockPlayerRepo(mockDB, roleRepository, perkRepository);
 
 	const mysteryBoxService = createMockMysteryBoxService(mysteryBoxRepository, characterRepository);
 	const characterService = createMockCharacterService(characterRepository);

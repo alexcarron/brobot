@@ -35,11 +35,11 @@ describe('sync-characters.ts', () => {
 				character.value === '✅'
 			);
 
-			const newCharacter1 = characterRepository.getCharacterByValue('❌');
+			const newCharacter1 = characterRepository.getCharacterByValueOrThrow('❌');
 			makeSure(newCharacter1).isNotNull();
 			makeSure(newCharacter1!.rarity).is(10);
 
-			const newCharacter2 = characterRepository.getCharacterByValue('✅');
+			const newCharacter2 = characterRepository.getCharacterByValueOrThrow('✅');
 			makeSure(newCharacter2).isNotNull();
 			makeSure(newCharacter2!.rarity).is(14);
 		});

@@ -14,7 +14,7 @@ describe('CharacterService', () => {
 	beforeEach(() => {
 		characterService = createMockCharacterService();
 
-		CHARACTER_A = characterService.characterRepository.getCharacterByValue('A');
+		CHARACTER_A = characterService.characterRepository.getCharacterByValueOrThrow('A');
 		CHARACTER_A_ID = CHARACTER_A.id;
 		CHARACTER_A_VALUE = CHARACTER_A.value;
 	});

@@ -404,7 +404,7 @@ export class PlayerService {
 			return;
 		}
 
-		this.playerRepository.publishName(playerID, currentName);
+		this.playerRepository.setPublishedName(playerID, currentName);
 
 		NamesmithEvents.NamePublish.announce({
 			player: this.resolvePlayer(playerID)
@@ -587,6 +587,6 @@ export class PlayerService {
 	 * Resets the player repository, clearing all stored players.
 	 */
 	reset() {
-		this.playerRepository.reset();
+		this.playerRepository.removePlayers();
 	}
 }

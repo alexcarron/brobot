@@ -4,6 +4,7 @@ import { Perks } from "../constants/perks.constants";
 import { INVALID_PERK_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
+import { addMockRole } from "../mocks/mock-data/mock-roles";
 import { createMockPerkRepo } from "../mocks/mock-repositories";
 import { PerkNotFoundError } from "../utilities/error.utility";
 import { PerkRepository } from "./perk.repository";
@@ -128,6 +129,31 @@ describe('PerkRepository', () => {
 		});
 	});
 
+	describe('getPerksOfPlayerID()', () => {
+		it('returns an array of the only perk that the player has', () => {
+			const player = addMockPlayer(db, {
+				perks: [Perks.MINE_BONUS.id]
+			});
+			const perks = perkRepository.getPerksOfPlayerID(player.id);
+
+			makeSure(perks).isAnArray();
+			makeSure(perks).hasLengthOf(1);
+			makeSure(perks[0].id).is(Perks.MINE_BONUS.id);
+			makeSure(perks[0]).hasProperties('id', 'name', 'description');
+		});
+
+		it('returns an empty array when the player has no perks', () => {
+			const player = addMockPlayer(db, {
+				perks: []
+			});
+
+			const perks = perkRepository.getPerksOfPlayerID(player.id);
+
+			makeSure(perks).isAnArray();
+			makeSure(perks).isEmpty();
+		});
+	});
+
 	describe('addPerkIDToPlayer()', () => {
 		it('adds the given perk ID to the player', () => {
 			const player = addMockPlayer(db, {
@@ -140,6 +166,19 @@ describe('PerkRepository', () => {
 			makeSure(perkIDs).contains(Perks.MINE_BONUS.id);
 		});
 	});
+
+	describe('removePerksFromPlayerID()', () => {
+		it('removes all perks from the player', () => {
+			const player = addMockPlayer(db, {
+				perks: [Perks.MINE_BONUS.id]
+			});
+			perkRepository.removePerksFromPlayerID(player.id);
+
+			const perkIDs = perkRepository.getPerkIDsOfPlayerID(player.id);
+			makeSure(perkIDs).isAnArray();
+			makeSure(perkIDs).isEmpty();
+		});
+	})
 
 	describe('removePerkIDFromPlayer()', () => {
 		it('removes the given perk ID from the player', () => {
@@ -166,6 +205,58 @@ describe('PerkRepository', () => {
 		it('returns an empty array when the role has no perks', () => {
 			const perkIDs = perkRepository.getPerkIDsOfRoleID(INVALID_PERK_ID);
 
+			makeSure(perkIDs).isAnArray();
+			makeSure(perkIDs).isEmpty();
+		});
+	});
+
+	describe('getPerksOfRoleID()', () => {
+		it('returns an array of the only perk that the role has', () => {
+			const role = addMockRole(db, {
+				perks: [Perks.MINE_BONUS.id]
+			});
+
+			const perks = perkRepository.getPerksOfRoleID(role.id);
+
+			makeSure(perks).isAnArray();
+			makeSure(perks).hasLengthOf(1);
+			makeSure(perks[0].id).is(Perks.MINE_BONUS.id);
+			makeSure(perks[0]).hasProperties('id', 'name', 'description');
+		});
+
+		it('returns an empty array when the player has no perks', () => {
+			const player = addMockRole(db, {
+				perks: []
+			});
+
+			const perks = perkRepository.getPerksOfRoleID(player.id);
+
+			makeSure(perks).isAnArray();
+			makeSure(perks).isEmpty();
+		});
+	});
+
+	describe('addPerkIDToRole()', () => {
+		it('adds the given perk ID to the role', () => {
+			const role = addMockRole(db, {
+				perks: []
+			});
+			perkRepository.addPerkIDToRole(Perks.MINE_BONUS.id, role.id);
+
+			const perkIDs = perkRepository.getPerkIDsOfRoleID(role.id);
+			makeSure(perkIDs).isAnArray();
+			makeSure(perkIDs).contains(Perks.MINE_BONUS.id);
+		});
+	});
+
+	describe('removePerksFromRoleID()', () => {
+		it('removes all perks from the role', () => {
+			const role = addMockRole(db, {
+				perks: [Perks.MINE_BONUS.id]
+			});
+			perkRepository.removePerksFromRoleID(role.id);
+
+			const perkIDs = perkRepository.getPerkIDsOfRoleID(role.id);
 			makeSure(perkIDs).isAnArray();
 			makeSure(perkIDs).isEmpty();
 		});

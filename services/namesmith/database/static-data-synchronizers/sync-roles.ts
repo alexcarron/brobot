@@ -1,6 +1,7 @@
 import { toPropertyValues } from "../../../../utilities/data-structure-utils";
 import { DeepReadonly } from "../../../../utilities/types/generic-types";
 import { isNotUndefined } from "../../../../utilities/types/type-guards";
+import { PerkRepository } from "../../repositories/perk.repository";
 import { RoleRepository } from "../../repositories/role.repository";
 import { DBRole, RoleDefinition } from "../../types/role.types";
 import { DatabaseQuerier, toListPlaceholder } from "../database-querier";
@@ -15,7 +16,8 @@ export function syncRolesToDB(
 	db: DatabaseQuerier,
 	roles: DeepReadonly<RoleDefinition[]>
 ) {
-	const roleRepository = new RoleRepository(db);
+	const perkRepository = new PerkRepository(db);
+	const roleRepository = new RoleRepository(db, perkRepository);
 
 	const roleIDs = toPropertyValues([...roles], "id").filter(isNotUndefined);
 	const roleNames = toPropertyValues([...roles], "name").filter(isNotUndefined);

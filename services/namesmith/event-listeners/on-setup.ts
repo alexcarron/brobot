@@ -38,13 +38,13 @@ export const initializeDependencies = async (): Promise<NamesmithDependencies> =
 
 	const mysteryBoxRepository = new MysteryBoxRepository(db);
 	const characterRepository = new CharacterRepository(db);
-	const playerRepository = new PlayerRepository(db);
 	const gameStateRepository = new GameStateRepository(db);
 	const voteRepository = new VoteRepository(db);
 	const recipeRepository = new RecipeRepository(db);
 	const tradeRepository = new TradeRepository(db);
 	const perkRepository = new PerkRepository(db);
-	const roleRepository = new RoleRepository(db);
+	const roleRepository = new RoleRepository(db, perkRepository);
+	const playerRepository = new PlayerRepository(db, roleRepository, perkRepository);
 
 	const mysteryBoxService = new MysteryBoxService(
 		mysteryBoxRepository,

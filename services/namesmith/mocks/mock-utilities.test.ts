@@ -3,6 +3,7 @@ import { DatabaseQuerier } from "../database/database-querier";
 import { DBPlayer, Player } from "../types/player.types";
 import { addMockPerk } from "./mock-data/mock-perks";
 import { addMockPlayer, editMockPlayer } from "./mock-data/mock-players";
+import { addMockRole } from "./mock-data/mock-roles";
 import { addMockVote } from "./mock-data/mock-votes";
 import { createMockDB } from "./mock-database";
 
@@ -233,6 +234,105 @@ describe("Mock Utilities", () => {
 				name: "Test Perk",
 				description: "",
 				wasOffered: 0,
+			});
+		});
+	});
+
+	describe('addMockRole()', () => {
+		it('returns the added role', () => {
+			const role = addMockRole(db, {
+				id: 123,
+				name: "Test Role",
+				description: "This is a test role",
+			});
+
+			makeSure(role).is({
+				id: 123,
+				name: "Test Role",
+				description: "This is a test role",
+				perks: [],
+			});
+		});
+
+		it('adds the role to the database', () => {
+			addMockRole(db, {
+				id: 123,
+				name: "Test Role",
+				description: "This is a test role",
+			});
+
+			const roles = db.getRows("SELECT * FROM role");
+			makeSure(roles).contains({
+				id: 123,
+				name: "Test Role",
+				description: "This is a test role",
+			});
+		});
+
+		it('adds a role with given perks', () => {
+			const perk1 = addMockPerk(db, {
+				name: "Test Perk 1",
+			});
+			const perk2 = addMockPerk(db, {
+				name: "Test Perk 2",
+			});
+			const perk3 = addMockPerk(db, {
+				name: "Test Perk 3",
+			});
+
+			const role = addMockRole(db, {
+				id: 123,
+				name: "Test Role",
+				description: "This is a test role",
+				perks: [perk1, perk2.id, perk3.name],
+			});
+
+			makeSure(role.perks).hasAnItemWhere(
+				(p) => p.id === perk1.id,
+				(p) => p.id === perk2.id,
+				(p) => p.id === perk3.id
+			);
+
+			const roles = db.getRows("SELECT * FROM role");
+			makeSure(roles).contains({
+				id: 123,
+				name: "Test Role",
+				description: "This is a test role",
+			});
+
+			const rolePerks = db.getRows("SELECT * FROM rolePerk");
+			makeSure(rolePerks).contains(
+				{roleID: 123, perkID: perk1.id},
+				{roleID: 123, perkID: perk2.id},
+				{roleID: 123, perkID: perk3.id},
+			)
+		});
+
+		it('throws if the role already exists', () => {
+			addMockRole(db, {
+				id: 123,
+				name: "Test Role",
+				description: "This is a test role",
+			});
+
+			expect(() => addMockRole(db, {
+				id: 123,
+				name: "Test Role",
+				description: "This is a test role",
+			})).toThrow();
+		});
+
+		it('creates its own ID when none is provided', () => {
+			const role = addMockRole(db, {
+				name: "Test Role",
+				description: "This is a test role",
+			});
+
+			makeSure(role).is({
+				id: expect.any(Number),
+				name: "Test Role",
+				description: "This is a test role",
+				perks: [],
 			});
 		});
 	});

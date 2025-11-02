@@ -84,6 +84,6 @@ export class MysteryBoxService {
 		const characterOdds = mysteryBox.characterOdds;
 
 		const characterValue = getRandomWeightedElement(characterOdds);
-		return this.characterRepository.getCharacterByValue(characterValue);
+		return this.characterRepository.getCharacterByValueOrThrow(characterValue);
 	}
 }

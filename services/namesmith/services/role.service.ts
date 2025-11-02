@@ -1,7 +1,5 @@
 import { RoleRepository } from "../repositories/role.repository";
-import { isNumber, isString } from "../../../utilities/types/type-guards";
 import { Role, RoleResolvable } from "../types/role.types";
-import { RoleNotFoundError } from "../utilities/error.utility";
 import { PlayerResolvable } from "../types/player.types";
 import { PlayerService } from "./player.service";
 
@@ -22,36 +20,11 @@ export class RoleService {
 	 * @throws {RoleNotFoundError} - If the role with the given ID or name is not found.
 	 */
 	resolveRole(roleResolvable: RoleResolvable): Role {
-		if (isNumber(roleResolvable)) {
-			return this.roleRepository.getRoleOrThrow(roleResolvable);
-		}
-		else if (isString(roleResolvable)) {
-			const roleName = roleResolvable;
-			const maybeRole = this.roleRepository.getRoleByName(roleName);
-			if (maybeRole === null) {
-				throw new RoleNotFoundError(roleName);
-			}
-
-			return maybeRole;
-		}
-		else {
-			const roleID = roleResolvable.id;
-			return this.roleRepository.getRoleOrThrow(roleID);
-		}
+		return this.roleRepository.resolveRole(roleResolvable);
 	}
 
 	resolveID(roleResolvable: RoleResolvable): number {
-		if (isNumber(roleResolvable)) {
-			const roleID = roleResolvable;
-			return roleID;
-		}
-		else if (isString(roleResolvable)) {
-			const role = this.resolveRole(roleResolvable);
-			return role.id;
-		}
-		else {
-			return roleResolvable.id;
-		}
+		return this.roleRepository.resolveID(roleResolvable);
 	}
 
 	/**

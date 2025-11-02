@@ -1,29 +1,29 @@
 import { InvalidArgumentError, returnIfNotNull } from "../../../utilities/error-utils";
-import { createRandomNumericUUID } from "../../../utilities/random-utils";
+import { getRandomNumericUUID } from "../../../utilities/random-utils";
 import { Override, WithOptional, WithRequiredAndOneOther } from "../../../utilities/types/generic-types";
-import { isNumber, isString } from "../../../utilities/types/type-guards";
 import { MAX_NAME_LENGTH } from "../constants/namesmith.constants";
 import { DatabaseQuerier, toAssignmentsPlaceholder } from "../database/database-querier";
-import { DBPerk, DBPlayerPerk, PerkID } from "../types/perk.types";
 import { DBPlayer, MinimalPlayer, Player, PlayerDefinition, PlayerID } from "../types/player.types";
-import { Role, RoleID } from "../types/role.types";
-import { PlayerNotFoundError, PlayerAlreadyExistsError, RoleNotFoundError, PerkNotFoundError } from "../utilities/error.utility";
-import { toPerk } from "../utilities/perk.utility";
+import { RoleID } from "../types/role.types";
+import { PlayerNotFoundError, PlayerAlreadyExistsError } from "../utilities/error.utility";
 import { toMinimalPlayerObject } from "../utilities/player.utility";
 import { RoleRepository } from "./role.repository";
+import { PerkRepository } from './perk.repository';
 
 /**
  * Provides access to the dynamic player data.
  */
 export class PlayerRepository {
-	db: DatabaseQuerier;
-
 	/**
 	 * @param db - The database querier instance used for executing SQL statements.
+	 * @param roleRepository - The role repository instance used for retrieving role data.
+	 * @param perkRepository - The perk repository instance used for retrieving perk data.
 	 */
-	constructor(db: DatabaseQuerier) {
-		this.db = db;
-	}
+	constructor(
+		public db: DatabaseQuerier,
+		public roleRepository: RoleRepository,
+		public perkRepository: PerkRepository
+	) {}
 
 
 	/**
@@ -36,33 +36,16 @@ export class PlayerRepository {
 		return dbPlayers.map(dbPlayer => toMinimalPlayerObject(dbPlayer));
 	}
 
-	private attachExistingPerksAndRoleToPlayer(
+	private toPlayerFromMinimal(
 		minimalPlayer: MinimalPlayer
 	): Player {
-		const dbPerks = this.db.getRows(
-			`SELECT id, name, description
-				FROM playerPerk
-				JOIN perk ON playerPerk.perkID = perk.id
-				WHERE playerID = @playerID`,
-			{ playerID: minimalPlayer.id }
-		) as Array<DBPerk>;
-
-		const roleID = this.db.getValue(
-			`SELECT role
-				FROM player
-				WHERE id = @id`,
-			{ id: minimalPlayer.id }
-		) as RoleID | null | undefined;
-
-		let role: Role | null = null;
-		if (roleID !== undefined && roleID !== null) {
-			role = new RoleRepository(this.db).getRoleOrThrow(roleID);
-		}
+		const role = this.roleRepository.getRoleOfPlayerID(minimalPlayer.id);
+		const perks = this.perkRepository.getPerksOfPlayerID(minimalPlayer.id);
 
 		return {
 			...minimalPlayer,
 			role,
-			perks: dbPerks.map(toPerk),
+			perks,
 		};
 	}
 
@@ -71,36 +54,10 @@ export class PlayerRepository {
 	 * @param minimalPlayers - An array of minimal player objects.
 	 * @returns An array of player objects.
 	 */
-	private attachExistingPerksToPlayers(minimalPlayers: MinimalPlayer[]): Player[] {
-		const playerPerks = this.db.getRows(
-			`SELECT playerID, perkID, id, name, description, wasOffered
-				FROM playerPerk
-				JOIN perk ON playerPerk.perkID = perk.id`
-		) as Array<DBPlayerPerk & DBPerk>;
-
-		return minimalPlayers.map(minimalPlayer => {
-			const perks = playerPerks
-				.filter(playerPerk => playerPerk.playerID === minimalPlayer.id)
-				.map(playerPerk => toPerk(playerPerk));
-
-			const roleID = this.db.getValue(
-				`SELECT role
-					FROM player
-					WHERE id = @id`,
-				{ id: minimalPlayer.id }
-			) as RoleID | null | undefined;
-
-			let role: Role | null = null;
-			if (roleID !== undefined && roleID !== null) {
-				role = new RoleRepository(this.db).getRoleOrThrow(roleID);
-			}
-
-			return {
-				...minimalPlayer,
-				role,
-				perks
-			}
-		});
+	private toPlayersFromMinimals(minimalPlayers: MinimalPlayer[]): Player[] {
+		return minimalPlayers.map(
+			minimalPlayer => this.toPlayerFromMinimal(minimalPlayer)
+		);
 	}
 
 	/**
@@ -109,7 +66,7 @@ export class PlayerRepository {
 	 */
 	getPlayers(): Player[] {
 		const minimalPlayers = this.getMinimalPlayers();
-		return this.attachExistingPerksToPlayers(minimalPlayers);
+		return this.toPlayersFromMinimals(minimalPlayers);
 	}
 
 	getMinimalPlayerByID(playerID: PlayerID): MinimalPlayer | null {
@@ -132,7 +89,7 @@ export class PlayerRepository {
 		if (minimalPlayer === null)
 			return null;
 
-		return this.attachExistingPerksAndRoleToPlayer(minimalPlayer);
+		return this.toPlayerFromMinimal(minimalPlayer);
 	}
 
 	getMinimalPlayerOrThrow(playerID: PlayerID): MinimalPlayer {
@@ -149,12 +106,10 @@ export class PlayerRepository {
 	 * @throws {PlayerNotFoundError} - If the player does not exist.
 	 */
 	getPlayerOrThrow(playerID: PlayerID): Player {
-		const player = this.getPlayerByID(playerID);
-
-		if (player === null)
-			throw new PlayerNotFoundError(playerID);
-
-		return player
+		return returnIfNotNull(
+			this.getPlayerByID(playerID),
+			new PlayerNotFoundError(playerID)
+		)
 	}
 
 	/**
@@ -177,7 +132,7 @@ export class PlayerRepository {
 	 */
 	getPlayersByCurrentName(currentName: string): Player[] {
 		const minimalPlayers = this.getMinimalPlayersByCurrentName(currentName);
-		return this.attachExistingPerksToPlayers(minimalPlayers);
+		return this.toPlayersFromMinimals(minimalPlayers);
 	}
 
 	/**
@@ -212,7 +167,7 @@ export class PlayerRepository {
 		publishedName: null
 	}>[] {
 		const minimalPlayers = this.getMinimalPlayersWithoutPublishedNames();
-		return this.attachExistingPerksToPlayers(minimalPlayers) as any;
+		return this.toPlayersFromMinimals(minimalPlayers) as any;
 	}
 
 	/**
@@ -238,7 +193,7 @@ export class PlayerRepository {
 		{publishedName: string}
 	>[] {
 		const minimalPlayers = this.getMinimalPlayersWithPublishedNames();
-		return this.attachExistingPerksToPlayers(minimalPlayers) as any;
+		return this.toPlayersFromMinimals(minimalPlayers) as any;
 	}
 
 	/**
@@ -343,7 +298,7 @@ export class PlayerRepository {
 	 * @param playerID - The ID of the player whose name is being published.
 	 * @param name - The name to be published for the player.
 	 */
-	publishName(playerID: string, name: string) {
+	setPublishedName(playerID: string, name: string) {
 		if (name.length > MAX_NAME_LENGTH)
 			throw new InvalidArgumentError(`publishName: name must be less than or equal to ${MAX_NAME_LENGTH}.`);
 
@@ -510,7 +465,7 @@ export class PlayerRepository {
 		WithOptional<MinimalPlayer, 'id'>
 	): MinimalPlayer {
 		if (id === undefined) {
-			id = createRandomNumericUUID();
+			id = getRandomNumericUUID();
 		}
 
 		if (this.doesPlayerExist(id)) {
@@ -547,69 +502,28 @@ export class PlayerRepository {
 	 * @throws {PerkNotFoundError} - If the perk with the given name does not exist.
 	 * @returns The player object with the given properties and the generated ID.
 	 */
-	addPlayer({id, currentName, publishedName, tokens, inventory, lastClaimedRefillTime, role, perks}: PlayerDefinition) {
+	addPlayer({
+		id, currentName, publishedName, tokens, inventory, lastClaimedRefillTime,
+		role: maybeRoleResolvable,
+		perks: perkResolvables
+	}: PlayerDefinition) {
 		const minimalPlayer = this.addMinimalPlayer({id, currentName, publishedName, tokens, inventory, lastClaimedRefillTime});
 
 		let roleID: RoleID | null = null;
-		if (isNumber(role)) {
-			roleID = role;
+		if (maybeRoleResolvable !== null) {
+			const roleResolvable = maybeRoleResolvable;
+			roleID = this.roleRepository.resolveID(roleResolvable);
 		}
-		else if (isString(role)) {
-			const maybeRoleID = this.db.getValue(
-				"SELECT id FROM role WHERE name = @name",
-				{ name: role }
-			)
-
-			if (!isNumber(maybeRoleID))
-				throw new RoleNotFoundError(role);
-
-			roleID = maybeRoleID;
-		}
-		else if (role !== null) {
-			roleID = role.id;
-		}
-		else {
-			roleID = null;
-		}
-
-		const result = this.db.run(
+		this.db.run(
 			`UPDATE player
 			SET role = @role
 			WHERE id = @id`,
 			{ role: roleID, id: minimalPlayer.id }
 		);
 
-		if (result.changes === 0)
-			throw new PlayerNotFoundError(minimalPlayer.id);
-
-		for (const perk of perks) {
-			let perkID: PerkID;
-			if (isString(perk)) {
-				const maybePerkID = this.db.getValue(
-					"SELECT id FROM perk WHERE name = @name",
-					{ name: perk }
-				)
-
-				if (!isNumber(maybePerkID))
-					throw new PerkNotFoundError(perk);
-
-				perkID = maybePerkID;
-			}
-			else if (isNumber(perk)) {
-				perkID = perk;
-			}
-			else {
-				perkID = perk.id;
-			}
-
-			const result = this.db.run(
-				`INSERT INTO playerPerk (playerID, perkID)
-				VALUES (@playerID, @perkID)`,
-				{ playerID: minimalPlayer.id, perkID }
-			);
-
-			if (result.changes === 0)
-				throw new PlayerNotFoundError(minimalPlayer.id);
+		for (const perk of perkResolvables) {
+			const perkID = this.perkRepository.resolveID(perk);
+			this.perkRepository.addPerkIDToPlayer(perkID, minimalPlayer.id);
 		}
 
 		return this.getPlayerOrThrow(minimalPlayer.id);
@@ -649,74 +563,34 @@ export class PlayerRepository {
 		return this.getMinimalPlayerOrThrow(id);
 	}
 
-	updatePlayer({ id, currentName, publishedName, tokens, inventory, lastClaimedRefillTime, role, perks }:
+	updatePlayer({
+		id, currentName, publishedName, tokens, inventory, lastClaimedRefillTime,
+		role: roleResolvable,
+		perks: perkResolvables
+	}:
 		WithRequiredAndOneOther<PlayerDefinition, "id">
 	) {
 		if (
-			currentName !== undefined ||
-			publishedName !== undefined ||
-			tokens !== undefined ||
-			inventory !== undefined ||
-			lastClaimedRefillTime !== undefined
+			[currentName, publishedName, tokens, inventory, lastClaimedRefillTime].some((value) => value !== undefined)
 		) {
 			this.updateMinimalPlayer({ id, currentName, publishedName, tokens: tokens!, inventory, lastClaimedRefillTime });
 		}
 
-		if (role !== undefined) {
+		if (roleResolvable !== undefined) {
 			let roleID: RoleID | null = null;
-			if (isNumber(role)) {
-				roleID = role;
-			}
-			else if (isString(role)) {
-				const maybeRoleID = this.db.getValue(
-					"SELECT id FROM role WHERE name = @name",
-					{ name: role }
-				)
-
-				if (!isNumber(maybeRoleID))
-					throw new RoleNotFoundError(role);
-
-				roleID = maybeRoleID;
-			}
-			else if (role !== null) {
-				roleID = role.id;
+			if (roleResolvable !== null) {
+				roleID = this.roleRepository.resolveID(roleResolvable);
 			}
 
 			this.setRoleID(id, roleID);
 		}
 
-		if (perks !== undefined) {
-			this.db.run(
-				`DELETE FROM playerPerk
-				WHERE playerID = @playerID`,
-				{ playerID: id }
-			);
+		if (perkResolvables !== undefined) {
+			this.perkRepository.removePerksFromPlayerID(id);
 
-			for (const perk of perks) {
-				let perkID: PerkID;
-				if (isString(perk)) {
-					const maybePerkID = this.db.getValue(
-						"SELECT id FROM perk WHERE name = @name",
-						{ name: perk }
-					)
-
-					if (!isNumber(maybePerkID))
-						throw new PerkNotFoundError(perk);
-
-					perkID = maybePerkID;
-				}
-				else if (isNumber(perk)) {
-					perkID = perk;
-				}
-				else {
-					perkID = perk.id;
-				}
-
-				this.db.run(
-					`INSERT INTO playerPerk (playerID, perkID)
-					VALUES (@playerID, @perkID)`,
-					{ playerID: id, perkID }
-				);
+			for (const perk of perkResolvables) {
+				const perkID = this.perkRepository.resolveID(perk);
+				this.perkRepository.addPerkIDToPlayer(perkID, id);
 			}
 		}
 
@@ -740,9 +614,7 @@ export class PlayerRepository {
 	/**
 	 * Resets the list of players, clearing all existing players.
 	 */
-	reset() {
-		const query = `DELETE FROM player`;
-		const reset = this.db.prepare(query);
-		reset.run();
+	removePlayers() {
+		this.db.run(`DELETE FROM player`);
 	}
 }

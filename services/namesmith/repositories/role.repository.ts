@@ -1,10 +1,8 @@
 import { InvalidArgumentError, toNullOnError } from "../../../utilities/error-utils";
 import { DatabaseQuerier, toAssignmentsPlaceholder } from "../database/database-querier";
-import { DBPerk, Perk, PerkID } from "../types/perk.types";
 import { PlayerID } from "../types/player.types";
-import { DBRole, DBRolePerk, MinimalRole, Role, RoleDefinition, RoleID, RoleName } from "../types/role.types";
-import { PerkNotFoundError, PlayerNotFoundError, RoleNotFoundError } from "../utilities/error.utility";
-import { toPerk } from "../utilities/perk.utility";
+import { DBRole, MinimalRole, Role, RoleDefinition, RoleID, RoleName, RoleResolvable } from "../types/role.types";
+import { PlayerNotFoundError, RoleNotFoundError } from "../utilities/error.utility";
 import { WithAtLeast, WithOptional } from '../../../utilities/types/generic-types';
 import { PerkRepository } from "./perk.repository";
 import { isNumber, isString } from "../../../utilities/types/type-guards";
@@ -13,33 +11,17 @@ import { isNumber, isString } from "../../../utilities/types/type-guards";
  * Provides access to the dynamic role data.
  */
 export class RoleRepository {
-	db: DatabaseQuerier;
-
 	/**
 	 * @param db - The database querier instance used for executing SQL statements.
+	 * @param perkRepository - The repository for accessing perk data.
 	 */
-	constructor(db: DatabaseQuerier) {
-		this.db = db;
-	}
+	constructor(
+		public db: DatabaseQuerier,
+		public perkRepository: PerkRepository,
+	) {}
 
 	private attachExistingPerksToRole(minimalRole: MinimalRole): Role {
-		const dbRolePerks = this.db.getRows(
-			"SELECT * FROM rolePerk WHERE roleID = @roleID",
-			{ roleID: minimalRole.id }
-		) as DBRolePerk[];
-
-		const perks: Perk[] = [];
-		for (const dbRolePerk of dbRolePerks) {
-			const perkID = dbRolePerk.perkID;
-
-			const perk = this.db.getRow(
-				"SELECT * FROM perk WHERE id = @id",
-				{ id: perkID }
-			) as DBPerk;
-
-			perks.push(toPerk(perk));
-		}
-
+		const perks = this.perkRepository.getPerksOfRoleID(minimalRole.id);
 		return {
 			...minimalRole,
 			perks
@@ -146,6 +128,73 @@ export class RoleRepository {
 	}
 
 	/**
+	 * Resolves a role given its ID, name, or a role object.
+	 * @param roleResolvable - The role to resolve. Can be a number (the role's ID), a string (the role's name), or a role object.
+	 * @returns The resolved role.
+	 * @throws {RoleNotFoundError} - If the role with the given ID or name is not found.
+	 */
+	resolveRole(roleResolvable: RoleResolvable): Role {
+		if (isNumber(roleResolvable)) {
+			return this.getRoleOrThrow(roleResolvable);
+		}
+		else if (isString(roleResolvable)) {
+			const roleName = roleResolvable;
+			const maybeRole = this.getRoleByName(roleName);
+			if (maybeRole === null) {
+				throw new RoleNotFoundError(roleName);
+			}
+
+			return maybeRole;
+		}
+		else {
+			const roleID = roleResolvable.id;
+			return this.getRoleOrThrow(roleID);
+		}
+	}
+
+	/**
+	 * Resolves a role ID from a given role ID, name, or role object.
+	 * @param roleResolvable - The role to resolve. Can be a number (the role's ID), a string (the role's name), or a role object.
+	 * @returns The resolved role ID.
+	 * @throws {RoleNotFoundError} - If the role with the given ID or name is not found.
+	 */
+	resolveID(roleResolvable: RoleResolvable): number {
+		if (isNumber(roleResolvable)) {
+			const roleID = roleResolvable;
+			return roleID;
+		}
+		else if (isString(roleResolvable)) {
+			const role = this.resolveRole(roleResolvable);
+			return role.id;
+		}
+		else {
+			return roleResolvable.id;
+		}
+	}
+
+	/**
+	 * Checks if a role with the given ID exists in the database.
+	 * @param idOrName - The ID of the role to check.
+	 * @returns true if a role with the given ID exists, false otherwise.
+	 */
+	doesRoleExist(idOrName: RoleID | RoleName): boolean {
+		if (isNumber(idOrName)) {
+			const id = idOrName;
+			return this.db.getValue(
+				'SELECT 1 FROM role WHERE id = @id LIMIT 1',
+				{ id: id }
+			) === 1;
+		}
+		else {
+			const name = idOrName;
+			return this.db.getValue(
+				'SELECT 1 FROM role WHERE name = @name LIMIT 1',
+				{ name: name }
+			) === 1;
+		}
+	}
+
+	/**
 	 * Retrieves the role ID associated with a player by their ID.
 	 * If no player with the given ID is found, returns null.
 	 * @param playerID - The ID of the player to retrieve the role ID of.
@@ -166,6 +215,20 @@ export class RoleRepository {
 		);
 
 		return roleID as number | null;
+	}
+
+	/**
+	 * Retrieves the role of a player by their ID.
+	 * @param playerID - The ID of the player to retrieve the role of.
+	 * @returns The role of the player.
+	 */
+	getRoleOfPlayerID(playerID: PlayerID): Role | null {
+		const roleID = this.getRoleIDOfPlayerID(playerID);
+
+		if (roleID === null)
+			return null;
+
+		return this.getRoleOrThrow(roleID);
 	}
 
 	/**
@@ -223,28 +286,8 @@ export class RoleRepository {
 		const minimalRole = this.addMinimalRole({ id, name, description });
 
 		for (const perkResolvable of perkResolvables) {
-			const perkRepository = new PerkRepository(this.db);
-
-			let perkID: PerkID;
-			if (isNumber(perkResolvable)) {
-				perkID = perkResolvable;
-			}
-			else if (isString(perkResolvable)) {
-				const perk = perkRepository.getPerkByName(perkResolvable);
-				if (perk === null)
-					throw new PerkNotFoundError(perkResolvable);
-
-				perkID = perk.id;
-			}
-			else {
-				perkID = perkResolvable.id;
-			}
-
-			this.db.run(
-				`INSERT INTO rolePerk (roleID, perkID)
-				VALUES (@roleID, @perkID)`,
-				{ roleID: minimalRole.id, perkID: perkID }
-			);
+			const perkID = this.perkRepository.resolveID(perkResolvable);
+			this.perkRepository.addPerkIDToRole(perkID, minimalRole.id);
 		}
 
 		return this.getRoleOrThrow(minimalRole.id);
@@ -265,6 +308,22 @@ export class RoleRepository {
 			| WithAtLeast<MinimalRole, 'id'>
 			| WithAtLeast<MinimalRole, 'name'>
 	): MinimalRole {
+		if (
+			id !== undefined &&
+			this.doesRoleExist(id) === false
+		) {
+			throw new RoleNotFoundError(id);
+		}
+
+		if (
+			id === undefined &&
+			name !== undefined &&
+			this.doesRoleExist(name) === false
+		) {
+			throw new RoleNotFoundError(name);
+		}
+
+
 		if (name !== undefined || description !== undefined) {
 			const updateQuery = `
 				UPDATE role
@@ -274,16 +333,7 @@ export class RoleRepository {
 					OR name = @name
 			`;
 
-			const result = this.db.run(updateQuery, {id, name, description});
-
-			if (result.changes === 0) {
-				if (id !== undefined)
-					throw new RoleNotFoundError(id);
-				else if (name !== undefined)
-					throw new RoleNotFoundError(name);
-				else
-					throw new InvalidArgumentError("updateMinimalRole: An ID or name must be provided.");
-			}
+			this.db.run(updateQuery, {id, name, description});
 		}
 
 		let minimalRole = null;
@@ -318,35 +368,11 @@ export class RoleRepository {
 		const minimalRole = this.updateMinimalRole({id: id!, name, description});
 
 		if (perkResolvables !== undefined) {
-			this.db.run(
-				`DELETE FROM rolePerk
-				WHERE roleID = @roleID`,
-				{ roleID: minimalRole.id }
-			);
+			this.perkRepository.removePerksFromRoleID(minimalRole.id);
 
 			for (const perkResolvable of perkResolvables) {
-				const perkRepository = new PerkRepository(this.db);
-
-				let perkID: PerkID;
-				if (isNumber(perkResolvable)) {
-					perkID = perkResolvable;
-				}
-				else if (isString(perkResolvable)) {
-					const perk = perkRepository.getPerkByName(perkResolvable);
-					if (perk === null)
-						throw new PerkNotFoundError(perkResolvable);
-
-					perkID = perk.id;
-				}
-				else {
-					perkID = perkResolvable.id;
-				}
-
-				this.db.run(
-					`INSERT INTO rolePerk (roleID, perkID)
-					VALUES (@roleID, @perkID)`,
-					{ roleID: minimalRole.id, perkID: perkID }
-				);
+				const perkID = this.perkRepository.resolveID(perkResolvable);
+				this.perkRepository.addPerkIDToRole(perkID, minimalRole.id);
 			}
 		}
 

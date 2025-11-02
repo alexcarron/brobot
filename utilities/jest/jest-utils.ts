@@ -308,24 +308,37 @@ export function makeSure<
 		},
 
 		/**
-		 * Asserts that at least one item in the array satisfies the given predicate.
-		 * @param predicate - A function that takes an item from the array and returns true or false.
+		 * Asserts that at least one item in the array satisfies the given predicates. For each predicate, there must be at least one item that satisfies it.
+		 * @param predicates - Functions that takes an item from the array and returns true or false.
 		 * @example
 		 * makeSure([1, 2, 3]).hasAnItemWhere(item => item % 2 === 0);
 		 */
-		hasAnItemWhere(predicate: (item: ElementOfArray<ActualType>) => boolean): void {
+		hasAnItemWhere(
+			...predicates: Array<(item: ElementOfArray<ActualType>) => boolean>
+		): void {
 			if (!isArray(actualValue))
 				throw new Error(`Expected actual value to be an array, but got: ${actualValue}`);
 
 			if (actualValue.length === 0)
 				throw new Error(`Expected at least one item in the array, but got an empty array`);
 
-			for (const item of actualValue) {
-				if (predicate(item as ElementOfArray<ActualType>))
-					return;
+			let allPredicatesSatisfied = true;
+			for (const predicate of predicates) {
+				let foundItem = false;
+
+				for (const item of actualValue) {
+					if (predicate(item as ElementOfArray<ActualType>))
+						foundItem = true;
+				}
+
+				if (!foundItem) {
+					allPredicatesSatisfied = false;
+					break;
+				}
 			}
 
-			throw new Error(`Expected at least one item in the array to satisfy the predicate, but got: ${actualValue}`);
+			if (!allPredicatesSatisfied)
+				throw new Error(`Expected at least one item in the array to satisfy the predicate, but got: ${actualValue}`);
 		},
 
 		/**

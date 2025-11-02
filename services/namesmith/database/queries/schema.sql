@@ -101,13 +101,31 @@ CREATE TABLE IF NOT EXISTS currentlyOfferedPerk (
 	PRIMARY KEY (id)
 );
 
--- Optional index for performance
-CREATE INDEX IF NOT EXISTS characterIDIndex ON character (id);
-CREATE INDEX IF NOT EXISTS characterValueIndex ON character (value);
-CREATE INDEX IF NOT EXISTS mysteryBoxIDIndex ON mysteryBoxCharacterOdds (mysteryBoxID);
-CREATE INDEX IF NOT EXISTS mysteryBoxCharacterIDIndex ON mysteryBoxCharacterOdds (characterID);
-CREATE INDEX IF NOT EXISTS playerIDIndex ON vote (playerVotedForID);
-CREATE INDEX IF NOT EXISTS voterIDIndex ON vote (voterID);
-CREATE INDEX IF NOT EXISTS recipeIDIndex ON recipe (id);
-CREATE INDEX IF NOT EXISTS recipeOutputIndex ON recipe (outputCharacters);
-CREATE INDEX IF NOT EXISTS recipeInputIndex ON recipe (inputCharacters);
+-- Mystery Box Character Odds
+CREATE INDEX IF NOT EXISTS characterOdds_mysteryBoxID_index ON mysteryBoxCharacterOdds(mysteryBoxID);
+CREATE INDEX IF NOT EXISTS characterOdds_characterID_index ON mysteryBoxCharacterOdds(characterID);
+
+-- Role Perks
+CREATE INDEX IF NOT EXISTS rolePerk_roleID_index ON rolePerk(roleID);
+CREATE INDEX IF NOT EXISTS rolePerk_perkID_index ON rolePerk(perkID);
+
+-- Players
+CREATE INDEX IF NOT EXISTS player_role_index ON player(role);
+
+-- Player Perks
+CREATE INDEX IF NOT EXISTS playerPerk_playerID_index ON playerPerk(playerID);
+CREATE INDEX IF NOT EXISTS playerPerk_perkID_index ON playerPerk(perkID);
+
+-- Votes
+CREATE INDEX IF NOT EXISTS vote_playerVotedForID_index ON vote(playerVotedForID);
+
+-- Trades
+CREATE INDEX IF NOT EXISTS trade_initiatingPlayerID_index ON trade(initiatingPlayerID);
+CREATE INDEX IF NOT EXISTS trade_recipientPlayerID_index ON trade(recipientPlayerID);
+
+-- Recipe input/output search
+CREATE INDEX IF NOT EXISTS recipe_inputCharacters_index ON recipe(inputCharacters);
+CREATE INDEX IF NOT EXISTS recipe_outputCharacters_index ON recipe(outputCharacters);
+
+-- Character search by value
+CREATE INDEX IF NOT EXISTS character_value_index ON character(value);

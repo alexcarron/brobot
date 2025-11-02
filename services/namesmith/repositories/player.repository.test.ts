@@ -165,17 +165,17 @@ describe('PlayerRepository', () => {
 
 	describe('publishName()', () => {
 		it('changes the published name of a player', () => {
-			playerRepository.publishName(mockPlayers[0].id, "new name");
+			playerRepository.setPublishedName(mockPlayers[0].id, "new name");
 			const result = playerRepository.getPublishedName(mockPlayers[0].id);
 			expect(result).toEqual("new name");
 		});
 
 		it('throws an error if the player is not found', () => {
-			expect(() => playerRepository.publishName(INVALID_PLAYER_ID, "new name")).toThrow();
+			expect(() => playerRepository.setPublishedName(INVALID_PLAYER_ID, "new name")).toThrow();
 		});
 
 		it('throws an error if the new name is too long', () => {
-			expect(() => playerRepository.publishName(mockPlayers[1].id, "a".repeat(33))).toThrow();
+			expect(() => playerRepository.setPublishedName(mockPlayers[1].id, "a".repeat(33))).toThrow();
 		});
 	});
 
@@ -311,7 +311,7 @@ describe('PlayerRepository', () => {
 
 	describe('reset()', () => {
 		it('resets the player repository', () => {
-			playerRepository.reset();
+			playerRepository.removePlayers();
 			const result = playerRepository.getPlayers();
 			expect(result).toEqual([]);
 		});

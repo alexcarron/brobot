@@ -6,6 +6,7 @@ import { DatabaseQuerier } from "../database-querier";
 import { syncRolesToDB } from "./sync-roles";
 import { INVALID_PERK_NAME } from "../../constants/test.constants";
 import { ignoreError } from "../../../../utilities/error-utils";
+import { createMockRoleRepo } from "../../mocks/mock-repositories";
 
 describe('sync-roles.ts', () => {
 	let db: DatabaseQuerier;
@@ -13,7 +14,7 @@ describe('sync-roles.ts', () => {
 
 	beforeEach(() => {
 		db = createMockDB();
-		roleRepository = new RoleRepository(db);
+		roleRepository = createMockRoleRepo(db);
 	});
 
 	describe('syncRolesToDB()', () => {

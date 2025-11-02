@@ -1,11 +1,12 @@
 import { InvalidArgumentError, toNullOnError } from "../../../utilities/error-utils";
 import { Override, WithAtLeast } from "../../../utilities/types/generic-types";
+import { isNumber, isString } from "../../../utilities/types/type-guards";
 import { DatabaseQuerier, toAssignmentsPlaceholder } from "../database/database-querier";
-import { DBPerk, Perk, PerkDefintion, PerkID } from "../types/perk.types";
+import { DBPerk, Perk, PerkDefintion, PerkID, PerkResolvable } from "../types/perk.types";
 import { PlayerID } from "../types/player.types";
 import { RoleID } from "../types/role.types";
 import { PerkNotFoundError } from "../utilities/error.utility";
-import { toPerk } from "../utilities/perk.utility";
+import { toPerk, toPerks } from "../utilities/perk.utility";
 
 /**
  * Provides access to the dynamic perk data.
@@ -74,6 +75,51 @@ export class PerkRepository {
 			return null;
 
 		return toPerk(perk);
+	}
+
+	/**
+	 * Resolves a perk ID, perk name, or perk object to a fetched Perk object.
+	 * @param perkResolvable - The perk to be resolved.
+	 * @throws PerkNotFoundError - If the provided perkResolvable is a string that does not correspond to a perk in the database.
+	 * @returns The resolved perk object.
+	 */
+	resolvePerk(perkResolvable: PerkResolvable): Perk {
+		if (isNumber(perkResolvable)) {
+			const perkID = perkResolvable;
+			return this.getPerkOrThrow(perkID);
+		}
+		else if (isString(perkResolvable)) {
+			const perkName = perkResolvable;
+			const maybePerk = this.getPerkByName(perkName);
+
+			if (maybePerk === null)
+				throw new PerkNotFoundError(perkName);
+
+			const perk = maybePerk;
+			return perk;
+		}
+		else {
+			const perk = perkResolvable;
+			return this.getPerkOrThrow(perk.id);
+		}
+	}
+
+	/**
+	 * Resolves a perk ID, perk name, or perk object to a perk ID.
+	 * @param perkResolvable - The perk to be resolved.
+	 * @returns The resolved perk ID.
+	 */
+	resolveID(perkResolvable: PerkResolvable): number {
+		if (isNumber(perkResolvable)) {
+			return perkResolvable;
+		}
+		else if (isString(perkResolvable)) {
+			const perk = this.resolvePerk(perkResolvable);
+			return perk.id;
+		}
+		else {
+			return perkResolvable.id;
+		}
 	}
 
 	/**
@@ -213,6 +259,23 @@ export class PerkRepository {
 	}
 
 	/**
+	 * Retrieves a list of perk objects that a player with the given ID has.
+	 * @param playerID - The ID of the player to be retrieved.
+	 * @returns An array of perk objects that the player with the given ID has.
+	 */
+	getPerksOfPlayerID(playerID: PlayerID): Perk[] {
+		const dbPerks = this.db.getRows(
+			`SELECT id, name, description
+				FROM playerPerk
+				JOIN perk ON playerPerk.perkID = perk.id
+				WHERE playerID = @playerID`,
+			{ playerID }
+		) as DBPerk[];
+
+		return toPerks(dbPerks);
+	}
+
+	/**
 	 * Adds a perk ID to a player ID in the database.
 	 * @param perkID - The ID of the perk to be added.
 	 * @param playerID - The ID of the player to have the perk added.
@@ -223,6 +286,18 @@ export class PerkRepository {
 			VALUES (@playerID, @perkID)
 		`;
 		this.db.run(query, { playerID, perkID });
+	}
+
+	/**
+	 * Removes all perks from a player with the given ID.
+	 * @param playerID - The ID of the player to have their perks removed.
+	 */
+	removePerksFromPlayerID(playerID: PlayerID) {
+		const query = `
+			DELETE FROM playerPerk
+			WHERE playerID = @playerID
+		`;
+		this.db.run(query, { playerID });
 	}
 
 	/**
@@ -246,6 +321,43 @@ export class PerkRepository {
 		const getPerksOfRole = this.db.prepare(query);
 		const rows = getPerksOfRole.all({ roleID }) as { perkID: number }[];
 		return rows.map(row => row.perkID);
+	}
+
+	getPerksOfRoleID(roleID: RoleID): Perk[] {
+		const dbPerks = this.db.getRows(
+			`SELECT id, name, description
+				FROM rolePerk
+				JOIN perk ON rolePerk.perkID = perk.id
+				WHERE roleID = @roleID`,
+			{ roleID }
+		) as DBPerk[];
+
+		return toPerks(dbPerks);
+	}
+
+	/**
+	 * Adds a perk ID to a role ID in the database.
+	 * @param perkID - The ID of the perk to be added.
+	 * @param roleID - The ID of the role to have the perk added.
+	 */
+	addPerkIDToRole(perkID: PerkID, roleID: RoleID): void {
+		const query = `
+			INSERT INTO rolePerk (roleID, perkID)
+			VALUES (@roleID, @perkID)
+		`;
+		this.db.run(query, { roleID, perkID });
+	}
+
+	/**
+	 * Removes all perks from a role with the given ID.
+	 * @param roleID - The ID of the role to have their perks removed.
+	 */
+	removePerksFromRoleID(roleID: RoleID): void {
+		const query = `
+			DELETE FROM rolePerk
+			WHERE roleID = @roleID
+		`;
+		this.db.run(query, { roleID });
 	}
 
 	/**

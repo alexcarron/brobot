@@ -40,18 +40,32 @@ describe('CharacterRepository', () => {
 
 	describe('getCharacterByValue()', () => {
 		it('returns a character object', async () => {
-			const character = await characterRepo.getCharacterByValue('A');
+			const character = await characterRepo.getCharacterByValueOrThrow('A');
 			expect(character).toHaveProperty('id', 65);
 			expect(character).toHaveProperty('value', 'A');
 			expect(character).toHaveProperty('rarity', expect.any(Number));
 		});
 
 		it('SHOULD throw CharacterNotFoundError if no character is found', () => {
-			expect(() => characterRepo.getCharacterByValue('❌')).toThrow(CharacterNotFoundError);
+			expect(() => characterRepo.getCharacterByValueOrThrow('❌')).toThrow(CharacterNotFoundError);
 		});
 
 		it('SHOULD throw an error if more than one character is given', () => {
-			expect(() => characterRepo.getCharacterByValue('AB')).toThrow();
+			expect(() => characterRepo.getCharacterByValueOrThrow('AB')).toThrow();
+		});
+	});
+
+	describe('doesCharacterExist()', () => {
+		it('returns true if the character exists', () => {
+			expect(characterRepo.doesCharacterExist(
+				getIDfromCharacterValue('A')
+			)).toBe(true);
+		});
+
+		it('returns false if the character does not exist', () => {
+			expect(characterRepo.doesCharacterExist(
+				INVALID_CHARACTER_ID
+			)).toBe(false);
 		});
 	});
 

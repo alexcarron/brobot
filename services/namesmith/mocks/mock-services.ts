@@ -1,7 +1,7 @@
 import { createMockDB } from "./mock-database";
 import { CharacterRepository } from "../repositories/character.repository";
 import { GameStateRepository } from "../repositories/game-state.repository";
-import { createMockPlayerRepo, createMockVoteRepo, createMockMysteryBoxRepo, createMockCharacterRepo, createMockGameStateRepo, createMockRecipeRepo, createMockTradeRepo, createMockPerkRepo, crateMockRoleRepo } from "./mock-repositories";
+import { createMockPlayerRepo, createMockVoteRepo, createMockMysteryBoxRepo, createMockCharacterRepo, createMockGameStateRepo, createMockRecipeRepo, createMockTradeRepo, createMockPerkRepo, createMockRoleRepo } from "./mock-repositories";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
 import { PlayerRepository } from "../repositories/player.repository";
 import { RecipeRepository } from "../repositories/recipe.repository";
@@ -218,7 +218,7 @@ export const createMockPerkService = (
 
 	const roleRepository =
 		mockRoleRepository ??
-		crateMockRoleRepo(sharedDB);
+		createMockRoleRepo(sharedDB, perkRepository);
 
 	const playerService =
 		mockPlayerService ??
@@ -238,7 +238,7 @@ export const createMockRoleService = (
 
 	const roleRepository =
 		mockRoleRepository ??
-		crateMockRoleRepo(sharedDB);
+		createMockRoleRepo(sharedDB);
 
 	const playerService =
 		mockPlayerService ??
@@ -296,10 +296,6 @@ export const createMockServices = ({
 		mockPerkRepo?.db ??
 		createMockDB();
 
-	const playerRepo =
-		mockPlayerRepo ??
-		createMockPlayerRepo(sharedDB);
-
 	const voteRepo =
 		mockVoteRepo ??
 		createMockVoteRepo(sharedDB);
@@ -330,7 +326,11 @@ export const createMockServices = ({
 
 	const roleRepo =
 		mockRoleRepo ??
-		crateMockRoleRepo(sharedDB);
+		createMockRoleRepo(sharedDB, perkRepo);
+
+	const playerRepo =
+		mockPlayerRepo ??
+		createMockPlayerRepo(sharedDB, roleRepo, perkRepo);
 
 	const playerService = createMockPlayerService(playerRepo);
 	const voteService = createMockVoteService(

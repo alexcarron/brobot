@@ -2,6 +2,8 @@ import { WithAtLeastOneProperty } from "../../../../utilities/types/generic-type
 import { Perk, PerkDefintion } from "../../types/perk.types";
 import { PerkRepository } from '../../repositories/perk.repository';
 import { DatabaseQuerier } from "../../database/database-querier";
+import { PerkAlreadyExistsError } from "../../utilities/error.utility";
+import { getRandomName } from "../../../../utilities/random-utils";
 
 /**
  * Adds a mock perk to the database.
@@ -16,10 +18,9 @@ export function addMockPerk(
 ): Perk {
 	const perkRepository = new PerkRepository(db);
 
-	let {id} = perkDefinition;
-
 	const {
-		name = "",
+		id = undefined,
+		name = getRandomName(),
 		description = "",
 		wasOffered = false
 	} = perkDefinition;
@@ -28,38 +29,12 @@ export function addMockPerk(
 		id !== undefined &&
 		perkRepository.getPerkByID(id) !== null
 	)
-		throw new Error(`Perk with ID ${id} already exists!`);
+		throw new PerkAlreadyExistsError(id);
 
-	if (id === undefined) {
-		const runResult = db.run(
-			`INSERT INTO perk (name, description, wasOffered)
-			VALUES (@name, @description, @wasOffered)`,
-			{
-				name,
-				description,
-				wasOffered: wasOffered ? 1 : 0
-			}
-		);
-
-		id = Number(runResult.lastInsertRowid);
-	}
-	else {
-		db.run(
-			`INSERT INTO perk (id, name, description, wasOffered)
-			VALUES (@id, @name, @description, @wasOffered)`,
-			{
-				id,
-				name,
-				description,
-				wasOffered: wasOffered ? 1 : 0
-			}
-		);
-	}
-
-	return {
+	return perkRepository.addPerk({
 		id,
 		name,
 		description,
-		wasOffered
-	}
+		wasOffered,
+	});
 }

@@ -1,5 +1,5 @@
 import { InvalidArgumentError, returnIfNotNull } from "../../../../utilities/error-utils";
-import { createRandomNumericUUID } from "../../../../utilities/random-utils";
+import { getRandomNumericUUID } from "../../../../utilities/random-utils";
 import { WithAtLeast, WithAtLeastOneProperty, WithID } from "../../../../utilities/types/generic-types";
 import { isNumber, isString } from "../../../../utilities/types/type-guards";
 import { DatabaseQuerier } from "../../database/database-querier";
@@ -10,6 +10,7 @@ import { PlayerAlreadyExistsError } from "../../utilities/error.utility";
 import { toMinimalPlayerObject } from "../../utilities/player.utility";
 import { toPerk } from '../../utilities/perk.utility';
 import { Role } from "../../types/role.types";
+import { PerkRepository } from "../../repositories/perk.repository";
 
 /**
  * An array of mock player data for use in tests.
@@ -121,8 +122,11 @@ export const addMockPlayer = (
 	}:
 	WithAtLeastOneProperty<PlayerDefinition>
 ): Player => {
+	const perkRepository = new PerkRepository(db);
+	const roleRepository = new RoleRepository(db, perkRepository);
+
 	if (id === undefined) {
-		id = createRandomNumericUUID();
+		id = getRandomNumericUUID();
 	}
 
 	if (inventory === "" && currentName !== "")
@@ -138,7 +142,6 @@ export const addMockPlayer = (
 	}
 
 	let role: Role | null = null;
-	const roleRepository = new RoleRepository(db);
 	if (isNumber(roleResolvable)) {
 		role = roleRepository.getRoleOrThrow(roleResolvable);
 	}

@@ -1,9 +1,8 @@
-import { isNumber, isString } from "../../../utilities/types/type-guards";
 import { PerkRepository } from "../repositories/perk.repository";
 import { RoleRepository } from "../repositories/role.repository";
 import { Perk, PerkResolvable } from "../types/perk.types";
 import { Player, PlayerResolvable } from "../types/player.types";
-import { NotEnoughPerksError, PerkNotFoundError } from "../utilities/error.utility";
+import { NotEnoughPerksError } from "../utilities/error.utility";
 import { PlayerService } from "./player.service";
 
 /**
@@ -23,24 +22,7 @@ export class PerkService {
 	 * @returns The resolved perk object.
 	 */
 	resolvePerk(perkResolvable: PerkResolvable): Perk {
-		if (isNumber(perkResolvable)) {
-			const perkID = perkResolvable;
-			return this.perkRepository.getPerkOrThrow(perkID);
-		}
-		else if (isString(perkResolvable)) {
-			const perkName = perkResolvable;
-			const maybePerk = this.perkRepository.getPerkByName(perkName);
-
-			if (maybePerk === null)
-				throw new PerkNotFoundError(perkName);
-
-			const perk = maybePerk;
-			return perk;
-		}
-		else {
-			const perk = perkResolvable;
-			return this.perkRepository.getPerkOrThrow(perk.id);
-		}
+		return this.perkRepository.resolvePerk(perkResolvable);
 	}
 
 	/**
@@ -49,16 +31,7 @@ export class PerkService {
 	 * @returns The resolved perk ID.
 	 */
 	resolveID(perkResolvable: PerkResolvable): number {
-		if (isNumber(perkResolvable)) {
-			return perkResolvable;
-		}
-		else if (isString(perkResolvable)) {
-			const perk = this.resolvePerk(perkResolvable);
-			return perk.id;
-		}
-		else {
-			return perkResolvable.id;
-		}
+		return this.perkRepository.resolveID(perkResolvable);
 	}
 
 	/**
