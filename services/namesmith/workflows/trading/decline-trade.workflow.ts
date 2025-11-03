@@ -69,8 +69,8 @@ export const declineTrade = (
 
 	const playerDeclinedID =
 		trade.status === TradeStatuses.AWAITING_INITIATOR
-			? trade.recipientPlayerID
-			: trade.initiatingPlayerID;
+			? trade.recipientPlayer
+			: trade.initiatingPlayer;
 
 	return result.success({
 		trade: tradeService.resolveTrade(trade.id),

@@ -1,14 +1,15 @@
-import { InvalidArgumentError, returnIfNotNull } from "../../../utilities/error-utils";
+import { InvalidArgumentError, returnNonNullOrThrow } from "../../../utilities/error-utils";
 import { getRandomNumericUUID } from "../../../utilities/random-utils";
 import { Override, WithOptional, WithRequiredAndOneOther } from "../../../utilities/types/generic-types";
 import { MAX_NAME_LENGTH } from "../constants/namesmith.constants";
 import { DatabaseQuerier, toAssignmentsPlaceholder } from "../database/database-querier";
-import { DBPlayer, MinimalPlayer, Player, PlayerDefinition, PlayerID } from "../types/player.types";
+import { DBPlayer, MinimalPlayer, Player, PlayerDefinition, PlayerID, PlayerResolvable } from "../types/player.types";
 import { RoleID } from "../types/role.types";
 import { PlayerNotFoundError, PlayerAlreadyExistsError } from "../utilities/error.utility";
 import { toMinimalPlayerObject } from "../utilities/player.utility";
 import { RoleRepository } from "./role.repository";
 import { PerkRepository } from './perk.repository';
+import { isString } from "../../../utilities/types/type-guards";
 
 /**
  * Provides access to the dynamic player data.
@@ -25,6 +26,12 @@ export class PlayerRepository {
 		public perkRepository: PerkRepository
 	) {}
 
+	static fromDB(db: DatabaseQuerier) {
+		return new PlayerRepository(db,
+			RoleRepository.fromDB(db),
+			PerkRepository.fromDB(db)
+		);
+	}
 
 	/**
 	 * Retrieves a list of all minimal player objects in the game.
@@ -93,7 +100,7 @@ export class PlayerRepository {
 	}
 
 	getMinimalPlayerOrThrow(playerID: PlayerID): MinimalPlayer {
-		return returnIfNotNull(
+		return returnNonNullOrThrow(
 			this.getMinimalPlayerByID(playerID),
 			new PlayerNotFoundError(playerID)
 		);
@@ -106,10 +113,44 @@ export class PlayerRepository {
 	 * @throws {PlayerNotFoundError} - If the player does not exist.
 	 */
 	getPlayerOrThrow(playerID: PlayerID): Player {
-		return returnIfNotNull(
+		return returnNonNullOrThrow(
 			this.getPlayerByID(playerID),
 			new PlayerNotFoundError(playerID)
 		)
+	}
+
+	/**
+	 * Resolves a player from the given resolvable.
+	 * @param playerResolvable - The player resolvable to resolve.
+	 * @returns The resolved player object.
+	 * @throws {PlayerNotFoundError} If the player resolvable is invalid or the player is not found.
+	 */
+	resolvePlayer(playerResolvable: PlayerResolvable): Player {
+		const playerID: PlayerID =
+			isString(playerResolvable)
+				? playerResolvable
+				: playerResolvable.id;
+
+		return this.getPlayerOrThrow(playerID);
+	}
+	/**
+	 * Resolves a player resolvable to a player ID.
+	 * @param playerResolvable - The player resolvable to resolve.
+	 * @returns The resolved player ID.
+	 * @throws {PlayerNotFoundError} If the player resolvable is invalid or the player is not found.
+	 */
+	resolveID(playerResolvable: PlayerResolvable): PlayerID {
+		if (isString(playerResolvable)) {
+			const playerID = playerResolvable;
+			if (/^\d+$/.test(playerID))
+				return playerID;
+
+			throw new InvalidArgumentError(`resolvePlayerID: Invalid player ID ${playerID}. Expected a number as a string.`);
+		}
+		else {
+			const player = playerResolvable;
+			return player.id;
+		}
 	}
 
 	/**

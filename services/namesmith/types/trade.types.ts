@@ -1,33 +1,45 @@
-import { WithOptional } from "../../../utilities/types/generic-types";
-import { PlayerID } from "./player.types";
+import { toEnumFromStrings, ValuesOf } from '../../../utilities/enum-utilts';
+import { Override } from "../../../utilities/types/generic-types";
+import { Player, PlayerID, PlayerResolvable } from "./player.types";
 
-export type TradeStatus =
-	| 'awaitingRecipient'
-	| 'awaitingInitiator'
-	| 'accepted'
-	| 'declined'
-	| 'ignored'
 
-export const TradeStatuses = Object.freeze({
-	AWAITING_RECIPIENT: 'awaitingRecipient',
-	AWAITING_INITIATOR: 'awaitingInitiator',
-	ACCEPTED: 'accepted',
-	DECLINED: 'declined',
-	IGNORED: 'ignored',
-} as const);
+/**
+ * Status values object (runtime) and derived type (compile-time).
+ * Single source of truth.
+ */
+export const TradeStatuses = toEnumFromStrings(
+	'awaitingRecipient',
+	'awaitingInitiator',
+	'accepted',
+	'declined',
+	'ignored'
+);
+
+export type TradeStatus = ValuesOf<typeof TradeStatuses>;
 
 export type Trade = {
 	id: number;
-	initiatingPlayerID: PlayerID;
-	recipientPlayerID: PlayerID;
+	initiatingPlayer: Player;
+	recipientPlayer: Player;
 	offeredCharacters: string;
 	requestedCharacters: string;
 	status: TradeStatus;
 }
 
-export type DBTrade = Trade;
+export type DBTrade = {
+	id: TradeID,
+	initiatingPlayerID: PlayerID,
+	recipientPlayerID: PlayerID,
+	offeredCharacters: string;
+	requestedCharacters: string;
+	status: TradeStatus;
+};
 
-export type TradeDefintion = WithOptional<Trade, "id">;
+export type TradeDefintion = Override<Trade, {
+	id?: TradeID,
+	initiatingPlayer: PlayerResolvable,
+	recipientPlayer: PlayerResolvable
+}>;
 
 export type TradeID = Trade['id'];
 export type TradeResolveable =

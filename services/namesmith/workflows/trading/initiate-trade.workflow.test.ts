@@ -50,8 +50,8 @@ describe('initiate-trade.workflow.ts', () => {
 
 			makeSure(result.initiatingPlayer).is(MOCK_INITIATING_PLAYER);
 			makeSure(result.recipientPlayer).is(MOCK_RECIPIENT_PLAYER);
-			makeSure(result.trade.initiatingPlayerID).is(MOCK_INITIATING_PLAYER.id);
-			makeSure(result.trade.recipientPlayerID).is(MOCK_RECIPIENT_PLAYER.id);
+			makeSure(result.trade.initiatingPlayer.id).is(MOCK_INITIATING_PLAYER.id);
+			makeSure(result.trade.recipientPlayer.id).is(MOCK_RECIPIENT_PLAYER.id);
 			makeSure(result.trade.offeredCharacters).is(MOCK_INITIATING_PLAYER.inventory);
 			makeSure(result.trade.requestedCharacters).is(MOCK_RECIPIENT_PLAYER.inventory);
 			makeSure(result.trade.status).is(TradeStatuses.AWAITING_RECIPIENT);

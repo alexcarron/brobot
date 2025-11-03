@@ -1,98 +1,55 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { INVALID_VOTE_ID } from "../constants/test.constants";
-import { mockVotes } from "../mocks/mock-data/mock-votes";
+import { DatabaseQuerier } from "../database/database-querier";
+import { addMockVote, mockVotes } from "../mocks/mock-data/mock-votes";
 import { createMockVoteRepo } from "../mocks/mock-repositories";
+import { Vote } from "../types/vote.types";
 import { VoteNotFoundError } from "../utilities/error.utility";
 import { VoteRepository } from "./vote.repository";
 
 describe('VoteRepository', () => {
+	let db: DatabaseQuerier;
 	let voteRepository: VoteRepository;
+
+	let SOME_VOTE: Vote;
 
 	beforeEach(() => {
 		voteRepository = createMockVoteRepo();
+		db = voteRepository.db;
+
+		SOME_VOTE = addMockVote(db);
 	})
 
 	describe('getVotes()', () => {
 		it('returns a list of votes', () => {
-			const result = voteRepository.getVotes();
-			expect(result).toEqual(mockVotes);
+			const votes = voteRepository.getVotes();
+			makeSure(votes).hasLengthOf(mockVotes.length + 1);
+			makeSure(votes).contains(SOME_VOTE);
+			makeSure(votes).haveProperties('voterID', 'playerVotedFor');
 		});
 	});
 
 	describe('getVoteByVoterID()', () => {
 		it('returns a vote by voterID', () => {
-			const result = voteRepository.getVoteByVoterID("1234567890");
-			expect(result).toEqual(mockVotes[0]);
+			const vote = voteRepository.getVoteByVoterID(SOME_VOTE.voterID);
+			makeSure(vote).is(SOME_VOTE);
 		});
 
 		it('returns null if no vote is found', () => {
-			const result = voteRepository.getVoteByVoterID(INVALID_VOTE_ID);
-			expect(result).toBeNull();
-		});
-	});
-
-	describe('getVotesByVotedForID()', () => {
-		it('returns a list of votes by votedForID', () => {
-			const result = voteRepository.getVotesByVotedForID("1234567891");
-			expect(result).toEqual([mockVotes[0], mockVotes[2]]);
-		});
-
-		it('returns an empty list if no votes are found', () => {
-			const result = voteRepository.getVotesByVotedForID(INVALID_VOTE_ID);
-			expect(result).toEqual([]);
+			const vote = voteRepository.getVoteByVoterID(INVALID_VOTE_ID);
+			makeSure(vote).isNull();
 		});
 	});
 
 	describe('.doesVoteExist()', () => {
-		it('returns true if the vote exists with given voterID and playerVotedForID', () => {
-			const result = voteRepository.doesVoteExist({
-				voterID: mockVotes[0].voterID,
-				playerVotedForID: mockVotes[0].playerVotedForID
-			});
-			expect(result).toBe(true);
-		});
-
-		it('returns false if the vote exists with given voterID but not playerVotedForID', () => {
-			const result = voteRepository.doesVoteExist({
-				voterID: mockVotes[0].voterID,
-				playerVotedForID: INVALID_VOTE_ID
-			});
-			expect(result).toBe(false);
-		});
-
-		it('returns false if the vote exists with given playerVotedForID but not voterID', () => {
-			const result = voteRepository.doesVoteExist({
-				voterID: INVALID_VOTE_ID,
-				playerVotedForID: mockVotes[0].playerVotedForID
-			});
-			expect(result).toBe(false);
-		});
 
 		it('returns true if the vote exists with given voterID', () => {
-			const result = voteRepository.doesVoteExist({
-				voterID: mockVotes[0].voterID,
-			});
+			const result = voteRepository.doesVoteExist(SOME_VOTE.voterID);
 			expect(result).toBe(true);
 		});
 
 		it('returns false if the vote does not exist with given voterID', () => {
-			const result = voteRepository.doesVoteExist({
-				voterID: INVALID_VOTE_ID,
-			});
-			expect(result).toBe(false);
-		});
-
-		it('returns true if the vote exists with given playerVotedForID', () => {
-			const result = voteRepository.doesVoteExist({
-				playerVotedForID: mockVotes[0].playerVotedForID,
-			});
-			expect(result).toBe(true);
-		});
-
-		it('returns false if the vote does not exist with given playerVotedForID', async () => {
-			const result = await voteRepository.doesVoteExist({
-				playerVotedForID: INVALID_VOTE_ID,
-			});
+			const result = voteRepository.doesVoteExist(INVALID_VOTE_ID);
 			expect(result).toBe(false);
 		});
 	})
@@ -100,20 +57,18 @@ describe('VoteRepository', () => {
 	describe('addVote()', () => {
 		it('adds a new vote', () => {
 			voteRepository.addVote({
-				voterID: "new-id",
-				playerVotedForID: "1234567891"
+				voter: "10000001",
+				playerVotedFor: "1234567891"
 			});
-			const result = voteRepository.getVoteByVoterID("new-id");
-			expect(result).toEqual({
-				voterID: "new-id",
-				playerVotedForID: "1234567891",
-			});
+			const vote = voteRepository.getVoteOrThrow("10000001");
+			makeSure(vote.voterID).is("10000001");
+			makeSure(vote.playerVotedFor.id).is("1234567891");
 		});
 
 		it('throws an error if the voter ID already exists', () => {
 			expect(() => voteRepository.addVote({
-				voterID: mockVotes[0].voterID,
-				playerVotedForID: "1234567891",
+				voter: SOME_VOTE.voterID,
+				playerVotedFor: "1234567891",
 			})).toThrow();
 		});
 	});
@@ -121,14 +76,12 @@ describe('VoteRepository', () => {
 	describe('updateVote()', () => {
 		it('changes the vote of a user', () => {
 			const vote = voteRepository.updateVote({
-				voterID: "1234567890",
-				playerVotedForID: "1234567892",
+				voter: "1234567890",
+				playerVotedFor: "1234567892",
 			});
 
-			makeSure(vote).is({
-				voterID: "1234567890",
-				playerVotedForID: "1234567892",
-			});
+			makeSure(vote.voterID).is("1234567890");
+			makeSure(vote.playerVotedFor.id).is("1234567892");
 
 			const resolvedVote = voteRepository.getVoteByVoterID("1234567890");
 
@@ -137,34 +90,34 @@ describe('VoteRepository', () => {
 
 		it('throws an error if the voter ID does not exist', () => {
 			makeSure(() => voteRepository.updateVote({
-				voterID: INVALID_VOTE_ID,
-				playerVotedForID: "1234567892",
+				voter: INVALID_VOTE_ID,
+				playerVotedFor: "1234567892",
 			})).throws(VoteNotFoundError);
 		});
 
 		it('throws an error if the player ID does not exist', () => {
 			expect(() => voteRepository.updateVote({
-				voterID: "1234567890",
-				playerVotedForID: INVALID_VOTE_ID,
+				voter: "1234567890",
+				playerVotedFor: INVALID_VOTE_ID,
 			})).toThrow();
 		});
 	});
 
 	describe('deleteVote()', () => {
 		it('deletes a vote by voterID', () => {
-			voteRepository.deleteVote("1234567890");
+			voteRepository.removeVote("1234567890");
 			const result = voteRepository.getVoteByVoterID("1234567890");
 			expect(result).toBeNull();
 		});
 
 		it('throws an error if the voter ID does not exist', () => {
-			expect(() => voteRepository.deleteVote(INVALID_VOTE_ID)).toThrow();
+			expect(() => voteRepository.removeVote(INVALID_VOTE_ID)).toThrow();
 		});
 	});
 
 	describe('reset()', () => {
 		it('resets the vote repository', () => {
-			voteRepository.reset();
+			voteRepository.removeVotes();
 			const result = voteRepository.getVotes();
 			expect(result).toEqual([]);
 		});

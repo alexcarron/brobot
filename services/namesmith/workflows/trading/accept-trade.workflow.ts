@@ -71,8 +71,8 @@ export const acceptTrade = async (
 	}
 
 	// Does the initating player have the characters they are offering?
-	if (!playerService.hasCharacters(trade.initiatingPlayerID, trade.offeredCharacters)) {
-		const player = playerService.resolvePlayer(trade.initiatingPlayerID);
+	if (!playerService.hasCharacters(trade.initiatingPlayer, trade.offeredCharacters)) {
+		const player = playerService.resolvePlayer(trade.initiatingPlayer);
 		const {missingCharacters} = getCharacterDifferences(trade.offeredCharacters, player.inventory);
 		return result.failure.playerMissingCharacters({
 			player,
@@ -81,8 +81,8 @@ export const acceptTrade = async (
 	}
 
 	// Does the recipient player have the characters they are requesting?
-	if (!playerService.hasCharacters(trade.recipientPlayerID, trade.requestedCharacters)) {
-		const player = playerService.resolvePlayer(trade.recipientPlayerID);
+	if (!playerService.hasCharacters(trade.recipientPlayer, trade.requestedCharacters)) {
+		const player = playerService.resolvePlayer(trade.recipientPlayer);
 		const {missingCharacters} = getCharacterDifferences(trade.requestedCharacters, player.inventory);
 		return result.failure.playerMissingCharacters({
 			player,
@@ -91,14 +91,14 @@ export const acceptTrade = async (
 	}
 
 	await playerService.transferCharacters(
-		trade.initiatingPlayerID,
-		trade.recipientPlayerID,
+		trade.initiatingPlayer,
+		trade.recipientPlayer,
 		trade.offeredCharacters
 	);
 
 	await playerService.transferCharacters(
-		trade.recipientPlayerID,
-		trade.initiatingPlayerID,
+		trade.recipientPlayer,
+		trade.initiatingPlayer,
 		trade.requestedCharacters
 	);
 
@@ -106,7 +106,7 @@ export const acceptTrade = async (
 
 	return result.success({
 		trade: tradeService.resolveTrade(trade.id),
-		initiatingPlayer: playerService.resolvePlayer(trade.initiatingPlayerID),
-		recipientPlayer: playerService.resolvePlayer(trade.recipientPlayerID),
+		initiatingPlayer: playerService.resolvePlayer(trade.initiatingPlayer),
+		recipientPlayer: playerService.resolvePlayer(trade.recipientPlayer),
 	});
 }

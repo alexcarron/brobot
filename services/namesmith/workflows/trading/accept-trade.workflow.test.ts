@@ -56,8 +56,8 @@ describe('accept-trade.workflow.ts', () => {
 		});
 
 		MOCK_TRADE = addMockTrade(db, {
-			initiatingPlayerID: MOCK_INITIATING_PLAYER.id,
-			recipientPlayerID: MOCK_RECIPIENT_PLAYER.id,
+			initiatingPlayer: MOCK_INITIATING_PLAYER.id,
+			recipientPlayer: MOCK_RECIPIENT_PLAYER.id,
 				offeredCharacters: "berv",
 				requestedCharacters: "Xx",
 			status: TradeStatuses.AWAITING_RECIPIENT,
@@ -72,11 +72,8 @@ describe('accept-trade.workflow.ts', () => {
 				trade: MOCK_TRADE,
 			}));
 
-			// TO DO: replace mock players with literal values
-			expect(result.trade).toEqual({
-				...MOCK_TRADE,
-				status: TradeStatuses.ACCEPTED,
-			});
+			const trade = tradeService.tradeRepository.getTradeOrThrow(MOCK_TRADE.id);
+			expect(result.trade).toEqual(trade);
 			expect(result.initiatingPlayer).toEqual({
 				...MOCK_INITIATING_PLAYER,
 				inventory: 'BbdoXx',

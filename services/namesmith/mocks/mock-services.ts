@@ -181,13 +181,13 @@ export const createMockTradeService = (
     mockPlayerService?.playerRepository.db ??
     createMockDB();
 
-  const tradeRepository =
-		mockTradeRepository ??
-		createMockTradeRepo(sharedDB);
-
   const playerService =
     mockPlayerService ??
     createMockPlayerService(createMockPlayerRepo(sharedDB));
+
+  const tradeRepository =
+		mockTradeRepository ??
+		createMockTradeRepo(sharedDB, playerService.playerRepository);
 
   return new TradeService(tradeRepository, playerService);
 }
@@ -316,10 +316,6 @@ export const createMockServices = ({
 		mockGameStateRepo ??
 		createMockGameStateRepo(sharedDB);
 
-	const tradeRepo =
-		mockTradeRepo ??
-		createMockTradeRepo(sharedDB);
-
 	const perkRepo =
 		mockPerkRepo ??
 		createMockPerkRepo(sharedDB);
@@ -331,6 +327,10 @@ export const createMockServices = ({
 	const playerRepo =
 		mockPlayerRepo ??
 		createMockPlayerRepo(sharedDB, roleRepo, perkRepo);
+
+	const tradeRepo =
+		mockTradeRepo ??
+		createMockTradeRepo(sharedDB, playerRepo);
 
 	const playerService = createMockPlayerService(playerRepo);
 	const voteService = createMockVoteService(

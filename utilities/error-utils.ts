@@ -581,7 +581,7 @@ export function returnIfNotError<GivenType>(
  * const maybeMoney: number | null = calculateMoney();
  * const money: number = returnIfNotNull(maybeMoney); // throws if maybeMoney is null
  */
-export function returnIfNotNull<GivenType, ErrorType extends Error>(
+export function returnNonNullOrThrow<GivenType, ErrorType extends Error>(
 	value: GivenType,
 	errorToThrow?: ErrorType
 ): Exclude<GivenType, null> {

@@ -2,20 +2,47 @@ import { DatabaseQuerier, toAssignmentsPlaceholder } from "../database/database-
 import { PlayerID } from "../types/player.types";
 import { DBTrade, Trade, TradeDefintion, TradeID, TradeStatus } from "../types/trade.types";
 import { CannotCreateTradeError, TradeAlreadyExistsError, TradeNotFoundError } from "../utilities/error.utility";
-import { throwIfNotTrade, throwIfNotTrades } from "../utilities/trade.utility";
 import { WithRequiredAndOneOther } from '../../../utilities/types/generic-types';
+import { PlayerRepository } from "./player.repository";
+import { returnNonNullOrThrow } from "../../../utilities/error-utils";
 
 /**
  * Provides access to the dynamic trading data
  */
 export class TradeRepository {
-	db: DatabaseQuerier;
 
 	/**
 	 * @param db - The database querier instance used for executing SQL statements.
+	 * @param playerRepository - The player repository instance used for retrieving player data.
 	 */
-	constructor(db: DatabaseQuerier) {
-		this.db = db;
+	constructor(
+		public db: DatabaseQuerier,
+		public playerRepository: PlayerRepository
+	) {}
+
+	static fromDB(db: DatabaseQuerier) {
+		return new TradeRepository(db, PlayerRepository.fromDB(db));
+	}
+
+	/**
+	 * Converts a DBTrade object to a Trade object.
+	 * @param dbTrade - The DBTrade object to convert.
+	 * @returns The converted Trade object.
+	 * @throws {PlayerNotFoundError} If either of the player IDs in the DBTrade object do not correspond to a player in the database.
+	 */
+	private toTradeFromDB(dbTrade: DBTrade): Trade {
+		const initiatingPlayer = this.playerRepository.getPlayerOrThrow(dbTrade.initiatingPlayerID);
+		const recipientPlayer = this.playerRepository.getPlayerOrThrow(dbTrade.recipientPlayerID);
+
+		return {
+			...dbTrade,
+			initiatingPlayer,
+			recipientPlayer
+		};
+	}
+
+	private toTradesFromDB(dbTrades: DBTrade[]): Trade[] {
+		return dbTrades.map(dbTrade => this.toTradeFromDB(dbTrade));
 	}
 
 	/**
@@ -23,10 +50,32 @@ export class TradeRepository {
 	 * @returns An array of all trade objects
 	 */
 	getTrades(): Trade[] {
-		const query =  "SELECT * FROM trade";
-		const dbTrades = this.db.getRows(query) as DBTrade[];
-		throwIfNotTrades(dbTrades);
-		return dbTrades;
+		const dbTrades = this.db.getRows(
+			'SELECT * FROM trade'
+		) as DBTrade[];
+
+		return this.toTradesFromDB(dbTrades);
+	}
+
+	/**
+	 * Retrieves a DBTrade object by its ID.
+	 * @param tradeID - The ID of the DBTrade to be retrieved.
+	 * @returns The DBTrade object with the given ID, or null if it does not exist.
+	 */
+	getDBTradeByID(tradeID: TradeID): DBTrade | null {
+		const dbTrade = this.db.getRow(
+			`SELECT * FROM trade WHERE id = @id`,
+			{ id: tradeID }
+		) as DBTrade | undefined;
+
+		return dbTrade ?? null;
+	}
+
+	getDBTradeOrThrow(tradeID: TradeID): DBTrade {
+		return returnNonNullOrThrow(
+			this.getDBTradeByID(tradeID),
+			new TradeNotFoundError(tradeID)
+		)
 	}
 
 	/**
@@ -35,15 +84,14 @@ export class TradeRepository {
 	 * @returns The trade object with the given ID.
 	 */
 	getTradeByID(tradeID: TradeID): Trade | null{
-		const query = `SELECT * FROM trade WHERE id = @id`;
-		const dbTrade = this.db.getRow(query,
+		const dbTrade = this.db.getRow(
+			`SELECT * FROM trade WHERE id = @id`,
 			{ id: tradeID }
 		) as DBTrade | undefined;
 
 		if (dbTrade === undefined) return null;
 
-		throwIfNotTrade(dbTrade);
-		return dbTrade;
+		return this.toTradeFromDB(dbTrade);
 	}
 
 	/**
@@ -53,12 +101,10 @@ export class TradeRepository {
 	 * @throws {TradeNotFoundError} - If the trade does not exist.
 	 */
 	getTradeOrThrow(tradeID: TradeID): Trade {
-		const trade = this.getTradeByID(tradeID);
-
-		if (trade === null)
-			throw new TradeNotFoundError(tradeID);
-
-		return trade
+		return returnNonNullOrThrow(
+			this.getTradeByID(tradeID),
+			new TradeNotFoundError(tradeID)
+		)
 	}
 
 	/**
@@ -99,8 +145,8 @@ export class TradeRepository {
 	 * @throws {TradeNotFoundError} - If the trade does not exist.
 	 */
 	getInitiatingPlayerID(tradeID: TradeID): PlayerID {
-		const trade = this.getTradeOrThrow(tradeID);
-		return trade.initiatingPlayerID
+		const dbTrade = this.getDBTradeOrThrow(tradeID);
+		return dbTrade.initiatingPlayerID
 	}
 
 	/**
@@ -110,8 +156,8 @@ export class TradeRepository {
 	 * @throws {TradeNotFoundError} - If the trade does not exist.
 	 */
 	getRecipientPlayerID(tradeID: TradeID): PlayerID {
-		const trade = this.getTradeOrThrow(tradeID);
-		return trade.recipientPlayerID
+		const dbTrade = this.getDBTradeOrThrow(tradeID);
+		return dbTrade.recipientPlayerID
 	}
 
 	/**
@@ -121,8 +167,8 @@ export class TradeRepository {
 	 * @throws {TradeNotFoundError} - If the trade does not exist.
 	 */
 	getOfferedCharacters(tradeID: TradeID): string {
-		const trade = this.getTradeOrThrow(tradeID);
-		return trade.offeredCharacters
+		const dbTrade = this.getDBTradeOrThrow(tradeID);
+		return dbTrade.offeredCharacters
 	}
 
 	/**
@@ -132,19 +178,19 @@ export class TradeRepository {
 	 * @throws {TradeNotFoundError} - If the trade does not exist.
 	 */
 	setOfferedCharacters(tradeID: TradeID, offeredCharacters: string): void {
+		if (!this.doesTradeExist(tradeID))
+			throw new TradeNotFoundError(tradeID);
+
 		const query = `
 			UPDATE trade
 			SET offeredCharacters = @offeredCharacters
 			WHERE id = @id
 		`;
 
-		const runResult = this.db.run(query, {
+		this.db.run(query, {
 			id: tradeID,
 			offeredCharacters
 		});
-
-		if (runResult.changes === 0)
-			throw new TradeNotFoundError(tradeID);
 	}
 
 	/**
@@ -154,8 +200,8 @@ export class TradeRepository {
 	 * @throws {TradeNotFoundError} - If the trade does not exist.
 	 */
 	getRequestedCharacters(tradeID: TradeID): string {
-		const trade = this.getTradeOrThrow(tradeID);
-		return trade.requestedCharacters
+		const dbTrade = this.getDBTradeOrThrow(tradeID);
+		return dbTrade.requestedCharacters
 	}
 
 	/**
@@ -165,19 +211,19 @@ export class TradeRepository {
 	 * @throws {TradeNotFoundError} - If the trade does not exist.
 	 */
 	setRequestedCharacters(tradeID: TradeID, requestedCharacters: string): void {
+		if (!this.doesTradeExist(tradeID))
+			throw new TradeNotFoundError(tradeID);
+
 		const query = `
 			UPDATE trade
 			SET requestedCharacters = @requestedCharacters
 			WHERE id = @id
 		`;
 
-		const runResult = this.db.run(query, {
+		this.db.run(query, {
 			id: tradeID,
 			requestedCharacters
 		});
-
-		if (runResult.changes === 0)
-			throw new TradeNotFoundError(tradeID);
 	}
 
 	/**
@@ -187,8 +233,8 @@ export class TradeRepository {
 	 * @throws {TradeNotFoundError} - If the trade does not exist.
 	 */
 	getStatus(tradeID: TradeID): TradeStatus {
-		const trade = this.getTradeOrThrow(tradeID);
-		return trade.status
+		const dbTrade = this.getDBTradeOrThrow(tradeID);
+		return dbTrade.status
 	}
 
 
@@ -199,19 +245,19 @@ export class TradeRepository {
 	 * @throws {TradeNotFoundError} - If the trade does not exist.
 	 */
 	setStatus(tradeID: TradeID, status: TradeStatus): void {
+		if (!this.doesTradeExist(tradeID))
+			throw new TradeNotFoundError(tradeID);
+
 		const query = `
 			UPDATE trade
 			SET status = @status
 			WHERE id = @id
 		`;
 
-		const runResult = this.db.run(query, {
+		this.db.run(query, {
 			id: tradeID,
 			status
 		});
-
-		if (runResult.changes === 0)
-			throw new TradeNotFoundError(tradeID);
 	}
 
 	/**
@@ -219,15 +265,27 @@ export class TradeRepository {
 	 * If the `id` property is provided and the trade already exists, a `TradeAlreadyExistsError` is thrown.
 	 * @param tradeDefinition - The data for the new trade.
 	 * @param tradeDefinition.id - The ID of the trade (optional).
-	 * @param tradeDefinition.initiatingPlayerID - The ID of the player who is initiating the trade.
-	 * @param tradeDefinition.recipientPlayerID - The ID of the player who is receiving the trade.
+	 * @param tradeDefinition.initiatingPlayer - The player who is initiating the trade.
+	 * @param tradeDefinition.recipientPlayer - The player who is receiving the trade.
 	 * @param tradeDefinition.offeredCharacters - The characters being offered in the trade.
 	 * @param tradeDefinition.requestedCharacters - The characters being requested in the trade.
 	 * @param tradeDefinition.status - The status of the trade.
 	 * @returns The newly added trade.
 	 * @throws {TradeAlreadyExistsError} - If the trade already exists.
 	 */
-	addTrade({id, initiatingPlayerID, recipientPlayerID, offeredCharacters, requestedCharacters, status}: TradeDefintion) {
+	addTrade(
+		{
+			id,
+			initiatingPlayer: initiatingPlayerResolvable,
+			recipientPlayer: recipientPlayerResolvable,
+			offeredCharacters,
+			requestedCharacters,
+			status
+		}: TradeDefintion
+	): Trade {
+		const initiatingPlayerID = this.playerRepository.resolveID(initiatingPlayerResolvable);
+		const recipientPlayerID = this.playerRepository.resolveID(recipientPlayerResolvable);
+
 		if (id !== undefined) {
 			if (this.doesTradeExist(id))
 				throw new TradeAlreadyExistsError(id);
@@ -248,7 +306,7 @@ export class TradeRepository {
 			id = Number(result.lastInsertRowid);
 		}
 
-		return { id, initiatingPlayerID, recipientPlayerID, offeredCharacters, requestedCharacters, status };
+		return this.getTradeOrThrow(id);
 	}
 
 	/**
@@ -258,19 +316,34 @@ export class TradeRepository {
 	 * If the trade does not exist, a `TradeNotFoundError` is thrown.
 	 * @param tradeDefinition - The data for the trade to be updated.
 	 * @param tradeDefinition.id - The ID of the trade.
-	 * @param tradeDefinition.initiatingPlayerID - The ID of the player who is initiating the trade (optional).
-	 * @param tradeDefinition.recipientPlayerID - The ID of the player who is receiving the trade (optional).
+	 * @param tradeDefinition.initiatingPlayer - The player who is initiating the trade (optional).
+	 * @param tradeDefinition.recipientPlayer - The player who is receiving the trade (optional).
 	 * @param tradeDefinition.offeredCharacters - The characters being offered in the trade (optional).
 	 * @param tradeDefinition.requestedCharacters - The characters being requested in the trade (optional).
 	 * @param tradeDefinition.status - The status of the trade (optional).
 	 * @returns The updated trade.
 	 * @throws {TradeNotFoundError} - If the trade does not exist.
 	 */
-	updateTrade({id, initiatingPlayerID, recipientPlayerID, offeredCharacters, requestedCharacters, status}:
-		WithRequiredAndOneOther<TradeDefintion, 'id'>
+	updateTrade(
+		{
+			id,
+			initiatingPlayer: initiatingPlayerResolvable,
+			recipientPlayer: recipientPlayerResolvable,
+			offeredCharacters,
+			requestedCharacters,
+			status
+		}: WithRequiredAndOneOther<TradeDefintion, 'id'>
 	) {
 		if (!this.doesTradeExist(id))
 			throw new TradeNotFoundError(id);
+
+		let initiatingPlayerID;
+		if (initiatingPlayerResolvable != undefined)
+			initiatingPlayerID = this.playerRepository.resolveID(initiatingPlayerResolvable);
+
+		let recipientPlayerID;
+		if (recipientPlayerResolvable != undefined)
+			recipientPlayerID = this.playerRepository.resolveID(recipientPlayerResolvable);
 
 		this.db.run(
 			`UPDATE trade

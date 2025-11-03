@@ -32,8 +32,8 @@ describe('decline-trade.workflow.ts', () => {
 		});
 
 		MOCK_TRADE = addMockTrade(db, {
-			initiatingPlayerID: MOCK_INITIATING_PLAYER.id,
-			recipientPlayerID: MOCK_RECIPIENT_PLAYER.id,
+			initiatingPlayer: MOCK_INITIATING_PLAYER.id,
+			recipientPlayer: MOCK_RECIPIENT_PLAYER.id,
 				offeredCharacters: "berv",
 				requestedCharacters: "Xx",
 			status: TradeStatuses.AWAITING_RECIPIENT,

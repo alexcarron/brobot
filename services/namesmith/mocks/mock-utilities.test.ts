@@ -1,6 +1,7 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { DatabaseQuerier } from "../database/database-querier";
 import { DBPlayer, Player } from "../types/player.types";
+import { DBVote } from "../types/vote.types";
 import { addMockPerk } from "./mock-data/mock-perks";
 import { addMockPlayer, editMockPlayer } from "./mock-data/mock-players";
 import { addMockRole } from "./mock-data/mock-roles";
@@ -69,39 +70,30 @@ describe("Mock Utilities", () => {
   });
 
   describe("addMockVote", () => {
-		beforeEach(() => {
-			addMockPlayer(db, {
-				id: "player-1",
-				currentName: "John Doe",
-				publishedName: null,
-				tokens: 100,
-				role: null,
-				inventory: "{}",
-			});
-			addMockPlayer(db, {
-				id: "player-2",
-				currentName: "Jane Doe",
-				publishedName: null,
-				tokens: 100,
-				role: null,
-				inventory: "{}",
-			});
-		})
-
     it("adds a vote to the database", () => {
       const voteData = {
-        voterID: "player-1",
-        playerVotedForID: "player-2",
+        voter: "10000001",
+        playerVotedFor: "10000002",
       };
 
-      const result = addMockVote(db, voteData);
-      expect(result).toHaveProperty("changes", expect.any(Number));
-			expect(result).toHaveProperty("lastInsertRowid", expect.any(Number));
+      const vote = addMockVote(db, voteData);
+			makeSure(vote.voterID).is(voteData.voter);
+			makeSure(vote.playerVotedFor.id).is(voteData.playerVotedFor);
 
-      const votes = db.prepare("SELECT * FROM vote").all();
-      expect(votes).toHaveLength(1);
-      expect(votes[0]).toEqual(voteData);
+      const votes = db.prepare("SELECT * FROM vote").all() as DBVote[]
+      makeSure(votes).hasLengthOf(1);
+      makeSure(votes[0].voterID).is(voteData.voter);
+			makeSure(votes[0].playerVotedForID).is(voteData.playerVotedFor);
     });
+
+		it('adds a mock vote even with no given data', () => {
+			const vote = addMockVote(db);
+
+			const votes = db.prepare("SELECT * FROM vote").all() as DBVote[]
+			makeSure(votes).hasLengthOf(1);
+			makeSure(votes[0].voterID).is(vote.voterID);
+			makeSure(votes[0].playerVotedForID).is(vote.playerVotedFor.id);
+		});
   });
 
 	describe('editMockPlayer', () => {

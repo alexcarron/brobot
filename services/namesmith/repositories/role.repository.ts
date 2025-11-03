@@ -20,6 +20,10 @@ export class RoleRepository {
 		public perkRepository: PerkRepository,
 	) {}
 
+	static fromDB(db: DatabaseQuerier) {
+		return new RoleRepository(db, PerkRepository.fromDB(db));
+	}
+
 	private attachExistingPerksToRole(minimalRole: MinimalRole): Role {
 		const perks = this.perkRepository.getPerksOfRoleID(minimalRole.id);
 		return {

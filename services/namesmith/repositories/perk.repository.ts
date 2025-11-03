@@ -21,6 +21,10 @@ export class PerkRepository {
 		this.db = db;
 	}
 
+	static fromDB(db: DatabaseQuerier) {
+		return new PerkRepository(db);
+	}
+
 	/**
 	 * Returns a list of all perk objects in the game.
 	 * @returns An array of perk objects.

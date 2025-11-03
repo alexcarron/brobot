@@ -1,8 +1,7 @@
-import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { logInfo } from "../../../utilities/logging-utils";
 import { VoteRepository } from "../repositories/vote.repository";
 import { PlayerID } from "../types/player.types";
-import { Vote, VoteResolvable } from "../types/vote.types";
+import { Vote, VoteDefinition, VoteID, VoteResolvable } from "../types/vote.types";
 import { PlayerService } from "./player.service";
 
 /**
@@ -26,45 +25,52 @@ export class VoteService {
 	 * @throws {Error} If the vote resolvable is invalid.
 	 */
 	resolveVote(voteResolvable: VoteResolvable): Vote {
-		const voteID =
-			typeof voteResolvable === 'object'
-				? voteResolvable.voterID
-				: voteResolvable;
+		return this.voteRepository.resolveVote(voteResolvable);
+	}
 
-		return this.voteRepository.getVoteOrThrow(voteID);
+	/**
+	 * Resolves a vote resolvable to a vote ID.
+	 * @param voteResolvable - The vote resolvable to resolve.
+	 * @returns The resolved vote ID.
+	 * @throws {Error} If the vote resolvable is invalid.
+	 */
+	resolveID(voteResolvable: VoteResolvable): VoteID {
+		return this.voteRepository.resolveID(voteResolvable);
 	}
 
 	/**
 	 * Adds a new vote to the list of votes.
 	 * @param vote - The vote object to add.
-	 * @param vote.voterID - The ID of the user who votes.
-	 * @param vote.playerVotedForID - The ID of the player voted for.
+	 * @param vote.voter - The user or player who votes.
+	 * @param vote.playerVotedFor - The player voted for.
 	 * @returns A promise that resolves with a message indicating the result of the vote.
 	 */
-	addVote({ voterID, playerVotedForID }: Vote): string {
-		if (!voterID || !playerVotedForID)
-			throw new InvalidArgumentError("Missing voterID or playerVotedForID");
-
+	addVote({ voter, playerVotedFor }: VoteDefinition): string {
+		const voterID = this.playerService.resolveID(voter);
 		const vote = this.voteRepository.getVoteByVoterID(voterID);
 		const hasVotedBefore = vote !== null;
+
+		const playerVotedForID = this.playerService.resolveID(playerVotedFor);
 		const nameVotingFor = this.playerService.getPublishedName(playerVotedForID);
 
 		if (voterID === playerVotedForID)
 			return `You cannot vote for yourself!`;
 
 		if (hasVotedBefore) {
-			if (vote.playerVotedForID === playerVotedForID)
+			if (vote.playerVotedFor.id === playerVotedForID)
 				return `You already voted for this name as your favorite!`;
 
-			const oldNameVotingFor = this.playerService.getPublishedName(vote.playerVotedForID);
+			const oldNameVotingFor = this.playerService.getPublishedName(vote.playerVotedFor.id);
+
 			this.voteRepository.updateVote({
-				voterID,
-				playerVotedForID
+				voter,
+				playerVotedFor,
 			});
+
 			return `You have changed your favorite name vote from ${oldNameVotingFor} to ${nameVotingFor}`;
 		}
 
-		this.voteRepository.addVote({ voterID, playerVotedForID });
+		this.voteRepository.addVote({ voter, playerVotedFor, });
 		return `You have voted for ${nameVotingFor} as your favorite name!`;
 	}
 
@@ -74,12 +80,12 @@ export class VoteService {
 		const voteCountPerPlayer: Record<PlayerID, number> = {};
 
 		votes.forEach(vote => {
-			const { playerVotedForID } = vote;
-			if (voteCountPerPlayer[playerVotedForID]) {
-				voteCountPerPlayer[playerVotedForID]++;
+			const { playerVotedFor } = vote;
+			if (voteCountPerPlayer[playerVotedFor.id]) {
+				voteCountPerPlayer[playerVotedFor.id]++;
 			}
 			else {
-				voteCountPerPlayer[playerVotedForID] = 1;
+				voteCountPerPlayer[playerVotedFor.id] = 1;
 			}
 		});
 
@@ -99,12 +105,12 @@ export class VoteService {
 		const voteCountPerPlayer: Record<PlayerID, number> = {};
 
 		votes.forEach(vote => {
-			const { playerVotedForID } = vote;
-			if (voteCountPerPlayer[playerVotedForID]) {
-				voteCountPerPlayer[playerVotedForID]++;
+			const { playerVotedFor } = vote;
+			if (voteCountPerPlayer[playerVotedFor.id]) {
+				voteCountPerPlayer[playerVotedFor.id]++;
 			}
 			else {
-				voteCountPerPlayer[playerVotedForID] = 1;
+				voteCountPerPlayer[playerVotedFor.id] = 1;
 			}
 		});
 
@@ -128,6 +134,6 @@ export class VoteService {
 	 * Resets the vote repository, clearing all stored votes.
 	 */
 	reset() {
-		this.voteRepository.reset();
+		this.voteRepository.removeVotes();
 	}
 }

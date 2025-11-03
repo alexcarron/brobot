@@ -15,10 +15,10 @@ export const createAllMocks = (): NamesmithDependencies => {
 	const voteRepository = createMockVoteRepo(mockDB);
 	const gameStateRepository = createMockGameStateRepo(mockDB);
 	const recipeRepository = createMockRecipeRepo(mockDB);
-	const tradeRepository = createMockTradeRepo(mockDB);
 	const perkRepository = createMockPerkRepo(mockDB);
 	const roleRepository = createMockRoleRepo(mockDB, perkRepository);
 	const playerRepository = createMockPlayerRepo(mockDB, roleRepository, perkRepository);
+	const tradeRepository = createMockTradeRepo(mockDB, playerRepository);
 
 	const mysteryBoxService = createMockMysteryBoxService(mysteryBoxRepository, characterRepository);
 	const characterService = createMockCharacterService(characterRepository);

@@ -63,8 +63,8 @@ export const checkIfPlayerCanModifyTrade = (
 
 	const otherPlayerID =
 		trade.status === TradeStatuses.AWAITING_INITIATOR
-			? trade.recipientPlayerID
-			: trade.initiatingPlayerID;
+			? trade.recipientPlayer
+			: trade.initiatingPlayer;
 
 	return result.success({
 		trade: trade,
@@ -112,9 +112,9 @@ export const modifyTrade = (
 
 	// Does the initating player have the new characters they want them to offer?
 	if (!playerService.hasCharacters(
-		trade.initiatingPlayerID, newOfferedCharacters
+		trade.initiatingPlayer, newOfferedCharacters
 	)) {
-		const player = playerService.resolvePlayer(trade.initiatingPlayerID);
+		const player = playerService.resolvePlayer(trade.initiatingPlayer);
 		const {missingCharacters} = getCharacterDifferences(newOfferedCharacters, player.inventory);
 		return result.failure.playerMissingCharacters({
 			player,
@@ -124,9 +124,9 @@ export const modifyTrade = (
 
 	// Does the recipient player have the new characters they want them to give?
 	if (!playerService.hasCharacters(
-		trade.recipientPlayerID, newRequestedCharacters
+		trade.recipientPlayer, newRequestedCharacters
 	)) {
-		const player = playerService.resolvePlayer(trade.recipientPlayerID);
+		const player = playerService.resolvePlayer(trade.recipientPlayer);
 		const {missingCharacters} = getCharacterDifferences(newRequestedCharacters, player.inventory);
 		return result.failure.playerMissingCharacters({
 			player,
@@ -142,8 +142,8 @@ export const modifyTrade = (
 
 	const otherPlayerID =
 		trade.status === TradeStatuses.AWAITING_INITIATOR
-			? trade.recipientPlayerID
-			: trade.initiatingPlayerID;
+			? trade.recipientPlayer
+			: trade.initiatingPlayer;
 
 	return result.success({
 		trade: tradeService.resolveTrade(trade),

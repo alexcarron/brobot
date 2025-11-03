@@ -24,8 +24,8 @@ export const onVoteButtonPressed = async (
 	let feedbackMessage = `You have voted for ${playerName}!`;
 	try {
 		feedbackMessage = voteService.addVote({
-			voterID: userID,
-			playerVotedForID: playerVotedForID
+			voter: userID,
+			playerVotedFor: playerVotedForID
 		});
 	}
 	catch (error) {

@@ -17,7 +17,7 @@ export function createAcceptTradeButton(
 		trade: Trade
 	}
 ) {
-	const { id, initiatingPlayerID, recipientPlayerID } = trade;
+	const { id, initiatingPlayer, recipientPlayer } = trade;
 
 	return {
 		id: `trade-accept-${id}`,
@@ -52,8 +52,8 @@ export function createAcceptTradeButton(
 
 			await buttonInteraction.reply(
 				`✅ This trade has been successfully executed\n` +
-				`<@${initiatingPlayerID}> has received ${trade.requestedCharacters} from <@${recipientPlayerID}>\n` +
-				`<@${recipientPlayerID}> has received ${trade.offeredCharacters} from <@${initiatingPlayerID}>`
+				`<@${initiatingPlayer.id}> has received ${trade.requestedCharacters} from <@${recipientPlayer.id}>\n` +
+				`<@${recipientPlayer.id}> has received ${trade.offeredCharacters} from <@${initiatingPlayer.id}>`
 			);
 		}
 	}

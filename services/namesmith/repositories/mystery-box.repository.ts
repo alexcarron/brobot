@@ -1,4 +1,4 @@
-import { ignoreError, InvalidArgumentError, returnIfNotNull } from "../../../utilities/error-utils";
+import { ignoreError, InvalidArgumentError, returnNonNullOrThrow } from "../../../utilities/error-utils";
 import { WithRequiredAndOneOther } from "../../../utilities/types/generic-types";
 import { DatabaseQuerier, toAssignmentsPlaceholder } from "../database/database-querier";
 import { CharacterOdds, DBCharacterOddsRow, DBMysteryBox, MinimalMysteryBox, MysteryBoxID, MysteryBox, MysteryBoxDefinition, MinimalMysteryBoxDefinition } from "../types/mystery-box.types";
@@ -104,14 +104,14 @@ export class MysteryBoxRepository {
 	}
 
 	getMinimalMysteryBoxOrThrow (id: MysteryBoxID): MinimalMysteryBox {
-		return returnIfNotNull(
+		return returnNonNullOrThrow(
 			this.getMinimalMysteryBox(id),
 			new MysteryBoxNotFoundError(id)
 		);
 	}
 
 	getMysteryBoxOrThrow(id: MysteryBoxID): MysteryBox {
-		return returnIfNotNull(
+		return returnNonNullOrThrow(
 			this.getMysteryBox(id),
 			new MysteryBoxNotFoundError(id)
 		);

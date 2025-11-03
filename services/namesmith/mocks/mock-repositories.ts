@@ -90,38 +90,50 @@ export const createMockPlayerRepo = (
 
  * The mock repository is populated with mock vote data from the mockVotes array.
  * @param mockDB - An optional mock database instance.
+ * @param mockPlayerRepo - An optional mock player repository instance.
  * @returns A mock instance of the VoteRepository.
  */
 export const createMockVoteRepo = (
 	mockDB?: DatabaseQuerier,
+	mockPlayerRepo?: PlayerRepository
 ): VoteRepository => {
-	if (mockDB === undefined || !(mockDB instanceof DatabaseQuerier))
-		mockDB = createMockDB();
+	const sharedDB =
+		mockDB ??
+		mockPlayerRepo?.db ??
+		createMockDB();
+
+	mockPlayerRepo =
+		mockPlayerRepo ??
+		createMockPlayerRepo(sharedDB);
 
 		// Get a list of unique player IDs used in votes
 	const requiredPlayerIDs = [
-		...new Set(mockVotes.map(vote => vote.playerVotedForID))
+		...new Set(mockVotes.map(vote =>
+			mockPlayerRepo.resolveID(vote.playerVotedFor)
+		)),
 	];
 
 	for (const player of mockPlayers) {
-		attempt(() => addMockPlayer(mockDB, player))
+		attempt(() => addMockPlayer(sharedDB, player))
 			.ignoreError(PlayerAlreadyExistsError)
 			.execute();
 	}
 
 	// Insert dummy players if they don't exist yet
 	for (const playerID of requiredPlayerIDs) {
-		attempt(addMockPlayer, mockDB,
-			createMockPlayerObject({id: playerID})
+		attempt(() =>
+			addMockPlayer(sharedDB,
+				createMockPlayerObject({id: playerID})
+			)
 		)
 			.ignoreError(PlayerAlreadyExistsError)
 			.execute();
 	}
 
 	for (const vote of mockVotes) {
-		addMockVote(mockDB, vote);
+		addMockVote(sharedDB, vote);
 	}
-	return new VoteRepository(mockDB);
+	return new VoteRepository(sharedDB, mockPlayerRepo);
 }
 
 /**
@@ -147,20 +159,30 @@ export const createMockRecipeRepo = (
  * If any of the mock repository parameters are undefined, a default mock repository
  * instance is created for the respective service.
  * @param mockDB - An optional mock database instance.
+ * @param mockPlayerRepo - An optional mock player repository instance.
  * @returns A mock instance of the TradeRepository.
  */
 export const createMockTradeRepo = (
 	mockDB?: DatabaseQuerier,
+	mockPlayerRepo?: PlayerRepository
 ): TradeRepository => {
 	mockDB =
 		mockDB
 		?? createMockDB();
 
+	mockPlayerRepo =
+		mockPlayerRepo
+		?? createMockPlayerRepo(mockDB);
+
 	// Get a list of unique player IDs used in votes
 	const requiredPlayerIDs = [
 		...new Set([
-			...mockTrades.map(trade => trade.initiatingPlayerID),
-			...mockTrades.map(trade => trade.recipientPlayerID)
+			...mockTrades.map(trade =>
+				mockPlayerRepo.resolveID(trade.initiatingPlayer)
+			),
+			...mockTrades.map(trade =>
+				mockPlayerRepo.resolveID(trade.recipientPlayer)
+			)
 		])
 	];
 
@@ -184,7 +206,7 @@ export const createMockTradeRepo = (
 		addMockTrade(mockDB, trade);
 	}
 
-	return new TradeRepository(mockDB);
+	return new TradeRepository(mockDB, mockPlayerRepo);
 }
 
 /**
@@ -248,10 +270,10 @@ export function createMockRepositories(
 	const mysteryBoxRepository = createMockMysteryBoxRepo(mockDB);
 	const voteRepository = createMockVoteRepo(mockDB);
 	const recipeRepository = createMockRecipeRepo(mockDB);
-	const tradeRepository = createMockTradeRepo(mockDB);
 	const perkRepository = createMockPerkRepo(mockDB);
 	const roleRepository = createMockRoleRepo(mockDB, perkRepository);
 	const playerRepository = createMockPlayerRepo(mockDB, roleRepository, perkRepository);
+	const tradeRepository = createMockTradeRepo(mockDB, playerRepository);
 
 	return {
 		characterRepository,

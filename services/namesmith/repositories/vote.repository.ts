@@ -1,20 +1,40 @@
-import { InvalidArgumentError } from "../../../utilities/error-utils";
-import { WithAtLeastOneProperty, WithRequiredAndOneOther } from '../../../utilities/types/generic-types';
+import { returnNonNullOrThrow } from "../../../utilities/error-utils";
+import { WithRequiredAndOneOther } from '../../../utilities/types/generic-types';
+import { isString } from "../../../utilities/types/type-guards";
 import { DatabaseQuerier } from "../database/database-querier";
-import { DBVote, Vote, VoteDefinition } from "../types/vote.types";
+import { DBVote, Vote, VoteDefinition, VoteID, VoteResolvable } from "../types/vote.types";
 import { VoteAlreadyExistsError, VoteNotFoundError } from "../utilities/error.utility";
+import { PlayerRepository } from "./player.repository";
 
 /**
  * Provides access to the dynamic votes data.
  */
 export class VoteRepository {
-	db: DatabaseQuerier;
 
 	/**
 	 * @param db - The database querier instance used for executing SQL statements.
+	 * @param playerRepository - The player repository instance used for retrieving player data.
 	 */
-	constructor(db: DatabaseQuerier) {
-		this.db = db;
+	constructor(
+		public db: DatabaseQuerier,
+		public playerRepository: PlayerRepository
+	) {}
+
+	static fromDB(db: DatabaseQuerier) {
+		return new VoteRepository(db, PlayerRepository.fromDB(db));
+	}
+
+	private toVoteFromDB(dbVote: DBVote): Vote {
+		const playerVotedFor = this.playerRepository.resolvePlayer(dbVote.playerVotedForID);
+
+		return {
+			voterID: dbVote.voterID,
+			playerVotedFor,
+		};
+	}
+
+	private toVotesFromDB(dbVotes: DBVote[]): Vote[] {
+		return dbVotes.map(dbVote => this.toVoteFromDB(dbVote));
 	}
 
 	/**
@@ -22,9 +42,11 @@ export class VoteRepository {
 	 * @returns An array of vote objects.
 	 */
 	getVotes(): Vote[] {
-		const query = `SELECT * FROM vote`;
-		const getAllVotes = this.db.prepare(query);
-		return getAllVotes.all() as DBVote[];
+		const dbVotes = this.db.getRows(
+			'SELECT * FROM vote'
+		) as DBVote[];
+
+		return this.toVotesFromDB(dbVotes);
 	}
 
 	/**
@@ -33,10 +55,14 @@ export class VoteRepository {
 	 * @returns A vote object if found, otherwise undefined.
 	 */
 	getVoteByVoterID(voterID: string): Vote | null {
-		const query = `SELECT * FROM vote WHERE voterID = @voterID`;
-		const getVoteByVoterID = this.db.prepare(query);
-		const vote = getVoteByVoterID.get({ voterID }) as DBVote | undefined;
-		return vote ?? null;
+		const vote = this.db.getRow(
+			'SELECT * FROM vote WHERE voterID = @voterID',
+			{ voterID }
+		) as DBVote | undefined;
+
+		if (vote === undefined) return null;
+
+		return this.toVoteFromDB(vote);
 	}
 
 	/**
@@ -46,91 +72,124 @@ export class VoteRepository {
 	 * @throws VoteNotFoundError - If the vote does not exist.
 	 */
 	getVoteOrThrow(voterID: string): Vote {
-		const vote = this.getVoteByVoterID(voterID);
-
-		if (vote === null)
-			throw new VoteNotFoundError(voterID);
-
-		return vote;
-	}
-
-	/**
-	 * Retrieves a list of votes by the ID of the player voted for.
-	 * @param playerVotedForID - The ID of the player voted for.
-	 * @returns A list of vote objects.
-	 */
-	getVotesByVotedForID(playerVotedForID: string): Vote[] {
-		const query = `SELECT * FROM vote WHERE playerVotedForID = @playerVotedForID`;
-		const getVotesByVotedForID = this.db.prepare(query);
-		return getVotesByVotedForID.all({ playerVotedForID }) as DBVote[];
+		return returnNonNullOrThrow(
+			this.getVoteByVoterID(voterID),
+			new VoteNotFoundError(voterID)
+		);
 	}
 
 	/**
 	 * Checks if a vote with the given properties exists.
-	 * @param voteData - The vote data to check for.
-	 * @param voteData.voterID - The ID of the user who voted.
-	 * @param voteData.playerVotedForID - The ID of the player voted for.
+	 * @param id - The ID of the vote to check.
 	 * @returns A promise that resolves with a boolean indicating if the vote exists.
 	 */
-	doesVoteExist({ voterID, playerVotedForID }: WithAtLeastOneProperty<Vote>): boolean {
-		if (voterID === undefined && playerVotedForID === undefined)
-			throw new InvalidArgumentError(`doesVoteExist: Missing voterID and playerVotedForID`);
+	doesVoteExist(id: VoteID): boolean {
+		return this.db.getValue(
+			'SELECT 1 FROM vote WHERE voterID = @voterID LIMIT 1',
+			{ voterID: id }
+		) === 1;
+	}
 
-		else if (voterID === undefined) {
-			const query = `SELECT * FROM vote WHERE playerVotedForID = @playerVotedForID LIMIT 1`;
-			const vote = this.db.getRow(query, { playerVotedForID });
-			return vote !== undefined;
+	/**
+	 * Resolves a vote from the given resolvable.
+	 * @param voteResolvable - The vote resolvable to resolve.
+	 * @returns The resolved vote.
+	 * @throws {Error} If the vote resolvable is invalid.
+	 */
+	resolveVote(voteResolvable: VoteResolvable): Vote {
+		if (isString(voteResolvable)) {
+			const voteID = voteResolvable;
+			return this.getVoteOrThrow(voteID);
 		}
-		else if (playerVotedForID === undefined) {
-			const query = `SELECT * FROM vote WHERE voterID = @voterID LIMIT 1`;
-			const vote = this.db.getRow(query, { voterID });
-			return vote !== undefined;
+		else if ('voter' in voteResolvable) {
+			const { voter } = voteResolvable;
+			const playerResolvable = voter;
+			const playerID = this.playerRepository.resolveID(playerResolvable);
+			return this.getVoteOrThrow(playerID);
 		}
 		else {
-			const query = `SELECT * FROM vote WHERE voterID = @voterID AND playerVotedForID = @playerVotedForID LIMIT 1`;
-			const vote = this.db.getRow(query, { voterID, playerVotedForID });
-			return vote !== undefined;
+			const { voterID } = voteResolvable;
+			return this.getVoteOrThrow(voterID);
+		}
+	}
+
+	/**
+	 * Resolves a vote resolvable to a vote ID.
+	 * @param voteResolvable - The vote resolvable to resolve.
+	 * @returns The resolved vote ID.
+	 * @throws {Error} If the vote resolvable is invalid.
+	 */
+	resolveID(voteResolvable: VoteResolvable): VoteID {
+		if (isString(voteResolvable)) {
+			const voteID = voteResolvable;
+			return voteID;
+		}
+		else if ('voter' in voteResolvable) {
+			const { voter } = voteResolvable;
+			const playerResolvable = voter;
+			const playerID = this.playerRepository.resolveID(playerResolvable);
+			return playerID;
+		}
+		else {
+			const { voterID } = voteResolvable;
+			return voterID;
 		}
 	}
 
 	/**
 	 * Adds a new vote to the list of votes.
-	 * @param vote - The vote object to add.
-	 * @param vote.voterID - The ID of the user who voted.
-	 * @param vote.playerVotedForID - The ID of the player voted for.
+	 * @param voteDefintion - The vote object to add.
+	 * @param voteDefintion.voter - The user or player who voted.
+	 * @param voteDefintion.playerVotedFor - The player voted for.
+	 * @returns The added vote object.
 	 */
-	addVote({ voterID, playerVotedForID }: VoteDefinition) {
-		const query = `
-			INSERT INTO vote (voterID, playerVotedForID)
-			VALUES (@voterID, @playerVotedForID)
-		`;
-		const addVote = this.db.prepare(query);
-		const vote = addVote.run({ voterID, playerVotedForID });
+	addVote(
+		{
+			voter: voterResolvable,
+			playerVotedFor: playerVotedForResolvable
+		}: VoteDefinition
+	): Vote {
+		const voterID = this.playerRepository.resolveID(voterResolvable);
+		const playerVotedForID = this.playerRepository.resolveID(playerVotedForResolvable);
 
-		if (vote.changes === 0)
+		if (this.doesVoteExist(voterID))
 			throw new VoteAlreadyExistsError(voterID);
+
+		this.db.run(
+			`INSERT INTO vote (voterID, playerVotedForID)
+			VALUES (@voterID, @playerVotedForID)`,
+			{ voterID, playerVotedForID }
+		);
+
+		return this.getVoteOrThrow(voterID);
 	}
 
 	/**
 	 * Changes the vote of a user by replacing the vote with a new player voted for ID.
-	 * @param vote - The vote object with the new player ID.
-	 * @param vote.voterID - The ID of the user who voted.
-	 * @param vote.playerVotedForID - The ID of the player voted for.
+	 * @param voteDefintion - The vote object to update.
+	 * @param voteDefintion.voter - The user or player who voted.
+	 * @param voteDefintion.playerVotedFor - The player voted for.
 	 * @returns The updated vote object.
 	 */
-	updateVote({ voterID, playerVotedForID }:
-		WithRequiredAndOneOther<VoteDefinition, 'voterID'>
+	updateVote(
+		{
+			voter: voterResolvable,
+			playerVotedFor: playerVotedForResolvable
+		}: WithRequiredAndOneOther<VoteDefinition, 'voter'>
 	): Vote {
-		if (!this.doesVoteExist({ voterID: voterID })) {
-			throw new VoteNotFoundError(voterID);
-		}
+		const voterID = this.playerRepository.resolveID(voterResolvable);
+		const playerVotedForID = this.playerRepository.resolveID(playerVotedForResolvable);
 
-		const query = `
-			UPDATE vote
+		if (!this.doesVoteExist(voterID))
+			throw new VoteNotFoundError(voterID);
+
+
+		this.db.run(
+			`UPDATE vote
 			SET playerVotedForID = @playerVotedForID
-			WHERE voterID = @voterID
-		`;
-		this.db.run(query, { voterID, playerVotedForID });
+			WHERE voterID = @voterID`,
+			{ voterID, playerVotedForID }
+		);
 
 		return this.getVoteOrThrow(voterID);
 	}
@@ -139,7 +198,7 @@ export class VoteRepository {
 	 * Deletes a vote by a given voter ID.
 	 * @param voterID - The ID of the user who voted.
 	 */
-	deleteVote(voterID: string) {
+	removeVote(voterID: VoteID) {
 		const query = `DELETE FROM vote WHERE voterID = @voterID`;
 		const deleteVote = this.db.prepare(query);
 		const vote = deleteVote.run({ voterID });
@@ -150,7 +209,7 @@ export class VoteRepository {
 	/**
 	 * Resets the list of votes, clearing all existing votes.
 	 */
-	reset() {
+	removeVotes() {
 		const query = `DELETE FROM vote`;
 		const reset = this.db.prepare(query);
 		reset.run();

@@ -197,10 +197,10 @@ export class TradeService {
 
 		switch (trade.status) {
 			case TradeStatuses.AWAITING_INITIATOR:
-				return this.playerService.resolvePlayer(trade.recipientPlayerID);
+				return this.playerService.resolvePlayer(trade.recipientPlayer);
 
 			case TradeStatuses.AWAITING_RECIPIENT:
-				return this.playerService.resolvePlayer(trade.initiatingPlayerID);
+				return this.playerService.resolvePlayer(trade.initiatingPlayer);
 
 			case TradeStatuses.ACCEPTED:
 			case TradeStatuses.DECLINED:
@@ -221,12 +221,12 @@ export class TradeService {
 		switch (trade.status) {
 			case TradeStatuses.AWAITING_RECIPIENT:
 				return this.playerService.resolvePlayer(
-					trade.recipientPlayerID
+					trade.recipientPlayer
 				);
 
 			case TradeStatuses.AWAITING_INITIATOR:
 				return this.playerService.resolvePlayer(
-					trade.initiatingPlayerID
+					trade.initiatingPlayer
 				);
 
 			case TradeStatuses.ACCEPTED:

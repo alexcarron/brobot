@@ -124,6 +124,7 @@ CREATE INDEX IF NOT EXISTS trade_initiatingPlayerID_index ON trade(initiatingPla
 CREATE INDEX IF NOT EXISTS trade_recipientPlayerID_index ON trade(recipientPlayerID);
 
 -- Recipe input/output search
+-- Recipe input/output search
 CREATE INDEX IF NOT EXISTS recipe_inputCharacters_index ON recipe(inputCharacters);
 CREATE INDEX IF NOT EXISTS recipe_outputCharacters_index ON recipe(outputCharacters);
 

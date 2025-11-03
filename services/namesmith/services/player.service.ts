@@ -10,7 +10,6 @@ import { areCharactersInString } from "../../../utilities/string-checks-utils";
 import { MAX_NAME_LENGTH, REFILL_COOLDOWN_HOURS } from "../constants/namesmith.constants";
 import { addHours } from "../../../utilities/date-time-utils";
 import { NamesmithEvents } from "../event-listeners/namesmith-events";
-import { isString } from "../../../utilities/types/type-guards";
 
 /**
  * Provides methods for interacting with players.
@@ -31,31 +30,17 @@ export class PlayerService {
 	 * @throws {PlayerNotFoundError} If the player resolvable is invalid or the player is not found.
 	 */
 	resolvePlayer(playerResolvable: PlayerResolvable): Player {
-		const playerID: PlayerID =
-			isString(playerResolvable)
-				? playerResolvable
-				: playerResolvable.id;
-
-		return this.playerRepository.getPlayerOrThrow(playerID);
+		return this.playerRepository.resolvePlayer(playerResolvable);
 	}
+
 	/**
 	 * Resolves a player resolvable to a player ID.
 	 * @param playerResolvable - The player resolvable to resolve.
 	 * @returns The resolved player ID.
-	 * @throws {Error} If the player resolvable is invalid or the player is not found.
+	 * @throws {PlayerNotFoundError} If the player resolvable is invalid or the player is not found.
 	 */
 	resolveID(playerResolvable: PlayerResolvable): PlayerID {
-		if (isString(playerResolvable)) {
-			const playerID = playerResolvable;
-			if (/^\d+$/.test(playerID))
-				return playerID;
-
-			throw new InvalidArgumentError(`resolvePlayerID: Invalid player ID ${playerID}. Expected a number as a string.`);
-		}
-		else {
-			const player = playerResolvable;
-			return player.id;
-		}
+		return this.playerRepository.resolveID(playerResolvable);
 	}
 
 	/**

@@ -1,21 +1,24 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { INVALID_TRADE_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
-import { TradeStatuses } from '../types/trade.types';
+import { Trade, TradeStatuses } from '../types/trade.types';
 import { CannotCreateTradeError, TradeAlreadyExistsError, TradeNotFoundError } from "../utilities/error.utility";
 import { createMockTradeRepo } from "../mocks/mock-repositories";
 import { TradeRepository } from "./trade.repository";
 import { addMockTrade, mockTrades } from "../mocks/mock-data/mock-trades";
 import { mockPlayers } from "../mocks/mock-data/mock-players";
 
-describe('TradeRepoistory', () => {
+describe('TradeRepository', () => {
 	let tradeRepository: TradeRepository;
 	let db: DatabaseQuerier;
-	const MOCK_TRADE = mockTrades[0];
+
+	let SOME_TRADE: Trade;
 
 	beforeEach(() => {
 		tradeRepository = createMockTradeRepo();
 		db = tradeRepository.db;
+
+		SOME_TRADE = tradeRepository.getTradeOrThrow(mockTrades[0].id!);
 	});
 
 	afterEach(() => {
@@ -28,15 +31,17 @@ describe('TradeRepoistory', () => {
 
 	describe('getTrades()', () => {
 		it('returns an array of trade objects', () => {
-			const result = tradeRepository.getTrades();
-			expect(result).toEqual(mockTrades);
+			const trades = tradeRepository.getTrades();
+			makeSure(trades).hasLengthOf(mockTrades.length);
+			makeSure(trades).contains(SOME_TRADE);
+			makeSure(trades).haveProperties('id', 'initiatingPlayer', 'recipientPlayer', 'offeredCharacters', 'requestedCharacters', 'status');
 		});
 	});
 
 	describe('getTradeByID()', () => {
 		it('returns a trade object', () => {
-			const result = tradeRepository.getTradeByID(MOCK_TRADE.id);
-			expect(result).toEqual(MOCK_TRADE);
+			const result = tradeRepository.getTradeByID(SOME_TRADE.id);
+			expect(result).toEqual(SOME_TRADE);
 		});
 
 		it('returns a created trade object', () => {
@@ -58,8 +63,8 @@ describe('TradeRepoistory', () => {
 
 		describe('getTradeOrThrow()', () => {
 		it('returns a trade object', () => {
-			const result = tradeRepository.getTradeOrThrow(MOCK_TRADE.id);
-			expect(result).toEqual(MOCK_TRADE);
+			const result = tradeRepository.getTradeOrThrow(SOME_TRADE.id);
+			expect(result).toEqual(SOME_TRADE);
 		});
 
 		it('throws TradeNotFoundError if trade does not exist', () => {
@@ -81,12 +86,9 @@ describe('TradeRepoistory', () => {
 			const tradeID = tradeRepository.createTrade(trade);
 			makeSure(tradeID).isANumber();
 
-			const createdTrade = tradeRepository.getTradeByID(tradeID);
-			expect(createdTrade).toEqual({
-				...trade,
-				id: tradeID,
-				status: TradeStatuses.AWAITING_RECIPIENT
-			});
+			const createdTrade = tradeRepository.getTradeOrThrow(tradeID);
+			expect(createdTrade.id).toEqual(tradeID);
+			expect(createdTrade.status).toEqual(TradeStatuses.AWAITING_RECIPIENT);
 		});
 
 		it('throws CannotCreateTradeError if trade cannot be created', () => {
@@ -111,8 +113,8 @@ describe('TradeRepoistory', () => {
 
 	describe('getInitiatingPlayer()', () => {
 		it('returns the ID of the initiating player', () => {
-			const result = tradeRepository.getInitiatingPlayerID(MOCK_TRADE.id);
-			expect(result).toEqual(MOCK_TRADE.initiatingPlayerID);
+			const result = tradeRepository.getInitiatingPlayerID(SOME_TRADE.id);
+			expect(result).toEqual(SOME_TRADE.initiatingPlayer.id);
 		});
 
 		it('throws TradeNotFoundError if trade does not exist', () => {
@@ -124,8 +126,8 @@ describe('TradeRepoistory', () => {
 
 	describe('getRecipientPlayer()', () => {
 		it('returns the ID of the recipient player', () => {
-			const result = tradeRepository.getRecipientPlayerID(MOCK_TRADE.id);
-			expect(result).toEqual(MOCK_TRADE.recipientPlayerID);
+			const result = tradeRepository.getRecipientPlayerID(SOME_TRADE.id);
+			expect(result).toEqual(SOME_TRADE.recipientPlayer.id);
 		});
 
 		it('throws TradeNotFoundError if trade does not exist', () => {
@@ -137,8 +139,8 @@ describe('TradeRepoistory', () => {
 
 	describe('getOfferedCharacters()', () => {
 		it('returns the offered characters', () => {
-			const result = tradeRepository.getOfferedCharacters(MOCK_TRADE.id);
-			expect(result).toEqual(MOCK_TRADE.offeredCharacters);
+			const result = tradeRepository.getOfferedCharacters(SOME_TRADE.id);
+			expect(result).toEqual(SOME_TRADE.offeredCharacters);
 		});
 
 		it('throws TradeNotFoundError if trade does not exist', () => {
@@ -150,8 +152,8 @@ describe('TradeRepoistory', () => {
 
 	describe('setOfferedCharacters()', () => {
 		it('sets the offered characters', () => {
-			tradeRepository.setOfferedCharacters(MOCK_TRADE.id, "aaa");
-			const result = tradeRepository.getOfferedCharacters(MOCK_TRADE.id);
+			tradeRepository.setOfferedCharacters(SOME_TRADE.id, "aaa");
+			const result = tradeRepository.getOfferedCharacters(SOME_TRADE.id);
 			expect(result).toEqual("aaa");
 		});
 
@@ -164,8 +166,8 @@ describe('TradeRepoistory', () => {
 
 	describe('getRequestedCharacters()', () => {
 		it('returns the requested characters', () => {
-			const result = tradeRepository.getRequestedCharacters(MOCK_TRADE.id);
-			expect(result).toEqual(MOCK_TRADE.requestedCharacters);
+			const result = tradeRepository.getRequestedCharacters(SOME_TRADE.id);
+			expect(result).toEqual(SOME_TRADE.requestedCharacters);
 		});
 
 		it('throws TradeNotFoundError if trade does not exist', () => {
@@ -177,8 +179,8 @@ describe('TradeRepoistory', () => {
 
 	describe('setRequestedCharacters()', () => {
 		it('sets the requested characters', () => {
-			tradeRepository.setRequestedCharacters(MOCK_TRADE.id, "aaa");
-			const result = tradeRepository.getRequestedCharacters(MOCK_TRADE.id);
+			tradeRepository.setRequestedCharacters(SOME_TRADE.id, "aaa");
+			const result = tradeRepository.getRequestedCharacters(SOME_TRADE.id);
 			expect(result).toEqual("aaa");
 		});
 
@@ -191,8 +193,8 @@ describe('TradeRepoistory', () => {
 
 	describe('getStatus()', () => {
 		it('returns the trade status', () => {
-			const result = tradeRepository.getStatus(MOCK_TRADE.id);
-			expect(result).toEqual(MOCK_TRADE.status);
+			const result = tradeRepository.getStatus(SOME_TRADE.id);
+			expect(result).toEqual(SOME_TRADE.status);
 		});
 
 		it('throws TradeNotFoundError if trade does not exist', () => {
@@ -204,8 +206,8 @@ describe('TradeRepoistory', () => {
 
 	describe('setStatus()', () => {
 		it('sets the trade status', () => {
-			tradeRepository.setStatus(MOCK_TRADE.id, TradeStatuses.ACCEPTED);
-			const result = tradeRepository.getStatus(MOCK_TRADE.id);
+			tradeRepository.setStatus(SOME_TRADE.id, TradeStatuses.ACCEPTED);
+			const result = tradeRepository.getStatus(SOME_TRADE.id);
 			expect(result).toEqual(TradeStatuses.ACCEPTED);
 		});
 
@@ -220,21 +222,22 @@ describe('TradeRepoistory', () => {
 		it('adds a trade with the given ID', () => {
 			const trade = tradeRepository.addTrade({
 				id: 10001,
-				initiatingPlayerID: mockPlayers[0].id,
-				recipientPlayerID: mockPlayers[1].id,
+				initiatingPlayer: mockPlayers[0].id,
+				recipientPlayer: mockPlayers[1].id,
 				offeredCharacters: "abc",
 				requestedCharacters: "def",
 				status: TradeStatuses.AWAITING_RECIPIENT
 			});
 
-			makeSure(trade).is({
+			makeSure(trade).includesObject({
 				id: 10001,
-				initiatingPlayerID: mockPlayers[0].id,
-				recipientPlayerID: mockPlayers[1].id,
 				offeredCharacters: "abc",
 				requestedCharacters: "def",
 				status: TradeStatuses.AWAITING_RECIPIENT
 			});
+
+			makeSure(trade.initiatingPlayer.id).is(mockPlayers[0].id);
+			makeSure(trade.recipientPlayer.id).is(mockPlayers[1].id);
 
 			const resolvedTrade = tradeRepository.getTradeByID(10001);
 			makeSure(resolvedTrade).is(trade);
@@ -242,8 +245,8 @@ describe('TradeRepoistory', () => {
 
 		it('generates an ID when none is provided', () => {
 			const trade = tradeRepository.addTrade({
-				initiatingPlayerID: mockPlayers[0].id,
-				recipientPlayerID: mockPlayers[1].id,
+				initiatingPlayer: mockPlayers[0].id,
+				recipientPlayer: mockPlayers[1].id,
 				offeredCharacters: "abc",
 				requestedCharacters: "def",
 				status: TradeStatuses.AWAITING_RECIPIENT
@@ -256,9 +259,9 @@ describe('TradeRepoistory', () => {
 		it('throws a TradeAlreadyExistsError if the trade already exists', () => {
 			makeSure(() =>
 				tradeRepository.addTrade({
-					id: MOCK_TRADE.id,
-					initiatingPlayerID: mockPlayers[0].id,
-					recipientPlayerID: mockPlayers[1].id,
+					id: SOME_TRADE.id,
+					initiatingPlayer: mockPlayers[0].id,
+					recipientPlayer: mockPlayers[1].id,
 					offeredCharacters: "abc",
 					requestedCharacters: "def",
 					status: TradeStatuses.AWAITING_RECIPIENT
@@ -270,31 +273,32 @@ describe('TradeRepoistory', () => {
 	describe('updateTrade()', () => {
 		it('updates a trade with the given ID', () => {
 			tradeRepository.updateTrade({
-				id: MOCK_TRADE.id,
-				initiatingPlayerID: mockPlayers[1].id,
-				recipientPlayerID: mockPlayers[0].id,
+				id: SOME_TRADE.id,
+				initiatingPlayer: mockPlayers[1].id,
+				recipientPlayer: mockPlayers[0].id,
 				offeredCharacters: "abc",
 				requestedCharacters: "def",
 				status: TradeStatuses.ACCEPTED
 			});
 
-			const resolvedTrade = tradeRepository.getTradeByID(MOCK_TRADE.id);
-			makeSure(resolvedTrade).is({
-				id: MOCK_TRADE.id,
-				initiatingPlayerID: mockPlayers[1].id,
-				recipientPlayerID: mockPlayers[0].id,
+			const resolvedTrade = tradeRepository.getTradeOrThrow(SOME_TRADE.id);
+			makeSure(resolvedTrade).includesObject({
+				id: SOME_TRADE.id,
 				offeredCharacters: "abc",
 				requestedCharacters: "def",
 				status: TradeStatuses.ACCEPTED
 			});
+
+			makeSure(resolvedTrade.initiatingPlayer.id).is(mockPlayers[1].id);
+			makeSure(resolvedTrade.recipientPlayer.id).is(mockPlayers[0].id);
 		});
 
 		it('throws TradeNotFoundError if trade does not exist', () => {
 			makeSure(() =>
 				tradeRepository.updateTrade({
 					id: INVALID_TRADE_ID,
-					initiatingPlayerID: mockPlayers[1].id,
-					recipientPlayerID: mockPlayers[0].id,
+					initiatingPlayer: mockPlayers[1].id,
+					recipientPlayer: mockPlayers[0].id,
 					offeredCharacters: "abc",
 					requestedCharacters: "def",
 					status: TradeStatuses.ACCEPTED
@@ -305,8 +309,8 @@ describe('TradeRepoistory', () => {
 
 	describe('removeTrade()', () => {
 		it('removes the trade', () => {
-			tradeRepository.removeTrade(MOCK_TRADE.id);
-			const result = tradeRepository.getTradeByID(MOCK_TRADE.id);
+			tradeRepository.removeTrade(SOME_TRADE.id);
+			const result = tradeRepository.getTradeByID(SOME_TRADE.id);
 			expect(result).toBeNull();
 		});
 

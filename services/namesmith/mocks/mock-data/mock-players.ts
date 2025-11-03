@@ -1,4 +1,4 @@
-import { InvalidArgumentError, returnIfNotNull } from "../../../../utilities/error-utils";
+import { InvalidArgumentError, returnNonNullOrThrow } from "../../../../utilities/error-utils";
 import { getRandomNumericUUID } from "../../../../utilities/random-utils";
 import { WithAtLeast, WithAtLeastOneProperty, WithID } from "../../../../utilities/types/generic-types";
 import { isNumber, isString } from "../../../../utilities/types/type-guards";
@@ -146,7 +146,7 @@ export const addMockPlayer = (
 		role = roleRepository.getRoleOrThrow(roleResolvable);
 	}
 	else if (isString(roleResolvable)) {
-		role = returnIfNotNull(
+		role = returnNonNullOrThrow(
 			roleRepository.getRoleByName(roleResolvable)
 		);
 
