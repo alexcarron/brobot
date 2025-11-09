@@ -2,7 +2,6 @@ import { WithAtLeastOneProperty } from "../../../../utilities/types/generic-type
 import { Role, RoleDefinition } from "../../types/role.types";
 import { RoleRepository } from '../../repositories/role.repository';
 import { DatabaseQuerier } from "../../database/database-querier";
-import { PerkRepository } from "../../repositories/perk.repository";
 import { RoleAlreadyExistsError } from "../../utilities/error.utility";
 import { getRandomName } from "../../../../utilities/random-utils";
 
@@ -17,9 +16,7 @@ export function addMockRole(
 	db: DatabaseQuerier,
 	roleDefinition: WithAtLeastOneProperty<RoleDefinition>
 ): Role {
-	const perkRepository = new PerkRepository(db);
-	const roleRepository = new RoleRepository(db, perkRepository);
-
+	const roleRepository = RoleRepository.fromDB(db);
 	const {
 		id = undefined,
 		name = getRandomName(),

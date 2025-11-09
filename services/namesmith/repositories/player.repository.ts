@@ -15,6 +15,7 @@ import { isString } from "../../../utilities/types/type-guards";
  * Provides access to the dynamic player data.
  */
 export class PlayerRepository {
+	
 	/**
 	 * @param db - The database querier instance used for executing SQL statements.
 	 * @param roleRepository - The role repository instance used for retrieving role data.

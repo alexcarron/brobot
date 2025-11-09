@@ -11,6 +11,7 @@ import { isNumber, isString } from "../../../utilities/types/type-guards";
  * Provides access to the dynamic role data.
  */
 export class RoleRepository {
+	
 	/**
 	 * @param db - The database querier instance used for executing SQL statements.
 	 * @param perkRepository - The repository for accessing perk data.

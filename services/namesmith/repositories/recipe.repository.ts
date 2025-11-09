@@ -8,9 +8,17 @@ import { RecipeAlreadyExistsError, RecipeNotFoundError } from "../utilities/erro
  * Provides access to all static recipe data.
  */
 export class RecipeRepository {
+
+	/**
+	 * @param db - The database querier instance used for executing SQL statements.
+	 */
 	constructor(
 		public db: DatabaseQuerier,
 	) {}
+
+	static fromDB(db: DatabaseQuerier) {
+		return new RecipeRepository(db);
+	}
 
 	/**
 	 * Retrieves all recipes from the database.

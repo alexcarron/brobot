@@ -1,7 +1,6 @@
 import { toPropertyValues } from "../../../../utilities/data-structure-utils";
 import { DeepReadonly } from "../../../../utilities/types/generic-types";
 import { isNotUndefined } from "../../../../utilities/types/type-guards";
-import { PerkRepository } from "../../repositories/perk.repository";
 import { RoleRepository } from "../../repositories/role.repository";
 import { DBRole, RoleDefinition } from "../../types/role.types";
 import { DatabaseQuerier, toListPlaceholder } from "../database-querier";
@@ -10,17 +9,16 @@ import { DatabaseQuerier, toListPlaceholder } from "../database-querier";
 /**
  * Syncronizes the database to match a list of role data defintions without breaking existing data.
  * @param db - The database querier used to execute queries.
- * @param roles - An array of role objects to be inserted. Each role can optionally include an 'id'. If 'id' is not provided, it will be auto-generated.
+ * @param roleDefinitions - An array of role objects to be inserted. Each role can optionally include an 'id'. If 'id' is not provided, it will be auto-generated.
  */
 export function syncRolesToDB(
 	db: DatabaseQuerier,
-	roles: DeepReadonly<RoleDefinition[]>
+	roleDefinitions: DeepReadonly<RoleDefinition[]>
 ) {
-	const perkRepository = new PerkRepository(db);
-	const roleRepository = new RoleRepository(db, perkRepository);
+	const roleRepository = RoleRepository.fromDB(db);
 
-	const roleIDs = toPropertyValues([...roles], "id").filter(isNotUndefined);
-	const roleNames = toPropertyValues([...roles], "name").filter(isNotUndefined);
+	const roleIDs = toPropertyValues([...roleDefinitions], "id").filter(isNotUndefined);
+	const roleNames = toPropertyValues([...roleDefinitions], "name").filter(isNotUndefined);
 
 	const runTransaction = db.getTransaction((
 		roleDefinitions: RoleDefinition[]
@@ -70,5 +68,5 @@ export function syncRolesToDB(
 		}
 	});
 
-	runTransaction(roles);
+	runTransaction(roleDefinitions);
 }

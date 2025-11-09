@@ -5,6 +5,7 @@ import { DatabaseQuerier, toAssignmentsPlaceholder } from "../database/database-
 import { DBPerk, Perk, PerkDefintion, PerkID, PerkResolvable } from "../types/perk.types";
 import { PlayerID } from "../types/player.types";
 import { RoleID } from "../types/role.types";
+import { toOptionalDBBool } from "../utilities/db.utility";
 import { PerkNotFoundError } from "../utilities/error.utility";
 import { toPerk, toPerks } from "../utilities/perk.utility";
 
@@ -12,14 +13,13 @@ import { toPerk, toPerks } from "../utilities/perk.utility";
  * Provides access to the dynamic perk data.
  */
 export class PerkRepository {
-	db: DatabaseQuerier;
 
 	/**
 	 * @param db - The database querier instance used for executing SQL statements.
 	 */
-	constructor(db: DatabaseQuerier) {
-		this.db = db;
-	}
+	constructor(
+		public db: DatabaseQuerier
+	) {}
 
 	static fromDB(db: DatabaseQuerier) {
 		return new PerkRepository(db);
@@ -193,7 +193,7 @@ export class PerkRepository {
 				id,
 				name,
 				description,
-				wasOffered: wasOffered ? 1 : 0
+				wasOffered: toOptionalDBBool(wasOffered),
 			});
 
 			if (result.changes === 0) {

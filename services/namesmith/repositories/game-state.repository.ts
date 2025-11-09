@@ -8,13 +8,16 @@ import { GameStateInitializationError } from "../utilities/error.utility";
  * Provides access to the game state data.
  */
 export class GameStateRepository {
-	db: DatabaseQuerier;
 
 	/**
 	 * @param db - The database querier instance used for executing SQL statements.
 	 */
-	constructor(db: DatabaseQuerier) {
-		this.db = db;
+	constructor(
+		public db: DatabaseQuerier
+	) {}
+
+	static fromDB(db: DatabaseQuerier) {
+		return new GameStateRepository(db);
 	}
 
 	/**

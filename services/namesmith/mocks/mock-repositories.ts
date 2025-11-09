@@ -17,6 +17,7 @@ import { addMockTrade, mockTrades } from './mock-data/mock-trades';
 import { PerkRepository } from '../repositories/perk.repository';
 import { RoleRepository } from '../repositories/role.repository';
 import { syncRecipesToDB } from '../database/static-data-synchronizers/sync-recipes';
+import { QuestRepository } from '../repositories/quest.repository';
 
 /**
  * Creates a mock character repository instance with an in-memory database for testing purposes.
@@ -248,6 +249,22 @@ export const createMockRoleRepo = (
 }
 
 /**
+ * Creates a mock quest repository instance with an in-memory database for testing purposes.
+ * If the mockDB parameter is undefined, a default mock database instance is created.
+ * @param mockDB - An optional mock database instance.
+ * @returns A mock instance of the QuestRepository.
+ */
+export function createMockQuestRepo(
+	mockDB?: DatabaseQuerier,
+): QuestRepository {
+	mockDB =
+		mockDB
+		?? createMockDB();
+
+	return new QuestRepository(mockDB);
+}
+
+/**
  * Creates an object containing mock instances of the repositories and the in-memory database for testing purposes.
  * The returned object contains the following properties:
  * - db: The mock database instance.
@@ -274,6 +291,7 @@ export function createMockRepositories(
 	const roleRepository = createMockRoleRepo(mockDB, perkRepository);
 	const playerRepository = createMockPlayerRepo(mockDB, roleRepository, perkRepository);
 	const tradeRepository = createMockTradeRepo(mockDB, playerRepository);
+	const questRepository = createMockQuestRepo(mockDB);
 
 	return {
 		characterRepository,
@@ -285,5 +303,6 @@ export function createMockRepositories(
 		perkRepository,
 		roleRepository,
 		playerRepository,
+		questRepository
 	}
 }

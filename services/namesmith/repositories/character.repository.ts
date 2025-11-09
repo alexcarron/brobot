@@ -13,6 +13,10 @@ export class CharacterRepository {
 		public db: DatabaseQuerier,
 	) {}
 
+	static fromDB(db: DatabaseQuerier) {
+		return new CharacterRepository(db);
+	}
+
 	/**
 	 * Returns an array of all character objects.
 	 * @returns An array of character objects.

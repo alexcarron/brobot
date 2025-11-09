@@ -10,13 +10,16 @@ import { CharacterRepository } from "./character.repository";
  * Provides access to the static mystery box data.
  */
 export class MysteryBoxRepository {
-	db: DatabaseQuerier;
 
 	/**
 	 * @param db - The database querier instance used for executing SQL statements.
 	 */
-	constructor(db: DatabaseQuerier) {
-		this.db = db;
+	constructor(
+		public db: DatabaseQuerier
+	) {}
+
+	static fromDB(db: DatabaseQuerier) {
+		return new MysteryBoxRepository(db);
 	}
 
 	/**

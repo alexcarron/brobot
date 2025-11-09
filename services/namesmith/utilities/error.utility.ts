@@ -6,6 +6,7 @@ import { CharacterID } from '../types/character.types';
 import { MinimalMysteryBox, MysteryBoxID } from '../types/mystery-box.types';
 import { PerkID, PerkName } from '../types/perk.types';
 import { Player } from '../types/player.types';
+import { QuestID, QuestName } from '../types/quest.types';
 import { Recipe, RecipeID } from '../types/recipe.types';
 import { RoleID, RoleName } from '../types/role.types';
 import { Trade, TradeID, TradeResolveable } from '../types/trade.types';
@@ -227,9 +228,65 @@ export class RoleNotFoundError extends ResourceNotFoundError {
 }
 
 /**
+ * Error thrown when a requested namesmith quest is not found.
+ */
+export class QuestNotFoundError extends ResourceNotFoundError {
+	declare relevantData: {
+		questID?: QuestID
+		questName?: QuestName
+	}
+	constructor(questIDOrName: QuestID | QuestName) {
+		const isID = isNumber(questIDOrName);
+
+		if (isID) {
+			super({
+				message: `Quest with ID ${questIDOrName} not found.`,
+				relevantData: { questID: questIDOrName }
+			})
+		}
+		else {
+			super({
+				message: `Quest with name "${questIDOrName}" not found.`,
+				relevantData: { questName: questIDOrName }
+			})
+		}
+	}
+}
+
+
+
+/**
  * Error thrown when a requested namesmith resource already exists.
  */
 export class ResourceAlreadyExistsError extends ResourceError {}
+
+
+
+/**
+ * Error thrown when a requested namesmith quest already exists.
+ */
+export class QuestAlreadyExistsError extends ResourceNotFoundError {
+	declare relevantData: {
+		questID?: QuestID
+		questName?: QuestName
+	}
+	constructor(questIDOrName: QuestID | QuestName) {
+		const isID = isNumber(questIDOrName);
+
+		if (isID) {
+			super({
+				message: `Cannot add quest. Quest with ID ${questIDOrName} already exists.`,
+				relevantData: { questID: questIDOrName }
+			})
+		}
+		else {
+			super({
+				message: `Cannot add quest. Quest with name "${questIDOrName}" already exists.`,
+				relevantData: { questName: questIDOrName }
+			})
+		}
+	}
+}
 
 /**
  * Error thrown when a requested namesmith perk already exists.

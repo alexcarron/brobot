@@ -1,4 +1,3 @@
--- Game State table
 CREATE TABLE IF NOT EXISTS gameState (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	timeStarted TEXT,
@@ -6,21 +5,18 @@ CREATE TABLE IF NOT EXISTS gameState (
 	timeVoteIsEnding TEXT
 );
 
--- Characters table
 CREATE TABLE IF NOT EXISTS character (
 	id INTEGER PRIMARY KEY,
 	value TEXT NOT NULL,
 	rarity INTEGER NOT NULL
 );
 
--- Mystery Boxes table
 CREATE TABLE IF NOT EXISTS mysteryBox (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	name TEXT NOT NULL,
 	tokenCost INTEGER NOT NULL
 );
 
--- Mystery Box Characters table
 CREATE TABLE IF NOT EXISTS mysteryBoxCharacterOdds (
 	mysteryBoxID INTEGER NOT NULL REFERENCES mysteryBox(id) ON DELETE CASCADE,
 	characterID INTEGER NOT NULL REFERENCES character(id) ON DELETE CASCADE,
@@ -28,7 +24,6 @@ CREATE TABLE IF NOT EXISTS mysteryBoxCharacterOdds (
 	PRIMARY KEY (mysteryBoxID, characterID)
 );
 
--- Perks table
 CREATE TABLE IF NOT EXISTS perk (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	name TEXT NOT NULL UNIQUE,
@@ -36,53 +31,51 @@ CREATE TABLE IF NOT EXISTS perk (
 	wasOffered BOOLEAN NOT NULL DEFAULT 0
 );
 
--- Role table
+CREATE TABLE IF NOT EXISTS currentlyOfferedPerk (
+	id INTEGER NOT NULL REFERENCES perk(id) ON DELETE CASCADE,
+	PRIMARY KEY (id)
+);
+
 CREATE TABLE IF NOT EXISTS role (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	name TEXT NOT NULL UNIQUE,
 	description TEXT NOT NULL
 );
 
--- Role Perks table
 CREATE TABLE IF NOT EXISTS rolePerk (
 	roleID INTEGER NOT NULL REFERENCES role(id) ON DELETE CASCADE,
 	perkID INTEGER NOT NULL REFERENCES perk(id) ON DELETE CASCADE,
 	PRIMARY KEY (roleID, perkID)
 );
 
--- Players table
 CREATE TABLE IF NOT EXISTS player (
 	id TEXT PRIMARY KEY,
 	currentName TEXT NOT NULL,
 	publishedName TEXT,
 	tokens INTEGER NOT NULL,
 	role INTEGER REFERENCES role(id) ON DELETE SET NULL,
-	inventory TEXT,
+	inventory TEXT NOT NULL DEFAULT '',
 	lastClaimedRefillTime TEXT
 );
 
--- Player Perks table
 CREATE TABLE IF NOT EXISTS playerPerk (
 	playerID TEXT NOT NULL REFERENCES player(id) ON DELETE CASCADE,
 	perkID INTEGER NOT NULL REFERENCES perk(id) ON DELETE CASCADE,
 	PRIMARY KEY (playerID, perkID)
 );
 
--- Votes table
 CREATE TABLE IF NOT EXISTS vote (
 	voterID TEXT PRIMARY KEY,
 	playerVotedForID TEXT NOT NULL REFERENCES player(id)
 		ON DELETE CASCADE
 );
 
--- Recipes table
 CREATE TABLE IF NOT EXISTS recipe (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	inputCharacters TEXT NOT NULL,
 	outputCharacters TEXT NOT NULL
 );
 
--- Trades table
 CREATE TABLE IF NOT EXISTS trade (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	initiatingPlayerID TEXT NOT NULL REFERENCES player(id)
@@ -96,9 +89,25 @@ CREATE TABLE IF NOT EXISTS trade (
 	) DEFAULT 'awaitingRecipient'
 );
 
-CREATE TABLE IF NOT EXISTS currentlyOfferedPerk (
-	id INTEGER NOT NULL REFERENCES perk(id) ON DELETE CASCADE,
-	PRIMARY KEY (id)
+CREATE TABLE IF NOT EXISTS quest (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	name TEXT NOT NULL UNIQUE,
+	description TEXT NOT NULL,
+	tokensReward INTEGER NOT NULL DEFAULT 0,
+	charactersReward TEXT NOT NULL DEFAULT '',
+	wasShown BOOLEAN NOT NULL DEFAULT 0,
+	isShown BOOLEAN NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS activityLog (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	playerID TEXT NOT NULL REFERENCES player(id),
+	type TEXT NOT NULL CHECK(type IN
+		('craftCharacters', 'acceptTrade', 'buyMysteryBox', 'mineTokens', 'claimRefill', 'completeQuest', 'pickPerk')
+	),
+	tokensDifference INTEGER NOT NULL DEFAULT 0,
+	involvedPlayerID TEXT REFERENCES player(id) DEFAULT NULL,
+	involvedRecipeID INTEGER REFERENCES recipe(id) DEFAULT NULL
 );
 
 -- Mystery Box Character Odds
@@ -123,7 +132,6 @@ CREATE INDEX IF NOT EXISTS vote_playerVotedForID_index ON vote(playerVotedForID)
 CREATE INDEX IF NOT EXISTS trade_initiatingPlayerID_index ON trade(initiatingPlayerID);
 CREATE INDEX IF NOT EXISTS trade_recipientPlayerID_index ON trade(recipientPlayerID);
 
--- Recipe input/output search
 -- Recipe input/output search
 CREATE INDEX IF NOT EXISTS recipe_inputCharacters_index ON recipe(inputCharacters);
 CREATE INDEX IF NOT EXISTS recipe_outputCharacters_index ON recipe(outputCharacters);

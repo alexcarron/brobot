@@ -132,6 +132,18 @@ export type WithOptional<
 export type AnyFunction = (...args: any[]) => any;
 
 /**
+ * Make all properties of a given object type optional
+ * @example
+ * type Player = WithAllOptional<{
+ *   id: number;
+ *   name: string;
+ *   currentName: string;
+ * }>
+ */
+export type WithAllOptional<ObjectType extends object> =
+	{ [Key in keyof ObjectType]?: ObjectType[Key] };
+
+/**
  * Requires one or more properties to be defined of a given object type
  * @example
  * type IdentifiedPlayer = WithRequired<Player, "id" | "currentName">
