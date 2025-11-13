@@ -2,6 +2,7 @@ import { getCharacterDifferences } from '../../../utilities/data-structure-utils
 import { CustomError } from '../../../utilities/error-utils';
 import { escapeDiscordMarkdown } from '../../../utilities/string-manipulation-utils';
 import { isNumber } from '../../../utilities/types/type-guards';
+import { ActivityLogID } from '../types/activity-log.types';
 import { CharacterID } from '../types/character.types';
 import { MinimalMysteryBox, MysteryBoxID } from '../types/mystery-box.types';
 import { PerkID, PerkName } from '../types/perk.types';
@@ -253,6 +254,20 @@ export class QuestNotFoundError extends ResourceNotFoundError {
 	}
 }
 
+/**
+ * Error thrown when a requested namesmith activity log is not found.
+ */
+export class ActivityLogNotFoundError extends ResourceNotFoundError {
+	declare relevantData: {
+		activityLogID?: ActivityLogID
+	}
+	constructor(activityLogID: ActivityLogID) {
+		super({
+			message: `Activity log with ID ${activityLogID} not found.`,
+			relevantData: { activityLogID }
+		})
+	}
+}
 
 
 /**
@@ -260,12 +275,22 @@ export class QuestNotFoundError extends ResourceNotFoundError {
  */
 export class ResourceAlreadyExistsError extends ResourceError {}
 
-
+/**
+ * Error thrown when a requested namesmith activity log already exists.
+ */
+export class ActivityLogAlreadyExistsError extends ResourceAlreadyExistsError {
+	constructor(activityLogID: ActivityLogID) {
+		super({
+			message: `Cannot add activity log. Activity log with ID ${activityLogID} already exists.`,
+			relevantData: { activityLogID }
+		})
+	}
+}
 
 /**
  * Error thrown when a requested namesmith quest already exists.
  */
-export class QuestAlreadyExistsError extends ResourceNotFoundError {
+export class QuestAlreadyExistsError extends ResourceAlreadyExistsError {
 	declare relevantData: {
 		questID?: QuestID
 		questName?: QuestName

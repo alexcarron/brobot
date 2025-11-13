@@ -10,3 +10,4 @@ export const INVALID_ROLE_NAME = "Invalid Role Name";
 export const INVALID_RECIPE_ID = 1853916519;
 export const INVALID_QUEST_ID = 172151920;
 export const INVALID_QUEST_NAME = "Invalid Quest Name";
+export const INVALID_ACTIVITY_LOG_ID = 132092292025;

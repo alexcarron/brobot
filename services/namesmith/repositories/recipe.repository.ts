@@ -1,7 +1,8 @@
 import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { WithRequiredAndOneOther } from "../../../utilities/types/generic-types";
+import { isNumber, isObject } from "../../../utilities/types/type-guards";
 import { DatabaseQuerier, toAssignmentsPlaceholder } from "../database/database-querier";
-import { DBRecipe, Recipe, RecipeDefinition, RecipeID } from "../types/recipe.types";
+import { DBRecipe, Recipe, RecipeDefinition, RecipeID, RecipeResolvable } from "../types/recipe.types";
 import { RecipeAlreadyExistsError, RecipeNotFoundError } from "../utilities/error.utility";
 
 /**
@@ -91,6 +92,33 @@ export class RecipeRepository {
 		) as number | undefined;
 
 		return recipeID !== undefined;
+	}
+
+	/**
+	 * Resolves a recipe resolvable to a recipe object.
+	 * @param recipeResolvable - The recipe resolvable to resolve.
+	 * @returns The resolved recipe object.
+	 * @throws {RecipeNotFoundError} If the recipe with the given ID is not found.
+	 */
+	resolveRecipe(recipeResolvable: RecipeResolvable): Recipe {
+		const recipeID =
+			isObject(recipeResolvable)
+				? recipeResolvable.id
+				: recipeResolvable;
+
+		return this.getRecipeOrThrow(recipeID);
+	}
+
+	/**
+	 * Resolves a recipe resolvable to a recipe ID.
+	 * @param recipeResolvable - The recipe resolvable to resolve.
+	 * @returns The resolved recipe ID.
+	 */
+	resolveID(recipeResolvable: RecipeResolvable): RecipeID {
+		if (isNumber(recipeResolvable))
+			return recipeResolvable;
+
+		return recipeResolvable.id;
 	}
 
 	/**

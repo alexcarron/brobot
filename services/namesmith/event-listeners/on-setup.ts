@@ -5,6 +5,7 @@ import { regeneratePickAPerkMessage } from "../interfaces/pick-a-perk-message";
 import { regenerateRecipeSelectMenu } from "../interfaces/recipe-select-menu";
 import { regenerateAllTradeMessages } from "../interfaces/trading/trade-message";
 import { regenerateVoteDisplay } from "../interfaces/voting/voting-messages";
+import { ActivityLogRepository } from "../repositories/activity-log.repository";
 import { CharacterRepository } from "../repositories/character.repository";
 import { GameStateRepository } from "../repositories/game-state.repository";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
@@ -21,6 +22,7 @@ import { getNamesmithServices } from "../services/get-namesmith-services";
 import { MysteryBoxService } from "../services/mystery-box.service";
 import { PerkService } from "../services/perk.service";
 import { PlayerService } from "../services/player.service";
+import { QuestService } from "../services/quest.service";
 import { RecipeService } from "../services/recipe.service";
 import { RoleService } from "../services/role.service";
 import { TradeService } from "../services/trade.service";
@@ -47,6 +49,7 @@ export const initializeDependencies = async (): Promise<NamesmithDependencies> =
 	const tradeRepository = new TradeRepository(db, playerRepository);
 	const voteRepository = new VoteRepository(db, playerRepository);
 	const questRepository = new QuestRepository(db);
+	const activityLogRepository = new ActivityLogRepository(db, playerRepository, recipeRepository);
 
 	const mysteryBoxService = new MysteryBoxService(
 		mysteryBoxRepository,
@@ -94,10 +97,12 @@ export const initializeDependencies = async (): Promise<NamesmithDependencies> =
 		playerService,
 	)
 
+	const questService = new QuestService(questRepository);
+
 	const namesmithDependencies: NamesmithDependencies = {
 		db,
-		mysteryBoxRepository, characterRepository, playerRepository, gameStateRepository, voteRepository, recipeRepository, tradeRepository, perkRepository, roleRepository, questRepository,
-		mysteryBoxService, characterService, playerService, voteService, recipeService, tradeService, gameStateService, perkService, roleService,
+		mysteryBoxRepository, characterRepository, playerRepository, gameStateRepository, voteRepository, recipeRepository, tradeRepository, perkRepository, roleRepository, questRepository, activityLogRepository,
+		mysteryBoxService, characterService, playerService, voteService, recipeService, tradeService, gameStateService, perkService, roleService, questService
 	};
 
 	global.namesmith = namesmithDependencies;

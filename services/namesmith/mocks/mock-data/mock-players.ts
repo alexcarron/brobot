@@ -1,6 +1,6 @@
 import { InvalidArgumentError, returnNonNullOrThrow } from "../../../../utilities/error-utils";
 import { getRandomNumericUUID } from "../../../../utilities/random-utils";
-import { WithAtLeast, WithAtLeastOneProperty, WithID } from "../../../../utilities/types/generic-types";
+import { WithAllOptional, WithAtLeast, WithID } from "../../../../utilities/types/generic-types";
 import { isNumber, isString } from "../../../../utilities/types/type-guards";
 import { DatabaseQuerier } from "../../database/database-querier";
 import { RoleRepository } from "../../repositories/role.repository";
@@ -119,8 +119,7 @@ export const addMockPlayer = (
 		perks = [],
 		inventory = "",
 		lastClaimedRefillTime = null,
-	}:
-	WithAtLeastOneProperty<PlayerDefinition>
+	}: WithAllOptional<PlayerDefinition> = {},
 ): Player => {
 	const perkRepository = new PerkRepository(db);
 	const roleRepository = new RoleRepository(db, perkRepository);

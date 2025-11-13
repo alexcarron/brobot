@@ -1,5 +1,5 @@
-import { WithAtLeastOneProperty as WithAtLeastOneProperty } from "../../../../utilities/types/generic-types";
 import { DatabaseQuerier } from "../../database/database-querier";
+import { RecipeRepository } from "../../repositories/recipe.repository";
 import { Recipe } from "../../types/recipe.types";
 
 export const mockRecipes: Recipe[] = [
@@ -28,36 +28,23 @@ export const mockRecipes: Recipe[] = [
 /**
  * Adds a recipe to the database with the given properties.
  * @param db - The in-memory database.
- * @param recipeData - The recipe data to add.
- * @param recipeData.id - The ID of the recipe.
- * @param recipeData.inputCharacters - The input characters of the recipe.
- * @param recipeData.outputCharacters - The output characters of the recipe.
+ * @param recipeDefinition - The recipe data to add.
+ * @param recipeDefinition.id - The ID of the recipe.
+ * @param recipeDefinition.inputCharacters - The input characters of the recipe.
+ * @param recipeDefinition.outputCharacters - The output characters of the recipe.
  * @returns The added recipe with an ID.
  */
 export const addMockRecipe = (
 	db: DatabaseQuerier,
-	{
+	recipeDefinition: Partial<Recipe> = {}
+): Recipe => {
+	const recipeRepository = RecipeRepository.fromDB(db);
+
+	const {
 		id = undefined,
 		inputCharacters = "a",
 		outputCharacters = "a",
-	}: WithAtLeastOneProperty<Recipe>
-): Recipe => {
-	if (id === undefined) {
-		const runResult = db.run(
-			"INSERT INTO recipe (inputCharacters, outputCharacters) VALUES (@inputCharacters, @outputCharacters)",
-			{ inputCharacters, outputCharacters }
-		);
+	} = recipeDefinition;
 
-		if (typeof runResult.lastInsertRowid !== "number")
-			id = Number(runResult.lastInsertRowid);
-		else
-			id = runResult.lastInsertRowid;
-	}
-	else {
-		db.run(
-			"INSERT INTO recipe (id, inputCharacters, outputCharacters) VALUES (@id, @inputCharacters, @outputCharacters)",
-			{ id, inputCharacters, outputCharacters }
-		);
-	}
-	return { id, inputCharacters, outputCharacters };
+	return recipeRepository.addRecipe({ id, inputCharacters, outputCharacters });
 };

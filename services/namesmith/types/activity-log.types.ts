@@ -1,5 +1,4 @@
 import { toEnumFromStrings, ValuesOf } from "../../../utilities/enum-utilts";
-import { Override } from "../../../utilities/types/generic-types";
 import { Player, PlayerResolvable } from "./player.types";
 import { Recipe, RecipeResolvable } from "./recipe.types";
 
@@ -15,8 +14,8 @@ export const ActivityTypes = toEnumFromStrings(
 
 export type ActivityType = ValuesOf<typeof ActivityTypes>;
 
-export type Activity = {
-	id: string;
+export type ActivityLog = {
+	id: number;
 	player: Player;
 	type: ActivityType;
 	tokensDifference: number;
@@ -25,7 +24,7 @@ export type Activity = {
 }
 
 export type DBActivityLog = {
-	id: string;
+	id: number;
 	playerID: string;
 	type: ActivityType;
 	tokensDifference: number;
@@ -33,15 +32,16 @@ export type DBActivityLog = {
 	involvedRecipeID: number | null;
 }
 
-export type ActivityDefinition = Override<Activity, {
-	id?: string,
-	player: PlayerResolvable,
-	tokensDifference?: number,
-	involvedPlayer?: PlayerResolvable,
-	involvedRecipe?: RecipeResolvable,
-}>
+export type ActivityLogDefinition = {
+	id?: number;
+	player: PlayerResolvable;
+	type: ActivityType;
+	tokensDifference?: number;
+	involvedPlayer?: PlayerResolvable | null;
+	involvedRecipe?: RecipeResolvable | null;
+}
 
-export type ActivityID = Activity['id'];
-export type ActivityResolvable =
-	| { id: ActivityID }
-	| ActivityID
+export type ActivityLogID = ActivityLog['id'];
+export type ActivityLogResolvable =
+	| { id: ActivityLogID }
+	| ActivityLogID

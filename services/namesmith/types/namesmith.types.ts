@@ -1,5 +1,6 @@
 import { Expand } from "../../../utilities/types/generic-types";
 import { DatabaseQuerier } from "../database/database-querier";
+import { ActivityLogRepository } from "../repositories/activity-log.repository";
 import { CharacterRepository } from "../repositories/character.repository";
 import { GameStateRepository } from "../repositories/game-state.repository";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
@@ -15,6 +16,7 @@ import { GameStateService } from "../services/game-state.service";
 import { MysteryBoxService } from "../services/mystery-box.service";
 import { PerkService } from "../services/perk.service";
 import { PlayerService } from "../services/player.service";
+import { QuestService } from "../services/quest.service";
 import { RecipeService } from "../services/recipe.service";
 import { RoleService } from "../services/role.service";
 import { TradeService } from "../services/trade.service";
@@ -41,6 +43,7 @@ export type NamesmithRepositories = Expand<{
 	perkRepository: PerkRepository,
 	roleRepository: RoleRepository,
 	questRepository: QuestRepository,
+	activityLogRepository: ActivityLogRepository,
 }>;
 
 /**
@@ -56,6 +59,7 @@ export type NamesmithServices = Expand<{
 	tradeService: TradeService,
 	perkService: PerkService,
 	roleService: RoleService,
+	questService: QuestService,
 }>;
 
 /**

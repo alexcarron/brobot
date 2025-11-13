@@ -18,6 +18,7 @@ import { PerkRepository } from '../repositories/perk.repository';
 import { RoleRepository } from '../repositories/role.repository';
 import { syncRecipesToDB } from '../database/static-data-synchronizers/sync-recipes';
 import { QuestRepository } from '../repositories/quest.repository';
+import { ActivityLogRepository } from '../repositories/activity-log.repository';
 
 /**
  * Creates a mock character repository instance with an in-memory database for testing purposes.
@@ -265,6 +266,33 @@ export function createMockQuestRepo(
 }
 
 /**
+ * Creates a mock activity log repository instance with an in-memory database for testing purposes.
+ * @param mockDB - An optional mock database instance.
+ * @param mockPlayerRepo - An optional mock player repository instance.
+ * @param mockRecipeRepo - An optional mock recipe repository instance.
+ * @returns A mock instance of the ActivityLogRepository.
+ */
+export function createMockActivityLogRepo(
+	mockDB?: DatabaseQuerier,
+	mockPlayerRepo?: PlayerRepository,
+	mockRecipeRepo?: RecipeRepository
+): ActivityLogRepository {
+	mockDB =
+		mockDB
+		?? createMockDB();
+
+	mockPlayerRepo =
+		mockPlayerRepo
+		?? createMockPlayerRepo(mockDB);
+
+	mockRecipeRepo =
+		mockRecipeRepo
+		?? createMockRecipeRepo(mockDB);
+
+	return new ActivityLogRepository(mockDB, mockPlayerRepo, mockRecipeRepo);
+}
+
+/**
  * Creates an object containing mock instances of the repositories and the in-memory database for testing purposes.
  * The returned object contains the following properties:
  * - db: The mock database instance.
@@ -292,6 +320,7 @@ export function createMockRepositories(
 	const playerRepository = createMockPlayerRepo(mockDB, roleRepository, perkRepository);
 	const tradeRepository = createMockTradeRepo(mockDB, playerRepository);
 	const questRepository = createMockQuestRepo(mockDB);
+	const activityLogRepository = createMockActivityLogRepo(mockDB, playerRepository, recipeRepository);
 
 	return {
 		characterRepository,
@@ -303,6 +332,7 @@ export function createMockRepositories(
 		perkRepository,
 		roleRepository,
 		playerRepository,
-		questRepository
+		questRepository,
+		activityLogRepository
 	}
 }

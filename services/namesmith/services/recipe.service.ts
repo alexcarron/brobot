@@ -19,12 +19,16 @@ export class RecipeService {
 	 * @throws {RecipeNotFoundError} If the recipe with the given ID is not found.
 	 */
 	resolveRecipe(recipeResolvable: RecipeResolvable): Recipe {
-		const recipeID =
-			typeof recipeResolvable === 'object'
-				? recipeResolvable.id
-				: recipeResolvable;
+		return this.recipeRepository.resolveRecipe(recipeResolvable);
+	}
 
-		return this.recipeRepository.getRecipeOrThrow(recipeID);
+	/**
+	 * Resolves a recipe resolvable to a recipe ID.
+	 * @param recipeResolvable - The recipe resolvable to resolve.
+	 * @returns The resolved recipe ID.
+	 */
+	resolveID(recipeResolvable: RecipeResolvable): RecipeID {
+		return this.recipeRepository.resolveID(recipeResolvable);
 	}
 
 	/**
@@ -137,7 +141,7 @@ export class RecipeService {
 		const recipe = this.resolveRecipe(recipeResolvable);
 		const inputCharacters = recipe.inputCharacters;
 		const outputCharacters = recipe.outputCharacters;
-		
+
 		this.playerService.giveAndTakeCharacters(playerResolvable, {
 			charactersGiving: outputCharacters,
 			charactersRemoving: inputCharacters,

@@ -57,6 +57,18 @@ describe('RecipeService', () => {
 		});
 	});
 
+	describe('resolveID()', () => {
+		it('should resolve a recipe id to a recipe ID', () => {
+			const recipeID = recipeService.resolveID(MOCK_RECIPE.id);
+			expect(recipeID).toEqual(MOCK_RECIPE.id);
+		});
+
+		it('should resolve a recipe object to its ID', () => {
+			const recipeID = recipeService.resolveID(MOCK_RECIPE);
+			expect(recipeID).toEqual(MOCK_RECIPE.id);
+		});
+	})
+
 	describe('playerHasNeededCharacters', () => {
 		it('returns true if the player has more than the needed characters', () => {
 			const player = addMockPlayer(db, {
