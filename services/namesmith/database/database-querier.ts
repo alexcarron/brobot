@@ -69,6 +69,26 @@ export function toAssignmentsPlaceholder(
 }
 
 /**
+ * Converts an object of column/field names of a database entity to their expected values into a string of equality conditions suitable for use in a parameterized WHERE clause.
+ * @param fieldToValue - An object of column/field names of a database entity to their expected values.
+ * @returns A string like "age = @age AND tokens = @tokens" suitable for use in a parameterized WHERE clause.
+ * @example
+ * const playerConditions = { name: "John Doe", age: 21 };
+ * const players = db.all(
+ *   `SELECT * FROM players WHERE ${toEqualityConditionsPlaceholder(playerConditions)}`,
+ *   playerConditions
+ * );
+ */
+export function toEqualityConditionsPlaceholder(
+	fieldToValue: Record<string, unknown>
+): string {
+	return Object.entries(fieldToValue)
+		.filter(([, value]) => value !== undefined)
+		.map(([key]) => `${key} = @${key}`)
+		.join(" AND ");
+}
+
+/**
  * A utility class for preparing and executing SQL queries using a better-sqlite3 database instance.
  * Provides methods for running single queries, retrieving results, and performing transactions.
  */

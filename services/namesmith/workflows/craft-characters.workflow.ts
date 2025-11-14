@@ -36,7 +36,7 @@ export const craftCharacters = (
 		recipe: RecipeResolvable;
 	}
 ) => {
-	const {playerService, recipeService} = getNamesmithServices();
+	const {playerService, recipeService, activityLogService} = getNamesmithServices();
 
 	if (!playerService.isPlayer(playerResolvable)) {
 		return result.failure.nonPlayerCrafted({});
@@ -64,6 +64,11 @@ export const craftCharacters = (
 	const newInventory = playerService.getInventory(playerResolvable);
 	const craftedCharacters = recipeService.getOutputCharacters(recipeResolvable);
 	const recipeUsed = recipeService.resolveRecipe(recipeResolvable);
+
+	activityLogService.logCraftCharacters({
+		playerCrafting: playerResolvable,
+		recipeUsed: recipeResolvable,
+	});
 
 	return result.success({
 		newInventory,

@@ -1,7 +1,7 @@
 import { createMockDB } from "./mock-database";
 import { CharacterRepository } from "../repositories/character.repository";
 import { GameStateRepository } from "../repositories/game-state.repository";
-import { createMockPlayerRepo, createMockVoteRepo, createMockMysteryBoxRepo, createMockCharacterRepo, createMockGameStateRepo, createMockRecipeRepo, createMockTradeRepo, createMockPerkRepo, createMockRoleRepo, createMockQuestRepo } from "./mock-repositories";
+import { createMockPlayerRepo, createMockVoteRepo, createMockMysteryBoxRepo, createMockCharacterRepo, createMockGameStateRepo, createMockRecipeRepo, createMockTradeRepo, createMockPerkRepo, createMockRoleRepo, createMockQuestRepo, createMockActivityLogRepo } from "./mock-repositories";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
 import { PlayerRepository } from "../repositories/player.repository";
 import { RecipeRepository } from "../repositories/recipe.repository";
@@ -21,6 +21,8 @@ import { RoleRepository } from "../repositories/role.repository";
 import { RoleService } from "../services/role.service";
 import { QuestRepository } from "../repositories/quest.repository";
 import { QuestService } from "../services/quest.service";
+import { ActivityLogRepository } from "../repositories/activity-log.repository";
+import { ActivityLogService } from "../services/activity-log.service";
 
 /**
  * Creates a mock GameStateService instance for testing purposes.
@@ -265,6 +267,21 @@ export function createMockQuestService(
 }
 
 /**
+ * Creates a mock ActivityLogService instance for testing purposes.
+ * @param mockActivityLogRepository - The mock activity log repository to use.
+ * @returns A mock instance of the ActivityLogService.
+ */
+export function createMockActivityLogService(
+	mockActivityLogRepository?: ActivityLogRepository,
+) {
+	const activityLogRepository =
+		mockActivityLogRepository ??
+		createMockActivityLogRepo();
+
+	return new ActivityLogService(activityLogRepository);
+}
+
+/**
  * Creates mock service instances for testing purposes.
 
  * If any of the mock repository parameters are undefined, a default mock repository
@@ -280,6 +297,7 @@ export function createMockQuestService(
  * @param options.mockPerkRepo - The mock perk repository to use.
  * @param options.mockRoleRepo - The mock role repository to use.
  * @param options.mockQuestRepo - The mock quest repository to use.
+ * @param options.mockActivityLogRepo - The mock activity log repository to use.
  * @returns An object with the created mock service instances.
  */
 export const createMockServices = ({
@@ -293,6 +311,7 @@ export const createMockServices = ({
 	mockPerkRepo,
 	mockRoleRepo,
 	mockQuestRepo,
+	mockActivityLogRepo,
 }: {
 	mockPlayerRepo?: PlayerRepository,
 	mockVoteRepo?: VoteRepository,
@@ -303,7 +322,8 @@ export const createMockServices = ({
 	mockTradeRepo?: TradeRepository,
 	mockPerkRepo?: PerkRepository,
 	mockRoleRepo?: RoleRepository,
-	mockQuestRepo?: QuestRepository
+	mockQuestRepo?: QuestRepository,
+	mockActivityLogRepo?: ActivityLogRepository,
 } = {}): NamesmithServices => {
 	const sharedDB =
 		mockPlayerRepo?.db ??
@@ -354,7 +374,12 @@ export const createMockServices = ({
 
 	const questRepo =
 		mockQuestRepo ??
-		createMockQuestRepo();
+		createMockQuestRepo(sharedDB);
+
+	const activityLogRepo =
+		mockActivityLogRepo ??
+		createMockActivityLogRepo(sharedDB, playerRepo, recipeRepo, questRepo);
+
 
 	const playerService = createMockPlayerService(playerRepo);
 	const voteService = createMockVoteService(
@@ -384,17 +409,21 @@ export const createMockServices = ({
 	const questService = createMockQuestService(
 		questRepo
 	);
+	const activityLogService = createMockActivityLogService(
+		activityLogRepo
+	);
 
 	return {
-		playerService: playerService,
-		voteService: voteService,
-		mysteryBoxService: mysteryBoxService,
-		recipeService: recipeService,
-		gameStateService: gameStateService,
-		tradeService: tradeService,
-		characterService: characterService,
-		perkService: perkService,
-		roleService: roleService,
-		questService: questService,
+		playerService,
+		voteService,
+		mysteryBoxService,
+		recipeService,
+		gameStateService,
+		tradeService,
+		characterService,
+		perkService,
+		roleService,
+		questService,
+		activityLogService,
 	}
 };

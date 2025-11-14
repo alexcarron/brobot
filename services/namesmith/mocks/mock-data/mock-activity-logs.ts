@@ -23,6 +23,7 @@ export function addMockActivityLog(
 		tokensDifference = 0,
 		involvedPlayer = null,
 		involvedRecipe = null,
+		involvedQuest = null,
 	} = activityLogDefinition;
 
 	return activitylogRepository.addActivityLog({
@@ -31,6 +32,7 @@ export function addMockActivityLog(
 		type,
 		tokensDifference,
 		involvedPlayer,
-		involvedRecipe
+		involvedRecipe,
+		involvedQuest,
 	});
 }

@@ -36,7 +36,7 @@ export const claimRefill = (
 		playerRefilling: PlayerResolvable,
 	}
 ) => {
-	const {playerService, perkService} = getNamesmithServices();
+	const {playerService, perkService, activityLogService} = getNamesmithServices();
 
 	if (!playerService.isPlayer(playerRefilling)) {
 		return result.failure.nonPlayerRefilled();
@@ -90,6 +90,11 @@ export const claimRefill = (
 
 	const newTokenCount = playerService.getTokens(playerRefilling);
 	const nextRefillTime = addHours(newLastRefillTime, REFILL_COOLDOWN_HOURS);
+
+	activityLogService.logClaimRefill({
+		playerRefilling,
+		tokensEarned: totalTokensEarned,
+	});
 
 	return result.success({
 		baseTokensEarned,

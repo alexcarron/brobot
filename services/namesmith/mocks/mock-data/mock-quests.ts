@@ -13,7 +13,7 @@ import { Quest, QuestDefinition } from '../../types/quest.types';
  */
 export function addMockQuest(
 	db: DatabaseQuerier,
-	questDefinition: WithAllOptional<QuestDefinition>
+	questDefinition: WithAllOptional<QuestDefinition> = {}
 ): Quest {
 	const questRepository = QuestRepository.fromDB(db);
 	const {

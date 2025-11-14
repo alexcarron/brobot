@@ -34,13 +34,13 @@ const result = getWorkflowResultCreator({
  * @param parameters.trade - The ID or trade object of the trade request to accept.
  * @returns An object containing the trade that was accepted, the initiating player, and the recipient player.
  */
-export const acceptTrade = async (
+export const acceptTrade = (
 	{playerAccepting, trade: tradeResolvable}: {
 		playerAccepting: PlayerResolvable,
 		trade: TradeResolveable,
 	}
 ) => {
-	const {tradeService, playerService} = getNamesmithServices();
+	const {tradeService, playerService, activityLogService} = getNamesmithServices();
 
 	// Is the user who accepting the trade a player?
 	if (!playerService.isPlayer(playerAccepting)) {
@@ -90,19 +90,24 @@ export const acceptTrade = async (
 		});
 	}
 
-	await playerService.transferCharacters(
+	playerService.transferCharacters(
 		trade.initiatingPlayer,
 		trade.recipientPlayer,
 		trade.offeredCharacters
 	);
 
-	await playerService.transferCharacters(
+	playerService.transferCharacters(
 		trade.recipientPlayer,
 		trade.initiatingPlayer,
 		trade.requestedCharacters
 	);
 
 	tradeService.accept(trade);
+
+	activityLogService.logAcceptTrade({
+		playerAcceptingTrade: playerAccepting,
+		playerAwaitingAcceptance: tradeService.getPlayerWaitingForResponse(trade)!
+	});
 
 	return result.success({
 		trade: tradeService.resolveTrade(trade.id),

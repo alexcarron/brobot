@@ -1,10 +1,13 @@
 import { returnNonNullOrThrow } from "../../../utilities/error-utils";
-import { DatabaseQuerier } from "../database/database-querier";
-import { ActivityLogID as ActivityLogID, ActivityLog, DBActivityLog, ActivityLogDefinition } from "../types/activity-log.types";
-import { Player } from "../types/player.types";
+import { WithAtLeastOneProperty } from "../../../utilities/types/generic-types";
+import { DatabaseQuerier, toEqualityConditionsPlaceholder } from "../database/database-querier";
+import { ActivityLogID as ActivityLogID, ActivityLog, DBActivityLog, ActivityLogDefinition, ActivityTypes } from "../types/activity-log.types";
+import { Player, PlayerID } from "../types/player.types";
+import { Quest, QuestID } from "../types/quest.types";
 import { Recipe } from "../types/recipe.types";
 import { ActivityLogAlreadyExistsError, ActivityLogNotFoundError } from "../utilities/error.utility";
 import { PlayerRepository } from "./player.repository";
+import { QuestRepository } from "./quest.repository";
 import { RecipeRepository } from "./recipe.repository";
 
 /**
@@ -16,18 +19,21 @@ export class ActivityLogRepository {
 	 * @param db - The database querier instance used for executing SQL statements.
 	 * @param playerRepository - The player repository instance used for retrieving player data.
 	 * @param recipeRepository - The recipe repository instance used for retrieving recipe data.
+	 * @param questRepository - The quest repository instance used for retrieving quest data.
 	 */
 	constructor(
 		public db: DatabaseQuerier,
 		public playerRepository: PlayerRepository,
-		public recipeRepository: RecipeRepository
+		public recipeRepository: RecipeRepository,
+		public questRepository: QuestRepository,
 	) {}
 
 	static fromDB(db: DatabaseQuerier) {
 		return new ActivityLogRepository(
 			db,
 			PlayerRepository.fromDB(db),
-			RecipeRepository.fromDB(db)
+			RecipeRepository.fromDB(db),
+			QuestRepository.fromDB(db),
 		);
 	}
 
@@ -56,11 +62,18 @@ export class ActivityLogRepository {
 			involvedRecipe = this.recipeRepository.getRecipeOrThrow(involvedRecipeID);
 		}
 
+		const involvedQuestID = dbActivityLog.involvedQuestID;
+		let involvedQuest: Quest | null = null;
+		if (involvedQuestID !== null) {
+			involvedQuest = this.questRepository.getQuestOrThrow(involvedQuestID);
+		}
+
 		return {
 			...dbActivityLog,
 			player,
 			involvedPlayer,
-			involvedRecipe
+			involvedRecipe,
+			involvedQuest,
 		};
 	}
 
@@ -118,28 +131,33 @@ export class ActivityLogRepository {
 	 * @throws {ActivityLogAlreadyExistsError} If an activity log with the given ID already exists.
 	 */
 	addActivityLog(
-		{id, player, type, tokensDifference, involvedPlayer, involvedRecipe}:
+		{id, player, type, tokensDifference, involvedPlayer, involvedRecipe, involvedQuest}:
 			ActivityLogDefinition
 	) {
-		const playerID = this.playerRepository.resolveID(player);
+		const playerID = this.playerRepository.resolvePlayer(player).id;
 		const involvedPlayerID =
 			involvedPlayer
-				? this.playerRepository.resolveID(involvedPlayer)
+				? this.playerRepository.resolvePlayer(involvedPlayer).id
 				: null;
 
 		const involvedRecipeID =
 			involvedRecipe
-				? this.recipeRepository.resolveID(involvedRecipe)
+				? this.recipeRepository.resolveRecipe(involvedRecipe).id
+				: null;
+
+		const involvedQuestID =
+			involvedQuest
+				? this.questRepository.resolveQuest(involvedQuest).id
 				: null;
 
 		tokensDifference = tokensDifference ?? 0;
 
-		const queryParameters = { playerID, type, tokensDifference, involvedPlayerID, involvedRecipeID };
+		const queryParameters = { playerID, type, tokensDifference, involvedPlayerID, involvedRecipeID, involvedQuestID };
 
 		if (id === undefined) {
 			const result = this.db.run(
-				`INSERT INTO activityLog (playerID, type, tokensDifference, involvedPlayerID, involvedRecipeID)
-				VALUES (@playerID, @type, @tokensDifference, @involvedPlayerID, @involvedRecipeID)`,
+				`INSERT INTO activityLog (playerID, type, tokensDifference, involvedPlayerID, involvedRecipeID, involvedQuestID)
+				VALUES (@playerID, @type, @tokensDifference, @involvedPlayerID, @involvedRecipeID, @involvedQuestID)`,
 				queryParameters
 			);
 
@@ -151,12 +169,58 @@ export class ActivityLogRepository {
 			}
 
 			this.db.run(
-				`INSERT INTO activityLog (id, playerID, type, tokensDifference, involvedPlayerID, involvedRecipeID)
-				VALUES (@id, @playerID, @type, @tokensDifference, @involvedPlayerID, @involvedRecipeID)`,
+				`INSERT INTO activityLog (id, playerID, type, tokensDifference, involvedPlayerID, involvedRecipeID, involvedQuestID)
+				VALUES (@id, @playerID, @type, @tokensDifference, @involvedPlayerID, @involvedRecipeID, @involvedQuestID)`,
 				{ ...queryParameters, id }
 			);
 		}
 
 		return this.getActivityLogOrThrow(id);
+	}
+
+	/**
+	 * Finds all activity logs where all of the given properties is equal to the given value.
+	 * @param queryParameters - An object with properties that are equal to the given value.
+	 * @param queryParameters.id - The ID of the activity log.
+	 * @param queryParameters.player - The player.
+	 * @param queryParameters.type - The type of activity.
+	 * @param queryParameters.tokensDifference - The difference in tokens.
+	 * @param queryParameters.involvedPlayer - The involved player.
+	 * @param queryParameters.involvedRecipe - The involved recipe.
+	 * @param queryParameters.involvedQuest - The involved quest.
+	 * @returns An array of activity logs that have all of the given properties equal to the given value.
+	 */
+	findActivityLogsWhere(
+		{ id, player, type, tokensDifference, involvedPlayer, involvedRecipe, involvedQuest }:
+			WithAtLeastOneProperty<ActivityLogDefinition>
+	): ActivityLog[] {
+		const playerID = player === undefined
+			? undefined
+			: this.playerRepository.resolvePlayer(player).id;
+
+		let involvedPlayerID = involvedPlayer;
+		if (involvedPlayer !== null && involvedPlayer !== undefined) {
+			involvedPlayerID = this.playerRepository.resolvePlayer(involvedPlayer).id;
+		}
+
+		let involvedRecipeID = involvedRecipe;
+		if (involvedRecipe !== null && involvedRecipe !== undefined) {
+			involvedRecipeID = this.recipeRepository.resolveRecipe(involvedRecipe).id;
+		}
+
+		let involvedQuestID = involvedQuest;
+		if (involvedQuest !== null && involvedQuest !== undefined) {
+			involvedQuestID = this.questRepository.resolveQuest(involvedQuest).id;
+		}
+
+		const dbActivityLogs = this.db.getRows(
+			`SELECT * FROM activityLog
+			WHERE
+				${toEqualityConditionsPlaceholder({ id, playerID, type, tokensDifference, involvedPlayerID, involvedRecipeID, involvedQuestID })}
+			`,
+			{ id, playerID, type, tokensDifference, involvedPlayerID, involvedRecipeID, involvedQuestID }
+		) as DBActivityLog[];
+
+		return dbActivityLogs.map(dbActivityLog => this.toActivityLogFromDB(dbActivityLog));
 	}
 }

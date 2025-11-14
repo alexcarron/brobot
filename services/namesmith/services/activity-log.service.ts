@@ -1,0 +1,158 @@
+import { ActivityLogRepository } from "../repositories/activity-log.repository";
+import { ActivityLog, ActivityTypes } from "../types/activity-log.types";
+import { PlayerResolvable } from "../types/player.types";
+import { QuestResolvable } from "../types/quest.types";
+import { RecipeResolvable } from "../types/recipe.types";
+
+/**
+ * Provides methods for interacting with activity logs.
+ */
+export class ActivityLogService {
+	constructor(
+		public activityLogRepository: ActivityLogRepository,
+	) {}
+
+	/**
+	 * Logs a character crafting activity.
+	 * @param parameters - The parameters which include:
+	 * @param parameters.playerCrafting - The player who is crafting.
+	 * @param parameters.recipeUsed - The recipe being used for crafting.
+	 * @returns The created activity log object.
+	 */
+	logCraftCharacters({ playerCrafting, recipeUsed }: {
+		playerCrafting: PlayerResolvable;
+		recipeUsed: RecipeResolvable;
+	}): ActivityLog {
+		return this.activityLogRepository.addActivityLog({
+			type: ActivityTypes.CRAFT_CHARACTERS,
+			player: playerCrafting,
+			involvedRecipe: recipeUsed,
+		});
+	}
+
+	/**
+	 * Logs an activity log when a player accepts a trade.
+	 * @param parameters - The parameters which include:
+	 * @param parameters.playerAcceptingTrade - The player who is accepting the trade.
+	 * @param parameters.playerAwaitingAcceptance - The player who is awaiting a response for the trade.
+	 * @returns The created activity log object.
+	 */
+	logAcceptTrade({ playerAcceptingTrade, playerAwaitingAcceptance }: {
+		playerAcceptingTrade: PlayerResolvable;
+		playerAwaitingAcceptance: PlayerResolvable;
+	}): ActivityLog {
+		return this.activityLogRepository.addActivityLog({
+			type: ActivityTypes.ACCEPT_TRADE,
+			player: playerAcceptingTrade,
+			involvedPlayer: playerAwaitingAcceptance,
+		});
+	}
+
+	/**
+	 * Logs a mystery box purchase activity.
+	 * @param parameters - The parameters which include:
+	 * @param parameters.playerBuyingBox - The player who is buying the mystery box.
+	 * @param parameters.tokensSpent - The number of tokens spent on the mystery box.
+	 * @returns The created activity log object.
+	 */
+	logBuyMysteryBox({ playerBuyingBox, tokensSpent }: {
+		playerBuyingBox: PlayerResolvable;
+		tokensSpent: number;
+	}): ActivityLog {
+		return this.activityLogRepository.addActivityLog({
+			type: ActivityTypes.BUY_MYSTERY_BOX,
+			player: playerBuyingBox,
+			tokensDifference: -tokensSpent,
+		});
+	}
+
+	/**
+	 * Logs a mining activity.
+	 * @param parameters - The parameters which include:
+	 * @param parameters.playerMining - The player who is mining.
+	 * @param parameters.tokensEarned - The number of tokens earned by mining.
+	 * @returns The created activity log object.
+	 */
+	logMineTokens({ playerMining, tokensEarned }: {
+		playerMining: PlayerResolvable;
+		tokensEarned: number;
+	}): ActivityLog {
+		return this.activityLogRepository.addActivityLog({
+			type: ActivityTypes.MINE_TOKENS,
+			player: playerMining,
+			tokensDifference: tokensEarned,
+		});
+	}
+
+	/**
+	 * Logs a refill activity.
+	 * @param parameters - The parameters which include:
+	 * @param parameters.playerRefilling - The player who is claiming the refill.
+	 * @param parameters.tokensEarned - The number of tokens earned by claiming the refill.
+	 * @returns The created activity log object.
+	 */
+	logClaimRefill({ playerRefilling, tokensEarned }: {
+		playerRefilling: PlayerResolvable;
+		tokensEarned: number;
+	}): ActivityLog {
+		return this.activityLogRepository.addActivityLog({
+			type: ActivityTypes.CLAIM_REFILL,
+			player: playerRefilling,
+			tokensDifference: tokensEarned,
+		});
+	}
+
+	/**
+	 * Logs a quest completion activity.
+	 * @param parameters - The parameters which include:
+	 * @param parameters.playerCompletingQuest - The player who is completing the quest.
+	 * @param parameters.questCompleted - The quest being completed.
+	 * @returns The created activity log object.
+	 */
+	logCompleteQuest({ playerCompletingQuest, questCompleted }: {
+		playerCompletingQuest: PlayerResolvable;
+		questCompleted: QuestResolvable;
+	}): ActivityLog {
+		return this.activityLogRepository.addActivityLog({
+			type: ActivityTypes.COMPLETE_QUEST,
+			player: playerCompletingQuest,
+			involvedQuest: questCompleted,
+		});
+	}
+
+	/**
+	 * Logs a perk picking activity.
+	 * @param parameters - An object containing the parameters.
+	 * @param parameters.playerPickingPerk - The player who is picking the perk.
+	 * @param parameters.tokensEarned - The number of tokens earned by picking the perk.
+	 * @returns The created activity log object.
+	 */
+	logPickPerk({ playerPickingPerk, tokensEarned }: {
+		playerPickingPerk: PlayerResolvable;
+		tokensEarned?: number;
+	}): ActivityLog {
+		return this.activityLogRepository.addActivityLog({
+			type: ActivityTypes.PICK_PERK,
+			player: playerPickingPerk,
+			tokensDifference: tokensEarned ?? 0,
+		});
+	}
+
+	/**
+	 * Checks if a player has completed a quest.
+	 * @param player - The player to check.
+	 * @param quest - The quest to check.
+	 * @returns True if the player has completed the quest, false otherwise.
+	 */
+	hasPlayerCompletedQuest(
+		player: PlayerResolvable,
+		quest: QuestResolvable
+	): boolean {
+		const activityLogs = this.activityLogRepository.findActivityLogsWhere({
+			player: player,
+			type: ActivityTypes.COMPLETE_QUEST,
+			involvedQuest: quest,
+		});
+		return activityLogs.length > 0;
+	}
+}

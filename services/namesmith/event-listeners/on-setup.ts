@@ -16,6 +16,7 @@ import { RecipeRepository } from "../repositories/recipe.repository";
 import { RoleRepository } from "../repositories/role.repository";
 import { TradeRepository } from "../repositories/trade.repository";
 import { VoteRepository } from "../repositories/vote.repository";
+import { ActivityLogService } from "../services/activity-log.service";
 import { CharacterService } from "../services/character.service";
 import { GameStateService } from "../services/game-state.service";
 import { getNamesmithServices } from "../services/get-namesmith-services";
@@ -49,60 +50,24 @@ export const initializeDependencies = async (): Promise<NamesmithDependencies> =
 	const tradeRepository = new TradeRepository(db, playerRepository);
 	const voteRepository = new VoteRepository(db, playerRepository);
 	const questRepository = new QuestRepository(db);
-	const activityLogRepository = new ActivityLogRepository(db, playerRepository, recipeRepository);
+	const activityLogRepository = new ActivityLogRepository(db, playerRepository, recipeRepository, questRepository);
 
-	const mysteryBoxService = new MysteryBoxService(
-		mysteryBoxRepository,
-		characterRepository,
-	);
-
-	const characterService = new CharacterService(
-		characterRepository,
-	);
-
-	const playerService = new PlayerService(
-		playerRepository,
-	);
-
-	const voteService = new VoteService(
-		voteRepository,
-		playerService,
-	);
-
-	const recipeService = new RecipeService(
-		recipeRepository,
-		playerService,
-	);
-
-	const tradeService = new TradeService(
-		tradeRepository,
-		playerService,
-	);
-
-	const gameStateService = new GameStateService(
-		gameStateRepository,
-		playerService,
-		voteService,
-		recipeService
-	);
-
-	const perkService = new PerkService(
-		perkRepository,
-		roleRepository,
-		playerService,
-	);
-
-	const roleService = new RoleService(
-		roleRepository,
-		playerService,
-	)
-
+	const mysteryBoxService = new MysteryBoxService(mysteryBoxRepository, characterRepository);
+	const characterService = new CharacterService(characterRepository);
+	const playerService = new PlayerService(playerRepository);
+	const voteService = new VoteService(voteRepository, playerService);
+	const recipeService = new RecipeService(recipeRepository, playerService);
+	const tradeService = new TradeService(tradeRepository, playerService);
+	const gameStateService = new GameStateService(gameStateRepository, playerService, voteService, recipeService);
+	const perkService = new PerkService(perkRepository, roleRepository, playerService);
+	const roleService = new RoleService(roleRepository, playerService)
 	const questService = new QuestService(questRepository);
+	const activityLogService = new ActivityLogService(activityLogRepository);
 
 	const namesmithDependencies: NamesmithDependencies = {
 		db,
 		mysteryBoxRepository, characterRepository, playerRepository, gameStateRepository, voteRepository, recipeRepository, tradeRepository, perkRepository, roleRepository, questRepository, activityLogRepository,
-		mysteryBoxService, characterService, playerService, voteService, recipeService, tradeService, gameStateService, perkService, roleService, questService
+		mysteryBoxService, characterService, playerService, voteService, recipeService, tradeService, gameStateService, perkService, roleService, questService, activityLogService,
 	};
 
 	global.namesmith = namesmithDependencies;

@@ -26,7 +26,7 @@ export const syncRecipesToDB = (
 		);
 
 		const existingDBRecipes = db.getRows(
-			`SELECT id FROM mysteryBox
+			`SELECT id FROM recipe
 			WHERE id IN ${toListPlaceholder(recipeIDs)}`,
 			...recipeIDs
 		) as DBRecipe[];
@@ -39,13 +39,15 @@ export const syncRecipesToDB = (
 				(dbRecipe) => dbRecipe.id === recipeDefinition.id
 			);
 
-			if (existingDBRecipe !== undefined)
+			if (existingDBRecipe !== undefined) {
 				existingRecipeDefinitions.push({
 					...recipeDefinition,
 					id: existingDBRecipe.id
 				});
-			else
+			}
+			else {
 				newRecipeDefinitions.push(recipeDefinition);
+			}
 		}
 
 		for (const recipeDefinition of existingRecipeDefinitions) {

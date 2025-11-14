@@ -270,12 +270,14 @@ export function createMockQuestRepo(
  * @param mockDB - An optional mock database instance.
  * @param mockPlayerRepo - An optional mock player repository instance.
  * @param mockRecipeRepo - An optional mock recipe repository instance.
+ * @param mockQuestRepo - An optional mock quest repository instance.
  * @returns A mock instance of the ActivityLogRepository.
  */
 export function createMockActivityLogRepo(
 	mockDB?: DatabaseQuerier,
 	mockPlayerRepo?: PlayerRepository,
-	mockRecipeRepo?: RecipeRepository
+	mockRecipeRepo?: RecipeRepository,
+	mockQuestRepo?: QuestRepository,
 ): ActivityLogRepository {
 	mockDB =
 		mockDB
@@ -289,7 +291,11 @@ export function createMockActivityLogRepo(
 		mockRecipeRepo
 		?? createMockRecipeRepo(mockDB);
 
-	return new ActivityLogRepository(mockDB, mockPlayerRepo, mockRecipeRepo);
+	mockQuestRepo =
+		mockQuestRepo
+		?? createMockQuestRepo(mockDB);
+
+	return new ActivityLogRepository(mockDB, mockPlayerRepo, mockRecipeRepo, mockQuestRepo);
 }
 
 /**
@@ -320,7 +326,7 @@ export function createMockRepositories(
 	const playerRepository = createMockPlayerRepo(mockDB, roleRepository, perkRepository);
 	const tradeRepository = createMockTradeRepo(mockDB, playerRepository);
 	const questRepository = createMockQuestRepo(mockDB);
-	const activityLogRepository = createMockActivityLogRepo(mockDB, playerRepository, recipeRepository);
+	const activityLogRepository = createMockActivityLogRepo(mockDB, playerRepository, recipeRepository, questRepository);
 
 	return {
 		characterRepository,

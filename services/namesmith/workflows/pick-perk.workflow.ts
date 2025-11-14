@@ -32,7 +32,7 @@ export function pickPerk(
 		perksPickingFrom: PerkResolvable[],
 	}
 ) {
-	const {playerService, perkService} = getNamesmithServices();
+	const {playerService, perkService, activityLogService} = getNamesmithServices();
 
 	if (!playerService.isPlayer(player)) {
 		return result.failure.nonPlayer();
@@ -68,6 +68,11 @@ export function pickPerk(
 		freeTokensEarned = -500;
 		playerService.takeTokens(player, -freeTokensEarned);
 	}
+
+	activityLogService.logPickPerk({
+		playerPickingPerk: player,
+		tokensEarned: freeTokensEarned,
+	});
 
 	return result.success({
 		perkBeingReplaced,

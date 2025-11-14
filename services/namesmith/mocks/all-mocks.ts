@@ -1,7 +1,7 @@
 import { NamesmithDependencies } from "../types/namesmith.types";
 import { createMockDB } from "./mock-database";
 import { createMockRoleRepo, createMockCharacterRepo, createMockGameStateRepo, createMockMysteryBoxRepo, createMockPerkRepo, createMockPlayerRepo, createMockRecipeRepo, createMockTradeRepo, createMockVoteRepo, createMockQuestRepo, createMockActivityLogRepo } from "./mock-repositories";
-import { createMockCharacterService, createMockGameStateService, createMockMysteryBoxService, createMockPerkService, createMockPlayerService, createMockQuestService, createMockRecipeService, createMockRoleService, createMockTradeService, createMockVoteService } from "./mock-services";
+import { createMockActivityLogService, createMockCharacterService, createMockGameStateService, createMockMysteryBoxService, createMockPerkService, createMockPlayerService, createMockQuestService, createMockRecipeService, createMockRoleService, createMockTradeService, createMockVoteService } from "./mock-services";
 
 /**
  * Creates all the mock services and repositories needed for testing.
@@ -20,7 +20,7 @@ export const createAllMocks = (): NamesmithDependencies => {
 	const playerRepository = createMockPlayerRepo(mockDB, roleRepository, perkRepository);
 	const tradeRepository = createMockTradeRepo(mockDB, playerRepository);
 	const questRepository = createMockQuestRepo(mockDB);
-	const activityLogRepository = createMockActivityLogRepo(mockDB, playerRepository, recipeRepository);
+	const activityLogRepository = createMockActivityLogRepo(mockDB, playerRepository, recipeRepository, questRepository);
 
 	const mysteryBoxService = createMockMysteryBoxService(mysteryBoxRepository, characterRepository);
 	const characterService = createMockCharacterService(characterRepository);
@@ -32,6 +32,7 @@ export const createAllMocks = (): NamesmithDependencies => {
 	const perkService = createMockPerkService(perkRepository, roleRepository, playerService);
 	const roleService = createMockRoleService(roleRepository, playerService);
 	const questService = createMockQuestService(questRepository);
+	const activityLogService = createMockActivityLogService(activityLogRepository);
 
 	return {
 		db: mockDB,
@@ -58,5 +59,6 @@ export const createAllMocks = (): NamesmithDependencies => {
 		perkService,
 		roleService,
 		questService,
+		activityLogService,
 	};
 }

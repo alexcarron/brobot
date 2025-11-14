@@ -4,7 +4,6 @@ import { INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { setupMockNamesmith } from "../mocks/mock-setup";
-import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PerkService } from "../services/perk.service";
 import { PlayerService } from "../services/player.service";
 import { Perk } from "../types/perk.types";
@@ -36,7 +35,6 @@ describe('pick-perk.workflow', () => {
 	describe('pickPerk()', () => {
 		it('should give player the given perk', () => {
 			pickPerk({
-				...getNamesmithServices(),
 				player: NO_PERKS_PLAYER,
 				pickedPerk: Perks.MINE_BONUS,
 				perksPickingFrom: PERKS_PICKING_FROM,
@@ -57,7 +55,6 @@ describe('pick-perk.workflow', () => {
 			});
 
 			pickPerk({
-				...getNamesmithServices(),
 				player: NO_PERKS_PLAYER,
 				pickedPerk: Perks.MINE_BONUS,
 				perksPickingFrom: PERKS_PICKING_FROM,
@@ -80,10 +77,9 @@ describe('pick-perk.workflow', () => {
 		it('should return any previously picked perks and any free tokens earned', () => {
 			const result = returnIfNotFailure(
 				pickPerk({
-					...getNamesmithServices(),
 					player: NO_PERKS_PLAYER,
 					pickedPerk: Perks.MINE_BONUS,
-				perksPickingFrom: PERKS_PICKING_FROM,
+					perksPickingFrom: PERKS_PICKING_FROM,
 				})
 			);
 
@@ -93,7 +89,6 @@ describe('pick-perk.workflow', () => {
 
 			const result2 = returnIfNotFailure(
 				pickPerk({
-					...getNamesmithServices(),
 					player: NO_PERKS_PLAYER,
 					pickedPerk: Perks.REFILL_BONUS,
 					perksPickingFrom: PERKS_PICKING_FROM,
@@ -109,7 +104,6 @@ describe('pick-perk.workflow', () => {
 		it('should give free token if player choose the free tokens perk', () => {
 			const result = returnIfNotFailure(
 				pickPerk({
-					...getNamesmithServices(),
 					player: NO_PERKS_PLAYER,
 					pickedPerk: Perks.FREE_TOKENS,
 					perksPickingFrom: PERKS_PICKING_FROM,
@@ -126,7 +120,6 @@ describe('pick-perk.workflow', () => {
 
 		it('should remove free tokens if player is replacing the free tokens perk', () => {
 			pickPerk({
-				...getNamesmithServices(),
 				player: NO_PERKS_PLAYER,
 				pickedPerk: Perks.FREE_TOKENS,
 				perksPickingFrom: PERKS_PICKING_FROM,
@@ -137,7 +130,6 @@ describe('pick-perk.workflow', () => {
 
 			const result = returnIfNotFailure(
 				pickPerk({
-					...getNamesmithServices(),
 					player: NO_PERKS_PLAYER,
 					pickedPerk: Perks.MINE_BONUS,
 					perksPickingFrom: PERKS_PICKING_FROM,
@@ -156,10 +148,9 @@ describe('pick-perk.workflow', () => {
 		it('should return nonPlayer failure if the player does not exist', () => {
 			const result =
 				pickPerk({
-					...getNamesmithServices(),
 					player: INVALID_PLAYER_ID,
 					pickedPerk: Perks.MINE_BONUS,
-				perksPickingFrom: PERKS_PICKING_FROM,
+					perksPickingFrom: PERKS_PICKING_FROM,
 				});
 
 			makeSure(result.isFailure()).isTrue();
@@ -169,10 +160,9 @@ describe('pick-perk.workflow', () => {
 		it('should return perkDoesNotExist failure if the perk does not exist', () => {
 			const result =
 				pickPerk({
-					...getNamesmithServices(),
 					player: NO_PERKS_PLAYER,
 					pickedPerk: INVALID_PLAYER_ID,
-				perksPickingFrom: PERKS_PICKING_FROM,
+					perksPickingFrom: PERKS_PICKING_FROM,
 				});
 
 			makeSure(result.isFailure()).isTrue();
@@ -186,10 +176,9 @@ describe('pick-perk.workflow', () => {
 
 			const result =
 				pickPerk({
-					...getNamesmithServices(),
 					player: playerWithAllPerks,
 					pickedPerk: Perks.MINE_BONUS,
-				perksPickingFrom: PERKS_PICKING_FROM,
+					perksPickingFrom: PERKS_PICKING_FROM,
 				});
 
 			makeSure(result.isFailure()).isTrue();

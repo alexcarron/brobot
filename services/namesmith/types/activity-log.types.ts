@@ -1,5 +1,6 @@
 import { toEnumFromStrings, ValuesOf } from "../../../utilities/enum-utilts";
 import { Player, PlayerResolvable } from "./player.types";
+import { Quest, QuestResolvable } from "./quest.types";
 import { Recipe, RecipeResolvable } from "./recipe.types";
 
 export const ActivityTypes = toEnumFromStrings(
@@ -21,6 +22,7 @@ export type ActivityLog = {
 	tokensDifference: number;
 	involvedPlayer: Player | null;
 	involvedRecipe: Recipe | null;
+	involvedQuest: Quest | null;
 }
 
 export type DBActivityLog = {
@@ -30,6 +32,7 @@ export type DBActivityLog = {
 	tokensDifference: number;
 	involvedPlayerID: string | null;
 	involvedRecipeID: number | null;
+	involvedQuestID: number | null;
 }
 
 export type ActivityLogDefinition = {
@@ -39,6 +42,7 @@ export type ActivityLogDefinition = {
 	tokensDifference?: number;
 	involvedPlayer?: PlayerResolvable | null;
 	involvedRecipe?: RecipeResolvable | null;
+	involvedQuest?: QuestResolvable | null;
 }
 
 export type ActivityLogID = ActivityLog['id'];

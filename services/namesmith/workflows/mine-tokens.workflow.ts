@@ -29,7 +29,7 @@ export const mineTokens = (
 		playerMining: PlayerResolvable,
 	}
 ) => {
-	const {playerService, perkService} = getNamesmithServices();
+	const {playerService, perkService, activityLogService} = getNamesmithServices();
 
 	if (!playerService.isPlayer(playerMining)) {
 		return result.failure.nonPlayerMined();
@@ -47,6 +47,11 @@ export const mineTokens = (
 	playerService.giveTokens(playerMining, tokensEarned);
 
 	const newTokenCount = playerService.getTokens(playerMining);
+
+	activityLogService.logMineTokens({
+		playerMining,
+		tokensEarned,
+	});
 
 	return result.success({
 		tokensEarned,

@@ -40,6 +40,9 @@ export const getNamesmithServices = (): NamesmithServices => {
 	if (!global.namesmith.questService)
 		throw new InitializationError("getNamesmithServices: QuestService is not set up yet.");
 
+	if (!global.namesmith.activityLogService)
+		throw new InitializationError("getNamesmithServices: ActivityLogService is not set up yet.");
+
 	return {
 		mysteryBoxService: global.namesmith.mysteryBoxService,
 		characterService: global.namesmith.characterService,
@@ -51,5 +54,6 @@ export const getNamesmithServices = (): NamesmithServices => {
 		perkService: global.namesmith.perkService,
 		roleService: global.namesmith.roleService,
 		questService: global.namesmith.questService,
+		activityLogService: global.namesmith.activityLogService,
 	}
 }

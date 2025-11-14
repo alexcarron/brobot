@@ -11,6 +11,7 @@ import { RecipeRepository } from "../repositories/recipe.repository";
 import { RoleRepository } from "../repositories/role.repository";
 import { TradeRepository } from "../repositories/trade.repository";
 import { VoteRepository } from "../repositories/vote.repository";
+import { ActivityLogService } from "../services/activity-log.service";
 import { CharacterService } from "../services/character.service";
 import { GameStateService } from "../services/game-state.service";
 import { MysteryBoxService } from "../services/mystery-box.service";
@@ -60,6 +61,7 @@ export type NamesmithServices = Expand<{
 	perkService: PerkService,
 	roleService: RoleService,
 	questService: QuestService,
+	activityLogService: ActivityLogService,
 }>;
 
 /**

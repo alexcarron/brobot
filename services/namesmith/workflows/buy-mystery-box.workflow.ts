@@ -47,7 +47,7 @@ export const buyMysteryBox = (
 		mysteryBox?: MysteryBoxResolveable
 	}
 ) => {
-	const {mysteryBoxService, playerService, perkService} = getNamesmithServices();
+	const {mysteryBoxService, playerService, perkService, activityLogService} = getNamesmithServices();
 
 	if (!playerService.isPlayer(playerResolvable)) {
 		return result.failure.nonPlayerBoughtMysteryBox();
@@ -98,6 +98,11 @@ export const buyMysteryBox = (
 			wasRefunded = true;
 			playerService.giveTokens(playerResolvable, tokenCost);
 		}
+	});
+
+	activityLogService.logBuyMysteryBox({
+		playerBuyingBox: playerResolvable,
+		tokensSpent: wasRefunded ? 0 : tokenCost,
 	});
 
 	return result.success({

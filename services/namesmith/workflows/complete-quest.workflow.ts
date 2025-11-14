@@ -12,13 +12,20 @@ const result = getWorkflowResultCreator({
 	playerAlreadyCompletedQuest: null,
 });
 
+/**
+ * Completes a quest for a player.
+ * @param parameters - An object containing the following parameters:
+ * @param parameters.player - The player completing the quest.
+ * @param parameters.quest - The quest being completed.
+ * @returns A result indicating if the quest was successfully completed or not.
+ */
 export function completeQuest(
 	{player, quest}: {
 		player: PlayerResolvable,
 		quest: QuestResolvable,
 	}
 ) {
-	const {playerService, questService} = getNamesmithServices();
+	const {playerService, questService, activityLogService} = getNamesmithServices();
 
 	if (!playerService.isPlayer(player)) {
 		return result.failure.nonPlayer();
@@ -27,4 +34,15 @@ export function completeQuest(
 	if (!questService.isQuest(quest)) {
 		return result.failure.questDoesNotExist();
 	}
+
+	if (activityLogService.hasPlayerCompletedQuest(player, quest)) {
+		return result.failure.playerAlreadyCompletedQuest();
+	}
+
+	activityLogService.logCompleteQuest({
+		playerCompletingQuest: player,
+		questCompleted: quest,
+	});
+
+	return result.success({});
 }
