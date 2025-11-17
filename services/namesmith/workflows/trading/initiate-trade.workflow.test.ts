@@ -6,7 +6,7 @@ import { PlayerService } from "../../services/player.service";
 import { TradeService } from "../../services/trade.service";
 import { Player } from "../../types/player.types";
 import { TradeStatuses } from "../../types/trade.types";
-import { returnIfNotFailure } from "../workflow-result-creator";
+import { returnIfNotFailure } from "../../utilities/workflow.utility";
 import { initiateTrade } from "./initiate-trade.workflow";
 
 describe('initiate-trade.workflow.ts', () => {
@@ -57,7 +57,7 @@ describe('initiate-trade.workflow.ts', () => {
 			makeSure(result.trade.status).is(TradeStatuses.AWAITING_RECIPIENT);
 		});
 
-		it('returns NonPlayerInitiatedTradeError if the initiating user is not a player', () => {
+		it('returns initatorNotAPlayer if the initiating user is not a player', () => {
 			const result = initiateTrade({
 				...services,
 				initiatingPlayer: INVALID_PLAYER_ID,
@@ -67,11 +67,11 @@ describe('initiate-trade.workflow.ts', () => {
 			});
 
 			makeSure(
-				result.isNonPlayerInitiatedTrade()
+				result.isInitatorNotAPlayer()
 			).isTrue();
 		});
 
-		it('returns NonPlayerReceivedTradeError if the recipient user is not a player', () => {
+		it('returns recipientNotAPlayer if the recipient user is not a player', () => {
 			const result = initiateTrade({
 				...services,
 				initiatingPlayer: MOCK_INITIATING_PLAYER,
@@ -81,7 +81,7 @@ describe('initiate-trade.workflow.ts', () => {
 			});
 
 			makeSure(
-				result.isNonPlayerReceivedTrade()
+				result.isRecipientNotAPlayer()
 			).isTrue();
 		});
 

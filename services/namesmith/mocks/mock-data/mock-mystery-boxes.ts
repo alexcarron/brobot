@@ -1,8 +1,12 @@
-import { getRandomName } from "../../../../utilities/random-utils";
-import { WithAtLeastOneProperty } from "../../../../utilities/types/generic-types";
+import { getRandomNameUUID } from "../../../../utilities/random-utils";
+import { WithAllOptional } from "../../../../utilities/types/generic-types";
 import { DatabaseQuerier } from "../../database/database-querier";
-import { MinimalMysteryBox } from "../../types/mystery-box.types";
+import { getNamesmithServices } from "../../services/get-namesmith-services";
+import { MinimalMysteryBox, MysteryBoxDefinition } from "../../types/mystery-box.types";
+import { PlayerResolvable } from "../../types/player.types";
 import { getIDfromCharacterValue } from "../../utilities/character.utility";
+import { returnIfNotFailure } from "../../utilities/workflow.utility";
+import { buyMysteryBox } from "../../workflows/buy-mystery-box.workflow";
 
 
 /**
@@ -20,10 +24,10 @@ export const addMockMysteryBox = (
 		id = undefined,
     name = undefined,
     tokenCost = 0,
-	}: WithAtLeastOneProperty<MinimalMysteryBox>
+	}: WithAllOptional<MinimalMysteryBox> = {}
 ): MinimalMysteryBox => {
 	if (name === undefined)
-		name = getRandomName();
+		name = getRandomNameUUID();
 
 	if (id === undefined) {
 		const runResult = db.run(
@@ -54,3 +58,29 @@ export const addMockMysteryBox = (
 	)
 	return { id, name, tokenCost };
 };
+
+
+/**
+ * Forces a player to buy a new mystery box, giving them enough tokens to do so if they don't have enough.
+ * @param player - The player to force to buy the mystery box.
+ * @param mysteryBoxDefinition - The definition of the mystery box to buy.
+ * @returns The result of buying the mystery box.
+ */
+export function forcePlayerToBuyNewMysteryBox(
+	player: PlayerResolvable,
+	mysteryBoxDefinition: WithAllOptional<MysteryBoxDefinition> = {}
+) {
+	const { playerService } = getNamesmithServices();
+	const db = playerService.playerRepository.db;
+
+	const newMysteryBox = addMockMysteryBox(db, mysteryBoxDefinition);
+	if (playerService.getTokens(player) < newMysteryBox.tokenCost)
+		playerService.giveTokens(player, newMysteryBox.tokenCost);
+
+	return returnIfNotFailure(
+		buyMysteryBox({
+			player,
+			mysteryBox: newMysteryBox.id,
+		})
+	)
+}

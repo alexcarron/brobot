@@ -126,8 +126,8 @@ export async function handleTradeResponseResult<
 
 	RemainingResults extends TradeWorkflowResult =
 		Exclude<TradeWorkflowResult,
-		| { failureType: "nonPlayerRespondedToTrade" }
-		| { failureType: "nonTradeRespondedTo" }
+		| { failureType: "notAPlayer" }
+		| { failureType: "tradeDoesNotExist" }
 		| { failureType: "tradeAlreadyRespondedTo" }
 		| { failureType: "tradeAwaitingDifferentPlayer" }
 	>
@@ -141,14 +141,14 @@ export async function handleTradeResponseResult<
 	| null
 	| RemainingResults
 > {
-	if (result.isNonPlayerRespondedToTrade()) {
+	if (result.isNotAPlayer()) {
 		await replyToInteraction(buttonInteraction,
 			`You're not a player, so you can't ${responseType} a trade.`
 		);
 
 		return null;
 	}
-	else if (result.isNonTradeRespondedTo()) {
+	else if (result.isTradeDoesNotExist()) {
 		await replyToInteraction(buttonInteraction,
 			`You can't ${responseType} a trade that does not exist`
 		);

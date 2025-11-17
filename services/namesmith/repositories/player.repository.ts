@@ -15,7 +15,7 @@ import { isString } from "../../../utilities/types/type-guards";
  * Provides access to the dynamic player data.
  */
 export class PlayerRepository {
-	
+
 	/**
 	 * @param db - The database querier instance used for executing SQL statements.
 	 * @param roleRepository - The role repository instance used for retrieving role data.
@@ -78,8 +78,9 @@ export class PlayerRepository {
 	}
 
 	getMinimalPlayerByID(playerID: PlayerID): MinimalPlayer | null {
-		const query = `SELECT * FROM player WHERE id = @id`;
-		const player = this.db.getRow(query, { id: playerID }) as DBPlayer | undefined;
+		const player = this.db.getRow(
+			'SELECT * FROM player WHERE id = ?', playerID
+		) as DBPlayer | undefined;
 
 		if (player === undefined)
 			return null;
@@ -94,7 +95,7 @@ export class PlayerRepository {
 	 */
 	getPlayerByID(playerID: string): Player | null {
 		const minimalPlayer = this.getMinimalPlayerByID(playerID);
-		if (minimalPlayer === null)
+	if (minimalPlayer === null)
 			return null;
 
 		return this.toPlayerFromMinimal(minimalPlayer);
@@ -143,10 +144,7 @@ export class PlayerRepository {
 	resolveID(playerResolvable: PlayerResolvable): PlayerID {
 		if (isString(playerResolvable)) {
 			const playerID = playerResolvable;
-			if (/^\d+$/.test(playerID))
-				return playerID;
-
-			throw new InvalidArgumentError(`resolvePlayerID: Invalid player ID ${playerID}. Expected a number as a string.`);
+			return playerID;
 		}
 		else {
 			const player = playerResolvable;

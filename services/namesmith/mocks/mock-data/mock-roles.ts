@@ -3,7 +3,7 @@ import { Role, RoleDefinition } from "../../types/role.types";
 import { RoleRepository } from '../../repositories/role.repository';
 import { DatabaseQuerier } from "../../database/database-querier";
 import { RoleAlreadyExistsError } from "../../utilities/error.utility";
-import { getRandomName } from "../../../../utilities/random-utils";
+import { getRandomNameUUID } from "../../../../utilities/random-utils";
 
 /**
  * Adds a mock role to the database.
@@ -19,7 +19,7 @@ export function addMockRole(
 	const roleRepository = RoleRepository.fromDB(db);
 	const {
 		id = undefined,
-		name = getRandomName(),
+		name = getRandomNameUUID(),
 		description = "",
 		perks = [],
 	} = roleDefinition;

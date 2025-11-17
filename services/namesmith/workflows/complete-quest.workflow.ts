@@ -7,9 +7,10 @@ const result = getWorkflowResultCreator({
 	success: provides<{
 
 	}>(),
-	nonPlayer: null,
+	notAPlayer: null,
 	questDoesNotExist: null,
-	playerAlreadyCompletedQuest: null,
+	alreadyCompletedQuest: null,
+	notEligibleToCompleteQuest: null,
 });
 
 /**
@@ -28,16 +29,23 @@ export function completeQuest(
 	const {playerService, questService, activityLogService} = getNamesmithServices();
 
 	if (!playerService.isPlayer(player)) {
-		return result.failure.nonPlayer();
+		return result.failure.notAPlayer();
 	}
 
 	if (!questService.isQuest(quest)) {
 		return result.failure.questDoesNotExist();
 	}
 
-	if (activityLogService.hasPlayerCompletedQuest(player, quest)) {
-		return result.failure.playerAlreadyCompletedQuest();
+	if (activityLogService.hasPlayerAlreadyCompletedQuest(player, quest)) {
+		return result.failure.alreadyCompletedQuest();
 	}
+
+	if (!questService.isPlayerEligibleToComplete(player, quest)) {
+		return result.failure.notEligibleToCompleteQuest();
+	}
+
+	// Give the player the rewards for the request
+	questService.givePlayerRewards(player, quest);
 
 	activityLogService.logCompleteQuest({
 		playerCompletingQuest: player,

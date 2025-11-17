@@ -9,7 +9,7 @@ import { Trade, TradeStatuses } from "../../types/trade.types";
 import { modifyTrade } from "./modify-trade.workflow";
 import { addMockPlayer, editMockPlayer } from "../../mocks/mock-data/mock-players";
 import { addMockTrade } from "../../mocks/mock-data/mock-trades";
-import { returnIfNotFailure } from "../workflow-result-creator";
+import { returnIfNotFailure } from "../../utilities/workflow.utility";
 
 describe('modifyTrade()', () => {
   let MOCK_INITIATING_PLAYER: Player;
@@ -90,7 +90,7 @@ describe('modifyTrade()', () => {
 		});
 
     makeSure(
-      result.isNonPlayerRespondedToTrade()
+      result.isNotAPlayer()
     ).isTrue();
   });
 
@@ -104,7 +104,7 @@ describe('modifyTrade()', () => {
 		});
 
     makeSure(
-      result.isNonTradeRespondedTo()
+      result.isTradeDoesNotExist()
     ).isTrue();
   });
 

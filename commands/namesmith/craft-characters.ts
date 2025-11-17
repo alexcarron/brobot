@@ -187,7 +187,7 @@ export const command = new SlashCommand({
 			recipe: recipeID,
 		});
 
-		if (result.isNonPlayerCrafted()) {
+		if (result.isNotAPlayer()) {
 			return `You're not a player, so you can't craft characters.`;
 		}
 		else if (result.isRecipeNotUnlocked()) {

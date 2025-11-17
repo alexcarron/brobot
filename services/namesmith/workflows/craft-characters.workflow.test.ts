@@ -11,7 +11,7 @@ import { RecipeService } from "../services/recipe.service";
 import { craftCharacters } from "./craft-characters.workflow";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { addMockRecipe } from "../mocks/mock-data/mock-recipes";
-import { returnIfNotFailure } from "./workflow-result-creator";
+import { returnIfNotFailure } from "../utilities/workflow.utility";
 
 describe('craft-character.workflow', () => {
 	let recipeService: RecipeService;

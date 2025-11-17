@@ -9,7 +9,7 @@ const result = getWorkflowResultCreator({
 		isNewRole: boolean
 	}>(),
 
-	nonPlayer: null,
+	notAPlayer: null,
 	roleDoesNotExist: null,
 })
 
@@ -31,7 +31,7 @@ export function chooseRole(
 	const {playerService, roleService} = getNamesmithServices();
 
 	if (!playerService.isPlayer(player)) {
-		return result.failure.nonPlayer();
+		return result.failure.notAPlayer();
 	}
 
 	if (!roleService.isRole(role)) {

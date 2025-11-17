@@ -33,7 +33,7 @@ import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { TradeService } from "../../services/trade.service";
 import { Player } from "../../types/player.types";
 import { Trade, TradeStatuses } from "../../types/trade.types";
-import { returnIfNotFailure } from "../workflow-result-creator";
+import { returnIfNotFailure } from "../../utilities/workflow.utility";
 import { acceptTrade } from "./accept-trade.workflow";
 
 describe('accept-trade.workflow.ts', () => {
@@ -65,8 +65,8 @@ describe('accept-trade.workflow.ts', () => {
 	})
 
 	describe('acceptTrade()', () => {
-		it('returns the trade, initiating player, and recipient player', async () => {
-			const result = returnIfNotFailure(await acceptTrade({
+		it('returns the trade, initiating player, and recipient player', () => {
+			const result = returnIfNotFailure(acceptTrade({
 				...getNamesmithServices(),
 				playerAccepting: MOCK_RECIPIENT_PLAYER,
 				trade: MOCK_TRADE,
@@ -125,7 +125,7 @@ describe('accept-trade.workflow.ts', () => {
 			});
 
 			makeSure(
-				result.isNonPlayerRespondedToTrade()
+				result.isNotAPlayer()
 			).isTrue();
 		});
 
@@ -137,7 +137,7 @@ describe('accept-trade.workflow.ts', () => {
 			});
 
 			makeSure(
-				result.isNonTradeRespondedTo()
+				result.isTradeDoesNotExist()
 			).isTrue();
 		});
 

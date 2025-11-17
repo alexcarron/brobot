@@ -1,18 +1,29 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { DatabaseQuerier } from "../database/database-querier";
 import { DBPlayer, Player } from "../types/player.types";
+import { Recipe } from "../types/recipe.types";
+import { TradeStatuses } from "../types/trade.types";
 import { DBVote } from "../types/vote.types";
+import { forcePlayerToBuyNewMysteryBox } from "./mock-data/mock-mystery-boxes";
 import { addMockPerk } from "./mock-data/mock-perks";
-import { addMockPlayer, editMockPlayer } from "./mock-data/mock-players";
+import { addMockPlayer, editMockPlayer, forcePlayerToClaimRefill, forcePlayerToMineTokens, forcePlayerToPublishName } from "./mock-data/mock-players";
+import { addMockRecipe, forcePlayerToCraft } from "./mock-data/mock-recipes";
 import { addMockRole } from "./mock-data/mock-roles";
+import { forcePlayerToAcceptNewTrade, forcePlayerToInitiateTrade } from "./mock-data/mock-trades";
 import { addMockVote } from "./mock-data/mock-votes";
-import { createMockDB } from "./mock-database";
+import { setupMockNamesmith } from "./mock-setup";
 
 describe("Mock Utilities", () => {
   let db: DatabaseQuerier;
 
+	let SOME_PLAYER: Player;
+	let SOME_OTHER_PLAYER: Player;
+
   beforeEach(() => {
-    db = createMockDB();
+		({ db } = setupMockNamesmith());
+
+		SOME_PLAYER = addMockPlayer(db);
+		SOME_OTHER_PLAYER = addMockPlayer(db);
   });
 
   afterEach(() => {
@@ -51,6 +62,7 @@ describe("Mock Utilities", () => {
 
   describe("addMockPlayer", () => {
     it("adds a player to the database", () => {
+			const numPlayers = db.getRows("SELECT * FROM player").length;
       const playerData = {
         id: "player-1",
         currentName: "John Doe",
@@ -64,13 +76,14 @@ describe("Mock Utilities", () => {
       addMockPlayer(db, playerData);
 
       const players = db.prepare("SELECT * FROM player").all();
-      expect(players).toHaveLength(1);
-      expect(players[0]).toEqual(playerData);
+      expect(players).toHaveLength(numPlayers + 1);
+      makeSure(players).contains(playerData);
     });
   });
 
   describe("addMockVote", () => {
     it("adds a vote to the database", () => {
+			const numVotes = db.getRows("SELECT * FROM vote").length;
       const voteData = {
         voter: "10000001",
         playerVotedFor: "10000002",
@@ -81,18 +94,23 @@ describe("Mock Utilities", () => {
 			makeSure(vote.playerVotedFor.id).is(voteData.playerVotedFor);
 
       const votes = db.prepare("SELECT * FROM vote").all() as DBVote[]
-      makeSure(votes).hasLengthOf(1);
-      makeSure(votes[0].voterID).is(voteData.voter);
-			makeSure(votes[0].playerVotedForID).is(voteData.playerVotedFor);
+      makeSure(votes).hasLengthOf(numVotes + 1);
+			makeSure(votes).hasAnItemWhere(vote =>
+				vote.voterID === voteData.voter &&
+				vote.playerVotedForID === voteData.playerVotedFor
+			);
     });
 
 		it('adds a mock vote even with no given data', () => {
+			const numVotes = db.getRows("SELECT * FROM vote").length;
 			const vote = addMockVote(db);
 
-			const votes = db.prepare("SELECT * FROM vote").all() as DBVote[]
-			makeSure(votes).hasLengthOf(1);
-			makeSure(votes[0].voterID).is(vote.voterID);
-			makeSure(votes[0].playerVotedForID).is(vote.playerVotedFor.id);
+			const dbVotes = db.prepare("SELECT * FROM vote").all() as DBVote[]
+			makeSure(dbVotes).hasLengthOf(numVotes + 1);
+			makeSure(dbVotes).hasAnItemWhere(dbVote =>
+				dbVote.voterID === vote.voterID &&
+				dbVote.playerVotedForID === vote.playerVotedFor.id
+			)
 		});
   });
 
@@ -326,6 +344,233 @@ describe("Mock Utilities", () => {
 				description: "This is a test role",
 				perks: [],
 			});
+		});
+	});
+
+	describe('forcePlayerToCraft()', () => {
+		let SOME_RECIPE: Recipe;
+
+		beforeEach(() => {
+			SOME_RECIPE = addMockRecipe(db, {
+				inputCharacters: "abc",
+				outputCharacters: "def",
+			});
+		})
+
+		it('returns a success result with the correct values', () => {
+			const result = forcePlayerToCraft(SOME_PLAYER, SOME_RECIPE);
+			makeSure(result.isFailure()).isFalse();
+			makeSure(result.craftedCharacters).is("def");
+			makeSure(result.newInventory).is("def");
+			makeSure(result.recipeUsed).is(SOME_RECIPE);
+		});
+
+		it('works with randomly generated recipes', () => {
+			SOME_RECIPE = addMockRecipe(db);
+			const result = forcePlayerToCraft(SOME_PLAYER, SOME_RECIPE);
+			makeSure(result.isFailure()).isFalse();
+		});
+
+		it('works when repeated many times', () => {
+			for (let i = 0; i < 25; i++) {
+				SOME_RECIPE = addMockRecipe(db);
+				const result = forcePlayerToCraft(SOME_PLAYER, SOME_RECIPE);
+				makeSure(result.isFailure()).isFalse();
+			}
+		});
+	});
+
+	describe('forcePlayerToPublishName()', () => {
+		it('returns the new player object with the correct values', () => {
+			const player = forcePlayerToPublishName(SOME_PLAYER, 'abc');
+			makeSure(player.currentName).is('abc');
+			makeSure(player.inventory).is('abc');
+			makeSure(player.publishedName).is('abc');
+		});
+
+		it('works when repeated many times', () => {
+			for (let numLoops = 0; numLoops < 25; numLoops++) {
+				const publishedName = 'abc' + numLoops + "$".repeat(numLoops);
+				const player = forcePlayerToPublishName(SOME_PLAYER, publishedName);
+				makeSure(player.currentName).is(publishedName);
+				makeSure(player.publishedName).is(publishedName);
+			}
+		});
+	});
+
+	describe('forcePlayerToAcceptNewTrade()', () => {
+		it('returns a success result with the correct values', () => {
+			const result = forcePlayerToAcceptNewTrade(SOME_PLAYER);
+			makeSure(result.isFailure()).isFalse();
+			makeSure(result.recipientPlayer.id).is(SOME_PLAYER.id);
+			makeSure(result.trade.status).is(TradeStatuses.ACCEPTED);
+		});
+
+		it('should work with a partially defined new trade', () => {
+			const result = forcePlayerToAcceptNewTrade(SOME_PLAYER, {
+				offeredCharacters: 'abc',
+				initiatingPlayer: SOME_OTHER_PLAYER,
+			});
+			makeSure(result.isFailure()).isFalse();
+			makeSure(result.recipientPlayer.id).is(SOME_PLAYER.id);
+			makeSure(result.initiatingPlayer.id).is(SOME_OTHER_PLAYER.id);
+			makeSure(result.trade.offeredCharacters).is('abc');
+			makeSure(result.trade.status).is(TradeStatuses.ACCEPTED);
+		});
+
+		it('should work with a fully defined new trade', () => {
+			const result = forcePlayerToAcceptNewTrade(SOME_PLAYER, {
+				id: 912397,
+				offeredCharacters: 'abc',
+				requestedCharacters: 'def',
+				initiatingPlayer: SOME_PLAYER,
+				recipientPlayer: SOME_OTHER_PLAYER,
+				status: TradeStatuses.AWAITING_INITIATOR,
+			});
+			makeSure(result.isFailure()).isFalse();
+			makeSure(result.initiatingPlayer.id).is(SOME_PLAYER.id);
+			makeSure(result.recipientPlayer.id).is(SOME_OTHER_PLAYER.id);
+			makeSure(result.trade.offeredCharacters).is('abc');
+			makeSure(result.trade.requestedCharacters).is('def');
+			makeSure(result.trade.status).is(TradeStatuses.ACCEPTED);
+		});
+
+		it('should work with a nonsensical defintion of the new trade', () => {
+			const result = forcePlayerToAcceptNewTrade(SOME_PLAYER, {
+				id: 912343243243297,
+				offeredCharacters: '',
+				requestedCharacters: 'asdsadasdsa909disa009def',
+				initiatingPlayer: SOME_PLAYER,
+				recipientPlayer: SOME_PLAYER,
+				status: TradeStatuses.IGNORED,
+			});
+			makeSure(result.isFailure()).isFalse();
+			makeSure(result.initiatingPlayer.id).is(SOME_PLAYER.id);
+			makeSure(result.recipientPlayer.id).is(SOME_PLAYER.id);
+			makeSure(result.trade.offeredCharacters).is('');
+			makeSure(result.trade.requestedCharacters).is('asdsadasdsa909disa009def');
+			makeSure(result.trade.status).is(TradeStatuses.ACCEPTED);
+		});
+	});
+
+	describe('forcePlayerToInitiateTrade()', () => {
+		it('returns a success result with the correct values', () => {
+			const result = forcePlayerToInitiateTrade(SOME_PLAYER, {});
+			makeSure(result.isFailure()).isFalse();
+			makeSure(result.initiatingPlayer.id).is(SOME_PLAYER.id);
+			makeSure(result.trade.status).is(TradeStatuses.AWAITING_RECIPIENT);
+		});
+
+		it('should work with a partially defined new trade', () => {
+			const result = forcePlayerToInitiateTrade(SOME_PLAYER, {
+				offeredCharacters: 'abc',
+				recipientPlayer: SOME_OTHER_PLAYER,
+			});
+			makeSure(result.isFailure()).isFalse();
+			makeSure(result.initiatingPlayer.id).is(SOME_PLAYER.id);
+			makeSure(result.recipientPlayer.id).is(SOME_OTHER_PLAYER.id);
+			makeSure(result.trade.offeredCharacters).is('abc');
+			makeSure(result.trade.status).is(TradeStatuses.AWAITING_RECIPIENT);
+		});
+
+		it('should work with a fully defined new trade', () => {
+			const result = forcePlayerToInitiateTrade(SOME_PLAYER, {
+				id: 912397,
+				offeredCharacters: 'abc',
+				requestedCharacters: 'def',
+				initiatingPlayer: SOME_PLAYER,
+				recipientPlayer: SOME_OTHER_PLAYER,
+				status: TradeStatuses.AWAITING_INITIATOR,
+			});
+			makeSure(result.isFailure()).isFalse();
+			makeSure(result.initiatingPlayer.id).is(SOME_PLAYER.id);
+			makeSure(result.recipientPlayer.id).is(SOME_OTHER_PLAYER.id);
+			makeSure(result.trade.offeredCharacters).is('abc');
+			makeSure(result.trade.requestedCharacters).is('def');
+			makeSure(result.trade.status).is(TradeStatuses.AWAITING_RECIPIENT);
+		});
+
+		it('should work with a nonsensical defintion of the new trade', () => {
+			const result = forcePlayerToInitiateTrade(SOME_PLAYER, {
+				id: 912343243243297,
+				offeredCharacters: '',
+				requestedCharacters: 'asdsadasdsa909disa009def',
+				initiatingPlayer: SOME_PLAYER,
+				recipientPlayer: SOME_PLAYER,
+				status: TradeStatuses.IGNORED,
+			});
+			makeSure(result.isFailure()).isFalse();
+			makeSure(result.initiatingPlayer.id).is(SOME_PLAYER.id);
+			makeSure(result.recipientPlayer.id).isNot(SOME_PLAYER.id);
+			makeSure(result.trade.offeredCharacters).is('');
+			makeSure(result.trade.requestedCharacters).is('asdsadasdsa909disa009def');
+			makeSure(result.trade.status).is(TradeStatuses.AWAITING_RECIPIENT);
+		});
+	});
+
+	describe('forcePlayerToMineTokens()', () => {
+		it('returns a success result with the correct values', () => {
+			const result = forcePlayerToMineTokens(SOME_PLAYER, 250);
+			makeSure(result.isFailure()).isFalse();
+			makeSure(result.tokensEarned).is(250);
+			makeSure(result.newTokenCount).is(SOME_PLAYER.tokens + 250);
+		});
+
+		it('should work when called many times', () => {
+			for (let i = 0; i < 25; i++) {
+				const result = forcePlayerToMineTokens(SOME_PLAYER, 250);
+				makeSure(result.isFailure()).isFalse();
+			}
+		});
+	});
+
+	describe('forcePlayerToClaimRefill()', () => {
+		it('returns a success result with the correct values', () => {
+			const result = forcePlayerToClaimRefill(SOME_PLAYER, 250);
+			makeSure(result.isFailure()).isFalse();
+			makeSure(result.baseTokensEarned).is(250);
+			makeSure(result.tokensFromRefillBonus).is(0);
+			makeSure(result.newTokenCount).is(SOME_PLAYER.tokens + 250);
+		});
+
+		it('should work when called many times', () => {
+			for (let i = 0; i < 25; i++) {
+				const result = forcePlayerToClaimRefill(SOME_PLAYER, 250);
+				makeSure(result.isFailure()).isFalse();
+			}
+		});
+	});
+
+	describe('forcePlayerToBuyNewMysteryBox()', () => {
+		it('returns a success result with the correct values', () => {
+			const result = forcePlayerToBuyNewMysteryBox(SOME_PLAYER);
+			makeSure(result.isFailure()).isFalse();
+			makeSure(result.player.id).is(SOME_PLAYER.id);
+		});
+
+		it('should work with partially defined mystery box', () => {
+			const result = forcePlayerToBuyNewMysteryBox(SOME_PLAYER, { tokenCost: 250 });
+			makeSure(result.isFailure()).isFalse();
+			makeSure(result.player.id).is(SOME_PLAYER.id);
+			makeSure(result.tokenCost).is(250);
+		});
+
+		it('should work with fully defined mystery box', () => {
+			const result = forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+				id: 387249834,
+				name: 'test',
+				tokenCost: 250,
+			});
+			makeSure(result.isFailure()).isFalse();
+			makeSure(result.player.id).is(SOME_PLAYER.id);
+			makeSure(result.tokenCost).is(250);
+		});
+
+		it('should work when called many times', () => {
+			for (let i = 0; i < 25; i++) {
+				const result = forcePlayerToBuyNewMysteryBox(SOME_PLAYER);
+				makeSure(result.isFailure()).isFalse();
+			}
 		});
 	});
 });

@@ -11,8 +11,8 @@ import { PlayerService } from "../services/player.service";
 import { mineTokens } from "./mine-tokens.workflow";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { Perks } from "../constants/perks.constants";
-import { returnIfNotFailure } from "./workflow-result-creator";
 import { Player } from "../types/player.types";
+import { returnIfNotFailure } from "../utilities/workflow.utility";
 
 describe('mine-tokens.workflow', () => {
 	let db: DatabaseQuerier;
@@ -63,11 +63,20 @@ describe('mine-tokens.workflow', () => {
 			makeSure(hasMineBonusPerk).isTrue();
 		})
 
+		it('should give the given tokenOverride if it is passed', () => {
+			const { newTokenCount, tokensEarned } = returnIfNotFailure(
+				mineTokens({playerMining: SOME_PLAYER.id, tokenOverride: 20})
+			);
+
+			makeSure(newTokenCount).is(SOME_PLAYER.tokens + 20);
+			makeSure(tokensEarned).is(20);
+		});
+
 		it('should return a nonPlayerMined failure if the provided player is not a valid player', () => {
 			const result = mineTokens({playerMining: INVALID_PLAYER_ID});
 
 			makeSure(result.isFailure()).isTrue();
-			makeSure(result.isNonPlayerMined()).isTrue();
+			makeSure(result.isNotAPlayer()).isTrue();
 		});
 	});
 });

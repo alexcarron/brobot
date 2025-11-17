@@ -133,3 +133,103 @@ export function isOneSymbol(string: string): boolean {
 
   return Array.from(string).length === 1;
 }
+
+/**
+ * Determines if a given string includes at least one emoji.
+ * @param string - The string to check.
+ * @returns Whether or not the string includes at least one emoji.
+ */
+export function hasEmoji(string: string): boolean {
+	const emojiRegex = /\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu;
+	return emojiRegex.test(string);
+}
+
+/**
+ * Determines if a given string includes at least one symbol (non-alphanumeric character besides emojis).
+ * Examples include ., !, @, #, $, %, ^, &, *, (, ), -, _, =, +, [, ], {, }, ;, :, ', ", ,, <, ., >, /, ?, \, |, ~, `.
+ * @param string - The string to check.
+ * @returns Whether or not the string includes at least one symbol.
+ */
+export function hasSymbol(string: string): boolean {
+	const emojiSequenceRegex = /(?:\p{Extended_Pictographic}(?:\p{Emoji_Modifier})?(?:\uFE0F)?(?:\u200D\p{Extended_Pictographic}(?:\p{Emoji_Modifier})?(?:\uFE0F)?)*|\p{Regional_Indicator}{2})/gu;
+	const withoutEmoji = string.replace(emojiSequenceRegex, '');
+	const withoutJoiners = withoutEmoji.replace(/(?:\u200D|\uFE0F|\p{Emoji_Modifier}\p{Regional_Indicator}{2})/gu, '');
+
+	const symbolRegex = /[^\p{L}\p{N}\s]/gu;
+	return symbolRegex.test(withoutJoiners);
+}
+
+/**
+ * Determines if a given string includes at least one numeric character.
+ * @param string - The string to check.
+ * @returns Whether or not the string includes at least one numeric character.
+ */
+export function hasNumber(string: string): boolean {
+	const numberRegex = /\p{N}/u;
+	return numberRegex.test(string);
+}
+
+/**
+ * Determines if a given string includes at least one letter character.
+ * @param string - The string to check.
+ * @returns Whether or not the string includes at least one letter character.
+ */
+export function hasLetter(string: string): boolean {
+	const letterRegex = /[a-zA-Z]/u;
+	return letterRegex.test(string);
+}
+
+/**
+ * Determines if a given code point is a valid Unicode code point.
+ * @param codePoint - The code point to check.
+ * @returns Whether or not the code point is a valid Unicode code point.
+ */
+export function isUnicodeCodePoint(codePoint: number): boolean {
+  if (codePoint <= 0) return false;
+  if (codePoint > 0x10FFFF) return false;
+  if (codePoint >= 0xD800 && codePoint <= 0xDFFF) return false;
+  if (codePoint >= 0xFDD0 && codePoint <= 0xFDEF) return false;
+  if (
+		(codePoint & 0xFFFF) === 0xFFFE ||
+		(codePoint & 0xFFFF) === 0xFFFF
+	) return false;
+  return true;
+}
+
+/**
+ * Heuristic: Accept only "reasonable" printable characters.
+ * - printable ASCII (space + 0x21..0x7E)
+ * - Unicode Letters, Numbers, Punctuation, Symbols
+ * - Extended_Pictographic (emoji / pictographs)
+ * Excludes control chars, private use, surrogates, unassigned, and non-characters.
+ * @param codePoint - The code point to check.
+ * @returns Whether or not the code point is a "reasonable" printable character.
+ */
+export function isReasonableCodePoint(codePoint: number): boolean {
+  if (!isUnicodeCodePoint(codePoint)) return false;
+
+  // Allow single space
+  if (codePoint === 0x20) return true;
+
+  // Printable ASCII range
+  if (codePoint >= 0x21 && codePoint <= 0x7E) return true;
+
+  // Convert to string and test Unicode property categories.
+  // Modern Node/V8 supports Unicode property escapes (\p{...}).
+  // We check categories separately (avoids matching control / separator implicitly).
+  const ch = String.fromCodePoint(codePoint);
+
+  // Letters
+  if (/\p{L}/u.test(ch)) return true;
+  // Numbers
+  if (/\p{N}/u.test(ch)) return true;
+  // Punctuation
+  if (/\p{P}/u.test(ch)) return true;
+  // Symbols (math, currency, other symbols)
+  if (/\p{S}/u.test(ch)) return true;
+  // Extended pictographic covers emoji and many pictographs
+  if (/\p{Extended_Pictographic}/u.test(ch)) return true;
+
+  // Otherwise reject (includes separators, control chars, marks-only, unassigned, etc.)
+  return false;
+}

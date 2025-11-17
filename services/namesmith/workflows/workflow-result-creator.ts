@@ -1,4 +1,3 @@
-import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { capitalize } from "../../../utilities/string-manipulation-utils";
 
 /**
@@ -51,7 +50,7 @@ type BaseSuccess<RelevantSuccessData extends RelevantData> = RelevantSuccessData
  *   console.log(result.failureType);
  * }
  */
-type IsFailureAssertion = {
+export type IsFailureAssertion = {
 	isFailure(): this is { failureType: string };
 };
 
@@ -282,30 +281,3 @@ export type FailuresOf<WorkflowResult> =
 
 export type SuccessOf<WorkflowResult> =
 	Exclude<WorkflowResult, { failureType: string }>
-
-/**
- * Throws an error if the given result is a failure result.
- * @param result - The workflow result to check.
- */
-export function assertNotFailure<
-  Result extends IsFailureAssertion
->(result: Result): asserts result is SuccessOf<Result> {
-  if (result.isFailure()) {
-		throw new InvalidArgumentError(
-			`Expected success but got failure "${result.failureType}".`
-		);
-
-  }
-}
-
-/**
- * Throws an error if the given result is a failure result. Otherwise, returns the success result.
- * @param result - The workflow result to check.
- * @returns The success result if the given result is a success result, otherwise throws an error.
- */
-export function returnIfNotFailure<
-  Result extends IsFailureAssertion
->(result: Result): SuccessOf<Result> {
-  assertNotFailure(result);
-  return result;
-}

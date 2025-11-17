@@ -254,16 +254,34 @@ export const createMockRoleService = (
 /**
  * Creates a mock QuestService instance for testing purposes.
  * @param mockQuestRepository - The mock quest repository to use.
+ * @param mockActivityLogService - The mock activity log service to use.
+ * @param mockPlayerService - The mock player service to use.
  * @returns A mock instance of the QuestService.
  */
 export function createMockQuestService(
 	mockQuestRepository?: QuestRepository,
+	mockActivityLogService?: ActivityLogService,
+	mockPlayerService?: PlayerService,
 ) {
+	const sharedDB =
+		mockQuestRepository?.db ??
+		mockActivityLogService?.activityLogRepository.db ??
+		mockPlayerService?.playerRepository.db ??
+		createMockDB();
+
 	const questRepository =
 		mockQuestRepository ??
-		createMockQuestRepo();
+		QuestRepository.fromDB(sharedDB);
 
-	return new QuestService(questRepository);
+	const activityLogService =
+		mockActivityLogService ??
+		ActivityLogService.fromDB(sharedDB);
+
+	const playerService =
+		mockPlayerService ??
+		PlayerService.fromDB(sharedDB);
+
+	return new QuestService(questRepository, activityLogService, playerService);
 }
 
 /**
@@ -406,11 +424,11 @@ export const createMockServices = ({
 	const roleService = createMockRoleService(
 		roleRepo, playerService
 	);
-	const questService = createMockQuestService(
-		questRepo
-	);
 	const activityLogService = createMockActivityLogService(
 		activityLogRepo
+	);
+	const questService = createMockQuestService(
+		questRepo, activityLogService, playerService
 	);
 
 	return {

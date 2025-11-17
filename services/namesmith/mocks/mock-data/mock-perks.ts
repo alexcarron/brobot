@@ -3,7 +3,7 @@ import { Perk, PerkDefintion } from "../../types/perk.types";
 import { PerkRepository } from '../../repositories/perk.repository';
 import { DatabaseQuerier } from "../../database/database-querier";
 import { PerkAlreadyExistsError } from "../../utilities/error.utility";
-import { getRandomName } from "../../../../utilities/random-utils";
+import { getRandomNameUUID } from "../../../../utilities/random-utils";
 
 /**
  * Adds a mock perk to the database.
@@ -20,7 +20,7 @@ export function addMockPerk(
 
 	const {
 		id = undefined,
-		name = getRandomName(),
+		name = getRandomNameUUID(),
 		description = "",
 		wasOffered = false
 	} = perkDefinition;

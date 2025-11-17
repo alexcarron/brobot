@@ -10,7 +10,8 @@ const result = getWorkflowResultCreator({
 		perkBeingReplaced: Perk | null,
 		freeTokensEarned: number,
 	}>(),
-	nonPlayer: null,
+	
+	notAPlayer: null,
 	perkDoesNotExist: null,
 	playerAlreadyHasThatPerk: null,
 })
@@ -35,7 +36,7 @@ export function pickPerk(
 	const {playerService, perkService, activityLogService} = getNamesmithServices();
 
 	if (!playerService.isPlayer(player)) {
-		return result.failure.nonPlayer();
+		return result.failure.notAPlayer();
 	}
 
 	if (!perkService.isPerk(pickedPerk)) {

@@ -15,10 +15,8 @@ const result = getWorkflowResultCreator({
 		gotDuplicate: boolean,
 	}>(),
 
-	nonPlayerBoughtMysteryBox: null,
-
+	notAPlayer: null,
 	mysteryBoxDoesNotExist: null,
-
 	playerCantAffordMysteryBox: provides<{
 		mysteryBoxName: string,
 		tokensNeeded: number,
@@ -50,7 +48,7 @@ export const buyMysteryBox = (
 	const {mysteryBoxService, playerService, perkService, activityLogService} = getNamesmithServices();
 
 	if (!playerService.isPlayer(playerResolvable)) {
-		return result.failure.nonPlayerBoughtMysteryBox();
+		return result.failure.notAPlayer();
 	}
 
 	if (!mysteryBoxService.isMysteryBox(mysteryBoxResolvable)) {

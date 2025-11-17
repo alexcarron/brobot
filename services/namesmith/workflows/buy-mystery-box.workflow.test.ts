@@ -23,8 +23,8 @@ import { makeSure } from "../../../utilities/jest/jest-utils";
 import { addMockMysteryBox } from "../mocks/mock-data/mock-mystery-boxes";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { NamesmithEvents } from "../event-listeners/namesmith-events";
-import { returnIfNotFailure } from "./workflow-result-creator";
 import { Perks } from "../constants/perks.constants";
+import { returnIfNotFailure } from "../utilities/workflow.utility";
 
 describe('buy-mystery-box.workflow', () => {
 	/**
@@ -204,7 +204,7 @@ describe('buy-mystery-box.workflow', () => {
 				mysteryBox: defaultMysteryBox.id
 			})
 
-			makeSure(result.isNonPlayerBoughtMysteryBox()).isTrue();
+			makeSure(result.isNotAPlayer()).isTrue();
 		});
 
 		it('should throw an error if no mystery box is found', () => {

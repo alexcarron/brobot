@@ -129,16 +129,22 @@ export class QuestRepository {
 	 * @throws {QuestNotFoundError} If no quest with the given ID or name exists.
 	 */
 	resolveID(questResolvable: QuestResolvable): QuestID {
-		if (isNumber(questResolvable)) {
-			return questResolvable;
-		}
-		else if (isString(questResolvable)) {
+		if (isString(questResolvable)) {
 			const quest = this.getQuestByNameOrThrow(questResolvable);
 			return quest.id;
 		}
-		else {
-			return questResolvable.id;
+
+		let questID;
+		if (isNumber(questResolvable))
+			questID = questResolvable;
+		else
+			questID = questResolvable.id;
+
+		if (!this.doesQuestExist(questID)) {
+			throw new QuestNotFoundError(questID);
 		}
+
+		return questID;
 	}
 
 	/**

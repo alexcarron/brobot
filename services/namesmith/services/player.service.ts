@@ -10,6 +10,7 @@ import { areCharactersInString } from "../../../utilities/string-checks-utils";
 import { MAX_NAME_LENGTH, REFILL_COOLDOWN_HOURS } from "../constants/namesmith.constants";
 import { addHours } from "../../../utilities/date-time-utils";
 import { NamesmithEvents } from "../event-listeners/namesmith-events";
+import { DatabaseQuerier } from "../database/database-querier";
 
 /**
  * Provides methods for interacting with players.
@@ -22,6 +23,10 @@ export class PlayerService {
 	constructor(
 		public playerRepository: PlayerRepository,
 	) {}
+
+	static fromDB(db: DatabaseQuerier) {
+		return new PlayerService(PlayerRepository.fromDB(db));
+	}
 
 	/**
 	 * Resolves a player from the given resolvable.
@@ -58,6 +63,15 @@ export class PlayerService {
 	 */
 	getPlayersWithPublishedName(){
 		return this.playerRepository.getPlayersWithPublishedNames();
+	}
+
+	/**
+	 * Retrieves all published names from the game.
+	 * @returns An array of all published names in the game.
+	 */
+	getAllPublishedNames() {
+		const playersWithPublishedNames = this.getPlayersWithPublishedName();
+		return playersWithPublishedNames.map(player => player.publishedName);
 	}
 
 	/**

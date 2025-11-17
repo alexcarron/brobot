@@ -296,7 +296,7 @@ describe('ActivityLogService', () => {
 			});
 
 			makeSure(
-				activityLogService.hasPlayerCompletedQuest(SOME_PLAYER.id, SOME_QUEST.id)
+				activityLogService.hasPlayerAlreadyCompletedQuest(SOME_PLAYER.id, SOME_QUEST.id)
 			).isTrue();
 		});
 
@@ -320,7 +320,7 @@ describe('ActivityLogService', () => {
 
 		it('returns false if the player has not completed the quest', () => {
 			makeSure(
-				activityLogService.hasPlayerCompletedQuest(SOME_PLAYER.id, SOME_QUEST.id)
+				activityLogService.hasPlayerAlreadyCompletedQuest(SOME_PLAYER.id, SOME_QUEST.id)
 			).isFalse();
 		});
 	});

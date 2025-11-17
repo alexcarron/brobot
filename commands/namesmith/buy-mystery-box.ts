@@ -47,7 +47,7 @@ export const command = new SlashCommand({
 			mysteryBox: parseInt(mysteryBoxID)
 		});
 
-		if (result.isNonPlayerBoughtMysteryBox()) {
+		if (result.isNotAPlayer()) {
 			return `You're not a player, so you can't buy a mystery box.`;
 		}
 		else if (result.isMysteryBoxDoesNotExist()) {

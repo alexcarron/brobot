@@ -12,29 +12,30 @@ const result = getWorkflowResultCreator({
 		hasMineBonusPerk: boolean,
 	}>(),
 
-	nonPlayerMined: null
+	notAPlayer: null
 })
 
 /**
  * gives tokens to a player for mining.
  * @param params - The parameters for the function.
- * @param params.playerService The player service.
- * @param params.perkService The perk service.
  * @param params.playerMining The player that is mining.
+ * @param params.tokenOverride The number of tokens to give the player.
  * @returns A result object containing the amount of tokens earned and the new token count of the player.
  * - NonPlayerMined failure object if the provided player is not a valid player.
  */
 export const mineTokens = (
-	{playerMining}: {
+	{playerMining, tokenOverride}: {
 		playerMining: PlayerResolvable,
+		tokenOverride?: number
 	}
 ) => {
 	const {playerService, perkService, activityLogService} = getNamesmithServices();
 
 	if (!playerService.isPlayer(playerMining)) {
-		return result.failure.nonPlayerMined();
+		return result.failure.notAPlayer();
 	}
 
+	// Calculate tokens earned
 	let tokensEarned = Math.round(getAnticipatedRandomNum({
 		expectedValue: AVERAGE_TOKENS_FROM_MINING,
 		minimumValue: MIN_TOKENS_FROM_MINING
@@ -44,15 +45,21 @@ export const mineTokens = (
 		tokensEarned += 1;
 	});
 
+	if (tokenOverride !== undefined) {
+		tokensEarned = tokenOverride;
+	}
+
+	// Actually give the tokens to the player
 	playerService.giveTokens(playerMining, tokensEarned);
 
-	const newTokenCount = playerService.getTokens(playerMining);
-
+	// Log the action
 	activityLogService.logMineTokens({
 		playerMining,
 		tokensEarned,
 	});
 
+	// Build returned result object
+	const newTokenCount = playerService.getTokens(playerMining);
 	return result.success({
 		tokensEarned,
 		newTokenCount,

@@ -64,7 +64,7 @@ export function toRoleButton(
 				role
 			});
 
-			if (result.isNonPlayer()) {
+			if (result.isNotAPlayer()) {
 				return await replyToInteraction(buttonInteraction,
 					`You are not a player, so you cannot choose a role.`
 				);

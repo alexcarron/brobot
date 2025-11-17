@@ -1,5 +1,5 @@
 import { makeSure } from "./jest/jest-utils";
-import { getRandomName, getRandomNumericUUID, getRandomUUID } from "./random-utils";
+import { getRandomNameUUID, getRandomNumericUUID, getRandomUnicodeUUID, getRandomUUID } from "./random-utils";
 
 describe('random-utils', () => {
 	describe('createRandomNumericUUID()', () => {
@@ -30,14 +30,14 @@ describe('random-utils', () => {
 
 	describe('getRandomName()', () => {
 		it('returns a random name of at least 32 characters', () => {
-			const name = getRandomName();
+			const name = getRandomNameUUID();
 			makeSure(
 				name.length >= 32
 			).isTrue();
 		});
 
 		it('returns only letters', () => {
-			const name = getRandomName();
+			const name = getRandomNameUUID();
 			makeSure(
 				/^[a-zA-Z]+$/.test(name)
 			).isTrue();
@@ -46,9 +46,30 @@ describe('random-utils', () => {
 		it('always returns a unique name over 10,000 iterations', () => {
 			const names = new Set<string>();
 			for (let i = 0; i < 10000; i++) {
-				names.add(getRandomName());
+				names.add(getRandomNameUUID());
 			}
 			makeSure(names.size).is(10000);
+		});
+	});
+
+	describe('getRandomUnicodeUUID()', () => {
+		it('produces a string containing the requested number of code points (default 16)', () => {
+			const string = getRandomUnicodeUUID();
+			makeSure(string.length).is(16);
+		});
+
+		it('produces a different string each time it is called', () => {
+			const string1 = getRandomUnicodeUUID();
+			const string2 = getRandomUnicodeUUID();
+			makeSure(string1).isNot(string2);
+		});
+
+		it('always returns a unique string over 10,000 iterations', () => {
+			const strings = new Set<string>();
+			for (let i = 0; i < 10000; i++) {
+				strings.add(getRandomUnicodeUUID());
+			}
+			makeSure(strings.size).is(10000);
 		});
 	});
 })

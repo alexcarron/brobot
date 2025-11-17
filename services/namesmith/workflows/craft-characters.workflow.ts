@@ -11,7 +11,7 @@ const result = getWorkflowResultCreator({
 		recipeUsed: Recipe,
 	}>(),
 
-	nonPlayerCrafted: provides<{}>(),
+	notAPlayer: provides<{}>(),
 	missingRequiredCharacters: provides<{
 		missingCharacters: string
 	}>(),
@@ -39,7 +39,7 @@ export const craftCharacters = (
 	const {playerService, recipeService, activityLogService} = getNamesmithServices();
 
 	if (!playerService.isPlayer(playerResolvable)) {
-		return result.failure.nonPlayerCrafted({});
+		return result.failure.notAPlayer({});
 	}
 
 	const hasRequiredCharacters = recipeService.playerHasInputCharacters(recipeResolvable, playerResolvable);

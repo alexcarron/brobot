@@ -5,12 +5,17 @@ import { isNumber, isString } from "../../../../utilities/types/type-guards";
 import { DatabaseQuerier } from "../../database/database-querier";
 import { RoleRepository } from "../../repositories/role.repository";
 import { DBPerk, Perk } from "../../types/perk.types";
-import { DBPlayer, MinimalPlayer, Player, PlayerDefinition } from "../../types/player.types";
+import { DBPlayer, MinimalPlayer, Player, PlayerDefinition, PlayerResolvable } from "../../types/player.types";
 import { PlayerAlreadyExistsError } from "../../utilities/error.utility";
 import { toMinimalPlayerObject } from "../../utilities/player.utility";
 import { toPerk } from '../../utilities/perk.utility';
 import { Role } from "../../types/role.types";
 import { PerkRepository } from "../../repositories/perk.repository";
+import { getNamesmithServices } from "../../services/get-namesmith-services";
+import { returnIfNotFailure } from "../../utilities/workflow.utility";
+import { mineTokens } from "../../workflows/mine-tokens.workflow";
+import { claimRefill } from "../../workflows/claim-refill.workflow";
+import { addDays } from "../../../../utilities/date-time-utils";
 
 /**
  * An array of mock player data for use in tests.
@@ -251,4 +256,65 @@ export const editMockPlayer = (
 		throw new InvalidArgumentError(`editMockPlayer: No player found with ID ${editedPlayer.id}.`);
 
 	return toMinimalPlayerObject(newMockPlayer);
+}
+
+/**
+ * Forces a player to publish a name by giving them the input characters, changing their current name to the published name, and publishing the name.
+ * @param playerResolvable - The player resolvable to force to publish the name.
+ * @param publishedName - The name to force the player to publish.
+ * @returns The resolved player after the name has been published.
+ */
+export function forcePlayerToPublishName(
+	playerResolvable: PlayerResolvable,
+	publishedName: string
+) {
+	const { playerService } = getNamesmithServices();
+	playerService.giveCharacters(playerResolvable, publishedName);
+	playerService.changeCurrentName(playerResolvable, publishedName);
+	playerService.publishName(playerResolvable);
+	return playerService.resolvePlayer(playerResolvable);
+}
+
+/**
+ * Forces a player to mine tokens by giving them the input characters and overriding the amount of tokens earned by mining.
+ * @param playerResolvable - The player resolvable to force to mine tokens.
+ * @param tokens - The number of tokens to give the player by overriding the amount of tokens earned by mining.
+ * @returns The result of the mineTokens workflow.
+ */
+export function forcePlayerToMineTokens(
+	playerResolvable: PlayerResolvable,
+	tokens: number
+) {
+	return returnIfNotFailure(
+		mineTokens({
+			playerMining: playerResolvable,
+			tokenOverride: tokens
+		})
+	);
+}
+
+/**
+ * Forces a player to claim a token refill by overriding the number of tokens earned from the claim and reseting their cooldown before and after
+ * @param playerResolvable - The player resolvable to force to claim a token refill.
+ * @param tokens - The number of tokens to give the player by overriding the amount of tokens earned from the claim.
+ * @returns The result of the claimRefill workflow.
+ */
+export function forcePlayerToClaimRefill(
+	playerResolvable: PlayerResolvable,
+	tokens: number
+) {
+	const { playerService } = getNamesmithServices();
+	const manyDaysAgo = addDays(new Date(), -1000);
+	playerService.setLastRefillTime(playerResolvable, manyDaysAgo);
+
+	const result = returnIfNotFailure(
+		claimRefill({
+			playerRefilling: playerResolvable,
+			tokenOverride: tokens
+		})
+	);
+
+	playerService.setLastRefillTime(playerResolvable, manyDaysAgo);
+
+	return result;
 }

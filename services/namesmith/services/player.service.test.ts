@@ -36,6 +36,7 @@ import { PlayerService } from "./player.service";
 import { NameTooLongError, PlayerNotFoundError } from "../utilities/error.utility";
 import { addMockPlayer, createMockPlayerObject, mockPlayers } from "../mocks/mock-data/mock-players";
 import { NamesmithEvents } from "../event-listeners/namesmith-events";
+import { isNotNullable } from "../../../utilities/types/type-guards";
 
 describe('PlayerService', () => {
   const MOCK_PLAYER = mockPlayers[0];
@@ -776,4 +777,15 @@ describe('PlayerService', () => {
       expect(() => playerService.getCurrentName(mockPlayers[0].id)).toThrow();
     });
   });
+
+	describe('getAllPublishedNames()', () => {
+		it('should return all published names', () => {
+			const result = playerService.getAllPublishedNames();
+			expect(result).toEqual(
+				mockPlayers
+					.map(player => player.publishedName)
+					.filter(isNotNullable)
+			);
+		});
+	});
 });

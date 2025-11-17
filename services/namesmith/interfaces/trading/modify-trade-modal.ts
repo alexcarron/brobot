@@ -78,12 +78,12 @@ async function onSubmitModifyTradeModal(
 ) {
 	const modifyResult = modifyTrade({playerModifying, trade, charactersGiving, charactersReceiving});
 
-	if (modifyResult.isNonPlayerRespondedToTrade()) {
+	if (modifyResult.isNotAPlayer()) {
 		return await replyToInteraction(modalSubmitInteraction,
 			`You're not a player, so you can't modify trades.`
 		);
 	}
-	else if (modifyResult.isNonTradeRespondedTo()) {
+	else if (modifyResult.isTradeDoesNotExist()) {
 		return await replyToInteraction(modalSubmitInteraction,
 			`You cannot modify a trade that does not exist.`
 		);

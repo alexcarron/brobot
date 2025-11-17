@@ -16,7 +16,7 @@ export const command = new SlashCommand({
 			playerRefilling: interaction.user.id,
 		});
 
-		if (refillResult.isNonPlayerRefilled()) {
+		if (refillResult.isNotAPlayer()) {
 			return `You're not a player, so you can't claim a refill of tokens.`;
 		}
 		else if (refillResult.isRefillAlreadyClaimed()) {

@@ -9,7 +9,7 @@ import { Trade, TradeStatuses } from "../../types/trade.types";
 import { declineTrade } from "./decline-trade.workflow";
 import { addMockTrade } from "../../mocks/mock-data/mock-trades";
 import { addMockPlayer } from "../../mocks/mock-data/mock-players";
-import { returnIfNotFailure } from "../workflow-result-creator";
+import { returnIfNotFailure } from "../../utilities/workflow.utility";
 
 describe('decline-trade.workflow.ts', () => {
 	let MOCK_INITIATING_PLAYER: Player;
@@ -76,7 +76,7 @@ describe('decline-trade.workflow.ts', () => {
 			});
 
 			makeSure(
-				result.isNonPlayerRespondedToTrade()
+				result.isNotAPlayer()
 			).isTrue();
 		});
 
@@ -88,7 +88,7 @@ describe('decline-trade.workflow.ts', () => {
 			});
 
 			makeSure(
-				result.isNonTradeRespondedTo()
+				result.isTradeDoesNotExist()
 			).isTrue();
 		});
 

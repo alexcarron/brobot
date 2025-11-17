@@ -106,6 +106,26 @@ describe('ActivityLogRepository', () => {
 			makeSure(retrievedActivityLog).is(activityLog);
 		});
 
+		it('handles optional fields', () => {
+			const activityLog = activityLogRepository.addActivityLog({
+				player: SOME_PLAYER.id,
+				type: ActivityTypes.BUY_MYSTERY_BOX,
+			});
+
+			makeSure(activityLog).includesObject({
+				player: SOME_PLAYER,
+				type: ActivityTypes.BUY_MYSTERY_BOX,
+				tokensDifference: 0,
+			});
+			makeSure(activityLog.involvedPlayer).isNull();
+			makeSure(activityLog.involvedRecipe).isNull();
+			makeSure(activityLog.involvedQuest).isNull();
+
+			const retrievedActivityLog = activityLogRepository.getActivityLogOrThrow(activityLog.id);
+
+			makeSure(retrievedActivityLog).is(activityLog);
+		});
+
 		it('throws an ActivityLogAlreadyExistsError if the activity log already exists', () => {
 			makeSure(() =>
 				activityLogRepository.addActivityLog({
@@ -252,8 +272,6 @@ describe('ActivityLogRepository', () => {
 			const foundActivityLogs = activityLogRepository.findActivityLogsWhere({
 				involvedQuest: SOME_QUEST.id
 			});
-			console.log(foundActivityLogs);
-			console.log(db.getRows('SELECT * FROM activityLog'));
 
 			makeSure(foundActivityLogs).isNotEmpty();
 			makeSure(foundActivityLogs).contains(SOME_ACTIVITY_LOG);
@@ -327,6 +345,84 @@ describe('ActivityLogRepository', () => {
 					involvedQuest: INVALID_QUEST_ID
 				})
 			).throws(QuestNotFoundError);
+		});
+	});
+
+	describe('toPartialDBActivityLog()', () => {
+		it('converts an activity log definition object to a DB activity log object', () => {
+			const partialDBActivityLog = activityLogRepository.toPartialDBActivityLog({
+				id: SOME_ACTIVITY_LOG.id,
+				player: SOME_PLAYER,
+				type: ActivityTypes.BUY_MYSTERY_BOX,
+				tokensDifference: 10,
+				involvedPlayer: INVOLVED_PLAYER,
+				involvedRecipe: SOME_RECIPE,
+				involvedQuest: SOME_QUEST,
+			});
+
+			makeSure(partialDBActivityLog).includesObject({
+				id: SOME_ACTIVITY_LOG.id,
+				playerID: SOME_PLAYER.id,
+				type: ActivityTypes.BUY_MYSTERY_BOX,
+				tokensDifference: 10,
+				involvedPlayerID: INVOLVED_PLAYER.id,
+				involvedRecipeID: SOME_RECIPE.id,
+				involvedQuestID: SOME_QUEST.id,
+			});
+		});
+
+		it('handles null/undefined involved fields correctly', () => {
+			const partialDBActivityLog = activityLogRepository.toPartialDBActivityLog({
+				id: SOME_ACTIVITY_LOG.id,
+				player: SOME_PLAYER,
+				type: ActivityTypes.BUY_MYSTERY_BOX,
+				tokensDifference: 10,
+				involvedPlayer: null,
+				involvedRecipe: undefined,
+				involvedQuest: null,
+			});
+
+			makeSure(partialDBActivityLog).includesObject({
+				id: SOME_ACTIVITY_LOG.id,
+				playerID: SOME_PLAYER.id,
+				type: ActivityTypes.BUY_MYSTERY_BOX,
+				tokensDifference: 10,
+				involvedPlayerID: null,
+				involvedRecipeID: undefined,
+				involvedQuestID: null,
+			});
+		});
+
+		it('handles missing optional fields correctly', () => {
+			const partialDBActivityLog = activityLogRepository.toPartialDBActivityLog({
+				id: SOME_ACTIVITY_LOG.id,
+				player: SOME_PLAYER,
+				type: ActivityTypes.BUY_MYSTERY_BOX,
+			});
+
+			makeSure(partialDBActivityLog).includesObject({
+				id: SOME_ACTIVITY_LOG.id,
+				playerID: SOME_PLAYER.id,
+				type: ActivityTypes.BUY_MYSTERY_BOX,
+				tokensDifference: undefined,
+				involvedPlayerID: undefined,
+				involvedRecipeID: undefined,
+				involvedQuestID: undefined,
+			});
+		});
+
+		it('handles no fields correctly', () => {
+			const partialDBActivityLog = activityLogRepository.toPartialDBActivityLog({});
+
+			makeSure(partialDBActivityLog).includesObject({
+				id: undefined,
+				playerID: undefined,
+				type: undefined,
+				tokensDifference: undefined,
+				involvedPlayerID: undefined,
+				involvedRecipeID: undefined,
+				involvedQuestID: undefined,
+			});
 		});
 	});
 });

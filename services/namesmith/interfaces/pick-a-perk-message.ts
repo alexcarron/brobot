@@ -67,7 +67,7 @@ export function toPerkButton(
 				perksPickingFrom
 			});
 
-			if (result.isNonPlayer())
+			if (result.isNotAPlayer())
 				return await replyToInteraction(buttonInteraction,
 					'You are not a player, so you cannot pick a perk.'
 				);

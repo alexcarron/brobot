@@ -8,8 +8,8 @@ import { PerkService } from "../services/perk.service";
 import { PlayerService } from "../services/player.service";
 import { Perk } from "../types/perk.types";
 import { Player } from "../types/player.types";
+import { returnIfNotFailure } from "../utilities/workflow.utility";
 import { pickPerk } from "./pick-perk.workflow";
-import { returnIfNotFailure } from "./workflow-result-creator";
 
 describe('pick-perk.workflow', () => {
 	let playerService: PlayerService;
@@ -154,7 +154,7 @@ describe('pick-perk.workflow', () => {
 				});
 
 			makeSure(result.isFailure()).isTrue();
-			makeSure(result.isNonPlayer()).isTrue();
+			makeSure(result.isNotAPlayer()).isTrue();
 		});
 
 		it('should return perkDoesNotExist failure if the perk does not exist', () => {

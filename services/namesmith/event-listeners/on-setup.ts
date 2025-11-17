@@ -61,8 +61,8 @@ export const initializeDependencies = async (): Promise<NamesmithDependencies> =
 	const gameStateService = new GameStateService(gameStateRepository, playerService, voteService, recipeService);
 	const perkService = new PerkService(perkRepository, roleRepository, playerService);
 	const roleService = new RoleService(roleRepository, playerService)
-	const questService = new QuestService(questRepository);
 	const activityLogService = new ActivityLogService(activityLogRepository);
+	const questService = new QuestService(questRepository, activityLogService, playerService);
 
 	const namesmithDependencies: NamesmithDependencies = {
 		db,

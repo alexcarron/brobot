@@ -3,6 +3,7 @@ import { Player, PlayerResolvable } from '../../types/player.types';
 import { getWorkflowResultCreator, provides } from '../workflow-result-creator';
 import { getCharacterDifferences } from '../../../../utilities/data-structure-utils';
 import { getNamesmithServices } from '../../services/get-namesmith-services';
+import { NamesmithError } from '../../utilities/error.utility';
 
 const result = getWorkflowResultCreator({
 	success: provides<{
@@ -11,8 +12,8 @@ const result = getWorkflowResultCreator({
 		recipientPlayer: Player,
 	}>(),
 
-	nonPlayerRespondedToTrade: null,
-	nonTradeRespondedTo: null,
+	notAPlayer: null,
+	tradeDoesNotExist: null,
 	tradeAlreadyRespondedTo: provides<{
 		trade: Trade,
 	}>(),
@@ -44,12 +45,12 @@ export const acceptTrade = (
 
 	// Is the user who accepting the trade a player?
 	if (!playerService.isPlayer(playerAccepting)) {
-		return result.failure.nonPlayerRespondedToTrade();
+		return result.failure.notAPlayer();
 	}
 
 	// Does this trade actually exist?
 	if (!tradeService.isTrade(tradeResolvable)) {
-		return result.failure.nonTradeRespondedTo();
+		return result.failure.tradeDoesNotExist();
 	}
 	const trade = tradeService.resolveTrade(tradeResolvable);
 
@@ -90,6 +91,11 @@ export const acceptTrade = (
 		});
 	}
 
+	const playerAwaitingAcceptance = tradeService.getPlayerWaitingForResponse(trade);
+	if (playerAwaitingAcceptance === null) {
+		throw new NamesmithError('Trade is not awaiting a response from any player, but it is also responded to. This should never happen.');
+	}
+
 	playerService.transferCharacters(
 		trade.initiatingPlayer,
 		trade.recipientPlayer,
@@ -106,7 +112,7 @@ export const acceptTrade = (
 
 	activityLogService.logAcceptTrade({
 		playerAcceptingTrade: playerAccepting,
-		playerAwaitingAcceptance: tradeService.getPlayerWaitingForResponse(trade)!
+		playerAwaitingAcceptance,
 	});
 
 	return result.success({

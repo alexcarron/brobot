@@ -101,6 +101,17 @@ export function makeSure<
 		},
 
 		/**
+		 * Asserts that the actual value is not a string.
+		 * @example
+		 * makeSure(actualResultValue).isNotAString();
+		 */
+		isNotAString(): void {
+			if (typeof actualValue === 'string') {
+				throw new Error(`Expected actual value to NOT be a string, but got string: ${actualValue}`);
+			}
+		},
+
+		/**
 		 * Asserts that the actual value is undefined.
 		 * @example
 		 * makeSure(actualResultValue).isUndefined();

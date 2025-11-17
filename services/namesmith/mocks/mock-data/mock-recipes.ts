@@ -1,6 +1,11 @@
+import { getRandomNameUUID } from "../../../../utilities/random-utils";
 import { DatabaseQuerier } from "../../database/database-querier";
 import { RecipeRepository } from "../../repositories/recipe.repository";
-import { Recipe } from "../../types/recipe.types";
+import { getNamesmithServices } from "../../services/get-namesmith-services";
+import { PlayerResolvable } from "../../types/player.types";
+import { Recipe, RecipeResolvable } from "../../types/recipe.types";
+import { returnIfNotFailure } from "../../utilities/workflow.utility";
+import { craftCharacters } from "../../workflows/craft-characters.workflow";
 
 export const mockRecipes: Recipe[] = [
 	{
@@ -42,9 +47,32 @@ export const addMockRecipe = (
 
 	const {
 		id = undefined,
-		inputCharacters = "a",
-		outputCharacters = "a",
+		inputCharacters = getRandomNameUUID(),
+		outputCharacters = getRandomNameUUID(),
 	} = recipeDefinition;
 
 	return recipeRepository.addRecipe({ id, inputCharacters, outputCharacters });
 };
+
+/**
+ * Forces a player to craft a recipe by giving them the input characters.
+ * Used for testing purposes.
+ * @param playerResolvable - The player resolvable to force to craft the recipe.
+ * @param recipeResolvable - The recipe resolvable to force the player to craft.
+ * @returns The result of the craftCharacters workflow.
+ */
+export function forcePlayerToCraft(
+	playerResolvable: PlayerResolvable,
+	recipeResolvable: RecipeResolvable
+) {
+	const { playerService, recipeService } = getNamesmithServices();
+	const recipe = recipeService.resolveRecipe(recipeResolvable);
+	playerService.giveCharacters(playerResolvable, recipe.inputCharacters);
+
+	return returnIfNotFailure(
+		craftCharacters({
+			player: playerResolvable,
+			recipe: recipeResolvable
+		})
+	)
+}

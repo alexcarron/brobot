@@ -1,4 +1,5 @@
 import { randomBytes, randomFillSync } from 'node:crypto';
+import { isUnicodeCodePoint } from './string-checks-utils';
 
 const UINT32_MAX_PLUS_ONE = 0x100000000;
 const globalBuffer = new Uint32Array(1);
@@ -17,7 +18,7 @@ export const getRandomNumericUUID = () => {
 
 /**
  * Creates a random UUID as a string of 32 hexadecimal digits to be used as a unique identifier.
- * @returns {string} A random UUID
+ * @returns A random UUID
  * @example
  * const uuid = getRandomUUID(); // e.g. "a1a819b8356eae7a33d3f79d2f879e9d"
  */
@@ -236,7 +237,7 @@ export function getRandomElement<ElementType>(array: ElementType[]): ElementType
  * @param max - The maximum value of the range to generate a random number from.
  * @returns A random integer between min and max (inclusive).
  */
-function getBetween(min: number, max: number) {
+export function getBetween(min: number, max: number) {
   const range = max - min + 1;
   const randomInteger = getRandomInteger();
   return min + (randomInteger % range);
@@ -247,7 +248,7 @@ function getBetween(min: number, max: number) {
  * The first letter is always uppercase.
  * @returns {string} A random name.
  */
-export const getRandomName = () => {
+export const getRandomNameUUID = () => {
 	const LETTERS = 'abcdefghijklmnopqrstuvwxyz';
 	const NUM_LETTERS = 26;
 	const MIN_LENGTH = 32;
@@ -278,4 +279,69 @@ export const getRandomName = () => {
   name[0] = name[0].toUpperCase();
 
 	return name.join('');
+}
+
+/**
+ * Generate a random Unicode string composed of `length` code points.
+ * Each code point is drawn uniformly from valid Unicode code points (excluding surrogates & non-characters).
+ * @param length Number of Unicode code points to produce. Default 16.
+ * @returns A random Unicode string (may include emoji and other full-plane characters).
+ */
+export function getRandomUnicodeUUID(length: number = 8): string {
+  if (!Number.isInteger(length) || length <= 0) {
+    throw new RangeError('length must be a positive integer');
+  }
+
+  const codepoints: number[] = [];
+  let leftoverBuffer = Buffer.alloc(0);
+
+  while (codepoints.length < length) {
+    if (leftoverBuffer.length < 3) {
+      const need = Math.max(
+				32,
+				(length - codepoints.length) * 3
+			);
+
+      leftoverBuffer = Buffer.concat([
+				leftoverBuffer, randomBytes(need)
+			]);
+    }
+
+    for (
+			let index = 0;
+			(
+				index + 2 < leftoverBuffer.length &&
+				codepoints.length < length
+			);
+			index += 3
+		) {
+      const codePoint =
+				(leftoverBuffer[index] << 16) |
+				(leftoverBuffer[index + 1] << 8) |
+				leftoverBuffer[index + 2];
+
+      if (codePoint <= 0x10FFFF && isUnicodeCodePoint(codePoint)) {
+        codepoints.push(codePoint);
+      }
+			else {
+        const mapped = codePoint % 0x110000;
+        if (isUnicodeCodePoint(mapped)) {
+          codepoints.push(mapped);
+        }
+      }
+    }
+
+    const consumedBytes = Math.floor(leftoverBuffer.length / 3) * 3;
+    leftoverBuffer = leftoverBuffer.subarray(consumedBytes);
+  }
+
+  const parts: string[] = [];
+  for (let index = 0; index < codepoints.length; index += 1024) {
+    parts.push(
+			String.fromCodePoint(
+				...codepoints.slice(index, index + 1024)
+			)
+		);
+  }
+  return parts.join('');
 }

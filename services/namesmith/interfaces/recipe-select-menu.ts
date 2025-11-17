@@ -20,7 +20,7 @@ const onRecipeSelected = async (
 		recipe
 	});
 
-	if (result.isNonPlayerCrafted()) {
+	if (result.isNotAPlayer()) {
 		await replyToInteraction(interaction,
 			'You\'re not a player, so you can\'t craft a character.'
 		);

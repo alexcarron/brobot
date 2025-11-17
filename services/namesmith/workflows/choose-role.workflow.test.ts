@@ -8,8 +8,8 @@ import { getNamesmithServices } from "../services/get-namesmith-services";
 import { RoleService } from "../services/role.service";
 import { Player } from "../types/player.types";
 import { RoleID } from "../types/role.types";
+import { returnIfNotFailure } from "../utilities/workflow.utility";
 import { chooseRole } from "./choose-role.workflow";
-import { returnIfNotFailure } from "./workflow-result-creator";
 
 describe('choose-role.workflow', () => {
 	let roleService: RoleService;
@@ -84,7 +84,7 @@ describe('choose-role.workflow', () => {
 
 			makeSure(result).isAnObject();
 			makeSure(result.isFailure()).isTrue();
-			makeSure(result.isNonPlayer()).isTrue();
+			makeSure(result.isNotAPlayer()).isTrue();
 		});
 
 		it('should return roleDoesNotExist failure if the role does not exist', () => {

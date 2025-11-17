@@ -15,7 +15,7 @@ const result = getWorkflowResultCreator({
 		tokensFromRefillBonus: number,
 	}>(),
 
-	nonPlayerRefilled: null,
+	notAPlayer: null,
 	refillAlreadyClaimed: provides<{
 		nextRefillTime: Date
 	}>(),
@@ -27,19 +27,21 @@ const result = getWorkflowResultCreator({
  * @param params.playerService The player service.
  * @param params.perkService The perk service.
  * @param params.playerRefilling The player that is refilling.
+ * @param params.tokenOverride The number of tokens to give the player.
  * @returns An object containing the amount of tokens earned and the new token count of the player.
  * - RefillAlreadyClaimedError if the player has already claimed a refill.
  * - NonPlayerRefilledError if the provided player is not a valid player.
  */
 export const claimRefill = (
-	{playerRefilling}: {
+	{playerRefilling, tokenOverride}: {
 		playerRefilling: PlayerResolvable,
+		tokenOverride?: number
 	}
 ) => {
 	const {playerService, perkService, activityLogService} = getNamesmithServices();
 
 	if (!playerService.isPlayer(playerRefilling)) {
-		return result.failure.nonPlayerRefilled();
+		return result.failure.notAPlayer();
 	}
 
 	let newLastRefillTime = new Date();
@@ -69,7 +71,6 @@ export const claimRefill = (
 		const inventory = playerService.getInventory(playerRefilling);
 		baseTokensEarned = inventory.length;
 	});
-
 	totalTokensEarned += baseTokensEarned;
 
 	// Handle Refill Bonus perk
@@ -79,6 +80,13 @@ export const claimRefill = (
 		totalTokensEarned += tokensFromRefillBonus;
 	});
 
+	if (tokenOverride !== undefined) {
+		baseTokensEarned = tokenOverride;
+		tokensFromRefillBonus = 0;
+		totalTokensEarned = tokenOverride;
+	}
+
+	// Actually give the tokens to the player
 	playerService.giveTokens(playerRefilling, totalTokensEarned);
 
 	// Set new last refill time
@@ -88,14 +96,13 @@ export const claimRefill = (
 
 	playerService.setLastRefillTime(playerRefilling, newLastRefillTime);
 
-	const newTokenCount = playerService.getTokens(playerRefilling);
-	const nextRefillTime = addHours(newLastRefillTime, REFILL_COOLDOWN_HOURS);
-
 	activityLogService.logClaimRefill({
 		playerRefilling,
 		tokensEarned: totalTokensEarned,
 	});
 
+	const newTokenCount = playerService.getTokens(playerRefilling);
+	const nextRefillTime = addHours(newLastRefillTime, REFILL_COOLDOWN_HOURS);
 	return result.success({
 		baseTokensEarned,
 		newTokenCount,

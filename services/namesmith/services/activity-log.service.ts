@@ -1,3 +1,4 @@
+import { DatabaseQuerier } from "../database/database-querier";
 import { ActivityLogRepository } from "../repositories/activity-log.repository";
 import { ActivityLog, ActivityTypes } from "../types/activity-log.types";
 import { PlayerResolvable } from "../types/player.types";
@@ -11,6 +12,12 @@ export class ActivityLogService {
 	constructor(
 		public activityLogRepository: ActivityLogRepository,
 	) {}
+
+	static fromDB(db: DatabaseQuerier) {
+		return new ActivityLogService(
+			ActivityLogRepository.fromDB(db),
+		);
+	}
 
 	/**
 	 * Logs a character crafting activity.
@@ -139,12 +146,23 @@ export class ActivityLogService {
 	}
 
 	/**
+	 * Retrieves all activity logs for a given player.
+	 * @param player - The player to retrieve the activity logs for.
+	 * @returns An array of activity logs for the given player.
+	 */
+	getLogsForPlayer(player: PlayerResolvable): ActivityLog[] {
+		return this.activityLogRepository.findActivityLogsWhere({
+			player: player,
+		});
+	}
+
+	/**
 	 * Checks if a player has completed a quest.
 	 * @param player - The player to check.
 	 * @param quest - The quest to check.
 	 * @returns True if the player has completed the quest, false otherwise.
 	 */
-	hasPlayerCompletedQuest(
+	hasPlayerAlreadyCompletedQuest(
 		player: PlayerResolvable,
 		quest: QuestResolvable
 	): boolean {
@@ -154,5 +172,41 @@ export class ActivityLogService {
 			involvedQuest: quest,
 		});
 		return activityLogs.length > 0;
+	}
+
+	/**
+	 * Retrieves all activity logs for a given player where the type is crafting characters.
+	 * @param player - The player to retrieve the activity logs for.
+	 * @returns An array of activity logs for the given player.
+	 */
+	getCraftLogsForPlayer(player: PlayerResolvable): ActivityLog[] {
+		return this.activityLogRepository.findActivityLogsWhere({
+			player: player,
+			type: ActivityTypes.CRAFT_CHARACTERS,
+		});
+	}
+
+	/**
+	 * Retrieves all activity logs for a given player where the type is accepting a trade.
+	 * @param player - The player to retrieve the activity logs for.
+	 * @returns An array of activity logs for the given player.
+	 */
+	getAcceptTradeLogsForPlayer(player: PlayerResolvable): ActivityLog[] {
+		return this.activityLogRepository.findActivityLogsWhere({
+			player: player,
+			type: ActivityTypes.ACCEPT_TRADE,
+		});
+	}
+
+	/**
+	 * Retrieves all activity logs where the type is accepting a trade and the involved player is the given player.
+	 * @param player - The player to retrieve the activity logs for.
+	 * @returns An array of activity logs for the given player.
+	 */
+	getAcceptTradeLogsInvolvingPlayer(player: PlayerResolvable): ActivityLog[] {
+		return this.activityLogRepository.findActivityLogsWhere({
+			involvedPlayer: player,
+			type: ActivityTypes.ACCEPT_TRADE,
+		});
 	}
 }

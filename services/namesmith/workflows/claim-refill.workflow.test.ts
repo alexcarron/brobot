@@ -13,8 +13,8 @@ import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { setupMockNamesmith } from "../mocks/mock-setup";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PlayerService } from "../services/player.service";
+import { returnIfNotFailure } from "../utilities/workflow.utility";
 import { claimRefill } from "./claim-refill.workflow";
-import { returnIfNotFailure } from "./workflow-result-creator";
 
 describe('claim-tokens.workflow', () => {
 	let services: {
@@ -170,13 +170,31 @@ describe('claim-tokens.workflow', () => {
 			makeSure(result.isRefillAlreadyClaimed()).isTrue();
 		})
 
+		it('override the number of tokens given based on the given tokenOverride value', () => {
+			const mockPlayer = addMockPlayer(db, {
+				tokens: 10
+			});
+
+			const result = returnIfNotFailure(
+				claimRefill({
+					...getNamesmithServices(),
+					playerRefilling: mockPlayer.id,
+					tokenOverride: 200
+				})
+			);
+
+			makeSure(result.baseTokensEarned).is(200);
+			makeSure(result.tokensFromRefillBonus).is(0);
+			makeSure(result.newTokenCount).is(mockPlayer.tokens + 200);
+		});
+
 		it('should throw NonPlayerRefilledError if the provided player is not a valid player', () => {
 			const result = claimRefill({
 				...getNamesmithServices(),
 				playerRefilling: INVALID_PLAYER_ID
 			});
 
-			makeSure(result.isNonPlayerRefilled()).isTrue();
+			makeSure(result.isNotAPlayer()).isTrue();
 		});
 	});
 });

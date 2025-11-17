@@ -15,7 +15,7 @@ export const command = new SlashCommand({
 			playerMining: interaction.user.id,
 		})
 
-		if (result.isNonPlayerMined())
+		if (result.isNotAPlayer())
 			return `You're not a player, so you can't mine tokens.`;
 
 		const { tokensEarned, newTokenCount, hasMineBonusPerk } = result;

@@ -10,8 +10,8 @@ const result = getWorkflowResultCreator({
 		playerDeclined: Player,
 	}>(),
 
-	nonPlayerRespondedToTrade: null,
-	nonTradeRespondedTo: null,
+	notAPlayer: null,
+	tradeDoesNotExist: null,
 	tradeAlreadyRespondedTo: provides<{
 		trade: Trade,
 	}>(),
@@ -39,12 +39,12 @@ export const declineTrade = (
 
 	// Is the user who is declining the trade a player?
 	if (!playerService.isPlayer(playerDeclining)) {
-		return result.failure.nonPlayerRespondedToTrade();
+		return result.failure.notAPlayer();
 	}
 
 	// Does this trade actually exist?
 	if (!tradeService.isTrade(tradeResolvable)) {
-		return result.failure.nonTradeRespondedTo();
+		return result.failure.tradeDoesNotExist();
 	}
 	const trade = tradeService.resolveTrade(tradeResolvable);
 

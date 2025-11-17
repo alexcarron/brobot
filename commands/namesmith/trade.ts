@@ -50,10 +50,10 @@ export const command = new SlashCommand({
 			requestedCharacters,
 		});
 
-		if (tradeResult.isNonPlayerInitiatedTrade()) {
+		if (tradeResult.isInitatorNotAPlayer()) {
 			return `You're not a player, so you can't initiate a trade.`;
 		}
-		else if (tradeResult.isNonPlayerReceivedTrade()) {
+		else if (tradeResult.isRecipientNotAPlayer()) {
 			return `You can only trade with players. <@${recipientPlayerID}> is not a player.`;
 		}
 		else if (tradeResult.isTradeBetweenSamePlayers()) {

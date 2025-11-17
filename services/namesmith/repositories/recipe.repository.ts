@@ -115,10 +115,17 @@ export class RecipeRepository {
 	 * @returns The resolved recipe ID.
 	 */
 	resolveID(recipeResolvable: RecipeResolvable): RecipeID {
+		let recipeID;
 		if (isNumber(recipeResolvable))
-			return recipeResolvable;
+			recipeID = recipeResolvable;
+		else
+			recipeID = recipeResolvable.id;
 
-		return recipeResolvable.id;
+		if (!this.doesRecipeExist(recipeID)) {
+			throw new RecipeNotFoundError(recipeID);
+		}
+
+		return recipeID;
 	}
 
 	/**

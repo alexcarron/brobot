@@ -1,5 +1,5 @@
 import { makeSure } from "./jest/jest-utils";
-import { areCharactersInString, getCharacterCounts, isIntegerString, isOneSymbol } from "./string-checks-utils";
+import { areCharactersInString, getCharacterCounts, hasEmoji, hasLetter, hasNumber, hasSymbol, isIntegerString, isOneSymbol, isUnicodeCodePoint } from "./string-checks-utils";
 
 describe('string-checks-utils', () => {
 	describe('areCharactersInString()', () => {
@@ -374,6 +374,228 @@ describe('string-checks-utils', () => {
 
 		it('returns false for repeated long ZWJ emoji (same sequence twice)', () => {
 			makeSure(isOneSymbol('👩🏽‍👩🏾‍👦🏿‍👦🏻👩🏽‍👩🏾‍👦🏿‍👦🏻')).is(false);
+		});
+	});
+
+	describe('hasEmoji()', () => {
+		it('returns true for a string that is just an emoji', () => {
+			makeSure(hasEmoji('😀')).is(true);
+		});
+
+		it('returns true for a string with a single emoji', () => {
+			makeSure(hasEmoji('Hello 😀')).is(true);
+		});
+
+		it('returns true for a string with multiple emojis', () => {
+			makeSure(hasEmoji('😀👍🏽👩‍💻')).is(true);
+		});
+
+		it('returns true for multi-codepoint emojis', () => {
+			makeSure(hasEmoji('👩‍👩‍👧‍👦')).is(true);
+		});
+
+		it('returns false for a string with no emoji', () => {
+			makeSure(hasEmoji('Hello world')).is(false);
+		});
+
+		it('returns false for an empty string', () => {
+			makeSure(hasEmoji('')).is(false);
+		});
+
+		it('returns false for a string with only whitespace', () => {
+			makeSure(hasEmoji('   ')).is(false);
+		});
+
+		it('returns false for a number', () => {
+			makeSure(hasEmoji('123')).is(false);
+		});
+
+		it('returns false for a symbol', () => {
+			makeSure(hasEmoji('%')).is(false);
+		});
+	});
+
+	describe('hasSymbol()', () => {
+		it('returns true for a string that is just a symbol', () => {
+			makeSure(hasSymbol('%')).is(true);
+		});
+
+		it('returns true for a string with a single symbol', () => {
+			makeSure(hasSymbol('Hello!')).is(true);
+		});
+
+		it('returns true for a string with multiple symbols', () => {
+			makeSure(hasSymbol('Hello!$@')).is(true);
+		});
+
+		it('returns false for a string with no symbols', () => {
+			makeSure(hasSymbol('Hello world')).is(false);
+		});
+
+		it('returns false for an emoji', () => {
+			makeSure(hasSymbol('😀')).is(false);
+		});
+
+		it('returns false for a multi-codepoint emoji', () => {
+			makeSure(hasSymbol('👩‍👩‍👧‍👦')).is(false);
+		});
+
+		it('returns false for regional indicators used in flags', () => {
+			makeSure(hasSymbol('🇺🇸')).is(false);
+		});
+
+		it('returns false for a number', () => {
+			makeSure(hasSymbol('123')).is(false);
+		});
+
+		it('returns false for an empty string', () => {
+			makeSure(hasSymbol('')).is(false);
+		});
+
+		it('returns false for a string with whitespace', () => {
+			makeSure(hasSymbol(' a')).is(false);
+			makeSure(hasSymbol('a ')).is(false);
+			makeSure(hasSymbol('a b')).is(false);
+		});
+	});
+
+	describe('hasNumber()', () => {
+		it('returns true for a string that is just a number', () => {
+			makeSure(hasNumber('5')).is(true);
+		});
+
+		it('returns true for a string with a single number', () => {
+			makeSure(hasNumber('Hello 5')).is(true);
+		});
+
+		it('returns true for a string with multiple numbers', () => {
+			makeSure(hasNumber('Hello 5 6')).is(true);
+		});
+
+		it('returns false for a string with no numbers', () => {
+			makeSure(hasNumber('Hello world')).is(false);
+		});
+
+		it('returns false for an emoji', () => {
+			makeSure(hasNumber('😀')).is(false);
+		});
+
+		it('returns false for a multi-codepoint emoji', () => {
+			makeSure(hasNumber('👩‍👩‍👧‍👦')).is(false);
+		});
+
+		it('returns false for regional indicators used in flags', () => {
+			makeSure(hasNumber('🇺🇸')).is(false);
+		});
+
+		it('returns false for a symbol', () => {
+			makeSure(hasNumber('%')).is(false);
+		});
+
+		it('returns false for an empty string', () => {
+			makeSure(hasNumber('')).is(false);
+		});
+
+		it('returns false for a string with whitespace', () => {
+			makeSure(hasNumber(' a')).is(false);
+			makeSure(hasNumber('a ')).is(false);
+			makeSure(hasNumber('a b')).is(false);
+		});
+	});
+
+	describe('hasLetter()', () => {
+		it('returns true for a string that is just a letter', () => {
+			makeSure(hasLetter('a')).is(true);
+		});
+
+		it('returns true for a string with a single letter', () => {
+			makeSure(hasLetter('123 a')).is(true);
+		});
+
+		it('returns true for a string with multiple letters', () => {
+			makeSure(hasLetter('123 abc')).is(true);
+		});
+
+		it('returns false for a string with no letters', () => {
+			makeSure(hasLetter('123 456')).is(false);
+		});
+
+		it('returns false for an emoji', () => {
+			makeSure(hasLetter('😀')).is(false);
+		});
+
+		it('returns false for a multi-codepoint emoji', () => {
+			makeSure(hasLetter('👩‍👩‍👧‍👦')).is(false);
+		});
+
+		it('returns false for regional indicators used in flags', () => {
+			makeSure(hasLetter('🇺🇸')).is(false);
+		});
+
+		it('returns false for a symbol', () => {
+			makeSure(hasLetter('%')).is(false);
+		});
+
+		it('returns false for an empty string', () => {
+			makeSure(hasLetter('')).is(false);
+		});
+
+		it('returns false for a string with whitespace', () => {
+			makeSure(hasLetter(' 1')).is(false);
+			makeSure(hasLetter('1 ')).is(false);
+			makeSure(hasLetter('1 2')).is(false);
+		});
+
+		it('returns false for greek letters', () => {
+			makeSure(hasLetter('αβγ|𝑒ττℛ∫')).is(false);
+		});
+	});
+
+	describe('isValidUnicodeCodePoint()', () => {
+		it('returns true for a code point for a', () => {
+			makeSure(isUnicodeCodePoint(
+				'a'.codePointAt(0)!
+			)).isTrue();
+		});
+
+		it('returns true for an emoji code point (basic plane)', () => {
+			makeSure(isUnicodeCodePoint(
+				'😀'.codePointAt(0)!
+			)).isTrue();
+		});
+
+		it('returns true for a precomposed accented character (é)', () => {
+			makeSure(isUnicodeCodePoint(
+				'é'.codePointAt(0)!
+			)).isTrue();
+		});
+
+		it('returns true for an emoji code point (astral plane)', () => {
+			// U+1F600 GRINNING FACE
+			makeSure(isUnicodeCodePoint(0x1F600)).isTrue();
+		});
+
+		it('rejects surrogate range start and end', () => {
+			makeSure(isUnicodeCodePoint(0xD800)).isFalse();
+			makeSure(isUnicodeCodePoint(0xDFFF)).isFalse();
+		});
+
+		it('rejects known non-characters (U+FDD0..U+FDEF)', () => {
+			makeSure(isUnicodeCodePoint(0xFDD0)).isFalse();
+			makeSure(isUnicodeCodePoint(0xFDEF)).isFalse();
+		});
+
+		it('rejects code points whose low 16 bits are 0xFFFE or 0xFFFF', () => {
+			// e.g. U+1FFFF (low 16 bits 0xFFFF)
+			makeSure(isUnicodeCodePoint(0x1FFFF)).isFalse();
+			// e.g. U+2FFFE (low 16 bits 0xFFFE)
+			makeSure(isUnicodeCodePoint(0x2FFFE)).isFalse();
+		});
+
+		it('rejects values outside Unicode range and non-positive values', () => {
+			makeSure(isUnicodeCodePoint(0)).isFalse();
+			makeSure(isUnicodeCodePoint(-1)).isFalse();
+			makeSure(isUnicodeCodePoint(0x110000)).isFalse(); // > U+10FFFF
 		});
 	});
 });

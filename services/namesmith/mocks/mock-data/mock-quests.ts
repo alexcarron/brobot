@@ -1,4 +1,4 @@
-import { getRandomName } from "../../../../utilities/random-utils";
+import { getRandomNameUUID } from "../../../../utilities/random-utils";
 import { WithAllOptional } from "../../../../utilities/types/generic-types";
 import { DatabaseQuerier } from "../../database/database-querier";
 import { QuestRepository } from "../../repositories/quest.repository";
@@ -18,7 +18,7 @@ export function addMockQuest(
 	const questRepository = QuestRepository.fromDB(db);
 	const {
 		id = undefined,
-		name = getRandomName(),
+		name = getRandomNameUUID(),
 		description = 'This is a mock description',
 		tokensReward = 0,
 		charactersReward = '',

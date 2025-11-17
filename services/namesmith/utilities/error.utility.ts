@@ -811,3 +811,19 @@ export class NotEnoughPerksError extends NamesmithError {
 		})
 	}
 }
+
+/**
+ * Error thrown when the verification for a quest completion has not been implemented yet
+ */
+export class QuestEligbilityNotImplementedError extends NamesmithError {
+	declare relevantData: { questID: QuestID };
+
+	constructor(questID: QuestID) {
+		super({
+			message: `Verification for the completion of the quest with the quest ID ${questID} has not been implemented yet.`,
+			relevantData: {
+				questID,
+			}
+		})
+	}
+}

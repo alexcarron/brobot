@@ -12,8 +12,8 @@ const result = getWorkflowResultCreator({
 		trade: Trade,
 	}>(),
 
-	nonPlayerInitiatedTrade: null,
-	nonPlayerReceivedTrade: null,
+	initatorNotAPlayer: null,
+	recipientNotAPlayer: null,
 	tradeBetweenSamePlayers: null,
 	missingOfferedCharacters: provides<{
 		missingCharacters: string,
@@ -44,14 +44,19 @@ export const initiateTrade = (
 ) => {
 	const {tradeService, playerService} = getNamesmithServices();
 
+	console.log({
+		initiatingPlayer,
+		recipientPlayer,
+	});
+
 	// Is the initiating user a player?
 	if (!playerService.isPlayer(initiatingPlayer)) {
-		return result.failure.nonPlayerInitiatedTrade();
+		return result.failure.initatorNotAPlayer();
 	}
 
 	// Is the recipient user a player?
 	if (!playerService.isPlayer(recipientPlayer)) {
-		return result.failure.nonPlayerReceivedTrade();
+		return result.failure.recipientNotAPlayer();
 	}
 
 	// Is the player trading with themselves?

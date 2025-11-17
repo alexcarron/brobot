@@ -174,6 +174,17 @@ export function isFunction(
 }
 
 /**
+ * Checks if a given value is null.
+ * @param value - The value to check.
+ * @returns If the value is null.
+ */
+export function isNull(
+	value: unknown
+): value is null {
+	return value === null;
+}
+
+/**
  * Checks if a given value is undefined.
  * @param value - The value to check.
  * @returns If the value is undefined.
@@ -199,4 +210,21 @@ export function isNotUndefined<
 	value: TypeOrUndefined
 ): value is Exclude<TypeOrUndefined, undefined> {
 	return !isUndefined(value);
+}
+
+/**
+ * Checks if a given value is neither null nor undefined.
+ * @param value - The value to check.
+ * @returns If the value is neither null nor undefined.
+ * @example
+ * expect(isNotNullable(undefined)).toBe(false);
+ * expect(isNotNullable(null)).toBe(false);
+ * expect(isNotNullable(0)).toBe(true);
+ */
+export function isNotNullable<
+	TypeOrNullOrUndefined
+>(
+	value: TypeOrNullOrUndefined
+): value is Exclude<TypeOrNullOrUndefined, null | undefined> {
+	return !isNull(value) && !isUndefined(value);
 }

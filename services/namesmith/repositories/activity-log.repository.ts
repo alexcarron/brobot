@@ -1,9 +1,11 @@
 import { returnNonNullOrThrow } from "../../../utilities/error-utils";
-import { WithAtLeastOneProperty } from "../../../utilities/types/generic-types";
+import { resolveOptional } from "../../../utilities/optional-utils";
+import { WithAllOptional, WithAtLeastOneProperty } from '../../../utilities/types/generic-types';
+import { isNotNullable } from "../../../utilities/types/type-guards";
 import { DatabaseQuerier, toEqualityConditionsPlaceholder } from "../database/database-querier";
-import { ActivityLogID as ActivityLogID, ActivityLog, DBActivityLog, ActivityLogDefinition, ActivityTypes } from "../types/activity-log.types";
-import { Player, PlayerID } from "../types/player.types";
-import { Quest, QuestID } from "../types/quest.types";
+import { ActivityLogID as ActivityLogID, ActivityLog, DBActivityLog, ActivityLogDefinition } from "../types/activity-log.types";
+import { Player } from "../types/player.types";
+import { Quest } from "../types/quest.types";
 import { Recipe } from "../types/recipe.types";
 import { ActivityLogAlreadyExistsError, ActivityLogNotFoundError } from "../utilities/error.utility";
 import { PlayerRepository } from "./player.repository";
@@ -123,6 +125,32 @@ export class ActivityLogRepository {
 		) === 1;
 	}
 
+	toPartialDBActivityLog(
+		{ id, player, type, tokensDifference, involvedPlayer, involvedRecipe, involvedQuest }: Partial<ActivityLogDefinition>
+	): WithAllOptional<DBActivityLog> {
+		const playerID = resolveOptional(player,
+			this.playerRepository.resolveID.bind(this.playerRepository)
+		);
+		const involvedPlayerID = resolveOptional(involvedPlayer,
+			this.playerRepository.resolveID.bind(this.playerRepository)
+		);
+		const involvedRecipeID = resolveOptional(involvedRecipe,
+			this.recipeRepository.resolveID.bind(this.recipeRepository)
+		);
+		const involvedQuestID = resolveOptional(involvedQuest,
+			this.questRepository.resolveID.bind(this.questRepository)
+		);
+
+		return {
+			id,
+			playerID,
+			type,
+			tokensDifference,
+			involvedPlayerID,
+			involvedRecipeID,
+			involvedQuestID,
+		};
+	}
 
 	/**
 	 * Adds an activity log to the database.
@@ -134,25 +162,26 @@ export class ActivityLogRepository {
 		{id, player, type, tokensDifference, involvedPlayer, involvedRecipe, involvedQuest}:
 			ActivityLogDefinition
 	) {
-		const playerID = this.playerRepository.resolvePlayer(player).id;
-		const involvedPlayerID =
-			involvedPlayer
-				? this.playerRepository.resolvePlayer(involvedPlayer).id
-				: null;
+		this.playerRepository.resolvePlayer(player);
+		if (isNotNullable(involvedPlayer)) {
+			this.playerRepository.resolvePlayer(involvedPlayer);
+		}
+		if (isNotNullable(involvedRecipe)) {
+			this.recipeRepository.resolveRecipe(involvedRecipe);
+		}
+		if (isNotNullable(involvedQuest)) {
+			this.questRepository.resolveQuest(involvedQuest);
+		}
 
-		const involvedRecipeID =
-			involvedRecipe
-				? this.recipeRepository.resolveRecipe(involvedRecipe).id
-				: null;
-
-		const involvedQuestID =
-			involvedQuest
-				? this.questRepository.resolveQuest(involvedQuest).id
-				: null;
-
-		tokensDifference = tokensDifference ?? 0;
-
-		const queryParameters = { playerID, type, tokensDifference, involvedPlayerID, involvedRecipeID, involvedQuestID };
+		const queryParameters = this.toPartialDBActivityLog({
+			id,
+			player,
+			type,
+			tokensDifference: tokensDifference ?? 0,
+			involvedPlayer,
+			involvedRecipe,
+			involvedQuest,
+		});
 
 		if (id === undefined) {
 			const result = this.db.run(
@@ -194,31 +223,29 @@ export class ActivityLogRepository {
 		{ id, player, type, tokensDifference, involvedPlayer, involvedRecipe, involvedQuest }:
 			WithAtLeastOneProperty<ActivityLogDefinition>
 	): ActivityLog[] {
-		const playerID = player === undefined
-			? undefined
-			: this.playerRepository.resolvePlayer(player).id;
-
-		let involvedPlayerID = involvedPlayer;
-		if (involvedPlayer !== null && involvedPlayer !== undefined) {
-			involvedPlayerID = this.playerRepository.resolvePlayer(involvedPlayer).id;
+		if (isNotNullable(player)) {
+			this.playerRepository.resolvePlayer(player);
+		}
+		if (isNotNullable(involvedPlayer)) {
+			this.playerRepository.resolvePlayer(involvedPlayer);
+		}
+		if (isNotNullable(involvedRecipe)) {
+			this.recipeRepository.resolveRecipe(involvedRecipe);
+		}
+		if (isNotNullable(involvedQuest)) {
+			this.questRepository.resolveQuest(involvedQuest);
 		}
 
-		let involvedRecipeID = involvedRecipe;
-		if (involvedRecipe !== null && involvedRecipe !== undefined) {
-			involvedRecipeID = this.recipeRepository.resolveRecipe(involvedRecipe).id;
-		}
-
-		let involvedQuestID = involvedQuest;
-		if (involvedQuest !== null && involvedQuest !== undefined) {
-			involvedQuestID = this.questRepository.resolveQuest(involvedQuest).id;
-		}
+		const queryParameters = this.toPartialDBActivityLog({
+			id, player, type, tokensDifference, involvedPlayer, involvedRecipe, involvedQuest,
+		});
 
 		const dbActivityLogs = this.db.getRows(
 			`SELECT * FROM activityLog
 			WHERE
-				${toEqualityConditionsPlaceholder({ id, playerID, type, tokensDifference, involvedPlayerID, involvedRecipeID, involvedQuestID })}
+				${toEqualityConditionsPlaceholder(queryParameters)}
 			`,
-			{ id, playerID, type, tokensDifference, involvedPlayerID, involvedRecipeID, involvedQuestID }
+			queryParameters
 		) as DBActivityLog[];
 
 		return dbActivityLogs.map(dbActivityLog => this.toActivityLogFromDB(dbActivityLog));

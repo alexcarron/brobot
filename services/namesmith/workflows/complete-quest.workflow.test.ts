@@ -1,29 +1,55 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
-import { INVALID_PLAYER_ID, INVALID_QUEST_ID } from "../constants/test.constants";
+import { getRandomUUID } from "../../../utilities/random-utils";
+import { Quests } from "../constants/quests.constants";
+import { FREEBIE_QUEST_NAME, INVALID_PLAYER_ID, INVALID_QUEST_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { addMockQuest } from "../mocks/mock-data/mock-quests";
 import { setupMockNamesmith } from "../mocks/mock-setup";
 import { ActivityLogService } from "../services/activity-log.service";
+import { PlayerService } from "../services/player.service";
 import { Player } from "../types/player.types";
 import { Quest } from "../types/quest.types";
+import { assertNotFailure, returnIfNotFailure } from "../utilities/workflow.utility";
 import { completeQuest } from "./complete-quest.workflow";
-import { returnIfNotFailure } from "./workflow-result-creator";
 
 describe('completeQuest()', () => {
   let db: DatabaseQuerier;
 	let activityLogService: ActivityLogService;
+	let playerService: PlayerService;
 
   let SOME_PLAYER: Player;
   let SOME_QUEST: Quest;
 
   beforeEach(() => {
-    ({ db, activityLogService } = setupMockNamesmith());
+    ({ db, activityLogService, playerService } = setupMockNamesmith());
     SOME_PLAYER = addMockPlayer(db, {});
-    SOME_QUEST = addMockQuest(db, {});
+    SOME_QUEST = addMockQuest(db, {
+			name: FREEBIE_QUEST_NAME + getRandomUUID()
+		});
   });
 
   describe('completeQuest()', () => {
+		it('should give the rewards of the quest to the player', () => {
+			const questWithRewards = addMockQuest(db, {
+				name: FREEBIE_QUEST_NAME + getRandomUUID(),
+				tokensReward: 28,
+				charactersReward: 'Abc34#🔥',
+			});
+
+			assertNotFailure(
+				completeQuest({
+					player: SOME_PLAYER,
+					quest: questWithRewards
+				})
+			);
+
+			const resolvedPlayer = playerService.resolvePlayer(SOME_PLAYER.id);
+
+			makeSure(resolvedPlayer.tokens).is(SOME_PLAYER.tokens + 28);
+			makeSure(resolvedPlayer.inventory).is(SOME_PLAYER.inventory + 'Abc34#🔥');
+		});
+
     it('should log the quest as completed in the activity log', () => {
       const activityLogSpy = jest.spyOn(activityLogService, 'logCompleteQuest');
 
@@ -50,7 +76,7 @@ describe('completeQuest()', () => {
 			});
 
       makeSure(result.isFailure()).isTrue();
-      makeSure(result.isNonPlayer()).isTrue();
+      makeSure(result.isNotAPlayer()).isTrue();
     });
 
     it('should return questDoesNotExist failure if the quest does not exist', () => {
@@ -74,7 +100,17 @@ describe('completeQuest()', () => {
 			});
 
       makeSure(result.isFailure()).isTrue();
-      makeSure(result.isPlayerAlreadyCompletedQuest()).isTrue();
+      makeSure(result.isAlreadyCompletedQuest()).isTrue();
     });
+
+		it('should return notEligibleToCompleteQuest failure if the player has not gained 1000 tokens while trying to claim the Get Rich Quick quest', () => {
+			const result = completeQuest({
+				player: SOME_PLAYER,
+				quest: Quests.GET_RICH_QUICK
+			});
+
+			makeSure(result.isFailure()).isTrue();
+			makeSure(result.isNotEligibleToCompleteQuest()).isTrue();
+		});
   });
 });

@@ -15,7 +15,7 @@ export const quests = [
 	{
 		id: 3,
 		name: "Trade Diplomat",
-		description: "Successfully trade with 3 different players",
+		description: "Successfully have your trades accepted by 3 different players",
 		tokensReward: 100,
 		charactersReward: "trade",
 	},
