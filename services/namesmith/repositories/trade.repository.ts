@@ -1,4 +1,4 @@
-import { DatabaseQuerier, toAssignmentsPlaceholder } from "../database/database-querier";
+import { DatabaseQuerier, toParameterSetClause } from "../database/database-querier";
 import { PlayerID } from "../types/player.types";
 import { DBTrade, Trade, TradeDefintion, TradeID, TradeStatus } from "../types/trade.types";
 import { CannotCreateTradeError, TradeAlreadyExistsError, TradeNotFoundError } from "../utilities/error.utility";
@@ -347,7 +347,7 @@ export class TradeRepository {
 
 		this.db.run(
 			`UPDATE trade
-			SET ${toAssignmentsPlaceholder({ initiatingPlayerID, recipientPlayerID, offeredCharacters, requestedCharacters, status })}
+			SET ${toParameterSetClause({ initiatingPlayerID, recipientPlayerID, offeredCharacters, requestedCharacters, status })}
 			WHERE id = @id`,
 			{ id, initiatingPlayerID, recipientPlayerID, offeredCharacters, requestedCharacters, status }
 		);

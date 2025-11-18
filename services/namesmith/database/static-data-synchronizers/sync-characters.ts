@@ -5,7 +5,7 @@ import { isNotUndefined } from "../../../../utilities/types/type-guards";
 import { CharacterRepository } from "../../repositories/character.repository";
 import { CharacterDefintion, DBCharacter } from '../../types/character.types';
 import { getCharacterValueFromID, getIDfromCharacterValue } from "../../utilities/character.utility";
-import { DatabaseQuerier, toListPlaceholder } from "../database-querier";
+import { DatabaseQuerier, toPlaceholdersList } from "../database-querier";
 
 
 /**
@@ -26,16 +26,16 @@ export const syncCharactersToDB = (
 		const deleteCharactersNotDefined = db.getQuery(
 			`DELETE FROM character
 			WHERE
-				id NOT IN ${toListPlaceholder(characterIDs)}
-				AND value NOT IN ${toListPlaceholder(characterValues)}`,
+				id NOT IN ${toPlaceholdersList(characterIDs)}
+				AND value NOT IN ${toPlaceholdersList(characterValues)}`,
 		);
 		deleteCharactersNotDefined.run(...characterIDs, ...characterValues);
 
 		const findExistingCharacters = db.getQuery(
 			`SELECT * FROM character
 			WHERE
-				id IN ${toListPlaceholder(characterIDs)}
-				OR value IN ${toListPlaceholder(characterValues)}`,
+				id IN ${toPlaceholdersList(characterIDs)}
+				OR value IN ${toPlaceholdersList(characterValues)}`,
 		);
 		const existingDBCharacters = findExistingCharacters.getRows(
 			...characterIDs, ...characterValues

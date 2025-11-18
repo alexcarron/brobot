@@ -2,7 +2,7 @@ import DatabasePkg, { Database, PragmaOptions, RunResult, Statement, Transaction
 import { ForeignKeyConstraintError, MultiStatementQueryError, QueryUsageError } from "../utilities/error.utility";
 import { AnyFunction } from "../../../utilities/types/generic-types";
 import { attempt } from '../../../utilities/error-utils';
-import { isArray, isObject } from "../../../utilities/types/type-guards";
+import { isArray, isNotUndefined, isObject } from "../../../utilities/types/type-guards";
 
 /**
  * A union type representing a set of possible values that can be used as the rest parameter of a DatabaseQuerier query function.
@@ -44,7 +44,7 @@ function toSQLParams(restSQLParams: RestSQLParams): SQLParams {
  *   ...playerIDs
  * );
  */
-export function toListPlaceholder(array: unknown[]): string {
+export function toPlaceholdersList(array: unknown[]): string {
 	return '(' + array.map( () => '?' ).join(', ') + ')';
 }
 
@@ -59,7 +59,7 @@ export function toListPlaceholder(array: unknown[]): string {
  *   playerToUpdate
  * );
  */
-export function toAssignmentsPlaceholder(
+export function toParameterSetClause(
 	fieldToUpdatedValue: Record<string, unknown>
 ): string {
 	return Object.entries(fieldToUpdatedValue)
@@ -79,13 +79,87 @@ export function toAssignmentsPlaceholder(
  *   playerConditions
  * );
  */
-export function toEqualityConditionsPlaceholder(
+export function toParameterANDWhereClause(
 	fieldToValue: Record<string, unknown>
 ): string {
 	return Object.entries(fieldToValue)
 		.filter(([, value]) => value !== undefined)
 		.map(([key]) => `${key} = @${key}`)
 		.join(" AND ");
+}
+
+/**
+ * Converts an object of column/field names of a database entity to their expected values into a string of equality conditions suitable for use in a parameterized WHERE clause.
+ * @param fieldToValue - An object of column/field names of a database entity to their expected values.
+ * @returns A string like "age = @age OR tokens = @tokens" suitable for use in a parameterized WHERE clause.
+ * @example
+ * const playerConditions = { name: "John Doe", age: 21 };
+ * const players = db.all(
+ *   `SELECT * FROM players WHERE ${toParameterizedORWhereClause(playerConditions)}`,
+ *   playerConditions
+ * );
+ */
+export function toParameterORWhereClause(fieldToValue: Record<string, unknown>): string {
+	return Object.entries(fieldToValue)
+		.filter(([, value]) => value !== undefined)
+		.map(([key]) => `${key} = @${key}`)
+		.join(" OR ");
+}
+
+/**
+ * Converts an object of column/field names of a database entity to their expected values into a parameterized UPDATE clause string.
+ * @param parameters - An object containing the following parameters:
+ * @param parameters.updatingFields - An object of column/field names of a database entity to their expected updated values.
+ * @param parameters.identifiers - An object of column/field names of a database entity to their expected values to use as identifiers in the WHERE clause.
+ * @returns A string like "SET name = @name, age = @age WHERE id = @id" suitable for use in a parameterized UPDATE query.
+ * @example
+ * const id = 1;
+ * const name = "John Doe";
+ * const age = 21;
+ * const birthDate = new Date();
+ * const updatedPlayer = db.run(
+ *   `UPDATE players ${toParameterizedUpdateClause({
+ *     	updatingFields: { name, age, birthDate },
+ *     	identifiers: { id, name },
+ *   })}`,
+ *   { ...playerToUpdate, ...playerIdentifiers }
+ * );
+ */
+export function toParameterUpdateClause(
+	{updatingFields, identifiers}: {
+		updatingFields: Record<string, unknown>;
+		identifiers: Record<string, unknown>;
+	}
+): string {
+	return `SET ${toParameterSetClause(updatingFields)} WHERE ${toParameterORWhereClause(identifiers)}`
+}
+
+/**
+ * Converts an object of column/field names of a database entity to their expected values into a parameterized INSERT clause string.
+ * @param fieldToValue An object of column/field names of a database entity to their expected values.
+ * @returns A string like "(column1, column2) VALUES (@column1, @column2)" suitable for use in a parameterized INSERT query.
+ * @example
+ * const playerToInsert = { name: "John Doe", age: 21 };
+ * const insertedPlayer = db.run(
+ *   `INSERT INTO players (${toParameterizedInsertClause(playerToInsert)})`,
+ *   playerToInsert
+ * );
+ */
+export function toParameterInsertClause(
+	fieldToValue: Record<string, unknown>,
+): string {
+	const columnNames =
+		Object.keys(fieldToValue)
+			.filter(isNotUndefined)
+			.join(", ");
+
+	const parameters =
+		Object.keys(fieldToValue)
+			.filter(isNotUndefined)
+			.map(key => `@${key}`)
+			.join(", ");
+
+	return `(${columnNames}) VALUES (${parameters})`;
 }
 
 /**

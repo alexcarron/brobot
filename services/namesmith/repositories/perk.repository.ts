@@ -1,12 +1,12 @@
-import { InvalidArgumentError, toNullOnError } from "../../../utilities/error-utils";
+import { toNullOnError } from "../../../utilities/error-utils";
 import { Override, WithAtLeast } from "../../../utilities/types/generic-types";
 import { isNumber, isString } from "../../../utilities/types/type-guards";
-import { DatabaseQuerier, toAssignmentsPlaceholder } from "../database/database-querier";
-import { DBPerk, Perk, PerkDefintion, PerkID, PerkResolvable } from "../types/perk.types";
+import { DatabaseQuerier, toParameterInsertClause, toParameterUpdateClause } from "../database/database-querier";
+import { DBPerk, Perk, PerkDefintion, PerkID, PerkName, PerkResolvable } from "../types/perk.types";
 import { PlayerID } from "../types/player.types";
 import { RoleID } from "../types/role.types";
-import { toOptionalDBBool } from "../utilities/db.utility";
-import { PerkNotFoundError } from "../utilities/error.utility";
+import { toDBBool, toOptionalDBBool } from "../utilities/db.utility";
+import { PerkAlreadyExistsError, PerkNotFoundError } from "../utilities/error.utility";
 import { toPerk, toPerks } from "../utilities/perk.utility";
 
 /**
@@ -49,6 +49,23 @@ export class PerkRepository {
 
 		if (perk === undefined)
 			throw new PerkNotFoundError(perkID);
+
+		return toPerk(perk);
+	}
+
+	/**
+	 * Retrieves a perk by its name. If the perk does not exist, an error will be thrown.
+	 * @param name - The name of the perk to be retrieved.
+	 * @returns The perk object if found.
+	 * @throws PerkNotFoundError - If the perk does not exist.
+	 */
+	getPerkByNameOrThrow(name: PerkName): Perk {
+		const query = `SELECT * FROM perk WHERE name = @name`;
+		const getPerkByName = this.db.prepare(query);
+		const perk = getPerkByName.get({ name }) as DBPerk | undefined;
+
+		if (perk === undefined)
+			throw new PerkNotFoundError(name);
 
 		return toPerk(perk);
 	}
@@ -127,37 +144,69 @@ export class PerkRepository {
 	}
 
 	/**
+	 * Checks if a perk with the given ID or name exists in the database.
+	 * @param idOrName - The ID or name of the perk to be checked for.
+	 * @returns A boolean indicating if the perk exists in the database.
+	 */
+	doesPerkExist(idOrName: PerkID | PerkName): boolean {
+		if (isNumber(idOrName)) {
+			const id = idOrName;
+			return this.db.getValue(
+				'SELECT 1 FROM perk WHERE id = @id LIMIT 1',
+				{ id }
+			) === 1;
+		}
+		else {
+			const name = idOrName;
+			return this.db.getValue(
+				'SELECT 1 FROM perk WHERE name = @name LIMIT 1',
+				{ name }
+			) === 1;
+		}
+	}
+
+	/**
 	 * Adds a perk to the database.
 	 * If the perk does not have an ID, a new perk is created and its ID is returned.
 	 * If the perk does have an ID, it is updated with the given information.
-	 * @param perk - The perk to be added to the database.
-	 * @param perk.id - The ID of the perk to be added to the database.
-	 * @param perk.name - The name of the perk to be added to the database.
-	 * @param perk.description - The description of the perk to be added to the database.
-	 * @param perk.wasOffered - A boolean indicating whether the perk was offered.
+	 * @param perkDefinition - The perk to be added to the database.
 	 * @returns The added perk object.
 	 */
-	addPerk(
-		{ id, name, description, wasOffered }: PerkDefintion
-	): Perk {
-		if (id === undefined) {
-			const result = this.db.run(
-				"INSERT INTO perk (name, description, wasOffered) VALUES (@name, @description, @wasOffered)",
-				{ name, description, wasOffered: wasOffered ? 1 : 0 }
-			);
-			id = Number(result.lastInsertRowid);
-		}
-		else {
-			this.db.run(
-				"INSERT INTO perk (id, name, description, wasOffered) VALUES (@id, @name, @description, @wasOffered)",
-				{ id, name, description, wasOffered: wasOffered ? 1 : 0 }
-			);
+	addPerk(perkDefinition: PerkDefintion): Perk {
+		if (this.doesPerkExist(perkDefinition.name)) {
+			console.log(`A perk with the name "${perkDefinition.name}" already exists.`);
+		if (this.doesPerkExist(perkDefinition.name))
+			throw new PerkAlreadyExistsError(perkDefinition.name);
 		}
 
-		return {
-			id, name, description,
-			wasOffered: wasOffered ?? false
+		if (perkDefinition.id !== undefined) {
+			if (this.doesPerkExist(perkDefinition.id)) {
+				console.log(`A perk with the ID "${perkDefinition.id}" already exists.`);
+		if (perkDefinition.id !== undefined)
+			if (this.doesPerkExist(perkDefinition.id))
+				throw new PerkAlreadyExistsError(perkDefinition.id);
+			}
+		}
+
+		let id = perkDefinition.id;
+		const queryParameters = {
+			...perkDefinition,
+			wasOffered: toDBBool(perkDefinition.wasOffered),
+			isBeingOffered: toDBBool(perkDefinition.isBeingOffered),
 		};
+
+		console.log(`Adding perk with parameters ${JSON.stringify(queryParameters)}`);
+
+		const result = this.db.run(
+			`INSERT INTO perk ${toParameterInsertClause(queryParameters)}`,
+			queryParameters
+		);
+
+		if (id === undefined) {
+			id = Number(result.lastInsertRowid);
+		}
+
+		return this.getPerkOrThrow(id);
 	}
 
 	/**
@@ -166,57 +215,46 @@ export class PerkRepository {
 	 * If the perk does have an ID, it is updated with the given information.
 	 * If the perk does not have a name, an error will be thrown.
 	 * If the perk does have a name, it is updated with the given information.
-	 * @param perk - The perk to be updated in the database.
-	 * @param perk.id - The ID of the perk to be updated in the database.
-	 * @param perk.name - The name of the perk to be updated in the database.
-	 * @param perk.description - The description of the perk to be updated in the database.
-	 * @param perk.wasOffered - A boolean indicating whether the perk was offered.
+	 * @param perkDefinition - The perk to be updated in the database.
 	 * @throws PerkNotFoundError - If the perk does not exist.
 	 * @throws InvalidArgumentError - If an ID or name must be provided.
 	 * @returns The updated perk object.
 	 */
 	updatePerk(
-		{ id, name, description, wasOffered }:
+		perkDefinition:
 			| WithAtLeast<PerkDefintion, 'id'>
 			| WithAtLeast<PerkDefintion, 'name'>
 	): Perk {
-		if (name !== undefined || description !== undefined || wasOffered !== undefined) {
-			const updateQuery = `
-				UPDATE perk
-				SET ${toAssignmentsPlaceholder({ name, description, wasOffered })}
-				WHERE
-					id = @id
-					OR name = @name
-			`;
-
-			const result = this.db.run(updateQuery, {
-				id,
-				name,
-				description,
-				wasOffered: toOptionalDBBool(wasOffered),
-			});
-
-			if (result.changes === 0) {
-				if (id !== undefined)
-					throw new PerkNotFoundError(id);
-				else if (name !== undefined)
-					throw new PerkNotFoundError(name);
-				else
-					throw new InvalidArgumentError("updatePerk: An ID or name must be provided.");
-			}
+		const {id, name} = perkDefinition;
+		const queryParameters = {
+			...perkDefinition,
+			wasOffered: toOptionalDBBool(perkDefinition.wasOffered),
+			isBeingOffered: toOptionalDBBool(perkDefinition.isBeingOffered)
 		}
 
-		let perk = null;
-		if (id !== undefined)
-			perk = this.getPerkByID(id);
+		if (id !== undefined) {
+			if (!this.doesPerkExist(id))
+				throw new PerkNotFoundError(id);
+		}
+		else if (name !== undefined) {
+			if (!this.doesPerkExist(name))
+				throw new PerkNotFoundError(name);
+		}
 
-		if (perk === null && name !== undefined)
-			perk = this.getPerkByName(name);
+		this.db.run(
+			`UPDATE perk ${toParameterUpdateClause({
+				updatingFields: queryParameters,
+				identifiers: { id, name },
+			})}`,
+			queryParameters,
+		);
 
-		if (perk === null)
-			throw new InvalidArgumentError("updatePerk: An ID or name must be provided.");
-
-		return perk;
+		if (id !== undefined) {
+			return this.getPerkOrThrow(id);
+		}
+		else {
+			return this.getPerkByNameOrThrow(name!);
+		}
 	}
 
 	/**
@@ -269,7 +307,7 @@ export class PerkRepository {
 	 */
 	getPerksOfPlayerID(playerID: PlayerID): Perk[] {
 		const dbPerks = this.db.getRows(
-			`SELECT id, name, description
+			`SELECT *
 				FROM playerPerk
 				JOIN perk ON playerPerk.perkID = perk.id
 				WHERE playerID = @playerID`,
@@ -329,7 +367,7 @@ export class PerkRepository {
 
 	getPerksOfRoleID(roleID: RoleID): Perk[] {
 		const dbPerks = this.db.getRows(
-			`SELECT id, name, description
+			`SELECT *
 				FROM rolePerk
 				JOIN perk ON rolePerk.perkID = perk.id
 				WHERE roleID = @roleID`,
@@ -428,7 +466,9 @@ export class PerkRepository {
 	 */
 	setPerkAsCurrentlyOffered(perkID: PerkID) {
 		const result = this.db.run(
-			"INSERT INTO currentlyOfferedPerk (id) VALUES (@perkID)",
+			`UPDATE perk
+			SET isBeingOffered = 1
+			WHERE id = @perkID`,
 			{ perkID }
 		);
 
@@ -441,7 +481,8 @@ export class PerkRepository {
 	 */
 	unsetAllPerksAsCurrentlyOffered() {
 		this.db.run(
-			"DELETE FROM currentlyOfferedPerk"
+			`UPDATE perk
+			SET isBeingOffered = 0`
 		);
 	}
 
@@ -451,12 +492,8 @@ export class PerkRepository {
 	 * @returns A boolean indicating if the perk with the given ID is currently offered.
 	 */
 	isCurrentlyOfferedPerk(perkID: PerkID): boolean {
-		const foundPerkID = this.db.getValue(
-			`SELECT * FROM currentlyOfferedPerk WHERE id = @perkID`,
-			{ perkID }
-		) as PerkID | undefined;
-
-		return foundPerkID !== undefined;
+		const perk = this.getPerkOrThrow(perkID);
+		return perk.isBeingOffered;
 	}
 
 	/**
@@ -465,8 +502,8 @@ export class PerkRepository {
 	 */
 	getCurrentlyOfferedPerks(): Perk[] {
 		const dbPerks = this.db.getRows(
-			`SELECT id, name, description, wasOffered FROM currentlyOfferedPerk
-			JOIN perk USING (id)
+			`SELECT * FROM perk
+			WHERE isBeingOffered = 1
 			ORDER BY id ASC`
 		) as DBPerk[];
 

@@ -405,3 +405,25 @@ export function toDefinedPropertyValues<
 		.map(object => object[propertyName as string])
 		.filter(value => value !== undefined) as any;
 }
+
+/**
+ * Sorts an array of objects by a given property in ascending order.
+ * @param object The array of objects to sort.
+ * @param propertyName The name of the property to sort by.
+ * @returns The sorted array of objects.
+ */
+export function sortByAscendingProperty<
+	ObjectType extends Record<string, unknown>,
+	PropertyName extends keyof ObjectType
+>(object: ObjectType[], propertyName: PropertyName): ObjectType[] {
+	return [...object].sort((object1, object2) => {
+    const value1 = object1[propertyName];
+    const value2 = object2[propertyName];
+
+    if (value1 === value2) return 0;
+    if (value1 == null) return 1;
+    if (value2 == null) return -1;
+
+    return (value1 as any) > (value2 as any) ? 1 : -1;
+  });
+}

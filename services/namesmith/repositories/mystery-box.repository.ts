@@ -1,6 +1,6 @@
 import { ignoreError, InvalidArgumentError, returnNonNullOrThrow } from "../../../utilities/error-utils";
 import { WithRequiredAndOneOther } from "../../../utilities/types/generic-types";
-import { DatabaseQuerier, toAssignmentsPlaceholder } from "../database/database-querier";
+import { DatabaseQuerier, toParameterSetClause } from "../database/database-querier";
 import { CharacterOdds, DBCharacterOddsRow, DBMysteryBox, MinimalMysteryBox, MysteryBoxID, MysteryBox, MysteryBoxDefinition, MinimalMysteryBoxDefinition } from "../types/mystery-box.types";
 import { getCharacterValueFromID, getIDfromCharacterValue } from "../utilities/character.utility";
 import { MysteryBoxAlreadyExistsError, MysteryBoxNotFoundError } from "../utilities/error.utility";
@@ -245,7 +245,7 @@ export class MysteryBoxRepository {
 	) {
 		this.db.run(
 			`UPDATE mysteryBox
-			SET ${toAssignmentsPlaceholder({ name, tokenCost })}
+			SET ${toParameterSetClause({ name, tokenCost })}
 			WHERE id = @id`,
 			{ id, name, tokenCost }
 		);

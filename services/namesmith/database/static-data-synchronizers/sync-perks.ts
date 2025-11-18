@@ -3,7 +3,7 @@ import { WithOptional } from "../../../../utilities/types/generic-types";
 import { isNotUndefined } from "../../../../utilities/types/type-guards";
 import { PerkRepository } from "../../repositories/perk.repository";
 import { PerkDefintion, Perk, DBPerk } from "../../types/perk.types";
-import { DatabaseQuerier, toListPlaceholder } from "../database-querier";
+import { DatabaseQuerier, toPlaceholdersList } from "../database-querier";
 
 /**
  * Syncronizes the database to match a list of data defintions of perks without breaking existing data.
@@ -23,16 +23,16 @@ export function syncPerksToDB(
 		const deletePerksNotDefined = db.getQuery(`
 			DELETE FROM perk
 			WHERE
-				id NOT IN ${toListPlaceholder(perkIDs)}
-				AND name NOT IN ${toListPlaceholder(perkNames)}
+				id NOT IN ${toPlaceholdersList(perkIDs)}
+				AND name NOT IN ${toPlaceholdersList(perkNames)}
 		`);
 		deletePerksNotDefined.run(...perkIDs, ...perkNames);
 
 		const findExistingPerks = db.getQuery(`
 			SELECT * FROM perk
 			WHERE
-				id IN ${toListPlaceholder(perkIDs)}
-				OR name IN ${toListPlaceholder(perkNames)}
+				id IN ${toPlaceholdersList(perkIDs)}
+				OR name IN ${toPlaceholdersList(perkNames)}
 		`);
 		const existingDBPerks = findExistingPerks.getRows(
 			...perkIDs, ...perkNames

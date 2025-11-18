@@ -44,11 +44,6 @@ export const initiateTrade = (
 ) => {
 	const {tradeService, playerService} = getNamesmithServices();
 
-	console.log({
-		initiatingPlayer,
-		recipientPlayer,
-	});
-
 	// Is the initiating user a player?
 	if (!playerService.isPlayer(initiatingPlayer)) {
 		return result.failure.initatorNotAPlayer();

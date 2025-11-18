@@ -1,7 +1,7 @@
 import { returnNonNullOrThrow } from "../../../utilities/error-utils";
 import { WithRequiredAndOneOther } from "../../../utilities/types/generic-types";
 import { isNumber, isString } from "../../../utilities/types/type-guards";
-import { DatabaseQuerier, toAssignmentsPlaceholder } from "../database/database-querier";
+import { DatabaseQuerier, toParameterSetClause } from "../database/database-querier";
 import { DBQuest, Quest, QuestDefinition, QuestID, QuestName, QuestResolvable } from "../types/quest.types";
 import { QuestAlreadyExistsError, QuestNotFoundError } from "../utilities/error.utility";
 import { toQuest } from '../utilities/quest.utility';
@@ -245,7 +245,7 @@ export class QuestRepository {
 
 		this.db.run(
 			`UPDATE quest
-			SET ${toAssignmentsPlaceholder({
+			SET ${toParameterSetClause({
 				name,
 				description,
 				tokensReward,

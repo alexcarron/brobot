@@ -22,7 +22,8 @@ export function addMockPerk(
 		id = undefined,
 		name = getRandomNameUUID(),
 		description = "",
-		wasOffered = false
+		wasOffered = false,
+		isBeingOffered = false,
 	} = perkDefinition;
 
 	if (
@@ -36,5 +37,6 @@ export function addMockPerk(
 		name,
 		description,
 		wasOffered,
+		isBeingOffered,
 	});
 }

@@ -3,7 +3,7 @@ import { DeepReadonly } from "../../../../utilities/types/generic-types";
 import { isNotUndefined } from "../../../../utilities/types/type-guards";
 import { RoleRepository } from "../../repositories/role.repository";
 import { DBRole, RoleDefinition } from "../../types/role.types";
-import { DatabaseQuerier, toListPlaceholder } from "../database-querier";
+import { DatabaseQuerier, toPlaceholdersList } from "../database-querier";
 
 
 /**
@@ -26,16 +26,16 @@ export function syncRolesToDB(
 		const deleteRolesNotDefined = db.getQuery(`
 			DELETE FROM role
 			WHERE
-				id NOT IN ${toListPlaceholder(roleIDs)}
-				AND name NOT IN ${toListPlaceholder(roleNames)}
+				id NOT IN ${toPlaceholdersList(roleIDs)}
+				AND name NOT IN ${toPlaceholdersList(roleNames)}
 		`);
 		deleteRolesNotDefined.run(...roleIDs, ...roleNames);
 
 		const findExistingRoles = db.getQuery(`
 			SELECT * FROM role
 			WHERE
-				id IN ${toListPlaceholder(roleIDs)}
-				OR name IN ${toListPlaceholder(roleNames)}
+				id IN ${toPlaceholdersList(roleIDs)}
+				OR name IN ${toPlaceholdersList(roleNames)}
 		`);
 		const existingDBRoles = findExistingRoles.getRows(
 			...roleIDs, ...roleNames

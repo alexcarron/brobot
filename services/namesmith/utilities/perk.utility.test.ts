@@ -9,7 +9,8 @@ describe('perk.utility', () => {
 				id: 1,
 				name: 'test',
 				description: 'test',
-				wasOffered: 1
+				wasOffered: 1,
+				isBeingOffered: 0,
 			};
 
 			const perk: Perk = toPerk(dbPerk);
@@ -18,7 +19,8 @@ describe('perk.utility', () => {
 				id: 1,
 				name: 'test',
 				description: 'test',
-				wasOffered: true
+				wasOffered: true,
+				isBeingOffered: false,
 			});
 		});
 	});
@@ -30,13 +32,15 @@ describe('perk.utility', () => {
 					id: 1,
 					name: 'test',
 					description: 'test',
-					wasOffered: 1
+					wasOffered: 1,
+					isBeingOffered: 0
 				},
 				{
 					id: 2,
 					name: 'test2',
 					description: 'test2',
-					wasOffered: 0
+					wasOffered: 0,
+					isBeingOffered: 1,
 				}
 			];
 
@@ -47,13 +51,15 @@ describe('perk.utility', () => {
 				id: 1,
 				name: 'test',
 				description: 'test',
-				wasOffered: true
+				wasOffered: true,
+				isBeingOffered: false,
 			});
 			makeSure(perks[1]).is({
 				id: 2,
 				name: 'test2',
 				description: 'test2',
-				wasOffered: false
+				wasOffered: false,
+				isBeingOffered: true,
 			});
 		});
 	});
@@ -64,7 +70,8 @@ describe('perk.utility', () => {
 				id: 1,
 				name: 'test',
 				description: 'test',
-				wasOffered: true
+				wasOffered: true,
+				isBeingOffered: false,
 			};
 
 			const dbPerk: DBPerk = toDBPerk(perk);
@@ -73,7 +80,8 @@ describe('perk.utility', () => {
 				id: 1,
 				name: 'test',
 				description: 'test',
-				wasOffered: 1
+				wasOffered: 1,
+				isBeingOffered: 0
 			});
 		});
 	})

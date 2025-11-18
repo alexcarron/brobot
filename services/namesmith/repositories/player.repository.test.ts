@@ -389,7 +389,7 @@ describe('PlayerRepository', () => {
 				perks: [Perks.DISCOUNT.id, Perks.FASTER_REFILL.name],
 			});
 
-			makeSure(player).includesObject({
+			makeSure(player).containsProperties({
 				id: "new-player-id",
 				currentName: "currentName",
 				publishedName: "publishedName",
@@ -475,7 +475,7 @@ describe('PlayerRepository', () => {
 				perks: [Perks.DISCOUNT.id, Perks.FASTER_REFILL.name],
 			});
 
-			makeSure(player).includesObject({
+			makeSure(player).containsProperties({
 				id: mockPlayers[0].id,
 				currentName: "currentName",
 				publishedName: "publishedName",

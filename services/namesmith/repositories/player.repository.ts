@@ -2,7 +2,7 @@ import { InvalidArgumentError, returnNonNullOrThrow } from "../../../utilities/e
 import { getRandomNumericUUID } from "../../../utilities/random-utils";
 import { Override, WithOptional, WithRequiredAndOneOther } from "../../../utilities/types/generic-types";
 import { MAX_NAME_LENGTH } from "../constants/namesmith.constants";
-import { DatabaseQuerier, toAssignmentsPlaceholder } from "../database/database-querier";
+import { DatabaseQuerier, toParameterSetClause } from "../database/database-querier";
 import { DBPlayer, MinimalPlayer, Player, PlayerDefinition, PlayerID, PlayerResolvable } from "../types/player.types";
 import { RoleID } from "../types/role.types";
 import { PlayerNotFoundError, PlayerAlreadyExistsError } from "../utilities/error.utility";
@@ -592,7 +592,7 @@ export class PlayerRepository {
 
 		this.db.run(
 			`UPDATE player
-			SET ${toAssignmentsPlaceholder({ currentName, publishedName, tokens, inventory, lastClaimedRefillTime })}
+			SET ${toParameterSetClause({ currentName, publishedName, tokens, inventory, lastClaimedRefillTime })}
 			WHERE id = @id`,
 			{
 				id, currentName, publishedName, tokens, inventory,

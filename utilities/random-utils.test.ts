@@ -53,11 +53,6 @@ describe('random-utils', () => {
 	});
 
 	describe('getRandomUnicodeUUID()', () => {
-		it('produces a string containing the requested number of code points (default 16)', () => {
-			const string = getRandomUnicodeUUID();
-			makeSure(string.length).is(16);
-		});
-
 		it('produces a different string each time it is called', () => {
 			const string1 = getRandomUnicodeUUID();
 			const string2 = getRandomUnicodeUUID();

@@ -167,14 +167,16 @@ describe("Mock Utilities", () => {
 				id: 123,
 				name: "Test Perk",
 				description: "This is a test perk",
-				wasOffered: false,
+				wasOffered: true,
+				isBeingOffered: true,
 			});
 
 			makeSure(perk).is({
 				id: 123,
 				name: "Test Perk",
 				description: "This is a test perk",
-				wasOffered: false
+				wasOffered: true,
+				isBeingOffered: true
 			});
 		});
 
@@ -184,6 +186,7 @@ describe("Mock Utilities", () => {
 				name: "Test Perk",
 				description: "This is a test perk",
 				wasOffered: false,
+				isBeingOffered: false
 			});
 
 			const perks = db.getRows("SELECT * FROM perk");
@@ -192,6 +195,7 @@ describe("Mock Utilities", () => {
 				name: "Test Perk",
 				description: "This is a test perk",
 				wasOffered: 0,
+				isBeingOffered: 0,
 			});
 		});
 
@@ -216,13 +220,15 @@ describe("Mock Utilities", () => {
 				name: "Test Perk",
 				description: "This is a test perk",
 				wasOffered: false,
+				isBeingOffered: false
 			});
 
 			makeSure(perk).is({
 				id: expect.any(Number),
 				name: "Test Perk",
 				description: "This is a test perk",
-				wasOffered: false
+				wasOffered: false,
+				isBeingOffered: false
 			});
 		});
 
@@ -235,7 +241,8 @@ describe("Mock Utilities", () => {
 				id: expect.any(Number),
 				name: "Test Perk",
 				description: "",
-				wasOffered: false
+				wasOffered: false,
+				isBeingOffered: false,
 			});
 
 			const perks = db.getRows("SELECT * FROM perk");
@@ -244,6 +251,7 @@ describe("Mock Utilities", () => {
 				name: "Test Perk",
 				description: "",
 				wasOffered: 0,
+				isBeingOffered: 0,
 			});
 		});
 	});

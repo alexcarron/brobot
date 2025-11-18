@@ -2,7 +2,7 @@ import { returnNonNullOrThrow } from "../../../utilities/error-utils";
 import { resolveOptional } from "../../../utilities/optional-utils";
 import { WithAllOptional, WithAtLeastOneProperty } from '../../../utilities/types/generic-types';
 import { isNotNullable } from "../../../utilities/types/type-guards";
-import { DatabaseQuerier, toEqualityConditionsPlaceholder } from "../database/database-querier";
+import { DatabaseQuerier, toParameterANDWhereClause } from "../database/database-querier";
 import { ActivityLogID as ActivityLogID, ActivityLog, DBActivityLog, ActivityLogDefinition } from "../types/activity-log.types";
 import { Player } from "../types/player.types";
 import { Quest } from "../types/quest.types";
@@ -243,7 +243,7 @@ export class ActivityLogRepository {
 		const dbActivityLogs = this.db.getRows(
 			`SELECT * FROM activityLog
 			WHERE
-				${toEqualityConditionsPlaceholder(queryParameters)}
+				${toParameterANDWhereClause(queryParameters)}
 			`,
 			queryParameters
 		) as DBActivityLog[];
