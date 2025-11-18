@@ -31,5 +31,6 @@ export const quests = [
 		name: "Get Rich Quick",
 		description: "Gain 1,000 tokens total through any means necessary",
 		tokensReward: 300,
+		charactersReward: "tokens",
 	}
 ] as const;

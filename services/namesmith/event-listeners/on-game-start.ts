@@ -1,5 +1,6 @@
 import { sendChooseARoleMessage } from '../interfaces/choose-a-role-message';
 import { sendPickAPerkMessage } from '../interfaces/pick-a-perk-message';
+import { sendDailyQuestsMessage } from '../interfaces/quests/daily-quests-message';
 import { sendRecipeSelectMenu } from '../interfaces/recipe-select-menu';
 import { getNamesmithServices } from '../services/get-namesmith-services';
 import { clearNamesToVoteOnChannel, clearPublishedNamesChannel, clearTheWinnerChannel, closeNamesToVoteOnChannel, closeTheWinnerChannel, openPublishedNamesChannel } from '../utilities/discord-action.utility';
@@ -34,9 +35,9 @@ export async function startGame(): Promise<void> {
 
 	// Send the recipe select menu in the recipes channel
 	await sendRecipeSelectMenu();
-
 	await sendChooseARoleMessage();
 	await sendPickAPerkMessage();
+	await sendDailyQuestsMessage();
 
 	// Set the game start and end times
 	const now = new Date();

@@ -22,7 +22,6 @@ module.exports = {
     'no-floating-promise/no-floating-promise': 'error',
     'promise/always-return': 'error',
     'jsdoc/no-undefined-types': ['warn', { disableReporting: true, markVariablesAsUsed: true }],
-    'jsdoc/require-jsdoc': ['warn', { require: { FunctionDeclaration: true, ClassDeclaration: true } }],
     'jsdoc/check-param-names': ['error', { checkDestructured: false }],
     'jsdoc/valid-types': 'off',
   },

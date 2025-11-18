@@ -2,6 +2,7 @@ import { logInfo, logSuccess } from "../../../utilities/logging-utils";
 import { setupDatabase } from "../database/setup-database";
 import { regenerateChooseARoleMessage } from "../interfaces/choose-a-role-message";
 import { regeneratePickAPerkMessage } from "../interfaces/pick-a-perk-message";
+import { regenerateDailyQuestsMessage } from "../interfaces/quests/daily-quests-message";
 import { regenerateRecipeSelectMenu } from "../interfaces/recipe-select-menu";
 import { regenerateAllTradeMessages } from "../interfaces/trading/trade-message";
 import { regenerateVoteDisplay } from "../interfaces/voting/voting-messages";
@@ -94,6 +95,7 @@ export const setupNamesmith = async () => {
 		await regenerateAllTradeMessages();
 		await regenerateChooseARoleMessage();
 		await regeneratePickAPerkMessage();
+		await regenerateDailyQuestsMessage();
 	}
 
 	logSuccess("Namesmith set up");

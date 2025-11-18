@@ -1,5 +1,5 @@
 import { QuestService } from "./quest.service";
-import { Quest } from '../types/quest.types';
+import { Quest, RewardTypes } from '../types/quest.types';
 import { addMockQuest } from "../mocks/mock-data/mock-quests";
 import { DatabaseQuerier } from "../database/database-querier";
 import { makeSure } from "../../../utilities/jest/jest-utils";
@@ -453,4 +453,69 @@ describe('QuestService', () => {
 			}).throws(QuestNotFoundError);
 		})
 	});
+
+	describe('getRewards()', () => {
+		it('returns an empty array if the quest has no rewards', () => {
+			const quest = addMockQuest(db, {
+				tokensReward: 0,
+				charactersReward: '',
+			});
+
+			const rewards = questService.getRewards(quest);
+
+			makeSure(rewards).is([]);
+		});
+
+		it('returns a token reward object if the quest has a token reward', () => {
+			const quest = addMockQuest(db, {
+				tokensReward: 100,
+			});
+
+			const rewards = questService.getRewards(quest);
+
+			makeSure(rewards).is([{
+				type: RewardTypes.TOKENS,
+				numTokens: 100
+			}]);
+		});
+
+		it('returns a character reward object if the quest has a character reward', () => {
+			const quest = addMockQuest(db, {
+				charactersReward: 'characters',
+			});
+
+			const rewards = questService.getRewards(quest);
+
+			makeSure(rewards).is([{
+				type: RewardTypes.CHARACTERS,
+				characters: 'characters'
+			}]);
+		});
+
+		it('returns both token and character reward objects if the quest has both', () => {
+			const quest = addMockQuest(db, {
+				tokensReward: 100,
+				charactersReward: 'characters',
+			});
+
+			const rewards = questService.getRewards(quest);
+
+			makeSure(rewards).is([
+				{
+					type: RewardTypes.TOKENS,
+					numTokens: 100
+				},
+				{
+					type: RewardTypes.CHARACTERS,
+					characters: 'characters'
+				}
+			]);
+		});
+
+		it('throws a QuestNotFoundError if the quest does not exist', () => {
+			makeSure(() => {
+				questService.getRewards(INVALID_QUEST_ID);
+			}).throws(QuestNotFoundError);
+		});
+	})
 });

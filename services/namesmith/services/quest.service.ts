@@ -5,8 +5,9 @@ import { FREEBIE_QUEST_NAME } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { QuestRepository } from "../repositories/quest.repository";
 import { PlayerResolvable } from "../types/player.types";
-import { Quest, QuestID, QuestResolvable } from "../types/quest.types";
+import { Quest, QuestID, QuestResolvable, Reward } from "../types/quest.types";
 import { QuestEligbilityNotImplementedError } from "../utilities/error.utility";
+import { createReward } from "../utilities/quest.utility";
 import { ActivityLogService } from "./activity-log.service";
 import { PlayerService } from "./player.service";
 
@@ -60,6 +61,31 @@ export class QuestService {
 		else {
 			return this.questRepository.doesQuestExist(questResolvable.id);
 		}
+	}
+
+	/**
+	 * Returns an array of typed rewards for the given quest.
+	 * @param questResolvable - A quest id, quest name, or a quest object.
+	 * @returns An array of typed rewards for the given quest.
+	 * @throws {QuestNotFoundError} If no quest with the given ID or name exists.
+	 */
+	getRewards(questResolvable: QuestResolvable): Reward[] {
+		const rewards: Reward[] = [];
+		const quest = this.resolveQuest(questResolvable);
+
+		if (quest.tokensReward > 0) {
+			rewards.push(
+				createReward.tokens(quest.tokensReward),
+			);
+		}
+
+		if (quest.charactersReward.length > 0) {
+			rewards.push(
+				createReward.characters(quest.charactersReward),
+			);
+		}
+
+		return rewards;
 	}
 
 	isPlayerEligibleToComplete(

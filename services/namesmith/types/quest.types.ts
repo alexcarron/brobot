@@ -1,3 +1,4 @@
+import { toEnumFromStrings, ValuesOf } from "../../../utilities/enum-utilts";
 import { Override, WithOptional } from "../../../utilities/types/generic-types"
 
 export type Quest = {
@@ -37,3 +38,24 @@ export type QuestResolvable =
 	| { id: QuestID }
 	| QuestID
 	| QuestName
+
+
+export const RewardTypes = toEnumFromStrings(
+	'tokens', 'characters',
+);
+
+export type RewardType = ValuesOf<typeof RewardTypes>;
+
+export type TokenReward = {
+	type: 'tokens',
+	numTokens: number,
+}
+
+export type CharacterReward = {
+	type: 'characters',
+	characters: string,
+}
+
+export type Reward =
+	| TokenReward
+	| CharacterReward

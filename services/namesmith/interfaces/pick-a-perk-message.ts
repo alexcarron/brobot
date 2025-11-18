@@ -16,7 +16,7 @@ import { getNamesmithServices } from "../services/get-namesmith-services";
  * @param services.threePerks - The perks to be displayed in the message.
  * @returns A DiscordButtons object with the prompt text and empty buttons.
  */
-export function getPickAPerkMessage(
+export function createPickAPerkMessage(
 	{threePerks}: {
 		threePerks: Perk[],
 	},
@@ -115,7 +115,7 @@ export async function sendPickAPerkMessage(): Promise<void> {
 	const {perkService} = getNamesmithServices();
 
 	const threePerks = perkService.offerThreeRandomNewPerks();
-	const pickAPerkMessage = getPickAPerkMessage({threePerks});
+	const pickAPerkMessage = createPickAPerkMessage({threePerks});
 	const channel = await fetchNamesmithChannel(ids.namesmith.channels.PICK_A_PERK);
 	await pickAPerkMessage.setIn(channel);
 }
@@ -130,7 +130,7 @@ export async function regeneratePickAPerkMessage(): Promise<void> {
 	const threePerks = perkService.getCurrentlyOfferedPerks();
 	if (threePerks.length < 3) return;
 
-	const pickAPerkMessage = getPickAPerkMessage({threePerks});
+	const pickAPerkMessage = createPickAPerkMessage({threePerks});
 	const channel = await fetchNamesmithChannel(ids.namesmith.channels.PICK_A_PERK);
 	await ignoreError(pickAPerkMessage.regenerate({channel}))
 }
