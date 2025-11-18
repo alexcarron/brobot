@@ -1,5 +1,5 @@
 import { WithRequiredAndOneOther } from "../../../utilities/types/generic-types";
-import { DatabaseQuerier, toAssignmentsPlaceholder } from "../database/database-querier";
+import { DatabaseQuerier, toParameterSetClause } from "../database/database-querier";
 import { Character, DBCharacter, CharacterID, CharacterDefintion } from "../types/character.types";
 import { getIDfromCharacterValue } from "../utilities/character.utility";
 import { CharacterAlreadyExistsError, CharacterNotFoundError } from "../utilities/error.utility";
@@ -123,7 +123,7 @@ export class CharacterRepository {
 	): Character {
 		this.db.run(
 			`UPDATE character
-			SET ${toAssignmentsPlaceholder({ value, rarity })}
+			SET ${toParameterSetClause({ value, rarity })}
 			WHERE id = @id`,
 			{ id, value, rarity }
 		);

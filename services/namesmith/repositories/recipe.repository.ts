@@ -1,7 +1,7 @@
 import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { WithRequiredAndOneOther } from "../../../utilities/types/generic-types";
 import { isNumber, isObject } from "../../../utilities/types/type-guards";
-import { DatabaseQuerier, toAssignmentsPlaceholder } from "../database/database-querier";
+import { DatabaseQuerier, toParameterSetClause } from "../database/database-querier";
 import { DBRecipe, Recipe, RecipeDefinition, RecipeID, RecipeResolvable } from "../types/recipe.types";
 import { RecipeAlreadyExistsError, RecipeNotFoundError } from "../utilities/error.utility";
 
@@ -176,7 +176,7 @@ export class RecipeRepository {
 
 		this.db.run(
 			`UPDATE recipe
-			SET ${toAssignmentsPlaceholder({ inputCharacters, outputCharacters })}
+			SET ${toParameterSetClause({ inputCharacters, outputCharacters })}
 			WHERE id = @id`,
 			{ id, inputCharacters, outputCharacters }
 		);

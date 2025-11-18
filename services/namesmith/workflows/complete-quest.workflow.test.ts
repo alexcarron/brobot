@@ -39,8 +39,8 @@ describe('completeQuest()', () => {
 
 			assertNotFailure(
 				completeQuest({
-					player: SOME_PLAYER,
-					quest: questWithRewards
+					playerResolvable: SOME_PLAYER,
+					questResolvable: questWithRewards
 				})
 			);
 
@@ -53,7 +53,7 @@ describe('completeQuest()', () => {
     it('should log the quest as completed in the activity log', () => {
       const activityLogSpy = jest.spyOn(activityLogService, 'logCompleteQuest');
 
-      completeQuest({ player: SOME_PLAYER, quest: SOME_QUEST });
+      completeQuest({ playerResolvable: SOME_PLAYER, questResolvable: SOME_QUEST });
 
       makeSure(activityLogSpy).toHaveBeenCalledWith({
         playerCompletingQuest: SOME_PLAYER,
@@ -63,16 +63,18 @@ describe('completeQuest()', () => {
 
     it('should return a success result if the player successfully completes the quest', () => {
       const result = returnIfNotFailure(
-				completeQuest({ player: SOME_PLAYER, quest: SOME_QUEST })
+				completeQuest({ playerResolvable: SOME_PLAYER, questResolvable: SOME_QUEST })
 			);
 
       makeSure(result.isFailure()).isFalse();
+			makeSure(result.player.id).is(SOME_PLAYER.id);
+			makeSure(result.quest.id).is(SOME_QUEST.id);
     });
 
     it('should return nonPlayer failure if the player does not exist', () => {
       const result = completeQuest({
-				player: INVALID_PLAYER_ID,
-				quest: SOME_QUEST
+				playerResolvable: INVALID_PLAYER_ID,
+				questResolvable: SOME_QUEST
 			});
 
       makeSure(result.isFailure()).isTrue();
@@ -81,8 +83,8 @@ describe('completeQuest()', () => {
 
     it('should return questDoesNotExist failure if the quest does not exist', () => {
       const result = completeQuest({
-				player: SOME_PLAYER,
-				quest: INVALID_QUEST_ID
+				playerResolvable: SOME_PLAYER,
+				questResolvable: INVALID_QUEST_ID
 			});
 
       makeSure(result.isFailure()).isTrue();
@@ -91,12 +93,12 @@ describe('completeQuest()', () => {
 
     it('should return playerAlreadyCompletedQuest failure if the player has already completed the quest', () => {
 			// First complete the quest once
-			completeQuest({ player: SOME_PLAYER, quest: SOME_QUEST });
+			completeQuest({ playerResolvable: SOME_PLAYER, questResolvable: SOME_QUEST });
 
 			// Try to complete the same quest again
       const result = completeQuest({
-				player: SOME_PLAYER,
-				quest: SOME_QUEST
+				playerResolvable: SOME_PLAYER,
+				questResolvable: SOME_QUEST
 			});
 
       makeSure(result.isFailure()).isTrue();
@@ -105,12 +107,15 @@ describe('completeQuest()', () => {
 
 		it('should return notEligibleToCompleteQuest failure if the player has not gained 1000 tokens while trying to claim the Get Rich Quick quest', () => {
 			const result = completeQuest({
-				player: SOME_PLAYER,
-				quest: Quests.GET_RICH_QUICK
+				playerResolvable: SOME_PLAYER,
+				questResolvable: Quests.GET_RICH_QUICK
 			});
 
 			makeSure(result.isFailure()).isTrue();
 			makeSure(result.isNotEligibleToCompleteQuest()).isTrue();
+			if (result.isNotEligibleToCompleteQuest()) {
+				makeSure(result.questName).is(Quests.GET_RICH_QUICK.name);
+			}
 		});
   });
 });

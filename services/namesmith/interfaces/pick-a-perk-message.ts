@@ -9,6 +9,7 @@ import { DiscordButtons } from "../../../utilities/discord-interfaces/discord-bu
 import { DiscordButtonDefinition } from '../../../utilities/discord-interfaces/discord-button';
 import { ignoreError } from "../../../utilities/error-utils";
 import { getNamesmithServices } from "../services/get-namesmith-services";
+import { sortByAscendingProperty } from "../../../utilities/data-structure-utils";
 
 /**
  * Generates a messaeg that prompts the user to pick a perk.
@@ -21,6 +22,8 @@ export function createPickAPerkMessage(
 		threePerks: Perk[],
 	},
 ): DiscordButtons {
+	threePerks = sortByAscendingProperty(threePerks, 'id');
+
 	const message = joinLines(
 		'# Pick a Perk',
 		'Choose one of the three perks below to gain a unique, permanent enhancement to your Namesmith gameplay.',

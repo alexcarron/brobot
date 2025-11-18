@@ -7,6 +7,7 @@ import {
 	getCharacterDifferences,
 	getRandomWeightedElement,
 	mapToObject,
+	sortByAscendingProperty,
 } from "./data-structure-utils";
 import { InvalidArgumentError } from "./error-utils";
 import { makeSure } from "./jest/jest-utils";
@@ -422,4 +423,48 @@ describe('mapToObject()', () => {
 			key5: 5
 		})
 	})
-})
+});
+
+describe('sortAscendingByProperty()', () => {
+	it('should sort an array of objects by a given string property in ascending order', () => {
+		const objects = [
+			{ id: 1, name: 'John Doe' },
+			{ id: 2, name: 'Jane Doe' },
+			{ id: 3, name: 'Bob Smith' },
+		];
+		const sortedObjects = sortByAscendingProperty(objects, 'name');
+		makeSure(sortedObjects).is([
+			{ id: 3, name: 'Bob Smith' },
+			{ id: 2, name: 'Jane Doe' },
+			{ id: 1, name: 'John Doe' },
+		]);
+	});
+
+	it('should sort an array of objects by a given number property in ascending order', () => {
+		const objects = [
+			{ id: 1, age: 30 },
+			{ id: 2, age: 25 },
+			{ id: 3, age: 35 },
+		];
+		const sortedObjects = sortByAscendingProperty(objects, 'age');
+		makeSure(sortedObjects).is([
+			{ id: 2, age: 25 },
+			{ id: 1, age: 30 },
+			{ id: 3, age: 35 },
+		]);
+	});
+
+	it('should sort an array of objects by a given date property in ascending order', () => {
+		const objects = [
+			{ id: 1, date: new Date('2022-01-01') },
+			{ id: 2, date: new Date('2022-02-01') },
+			{ id: 3, date: new Date('2022-03-01') },
+		];
+		const sortedObjects = sortByAscendingProperty(objects, 'date');
+		makeSure(sortedObjects).is([
+			{ id: 1, date: new Date('2022-01-01') },
+			{ id: 2, date: new Date('2022-02-01') },
+			{ id: 3, date: new Date('2022-03-01') },
+		]);
+	});
+});

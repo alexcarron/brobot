@@ -2,7 +2,7 @@ import { toDefinedPropertyValues } from "../../../../utilities/data-structure-ut
 import { DeepReadonly, WithID } from "../../../../utilities/types/generic-types";
 import { QuestRepository } from "../../repositories/quest.repository";
 import { DBQuest, QuestDefinition } from "../../types/quest.types";
-import { DatabaseQuerier, toListPlaceholder } from "../database-querier";
+import { DatabaseQuerier, toPlaceholdersList } from "../database-querier";
 
 /**
  * Synchronizes the database to match a list of data definitions of quests without breaking existing data.
@@ -25,8 +25,8 @@ export function syncQuestsToDB(
 		db.run(
 			`DELETE FROM quest
 			WHERE
-				id NOT IN ${toListPlaceholder(questIDs)}
-				AND name NOT IN ${toListPlaceholder(questNames)}`,
+				id NOT IN ${toPlaceholdersList(questIDs)}
+				AND name NOT IN ${toPlaceholdersList(questNames)}`,
 			...questIDs,
 			...questNames
 		);
@@ -34,8 +34,8 @@ export function syncQuestsToDB(
 		const existingDBQuests = db.getRows(
 			`SELECT * FROM quest
 			WHERE
-				id IN ${toListPlaceholder(questIDs)}
-				OR name IN ${toListPlaceholder(questNames)}`,
+				id IN ${toPlaceholdersList(questIDs)}
+				OR name IN ${toPlaceholdersList(questNames)}`,
 			...questIDs,
 			...questNames
 		) as DBQuest[];

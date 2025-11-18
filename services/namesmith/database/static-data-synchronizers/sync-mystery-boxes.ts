@@ -2,7 +2,7 @@ import { toDefinedPropertyValues } from "../../../../utilities/data-structure-ut
 import { WithRequired } from "../../../../utilities/types/generic-types";
 import { MysteryBoxRepository } from "../../repositories/mystery-box.repository";
 import { DBMysteryBox, MysteryBoxDefinition } from "../../types/mystery-box.types";
-import { DatabaseQuerier, toListPlaceholder } from "../database-querier";
+import { DatabaseQuerier, toPlaceholdersList } from "../database-querier";
 
 /**
  * Syncronizes the database to match a list of data defintions of mystery boxes without breaking existing data.
@@ -22,13 +22,13 @@ export const syncMysteryBoxesToDB = (
 	db.runTransaction(() => {
 		db.run(
 			`DELETE FROM mysteryBox
-			WHERE id NOT IN ${toListPlaceholder(mysertyBoxIDs)}`,
+			WHERE id NOT IN ${toPlaceholdersList(mysertyBoxIDs)}`,
 			...mysertyBoxIDs
 		);
 
 		const existingDBMysteryBoxes = db.getRows(
 			`SELECT id FROM mysteryBox
-			WHERE id IN ${toListPlaceholder(mysertyBoxIDs)}`,
+			WHERE id IN ${toPlaceholdersList(mysertyBoxIDs)}`,
 			...mysertyBoxIDs
 		) as DBMysteryBox[];
 

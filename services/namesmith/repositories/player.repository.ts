@@ -2,7 +2,7 @@ import { InvalidArgumentError, returnNonNullOrThrow } from "../../../utilities/e
 import { getRandomNumericUUID } from "../../../utilities/random-utils";
 import { Override, WithOptional, WithRequiredAndOneOther } from "../../../utilities/types/generic-types";
 import { MAX_NAME_LENGTH } from "../constants/namesmith.constants";
-import { DatabaseQuerier, toAssignmentsPlaceholder } from "../database/database-querier";
+import { DatabaseQuerier, toParameterSetClause } from "../database/database-querier";
 import { DBPlayer, MinimalPlayer, Player, PlayerDefinition, PlayerID, PlayerResolvable } from "../types/player.types";
 import { RoleID } from "../types/role.types";
 import { PlayerNotFoundError, PlayerAlreadyExistsError } from "../utilities/error.utility";
@@ -10,6 +10,7 @@ import { toMinimalPlayerObject } from "../utilities/player.utility";
 import { RoleRepository } from "./role.repository";
 import { PerkRepository } from './perk.repository';
 import { isString } from "../../../utilities/types/type-guards";
+import { isOneSymbol } from "../../../utilities/string-checks-utils";
 
 /**
  * Provides access to the dynamic player data.
@@ -271,7 +272,7 @@ export class PlayerRepository {
 	 * @param characterValue - The value of the character to add to the player's inventory.
 	 */
 	addCharacterToInventory(playerID: string, characterValue: string) {
-		if (characterValue.length !== 1)
+		if (!isOneSymbol(characterValue))
 			throw new InvalidArgumentError("addCharacterToInventory: characterValue must be a single character.");
 
 		const query = `
@@ -591,7 +592,7 @@ export class PlayerRepository {
 
 		this.db.run(
 			`UPDATE player
-			SET ${toAssignmentsPlaceholder({ currentName, publishedName, tokens, inventory, lastClaimedRefillTime })}
+			SET ${toParameterSetClause({ currentName, publishedName, tokens, inventory, lastClaimedRefillTime })}
 			WHERE id = @id`,
 			{
 				id, currentName, publishedName, tokens, inventory,

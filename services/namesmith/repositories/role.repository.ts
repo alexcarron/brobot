@@ -1,5 +1,5 @@
 import { InvalidArgumentError, toNullOnError } from "../../../utilities/error-utils";
-import { DatabaseQuerier, toAssignmentsPlaceholder } from "../database/database-querier";
+import { DatabaseQuerier, toParameterORWhereClause, toParameterSetClause } from "../database/database-querier";
 import { PlayerID } from "../types/player.types";
 import { DBRole, MinimalRole, Role, RoleDefinition, RoleID, RoleName, RoleResolvable } from "../types/role.types";
 import { PlayerNotFoundError, RoleNotFoundError } from "../utilities/error.utility";
@@ -11,7 +11,7 @@ import { isNumber, isString } from "../../../utilities/types/type-guards";
  * Provides access to the dynamic role data.
  */
 export class RoleRepository {
-	
+
 	/**
 	 * @param db - The database querier instance used for executing SQL statements.
 	 * @param perkRepository - The repository for accessing perk data.
@@ -332,10 +332,8 @@ export class RoleRepository {
 		if (name !== undefined || description !== undefined) {
 			const updateQuery = `
 				UPDATE role
-				SET ${toAssignmentsPlaceholder({ name, description })}
-				WHERE
-					id = @id
-					OR name = @name
+				SET ${toParameterSetClause({ name, description })}
+				WHERE ${toParameterORWhereClause({ id, name })}
 			`;
 
 			this.db.run(updateQuery, {id, name, description});

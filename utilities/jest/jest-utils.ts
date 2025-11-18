@@ -444,7 +444,7 @@ export function makeSure<
 		 * @example
 		 * makeSure({id: 1, name: 'John Doe', age: 30}).includesObject({ id: 1 });
 		 */
-		includesObject(expectedObjectSubset: Partial<ActualType>): void {
+		containsProperties(expectedObjectSubset: Partial<ActualType>): void {
 			expect(actualValue).toEqual(
 				expect.objectContaining(expectedObjectSubset)
 			);

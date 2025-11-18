@@ -2,7 +2,7 @@ import { toDefinedPropertyValues } from "../../../../utilities/data-structure-ut
 import { WithRequired } from "../../../../utilities/types/generic-types";
 import { RecipeRepository } from "../../repositories/recipe.repository";
 import { DBRecipe, RecipeDefinition } from "../../types/recipe.types";
-import { DatabaseQuerier, toListPlaceholder } from "../database-querier";
+import { DatabaseQuerier, toPlaceholdersList } from "../database-querier";
 
 /**
  * Synchronizes the database to match a list of data definitions of recipes without breaking existing data.
@@ -21,13 +21,13 @@ export const syncRecipesToDB = (
 	db.runTransaction(() => {
 		db.run(
 			`DELETE FROM recipe
-			WHERE id NOT IN ${toListPlaceholder(recipeIDs)}`,
+			WHERE id NOT IN ${toPlaceholdersList(recipeIDs)}`,
 			...recipeIDs
 		);
 
 		const existingDBRecipes = db.getRows(
 			`SELECT id FROM recipe
-			WHERE id IN ${toListPlaceholder(recipeIDs)}`,
+			WHERE id IN ${toPlaceholdersList(recipeIDs)}`,
 			...recipeIDs
 		) as DBRecipe[];
 

@@ -1,4 +1,5 @@
 import { DBPerk, Perk } from "../types/perk.types";
+import { fromDBBoolean as fromDBBool, toDBBool } from "./db.utility";
 
 /**
  * Converts a DBPerk object into a Perk object.
@@ -8,7 +9,8 @@ import { DBPerk, Perk } from "../types/perk.types";
 export function toPerk(dbPerk: DBPerk): Perk {
 	return {
 		...dbPerk,
-		wasOffered: dbPerk.wasOffered === 1
+		wasOffered: fromDBBool(dbPerk.wasOffered),
+		isBeingOffered: fromDBBool(dbPerk.isBeingOffered),
 	};
 }
 
@@ -29,15 +31,7 @@ export function toPerks(dbPerks: DBPerk[]): Perk[] {
 export function toDBPerk(perk: Perk): DBPerk {
 	return {
 		...perk,
-		wasOffered: perk.wasOffered ? 1 : 0
+		wasOffered: toDBBool(perk.wasOffered),
+		isBeingOffered: toDBBool(perk.isBeingOffered),
 	}
-}
-
-/**
- * Converts a boolean indicating if a perk was offered into a DBPerk compatible value.
- * @param wasOffered - The boolean indicating if the perk was offered.
- * @returns The converted value.
- */
-export function toDBWasOffered(wasOffered: Perk['wasOffered']): 1 | 0 {
-	return wasOffered ? 1 : 0
 }

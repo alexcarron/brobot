@@ -317,11 +317,26 @@ export class QuestAlreadyExistsError extends ResourceAlreadyExistsError {
  * Error thrown when a requested namesmith perk already exists.
  */
 export class PerkAlreadyExistsError extends ResourceAlreadyExistsError {
-	constructor(perkID: PerkID) {
-		super({
-			message: `Cannot add perk. Perk with ID ${perkID} already exists.`,
-			relevantData: { perkID }
-		})
+	declare relevantData: {
+		perkID?: PerkID
+		perkName?: PerkName
+	}
+	
+	constructor(perkIDOrName: PerkID | PerkName) {
+		const isID = isNumber(perkIDOrName);
+
+		if (isID) {
+			super({
+				message: `Cannot add perk. Perk with ID ${perkIDOrName} already exists.`,
+				relevantData: { perkID: perkIDOrName }
+			})
+		}
+		else {
+			super({
+				message: `Cannot add perk. Perk with name "${perkIDOrName}" already exists.`,
+				relevantData: { perkName: perkIDOrName }
+			})
+		}
 	}
 }
 

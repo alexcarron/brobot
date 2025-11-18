@@ -9,6 +9,7 @@ import { fetchNamesmithChannel } from "../../utilities/discord-fetch.utility";
 import { ids } from "../../../../bot-config/discord-ids";
 import { ignoreError } from "../../../../utilities/error-utils";
 import { replyToInteraction } from "../../../../utilities/discord-action-utils";
+import { completeQuest } from "../../workflows/complete-quest.workflow";
 
 /**
  * Creates a message with details about the given quest and a button to complete it.
@@ -30,8 +31,36 @@ export function toQuestButton(quest: Quest) {
 		id: `complete-quest-button-${quest.id}`,
 		style: ButtonStyle.Secondary,
 		onButtonPressed: async (buttonInteraction) => {
-			await replyToInteraction(buttonInteraction,
-				'This is a temporary response message until the functionality is implemented.'
+			const result = completeQuest({
+				playerResolvable: buttonInteraction.user.id,
+				questResolvable: quest,
+			});
+
+			if (result.isNotAPlayer())
+				return await replyToInteraction(buttonInteraction,
+					'You are not a player, so you cannot complete a quest.'
+				);
+
+			if (result.isQuestDoesNotExist())
+				return await replyToInteraction(buttonInteraction,
+					`This quest no longer exists, so you cannot complete it.`
+				);
+
+			if (result.isAlreadyCompletedQuest())
+				return await replyToInteraction(buttonInteraction,
+					`You already completed this quest! You cannot claim the rewards again.`
+				);
+
+			if (result.isNotEligibleToCompleteQuest()) {
+				const { questName } = result;
+				return await replyToInteraction(buttonInteraction,
+					`Sorry, you haven't meet the requirements to complete the ${questName} quest yet.`
+				);
+			}
+
+			return await replyToInteraction(buttonInteraction,
+				`You have completed the **${quest.name}** quest!`,
+				...rewards.map(toRewardBulletPoint),
 			);
 		},
 	})

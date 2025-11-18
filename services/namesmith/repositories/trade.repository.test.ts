@@ -229,7 +229,7 @@ describe('TradeRepository', () => {
 				status: TradeStatuses.AWAITING_RECIPIENT
 			});
 
-			makeSure(trade).includesObject({
+			makeSure(trade).containsProperties({
 				id: 10001,
 				offeredCharacters: "abc",
 				requestedCharacters: "def",
@@ -282,7 +282,7 @@ describe('TradeRepository', () => {
 			});
 
 			const resolvedTrade = tradeRepository.getTradeOrThrow(SOME_TRADE.id);
-			makeSure(resolvedTrade).includesObject({
+			makeSure(resolvedTrade).containsProperties({
 				id: SOME_TRADE.id,
 				offeredCharacters: "abc",
 				requestedCharacters: "def",
