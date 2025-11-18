@@ -10,6 +10,7 @@ import { toMinimalPlayerObject } from "../utilities/player.utility";
 import { RoleRepository } from "./role.repository";
 import { PerkRepository } from './perk.repository';
 import { isString } from "../../../utilities/types/type-guards";
+import { isOneSymbol } from "../../../utilities/string-checks-utils";
 
 /**
  * Provides access to the dynamic player data.
@@ -271,7 +272,7 @@ export class PlayerRepository {
 	 * @param characterValue - The value of the character to add to the player's inventory.
 	 */
 	addCharacterToInventory(playerID: string, characterValue: string) {
-		if (characterValue.length !== 1)
+		if (!isOneSymbol(characterValue))
 			throw new InvalidArgumentError("addCharacterToInventory: characterValue must be a single character.");
 
 		const query = `

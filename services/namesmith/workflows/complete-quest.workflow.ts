@@ -1,56 +1,63 @@
 import { getNamesmithServices } from "../services/get-namesmith-services";
-import { PlayerResolvable } from "../types/player.types";
-import { QuestResolvable } from "../types/quest.types";
+import { Player, PlayerResolvable } from "../types/player.types";
+import { Quest, QuestResolvable } from "../types/quest.types";
 import { getWorkflowResultCreator, provides } from "./workflow-result-creator";
 
 const result = getWorkflowResultCreator({
 	success: provides<{
-
+		player: Player,
+		quest: Quest,
 	}>(),
 	notAPlayer: null,
 	questDoesNotExist: null,
 	alreadyCompletedQuest: null,
-	notEligibleToCompleteQuest: null,
+	notEligibleToCompleteQuest: provides<{questName: string}>(),
 });
 
 /**
  * Completes a quest for a player.
  * @param parameters - An object containing the following parameters:
- * @param parameters.player - The player completing the quest.
- * @param parameters.quest - The quest being completed.
+ * @param parameters.playerResolvable - The player completing the quest.
+ * @param parameters.questResolvable - The quest being completed.
  * @returns A result indicating if the quest was successfully completed or not.
  */
 export function completeQuest(
-	{player, quest}: {
-		player: PlayerResolvable,
-		quest: QuestResolvable,
+	{playerResolvable, questResolvable}: {
+		playerResolvable: PlayerResolvable,
+		questResolvable: QuestResolvable,
 	}
 ) {
 	const {playerService, questService, activityLogService} = getNamesmithServices();
 
-	if (!playerService.isPlayer(player)) {
+	if (!playerService.isPlayer(playerResolvable)) {
 		return result.failure.notAPlayer();
 	}
 
-	if (!questService.isQuest(quest)) {
+	if (!questService.isQuest(questResolvable)) {
 		return result.failure.questDoesNotExist();
 	}
 
-	if (activityLogService.hasPlayerAlreadyCompletedQuest(player, quest)) {
+	if (activityLogService.hasPlayerAlreadyCompletedQuest(playerResolvable, questResolvable)) {
 		return result.failure.alreadyCompletedQuest();
 	}
 
-	if (!questService.isPlayerEligibleToComplete(player, quest)) {
-		return result.failure.notEligibleToCompleteQuest();
+	if (!questService.isPlayerEligibleToComplete(playerResolvable, questResolvable)) {
+		const quest = questService.resolveQuest(questResolvable);
+		return result.failure.notEligibleToCompleteQuest({
+			questName: quest.name
+		});
 	}
 
 	// Give the player the rewards for the request
-	questService.givePlayerRewards(player, quest);
+	questService.givePlayerRewards(playerResolvable, questResolvable);
 
 	activityLogService.logCompleteQuest({
-		playerCompletingQuest: player,
-		questCompleted: quest,
+		playerCompletingQuest: playerResolvable,
+		questCompleted: questResolvable,
 	});
 
-	return result.success({});
+	return result.success({
+		player: playerService.resolvePlayer(playerResolvable),
+		quest: questService.resolveQuest(questResolvable),
+	});
 }
