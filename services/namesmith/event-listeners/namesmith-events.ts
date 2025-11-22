@@ -10,6 +10,9 @@ export const NamesmithEvents = {
 	NamePublish: createEventHandler<{
 		player: Player;
 	}>(),
+
+	VotingStart: createEventHandler<{}>(),
+	VotingEnd: createEventHandler<{}>(),
 };
 
 export type RelevantDataOf<
@@ -65,6 +68,6 @@ function createEventHandler<
 		doOnceWhenItOccurs: addOneTimeHandler,
 
 		runHandlers: runHandlers,
-		announce: runHandlers,
+		triggerEvent: runHandlers,
 	}
 }

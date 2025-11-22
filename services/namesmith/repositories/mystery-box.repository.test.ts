@@ -1,6 +1,5 @@
 import { INVALID_MYSTERY_BOX_ID } from "../constants/test.constants";
 import { MysteryBoxAlreadyExistsError, MysteryBoxNotFoundError } from "../utilities/error.utility";
-import { createMockMysteryBoxRepo } from "../mocks/mock-repositories";
 import { MysteryBoxRepository } from "./mystery-box.repository";
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { MysteryBoxes } from "../constants/mystery-boxes.constants";
@@ -9,7 +8,7 @@ describe('MysteryBoxRepository', () => {
 	let mysteryBoxRepo: MysteryBoxRepository;
 
 	beforeEach(() => {
-		mysteryBoxRepo = createMockMysteryBoxRepo();
+		mysteryBoxRepo = MysteryBoxRepository.asMock();
 	});
 
 	describe('getMysteryBoxes()', () => {

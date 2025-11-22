@@ -1,36 +1,42 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { INVALID_RECIPE_ID } from "../constants/test.constants";
-import { mockRecipes } from "../mocks/mock-data/mock-recipes";
-import { createMockRecipeRepo } from "../mocks/mock-repositories";
+import { DatabaseQuerier } from "../database/database-querier";
+import { addMockRecipe } from "../mocks/mock-data/mock-recipes";
 import { Recipe } from "../types/recipe.types";
 import { RecipeAlreadyExistsError, RecipeNotFoundError } from "../utilities/error.utility";
 import { RecipeRepository } from "./recipe.repository"
 
 describe('RecipeRepository', () => {
+	let db: DatabaseQuerier;
 	let recipeRepository: RecipeRepository;
 
 	let SOME_RECIPE: Recipe;
+	let ALL_RECIPES: Recipe[];
 
 	beforeEach(() => {
-		recipeRepository = createMockRecipeRepo();
-		SOME_RECIPE = recipeRepository.getRecipes()[0];
+		recipeRepository = RecipeRepository.asMock();
+		db = recipeRepository.db;
+
+		SOME_RECIPE = addMockRecipe(db);
+		ALL_RECIPES = recipeRepository.getRecipes();
 	})
 
 	describe('.getRecipes()', () => {
 		it('returns all recipes', () => {
 			const recipes = recipeRepository.getRecipes();
-			expect(recipes).toEqual(mockRecipes);
+			makeSure(recipes).isNotEmpty();
+			makeSure(recipes).haveProperties('id', 'inputCharacters', 'outputCharacters');
 		})
 	})
 
 	describe('.getRecipeByID()', () => {
 		it('returns a recipe by ID', () => {
-			const recipe = recipeRepository.getRecipeByID(1);
-			expect(recipe).toEqual(mockRecipes[0]);
+			const recipe = recipeRepository.getRecipeByID(SOME_RECIPE.id);
+			expect(recipe).toEqual(SOME_RECIPE);
 		})
 
 		it('returns null if no recipe is found', () => {
-			const recipe = recipeRepository.getRecipeByID(0);
+			const recipe = recipeRepository.getRecipeByID(INVALID_RECIPE_ID);
 			expect(recipe).toBeNull();
 		})
 	})
@@ -38,12 +44,12 @@ describe('RecipeRepository', () => {
 	describe('.getRecipesWithInputs()', () => {
 		it('returns recipes with the given input characters', () => {
 			const recipes = recipeRepository.getRecipesWithInputs('abc');
-			expect(recipes).toEqual(mockRecipes.filter(recipe => recipe.inputCharacters === 'abc'));
+			expect(recipes).toEqual(ALL_RECIPES.filter(recipe => recipe.inputCharacters === 'abc'));
 		})
 
 		it('returns multiple recipes with the given input characters', () => {
 			const recipes = recipeRepository.getRecipesWithInputs('nn');
-			expect(recipes).toEqual(mockRecipes.filter(recipe => recipe.inputCharacters === 'nn'));
+			expect(recipes).toEqual(ALL_RECIPES.filter(recipe => recipe.inputCharacters === 'nn'));
 		})
 
 		it('returns an empty array if no recipes are found', () => {

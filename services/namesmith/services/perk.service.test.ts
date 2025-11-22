@@ -5,7 +5,6 @@ import { INVALID_PERK_ID, INVALID_PERK_NAME } from "../constants/test.constants"
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPerk } from "../mocks/mock-data/mock-perks";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
-import { createMockPerkService } from "../mocks/mock-services";
 import { Perk } from "../types/perk.types";
 import { PerkNotFoundError } from "../utilities/error.utility";
 import { PerkService } from "./perk.service";
@@ -15,7 +14,7 @@ describe('PerkService', () => {
 	let db: DatabaseQuerier;
 
 	beforeEach(() => {
-		perkService = createMockPerkService();
+		perkService = PerkService.asMock();
 		db = perkService.perkRepository.db;
 	});
 

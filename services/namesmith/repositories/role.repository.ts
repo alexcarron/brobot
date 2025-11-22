@@ -6,6 +6,7 @@ import { PlayerNotFoundError, RoleNotFoundError } from "../utilities/error.utili
 import { WithAtLeast, WithOptional } from '../../../utilities/types/generic-types';
 import { PerkRepository } from "./perk.repository";
 import { isNumber, isString } from "../../../utilities/types/type-guards";
+import { createMockDB } from "../mocks/mock-database";
 
 /**
  * Provides access to the dynamic role data.
@@ -23,6 +24,11 @@ export class RoleRepository {
 
 	static fromDB(db: DatabaseQuerier) {
 		return new RoleRepository(db, PerkRepository.fromDB(db));
+	}
+
+	static asMock() {
+		const db = createMockDB();
+		return RoleRepository.fromDB(db);
 	}
 
 	private attachExistingPerksToRole(minimalRole: MinimalRole): Role {

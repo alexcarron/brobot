@@ -5,7 +5,6 @@ import { INVALID_PERK_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { addMockRole } from "../mocks/mock-data/mock-roles";
-import { createMockPerkRepo } from "../mocks/mock-repositories";
 import { PerkNotFoundError } from "../utilities/error.utility";
 import { PerkRepository } from "./perk.repository";
 
@@ -16,7 +15,7 @@ describe('PerkRepository', () => {
 	const MINE_BONUS_ROLE_ID = 1;
 
 	beforeEach(() => {
-		perkRepository = createMockPerkRepo();
+		perkRepository = PerkRepository.asMock();
 		db = perkRepository.db;
 	});
 

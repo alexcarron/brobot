@@ -3,6 +3,7 @@ import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { DBGameState, GameState } from "../types/game-state.types";
 import { WithAtLeastOneProperty } from '../../../utilities/types/generic-types';
 import { GameStateInitializationError } from "../utilities/error.utility";
+import { createMockDB } from "../mocks/mock-database";
 
 /**
  * Provides access to the game state data.
@@ -18,6 +19,11 @@ export class GameStateRepository {
 
 	static fromDB(db: DatabaseQuerier) {
 		return new GameStateRepository(db);
+	}
+
+	static asMock() {
+		const db = createMockDB();
+		return GameStateRepository.fromDB(db);
 	}
 
 	/**

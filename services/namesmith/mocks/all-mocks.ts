@@ -1,7 +1,6 @@
-import { NamesmithDependencies } from "../types/namesmith.types";
+import { NamesmithDependencies, NamesmithDependencyClasses } from "../types/namesmith.types";
+import { createRepositoriesFromDB, createServicesFromDB } from "../utilities/dependency.utility";
 import { createMockDB } from "./mock-database";
-import { createMockRoleRepo, createMockCharacterRepo, createMockGameStateRepo, createMockMysteryBoxRepo, createMockPerkRepo, createMockPlayerRepo, createMockRecipeRepo, createMockTradeRepo, createMockVoteRepo, createMockQuestRepo, createMockActivityLogRepo } from "./mock-repositories";
-import { createMockActivityLogService, createMockCharacterService, createMockGameStateService, createMockMysteryBoxService, createMockPerkService, createMockPlayerService, createMockQuestService, createMockRecipeService, createMockRoleService, createMockTradeService, createMockVoteService } from "./mock-services";
 
 /**
  * Creates all the mock services and repositories needed for testing.
@@ -9,56 +8,28 @@ import { createMockActivityLogService, createMockCharacterService, createMockGam
  */
 export const createAllMocks = (): NamesmithDependencies => {
 	const mockDB = createMockDB();
-
-	const mysteryBoxRepository = createMockMysteryBoxRepo(mockDB);
-	const characterRepository = createMockCharacterRepo(mockDB);
-	const voteRepository = createMockVoteRepo(mockDB);
-	const gameStateRepository = createMockGameStateRepo(mockDB);
-	const recipeRepository = createMockRecipeRepo(mockDB);
-	const perkRepository = createMockPerkRepo(mockDB);
-	const roleRepository = createMockRoleRepo(mockDB, perkRepository);
-	const playerRepository = createMockPlayerRepo(mockDB, roleRepository, perkRepository);
-	const tradeRepository = createMockTradeRepo(mockDB, playerRepository);
-	const questRepository = createMockQuestRepo(mockDB);
-	const activityLogRepository = createMockActivityLogRepo(mockDB, playerRepository, recipeRepository, questRepository);
-
-	const mysteryBoxService = createMockMysteryBoxService(mysteryBoxRepository, characterRepository);
-	const characterService = createMockCharacterService(characterRepository);
-	const playerService = createMockPlayerService(playerRepository);
-	const voteService = createMockVoteService(voteRepository, playerService);
-	const recipeService = createMockRecipeService(recipeRepository, playerService);
-	const tradeService = createMockTradeService(tradeRepository, playerService);
-	const gameStateService = createMockGameStateService(gameStateRepository, playerService, voteService);
-	const perkService = createMockPerkService(perkRepository, roleRepository, playerService);
-	const roleService = createMockRoleService(roleRepository, playerService);
-	const activityLogService = createMockActivityLogService(activityLogRepository);
-	const questService = createMockQuestService(questRepository, activityLogService, playerService);
-
-	return {
+	const repositories = createRepositoriesFromDB(mockDB);
+	const services = createServicesFromDB(mockDB);
+	const allMocks = {
 		db: mockDB,
-
-		mysteryBoxRepository,
-		characterRepository,
-		playerRepository,
-		voteRepository,
-		gameStateRepository,
-		recipeRepository,
-		tradeRepository,
-		perkRepository,
-		roleRepository,
-		questRepository,
-		activityLogRepository,
-
-		mysteryBoxService,
-		characterService,
-		playerService,
-		voteService,
-		gameStateService,
-		recipeService,
-		tradeService,
-		perkService,
-		roleService,
-		questService,
-		activityLogService,
+		...repositories,
+		...services
 	};
+
+	// Validate all Mocks has correct shape
+	for (const [dependencyName, DependencyClass] of Object.entries(NamesmithDependencyClasses)) {
+		if (allMocks[dependencyName] === undefined) {
+			throw new Error(`createAllMocks: Dependency ${dependencyName} must be defined in NamesmithDependencyClasses and have a corresponding implementation in the all-mocks file. If you added a new dependency, make sure to add its implementation here too.`);
+		}
+
+		if (allMocks[dependencyName] instanceof DependencyClass === false) {
+			throw new Error(
+				`createAllMocks: Dependency ${dependencyName} must be an instance of ${DependencyClass.name}.` +
+				` Received ${typeof allMocks[dependencyName]} instead.` +
+				` Check that the dependency is correctly implemented in the all-mocks file.`
+			);
+		}
+	}
+
+	return allMocks;
 }

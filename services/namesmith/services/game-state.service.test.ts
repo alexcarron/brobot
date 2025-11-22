@@ -21,7 +21,7 @@ jest.mock('../utilities/discord-fetch.utility', () => ({
 		Promise.resolve({ id: playerID })
 	),
 	fetchNamesmithGuildMembers: jest.fn(() =>
-		Promise.resolve(mockPlayers.slice(0, 2).map((player) => ({ id: player.id })))
+		Promise.resolve([])
 	),
 	fetchNamesToVoteOnChannel: jest.fn(() => Promise.resolve({})),
 }));
@@ -45,20 +45,16 @@ jest.mock('cron', () => ({
 import { CronJob } from "cron";
 import { GameStateRepository } from "../repositories/game-state.repository";
 import { GameStateService } from "./game-state.service";
-import { createMockServices } from "../mocks/mock-services";
 import { PlayerService } from "./player.service";
 import { VoteService } from "./vote.service";
 import { DAYS_TO_BUILD_NAME, DAYS_TO_VOTE } from "../constants/namesmith.constants";
-import { mockPlayers } from "../mocks/mock-data/mock-players";
 
 
 describe('GameStateService', () => {
 	let gameStateService: GameStateService;
 
 	beforeEach(() => {
-		const services = createMockServices();
-
-		gameStateService = services.gameStateService;
+		gameStateService = GameStateService.asMock();
 
 		jest.useFakeTimers();
 		jest.setSystemTime(new Date('2025-07-12T12:00:00.000Z'));

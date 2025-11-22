@@ -2,6 +2,7 @@ import { returnNonNullOrThrow } from "../../../utilities/error-utils";
 import { WithRequiredAndOneOther } from '../../../utilities/types/generic-types';
 import { isString } from "../../../utilities/types/type-guards";
 import { DatabaseQuerier } from "../database/database-querier";
+import { createMockDB } from "../mocks/mock-database";
 import { DBVote, Vote, VoteDefinition, VoteID, VoteResolvable } from "../types/vote.types";
 import { VoteAlreadyExistsError, VoteNotFoundError } from "../utilities/error.utility";
 import { PlayerRepository } from "./player.repository";
@@ -22,6 +23,11 @@ export class VoteRepository {
 
 	static fromDB(db: DatabaseQuerier) {
 		return new VoteRepository(db, PlayerRepository.fromDB(db));
+	}
+
+	static asMock() {
+		const db = createMockDB();
+		return VoteRepository.fromDB(db);
 	}
 
 	private toVoteFromDB(dbVote: DBVote): Vote {

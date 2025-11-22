@@ -1,3 +1,5 @@
+import { DatabaseQuerier } from "../database/database-querier";
+import { createMockDB } from "../mocks/mock-database";
 import { CharacterRepository } from "../repositories/character.repository";
 import { Character, CharacterID, CharacterResolvable } from "../types/character.types";
 import { getIDfromCharacterValue } from "../utilities/character.utility";
@@ -9,6 +11,17 @@ export class CharacterService {
 	constructor(
 		public characterRepository: CharacterRepository,
 	) {}
+
+	static fromDB(db: DatabaseQuerier) {
+		return new CharacterService(
+			CharacterRepository.fromDB(db),
+		);
+	}
+
+	static asMock() {
+		const db = createMockDB();
+		return CharacterService.fromDB(db);
+	}
 
 	/**
 	 * Resolves a character resolvable to a character object.

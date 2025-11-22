@@ -24,6 +24,13 @@ import { TradeService } from "../services/trade.service";
 import { VoteService } from "../services/vote.service";
 
 /**
+ * A record of all database classes in Namesmith
+ */
+const NamesmithDatabaseClasses = {
+	db: DatabaseQuerier
+};
+
+/**
  * A record of all database objects in Namesmith that provide access to the raw database connection and query execution that repositories depend on
  */
 export type NamesmithDatabases = Expand<{
@@ -31,9 +38,9 @@ export type NamesmithDatabases = Expand<{
 }>;
 
 /**
- * A record of all repositories in Namesmith that encapsulate direct database access and expose clean methods for fetching and persisting entities
+ * A record of all repository names to their repository classes in Namesmith
  */
-export type NamesmithRepositories = Expand<{
+export const NamesmithRepositoryClasses = {
 	mysteryBoxRepository: MysteryBoxRepository,
 	characterRepository: CharacterRepository,
 	playerRepository: PlayerRepository,
@@ -45,12 +52,19 @@ export type NamesmithRepositories = Expand<{
 	roleRepository: RoleRepository,
 	questRepository: QuestRepository,
 	activityLogRepository: ActivityLogRepository,
-}>;
+};
 
 /**
- * A record of all services in Namesmith that coordinate repositories and external system to implement game rules and small reusable operations
+ * A record of all repositories in Namesmith that encapsulate direct database access and expose clean methods for fetching and persisting entities
  */
-export type NamesmithServices = Expand<{
+export type NamesmithRepositories = {
+	[RepoName in keyof typeof NamesmithRepositoryClasses]: InstanceType<typeof NamesmithRepositoryClasses[RepoName]>
+}
+
+/**
+ * A record of all service names to their service classes in Namesmith
+ */
+export const NamesmithServiceClasses = {
 	mysteryBoxService: MysteryBoxService,
 	characterService: CharacterService,
 	playerService: PlayerService,
@@ -62,7 +76,23 @@ export type NamesmithServices = Expand<{
 	roleService: RoleService,
 	questService: QuestService,
 	activityLogService: ActivityLogService,
-}>;
+};
+
+/**
+ * A record of all services in Namesmith that coordinate repositories and external system to implement game rules and small reusable operations
+ */
+export type NamesmithServices = {
+	[ServiceName in keyof typeof NamesmithServiceClasses]: InstanceType<typeof NamesmithServiceClasses[ServiceName]>
+}
+
+/**
+ * A record of all dependency names to their dependency classes in Namesmith
+ */
+export const NamesmithDependencyClasses = {
+	...NamesmithDatabaseClasses,
+	...NamesmithRepositoryClasses,
+	...NamesmithServiceClasses
+};
 
 /**
  * A record of all required modules in Namesmith

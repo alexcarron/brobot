@@ -3,6 +3,7 @@ import { resolveOptional } from "../../../utilities/optional-utils";
 import { WithAllOptional, WithAtLeastOneProperty } from '../../../utilities/types/generic-types';
 import { isNotNullable } from "../../../utilities/types/type-guards";
 import { DatabaseQuerier, toParameterANDWhereClause } from "../database/database-querier";
+import { createMockDB } from "../mocks/mock-database";
 import { ActivityLogID as ActivityLogID, ActivityLog, DBActivityLog, ActivityLogDefinition } from "../types/activity-log.types";
 import { Player } from "../types/player.types";
 import { Quest } from "../types/quest.types";
@@ -37,6 +38,11 @@ export class ActivityLogRepository {
 			RecipeRepository.fromDB(db),
 			QuestRepository.fromDB(db),
 		);
+	}
+
+	static asMock() {
+		const db = createMockDB();
+		return ActivityLogRepository.fromDB(db);
 	}
 
 	/**

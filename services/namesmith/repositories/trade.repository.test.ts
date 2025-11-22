@@ -3,22 +3,26 @@ import { INVALID_TRADE_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { Trade, TradeStatuses } from '../types/trade.types';
 import { CannotCreateTradeError, TradeAlreadyExistsError, TradeNotFoundError } from "../utilities/error.utility";
-import { createMockTradeRepo } from "../mocks/mock-repositories";
 import { TradeRepository } from "./trade.repository";
-import { addMockTrade, mockTrades } from "../mocks/mock-data/mock-trades";
-import { mockPlayers } from "../mocks/mock-data/mock-players";
+import { addMockTrade } from "../mocks/mock-data/mock-trades";
+import { addMockPlayer } from "../mocks/mock-data/mock-players";
+import { Player } from "../types/player.types";
 
 describe('TradeRepository', () => {
 	let tradeRepository: TradeRepository;
 	let db: DatabaseQuerier;
 
+	let SOME_PLAYER: Player;
+	let SOME_OTHER_PLAYER: Player;
 	let SOME_TRADE: Trade;
 
 	beforeEach(() => {
-		tradeRepository = createMockTradeRepo();
+		tradeRepository = TradeRepository.asMock();
 		db = tradeRepository.db;
 
-		SOME_TRADE = tradeRepository.getTradeOrThrow(mockTrades[0].id!);
+		SOME_PLAYER = addMockPlayer(db);
+		SOME_OTHER_PLAYER = addMockPlayer(db);
+		SOME_TRADE = addMockTrade(db);
 	});
 
 	afterEach(() => {
@@ -32,7 +36,6 @@ describe('TradeRepository', () => {
 	describe('getTrades()', () => {
 		it('returns an array of trade objects', () => {
 			const trades = tradeRepository.getTrades();
-			makeSure(trades).hasLengthOf(mockTrades.length);
 			makeSure(trades).contains(SOME_TRADE);
 			makeSure(trades).haveProperties('id', 'initiatingPlayer', 'recipientPlayer', 'offeredCharacters', 'requestedCharacters', 'status');
 		});
@@ -77,8 +80,8 @@ describe('TradeRepository', () => {
 	describe('createTrade()', () => {
 		it('creates a new trade and returns its ID', () => {
 			const trade = {
-				initiatingPlayerID: mockPlayers[2].id,
-				recipientPlayerID: mockPlayers[3].id,
+				initiatingPlayerID: SOME_PLAYER.id,
+				recipientPlayerID: SOME_OTHER_PLAYER.id,
 				offeredCharacters: "aaa",
 				requestedCharacters: "bbb"
 			};
@@ -99,8 +102,8 @@ describe('TradeRepository', () => {
 				}));
 
 			const trade = {
-				initiatingPlayerID: mockPlayers[2].id,
-				recipientPlayerID: mockPlayers[3].id,
+				initiatingPlayerID: SOME_PLAYER.id,
+				recipientPlayerID: SOME_OTHER_PLAYER.id,
 				offeredCharacters: "aaa",
 				requestedCharacters: "bbb"
 			};
@@ -222,22 +225,22 @@ describe('TradeRepository', () => {
 		it('adds a trade with the given ID', () => {
 			const trade = tradeRepository.addTrade({
 				id: 10001,
-				initiatingPlayer: mockPlayers[0].id,
-				recipientPlayer: mockPlayers[1].id,
+				initiatingPlayer: SOME_PLAYER.id,
+				recipientPlayer: SOME_OTHER_PLAYER.id,
 				offeredCharacters: "abc",
 				requestedCharacters: "def",
 				status: TradeStatuses.AWAITING_RECIPIENT
 			});
 
-			makeSure(trade).containsProperties({
+			makeSure(trade).hasProperties({
 				id: 10001,
 				offeredCharacters: "abc",
 				requestedCharacters: "def",
 				status: TradeStatuses.AWAITING_RECIPIENT
 			});
 
-			makeSure(trade.initiatingPlayer.id).is(mockPlayers[0].id);
-			makeSure(trade.recipientPlayer.id).is(mockPlayers[1].id);
+			makeSure(trade.initiatingPlayer.id).is(SOME_PLAYER.id);
+			makeSure(trade.recipientPlayer.id).is(SOME_OTHER_PLAYER.id);
 
 			const resolvedTrade = tradeRepository.getTradeByID(10001);
 			makeSure(resolvedTrade).is(trade);
@@ -245,8 +248,8 @@ describe('TradeRepository', () => {
 
 		it('generates an ID when none is provided', () => {
 			const trade = tradeRepository.addTrade({
-				initiatingPlayer: mockPlayers[0].id,
-				recipientPlayer: mockPlayers[1].id,
+				initiatingPlayer: SOME_PLAYER.id,
+				recipientPlayer: SOME_OTHER_PLAYER.id,
 				offeredCharacters: "abc",
 				requestedCharacters: "def",
 				status: TradeStatuses.AWAITING_RECIPIENT
@@ -260,8 +263,8 @@ describe('TradeRepository', () => {
 			makeSure(() =>
 				tradeRepository.addTrade({
 					id: SOME_TRADE.id,
-					initiatingPlayer: mockPlayers[0].id,
-					recipientPlayer: mockPlayers[1].id,
+					initiatingPlayer: SOME_PLAYER.id,
+					recipientPlayer: SOME_OTHER_PLAYER.id,
 					offeredCharacters: "abc",
 					requestedCharacters: "def",
 					status: TradeStatuses.AWAITING_RECIPIENT
@@ -274,31 +277,31 @@ describe('TradeRepository', () => {
 		it('updates a trade with the given ID', () => {
 			tradeRepository.updateTrade({
 				id: SOME_TRADE.id,
-				initiatingPlayer: mockPlayers[1].id,
-				recipientPlayer: mockPlayers[0].id,
+				initiatingPlayer: SOME_OTHER_PLAYER.id,
+				recipientPlayer: SOME_PLAYER.id,
 				offeredCharacters: "abc",
 				requestedCharacters: "def",
 				status: TradeStatuses.ACCEPTED
 			});
 
 			const resolvedTrade = tradeRepository.getTradeOrThrow(SOME_TRADE.id);
-			makeSure(resolvedTrade).containsProperties({
+			makeSure(resolvedTrade).hasProperties({
 				id: SOME_TRADE.id,
 				offeredCharacters: "abc",
 				requestedCharacters: "def",
 				status: TradeStatuses.ACCEPTED
 			});
 
-			makeSure(resolvedTrade.initiatingPlayer.id).is(mockPlayers[1].id);
-			makeSure(resolvedTrade.recipientPlayer.id).is(mockPlayers[0].id);
+			makeSure(resolvedTrade.initiatingPlayer.id).is(SOME_OTHER_PLAYER.id);
+			makeSure(resolvedTrade.recipientPlayer.id).is(SOME_PLAYER.id);
 		});
 
 		it('throws TradeNotFoundError if trade does not exist', () => {
 			makeSure(() =>
 				tradeRepository.updateTrade({
 					id: INVALID_TRADE_ID,
-					initiatingPlayer: mockPlayers[1].id,
-					recipientPlayer: mockPlayers[0].id,
+					initiatingPlayer: SOME_OTHER_PLAYER.id,
+					recipientPlayer: SOME_PLAYER.id,
 					offeredCharacters: "abc",
 					requestedCharacters: "def",
 					status: TradeStatuses.ACCEPTED

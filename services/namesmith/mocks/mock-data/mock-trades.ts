@@ -4,21 +4,10 @@ import { TradeRepository } from "../../repositories/trade.repository";
 import { PlayerResolvable } from "../../types/player.types";
 import { Trade, TradeDefintion, TradeStatuses } from "../../types/trade.types";
 import { acceptTrade } from "../../workflows/trading/accept-trade.workflow";
-import { addMockPlayer, mockPlayers } from "./mock-players";
+import { addMockPlayer } from "./mock-players";
 import { returnIfNotFailure } from '../../utilities/workflow.utility';
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { initiateTrade } from "../../workflows/trading/initiate-trade.workflow";
-
-export const mockTrades: TradeDefintion[] = [
-	{
-		id: 1,
-		initiatingPlayer: mockPlayers[0].id,
-		recipientPlayer: mockPlayers[1].id,
-		offeredCharacters: "abc",
-		requestedCharacters: "edf",
-		status: TradeStatuses.AWAITING_RECIPIENT,
-	},
-];
 
 /**
  * Adds a trade to the database with the given properties.
@@ -36,14 +25,23 @@ export const addMockTrade = (
 	db: DatabaseQuerier,
 	tradeDefintion: WithAllOptional<TradeDefintion> = {}
 ): Trade => {
+	let {
+		initiatingPlayer = undefined,
+		recipientPlayer = undefined,
+	} = tradeDefintion;
 	const {
 		id,
-		initiatingPlayer = mockPlayers[0].id,
-		recipientPlayer = mockPlayers[1].id,
 		offeredCharacters = "abc",
 		requestedCharacters = "edf",
 		status = TradeStatuses.AWAITING_RECIPIENT,
-	} = tradeDefintion
+	} = tradeDefintion;
+
+	if (initiatingPlayer === undefined) {
+		initiatingPlayer = addMockPlayer(db);
+	}
+	if (recipientPlayer === undefined) {
+		recipientPlayer = addMockPlayer(db);
+	}
 
 	const tradeRepository = TradeRepository.fromDB(db);
 	return tradeRepository.addTrade({
@@ -117,7 +115,7 @@ export function forcePlayerToAcceptNewTrade(
 	player: PlayerResolvable,
 	tradeDefinition: WithAllOptional<TradeDefintion> = {},
 ) {
-const { playerService } = getNamesmithServices();
+	const { playerService } = getNamesmithServices();
 	const db = playerService.playerRepository.db;
 
 	switch (tradeDefinition.status) {

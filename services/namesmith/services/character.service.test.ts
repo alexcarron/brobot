@@ -1,5 +1,4 @@
 import { INVALID_CHARACTER_ID } from "../constants/test.constants";
-import { createMockCharacterService } from "../mocks/mock-services";
 import { Character, CharacterID, CharacterValue } from "../types/character.types";
 import { CharacterNotFoundError } from "../utilities/error.utility";
 import { CharacterService } from "./character.service";
@@ -12,7 +11,7 @@ describe('CharacterService', () => {
 	let characterService: CharacterService;
 
 	beforeEach(() => {
-		characterService = createMockCharacterService();
+		characterService = CharacterService.asMock();
 
 		CHARACTER_A = characterService.characterRepository.getCharacterByValueOrThrow('A');
 		CHARACTER_A_ID = CHARACTER_A.id;

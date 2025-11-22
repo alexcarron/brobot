@@ -22,7 +22,7 @@ export const toTitleCase = (string: string): string => {
 	);
 };
 
-export function toCamelCase<
+export function toCamelFromKebabCase<
 	SpecificString extends string
 >(kebabCaseString: SpecificString): ToCamelCase<SpecificString>;
 
@@ -36,7 +36,7 @@ export function toCamelCase<
  * @param kebabCaseString kebab-case string
  * @returns The given string in camelCase
  */
-export function toCamelCase(kebabCaseString: string) {
+export function toCamelFromKebabCase(kebabCaseString: string) {
 	// Fast path for empty input
 	if (kebabCaseString === '') return '';
 
@@ -63,6 +63,113 @@ export function toCamelCase(kebabCaseString: string) {
 	return result as any;
 }
 
+/**
+ * Splits a given string into segments that can be used to form an identifier.
+ * This function replaces underscores, hyphens, and other separators with spaces, then
+ * splits the string on whitespace. The resulting segments are in lowercase.
+ * @param string - The string to split into segments.
+ * @returns An array of strings, each representing a segment of the input string.
+ * @example
+ * toIdentifierSegments('hello world'); // ['hello', 'world']
+ * toIdentifierSegments('HELLO WORLD'); // ['hello', 'world']
+ * toIdentifierSegments('hello-world'); // ['hello', 'world']
+ * toIdentifierSegments('hello_world'); // ['hello', 'world']
+ * toIdentifierSegments('helloWorld'); // ['hello', 'world']
+ */
+export function toIdentifierSegments(string: string): string[] {
+  if (string.trim() === "")
+		return [];
+
+	// Remove non-alphanumeric characters (Keep whitespace, hyphens, and underscores)
+	string = string.replace(/[^a-zA-Z0-9\s-_.]/g, "");
+
+  // Replace underscores, hyphens, and other separators with spaces
+  const normalizedString = string
+    .replace(/[._-]+/g, " ")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/([A-Z])([A-Z][a-z])/g, "$1 $2");
+
+  const words = normalizedString
+    .trim()
+    .toLowerCase()
+    .split(/\s+/);
+
+  if (words.length === 0) {
+    return [];
+  }
+
+	return words;
+}
+
+/**
+ * Converts any string in any casing to camelCase.
+ * @param string - The string to convert
+ * @returns The string in camelCase
+ * @example
+ * toCamelCase('hello world'); // 'helloWorld'
+ * toCamelCase('HELLO WORLD'); // 'helloWorld'
+ * toCamelCase('hello-world'); // 'helloWorld'
+ * toCamelCase('hello_world'); // 'helloWorld'
+ * toCamelCase('helloWorld'); // 'helloWorld'
+ * toCamelCase('HelloWorld'); // 'helloWorld'
+ */
+export function toCamelCase(string: string): string {
+	const words = toIdentifierSegments(string);
+
+  if (words.length === 0) {
+    return "";
+  }
+
+  const [firstWord, ...remainingWords] = words;
+
+  const camelCasedResult = [
+    firstWord,
+    ...remainingWords.map(word =>
+      capitalizeFirstLetter(word)
+    ),
+  ].join("");
+
+  return camelCasedResult;
+}
+
+/**
+ * Converts any string in any casing to PascalCase.
+ * @param string - The string to convert
+ * @returns The string in PascalCase
+ * @example
+ * toPascalCase('hello world'); // 'HelloWorld'
+ * toPascalCase('HELLO WORLD'); // 'HelloWorld'
+ * toPascalCase('hello-world'); // 'HelloWorld'
+ * toPascalCase('hello_world'); // 'HelloWorld'
+ * toPascalCase('helloWorld'); // 'HelloWorld'
+ * toPascalCase('HelloWorld'); // 'HelloWorld'
+ */
+
+export function toPascalCase(string: string): string {
+	return capitalizeFirstLetter(toCamelCase(string));
+}
+
+/**
+ * Converts any string in any casing to kebab-case.
+ * @param string - The string to convert
+ * @returns The string in kebab-case
+ * @example
+ * toKebabCase('hello world'); // 'hello-world'
+ * toKebabCase('HELLO WORLD'); // 'hello-world'
+ * toKebabCase('hello-world'); // 'hello-world'
+ * toKebabCase('hello_world'); // 'hello-world'
+ * toKebabCase('helloWorld'); // 'hello-world'
+ * toKebabCase('HelloWorld'); // 'hello-world'
+ */
+export function toKebabCase(string: string): string {
+	const words = toIdentifierSegments(string);
+
+	if (words.length === 0) {
+		return "";
+	}
+
+	return words.join("-");
+}
 
 /**
  * Creates a text-based progress bar based on a current value and total value.
@@ -532,4 +639,15 @@ export function joinLines(
 	);
 	const joinedLines = filteredLines.join('\n');
 	return joinedLines;
+}
+
+/**
+ * Capitalizes the first letter of a string.
+ * @param string - The string to capitalize the first letter of.
+ * @returns The string with the first letter capitalized.
+ * @example
+ * capitalizeFirstLetter('hello'); // 'Hello'
+ */
+export function capitalizeFirstLetter(string: string) {
+	return string.charAt(0).toUpperCase() + string.slice(1);
 }

@@ -2,6 +2,8 @@ import { RoleRepository } from "../repositories/role.repository";
 import { Role, RoleResolvable } from "../types/role.types";
 import { PlayerResolvable } from "../types/player.types";
 import { PlayerService } from "./player.service";
+import { DatabaseQuerier } from "../database/database-querier";
+import { createMockDB } from "../mocks/mock-database";
 
 
 /**
@@ -12,6 +14,18 @@ export class RoleService {
 		public roleRepository: RoleRepository,
 		public playerService: PlayerService,
 	) {}
+
+	static fromDB(db: DatabaseQuerier) {
+		return new RoleService(
+			RoleRepository.fromDB(db),
+			PlayerService.fromDB(db),
+		);
+	}
+
+	static asMock() {
+		const db = createMockDB();
+		return RoleService.fromDB(db);
+	}
 
 	/**
 	 * Resolves a role given its ID, name, or a role object.

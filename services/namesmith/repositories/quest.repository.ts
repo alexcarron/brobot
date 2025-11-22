@@ -6,6 +6,7 @@ import { DBQuest, Quest, QuestDefinition, QuestID, QuestName, QuestResolvable } 
 import { QuestAlreadyExistsError, QuestNotFoundError } from "../utilities/error.utility";
 import { toQuest } from '../utilities/quest.utility';
 import { toDBBool, toOptionalDBBool } from "../utilities/db.utility";
+import { createMockDB } from "../mocks/mock-database";
 
 /**
  * Provides access to the quest data.
@@ -21,6 +22,11 @@ export class QuestRepository {
 
 	static fromDB(db: DatabaseQuerier) {
 		return new QuestRepository(db);
+	}
+
+	static asMock() {
+		const db = createMockDB();
+		return QuestRepository.fromDB(db);
 	}
 
 	/**

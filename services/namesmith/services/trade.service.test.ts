@@ -1,31 +1,28 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { INVALID_TRADE_ID } from "../constants/test.constants";
 import { InvalidStateError, TradeNotFoundError } from "../utilities/error.utility";
-import { createMockTradeService } from "../mocks/mock-services";
 import { TradeService } from "./trade.service";
 import { DatabaseQuerier } from "../database/database-querier";
 import { Trade, TradeStatuses } from "../types/trade.types";
-import { addMockTrade, mockTrades } from "../mocks/mock-data/mock-trades";
-import { mockPlayers } from "../mocks/mock-data/mock-players";
+import { addMockTrade } from "../mocks/mock-data/mock-trades";
 import { Player } from "../types/player.types";
+import { addMockPlayer } from "../mocks/mock-data/mock-players";
 
 describe('TradeService', () => {
 	let SOME_TRADE: Trade;
-	let MOCK_INITIATING_PLAYER: Player;
-	let MOCK_RECIPIENT_PLAYER: Player;
+	let SOME_INITIATING_PLAYER: Player;
+	let SOME_RECIPIENT_PLAYER: Player;
 
 	let tradeService: TradeService;
 	let db: DatabaseQuerier;
 
 	beforeEach(() => {
-		tradeService = createMockTradeService();
+		tradeService = TradeService.asMock();
 		db = tradeService.tradeRepository.db;
 
-		const players = tradeService.playerService.playerRepository.getPlayers();
-		MOCK_INITIATING_PLAYER = players[0];
-		MOCK_RECIPIENT_PLAYER = players[1];
-
-		SOME_TRADE = tradeService.tradeRepository.getTradeOrThrow(mockTrades[0].id!);
+		SOME_INITIATING_PLAYER = addMockPlayer(db);
+		SOME_RECIPIENT_PLAYER = addMockPlayer(db);
+		SOME_TRADE = addMockTrade(db);
 	});
 
 	describe('resolveTrade()', () => {
@@ -60,13 +57,13 @@ describe('TradeService', () => {
 	describe('createTradeRequest()', () => {
 		it('creates and returns a new trade object', () => {
 			const newTrade = tradeService.createTradeRequest({
-				initiatingPlayer: mockPlayers[2].id,
-				recipientPlayer: mockPlayers[3].id,
+				initiatingPlayer: SOME_INITIATING_PLAYER.id,
+				recipientPlayer: SOME_RECIPIENT_PLAYER.id,
 				offeredCharacters: "xyz",
 				requestedCharacters: "abc"
 			});
-			expect(newTrade.initiatingPlayer.id).toEqual(mockPlayers[2].id);
-			expect(newTrade.recipientPlayer.id).toEqual(mockPlayers[3].id);
+			expect(newTrade.initiatingPlayer.id).toEqual(SOME_INITIATING_PLAYER.id);
+			expect(newTrade.recipientPlayer.id).toEqual(SOME_RECIPIENT_PLAYER.id);
 			expect(newTrade.offeredCharacters).toEqual("xyz");
 			expect(newTrade.requestedCharacters).toEqual("abc");
 		});
@@ -101,8 +98,8 @@ describe('TradeService', () => {
 	describe('requestModification()', () => {
 		it('modifies the trade with new offered, requested characters, and status when awaiting initiator', () => {
 			const trade = addMockTrade(db, {
-				initiatingPlayer: MOCK_INITIATING_PLAYER.id,
-				recipientPlayer: MOCK_RECIPIENT_PLAYER.id,
+				initiatingPlayer: SOME_INITIATING_PLAYER.id,
+				recipientPlayer: SOME_RECIPIENT_PLAYER.id,
 				offeredCharacters: "berv",
 				requestedCharacters: "Xx",
 				status: TradeStatuses.AWAITING_INITIATOR,
@@ -118,8 +115,8 @@ describe('TradeService', () => {
 
 		it('modifies the trade with new offered, requested characters, and status when awaiting recipient', () => {
 			const trade = addMockTrade(db, {
-				initiatingPlayer: MOCK_INITIATING_PLAYER.id,
-				recipientPlayer: MOCK_RECIPIENT_PLAYER.id,
+				initiatingPlayer: SOME_INITIATING_PLAYER.id,
+				recipientPlayer: SOME_RECIPIENT_PLAYER.id,
 				offeredCharacters: "berv",
 				requestedCharacters: "Xx",
 				status: TradeStatuses.AWAITING_RECIPIENT,
@@ -168,12 +165,12 @@ describe('TradeService', () => {
 	describe('canPlayerRespond()', () => {
 		it('returns true the trade is awaiting the recipient and the player is the recipient', () => {
 			const trade = addMockTrade(db, {
-				recipientPlayer: MOCK_RECIPIENT_PLAYER.id,
+				recipientPlayer: SOME_RECIPIENT_PLAYER.id,
 				status: TradeStatuses.AWAITING_RECIPIENT,
 			});
 
 			const result = tradeService.canPlayerRespond(
-				trade, MOCK_RECIPIENT_PLAYER.id
+				trade, SOME_RECIPIENT_PLAYER.id
 			);
 
 			expect(result).toBe(true);
@@ -181,12 +178,12 @@ describe('TradeService', () => {
 
 		it('returns true if the trade is awaiting the initiator and the player is the initiator', () => {
 			const trade = addMockTrade(db, {
-				initiatingPlayer: MOCK_INITIATING_PLAYER.id,
+				initiatingPlayer: SOME_INITIATING_PLAYER.id,
 				status: TradeStatuses.AWAITING_INITIATOR,
 			});
 
 			const result = tradeService.canPlayerRespond(
-				trade, MOCK_INITIATING_PLAYER.id
+				trade, SOME_INITIATING_PLAYER.id
 			);
 
 			expect(result).toBe(true);
@@ -194,13 +191,13 @@ describe('TradeService', () => {
 
 		it('returns false if the trade is awaiting the recipient and the player is the initiator', () => {
 			const trade = addMockTrade(db, {
-				initiatingPlayer: MOCK_INITIATING_PLAYER.id,
-				recipientPlayer: MOCK_RECIPIENT_PLAYER.id,
+				initiatingPlayer: SOME_INITIATING_PLAYER.id,
+				recipientPlayer: SOME_RECIPIENT_PLAYER.id,
 				status: TradeStatuses.AWAITING_RECIPIENT,
 			});
 
 			const result = tradeService.canPlayerRespond(
-				trade, MOCK_INITIATING_PLAYER.id
+				trade, SOME_INITIATING_PLAYER.id
 			);
 
 			expect(result).toBe(false);
@@ -208,13 +205,13 @@ describe('TradeService', () => {
 
 		it('returns false if the trade is awaiting the initiator and the player is the recipient', () => {
 			const trade = addMockTrade(db, {
-				initiatingPlayer: MOCK_INITIATING_PLAYER.id,
-				recipientPlayer: MOCK_RECIPIENT_PLAYER.id,
+				initiatingPlayer: SOME_INITIATING_PLAYER.id,
+				recipientPlayer: SOME_RECIPIENT_PLAYER.id,
 				status: TradeStatuses.AWAITING_INITIATOR,
 			});
 
 			const result = tradeService.canPlayerRespond(
-				trade, MOCK_RECIPIENT_PLAYER.id
+				trade, SOME_RECIPIENT_PLAYER.id
 			);
 
 			expect(result).toBe(false);
@@ -222,13 +219,13 @@ describe('TradeService', () => {
 
 		it('returns false if the trade is accepted already', () => {
 			const trade = addMockTrade(db, {
-				initiatingPlayer: MOCK_INITIATING_PLAYER.id,
-				recipientPlayer: MOCK_RECIPIENT_PLAYER.id,
+				initiatingPlayer: SOME_INITIATING_PLAYER.id,
+				recipientPlayer: SOME_RECIPIENT_PLAYER.id,
 				status: TradeStatuses.ACCEPTED,
 			});
 
 			const result = tradeService.canPlayerRespond(
-				trade, MOCK_RECIPIENT_PLAYER.id
+				trade, SOME_RECIPIENT_PLAYER.id
 			);
 
 			expect(result).toBe(false);
@@ -236,13 +233,13 @@ describe('TradeService', () => {
 
 		it('returns false if the trade is declined already', () => {
 			const trade = addMockTrade(db, {
-				initiatingPlayer: MOCK_INITIATING_PLAYER.id,
-				recipientPlayer: MOCK_RECIPIENT_PLAYER.id,
+				initiatingPlayer: SOME_INITIATING_PLAYER.id,
+				recipientPlayer: SOME_RECIPIENT_PLAYER.id,
 				status: TradeStatuses.DECLINED,
 			});
 
 			const result = tradeService.canPlayerRespond(
-				trade, MOCK_RECIPIENT_PLAYER.id
+				trade, SOME_RECIPIENT_PLAYER.id
 			);
 
 			expect(result).toBe(false);
@@ -252,32 +249,32 @@ describe('TradeService', () => {
 	describe('getPlayerWaitingForResponse()', () => {
 		it('returns the initiating player if the trade if the intiator is waiting for a response from the recipient', () => {
 			const trade = addMockTrade(db, {
-				initiatingPlayer: MOCK_INITIATING_PLAYER.id,
-				recipientPlayer: MOCK_RECIPIENT_PLAYER.id,
+				initiatingPlayer: SOME_INITIATING_PLAYER.id,
+				recipientPlayer: SOME_RECIPIENT_PLAYER.id,
 				status: TradeStatuses.AWAITING_RECIPIENT,
 			});
 
 			const result = tradeService.getPlayerWaitingForResponse(trade);
 
-			expect(result).toEqual(MOCK_INITIATING_PLAYER);
+			expect(result).toEqual(SOME_INITIATING_PLAYER);
 		});
 
 		it('returns the recipient player if the trade if the recipient is waiting for a response from the initiator', () => {
 			const trade = addMockTrade(db, {
-				initiatingPlayer: MOCK_INITIATING_PLAYER.id,
-				recipientPlayer: MOCK_RECIPIENT_PLAYER.id,
+				initiatingPlayer: SOME_INITIATING_PLAYER.id,
+				recipientPlayer: SOME_RECIPIENT_PLAYER.id,
 				status: TradeStatuses.AWAITING_INITIATOR,
 			});
 
 			const result = tradeService.getPlayerWaitingForResponse(trade);
 
-			expect(result).toEqual(MOCK_RECIPIENT_PLAYER);
+			expect(result).toEqual(SOME_RECIPIENT_PLAYER);
 		});
 
 		it('returns null if the trade is accepted', () => {
 			const trade = addMockTrade(db, {
-				initiatingPlayer: MOCK_INITIATING_PLAYER.id,
-				recipientPlayer: MOCK_RECIPIENT_PLAYER.id,
+				initiatingPlayer: SOME_INITIATING_PLAYER.id,
+				recipientPlayer: SOME_RECIPIENT_PLAYER.id,
 				status: TradeStatuses.ACCEPTED,
 			});
 
@@ -288,8 +285,8 @@ describe('TradeService', () => {
 
 		it('returns null if the trade is declined', () => {
 			const trade = addMockTrade(db, {
-				initiatingPlayer: MOCK_INITIATING_PLAYER.id,
-				recipientPlayer: MOCK_RECIPIENT_PLAYER.id,
+				initiatingPlayer: SOME_INITIATING_PLAYER.id,
+				recipientPlayer: SOME_RECIPIENT_PLAYER.id,
 				status: TradeStatuses.DECLINED,
 			});
 
@@ -302,30 +299,30 @@ describe('TradeService', () => {
 	describe('getPlayerAwaitingResponseFrom()', () => {
 		it('returns the recipient player if the trade is awaiting the recipient', () => {
 			const trade = addMockTrade(db, {
-				recipientPlayer: MOCK_RECIPIENT_PLAYER.id,
+				recipientPlayer: SOME_RECIPIENT_PLAYER.id,
 				status: TradeStatuses.AWAITING_RECIPIENT,
 			});
 
 			const result = tradeService.getPlayerAwaitingResponseFrom(trade);
 
-			expect(result).toEqual(MOCK_RECIPIENT_PLAYER);
+			expect(result).toEqual(SOME_RECIPIENT_PLAYER);
 		});
 
 		it('returns the initiating player if the trade is awaiting the initiator', () => {
 			const trade = addMockTrade(db, {
-				initiatingPlayer: MOCK_INITIATING_PLAYER.id,
+				initiatingPlayer: SOME_INITIATING_PLAYER.id,
 				status: TradeStatuses.AWAITING_INITIATOR,
 			});
 
 			const result = tradeService.getPlayerAwaitingResponseFrom(trade);
 
-			expect(result).toEqual(MOCK_INITIATING_PLAYER);
+			expect(result).toEqual(SOME_INITIATING_PLAYER);
 		});
 
 		it('returns null if the trade is accepted or declined', () => {
 			const trade = addMockTrade(db, {
-				initiatingPlayer: MOCK_INITIATING_PLAYER.id,
-				recipientPlayer: MOCK_RECIPIENT_PLAYER.id,
+				initiatingPlayer: SOME_INITIATING_PLAYER.id,
+				recipientPlayer: SOME_RECIPIENT_PLAYER.id,
 				status: TradeStatuses.ACCEPTED,
 			});
 			const result = tradeService.getPlayerAwaitingResponseFrom(trade);

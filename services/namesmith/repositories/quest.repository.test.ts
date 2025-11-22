@@ -2,7 +2,6 @@ import { makeSure } from "../../../utilities/jest/jest-utils";
 import { INVALID_QUEST_ID, INVALID_QUEST_NAME } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockQuest } from "../mocks/mock-data/mock-quests";
-import { createMockQuestRepo } from "../mocks/mock-repositories";
 import { Quest } from "../types/quest.types";
 import { QuestNotFoundError } from "../utilities/error.utility";
 import { QuestRepository } from "./quest.repository";
@@ -14,7 +13,7 @@ describe('QuestRepository', () => {
 	let SOME_QUEST: Quest;
 
 	beforeEach(() => {
-		questRepository = createMockQuestRepo();
+		questRepository = QuestRepository.asMock();
 		db = questRepository.db;
 
 		SOME_QUEST = addMockQuest(db, {

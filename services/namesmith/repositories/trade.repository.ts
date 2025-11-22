@@ -5,6 +5,7 @@ import { CannotCreateTradeError, TradeAlreadyExistsError, TradeNotFoundError } f
 import { WithRequiredAndOneOther } from '../../../utilities/types/generic-types';
 import { PlayerRepository } from "./player.repository";
 import { returnNonNullOrThrow } from "../../../utilities/error-utils";
+import { createMockDB } from "../mocks/mock-database";
 
 /**
  * Provides access to the dynamic trading data
@@ -22,6 +23,11 @@ export class TradeRepository {
 
 	static fromDB(db: DatabaseQuerier) {
 		return new TradeRepository(db, PlayerRepository.fromDB(db));
+	}
+
+	static asMock() {
+		const db = createMockDB();
+		return TradeRepository.fromDB(db);
 	}
 
 	/**

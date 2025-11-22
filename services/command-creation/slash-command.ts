@@ -1,6 +1,6 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { Parameter, ParamNameToType } from "./parameter";
-import { toCamelCase } from "../../utilities/string-manipulation-utils";
+import { toCamelFromKebabCase } from "../../utilities/string-manipulation-utils";
 import { isString, isStringToStringRecord, isUndefined } from "../../utilities/types/type-guards";
 import { filterAutocompleteByEnteredValue, getEnteredValueOfParameter, getEnteredValueOfParameters, isAutocompleteForParameter, limitAutocompleteChoices, toAutocompleteChoices } from "./autocomplete-utils";
 import { deferInteraction, replyToInteraction } from "../../utilities/discord-action-utils";
@@ -21,7 +21,7 @@ function collectParameters<Parameters extends readonly Parameter[]>(
 
   for (const param of parameters) {
     const name = param.name;
-		const functionParameterName = toCamelCase(name);
+		const functionParameterName = toCamelFromKebabCase(name);
 
     switch (param.type) {
       case 'string':

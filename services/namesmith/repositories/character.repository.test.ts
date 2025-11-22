@@ -1,6 +1,5 @@
 import { CharacterAlreadyExistsError, CharacterNotFoundError } from "../utilities/error.utility";
 import { CharacterRepository } from "./character.repository";
-import { createMockCharacterRepo } from "../mocks/mock-repositories";
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { getIDfromCharacterValue } from "../utilities/character.utility";
 import { INVALID_CHARACTER_ID } from "../constants/test.constants";
@@ -9,7 +8,7 @@ describe('CharacterRepository', () => {
 	let characterRepo: CharacterRepository;
 
 	beforeEach(() => {
-		characterRepo = createMockCharacterRepo();
+		characterRepo = CharacterRepository.asMock();
 	})
 
 	describe('getCharacters()', () => {

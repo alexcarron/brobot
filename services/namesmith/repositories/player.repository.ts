@@ -11,6 +11,7 @@ import { RoleRepository } from "./role.repository";
 import { PerkRepository } from './perk.repository';
 import { isString } from "../../../utilities/types/type-guards";
 import { isOneSymbol } from "../../../utilities/string-checks-utils";
+import { createMockDB } from "../mocks/mock-database";
 
 /**
  * Provides access to the dynamic player data.
@@ -33,6 +34,11 @@ export class PlayerRepository {
 			RoleRepository.fromDB(db),
 			PerkRepository.fromDB(db)
 		);
+	}
+
+	static asMock() {
+		const db = createMockDB();
+		return PlayerRepository.fromDB(db);
 	}
 
 	/**

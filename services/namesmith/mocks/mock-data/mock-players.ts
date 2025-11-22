@@ -1,6 +1,6 @@
 import { InvalidArgumentError, returnNonNullOrThrow } from "../../../../utilities/error-utils";
 import { getRandomNumericUUID } from "../../../../utilities/random-utils";
-import { WithAllOptional, WithAtLeast, WithID } from "../../../../utilities/types/generic-types";
+import { WithAllOptional, WithAtLeast } from "../../../../utilities/types/generic-types";
 import { isNumber, isString } from "../../../../utilities/types/type-guards";
 import { DatabaseQuerier } from "../../database/database-querier";
 import { RoleRepository } from "../../repositories/role.repository";
@@ -16,52 +16,6 @@ import { returnIfNotFailure } from "../../utilities/workflow.utility";
 import { mineTokens } from "../../workflows/mine-tokens.workflow";
 import { claimRefill } from "../../workflows/claim-refill.workflow";
 import { addDays } from "../../../../utilities/date-time-utils";
-
-/**
- * An array of mock player data for use in tests.
- */
-export const mockPlayers: WithID<PlayerDefinition>[] = [
-	{
-		id: "1234567890",
-		currentName: "John Doe",
-		publishedName: "John Doe",
-		tokens: 10,
-		role: null,
-		perks: [],
-		inventory: "John Doe",
-		lastClaimedRefillTime: null,
-	},
-	{
-		id: "1234567891",
-		currentName: "abcdefgh",
-		publishedName: "abcd",
-		tokens: 0,
-		role: null,
-		perks: [],
-		inventory: "abcdefghijklmnopqrstuvwxyz",
-		lastClaimedRefillTime: null,
-	},
-	{
-		id: "1234567892",
-		currentName: "UNPUBLISHED",
-		publishedName: null,
-		tokens: 0,
-		role: null,
-		perks: [],
-		inventory: "UNPUBLISHED",
-		lastClaimedRefillTime: null,
-	},
-	{
-		id: "1234567893",
-		currentName: "non-voter",
-		publishedName: "non-voter",
-		tokens: 0,
-		role: null,
-		perks: [],
-		inventory: "non-voter",
-		lastClaimedRefillTime: null,
-	}
-];
 
 /**
  * Creates a mock player object with default values for optional properties.

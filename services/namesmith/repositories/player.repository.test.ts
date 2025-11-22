@@ -3,8 +3,8 @@ import { Perks } from "../constants/perks.constants";
 import { Roles } from "../constants/roles.constants";
 import { INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
-import { addMockPlayer, mockPlayers } from "../mocks/mock-data/mock-players";
-import { createMockPlayerRepo } from "../mocks/mock-repositories";
+import { addMockPlayer } from "../mocks/mock-data/mock-players";
+import { Player } from "../types/player.types";
 import { PlayerAlreadyExistsError, PlayerNotFoundError } from "../utilities/error.utility";
 import { PlayerRepository } from "./player.repository";
 
@@ -13,10 +13,17 @@ describe('PlayerRepository', () => {
 	let db: DatabaseQuerier;
 
 	const SOME_ROLE = Roles.PROSPECTOR;
+	let SOME_PLAYER: Player;
+	let SOME_OTHER_PLAYER: Player;
+	let ALL_PLAYERS: Player[];
 
 	beforeEach(() => {
-		playerRepository = createMockPlayerRepo();
+		playerRepository = PlayerRepository.asMock();
 		db = playerRepository.db;
+
+		SOME_PLAYER = addMockPlayer(db);
+		SOME_OTHER_PLAYER = addMockPlayer(db);
+		ALL_PLAYERS = playerRepository.getPlayers();
 	});
 
 	afterEach(() => {
@@ -29,15 +36,16 @@ describe('PlayerRepository', () => {
 
   describe('getPlayers()', () => {
     it('returns an array of player objects', () => {
-      const result = playerRepository.getPlayers();
-      expect(result).toEqual(mockPlayers);
+      const players = playerRepository.getPlayers();
+      makeSure(players).isNotEmpty();
+			makeSure(players).haveProperties('id', 'currentName', 'publishedName', 'tokens', 'role', 'perks', 'inventory', 'lastClaimedRefillTime');
     });
   });
 
   describe('getPlayerByID()', () => {
 		it('returns a player object', () => {
-			const result = playerRepository.getPlayerByID(mockPlayers[0].id);
-			expect(result).toEqual(mockPlayers[0]);
+			const result = playerRepository.getPlayerByID(SOME_PLAYER.id);
+			expect(result).toEqual(SOME_PLAYER);
 		});
 
 		it('returns null if the player is not found', () => {
@@ -48,19 +56,26 @@ describe('PlayerRepository', () => {
 
 	describe('getPlayersByCurrentName()', () => {
 		it('should return an array of both players with the same current name', () => {
+			const namedPlayer = addMockPlayer(db, {
+				currentName: "Thompson",
+			});
 			const sameNamePlayer = addMockPlayer(db, {
-				currentName: mockPlayers[0].currentName,
+				currentName: namedPlayer.currentName,
 			});
 
-			const result = playerRepository.getPlayersByCurrentName(mockPlayers[0].currentName);
+			const returnedPlayers = playerRepository.getPlayersByCurrentName(namedPlayer.currentName);
 
-			expect(result).toEqual([mockPlayers[0], sameNamePlayer]);
+			makeSure(returnedPlayers).contains(namedPlayer, sameNamePlayer);
 		})
 
 		it('should return an array of a single player with the same current name', () => {
-			const result = playerRepository.getPlayersByCurrentName(mockPlayers[0].currentName);
+			const namedPlayer = addMockPlayer(db, {
+				currentName: "Thompson",
+			});
 
-			expect(result).toEqual([mockPlayers[0]]);
+			const result = playerRepository.getPlayersByCurrentName(namedPlayer.currentName);
+
+			expect(result).toEqual([namedPlayer]);
 		});
 
 		it('should return an empty array if no players have the same current name', () => {
@@ -72,7 +87,7 @@ describe('PlayerRepository', () => {
 
   describe('doesPlayerExist()', () => {
 		it('returns true if the player is found', () => {
-			const result = playerRepository.doesPlayerExist(mockPlayers[0].id);
+			const result = playerRepository.doesPlayerExist(SOME_PLAYER.id);
 			expect(result).toBe(true);
 		});
 
@@ -87,7 +102,7 @@ describe('PlayerRepository', () => {
 			const result = playerRepository.getPlayersWithoutPublishedNames();
 
 			expect(result).toEqual(
-				mockPlayers.filter(player => player.publishedName === null)
+				ALL_PLAYERS.filter(player => player.publishedName === null)
 			);
 		});
 	});
@@ -97,15 +112,15 @@ describe('PlayerRepository', () => {
 			const result = playerRepository.getPlayersWithPublishedNames();
 
 			expect(result).toEqual(
-				mockPlayers.filter(player => player.publishedName !== null)
+				ALL_PLAYERS.filter(player => player.publishedName !== null)
 			);
 		});
 	})
 
 	describe('getInventory()', () => {
 		it('returns the inventory of a player', () => {
-			const result = playerRepository.getInventory(mockPlayers[0].id);
-			expect(result).toEqual(mockPlayers[0].inventory);
+			const result = playerRepository.getInventory(SOME_PLAYER.id);
+			expect(result).toEqual(SOME_PLAYER.inventory);
 		});
 
 		it('throws an error if the player is not found', () => {
@@ -115,8 +130,8 @@ describe('PlayerRepository', () => {
 
 	describe('setInventory()', () => {
 		it('sets the inventory of a player', () => {
-			playerRepository.setInventory(mockPlayers[0].id, "new inventory");
-			const result = playerRepository.getInventory(mockPlayers[0].id);
+			playerRepository.setInventory(SOME_PLAYER.id, "new inventory");
+			const result = playerRepository.getInventory(SOME_PLAYER.id);
 			expect(result).toEqual("new inventory");
 		});
 
@@ -127,8 +142,8 @@ describe('PlayerRepository', () => {
 
 	describe('getCurrentName()', () => {
 		it('returns the current name of a player', () => {
-			const result = playerRepository.getCurrentName(mockPlayers[0].id);
-			expect(result).toEqual(mockPlayers[0].currentName);
+			const result = playerRepository.getCurrentName(SOME_PLAYER.id);
+			expect(result).toEqual(SOME_PLAYER.currentName);
 		});
 
 		it('throws an error if the player is not found', () => {
@@ -138,8 +153,8 @@ describe('PlayerRepository', () => {
 
 	describe('changeCurrentName()', () => {
 		it('changes the current name of a player', () => {
-			playerRepository.changeCurrentName(mockPlayers[0].id, "new name");
-			const result = playerRepository.getCurrentName(mockPlayers[0].id);
+			playerRepository.changeCurrentName(SOME_PLAYER.id, "new name");
+			const result = playerRepository.getCurrentName(SOME_PLAYER.id);
 			expect(result).toEqual("new name");
 		});
 
@@ -148,14 +163,14 @@ describe('PlayerRepository', () => {
 		});
 
 		it('throws an error if the new name is too long', () => {
-			expect(() => playerRepository.changeCurrentName(mockPlayers[1].id, "a".repeat(33))).toThrow();
+			expect(() => playerRepository.changeCurrentName(SOME_OTHER_PLAYER.id, "a".repeat(33))).toThrow();
 		});
 	});
 
 	describe('getPublishedName()', () => {
 		it('returns the published name of a player', () => {
-			const result = playerRepository.getPublishedName(mockPlayers[0].id);
-			expect(result).toEqual(mockPlayers[0].publishedName);
+			const result = playerRepository.getPublishedName(SOME_PLAYER.id);
+			expect(result).toEqual(SOME_PLAYER.publishedName);
 		});
 
 		it('throws an error if the player is not found', () => {
@@ -165,8 +180,8 @@ describe('PlayerRepository', () => {
 
 	describe('publishName()', () => {
 		it('changes the published name of a player', () => {
-			playerRepository.setPublishedName(mockPlayers[0].id, "new name");
-			const result = playerRepository.getPublishedName(mockPlayers[0].id);
+			playerRepository.setPublishedName(SOME_PLAYER.id, "new name");
+			const result = playerRepository.getPublishedName(SOME_PLAYER.id);
 			expect(result).toEqual("new name");
 		});
 
@@ -175,14 +190,14 @@ describe('PlayerRepository', () => {
 		});
 
 		it('throws an error if the new name is too long', () => {
-			expect(() => playerRepository.setPublishedName(mockPlayers[1].id, "a".repeat(33))).toThrow();
+			expect(() => playerRepository.setPublishedName(SOME_OTHER_PLAYER.id, "a".repeat(33))).toThrow();
 		});
 	});
 
 	describe('getTokens()', () => {
 		it('returns the number of tokens a player has', () => {
-			const result = playerRepository.getTokens(mockPlayers[0].id);
-			expect(result).toEqual(mockPlayers[0].tokens);
+			const result = playerRepository.getTokens(SOME_PLAYER.id);
+			expect(result).toEqual(SOME_PLAYER.tokens);
 		});
 
 		it('returns a large amount of tokens a player has', () => {
@@ -201,13 +216,13 @@ describe('PlayerRepository', () => {
 
 	describe('setTokens()', () => {
 		it('sets the number of tokens a player has', () => {
-			playerRepository.setTokens(mockPlayers[0].id, 500);
-			const result = playerRepository.getTokens(mockPlayers[0].id);
+			playerRepository.setTokens(SOME_PLAYER.id, 500);
+			const result = playerRepository.getTokens(SOME_PLAYER.id);
 			expect(result).toEqual(500);
 		});
 
 		it('should not throw error if the number of tokens is negative', () => {
-			expect(() => playerRepository.setTokens(mockPlayers[0].id, -500)).not.toThrow();
+			expect(() => playerRepository.setTokens(SOME_PLAYER.id, -500)).not.toThrow();
 		});
 
 		it('throws an error if the player is not found', () => {
@@ -217,8 +232,8 @@ describe('PlayerRepository', () => {
 
 	describe('getLastClaimedRefillTime()', () => {
 		it('returns the last claimed refill time of a player', () => {
-			const result = playerRepository.getLastClaimedRefillTime(mockPlayers[0].id);
-			expect(result).toEqual(mockPlayers[0].lastClaimedRefillTime);
+			const result = playerRepository.getLastClaimedRefillTime(SOME_PLAYER.id);
+			expect(result).toEqual(SOME_PLAYER.lastClaimedRefillTime);
 		});
 
 		it('returns the date of a player that has claimed a refill', () => {
@@ -238,8 +253,8 @@ describe('PlayerRepository', () => {
 	describe('setLastClaimedRefillTime()', () => {
 		it('sets the last claimed refill time of a player to a date', () => {
 			const DATE = new Date();
-			playerRepository.setLastClaimedRefillTime(mockPlayers[0].id, DATE);
-			const result = playerRepository.getLastClaimedRefillTime(mockPlayers[0].id);
+			playerRepository.setLastClaimedRefillTime(SOME_PLAYER.id, DATE);
+			const result = playerRepository.getLastClaimedRefillTime(SOME_PLAYER.id);
 			expect(result).toEqual(DATE);
 		});
 
@@ -259,7 +274,7 @@ describe('PlayerRepository', () => {
 		});
 
 		it('returns the null role ID of a player', () => {
-			const result = playerRepository.getRoleID(mockPlayers[0].id);
+			const result = playerRepository.getRoleID(SOME_PLAYER.id);
 			expect(result).toBeNull();
 		});
 
@@ -270,14 +285,14 @@ describe('PlayerRepository', () => {
 
 	describe('setRoleID()', () => {
 		it('sets the role ID of a player', () => {
-			playerRepository.setRoleID(mockPlayers[0].id, 1);
-			const result = playerRepository.getRoleID(mockPlayers[0].id);
+			playerRepository.setRoleID(SOME_PLAYER.id, 1);
+			const result = playerRepository.getRoleID(SOME_PLAYER.id);
 			expect(result).toEqual(1);
 		});
 
 		it('sets the role ID of a player to null', () => {
-			playerRepository.setRoleID(mockPlayers[0].id, null);
-			const result = playerRepository.getRoleID(mockPlayers[0].id);
+			playerRepository.setRoleID(SOME_PLAYER.id, null);
+			const result = playerRepository.getRoleID(SOME_PLAYER.id);
 			expect(result).toBeNull();
 		});
 
@@ -305,7 +320,7 @@ describe('PlayerRepository', () => {
 		});
 
 		it('throws an error if the player already exists', () => {
-			expect(() => playerRepository.createPlayer(mockPlayers[0].id)).toThrow();
+			expect(() => playerRepository.createPlayer(SOME_PLAYER.id)).toThrow();
 		});
 	});
 
@@ -319,10 +334,10 @@ describe('PlayerRepository', () => {
 
 	describe('addCharacterToInventory', () => {
 		it('adds a character to the player inventory', () => {
-			playerRepository.addCharacterToInventory(mockPlayers[0].id, "A");
-			const result = playerRepository.getInventory(mockPlayers[0].id);
+			playerRepository.addCharacterToInventory(SOME_PLAYER.id, "A");
+			const result = playerRepository.getInventory(SOME_PLAYER.id);
 			expect(result).toEqual(
-				mockPlayers[0].inventory + "A"
+				SOME_PLAYER.inventory + "A"
 			);
 		});
 
@@ -331,14 +346,14 @@ describe('PlayerRepository', () => {
 		});
 
 		it('throws an error if the character is too long', () => {
-			expect(() => playerRepository.addCharacterToInventory(mockPlayers[1].id, "aa")).toThrow();
+			expect(() => playerRepository.addCharacterToInventory(SOME_OTHER_PLAYER.id, "aa")).toThrow();
 		});
 	});
 
 	describe('removePlayer()', () => {
 		it('removes a player from the database', () => {
-			playerRepository.removePlayer(mockPlayers[0].id);
-			const maybePlayer = playerRepository.getPlayerByID(mockPlayers[0].id);
+			playerRepository.removePlayer(SOME_PLAYER.id);
+			const maybePlayer = playerRepository.getPlayerByID(SOME_PLAYER.id);
 			makeSure(maybePlayer).isNull();
 		});
 
@@ -389,7 +404,7 @@ describe('PlayerRepository', () => {
 				perks: [Perks.DISCOUNT.id, Perks.FASTER_REFILL.name],
 			});
 
-			makeSure(player).containsProperties({
+			makeSure(player).hasProperties({
 				id: "new-player-id",
 				currentName: "currentName",
 				publishedName: "publishedName",
@@ -428,7 +443,7 @@ describe('PlayerRepository', () => {
 		it('throws a PlayerAlreadyExistsError if the player already exists', () => {
 			makeSure(() =>
 				playerRepository.addPlayer({
-					id: mockPlayers[0].id,
+					id: SOME_PLAYER.id,
 					currentName: "test",
 					publishedName: "test",
 					tokens: 0,
@@ -444,28 +459,28 @@ describe('PlayerRepository', () => {
 	describe('updatePlayer()', () => {
 		it('updates a player in the database with minimal fields', () => {
 			const player = playerRepository.updatePlayer({
-				id: mockPlayers[0].id,
+				id: SOME_PLAYER.id,
 				currentName: "test",
 			});
 
 			makeSure(player).toEqual({
-				id: mockPlayers[0].id,
+				id: SOME_PLAYER.id,
 				currentName: "test",
-				publishedName: mockPlayers[0].publishedName,
-				tokens: mockPlayers[0].tokens,
-				inventory: mockPlayers[0].inventory,
-				lastClaimedRefillTime: mockPlayers[0].lastClaimedRefillTime,
-				role: mockPlayers[0].role,
-				perks: mockPlayers[0].perks,
+				publishedName: SOME_PLAYER.publishedName,
+				tokens: SOME_PLAYER.tokens,
+				inventory: SOME_PLAYER.inventory,
+				lastClaimedRefillTime: SOME_PLAYER.lastClaimedRefillTime,
+				role: SOME_PLAYER.role,
+				perks: SOME_PLAYER.perks,
 			});
 
-			const resolvedPlayer = playerRepository.getPlayerOrThrow(mockPlayers[0].id);
+			const resolvedPlayer = playerRepository.getPlayerOrThrow(SOME_PLAYER.id);
 			makeSure(resolvedPlayer).is(player);
 		});
 
 		it('updates a player in the database with complex values for all fields', () => {
 			const player = playerRepository.updatePlayer({
-				id: mockPlayers[0].id,
+				id: SOME_PLAYER.id,
 				currentName: "currentName",
 				publishedName: "publishedName",
 				tokens: 100,
@@ -475,8 +490,8 @@ describe('PlayerRepository', () => {
 				perks: [Perks.DISCOUNT.id, Perks.FASTER_REFILL.name],
 			});
 
-			makeSure(player).containsProperties({
-				id: mockPlayers[0].id,
+			makeSure(player).hasProperties({
+				id: SOME_PLAYER.id,
 				currentName: "currentName",
 				publishedName: "publishedName",
 				tokens: 100,
@@ -492,7 +507,7 @@ describe('PlayerRepository', () => {
 				perk.id === Perks.FASTER_REFILL.id
 			);
 
-			const resolvedPlayer = playerRepository.getPlayerOrThrow(mockPlayers[0].id);
+			const resolvedPlayer = playerRepository.getPlayerOrThrow(SOME_PLAYER.id);
 			makeSure(resolvedPlayer).is(player);
 		});
 

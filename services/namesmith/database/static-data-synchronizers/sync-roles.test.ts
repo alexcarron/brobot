@@ -1,20 +1,18 @@
 import { makeSure } from "../../../../utilities/jest/jest-utils";
 import { Perks } from "../../constants/perks.constants";
-import { createMockDB } from "../../mocks/mock-database";
 import { RoleRepository } from "../../repositories/role.repository";
 import { DatabaseQuerier } from "../database-querier";
 import { syncRolesToDB } from "./sync-roles";
 import { INVALID_PERK_NAME } from "../../constants/test.constants";
 import { ignoreError } from "../../../../utilities/error-utils";
-import { createMockRoleRepo } from "../../mocks/mock-repositories";
 
 describe('sync-roles.ts', () => {
 	let db: DatabaseQuerier;
 	let roleRepository: RoleRepository;
 
 	beforeEach(() => {
-		db = createMockDB();
-		roleRepository = createMockRoleRepo(db);
+		roleRepository = RoleRepository.asMock();
+		db = roleRepository.db;
 	});
 
 	describe('syncRolesToDB()', () => {

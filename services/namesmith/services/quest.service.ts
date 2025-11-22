@@ -3,6 +3,7 @@ import { isObject } from "../../../utilities/types/type-guards";
 import { Quests } from "../constants/quests.constants";
 import { FREEBIE_QUEST_NAME } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
+import { createMockDB } from "../mocks/mock-database";
 import { QuestRepository } from "../repositories/quest.repository";
 import { PlayerResolvable } from "../types/player.types";
 import { Quest, QuestID, QuestResolvable, Reward } from "../types/quest.types";
@@ -27,6 +28,11 @@ export class QuestService {
 			ActivityLogService.fromDB(db),
 			PlayerService.fromDB(db),
 		);
+	}
+
+	static asMock() {
+		const db = createMockDB();
+		return QuestService.fromDB(db);
 	}
 
 	/**
