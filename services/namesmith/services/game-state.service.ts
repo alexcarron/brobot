@@ -7,8 +7,9 @@ import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { RecipeService } from "./recipe.service";
 import { DAYS_TO_BUILD_NAME, DAYS_TO_VOTE } from "../constants/namesmith.constants";
 import { addDays } from "../../../utilities/date-time-utils";
-import { startVoting } from "../event-listeners/on-voting-start";
-import { onVotingEnd } from "../event-listeners/on-voting-end";
+import { DatabaseQuerier } from "../database/database-querier";
+import { createMockDB } from "../mocks/mock-database";
+import { NamesmithEvents } from "../event-listeners/namesmith-events";
 
 /**
  * Provides methods for interacting with the game state.
@@ -30,6 +31,20 @@ export class GameStateService {
 		public voteService: VoteService,
 		public recipeService: RecipeService,
 	) {}
+
+	static fromDB(db: DatabaseQuerier) {
+		return new GameStateService(
+			GameStateRepository.fromDB(db),
+			PlayerService.fromDB(db),
+			VoteService.fromDB(db),
+			RecipeService.fromDB(db),
+		);
+	}
+
+	static asMock() {
+		const db = createMockDB();
+		return GameStateService.fromDB(db);
+	}
 
 	/**
 	 * Sets the game's start time to the given date, and its vote start and end times according to the configured constants.
@@ -65,9 +80,8 @@ export class GameStateService {
 
 		const endGameCronJob = new CronJob(
 			endDate,
-			async () => {
-				// TODO: Convert to event
-				await startVoting();
+			() => {
+				NamesmithEvents.VotingStart.triggerEvent({});
 			},
 		);
 
@@ -97,9 +111,8 @@ export class GameStateService {
 
 		const voteIsEndingCronJob = new CronJob(
 			voteEndingDate,
-			async () => {
-				// TODO: Convert to event
-				await onVotingEnd();
+			() => {
+				NamesmithEvents.VotingEnd.triggerEvent({});
 			},
 		);
 

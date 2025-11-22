@@ -1,4 +1,6 @@
 import { logInfo } from "../../../utilities/logging-utils";
+import { DatabaseQuerier } from "../database/database-querier";
+import { createMockDB } from "../mocks/mock-database";
 import { VoteRepository } from "../repositories/vote.repository";
 import { PlayerID } from "../types/player.types";
 import { Vote, VoteDefinition, VoteID, VoteResolvable } from "../types/vote.types";
@@ -17,6 +19,18 @@ export class VoteService {
 		public voteRepository: VoteRepository,
 		public playerService: PlayerService
 	) {}
+
+	static fromDB(db: DatabaseQuerier) {
+		return new VoteService(
+			VoteRepository.fromDB(db),
+			PlayerService.fromDB(db),
+		);
+	}
+
+	static asMock() {
+		const db = createMockDB();
+		return VoteService.fromDB(db);
+	}
 
 	/**
 	 * Resolves a vote from the given resolvable.

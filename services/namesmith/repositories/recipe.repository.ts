@@ -2,6 +2,7 @@ import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { WithRequiredAndOneOther } from "../../../utilities/types/generic-types";
 import { isNumber, isObject } from "../../../utilities/types/type-guards";
 import { DatabaseQuerier, toParameterSetClause } from "../database/database-querier";
+import { createMockDB } from "../mocks/mock-database";
 import { DBRecipe, Recipe, RecipeDefinition, RecipeID, RecipeResolvable } from "../types/recipe.types";
 import { RecipeAlreadyExistsError, RecipeNotFoundError } from "../utilities/error.utility";
 
@@ -19,6 +20,11 @@ export class RecipeRepository {
 
 	static fromDB(db: DatabaseQuerier) {
 		return new RecipeRepository(db);
+	}
+
+	static asMock() {
+		const db = createMockDB();
+		return RecipeRepository.fromDB(db);
 	}
 
 	/**

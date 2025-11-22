@@ -7,29 +7,6 @@ import { Recipe, RecipeResolvable } from "../../types/recipe.types";
 import { returnIfNotFailure } from "../../utilities/workflow.utility";
 import { craftCharacters } from "../../workflows/craft-characters.workflow";
 
-export const mockRecipes: Recipe[] = [
-	{
-		id: 1,
-		inputCharacters: "nn",
-		outputCharacters: "m",
-	},
-	{
-		id: 2,
-		inputCharacters: "vv",
-		outputCharacters: "w",
-	},
-	{
-		id: 3,
-		inputCharacters: "abc",
-		outputCharacters: "def",
-	},
-	{
-		id: 4,
-		inputCharacters: "nn",
-		outputCharacters: "N",
-	},
-];
-
 /**
  * Adds a recipe to the database with the given properties.
  * @param db - The in-memory database.

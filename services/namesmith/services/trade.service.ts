@@ -1,4 +1,6 @@
 import { isObject } from "../../../utilities/types/type-guards";
+import { DatabaseQuerier } from "../database/database-querier";
+import { createMockDB } from "../mocks/mock-database";
 import { TradeRepository } from "../repositories/trade.repository";
 import { Player, PlayerResolvable } from "../types/player.types";
 import { Trade, TradeID, TradeResolveable, TradeStatuses } from "../types/trade.types";
@@ -13,6 +15,18 @@ export class TradeService {
 		public tradeRepository: TradeRepository,
 		public playerService: PlayerService,
 	) {}
+
+	static fromDB(db: DatabaseQuerier) {
+		return new TradeService(
+			TradeRepository.fromDB(db),
+			PlayerService.fromDB(db),
+		);
+	}
+
+	static asMock() {
+		const db = createMockDB();
+		return TradeService.fromDB(db);
+	}
 
 	/**
 	 * Resolves a recipe resolvable to a recipe object.

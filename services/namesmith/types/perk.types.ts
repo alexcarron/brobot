@@ -1,4 +1,5 @@
-import { Override, WithOptional } from '../../../utilities/types/generic-types';
+import { object, number, string, zeroOrOne, ExtractType } from '../../../utilities/runtime-types-utils';
+import { WithOptional } from '../../../utilities/types/generic-types';
 export type Perk = {
 	id: number;
 	name: string;
@@ -7,10 +8,16 @@ export type Perk = {
 	isBeingOffered: boolean;
 }
 
-export type DBPerk = Override<Perk, {
-	wasOffered: 0 | 1;
-	isBeingOffered: 0 | 1;
-}>
+const dbPerkType = object.asType({
+	id: number,
+	name: string,
+	description: string,
+	wasOffered: zeroOrOne,
+	isBeingOffered: zeroOrOne,
+});
+export const asDBPerk = dbPerkType.from;
+export const asDBPerks = dbPerkType.fromAll;
+export type DBPerk = ExtractType<typeof dbPerkType>;
 
 export type PerkDefintion = WithOptional<Perk,
 	| 'id'

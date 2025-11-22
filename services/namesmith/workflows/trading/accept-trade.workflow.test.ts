@@ -15,7 +15,7 @@ jest.mock("../../utilities/discord-fetch.utility", () => ({
 		Promise.resolve({ id: playerID })
 	),
 	fetchNamesmithGuildMembers: jest.fn(() =>
-		Promise.resolve(mockPlayers.map((player) => ({ id: player.id })))
+		Promise.resolve([])
 	),
 }));
 
@@ -26,7 +26,7 @@ jest.mock("../../../../utilities/discord-action-utils", () => ({
 import { makeSure } from "../../../../utilities/jest/jest-utils";
 import { INVALID_PLAYER_ID, INVALID_TRADE_ID } from "../../constants/test.constants";
 import { DatabaseQuerier } from "../../database/database-querier";
-import { addMockPlayer, editMockPlayer, mockPlayers } from "../../mocks/mock-data/mock-players";
+import { addMockPlayer, editMockPlayer } from "../../mocks/mock-data/mock-players";
 import { addMockTrade } from "../../mocks/mock-data/mock-trades";
 import { setupMockNamesmith } from "../../mocks/mock-setup";
 import { getNamesmithServices } from "../../services/get-namesmith-services";

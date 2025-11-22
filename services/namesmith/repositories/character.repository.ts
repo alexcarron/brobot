@@ -1,5 +1,6 @@
 import { WithRequiredAndOneOther } from "../../../utilities/types/generic-types";
 import { DatabaseQuerier, toParameterSetClause } from "../database/database-querier";
+import { createMockDB } from "../mocks/mock-database";
 import { Character, DBCharacter, CharacterID, CharacterDefintion } from "../types/character.types";
 import { getIDfromCharacterValue } from "../utilities/character.utility";
 import { CharacterAlreadyExistsError, CharacterNotFoundError } from "../utilities/error.utility";
@@ -15,6 +16,11 @@ export class CharacterRepository {
 
 	static fromDB(db: DatabaseQuerier) {
 		return new CharacterRepository(db);
+	}
+
+	static asMock() {
+		const db = createMockDB();
+		return CharacterRepository.fromDB(db);
 	}
 
 	/**

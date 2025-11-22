@@ -1,4 +1,5 @@
 import { DatabaseQuerier } from "../database/database-querier";
+import { createMockDB } from "../mocks/mock-database";
 import { ActivityLogRepository } from "../repositories/activity-log.repository";
 import { ActivityLog, ActivityTypes } from "../types/activity-log.types";
 import { PlayerResolvable } from "../types/player.types";
@@ -17,6 +18,11 @@ export class ActivityLogService {
 		return new ActivityLogService(
 			ActivityLogRepository.fromDB(db),
 		);
+	}
+
+	static asMock() {
+		const db = createMockDB();
+		return ActivityLogService.fromDB(db);
 	}
 
 	/**

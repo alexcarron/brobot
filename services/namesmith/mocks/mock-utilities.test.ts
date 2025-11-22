@@ -1,15 +1,21 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { DatabaseQuerier } from "../database/database-querier";
+import { ActivityTypes, DBActivityLog } from "../types/activity-log.types";
 import { DBPlayer, Player } from "../types/player.types";
+import { Quest } from "../types/quest.types";
 import { Recipe } from "../types/recipe.types";
-import { TradeStatuses } from "../types/trade.types";
+import { DBTrade, TradeStatuses } from "../types/trade.types";
 import { DBVote } from "../types/vote.types";
+import { ActivityLogAlreadyExistsError, TradeAlreadyExistsError } from "../utilities/error.utility";
+import { createAllMocks } from "./all-mocks";
+import { addMockActivityLog } from "./mock-data/mock-activity-logs";
 import { forcePlayerToBuyNewMysteryBox } from "./mock-data/mock-mystery-boxes";
 import { addMockPerk } from "./mock-data/mock-perks";
 import { addMockPlayer, editMockPlayer, forcePlayerToClaimRefill, forcePlayerToMineTokens, forcePlayerToPublishName } from "./mock-data/mock-players";
+import { addMockQuest } from "./mock-data/mock-quests";
 import { addMockRecipe, forcePlayerToCraft } from "./mock-data/mock-recipes";
 import { addMockRole } from "./mock-data/mock-roles";
-import { forcePlayerToAcceptNewTrade, forcePlayerToInitiateTrade } from "./mock-data/mock-trades";
+import { addMockTrade, forcePlayerToAcceptNewTrade, forcePlayerToInitiateTrade } from "./mock-data/mock-trades";
 import { addMockVote } from "./mock-data/mock-votes";
 import { setupMockNamesmith } from "./mock-setup";
 
@@ -29,6 +35,69 @@ describe("Mock Utilities", () => {
   afterEach(() => {
     db.close();
   });
+
+	describe('createAllMocks()', () => {
+		it('returns an object containing all the mock services and repositories.', () => {
+			const allMocks = createAllMocks();
+			makeSure(allMocks).hasProperties(
+				'db',
+
+				'playerRepository',
+				'gameStateRepository',
+				'mysteryBoxRepository',
+				'voteRepository',
+				'recipeRepository',
+				'tradeRepository',
+				'perkRepository',
+				'roleRepository',
+				'questRepository',
+				'activityLogRepository',
+
+				'playerService',
+				'gameStateService',
+				'mysteryBoxService',
+				'voteService',
+				'recipeService',
+				'tradeService',
+				'perkService',
+				'roleService',
+				'questService',
+				'activityLogService',
+			);
+		});
+
+		it('returns dependencies that all share the same db instance', () => {
+			const allMocks = createAllMocks();
+			const sharedDB = allMocks.db;
+			makeSure(sharedDB).isSameInstanceAs(allMocks.playerRepository.db);
+			makeSure(sharedDB).isSameInstanceAs(allMocks.gameStateRepository.db);
+			makeSure(sharedDB).isSameInstanceAs(allMocks.mysteryBoxRepository.db);
+			makeSure(sharedDB).isSameInstanceAs(allMocks.voteRepository.db);
+			makeSure(sharedDB).isSameInstanceAs(allMocks.recipeRepository.db);
+			makeSure(sharedDB).isSameInstanceAs(allMocks.tradeRepository.db);
+			makeSure(sharedDB).isSameInstanceAs(allMocks.perkRepository.db);
+			makeSure(sharedDB).isSameInstanceAs(allMocks.roleRepository.db);
+			makeSure(sharedDB).isSameInstanceAs(allMocks.roleRepository.perkRepository.db);
+			makeSure(sharedDB).isSameInstanceAs(allMocks.questRepository.db);
+			makeSure(sharedDB).isSameInstanceAs(allMocks.activityLogRepository.db);
+			makeSure(sharedDB).isSameInstanceAs(allMocks.activityLogRepository.playerRepository.db);
+			makeSure(sharedDB).isSameInstanceAs(allMocks.activityLogRepository.recipeRepository.db);
+			makeSure(sharedDB).isSameInstanceAs(allMocks.activityLogRepository.questRepository.db);
+			makeSure(sharedDB).isSameInstanceAs(allMocks.playerService.playerRepository.db);
+			makeSure(sharedDB).isSameInstanceAs(allMocks.gameStateService.gameStateRepository.db);
+			makeSure(sharedDB).isSameInstanceAs(allMocks.mysteryBoxService.mysteryBoxRepository.db);
+			makeSure(sharedDB).isSameInstanceAs(allMocks.voteService.voteRepository.db);
+			makeSure(sharedDB).isSameInstanceAs(allMocks.recipeService.recipeRepository.db);
+			makeSure(sharedDB).isSameInstanceAs(allMocks.tradeService.tradeRepository.db);
+			makeSure(sharedDB).isSameInstanceAs(allMocks.perkService.perkRepository.db);
+			makeSure(sharedDB).isSameInstanceAs(allMocks.roleService.roleRepository.db);
+			makeSure(sharedDB).isSameInstanceAs(allMocks.questService.questRepository.db);
+			makeSure(sharedDB).isSameInstanceAs(allMocks.questService.activityLogService.activityLogRepository.playerRepository.db);
+			makeSure(sharedDB).isSameInstanceAs(allMocks.questService.playerService.playerRepository.db);
+			makeSure(sharedDB).isSameInstanceAs(allMocks.activityLogService.activityLogRepository.db);
+			makeSure(sharedDB).isSameInstanceAs(allMocks.activityLogService.activityLogRepository.playerRepository.db);
+		})
+	});
 
   describe("createMockDB", () => {
     it("creates an in-memory SQLite database", () => {
@@ -352,6 +421,166 @@ describe("Mock Utilities", () => {
 				description: "This is a test role",
 				perks: [],
 			});
+		});
+	});
+
+	describe('addMockTrade()', () => {
+		it('returns the added trade', () => {
+			const trade = addMockTrade(db, {
+				id: 123,
+				initiatingPlayer: SOME_PLAYER.id,
+				recipientPlayer: SOME_OTHER_PLAYER.id,
+				offeredCharacters: "abc",
+				requestedCharacters: "def",
+				status: TradeStatuses.AWAITING_INITIATOR,
+			});
+
+			makeSure(trade).hasProperties({
+				id: 123,
+				initiatingPlayer: SOME_PLAYER,
+				recipientPlayer: SOME_OTHER_PLAYER,
+				offeredCharacters: "abc",
+				requestedCharacters: "def",
+				status: TradeStatuses.AWAITING_INITIATOR,
+			});
+		});
+
+		it('adds the trade to the database', () => {
+			addMockTrade(db, {
+				id: 123,
+				initiatingPlayer: SOME_PLAYER.id,
+				recipientPlayer: SOME_OTHER_PLAYER.id,
+				offeredCharacters: "abc",
+				requestedCharacters: "def",
+				status: TradeStatuses.AWAITING_INITIATOR,
+			});
+
+			const trades = db.getRows("SELECT * FROM trade");
+			makeSure(trades).contains({
+				id: 123,
+				initiatingPlayerID: SOME_PLAYER.id,
+				recipientPlayerID: SOME_OTHER_PLAYER.id,
+				offeredCharacters: "abc",
+				requestedCharacters: "def",
+				status: TradeStatuses.AWAITING_INITIATOR,
+			});
+		});
+
+		it('creates a trade even when no fields are provided', () => {
+			const mockTrade = addMockTrade(db);
+			makeSure(mockTrade).hasProperties('id', 'initiatingPlayer', 'recipientPlayer', 'offeredCharacters', 'requestedCharacters', 'status');
+
+			const trades = db.getRows("SELECT * FROM trade") as DBTrade[];
+			makeSure(trades).hasAnItemWhere(trade =>
+				trade.id === mockTrade.id
+			);
+		})
+
+		it('throws if the trade already exists', () => {
+			addMockTrade(db, {
+				id: 123,
+				initiatingPlayer: SOME_PLAYER.id,
+				recipientPlayer: SOME_OTHER_PLAYER.id,
+				offeredCharacters: "abc",
+				requestedCharacters: "def",
+				status: TradeStatuses.AWAITING_INITIATOR,
+			});
+
+			makeSure(() => addMockTrade(db, {
+				id: 123,
+				initiatingPlayer: SOME_PLAYER.id,
+				recipientPlayer: SOME_OTHER_PLAYER.id,
+				offeredCharacters: "abc",
+				requestedCharacters: "def",
+				status: TradeStatuses.AWAITING_INITIATOR,
+			})).throws(TradeAlreadyExistsError);
+		})
+	});
+
+	describe('addMockActivityLog()', () => {
+		let SOME_RECIPE: Recipe;
+		let SOME_QUEST: Quest;
+
+		beforeEach(() => {
+			SOME_RECIPE = addMockRecipe(db);
+			SOME_QUEST = addMockQuest(db);
+		})
+
+		it('returns the added activity log', () => {
+			const activityLog = addMockActivityLog(db, {
+				id: 1000000001,
+				player: SOME_PLAYER.id,
+				type: ActivityTypes.COMPLETE_QUEST,
+				tokensDifference: 10,
+				involvedPlayer: SOME_OTHER_PLAYER.id,
+				involvedRecipe: SOME_RECIPE.id,
+				involvedQuest: SOME_QUEST.id,
+			});
+
+			makeSure(activityLog).hasProperties({
+				id: 1000000001,
+				player: SOME_PLAYER,
+				type: ActivityTypes.COMPLETE_QUEST,
+				tokensDifference: 10,
+				involvedPlayer: SOME_OTHER_PLAYER,
+				involvedRecipe: SOME_RECIPE,
+				involvedQuest: SOME_QUEST,
+			});
+		});
+
+		it('adds the activity log to the database', () => {
+			addMockActivityLog(db, {
+				id: 1000000001,
+				player: SOME_PLAYER.id,
+				type: ActivityTypes.COMPLETE_QUEST,
+				tokensDifference: 10,
+				involvedPlayer: SOME_OTHER_PLAYER.id,
+				involvedRecipe: SOME_RECIPE.id,
+				involvedQuest: SOME_QUEST.id,
+			});
+
+			const activityLogs = db.getRows("SELECT * FROM activityLog");
+			makeSure(activityLogs).contains({
+				id: 1000000001,
+				playerID: SOME_PLAYER.id,
+				type: ActivityTypes.COMPLETE_QUEST,
+				tokensDifference: 10,
+				involvedPlayerID: SOME_OTHER_PLAYER.id,
+				involvedRecipeID: SOME_RECIPE.id,
+				involvedQuestID: SOME_QUEST.id,
+			});
+		});
+
+		it('adds the activity log even when no fields are provided', () => {
+			const mockActivityLog = addMockActivityLog(db);
+			makeSure(mockActivityLog).hasProperties('id', 'player', 'type', 'tokensDifference', 'involvedPlayer', 'involvedRecipe', 'involvedQuest');
+
+			const activityLogs = db.getRows("SELECT * FROM activityLog") as DBActivityLog[];
+			makeSure(activityLogs).hasAnItemWhere(activityLog =>
+				activityLog.id === mockActivityLog.id
+			);
+		});
+
+		it('throws if the activity log already exists', () => {
+			addMockActivityLog(db, {
+				id: 1000000001,
+				player: SOME_PLAYER.id,
+				type: ActivityTypes.COMPLETE_QUEST,
+				tokensDifference: 10,
+				involvedPlayer: SOME_OTHER_PLAYER.id,
+				involvedRecipe: SOME_RECIPE.id,
+				involvedQuest: SOME_QUEST.id,
+			});
+
+			makeSure(() => addMockActivityLog(db, {
+				id: 1000000001,
+				player: SOME_PLAYER.id,
+				type: ActivityTypes.COMPLETE_QUEST,
+				tokensDifference: 10,
+				involvedPlayer: SOME_OTHER_PLAYER.id,
+				involvedRecipe: SOME_RECIPE.id,
+				involvedQuest: SOME_QUEST.id,
+			})).throws(ActivityLogAlreadyExistsError);
 		});
 	});
 

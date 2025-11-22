@@ -2,7 +2,8 @@ import { toNullOnError } from "../../../utilities/error-utils";
 import { Override, WithAtLeast } from "../../../utilities/types/generic-types";
 import { isNumber, isString } from "../../../utilities/types/type-guards";
 import { DatabaseQuerier, toParameterInsertClause, toParameterUpdateClause } from "../database/database-querier";
-import { DBPerk, Perk, PerkDefintion, PerkID, PerkName, PerkResolvable } from "../types/perk.types";
+import { createMockDB } from "../mocks/mock-database";
+import { asDBPerk, asDBPerks, Perk, PerkDefintion, PerkID, PerkName, PerkResolvable } from "../types/perk.types";
 import { PlayerID } from "../types/player.types";
 import { RoleID } from "../types/role.types";
 import { toDBBool, toOptionalDBBool } from "../utilities/db.utility";
@@ -25,15 +26,19 @@ export class PerkRepository {
 		return new PerkRepository(db);
 	}
 
+	static asMock() {
+		const db = createMockDB();
+		return PerkRepository.fromDB(db);
+	}
+
 	/**
 	 * Returns a list of all perk objects in the game.
 	 * @returns An array of perk objects.
 	 */
 	getPerks(): Perk[] {
-		const query = `SELECT * FROM perk`;
-		const getAllPerks = this.db.prepare(query);
-		const dbPerks = getAllPerks.all() as DBPerk[];
-		return dbPerks.map(toPerk);
+		const rows = this.db.getRows('SELECT * FROM perk');
+		const dbPerks = asDBPerks(rows);
+		return toPerks(dbPerks);
 	}
 
 	/**
@@ -43,14 +48,15 @@ export class PerkRepository {
 	 * @throws PerkNotFoundError - If the perk does not exist.
 	 */
 	getPerkOrThrow(perkID: PerkID): Perk {
-		const query = `SELECT * FROM perk WHERE id = @id`;
-		const getPerkByID = this.db.prepare(query);
-		const perk = getPerkByID.get({ id: perkID }) as DBPerk | undefined;
+		const row = this.db.getRow(
+			'SELECT * FROM perk WHERE id = ?', perkID
+		);
 
-		if (perk === undefined)
+		if (row === undefined)
 			throw new PerkNotFoundError(perkID);
 
-		return toPerk(perk);
+		const dbPerk = asDBPerk(row);
+		return toPerk(dbPerk);
 	}
 
 	/**
@@ -60,14 +66,15 @@ export class PerkRepository {
 	 * @throws PerkNotFoundError - If the perk does not exist.
 	 */
 	getPerkByNameOrThrow(name: PerkName): Perk {
-		const query = `SELECT * FROM perk WHERE name = @name`;
-		const getPerkByName = this.db.prepare(query);
-		const perk = getPerkByName.get({ name }) as DBPerk | undefined;
+		const maybeRow = this.db.getRow(
+			'SELECT * FROM perk WHERE name = ?', name
+		);
 
-		if (perk === undefined)
+		if (maybeRow === undefined)
 			throw new PerkNotFoundError(name);
 
-		return toPerk(perk);
+		const dbPerk = asDBPerk(maybeRow);
+		return toPerk(dbPerk);
 	}
 
 	/**
@@ -87,15 +94,16 @@ export class PerkRepository {
 	 * @returns The perk object if found, otherwise null.
 	 */
 	getPerkByName(name: string): Perk | null {
-		const perk = this.db.getRow(
+		const row = this.db.getRow(
 			"SELECT * FROM perk WHERE name = @name",
 			{ name }
-		) as DBPerk | undefined;
+		);
 
-		if (perk === undefined)
+		if (row === undefined)
 			return null;
 
-		return toPerk(perk);
+		const dbPerk = asDBPerk(row);
+		return toPerk(dbPerk);
 	}
 
 	/**
@@ -194,8 +202,6 @@ export class PerkRepository {
 			wasOffered: toDBBool(perkDefinition.wasOffered),
 			isBeingOffered: toDBBool(perkDefinition.isBeingOffered),
 		};
-
-		console.log(`Adding perk with parameters ${JSON.stringify(queryParameters)}`);
 
 		const result = this.db.run(
 			`INSERT INTO perk ${toParameterInsertClause(queryParameters)}`,
@@ -306,14 +312,15 @@ export class PerkRepository {
 	 * @returns An array of perk objects that the player with the given ID has.
 	 */
 	getPerksOfPlayerID(playerID: PlayerID): Perk[] {
-		const dbPerks = this.db.getRows(
+		const rows = this.db.getRows(
 			`SELECT *
 				FROM playerPerk
 				JOIN perk ON playerPerk.perkID = perk.id
 				WHERE playerID = @playerID`,
 			{ playerID }
-		) as DBPerk[];
+		);
 
+		const dbPerks = asDBPerks(rows);
 		return toPerks(dbPerks);
 	}
 
@@ -366,14 +373,15 @@ export class PerkRepository {
 	}
 
 	getPerksOfRoleID(roleID: RoleID): Perk[] {
-		const dbPerks = this.db.getRows(
+		const rows = this.db.getRows(
 			`SELECT *
 				FROM rolePerk
 				JOIN perk ON rolePerk.perkID = perk.id
 				WHERE roleID = @roleID`,
 			{ roleID }
-		) as DBPerk[];
+		);
 
+		const dbPerks = asDBPerks(rows);
 		return toPerks(dbPerks);
 	}
 
@@ -442,9 +450,10 @@ export class PerkRepository {
 		const rows = this.db.getRows(
 			`SELECT * FROM perk
 			WHERE wasOffered = 0`
-		) as DBPerk[];
+		);
 
-		return rows.map(toPerk) as Override<Perk, { wasOffered: false }>[];
+		const dbPerks = asDBPerks(rows);
+		return dbPerks.map(toPerk) as Override<Perk, { wasOffered: false }>[];
 	}
 
 	/**
@@ -501,12 +510,13 @@ export class PerkRepository {
 	 * @returns An array of perk objects that are currently offered.
 	 */
 	getCurrentlyOfferedPerks(): Perk[] {
-		const dbPerks = this.db.getRows(
+		const rows = this.db.getRows(
 			`SELECT * FROM perk
 			WHERE isBeingOffered = 1
 			ORDER BY id ASC`
-		) as DBPerk[];
+		);
 
+		const dbPerks = asDBPerks(rows);
 		return dbPerks.map(toPerk);
 	}
 }

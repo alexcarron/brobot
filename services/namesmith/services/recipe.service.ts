@@ -2,6 +2,8 @@ import { RecipeRepository } from "../repositories/recipe.repository";
 import { Recipe, RecipeID, RecipeResolvable } from "../types/recipe.types";
 import { PlayerResolvable } from '../types/player.types';
 import { PlayerService } from "./player.service";
+import { DatabaseQuerier } from "../database/database-querier";
+import { createMockDB } from "../mocks/mock-database";
 
 /**
  * Provides methods for interacting with recipes.
@@ -11,6 +13,18 @@ export class RecipeService {
 		public recipeRepository: RecipeRepository,
 		public playerService: PlayerService,
 	) {}
+
+	static fromDB(db: DatabaseQuerier) {
+		return new RecipeService(
+			RecipeRepository.fromDB(db),
+			PlayerService.fromDB(db),
+		);
+	}
+
+	static asMock() {
+		const db = createMockDB();
+		return RecipeService.fromDB(db);
+	}
 
 	/**
 	 * Resolves a recipe resolvable to a recipe object.

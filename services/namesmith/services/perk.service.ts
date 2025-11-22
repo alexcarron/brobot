@@ -1,3 +1,5 @@
+import { DatabaseQuerier } from "../database/database-querier";
+import { createMockDB } from "../mocks/mock-database";
 import { PerkRepository } from "../repositories/perk.repository";
 import { RoleRepository } from "../repositories/role.repository";
 import { Perk, PerkResolvable } from "../types/perk.types";
@@ -14,6 +16,19 @@ export class PerkService {
 		public roleRepoistory: RoleRepository,
 		public playerService: PlayerService,
 	) {}
+
+	static fromDB(db: DatabaseQuerier) {
+		return new PerkService(
+			PerkRepository.fromDB(db),
+			RoleRepository.fromDB(db),
+			PlayerService.fromDB(db),
+		);
+	}
+
+	static asMock() {
+		const db = createMockDB();
+		return PerkService.fromDB(db);
+	}
 
 	/**
 	 * Resolves a perk ID, perk name, or perk object to a fetched Perk object.

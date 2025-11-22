@@ -7,21 +7,28 @@ import { INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { RecipeRepository } from "../repositories/recipe.repository";
 import { PlayerNotFoundError, RecipeNotFoundError } from "../utilities/error.utility";
-import { createMockRecipeService } from "../mocks/mock-services";
 import { RecipeService } from "./recipe.service";
 import { Recipe } from "../types/recipe.types";
-import { addMockRecipe, mockRecipes } from "../mocks/mock-data/mock-recipes";
-import { addMockPlayer, mockPlayers } from "../mocks/mock-data/mock-players";
+import { addMockRecipe } from "../mocks/mock-data/mock-recipes";
+import { addMockPlayer } from "../mocks/mock-data/mock-players";
+import { Player } from "../types/player.types";
 
 describe('RecipeService', () => {
-	const MOCK_RECIPE = mockRecipes[0];
-
 	let recipeService: RecipeService;
 	let db: DatabaseQuerier;
 
+	let SOME_RECIPE: Recipe;
+	let SOME_PLAYER: Player;
+
 	beforeEach(() => {
-		recipeService = createMockRecipeService();
+		recipeService = RecipeService.asMock();
 		db = recipeService.recipeRepository.db;
+
+		SOME_RECIPE = addMockRecipe(db, {
+			inputCharacters: "nn",
+			outputCharacters: "m",
+		});
+		SOME_PLAYER = addMockPlayer(db);
 	});
 
 	describe('constructor', () => {
@@ -33,8 +40,8 @@ describe('RecipeService', () => {
 
 	describe('resolveRecipe()', () => {
 		it('should resolve a recipe resolvable to a recipe object', () => {
-			const recipe = recipeService.resolveRecipe(MOCK_RECIPE.id);
-			expect(recipe).toEqual(MOCK_RECIPE);
+			const recipe = recipeService.resolveRecipe(SOME_RECIPE.id);
+			expect(recipe).toEqual(SOME_RECIPE);
 		});
 
 		it('should throw an error if the recipe with the given ID is not found', () => {
@@ -43,29 +50,29 @@ describe('RecipeService', () => {
 
 		it('returns a current recipe when given an outdated recipe object', () => {
 			const OUTDATED_RECIPE: Recipe = {
-				...MOCK_RECIPE,
+				...SOME_RECIPE,
 				outputCharacters: "OUTDATED"
 			};
 
 			const recipe = recipeService.resolveRecipe(OUTDATED_RECIPE);
-			expect(recipe).toEqual(MOCK_RECIPE);
+			expect(recipe).toEqual(SOME_RECIPE);
 		});
 
 		it('should resolve a recipe object to itself', () => {
-			const recipe = recipeService.resolveRecipe(MOCK_RECIPE);
-			expect(recipe).toEqual(MOCK_RECIPE);
+			const recipe = recipeService.resolveRecipe(SOME_RECIPE);
+			expect(recipe).toEqual(SOME_RECIPE);
 		});
 	});
 
 	describe('resolveID()', () => {
 		it('should resolve a recipe id to a recipe ID', () => {
-			const recipeID = recipeService.resolveID(MOCK_RECIPE.id);
-			expect(recipeID).toEqual(MOCK_RECIPE.id);
+			const recipeID = recipeService.resolveID(SOME_RECIPE.id);
+			expect(recipeID).toEqual(SOME_RECIPE.id);
 		});
 
 		it('should resolve a recipe object to its ID', () => {
-			const recipeID = recipeService.resolveID(MOCK_RECIPE);
-			expect(recipeID).toEqual(MOCK_RECIPE.id);
+			const recipeID = recipeService.resolveID(SOME_RECIPE);
+			expect(recipeID).toEqual(SOME_RECIPE.id);
 		});
 	})
 
@@ -170,13 +177,13 @@ describe('RecipeService', () => {
 
 		it('should throw an error if the player is not found', async () => {
 			await makeSure(
-				recipeService.takeInputCharactersFromPlayer(MOCK_RECIPE.id, INVALID_PLAYER_ID)
+				recipeService.takeInputCharactersFromPlayer(SOME_RECIPE.id, INVALID_PLAYER_ID)
 			).eventuallyThrows(PlayerNotFoundError);
 		});
 
 		it('should throw an error if the recipe is not found', async () => {
 			await makeSure(
-				recipeService.takeInputCharactersFromPlayer(-999, mockPlayers[0].id)
+				recipeService.takeInputCharactersFromPlayer(-999, SOME_PLAYER.id)
 			).eventuallyThrows(RecipeNotFoundError);
 		});
 	});
@@ -202,13 +209,13 @@ describe('RecipeService', () => {
 
 		it('should throw an error if the player is not found', async () => {
 			await makeSure(
-				recipeService.giveOutputCharacterToPlayer(MOCK_RECIPE.id, INVALID_PLAYER_ID)
+				recipeService.giveOutputCharacterToPlayer(SOME_RECIPE.id, INVALID_PLAYER_ID)
 			).eventuallyThrows(PlayerNotFoundError);
 		});
 
 		it('should throw an error if the recipe is not found', async () => {
 			await makeSure(
-				recipeService.giveOutputCharacterToPlayer(-999, mockPlayers[0].id)
+				recipeService.giveOutputCharacterToPlayer(-999, SOME_PLAYER.id)
 			).eventuallyThrows(RecipeNotFoundError);
 		});
 	});

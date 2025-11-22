@@ -4,7 +4,6 @@ import { Roles } from "../constants/roles.constants";
 import { INVALID_ROLE_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
-import { createMockRoleService } from "../mocks/mock-services";
 import { Role } from "../types/role.types";
 import { RoleService } from "./role.service";
 
@@ -15,7 +14,7 @@ describe('RoleService', () => {
 	const SOME_ROLE = Roles.PROSPECTOR;
 
 	beforeEach(() => {
-		roleService = createMockRoleService();
+		roleService = RoleService.asMock();
 		db = roleService.roleRepository.db;
 	});
 

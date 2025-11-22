@@ -1,6 +1,7 @@
 import { ignoreError, InvalidArgumentError, returnNonNullOrThrow } from "../../../utilities/error-utils";
 import { WithRequiredAndOneOther } from "../../../utilities/types/generic-types";
 import { DatabaseQuerier, toParameterSetClause } from "../database/database-querier";
+import { createMockDB } from "../mocks/mock-database";
 import { CharacterOdds, DBCharacterOddsRow, DBMysteryBox, MinimalMysteryBox, MysteryBoxID, MysteryBox, MysteryBoxDefinition, MinimalMysteryBoxDefinition } from "../types/mystery-box.types";
 import { getCharacterValueFromID, getIDfromCharacterValue } from "../utilities/character.utility";
 import { MysteryBoxAlreadyExistsError, MysteryBoxNotFoundError } from "../utilities/error.utility";
@@ -20,6 +21,11 @@ export class MysteryBoxRepository {
 
 	static fromDB(db: DatabaseQuerier) {
 		return new MysteryBoxRepository(db);
+	}
+
+	static asMock() {
+		const db = createMockDB();
+		return MysteryBoxRepository.fromDB(db);
 	}
 
 	/**

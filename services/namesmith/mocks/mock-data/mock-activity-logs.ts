@@ -2,7 +2,7 @@ import { WithAllOptional } from "../../../../utilities/types/generic-types";
 import { DatabaseQuerier } from "../../database/database-querier";
 import { ActivityLogRepository } from "../../repositories/activity-log.repository";
 import { ActivityLog, ActivityLogDefinition, ActivityTypes } from '../../types/activity-log.types';
-import { mockPlayers } from "./mock-players";
+import { addMockPlayer } from "./mock-players";
 
 /**
  * Adds a mock activity log to the given database.
@@ -13,18 +13,21 @@ import { mockPlayers } from "./mock-players";
  */
 export function addMockActivityLog(
 	db: DatabaseQuerier,
-	activityLogDefinition: WithAllOptional<ActivityLogDefinition>
+	activityLogDefinition: WithAllOptional<ActivityLogDefinition> = {}
 ): ActivityLog {
 	const activitylogRepository = ActivityLogRepository.fromDB(db);
+	let { player = undefined } = activityLogDefinition;
 	const {
 		id = undefined,
-		player = mockPlayers[0].id,
 		type = ActivityTypes.MINE_TOKENS,
 		tokensDifference = 0,
 		involvedPlayer = null,
 		involvedRecipe = null,
 		involvedQuest = null,
 	} = activityLogDefinition;
+
+	if (player === undefined)
+		player = addMockPlayer(db);
 
 	return activitylogRepository.addActivityLog({
 		id,

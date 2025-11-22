@@ -1,5 +1,7 @@
 import { makeSure } from "../../../../utilities/jest/jest-utils";
 import { INVALID_PLAYER_ID } from "../../constants/test.constants";
+import { DatabaseQuerier } from "../../database/database-querier";
+import { addMockPlayer } from "../../mocks/mock-data/mock-players";
 import { setupMockNamesmith } from "../../mocks/mock-setup";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { PlayerService } from "../../services/player.service";
@@ -10,13 +12,14 @@ import { returnIfNotFailure } from "../../utilities/workflow.utility";
 import { initiateTrade } from "./initiate-trade.workflow";
 
 describe('initiate-trade.workflow.ts', () => {
-	let MOCK_INITIATING_PLAYER: Player;
-	let MOCK_RECIPIENT_PLAYER: Player;
-
+	let db: DatabaseQuerier;
 	let services: {
 		tradeService: TradeService,
 		playerService: PlayerService,
 	};
+
+	let SOME_INITIATING_PLAYER: Player;
+	let SOME_RECIPIENT_PLAYER: Player;
 
 	beforeEach(() => {
 		setupMockNamesmith();
@@ -25,10 +28,14 @@ describe('initiate-trade.workflow.ts', () => {
 			tradeService,
 			playerService
 		};
+		db = playerService.playerRepository.db;
 
-		const players = playerService.playerRepository.getPlayers();
-		MOCK_INITIATING_PLAYER = players[0];
-		MOCK_RECIPIENT_PLAYER = players[1];
+		SOME_INITIATING_PLAYER = addMockPlayer(db, {
+			inventory: "abcdefgh",
+		});
+		SOME_RECIPIENT_PLAYER = addMockPlayer(db, {
+			inventory: "ijklmnop",
+		});
 	})
 
 	describe('initiateTrade()', () => {
@@ -37,10 +44,10 @@ describe('initiate-trade.workflow.ts', () => {
 				returnIfNotFailure(
 					initiateTrade({
 						...services,
-						initiatingPlayer: MOCK_INITIATING_PLAYER,
-						recipientPlayer: MOCK_RECIPIENT_PLAYER,
-						offeredCharacters: MOCK_INITIATING_PLAYER.inventory,
-						requestedCharacters: MOCK_RECIPIENT_PLAYER.inventory,
+						initiatingPlayer: SOME_INITIATING_PLAYER,
+						recipientPlayer: SOME_RECIPIENT_PLAYER,
+						offeredCharacters: SOME_INITIATING_PLAYER.inventory,
+						requestedCharacters: SOME_RECIPIENT_PLAYER.inventory,
 					})
 				);
 
@@ -48,12 +55,12 @@ describe('initiate-trade.workflow.ts', () => {
 			const trade = tradeService.resolveTrade(result.trade.id);
 			makeSure(trade).is(result.trade);
 
-			makeSure(result.initiatingPlayer).is(MOCK_INITIATING_PLAYER);
-			makeSure(result.recipientPlayer).is(MOCK_RECIPIENT_PLAYER);
-			makeSure(result.trade.initiatingPlayer.id).is(MOCK_INITIATING_PLAYER.id);
-			makeSure(result.trade.recipientPlayer.id).is(MOCK_RECIPIENT_PLAYER.id);
-			makeSure(result.trade.offeredCharacters).is(MOCK_INITIATING_PLAYER.inventory);
-			makeSure(result.trade.requestedCharacters).is(MOCK_RECIPIENT_PLAYER.inventory);
+			makeSure(result.initiatingPlayer).is(SOME_INITIATING_PLAYER);
+			makeSure(result.recipientPlayer).is(SOME_RECIPIENT_PLAYER);
+			makeSure(result.trade.initiatingPlayer.id).is(SOME_INITIATING_PLAYER.id);
+			makeSure(result.trade.recipientPlayer.id).is(SOME_RECIPIENT_PLAYER.id);
+			makeSure(result.trade.offeredCharacters).is(SOME_INITIATING_PLAYER.inventory);
+			makeSure(result.trade.requestedCharacters).is(SOME_RECIPIENT_PLAYER.inventory);
 			makeSure(result.trade.status).is(TradeStatuses.AWAITING_RECIPIENT);
 		});
 
@@ -61,9 +68,9 @@ describe('initiate-trade.workflow.ts', () => {
 			const result = initiateTrade({
 				...services,
 				initiatingPlayer: INVALID_PLAYER_ID,
-				recipientPlayer: MOCK_RECIPIENT_PLAYER,
-				offeredCharacters: MOCK_INITIATING_PLAYER.inventory,
-				requestedCharacters: MOCK_RECIPIENT_PLAYER.inventory,
+				recipientPlayer: SOME_RECIPIENT_PLAYER,
+				offeredCharacters: SOME_INITIATING_PLAYER.inventory,
+				requestedCharacters: SOME_RECIPIENT_PLAYER.inventory,
 			});
 
 			makeSure(
@@ -74,10 +81,10 @@ describe('initiate-trade.workflow.ts', () => {
 		it('returns recipientNotAPlayer if the recipient user is not a player', () => {
 			const result = initiateTrade({
 				...services,
-				initiatingPlayer: MOCK_INITIATING_PLAYER,
+				initiatingPlayer: SOME_INITIATING_PLAYER,
 				recipientPlayer: INVALID_PLAYER_ID,
-				offeredCharacters: MOCK_INITIATING_PLAYER.inventory,
-				requestedCharacters: MOCK_RECIPIENT_PLAYER.inventory,
+				offeredCharacters: SOME_INITIATING_PLAYER.inventory,
+				requestedCharacters: SOME_RECIPIENT_PLAYER.inventory,
 			});
 
 			makeSure(
@@ -88,10 +95,10 @@ describe('initiate-trade.workflow.ts', () => {
 		it('returns TradeBetweenSamePlayersError if the initiating player attempts to trade with themselves', () => {
 			const result = initiateTrade({
 				...services,
-				initiatingPlayer: MOCK_INITIATING_PLAYER,
-				recipientPlayer: MOCK_INITIATING_PLAYER,
-				offeredCharacters: MOCK_INITIATING_PLAYER.inventory,
-				requestedCharacters: MOCK_RECIPIENT_PLAYER.inventory,
+				initiatingPlayer: SOME_INITIATING_PLAYER,
+				recipientPlayer: SOME_INITIATING_PLAYER,
+				offeredCharacters: SOME_INITIATING_PLAYER.inventory,
+				requestedCharacters: SOME_RECIPIENT_PLAYER.inventory,
 			});
 
 			makeSure(
@@ -102,10 +109,10 @@ describe('initiate-trade.workflow.ts', () => {
 		it('returns MissingOfferedCharactersError if the initiating player does not have the characters they are offering', () => {
 			const result = initiateTrade({
 				...services,
-				initiatingPlayer: MOCK_INITIATING_PLAYER,
-				recipientPlayer: MOCK_RECIPIENT_PLAYER,
-				offeredCharacters: MOCK_INITIATING_PLAYER.inventory + 'z',
-				requestedCharacters: MOCK_RECIPIENT_PLAYER.inventory,
+				initiatingPlayer: SOME_INITIATING_PLAYER,
+				recipientPlayer: SOME_RECIPIENT_PLAYER,
+				offeredCharacters: SOME_INITIATING_PLAYER.inventory + 'z',
+				requestedCharacters: SOME_RECIPIENT_PLAYER.inventory,
 			});
 
 			makeSure(
@@ -116,10 +123,10 @@ describe('initiate-trade.workflow.ts', () => {
 		it('returns MissingRequestedCharactersError if the recipient player does not have the characters they are requesting', () => {
 			const result = initiateTrade({
 				...services,
-				initiatingPlayer: MOCK_INITIATING_PLAYER,
-				recipientPlayer: MOCK_RECIPIENT_PLAYER,
-				offeredCharacters: MOCK_INITIATING_PLAYER.inventory,
-				requestedCharacters: MOCK_RECIPIENT_PLAYER.inventory + 'z',
+				initiatingPlayer: SOME_INITIATING_PLAYER,
+				recipientPlayer: SOME_RECIPIENT_PLAYER,
+				offeredCharacters: SOME_INITIATING_PLAYER.inventory,
+				requestedCharacters: SOME_RECIPIENT_PLAYER.inventory + 'z',
 			});
 
 			makeSure(

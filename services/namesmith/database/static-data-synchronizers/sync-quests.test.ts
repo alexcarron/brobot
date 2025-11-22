@@ -1,6 +1,4 @@
 import { makeSure } from "../../../../utilities/jest/jest-utils";
-import { createMockDB } from "../../mocks/mock-database";
-import { createMockQuestRepo } from "../../mocks/mock-repositories";
 import { QuestRepository } from "../../repositories/quest.repository";
 import { DatabaseQuerier } from "../database-querier";
 import { syncQuestsToDB } from "./sync-quests";
@@ -10,8 +8,8 @@ describe('sync-quests.ts', () => {
 	let questRepository: QuestRepository;
 
 	beforeEach(() => {
-		db = createMockDB();
-		questRepository = createMockQuestRepo(db);
+		questRepository = QuestRepository.asMock();
+		db = questRepository.db;
 	});
 
 	describe('syncQuestsToDB()', () => {

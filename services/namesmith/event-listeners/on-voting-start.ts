@@ -8,7 +8,7 @@ import { getNamesmithServices } from '../services/get-namesmith-services';
  * - Sending the voting display
  * - Resetting the vote service
  */
-export async function startVoting() {
+export async function onVotingStart() {
 	const { playerService, voteService } = getNamesmithServices();
 
 	await playerService.publishUnpublishedNames();

@@ -5,7 +5,6 @@ import { Roles } from "../constants/roles.constants";
 import { INVALID_PLAYER_ID, INVALID_ROLE_ID, INVALID_ROLE_NAME } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
-import { createMockRoleRepo } from "../mocks/mock-repositories";
 import { PlayerNotFoundError, RoleNotFoundError } from "../utilities/error.utility";
 import { RoleRepository } from "./role.repository";
 
@@ -16,7 +15,7 @@ describe('RoleRepository', () => {
 	const SOME_ROLE = Roles.PROSPECTOR;
 
 	beforeEach(() => {
-		roleRepository = createMockRoleRepo();
+		roleRepository = RoleRepository.asMock();
 		db = roleRepository.db;
 	});
 

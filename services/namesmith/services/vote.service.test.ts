@@ -1,22 +1,36 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { VoteRepository } from "../repositories/vote.repository";
-import { createMockVoteService } from "../mocks/mock-services";
 import { PlayerService } from "./player.service";
 import { VoteService } from "./vote.service";
 import { INVALID_PLAYER_ID } from "../constants/test.constants";
-import { mockVotes } from "../mocks/mock-data/mock-votes";
-import { mockPlayers } from "../mocks/mock-data/mock-players";
+import { addMockVote } from "../mocks/mock-data/mock-votes";
+import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { Vote } from "../types/vote.types";
+import { DatabaseQuerier } from "../database/database-querier";
+import { Player } from "../types/player.types";
 
 describe('VoteService', () => {
+	let db: DatabaseQuerier;
 	let voteService: VoteService;
 
+	let SOME_PLAYER: Player;
+	let SOME_OTHER_PLAYER: Player;
+	let FOUR_DIFFERENT_PLAYERS: [Player, Player, Player, Player];
 	let SOME_VOTE: Vote;
 
 	beforeEach(() => {
-		voteService = createMockVoteService();
+		voteService = VoteService.asMock();
+		db = voteService.voteRepository.db;
 
-		SOME_VOTE = voteService.voteRepository.getVotes()[0];
+		SOME_PLAYER = addMockPlayer(db);
+		SOME_OTHER_PLAYER = addMockPlayer(db);
+		const SOME_THIRD_PLAYER = addMockPlayer(db);
+		const SOME_FOURTH_PLAYER = addMockPlayer(db);
+		FOUR_DIFFERENT_PLAYERS = [SOME_PLAYER, SOME_OTHER_PLAYER, SOME_THIRD_PLAYER, SOME_FOURTH_PLAYER];
+		SOME_VOTE = addMockVote(db, {
+			voter: SOME_PLAYER.id,
+			playerVotedFor: SOME_OTHER_PLAYER.id
+		});
 	});
 
 	afterEach(() => {
@@ -72,50 +86,51 @@ describe('VoteService', () => {
 	describe('.addVote()', () => {
 		it('should add a new vote', () => {
 			const message = voteService.addVote({
-				voter: mockPlayers[3].id,
-				playerVotedFor: mockPlayers[1].id
+				voter: FOUR_DIFFERENT_PLAYERS[3].id,
+				playerVotedFor: FOUR_DIFFERENT_PLAYERS[1].id
 			});
 
 			const votes = voteService.voteRepository.getVotes();
 
-			makeSure(votes).hasLengthOf(mockVotes.length + 1);
 			makeSure(votes).hasAnItemWhere( vote => {
 				return (
-					vote.voterID === mockPlayers[3].id &&
-					vote.playerVotedFor.id === mockPlayers[1].id
+					vote.voterID === FOUR_DIFFERENT_PLAYERS[3].id &&
+					vote.playerVotedFor.id === FOUR_DIFFERENT_PLAYERS[1].id
 				)
 			})
-			makeSure(message).is(`You have voted for ${mockPlayers[1].publishedName} as your favorite name!`);
+			makeSure(message).is(`You have voted for ${FOUR_DIFFERENT_PLAYERS[1].publishedName} as your favorite name!`);
 		});
 
 		it('should not add a new vote when they have already voted that person', () => {
+			const oldNumVotes = voteService.voteRepository.getVotes().length;
 			const message = voteService.addVote({
-				voter: mockVotes[0].voter,
-				playerVotedFor: mockVotes[0].playerVotedFor
+				voter: SOME_VOTE.voterID,
+				playerVotedFor: SOME_VOTE.playerVotedFor
 			});
 
 			const votes = voteService.voteRepository.getVotes();
 
-			makeSure(votes).hasLengthOf(mockVotes.length);
+			makeSure(votes).hasLengthOf(oldNumVotes);
 			makeSure(message).is(`You already voted for this name as your favorite!`);
 		});
 
 		it('should change their vote when they have already voted a different person', () => {
+			const oldNumVotes = voteService.voteRepository.getVotes().length;
 			const message = voteService.addVote({
-				voter: mockVotes[0].voter,
-				playerVotedFor: mockPlayers[3].id
+				voter: SOME_VOTE.voterID,
+				playerVotedFor: FOUR_DIFFERENT_PLAYERS[3].id
 			});
 
 			const votes = voteService.voteRepository.getVotes();
 
-			makeSure(votes).hasLengthOf(mockVotes.length);
+			makeSure(votes).hasLengthOf(oldNumVotes);
 			makeSure(votes).hasAnItemWhere( vote => {
 				return (
-					vote.voterID === mockPlayers[0].id &&
-					vote.playerVotedFor.id === mockPlayers[3].id
+					vote.voterID === FOUR_DIFFERENT_PLAYERS[0].id &&
+					vote.playerVotedFor.id === FOUR_DIFFERENT_PLAYERS[3].id
 				)
 			})
-			makeSure(message).is(`You have changed your favorite name vote from ${mockPlayers[1].publishedName} to ${mockPlayers[3].publishedName}`);
+			makeSure(message).is(`You have changed your favorite name vote from ${FOUR_DIFFERENT_PLAYERS[1].publishedName} to ${FOUR_DIFFERENT_PLAYERS[3].publishedName}`);
 		});
 	});
 
@@ -123,31 +138,31 @@ describe('VoteService', () => {
 		it('should return the ID of the player with the most votes', async () => {
 			const winningPlayerID = await voteService.getWinningPlayerID();
 
-			makeSure(winningPlayerID).is(mockPlayers[1].id);
+			makeSure(winningPlayerID).is(FOUR_DIFFERENT_PLAYERS[1].id);
 		});
 
 		it('should return the ID of the player with the most votes when votes change', () => {
 			voteService.addVote({
-				voter: mockPlayers[0].id,
-				playerVotedFor: mockPlayers[3].id
+				voter: FOUR_DIFFERENT_PLAYERS[0].id,
+				playerVotedFor: FOUR_DIFFERENT_PLAYERS[3].id
 			});
 			voteService.addVote({
-				voter: mockPlayers[1].id,
-				playerVotedFor: mockPlayers[3].id
+				voter: FOUR_DIFFERENT_PLAYERS[1].id,
+				playerVotedFor: FOUR_DIFFERENT_PLAYERS[3].id
 			});
 			voteService.addVote({
-				voter: mockPlayers[2].id,
-				playerVotedFor: mockPlayers[3].id
+				voter: FOUR_DIFFERENT_PLAYERS[2].id,
+				playerVotedFor: FOUR_DIFFERENT_PLAYERS[3].id
 			});
 
 			const winningPlayerID = voteService.getWinningPlayerID();
-			makeSure(winningPlayerID).is(mockPlayers[3].id);
+			makeSure(winningPlayerID).is(FOUR_DIFFERENT_PLAYERS[3].id);
 		});
 
 		it('should not return anything when there is a tie', () => {
 			voteService.addVote({
-				voter: mockPlayers[3].id,
-				playerVotedFor: mockPlayers[2].id
+				voter: FOUR_DIFFERENT_PLAYERS[3].id,
+				playerVotedFor: FOUR_DIFFERENT_PLAYERS[2].id
 			});
 
 			const winningPlayerID = voteService.getWinningPlayerID();
@@ -165,8 +180,8 @@ describe('VoteService', () => {
 	describe('.reset()', () => {
 		it('should reset the votes', () => {
 			voteService.addVote({
-				voter: mockPlayers[3].id,
-				playerVotedFor: mockPlayers[2].id
+				voter: FOUR_DIFFERENT_PLAYERS[3].id,
+				playerVotedFor: FOUR_DIFFERENT_PLAYERS[2].id
 			});
 
 			voteService.reset();

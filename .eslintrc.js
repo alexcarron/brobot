@@ -22,6 +22,7 @@ module.exports = {
     'no-floating-promise/no-floating-promise': 'error',
     'promise/always-return': 'error',
     'jsdoc/no-undefined-types': ['warn', { disableReporting: true, markVariablesAsUsed: true }],
+    'jsdoc/require-jsdoc': 'off',
     'jsdoc/check-param-names': ['error', { checkDestructured: false }],
     'jsdoc/valid-types': 'off',
   },
@@ -50,6 +51,7 @@ module.exports = {
 				'@typescript-eslint/no-explicit-any': 'off',
 				'jsdoc/require-param-type': 'off',    // ignore type in @param
 				'jsdoc/require-returns-type': 'off',  // ignore type in @returns
+				'jsdoc/require-jsdoc': 'off',         // ignore missing @jsdoc
 				'jest/expect-expect': 'off',
 				'@typescript-eslint/ban-ts-comment': 'off',
         // you can add TS overrides here

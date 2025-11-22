@@ -86,7 +86,7 @@ describe('buy-mystery-box.workflow', () => {
 		});
 
 		it('should change the player\'s Discord name to their current name plus that recieved character', () => {
-			const announceNameChangeEvent = jest.spyOn(NamesmithEvents.NameChange, "announce");
+			const announceNameChangeEvent = jest.spyOn(NamesmithEvents.NameChange, "triggerEvent");
 
 			const { recievedCharacterValues } = returnIfNotFailure(
 				buyMysteryBox({

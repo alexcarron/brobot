@@ -4,7 +4,7 @@
  */
 
 import { Class, ElementOfArray, ErrorClass } from "../types/generic-types";
-import { isArray, isObject } from "../types/type-guards";
+import { isArray, isObject, isStrings } from "../types/type-guards";
 
 
 /**
@@ -369,28 +369,40 @@ export function makeSure<
 		},
 
 		/**
-		 * Asserts that each item in the array has the given properties.
-		 * @param propertyNames - The names of the properties that each item in the array should have.
+		 * Asserts that the object has the given properties
+		 * OR
+		 * Asserts that the object contains the expected properties with the given values
+		 * @param properties - The names of the properties that the object should have or the expected properties and values that the object should contain.
 		 * @example
-		 * makeSure([{ id: 1 }, { id: 2 }]).hasProperties('id');
+		 * makeSure([{ id: 1 }]).hasProperties('id');
+		 * makeSure({id: 1, name: 'John Doe', age: 30}).includesObject({ id: 1 });
 		 */
-		hasProperties(...propertyNames: string[]): void {
+		hasProperties(...properties: string[] | [Partial<ActualType>]): void {
 			if (!isObject(actualValue))
-				throw new Error(`Expected each item in the array to be an object, but got: ${actualValue}`);
+				throw new Error(`Expected actual value to be an object, but got: ${actualValue}`);
 
-			propertyNames.forEach(propertyName => {
-				expect(actualValue).toHaveProperty(propertyName);
-			});
+			if (isStrings(properties)) {
+				const propertyNames = properties;
+				propertyNames.forEach(propertyName => {
+					expect(actualValue).toHaveProperty(propertyName);
+				});
+			}
+			else {
+				const expectedObjectSubset = properties[0];
+				expect(actualValue).toEqual(
+					expect.objectContaining(expectedObjectSubset)
+				);
+			}
 		},
 
-	/**
-	 * Asserts that the actual value has a property with the given name and optional value.
-	 * @param propertyName - The name of the property that the actual value should have.
-	 * @param value - The value that the actual value's property should have.
-	 * @example
-	 * makeSure({ name: 'John' }).hasProperty('name');
-	 * makeSure({ id: 1 }).hasProperty('id', 1);
-	 */
+		/**
+		 * Asserts that the actual value has a property with the given name and optional value.
+		 * @param propertyName - The name of the property that the actual value should have.
+		 * @param value - The value that the actual value's property should have.
+		 * @example
+		 * makeSure({ name: 'John' }).hasProperty('name');
+		 * makeSure({ id: 1 }).hasProperty('id', 1);
+		 */
 		hasProperty(
 			propertyName: string,
 			value?: unknown
@@ -439,24 +451,21 @@ export function makeSure<
 		},
 
 		/**
-		 * Asserts that the actual object contains the expected object subset in it.
-		 * @param expectedObjectSubset - The expected object subset that the actual object should contain.
-		 * @example
-		 * makeSure({id: 1, name: 'John Doe', age: 30}).includesObject({ id: 1 });
-		 */
-		containsProperties(expectedObjectSubset: Partial<ActualType>): void {
-			expect(actualValue).toEqual(
-				expect.objectContaining(expectedObjectSubset)
-			);
-		},
-
-		/**
 		 * Asserts that the actual function throws an error.
 		 * @example
 		 * makeSure(() => { throw new Error('Error!'); }).throwsAnError();
 		 */
 		throwsAnError(): void {
 			baseExpect.toThrow();
+		},
+
+		/**
+		 * Asserts that the actual function does not throw an error.
+		 * @example
+		 * makeSure(() => { return 'Success!'; }).doesNotThrow();
+		 */
+		doesNotThrow(): void {
+			baseExpect.not.toThrow();
 		},
 
 		/**

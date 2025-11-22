@@ -4,7 +4,6 @@ import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { addMockQuest } from "../mocks/mock-data/mock-quests";
 import { addMockRecipe } from "../mocks/mock-data/mock-recipes";
-import { createMockActivityLogService } from "../mocks/mock-services";
 import { ActivityTypes } from "../types/activity-log.types";
 import { Player } from "../types/player.types";
 import { Quest } from "../types/quest.types";
@@ -21,7 +20,7 @@ describe('ActivityLogService', () => {
 	let SOME_QUEST: Quest;
 
 	beforeEach(() => {
-		activityLogService = createMockActivityLogService();
+		activityLogService = ActivityLogService.asMock();
 		db = activityLogService.activityLogRepository.db;
 
 		SOME_PLAYER = addMockPlayer(db);
@@ -36,7 +35,7 @@ describe('ActivityLogService', () => {
 				recipeUsed: SOME_RECIPE.id
 			});
 
-			makeSure(activityLog).containsProperties({
+			makeSure(activityLog).hasProperties({
 				player: SOME_PLAYER,
 				type: ActivityTypes.CRAFT_CHARACTERS,
 				tokensDifference: 0,
@@ -76,7 +75,7 @@ describe('ActivityLogService', () => {
 				playerAwaitingAcceptance: OTHER_PLAYER.id
 			});
 
-			makeSure(activityLog).containsProperties({
+			makeSure(activityLog).hasProperties({
 				player: SOME_PLAYER,
 				type: ActivityTypes.ACCEPT_TRADE,
 				tokensDifference: 0,
@@ -117,7 +116,7 @@ describe('ActivityLogService', () => {
 				tokensSpent: 150
 			});
 
-			makeSure(activityLog).containsProperties({
+			makeSure(activityLog).hasProperties({
 				player: SOME_PLAYER,
 				type: ActivityTypes.BUY_MYSTERY_BOX,
 				tokensDifference: -150,
@@ -147,7 +146,7 @@ describe('ActivityLogService', () => {
 				tokensEarned: 75
 			});
 
-			makeSure(activityLog).containsProperties({
+			makeSure(activityLog).hasProperties({
 				player: SOME_PLAYER,
 				type: ActivityTypes.MINE_TOKENS,
 				tokensDifference: 75,
@@ -177,7 +176,7 @@ describe('ActivityLogService', () => {
 				tokensEarned: 20
 			});
 
-			makeSure(activityLog).containsProperties({
+			makeSure(activityLog).hasProperties({
 				player: SOME_PLAYER,
 				type: ActivityTypes.CLAIM_REFILL,
 				tokensDifference: 20,
@@ -207,7 +206,7 @@ describe('ActivityLogService', () => {
 				questCompleted: SOME_QUEST.id
 			});
 
-			makeSure(activityLog).containsProperties({
+			makeSure(activityLog).hasProperties({
 				player: SOME_PLAYER,
 				type: ActivityTypes.COMPLETE_QUEST,
 				tokensDifference: 0,
@@ -246,7 +245,7 @@ describe('ActivityLogService', () => {
 				tokensEarned: 12
 			});
 
-			makeSure(activityLog).containsProperties({
+			makeSure(activityLog).hasProperties({
 				player: SOME_PLAYER,
 				type: ActivityTypes.PICK_PERK,
 				tokensDifference: 12,
@@ -265,7 +264,7 @@ describe('ActivityLogService', () => {
 				// tokensEarned omitted
 			});
 
-			makeSure(activityLog).containsProperties({
+			makeSure(activityLog).hasProperties({
 				player: SOME_PLAYER,
 				type: ActivityTypes.PICK_PERK,
 				tokensDifference: 0,

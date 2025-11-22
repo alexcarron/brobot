@@ -14,8 +14,13 @@ import {
 	removeMissingCharacters,
 	addSIfPlural,
 	toAmountOfNoun,
-	toCamelCase,
+	toCamelFromKebabCase,
 	joinLines,
+	capitalizeFirstLetter,
+	toCamelCase,
+	toIdentifierSegments,
+	toKebabCase,
+	toPascalCase,
 } from "./string-manipulation-utils";
 import { createNowUnixTimestamp } from "./date-time-utils";
 import { makeSure } from "./jest/jest-utils";
@@ -55,6 +60,107 @@ describe('string-manipulation-utils', () => {
 		});
 	});
 
+	describe('toCamelFromKebabCase()', () => {
+		it('should return an empty string for an empty input', () => {
+			expect(toCamelFromKebabCase('')).toBe('');
+		});
+
+		it('should convert a single word to camel case', () => {
+			expect(toCamelFromKebabCase('hello')).toBe('hello');
+		});
+
+		it('should convert multiple words to camel case', () => {
+			expect(toCamelFromKebabCase('hello-world')).toBe('helloWorld');
+		});
+
+		it('should handle words with punctuation', () => {
+			expect(toCamelFromKebabCase('hello, world!')).toBe('hello, world!');
+		});
+
+		it('should handle words with numbers', () => {
+			expect(toCamelFromKebabCase('hello123-world-56-numbers')).toBe('hello123World56Numbers');
+		});
+
+		it('should handle leading and trailing dashes', () => {
+			expect(toCamelFromKebabCase('-hello-world-')).toBe('helloWorld');
+		});
+
+		it('should handle duplicate dashes', () => {
+			expect(toCamelFromKebabCase('--hello--world--')).toBe('helloWorld');
+		});
+	});
+
+	describe('toIdentifierSegments()', () => {
+		it('should return an empty array for an empty input', () => {
+			expect(toIdentifierSegments('')).toEqual([]);
+		});
+
+		it('should split a string into segments', () => {
+			expect(toIdentifierSegments('hello world')).toEqual(['hello', 'world']);
+		});
+
+		it('should handle words with punctuation', () => {
+			expect(toIdentifierSegments('hello, world!')).toEqual(['hello', 'world']);
+		});
+
+		it('should handle words with numbers', () => {
+			expect(toIdentifierSegments('hello123-world-56-numbers')).toEqual(['hello123', 'world', '56', 'numbers']);
+		});
+
+		it('should handle leading and trailing dashes', () => {
+			expect(toIdentifierSegments('-hello-world-')).toEqual(['hello', 'world']);
+		});
+
+		it('should handle duplicate dashes', () => {
+			expect(toIdentifierSegments('--hello--world--')).toEqual(['hello', 'world']);
+		});
+
+		it('should handle spaces', () => {
+			expect(toIdentifierSegments('hello world')).toEqual(['hello', 'world']);
+		});
+
+		it('should handle underscores', () => {
+			expect(toIdentifierSegments('hello_world')).toEqual(['hello', 'world']);
+		});
+
+		it('should handle hyphens', () => {
+			expect(toIdentifierSegments('hello-world')).toEqual(['hello', 'world']);
+		});
+
+		it('should handle special characters', () => {
+			expect(toIdentifierSegments('hello!@# world')).toEqual(['hello', 'world']);
+		});
+
+		it('should handle multiple consecutive separators', () => {
+			expect(toIdentifierSegments('hello---world')).toEqual(['hello', 'world']);
+		});
+
+		it('should handle leading and trailing separators', () => {
+			expect(toIdentifierSegments('---hello---world---')).toEqual(['hello', 'world']);
+		});
+
+		it('should handle leading and trailing spaces', () => {
+			expect(toIdentifierSegments('   hello   world   ')).toEqual(['hello', 'world']);
+		});
+
+		it('should handle leading and trailing underscores', () => {
+			expect(toIdentifierSegments('___hello___world___')).toEqual(['hello', 'world']);
+		});
+
+		it('should handle numbers, symbols, underscores, dashes, and periods all at once', () => {
+			expect(
+				toIdentifierSegments('hello123-w0rld#_my-s3cret.is.cool')
+			).toEqual([
+				'hello123',
+				'w0rld',
+				'my',
+				's3cret',
+				'is',
+				'cool'
+			]);
+		});
+	});
+
 	describe('toCamelCase()', () => {
 		it('should return an empty string for an empty input', () => {
 			expect(toCamelCase('')).toBe('');
@@ -69,7 +175,7 @@ describe('string-manipulation-utils', () => {
 		});
 
 		it('should handle words with punctuation', () => {
-			expect(toCamelCase('hello, world!')).toBe('hello, world!');
+			expect(toCamelCase('hello, world!')).toBe('helloWorld');
 		});
 
 		it('should handle words with numbers', () => {
@@ -83,7 +189,99 @@ describe('string-manipulation-utils', () => {
 		it('should handle duplicate dashes', () => {
 			expect(toCamelCase('--hello--world--')).toBe('helloWorld');
 		});
-	})
+
+		it('should convert words seperated by spaces', () => {
+			expect(toCamelCase('hello world')).toBe('helloWorld');
+		});
+
+		it('should convert all uppercase words seperated by spaces', () => {
+			expect(toCamelCase('HELLO WORLD')).toBe('helloWorld');
+		});
+
+		it('should convert a snake case string', () => {
+			expect(toCamelCase('hello_world')).toBe('helloWorld');
+		});
+
+		it('should convert a camel case string', () => {
+			expect(toCamelCase('helloWorld')).toBe('helloWorld');
+		});
+
+		it('should convert a pascal case string', () => {
+			expect(toCamelCase('HelloWorld')).toBe('helloWorld');
+		});
+
+		it('should convert a kebab case string', () => {
+			expect(toCamelCase('hello-world')).toBe('helloWorld');
+		});
+
+		it('should handle nonsense casing and seperators', () => {
+			expect(toCamelCase('hEllO_woRLd-ThesE are moreWords')).toBe('hEllOWoRLdThesEAreMoreWords');
+		});
+
+		it('should handle ambigious casing situations', () => {
+			expect(toCamelCase('XML HTTP Request')).toBe('xmlHttpRequest');
+		})
+	});
+
+	describe('toKebabCase', () => {
+		it('should return an empty string for an empty input', () => {
+			expect(toKebabCase('')).toBe('');
+		});
+
+		it('should convert a string to kebab case', () => {
+			expect(toKebabCase('hello world')).toBe('hello-world');
+		});
+
+		it('should convert a snake case string', () => {
+			expect(toKebabCase('hello_world')).toBe('hello-world');
+		});
+
+		it('should convert a camel case string', () => {
+			expect(toKebabCase('helloWorld')).toBe('hello-world');
+		});
+
+		it('should convert a pascal case string', () => {
+			expect(toKebabCase('HelloWorld')).toBe('hello-world');
+		});
+
+		it('should convert a kebab case string', () => {
+			expect(toKebabCase('hello-world')).toBe('hello-world');
+		});
+
+		it('should handle ambigious casing situations', () => {
+			expect(toKebabCase('XML HTTP Request')).toBe('xml-http-request');
+		});
+	});
+
+	describe('toPascalCase', () => {
+		it('should return an empty string for an empty input', () => {
+			expect(toPascalCase('')).toBe('');
+		});
+
+		it('should convert a string to pascal case', () => {
+			expect(toPascalCase('hello world')).toBe('HelloWorld');
+		});
+
+		it('should convert a snake case string', () => {
+			expect(toPascalCase('hello_world')).toBe('HelloWorld');
+		});
+
+		it('should convert a camel case string', () => {
+			expect(toPascalCase('helloWorld')).toBe('HelloWorld');
+		});
+
+		it('should convert a pascal case string', () => {
+			expect(toPascalCase('HelloWorld')).toBe('HelloWorld');
+		});
+
+		it('should convert a kebab case string', () => {
+			expect(toPascalCase('hello-world')).toBe('HelloWorld');
+		});
+
+		it('should handle ambigious casing situations', () => {
+			expect(toPascalCase('XML HTTP Request')).toBe('XmlHttpRequest');
+		});
+	});
 
 	describe('createTextProgressBar', () => {
 		it('should return an empty progress bar for 0% completion', () => {
@@ -588,6 +786,36 @@ describe('string-manipulation-utils', () => {
 			);
 
 			makeSure(result).is('line 1\nline 2\nline 3\nline 4\nline 5\nline 6\nline 7\nline 8');
+		});
+	});
+
+	describe('capitalizeFirstLetter()', () => {
+		it('should capitalize the first letter of a string', () => {
+			makeSure(capitalizeFirstLetter('hello')).is('Hello');
+		});
+
+		it('should ignore a number at the start of the string', () => {
+			makeSure(capitalizeFirstLetter('1hello')).is('1hello');
+			makeSure(capitalizeFirstLetter('2hello')).is('2hello');
+			makeSure(capitalizeFirstLetter('3hello')).is('3hello');
+		});
+
+		it('should ignore all symbols at the start of the string', () => {
+			makeSure(capitalizeFirstLetter('!hello')).is('!hello');
+			makeSure(capitalizeFirstLetter('&hello')).is('&hello');
+			makeSure(capitalizeFirstLetter('#hello')).is('#hello');
+		});
+
+		it('should preserve the rest of the string', () => {
+			makeSure(capitalizeFirstLetter('hello world')).is('Hello world');
+		});
+
+		it('should work with empty strings', () => {
+			makeSure(capitalizeFirstLetter('')).is('');
+		});
+
+		it('should capitalize a single letter string', () => {
+			makeSure(capitalizeFirstLetter('a')).is('A');
 		});
 	});
 });

@@ -11,6 +11,7 @@ import { MAX_NAME_LENGTH, REFILL_COOLDOWN_HOURS } from "../constants/namesmith.c
 import { addHours } from "../../../utilities/date-time-utils";
 import { NamesmithEvents } from "../event-listeners/namesmith-events";
 import { DatabaseQuerier } from "../database/database-querier";
+import { createMockDB } from "../mocks/mock-database";
 
 /**
  * Provides methods for interacting with players.
@@ -25,7 +26,14 @@ export class PlayerService {
 	) {}
 
 	static fromDB(db: DatabaseQuerier) {
-		return new PlayerService(PlayerRepository.fromDB(db));
+		return new PlayerService(
+			PlayerRepository.fromDB(db),
+		);
+	}
+
+	static asMock() {
+		const db = createMockDB();
+		return PlayerService.fromDB(db);
 	}
 
 	/**
@@ -136,7 +144,7 @@ export class PlayerService {
 
 		this.playerRepository.changeCurrentName(playerID, newName);
 
-		NamesmithEvents.NameChange.announce({
+		NamesmithEvents.NameChange.triggerEvent({
 			playerID, oldName, newName
 		});
 	}
@@ -405,7 +413,7 @@ export class PlayerService {
 
 		this.playerRepository.setPublishedName(playerID, currentName);
 
-		NamesmithEvents.NamePublish.announce({
+		NamesmithEvents.NamePublish.triggerEvent({
 			player: this.resolvePlayer(playerID)
 		});
 	}
@@ -413,10 +421,11 @@ export class PlayerService {
 	/**
 	 * Publishes names of players who have not yet published their names.
 	 */
-	async publishUnpublishedNames(): Promise<void> {
+	publishUnpublishedNames(): void {
 		const players = this.playerRepository.getPlayersWithoutPublishedNames();
 		for (const player of players) {
-			await this.publishName(player.id);
+			if (player.currentName.length !== 0)
+				this.publishName(player.id);
 		}
 	}
 
@@ -425,9 +434,8 @@ export class PlayerService {
 	 * If the player has no published name, logs a warning and does nothing.
 	 * Also sends a message to the 'Names to Vote On' channel announcing the final name.
 	 * @param playerResolvable - The player resolvable whose name is being finalized.
-	 * @returns A promise that resolves once the name has been finalized.
 	 */
-	async finalizeName(playerResolvable: PlayerResolvable): Promise<void> {
+	finalizeName(playerResolvable: PlayerResolvable): void {
 		const playerID = this.resolveID(playerResolvable);
 		const publishedName = this.getPublishedName(playerResolvable);
 
@@ -440,14 +448,14 @@ export class PlayerService {
 			return;
 		}
 
-		await this.changeCurrentName(playerResolvable, publishedName);
+		this.changeCurrentName(playerResolvable, publishedName);
 	}
 
-	async finalizeAllNames() {
+	finalizeAllNames() {
 		const players = this.playerRepository.getPlayers();
 
 		for (const player of players) {
-			await this.finalizeName(player.id);
+			this.finalizeName(player.id);
 		}
 	}
 

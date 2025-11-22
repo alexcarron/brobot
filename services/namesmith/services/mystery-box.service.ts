@@ -1,4 +1,6 @@
 import { getRandomWeightedElement } from "../../../utilities/data-structure-utils";
+import { DatabaseQuerier } from "../database/database-querier";
+import { createMockDB } from "../mocks/mock-database";
 import { CharacterRepository } from "../repositories/character.repository";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
 import { Character } from "../types/character.types";
@@ -17,6 +19,18 @@ export class MysteryBoxService {
 		public mysteryBoxRepository: MysteryBoxRepository,
 		public characterRepository: CharacterRepository
 	) {}
+
+	static fromDB(db: DatabaseQuerier) {
+		return new MysteryBoxService(
+			MysteryBoxRepository.fromDB(db),
+			CharacterRepository.fromDB(db)
+		);
+	}
+
+	static asMock() {
+		const db = createMockDB();
+		return MysteryBoxService.fromDB(db);
+	}
 
 	/**
 	 * Resolves a mystery box resolvable to a mystery box object.
