@@ -311,9 +311,9 @@ describe('runtime-types-utils.test.ts', () => {
 			});
 		});
 
-		describe('asRawType()', () => {
+		describe('asTransformableType()', () => {
 			it('transforms to and from domain object', () => {
-				const dbPerkType = object.asRawType('Perk', {
+				const dbPerkType = object.asTransformableType('Perk', {
 					id: number,
 					name: string,
 					wasOffered: zeroOrOne
@@ -339,7 +339,7 @@ describe('runtime-types-utils.test.ts', () => {
 			});
 
 			it('Works with toPerks and fromPerks', () => {
-				const dbPerkType = object.asRawType('Perk', {
+				const dbPerkType = object.asTransformableType('Perk', {
 					id: number,
 					name: string,
 					wasOffered: zeroOrOne
@@ -363,7 +363,7 @@ describe('runtime-types-utils.test.ts', () => {
 			});
 
 			it('toPerk() and toPerks() throw if value isn\'t a db perk', () => {
-				const dbPerkType = object.asRawType('Perk', {
+				const dbPerkType = object.asTransformableType('Perk', {
 					id: number,
 					name: string,
 					wasOffered: zeroOrOne
@@ -385,7 +385,7 @@ describe('runtime-types-utils.test.ts', () => {
 
 
 			it('works with null and undefined properties', () => {
-				const dbType = object.asRawType('User', {
+				const dbType = object.asTransformableType('User', {
 					id: number,
 					name: string,
 					note: null,

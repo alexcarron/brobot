@@ -9,7 +9,7 @@ export type Perk = {
 	isBeingOffered: boolean;
 }
 
-const dbPerkType = object.asRawType('Perk', {
+const dbPerkType = object.asTransformableType('Perk', {
 	id: number,
 	name: string,
 	description: string,
