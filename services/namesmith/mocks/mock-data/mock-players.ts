@@ -4,11 +4,10 @@ import { WithAllOptional, WithAtLeast } from "../../../../utilities/types/generi
 import { isNumber, isString } from "../../../../utilities/types/type-guards";
 import { DatabaseQuerier } from "../../database/database-querier";
 import { RoleRepository } from "../../repositories/role.repository";
-import { DBPerk, Perk } from "../../types/perk.types";
+import { asDBPerk, Perk, toPerk } from "../../types/perk.types";
 import { DBPlayer, MinimalPlayer, Player, PlayerDefinition, PlayerResolvable } from "../../types/player.types";
 import { PlayerAlreadyExistsError } from "../../utilities/error.utility";
 import { toMinimalPlayerObject } from "../../utilities/player.utility";
-import { toPerk } from '../../utilities/perk.utility';
 import { Role } from "../../types/role.types";
 import { PerkRepository } from "../../repositories/perk.repository";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
@@ -142,28 +141,29 @@ export const addMockPlayer = (
 			const perkID = perkResolvable;
 			givePlayerPerk.run({ playerID: id, perkID });
 
-			const dbPerk = db.getRow(
+
+			const row = db.getRow(
 				"SELECT * FROM perk WHERE id = ?",
 				[perkID]
-			) as DBPerk | undefined;
+			);
 
-			if (dbPerk === undefined) {
+			if (row === undefined) {
 				throw new InvalidArgumentError(`addMockPlayer: No perk found with ID ${perkID}.`);
 			}
 
-			actualPerks.push(toPerk(dbPerk));
+			actualPerks.push(toPerk(row));
 		}
 		else {
 			const perkName = perkResolvable;
 			const getPerkByName = db.prepare("SELECT * FROM perk WHERE name = @name");
-			const dbPerk = getPerkByName.get({ name: perkName }) as DBPerk | undefined;
+			const row = getPerkByName.get({ name: perkName });
 
-			if (dbPerk === undefined) {
+			if (row === undefined) {
 				throw new InvalidArgumentError(`addMockPlayer: No perk found with name ${perkName}.`);
 			}
 
+			const dbPerk = asDBPerk(row);
 			givePlayerPerk.run({ playerID: id, perkID: dbPerk.id });
-
 			actualPerks.push(toPerk(dbPerk));
 		}
 	}

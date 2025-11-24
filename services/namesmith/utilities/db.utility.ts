@@ -1,3 +1,5 @@
+import { zeroOrOne } from "../../../utilities/runtime-types-utils";
+
 /**
  * Converts a boolean value into a 0 or 1 value that can be inserted into the database.
  * @param value - The boolean value to be converted.
@@ -34,3 +36,10 @@ export function fromDBBoolean(value: 0 | 1): boolean {
 
 	throw Error(`Invalid db boolean value: ${value}`);
 }
+
+/**
+ * A transformable runtime type representing a boolean value stored in the database (0 or 1).
+ */
+export const DBBoolean = zeroOrOne
+	.to(oneOrZero => oneOrZero === 1)
+	.from(boolean => boolean ? 1 : 0);

@@ -249,3 +249,23 @@ export type KeysOf<
 > = {
 	[Index in keyof SpecificArray]: keyof SpecificArray[Index]
 }[number];
+
+export type ToTypeName<Type> =
+	Type extends string ? "string" :
+	Type extends number ? "number" :
+	Type extends boolean ? "boolean" :
+	Type extends bigint ? "bigint" :
+	Type extends symbol ? "symbol" :
+	Type extends null ? "null" :
+	Type extends undefined ? "undefined" :
+	Type extends AnyFunction ? "function" :
+	Type extends Date ? "date" :
+	Type extends RegExp ? "regexp" :
+	Type extends Map<any, any> ? "map" :
+	Type extends Set<any> ? "set" :
+	Type extends WeakMap<any, any> ? "weakmap" :
+	Type extends WeakSet<any> ? "weakset" :
+	Type extends Promise<any> ? "promise" :
+	Type extends readonly any[] ? "array" :
+	Type extends object ? "object" :
+	"unknown";

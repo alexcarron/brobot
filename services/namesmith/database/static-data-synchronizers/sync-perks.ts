@@ -2,7 +2,7 @@ import { toPropertyValues } from "../../../../utilities/data-structure-utils";
 import { WithOptional } from "../../../../utilities/types/generic-types";
 import { isNotUndefined } from "../../../../utilities/types/type-guards";
 import { PerkRepository } from "../../repositories/perk.repository";
-import { PerkDefintion, Perk, DBPerk } from "../../types/perk.types";
+import { PerkDefintion, Perk, asDBPerks } from "../../types/perk.types";
 import { DatabaseQuerier, toPlaceholdersList } from "../database-querier";
 
 /**
@@ -34,9 +34,11 @@ export function syncPerksToDB(
 				id IN ${toPlaceholdersList(perkIDs)}
 				OR name IN ${toPlaceholdersList(perkNames)}
 		`);
-		const existingDBPerks = findExistingPerks.getRows(
-			...perkIDs, ...perkNames
-		) as DBPerk[];
+		const existingDBPerks = asDBPerks(
+			findExistingPerks.getRows(
+				...perkIDs, ...perkNames
+			)
+		);
 
 		for (const dbPerk of existingDBPerks) {
 			const perkDefintion = perkDefinitions.find(perk =>
