@@ -41,10 +41,18 @@ export const command = new SlashCommand({
 			name: "input",
 			description: "The characters consumed in the crafting recipe",
 			autocomplete: ({enteredValue, user, enteredValueByParameter}) => {
-				const { recipeService } = getNamesmithServices();
+				const { recipeService, playerService } = getNamesmithServices();
+
+				const playerID = user.id;
+
+				if (!playerService.isPlayer(playerID)) {
+					return [{
+						name: `You're not a player, so you can't craft characters.`,
+						value: "-1",
+					}];
+				}
 
 				const recipes = recipeService.getRecipes();
-				const playerID = user.id;
 				let enteredOutputValue = enteredValueByParameter.output ?? '';
 				if (enteredOutputValue.startsWith("ENTERED VALUE: ")) {
 					enteredOutputValue = enteredOutputValue.substring(
@@ -105,10 +113,18 @@ export const command = new SlashCommand({
 			name: "output",
 			description: "The characters produced by the crafting recipe",
 			autocomplete: ({enteredValue, user, enteredValueByParameter}) => {
-				const { recipeService } = getNamesmithServices();
+				const { recipeService, playerService } = getNamesmithServices();
+
+				const playerID = user.id;
+
+				if (!playerService.isPlayer(playerID)) {
+					return [{
+						name: `You're not a player, so you can't craft characters.`,
+						value: "-1",
+					}];
+				}
 
 				const recipes = recipeService.getRecipes();
-				const playerID = user.id;
 				let enteredInputValue = enteredValueByParameter.input ?? '';
 				if (enteredInputValue.startsWith("ENTERED VALUE: ")) {
 					enteredInputValue = enteredInputValue.substring(

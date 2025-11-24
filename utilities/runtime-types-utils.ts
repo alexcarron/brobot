@@ -10,7 +10,7 @@ type RuntimeType<Type> = {
 	isType(value: unknown): value is Type;
 	from(value: unknown): Type;
 	fromAll(values: unknown[]): Type[];
-	asRawType<DomainType, DomainName extends string>(
+	asTranformableType<DomainType, DomainName extends string>(
 		domainName: DomainName,
 		toDomainType: (rawValue: Type) => DomainType,
 		fromDomainType: (domainValue: DomainType) => Type
@@ -166,7 +166,7 @@ function createRuntimeType<Type>(
 		fromAll: (values: unknown[]): Type[] => {
 			return returnAllOfTypeOrThrow(values, predicate, expectedType);
 		},
-		asRawType: <DomainType, DomainName extends string>(
+		asTranformableType: <DomainType, DomainName extends string>(
 			domainName: DomainName,
 			toDomainType: (rawValue: Type) => DomainType,
 			fromDomainType: (domainValue: DomainType) => Type
@@ -299,7 +299,7 @@ export const object = {
 				return true;
 		});
 	},
-	asRawType:<
+	asTransformableType:<
 		DomainName extends string,
 		RawObjectType extends Record<string, any>,
 		DomainObjectType extends Record<keyof RawObjectType, any>
