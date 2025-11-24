@@ -3,12 +3,11 @@ import { Override, WithAtLeast } from "../../../utilities/types/generic-types";
 import { isNumber, isString } from "../../../utilities/types/type-guards";
 import { DatabaseQuerier, toParameterInsertClause, toParameterUpdateClause } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
-import { asDBPerk, asDBPerks, Perk, PerkDefintion, PerkID, PerkName, PerkResolvable } from "../types/perk.types";
+import { Perk, PerkDefintion, PerkID, PerkName, PerkResolvable, toPerk, toPerks } from "../types/perk.types";
 import { PlayerID } from "../types/player.types";
 import { RoleID } from "../types/role.types";
 import { toDBBool, toOptionalDBBool } from "../utilities/db.utility";
 import { PerkAlreadyExistsError, PerkNotFoundError } from "../utilities/error.utility";
-import { toPerk, toPerks } from "../utilities/perk.utility";
 
 /**
  * Provides access to the dynamic perk data.
@@ -37,8 +36,7 @@ export class PerkRepository {
 	 */
 	getPerks(): Perk[] {
 		const rows = this.db.getRows('SELECT * FROM perk');
-		const dbPerks = asDBPerks(rows);
-		return toPerks(dbPerks);
+		return toPerks(rows);
 	}
 
 	/**
@@ -55,8 +53,7 @@ export class PerkRepository {
 		if (row === undefined)
 			throw new PerkNotFoundError(perkID);
 
-		const dbPerk = asDBPerk(row);
-		return toPerk(dbPerk);
+		return toPerk(row);
 	}
 
 	/**
@@ -73,8 +70,7 @@ export class PerkRepository {
 		if (maybeRow === undefined)
 			throw new PerkNotFoundError(name);
 
-		const dbPerk = asDBPerk(maybeRow);
-		return toPerk(dbPerk);
+		return toPerk(maybeRow);
 	}
 
 	/**
@@ -102,8 +98,7 @@ export class PerkRepository {
 		if (row === undefined)
 			return null;
 
-		const dbPerk = asDBPerk(row);
-		return toPerk(dbPerk);
+		return toPerk(row);
 	}
 
 	/**
@@ -320,8 +315,7 @@ export class PerkRepository {
 			{ playerID }
 		);
 
-		const dbPerks = asDBPerks(rows);
-		return toPerks(dbPerks);
+		return toPerks(rows);
 	}
 
 	/**
@@ -381,8 +375,7 @@ export class PerkRepository {
 			{ roleID }
 		);
 
-		const dbPerks = asDBPerks(rows);
-		return toPerks(dbPerks);
+		return toPerks(rows);
 	}
 
 	/**
@@ -452,8 +445,7 @@ export class PerkRepository {
 			WHERE wasOffered = 0`
 		);
 
-		const dbPerks = asDBPerks(rows);
-		return dbPerks.map(toPerk) as Override<Perk, { wasOffered: false }>[];
+		return toPerks(rows) as Override<Perk, { wasOffered: false }>[];
 	}
 
 	/**
@@ -516,7 +508,6 @@ export class PerkRepository {
 			ORDER BY id ASC`
 		);
 
-		const dbPerks = asDBPerks(rows);
-		return dbPerks.map(toPerk);
+		return toPerks(rows);
 	}
 }

@@ -1,5 +1,6 @@
-import { object, number, string, zeroOrOne, ExtractType } from '../../../utilities/runtime-types-utils';
+import { object, number, string } from '../../../utilities/runtime-types-utils';
 import { WithOptional } from '../../../utilities/types/generic-types';
+import { DBBoolean } from '../utilities/db.utility';
 export type Perk = {
 	id: number;
 	name: string;
@@ -8,16 +9,17 @@ export type Perk = {
 	isBeingOffered: boolean;
 }
 
-const dbPerkType = object.asType({
+const dbPerkType = object.asRawType('Perk', {
 	id: number,
 	name: string,
 	description: string,
-	wasOffered: zeroOrOne,
-	isBeingOffered: zeroOrOne,
+	wasOffered: DBBoolean,
+	isBeingOffered: DBBoolean,
 });
 export const asDBPerk = dbPerkType.from;
 export const asDBPerks = dbPerkType.fromAll;
-export type DBPerk = ExtractType<typeof dbPerkType>;
+export const toPerk = dbPerkType.toPerk;
+export const toPerks = dbPerkType.toPerks;
 
 export type PerkDefintion = WithOptional<Perk,
 	| 'id'
