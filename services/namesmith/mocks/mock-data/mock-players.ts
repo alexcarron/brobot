@@ -5,9 +5,8 @@ import { isNumber, isString } from "../../../../utilities/types/type-guards";
 import { DatabaseQuerier } from "../../database/database-querier";
 import { RoleRepository } from "../../repositories/role.repository";
 import { asDBPerk, Perk, toPerk } from "../../types/perk.types";
-import { DBPlayer, MinimalPlayer, Player, PlayerDefinition, PlayerResolvable } from "../../types/player.types";
+import { asMinimalPlayer, MinimalPlayer, Player, PlayerDefinition, PlayerResolvable } from "../../types/player.types";
 import { PlayerAlreadyExistsError } from "../../utilities/error.utility";
-import { toMinimalPlayerObject } from "../../utilities/player.utility";
 import { Role } from "../../types/role.types";
 import { PerkRepository } from "../../repositories/perk.repository";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
@@ -177,7 +176,7 @@ export const addMockPlayer = (
 
 export const editMockPlayer = (
 	db: DatabaseQuerier,
-	editedPlayer: WithAtLeast<DBPlayer, "id">
+	editedPlayer: WithAtLeast<MinimalPlayer, "id">
 ): MinimalPlayer => {
 	const setQueries: string[] =
 		Object.entries(editedPlayer)
@@ -201,15 +200,15 @@ export const editMockPlayer = (
 	if (result.changes === 0)
 		throw new InvalidArgumentError(`editMockPlayer: No player found with ID ${editedPlayer.id}.`);
 
-	const newMockPlayer = db.getRow(
+	const row = db.getRow(
 		"SELECT * FROM player WHERE id = @id",
 		{ id: editedPlayer.id }
-	) as DBPlayer | undefined;
+	);
 
-	if (newMockPlayer === undefined)
+	if (row === undefined)
 		throw new InvalidArgumentError(`editMockPlayer: No player found with ID ${editedPlayer.id}.`);
 
-	return toMinimalPlayerObject(newMockPlayer);
+	return asMinimalPlayer(row);
 }
 
 /**

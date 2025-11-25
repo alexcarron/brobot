@@ -1,4 +1,4 @@
-import { zeroOrOne } from "../../../utilities/runtime-types-utils";
+import { string, zeroOrOne } from "../../../utilities/runtime-types-utils";
 
 /**
  * Converts a boolean value into a 0 or 1 value that can be inserted into the database.
@@ -43,3 +43,10 @@ export function fromDBBoolean(value: 0 | 1): boolean {
 export const DBBoolean = zeroOrOne
 	.to(oneOrZero => oneOrZero === 1)
 	.from(boolean => boolean ? 1 : 0);
+
+/**
+ * A transformable runtime type representing a date stored in the database as a string.
+ */
+export const DBDate = string
+	.to(string => new Date(Number(string)))
+	.from(date => date.getTime().toString());

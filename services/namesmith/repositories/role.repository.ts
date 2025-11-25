@@ -1,7 +1,7 @@
 import { InvalidArgumentError, toNullOnError } from "../../../utilities/error-utils";
 import { DatabaseQuerier, toParameterORWhereClause, toParameterSetClause } from "../database/database-querier";
 import { PlayerID } from "../types/player.types";
-import { DBRole, MinimalRole, Role, RoleDefinition, RoleID, RoleName, RoleResolvable } from "../types/role.types";
+import { asMinimalRoles, MinimalRole, Role, RoleDefinition, RoleID, RoleName, RoleResolvable, asMinimalRole } from "../types/role.types";
 import { PlayerNotFoundError, RoleNotFoundError } from "../utilities/error.utility";
 import { WithAtLeast, WithOptional } from '../../../utilities/types/generic-types';
 import { PerkRepository } from "./perk.repository";
@@ -43,11 +43,10 @@ export class RoleRepository {
 	 * Returns a list of all role objects in the game without any sub-entities.
 	 * @returns An array of role objects with minimal fields.
 	 */
-	getMinimalRoles(): MinimalRole[] {
-		const minimalRoles = this.db.getRows(
-			"SELECT * FROM role"
-		) as DBRole[];
-		return minimalRoles;
+	private getMinimalRole(): MinimalRole[] {
+		return asMinimalRoles(
+			this.db.getRows("SELECT * FROM role")
+		)
 	}
 
 	/**
@@ -55,7 +54,7 @@ export class RoleRepository {
 	 * @returns An array of role objects.
 	 */
 	getRoles(): Role[] {
-		const minimalRoles = this.getMinimalRoles();
+		const minimalRoles = this.getMinimalRole();
 		return minimalRoles.map(minimalRole =>
 			this.attachExistingPerksToRole(minimalRole)
 		);
@@ -69,15 +68,15 @@ export class RoleRepository {
 	 * @throws {RoleNotFoundError} If no role with the given ID is found.
 	 */
 	getMinimalRoleOrThrow(roleID: RoleID): MinimalRole {
-		const role = this.db.getRow(
+		const row = this.db.getRow(
 			"SELECT * FROM role WHERE id = @id",
 			{ id: roleID }
-		) as DBRole | undefined;
+		);
 
-		if (role === undefined)
+		if (row === undefined)
 			throw new RoleNotFoundError(roleID);
 
-		return role;
+		return asMinimalRole(row);
 	}
 
 	getRoleOrThrow(roleID: RoleID): Role {
@@ -102,12 +101,14 @@ export class RoleRepository {
 	 * @returns The role with the given name, or null if no role with the given name is found.
 	 */
 	getMinimalRoleByName(name: RoleName): MinimalRole | null {
-		const dbRole = this.db.getRow(
+		const row = this.db.getRow(
 			"SELECT * FROM role WHERE name = @name",
 			{ name }
-		) as DBRole | undefined;
+		);
 
-		return dbRole ?? null;
+		if (row === undefined) return null;
+
+		return asMinimalRole(row);
 	}
 
 	/**

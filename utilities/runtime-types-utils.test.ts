@@ -1,8 +1,18 @@
 import { makeSure } from "./jest/jest-utils";
-import { boolean, InvalidTypeError, number, object, string, zeroOrOne } from "./runtime-types-utils";
+import { boolean, date, InvalidTypeError, number, object, string, strings, zeroOrOne } from "./runtime-types-utils";
 
 describe('runtime-types-utils.test.ts', () => {
 	describe('number', () => {
+		it('orNull returns a runtime type of number or null', () => {
+			const nullValue: unknown = null;
+			const numberValue: unknown = 10;
+			makeSure(number.orNull.isType(nullValue)).is(true);
+			makeSure(number.orNull.isType(numberValue)).is(true);
+			makeSure(number.orNull.from(nullValue)).is(null);
+			makeSure(number.orNull.from(numberValue)).is(10);
+			makeSure(number.orNull.fromAll([numberValue, nullValue])).is([10, null]);
+		});
+
 		it('asType() returns as a type', () => {
 			const value: unknown = 10;
 			const integer = number.from(value);
@@ -94,6 +104,99 @@ describe('runtime-types-utils.test.ts', () => {
 		});
 	});
 
+	describe('strings', () => {
+		const Colors = strings('red', 'green', 'blue');
+
+		describe('isType()', () => {
+			it('returns true if value is a string in the list of strings', () => {
+				const value: unknown = 'red';
+				makeSure(Colors.isType(value)).is(true);
+			});
+
+			it('returns false if value is not a string in the list of strings', () => {
+				const value: unknown = 'cheese';
+				makeSure(Colors.isType(value)).is(false);
+			});
+		});
+
+		describe('from()', () => {
+			it('does not throw and returns value if it is in the list of strings', () => {
+				const value: unknown = 'red';
+				const result = Colors.from(value);
+				makeSure(result).is('red');
+			});
+
+			it('throws if not a in the list of strings', () => {
+				const value: unknown = 'cheese';
+				makeSure(() =>
+					Colors.from(value)
+				).throws(InvalidTypeError);
+			});
+		});
+
+		describe('fromAll()', () => {
+			it('does not throw and returns values if they are in the list of strings', () => {
+				const values: unknown[] = ['red', 'green', 'blue'];
+				const result = Colors.fromAll(values);
+				makeSure(result).is(['red', 'green', 'blue']);
+			});
+
+			it('throws if any value is not in the list of strings', () => {
+				const values: unknown[] = ['red', 'cheese', 'blue'];
+				makeSure(() =>
+					Colors.fromAll(values)
+				).throws(InvalidTypeError);
+			})
+		});
+
+		describe('asTranformableType()', () => {
+			it('allows you to transfer a union of strings into a different type', () => {
+				const ColorNames = Colors.asTranformableType(
+					'RGBValue',
+					(color) => {
+						switch (color) {
+							case 'red':
+								return [255, 0, 0];
+							case 'green':
+								return [0, 255, 0];
+							case 'blue':
+								return [0, 0, 255];
+						}
+					},
+					(rgbValues) => {
+						if (rgbValues[0] === 255 && rgbValues[1] === 0 && rgbValues[2] === 0) {
+							return 'red';
+						}
+						else if (rgbValues[0] === 0 && rgbValues[1] === 255 && rgbValues[2] === 0) {
+							return 'green';
+						}
+						else {
+							return 'blue';
+						}
+					}
+				);
+
+				makeSure(ColorNames.toRGBValue('red')).is([255, 0, 0]);
+				makeSure(ColorNames.fromRGBValue([255, 0, 0])).is('red');
+				makeSure(ColorNames.toRGBValues(['red', 'green', 'blue'])).is([[255, 0, 0], [0, 255, 0], [0, 0, 255]]);
+				makeSure(ColorNames.fromRGBValues([[255, 0, 0], [0, 255, 0], [0, 0, 255]])).is(['red', 'green', 'blue']);
+			});
+		});
+
+		describe('to() and from()', () => {
+			it('to() and from() provides accureate toDomain, toDomains, fromDomain, and fromDomains types', () => {
+				const ColorNames = Colors
+					.to(color => color.toUpperCase())
+					.from(COLOR => COLOR.toLowerCase() as any);
+
+				makeSure(ColorNames.toDomain('red')).is('RED');
+				makeSure(ColorNames.fromDomain('RED')).is('red');
+				makeSure(ColorNames.toDomains(['red', 'green', 'blue'])).is(['RED', 'GREEN', 'BLUE']);
+				makeSure(ColorNames.fromDomains(['red', 'green', 'blue'])).is(['red', 'green', 'blue']);
+			});
+		});
+	});
+
 	describe('boolean', () => {
 		it('asType() returns as a type', () => {
 			const value: unknown = true;
@@ -169,6 +272,50 @@ describe('runtime-types-utils.test.ts', () => {
 			makeSure(() => zeroOrOne.fromAll(values)).throws(InvalidTypeError);
 		});
 	});
+
+	describe('date', () => {
+		describe('isType()', () => {
+			it('returns true for valid dates', () => {
+				makeSure(date.isType(new Date())).is(true);
+			});
+
+			it('returns false for invalid dates', () => {
+				makeSure(date.isType(new Date('invalid'))).is(false);
+			});
+
+			it('returns false for non-dates', () => {
+				makeSure(date.isType('not a date')).is(false);
+			});
+		});
+
+		describe('from()', () => {
+			it('returns a date', () => {
+				const value: unknown = new Date();
+				const dateValue = date.from(value);
+				makeSure(dateValue).isAnInstanceOf(Date);
+			});
+
+			it('throws if not a date', () => {
+				const value: unknown = 'not a date';
+				makeSure(() => date.from(value)).throws(InvalidTypeError);
+			})
+		});
+
+		describe('fromAll()', () => {
+			it('returns an array of dates', () => {
+				const values: unknown[] = [new Date(), new Date()];
+				const dateValues = date.fromAll(values);
+				makeSure(dateValues).isAnInstanceOf(Array);
+				makeSure(dateValues[0]).isAnInstanceOf(Date);
+				makeSure(dateValues[1]).isAnInstanceOf(Date);
+			});
+
+			it('throws if any value is not a date', () => {
+				const values: unknown[] = [new Date(), 'not a date'];
+				makeSure(() => date.fromAll(values)).throws(InvalidTypeError);
+			})
+		});
+	})
 
 	describe('object', () => {
 		describe('asType()', () => {
@@ -424,4 +571,178 @@ describe('runtime-types-utils.test.ts', () => {
 			});
 		});
 	});
-})
+
+	describe('orNull property (nullable variants)', () => {
+		it('primitive runtime types: number.orNull works for isType, from, fromAll', () => {
+			const nullValue: unknown = null;
+			const numValue: unknown = 5;
+
+			makeSure(number.orNull.isType(nullValue)).is(true);
+			makeSure(number.orNull.isType(numValue)).is(true);
+			makeSure(number.orNull.from(nullValue)).is(null);
+			makeSure(number.orNull.from(numValue)).is(5);
+			makeSure(number.orNull.fromAll([nullValue, numValue])).is([null, 5]);
+
+			// invalid non-null still throws
+			makeSure(() => number.orNull.from('x' as unknown)).throws(InvalidTypeError);
+		});
+
+		it('transformable primitive: string.to(...).from(...).orNull supports toDomain/fromDomain and arrays', () => {
+			const rawUserID = string
+				.to((stringID) => Number(stringID))
+				.from((numberID) => numberID.toString());
+
+			const nullable = rawUserID.orNull;
+
+			// null handling
+			makeSure(nullable.isType(null)).is(true);
+			makeSure(nullable.from(null)).is(null);
+			makeSure(nullable.toDomain(null)).is(null);
+			makeSure(nullable.toDomains([null, '10'])).is([null, 10]);
+			makeSure(nullable.fromDomains([null, 10])).is([null, '10']);
+
+			// valid non-null still works
+			makeSure(nullable.toDomain('20')).is(20);
+			makeSure(nullable.fromDomain(20)).is('20');
+
+			// invalid non-null still throws
+			makeSure(() => nullable.toDomain(42)).throws(InvalidTypeError);
+			makeSure(() => nullable.toDomains([null, 42])).throws(InvalidTypeError);
+		});
+
+		it('named transformable (strings.asTranformableType) .orNull provides named methods that accept null', () => {
+			const ColorNames = strings('red', 'green', 'blue').asTranformableType(
+				'RGB',
+				(color) => {
+					switch (color) {
+						case 'red': return [255, 0, 0] as const;
+						case 'green': return [0, 255, 0] as const;
+						default: return [0, 0, 255] as const;
+					}
+				},
+				(rgb) => {
+					if (rgb[0] === 255) return 'red';
+					if (rgb[1] === 255) return 'green';
+					return 'blue';
+				}
+			);
+
+			const NullableColor = ColorNames.orNull;
+
+			makeSure(NullableColor.toRGB(null)).is(null);
+			makeSure(NullableColor.fromRGB(null)).is(null);
+			makeSure(NullableColor.toRGBs([null, 'red'])).is([null, [255, 0, 0]]);
+			makeSure(NullableColor.fromRGBs([null, [0, 255, 0]])).is([null, 'green']);
+
+			// invalid non-null still throws (e.g., passing object to toRGB)
+			makeSure(() => NullableColor.toRGB(123)).throws(InvalidTypeError);
+		});
+
+		it('object.asTransformableType .orNull returns nullable named transformable methods', () => {
+			const dbPerkType = object.asTransformableType('Perk', {
+				id: number,
+				name: string,
+				wasOffered: zeroOrOne
+					.to(z => z === 1)
+					.from(b => b ? 1 : 0),
+			});
+
+			const rawPerk: unknown = { id: 1, name: 'Speed', wasOffered: 1 };
+			const nullablePerk = dbPerkType.orNull as any;
+
+			// null => null
+			makeSure(nullablePerk.toPerk(null)).is(null);
+			makeSure(nullablePerk.fromPerk(null)).is(null);
+
+			// arrays with nulls
+			const rawPerks: unknown[] = [null, rawPerk];
+			const converted = nullablePerk.toPerks(rawPerks);
+			makeSure(converted).is([null, { id: 1, name: 'Speed', wasOffered: true }]);
+			const back = nullablePerk.fromPerks(converted);
+			makeSure(back).is([null, rawPerk]);
+
+			// invalid shapes still throw when non-null
+			makeSure(() => nullablePerk.toPerk({ id: 'x', name: 'N', wasOffered: 1 })).throws(InvalidTypeError);
+		});
+
+		it('object.asTransformableType with transformable property .orNull preserves nested nullable transformable behavior', () => {
+			// make wasOffered nullable transformable
+			const wasOfferedTT = zeroOrOne
+				.to(z => z === 1)
+				.from(b => b ? 1 : 0)
+				.orNull;
+
+			const dbPerkType = object.asTransformableType('Perk', {
+				id: number,
+				name: string,
+				wasOffered: wasOfferedTT,
+			});
+
+			const raw1: unknown = { id: 1, name: 'Speed', wasOffered: null };
+			const domain1 = dbPerkType.toPerk(raw1);
+			makeSure(domain1).is({ id: 1, name: 'Speed', wasOffered: null });
+
+			const raw2: unknown = { id: 2, name: 'Strength', wasOffered: 1 };
+			const domain2 = dbPerkType.toPerk(raw2);
+			makeSure(domain2).is({ id: 2, name: 'Strength', wasOffered: true });
+
+			// roundtrip
+			const back1 = dbPerkType.fromPerk(domain1);
+			makeSure(back1).is(raw1);
+			const back2 = dbPerkType.fromPerk(domain2);
+			makeSure(back2).is(raw2);
+
+			// invalid non-null in nested still throws
+			makeSure(() => dbPerkType.toPerk({ id: 3, name: 'X', wasOffered: 5 })).throws(InvalidTypeError);
+		});
+
+		it('orNull property is idempotent and safe to chain (accessing multiple times does not throw / behaves same)', () => {
+			const rawUserID = string
+				.to((s) => Number(s))
+				.from((n) => n.toString());
+
+			const a = rawUserID.orNull;
+			const b = (a as any).orNull; // second access
+			const c = (b as any).orNull; // third access
+
+			makeSure(a.isType(null)).is(true);
+			makeSure(b.isType(null)).is(true);
+			makeSure(c.isType(null)).is(true);
+
+			makeSure(a.from(null)).is(null);
+			makeSure(b.from(null)).is(null);
+			makeSure(c.from(null)).is(null);
+		});
+
+		it('nullable transformable toDomain/fromDomain throws for invalid non-null inputs but accepts null', () => {
+			const dbBoolean = zeroOrOne
+				.to(z => z === 1)
+				.from(b => b ? 1 : 0);
+
+			const nullableDbBoolean = dbBoolean.orNull;
+
+			// valid
+			makeSure(nullableDbBoolean.toDomain(1)).is(true);
+			makeSure(nullableDbBoolean.toDomain(null)).is(null);
+
+			// invalid non-null should throw
+			makeSure(() => nullableDbBoolean.toDomain('x' as unknown)).throws(InvalidTypeError);
+			makeSure(() => nullableDbBoolean.toDomains([null, 'x' as unknown])).throws(InvalidTypeError);
+		});
+
+		it('compound arrays mapping/roundtrip with mixed nulls and values', () => {
+			const rawUserID = string
+				.to((s) => Number(s))
+				.from((n) => n.toString());
+
+			const nullable = rawUserID.orNull;
+
+			const inputs: unknown[] = ['1', null, '2'];
+			const domains = nullable.toDomains(inputs);
+			makeSure(domains).is([1, null, 2]);
+
+			const back = nullable.fromDomains(domains);
+			makeSure(back).is(['1', null, '2']);
+		});
+	});
+});

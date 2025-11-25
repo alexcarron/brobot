@@ -1,6 +1,6 @@
 import { DatabaseQuerier } from "../database/database-querier";
 import { InvalidArgumentError } from "../../../utilities/error-utils";
-import { DBGameState, GameState } from "../types/game-state.types";
+import { asGameState, DefinedGameState, GameState, isGameStateDefined } from "../types/game-state.types";
 import { WithAtLeastOneProperty } from '../../../utilities/types/generic-types';
 import { GameStateInitializationError } from "../utilities/error.utility";
 import { createMockDB } from "../mocks/mock-database";
@@ -27,39 +27,28 @@ export class GameStateRepository {
 	}
 
 	/**
+	 * Throws a GameStateInitializationError if the given game state is not defined.
+	 * @param {GameState} gameState - The game state to check.
+	 * @throws {GameStateInitializationError} - If the game state is not defined.
+	 */
+	throwIfNotDefined(gameState: GameState): asserts gameState is DefinedGameState {
+		if (!isGameStateDefined(gameState))
+			throw new GameStateInitializationError();
+	}
+
+	/**
 	 * Retrieves the current game state.
 	 * @returns The current game state.
 	 */
-	getGameState(): GameState {
-		const query = `
-			SELECT timeStarted, timeEnding, timeVoteIsEnding
-			FROM gameState
-			WHERE id = 1
-		`;
+	getDefinedGameState(): DefinedGameState {
+		const gameState = asGameState(
+			this.db.getRow(
+				'SELECT * FROM gameState WHERE id = 1'
+			)
+		);
 
-		const getGameState = this.db.prepare(query);
-		const dbGameState = getGameState.get() as DBGameState;
-
-		const timeStarted = dbGameState.timeStarted ?
-			new Date(parseInt(dbGameState.timeStarted)) :
-			undefined;
-
-		const timeEnding = dbGameState.timeEnding ?
-			new Date(parseInt(dbGameState.timeEnding)) :
-			undefined;
-
-		const timeVoteIsEnding = dbGameState.timeVoteIsEnding ?
-			new Date(parseInt(dbGameState.timeVoteIsEnding)) :
-			undefined;
-
-		if (!timeStarted || !timeEnding || !timeVoteIsEnding)
-			throw new GameStateInitializationError();
-
-		return {
-			timeStarted,
-			timeEnding,
-			timeVoteIsEnding,
-		};
+		this.throwIfNotDefined(gameState);
+		return gameState;
 	}
 
 	/**
@@ -70,7 +59,7 @@ export class GameStateRepository {
 	 * @param newGameState.timeVoteIsEnding - The time when voting is expected to end.
 	 * @throws If there are no fields provided to update.
 	 */
-	setGameState({ timeStarted, timeEnding, timeVoteIsEnding }: WithAtLeastOneProperty<GameState>) {
+	setGameState({ timeStarted, timeEnding, timeVoteIsEnding }: WithAtLeastOneProperty<DefinedGameState>) {
 		const assignmentExpressions: string[] = [];
 		const fieldToValue: Record<string, string> = {};
 
@@ -105,7 +94,7 @@ export class GameStateRepository {
 	 * @returns The time when the game started.
 	 */
 	getTimeStarted(): Date {
-		const gameState = this.getGameState();
+		const gameState = this.getDefinedGameState();
 		return gameState.timeStarted;
 	}
 
@@ -122,7 +111,7 @@ export class GameStateRepository {
 	 * @returns The time when the game is expected to end.
 	 */
 	getTimeEnding(): Date {
-		const gameState = this.getGameState();
+		const gameState = this.getDefinedGameState();
 		return gameState.timeEnding;
 	}
 
@@ -139,7 +128,7 @@ export class GameStateRepository {
 	 * @returns The time when the voting phase is expected to end.
 	 */
 	getTimeVoteIsEnding(): Date {
-		const gameState = this.getGameState();
+		const gameState = this.getDefinedGameState();
 		return gameState.timeVoteIsEnding;
 	}
 

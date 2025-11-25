@@ -19,16 +19,6 @@ describe('RoleRepository', () => {
 		db = roleRepository.db;
 	});
 
-	describe('getMinimalRoles()', () => {
-		it('returns an array of all role objects with minimal fields', () => {
-			const minimalRoles = roleRepository.getMinimalRoles();
-
-			makeSure(minimalRoles).isAnArray();
-			makeSure(minimalRoles).isNotEmpty();
-			makeSure(minimalRoles).haveProperties('id', 'name', 'description');
-		});
-	});
-
 	describe('getRoles()', () => {
 		it('returns an array of all role objects', () => {
 			const roles = roleRepository.getRoles();
@@ -42,7 +32,7 @@ describe('RoleRepository', () => {
 
 	describe('getMinimalRoleOrThrow()', () => {
 		it('returns the correct role object when given a valid ID', () => {
-			const ALL_ROLES = roleRepository.getMinimalRoles();
+			const ALL_ROLES = roleRepository.getRoles();
 			const RANDOM_ROLE = getRandomElement(ALL_ROLES);
 
 			const role = roleRepository.getMinimalRoleOrThrow(RANDOM_ROLE.id);
@@ -59,7 +49,7 @@ describe('RoleRepository', () => {
 
 	describe('getMinimalRoleByID()', () => {
 		it('returns the correct role object when given a valid ID', () => {
-			const ALL_ROLES = roleRepository.getMinimalRoles();
+			const ALL_ROLES = roleRepository.getRoles();
 			const RANDOM_ROLE = getRandomElement(ALL_ROLES);
 
 			const role = roleRepository.getMinimalRoleByID(RANDOM_ROLE.id);

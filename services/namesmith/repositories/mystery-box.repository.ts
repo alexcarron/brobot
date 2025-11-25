@@ -1,8 +1,8 @@
-import { ignoreError, InvalidArgumentError, returnNonNullOrThrow } from "../../../utilities/error-utils";
+import { ignoreError, returnNonNullOrThrow } from "../../../utilities/error-utils";
 import { WithRequiredAndOneOther } from "../../../utilities/types/generic-types";
 import { DatabaseQuerier, toParameterSetClause } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
-import { CharacterOdds, DBCharacterOddsRow, DBMysteryBox, MinimalMysteryBox, MysteryBoxID, MysteryBox, MysteryBoxDefinition, MinimalMysteryBoxDefinition } from "../types/mystery-box.types";
+import { CharacterOdds, MinimalMysteryBox, MysteryBoxID, MysteryBox, MysteryBoxDefinition, MinimalMysteryBoxDefinition, asMinimalMysteryBoxes, asDBCharacterOdds, asMinimalMysteryBox } from "../types/mystery-box.types";
 import { getCharacterValueFromID, getIDfromCharacterValue } from "../utilities/character.utility";
 import { MysteryBoxAlreadyExistsError, MysteryBoxNotFoundError } from "../utilities/error.utility";
 import { CharacterRepository } from "./character.repository";
@@ -33,9 +33,9 @@ export class MysteryBoxRepository {
 	 * @returns An array of mystery box objects with minimal fields.
 	 */
 	private getMinimalMysteryBoxes(): MinimalMysteryBox[] {
-		const query = `SELECT DISTINCT * FROM mysteryBox`;
-		const getAllMysteryBoxes = this.db.prepare(query);
-		return getAllMysteryBoxes.all() as DBMysteryBox[];
+		return asMinimalMysteryBoxes(
+			this.db.getRows('SELECT * FROM mysteryBox')
+		);
 	}
 
 	/**
@@ -45,11 +45,11 @@ export class MysteryBoxRepository {
 	 */
 	getMysteryBoxes(): MysteryBox[] {
 		const minimalMysteryBoxes = this.getMinimalMysteryBoxes();
-		const characterOddsRows =
+		const characterOddsRows = asDBCharacterOdds(
 			this.db.getRows(
-				`SELECT mysteryBoxID, characterID, weight
-				FROM mysteryBoxCharacterOdds`
-			) as DBCharacterOddsRow[];
+				`SELECT * FROM mysteryBoxCharacterOdds`
+			)
+		);
 
 		return minimalMysteryBoxes.map(minimalMysteryBox => {
 			const characterOdds = characterOddsRows
@@ -73,16 +73,14 @@ export class MysteryBoxRepository {
 	 * @returns The mystery box object with the given id or null if no such object exists.
 	 */
 	private getMinimalMysteryBox(id: MysteryBoxID): MinimalMysteryBox | null {
-		if (!id)
-			throw new InvalidArgumentError('getMysteryBoxByID: Mystery box id must be provided.');
+		const row =
+			this.db.getRow(
+				'SELECT * FROM mysteryBox WHERE id = ?', id
+			);
 
-		if (typeof id !== 'number')
-			throw new InvalidArgumentError('getMysteryBoxByID: Mystery box id must be a number.');
+		if (row === undefined) return null;
 
-		const query = `SELECT * FROM mysteryBox WHERE id = @id`;
-		const getMysteryBoxById = this.db.prepare(query);
-		const mysteryBox = getMysteryBoxById.get({ id }) as DBMysteryBox | undefined;
-		return mysteryBox ?? null;
+		return asMinimalMysteryBox(row);
 	}
 
 	/**
@@ -94,11 +92,13 @@ export class MysteryBoxRepository {
 		const mysteryBox = this.getMinimalMysteryBox(id);
 		if (mysteryBox === null) return null;
 
-		const characterOddsRows = this.db.getRows(
-			`SELECT characterID, weight FROM mysteryBoxCharacterOdds
-			WHERE mysteryBoxID = @id`,
-			{ id }
-		) as DBCharacterOddsRow[];
+		const characterOddsRows = asDBCharacterOdds(
+			this.db.getRows(
+				`SELECT * FROM mysteryBoxCharacterOdds
+				WHERE mysteryBoxID = @id`,
+				{ id }
+			)
+		);
 
 		const characterOdds = characterOddsRows
 			.reduce<CharacterOdds>((characterOdds, oddsRow) => {
@@ -132,9 +132,13 @@ export class MysteryBoxRepository {
 	 * @returns An object with character IDs as keys and the weight of the character in the mystery box as the value.
 	 */
 	getCharacterOdds(mysteryBoxID: MysteryBoxID): CharacterOdds {
-		const query = `SELECT characterID, weight FROM mysteryBoxCharacterOdds WHERE mysteryBoxID = @mysteryBoxID`;
-		const getCharacterOdds = this.db.prepare(query);
-		const characterOddsRows = getCharacterOdds.all({ mysteryBoxID }) as DBCharacterOddsRow[];
+		const characterOddsRows = asDBCharacterOdds(
+			this.db.getRows(
+				`SELECT * FROM mysteryBoxCharacterOdds
+				WHERE mysteryBoxID = @mysteryBoxID`,
+				{ mysteryBoxID }
+			)
+		);
 
 		return characterOddsRows
 			.reduce<CharacterOdds>((characterOdds, oddsRow) => {

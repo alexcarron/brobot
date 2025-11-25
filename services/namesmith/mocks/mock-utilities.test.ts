@@ -1,11 +1,11 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { DatabaseQuerier } from "../database/database-querier";
 import { ActivityTypes, DBActivityLog } from "../types/activity-log.types";
-import { DBPlayer, Player } from "../types/player.types";
+import { asMinimalPlayer, Player } from "../types/player.types";
 import { Quest } from "../types/quest.types";
 import { Recipe } from "../types/recipe.types";
-import { DBTrade, TradeStatuses } from "../types/trade.types";
-import { DBVote } from "../types/vote.types";
+import { MinimalTrade, TradeStatuses } from "../types/trade.types";
+import { asDBVotes, asMinimalVotes } from "../types/vote.types";
 import { ActivityLogAlreadyExistsError, TradeAlreadyExistsError } from "../utilities/error.utility";
 import { createAllMocks } from "./all-mocks";
 import { addMockActivityLog } from "./mock-data/mock-activity-logs";
@@ -162,7 +162,7 @@ describe("Mock Utilities", () => {
 			makeSure(vote.voterID).is(voteData.voter);
 			makeSure(vote.playerVotedFor.id).is(voteData.playerVotedFor);
 
-      const votes = db.prepare("SELECT * FROM vote").all() as DBVote[]
+      const votes = asMinimalVotes( db.getRows("SELECT * FROM vote") );
       makeSure(votes).hasLengthOf(numVotes + 1);
 			makeSure(votes).hasAnItemWhere(vote =>
 				vote.voterID === voteData.voter &&
@@ -174,7 +174,7 @@ describe("Mock Utilities", () => {
 			const numVotes = db.getRows("SELECT * FROM vote").length;
 			const vote = addMockVote(db);
 
-			const dbVotes = db.prepare("SELECT * FROM vote").all() as DBVote[]
+			const dbVotes = asDBVotes( db.getRows("SELECT * FROM vote") );
 			makeSure(dbVotes).hasLengthOf(numVotes + 1);
 			makeSure(dbVotes).hasAnItemWhere(dbVote =>
 				dbVote.voterID === vote.voterID &&
@@ -205,14 +205,15 @@ describe("Mock Utilities", () => {
 				tokens: 200,
 			});
 
-			const player = db.getRow(
+			const row = db.getRow(
 				"SELECT * FROM player WHERE id = @id",
 				{ id: ORIGINAL_PLAYER.id }
-			) as DBPlayer | undefined;
+			);
 
-			expect(player).toBeDefined();
+			expect(row).toBeDefined();
+			const minimalPlayer = asMinimalPlayer(row);
 			expect({
-				...player,
+				...minimalPlayer,
 				perks: [],
 			}).toEqual({
 				...ORIGINAL_PLAYER,
@@ -470,7 +471,7 @@ describe("Mock Utilities", () => {
 			const mockTrade = addMockTrade(db);
 			makeSure(mockTrade).hasProperties('id', 'initiatingPlayer', 'recipientPlayer', 'offeredCharacters', 'requestedCharacters', 'status');
 
-			const trades = db.getRows("SELECT * FROM trade") as DBTrade[];
+			const trades = db.getRows("SELECT * FROM trade") as MinimalTrade[];
 			makeSure(trades).hasAnItemWhere(trade =>
 				trade.id === mockTrade.id
 			);

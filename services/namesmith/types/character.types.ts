@@ -1,11 +1,16 @@
+import { ExtractType, number, object, string } from '../../../utilities/runtime-types-utils';
 import { WithOptional } from '../../../utilities/types/generic-types';
-export type Character = {
-  id: number;
-  value: string;
-  rarity: number;
-}
 
-export type DBCharacter = Character;
+const DBCharacterType = object.asType({
+  id: number,
+  value: string,
+  rarity: number,
+});
+export const asMinimalCharacter = DBCharacterType.from;
+export const asMinimalCharacters = DBCharacterType.fromAll;
+export type MinimalCharacter = ExtractType<typeof DBCharacterType>
+
+export type Character = MinimalCharacter;
 export type CharacterDefintion = WithOptional<Character, "id">;
 
 export type CharacterID = Character["id"];

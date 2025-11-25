@@ -3,10 +3,9 @@ import { getRandomNumericUUID } from "../../../utilities/random-utils";
 import { Override, WithOptional, WithRequiredAndOneOther } from "../../../utilities/types/generic-types";
 import { MAX_NAME_LENGTH } from "../constants/namesmith.constants";
 import { DatabaseQuerier, toParameterSetClause } from "../database/database-querier";
-import { DBPlayer, MinimalPlayer, Player, PlayerDefinition, PlayerID, PlayerResolvable } from "../types/player.types";
+import { asMinimalPlayer, asMinimalPlayers, MinimalPlayer, Player, PlayerDefinition, PlayerID, PlayerResolvable } from "../types/player.types";
 import { RoleID } from "../types/role.types";
 import { PlayerNotFoundError, PlayerAlreadyExistsError } from "../utilities/error.utility";
-import { toMinimalPlayerObject } from "../utilities/player.utility";
 import { RoleRepository } from "./role.repository";
 import { PerkRepository } from './perk.repository';
 import { isString } from "../../../utilities/types/type-guards";
@@ -46,9 +45,9 @@ export class PlayerRepository {
 	 * @returns An array of minimal player objects.
 	 */
 	private getMinimalPlayers(): MinimalPlayer[] {
-		const query = `SELECT * FROM player`;
-		const dbPlayers = this.db.getRows(query) as DBPlayer[];
-		return dbPlayers.map(dbPlayer => toMinimalPlayerObject(dbPlayer));
+		return asMinimalPlayers(
+			this.db.getRows('SELECT * FROM player')
+		)
 	}
 
 	private toPlayerFromMinimal(
@@ -84,15 +83,15 @@ export class PlayerRepository {
 		return this.toPlayersFromMinimals(minimalPlayers);
 	}
 
-	getMinimalPlayerByID(playerID: PlayerID): MinimalPlayer | null {
-		const player = this.db.getRow(
+	private getMinimalPlayerByID(playerID: PlayerID): MinimalPlayer | null {
+		const row = this.db.getRow(
 			'SELECT * FROM player WHERE id = ?', playerID
-		) as DBPlayer | undefined;
+		);
 
-		if (player === undefined)
+		if (row === undefined)
 			return null;
 
-		return toMinimalPlayerObject(player);
+		return asMinimalPlayer(row);
 	}
 
 	/**
@@ -102,8 +101,8 @@ export class PlayerRepository {
 	 */
 	getPlayerByID(playerID: string): Player | null {
 		const minimalPlayer = this.getMinimalPlayerByID(playerID);
-	if (minimalPlayer === null)
-			return null;
+		if (minimalPlayer === null)
+				return null;
 
 		return this.toPlayerFromMinimal(minimalPlayer);
 	}
@@ -165,11 +164,12 @@ export class PlayerRepository {
 	 * @returns An array of minimal player objects with the given current name.
 	 */
 	private getMinimalPlayersByCurrentName(currentName: string): MinimalPlayer[] {
-		const query = `SELECT * FROM player WHERE currentName = @currentName`;
-
-		const player = this.db.getRows(query, { currentName }) as DBPlayer[];
-
-		return player.map(dbPlayer => toMinimalPlayerObject(dbPlayer));
+		return asMinimalPlayers(
+			this.db.getRows(
+				'SELECT * FROM player WHERE currentName = @currentName',
+				{ currentName }
+			)
+		)
 	}
 
 	/**
@@ -198,10 +198,12 @@ export class PlayerRepository {
 	private getMinimalPlayersWithoutPublishedNames(): Override<MinimalPlayer, {
 		publishedName: null
 	}>[]  {
-		const query = `SELECT * FROM player WHERE publishedName IS NULL`;
-		const dbPlayers = this.db.getRows(query) as DBPlayer[];
-		return dbPlayers.map(dbPlayer => ({
-			...toMinimalPlayerObject(dbPlayer),
+		const rows = this.db.getRows(
+			'SELECT * FROM player WHERE publishedName IS NULL'
+		);
+
+		return rows.map(row => ({
+			...asMinimalPlayer(row),
 			publishedName: null
 		}));
 	}
@@ -224,12 +226,16 @@ export class PlayerRepository {
 	private getMinimalPlayersWithPublishedNames(): Override<MinimalPlayer, {
 		publishedName: string
 	}>[]  {
-		const query = `SELECT * FROM player WHERE publishedName IS NOT NULL`;
-		const dbPlayers = this.db.getRows(query) as DBPlayer[];
-		return dbPlayers.map(dbPlayer => ({
-			...toMinimalPlayerObject(dbPlayer),
-			publishedName: dbPlayer.publishedName!
-		}));
+		const rows = this.db.getRows(
+			'SELECT * FROM player WHERE publishedName IS NOT NULL'
+		)
+		return rows.map(row => {
+			const minimalPlayer = asMinimalPlayer(row)
+			return {
+				...minimalPlayer,
+				publishedName: minimalPlayer.publishedName!
+			}
+		});
 	}
 
 	/**
@@ -503,12 +509,13 @@ export class PlayerRepository {
 	 * @param minimalPlayerDefinition.currentName - The current name of the player (optional).
 	 * @param minimalPlayerDefinition.publishedName - The published name of the player (optional).
 	 * @param minimalPlayerDefinition.tokens - The number of tokens the player has (optional).
+	 * @param minimalPlayerDefinition.role - The role of the player (optional).
 	 * @param minimalPlayerDefinition.inventory - The player's inventory (optional).
 	 * @param minimalPlayerDefinition.lastClaimedRefillTime - The last time the player claimed a refill (optional).
 	 * @throws {PlayerAlreadyExistsError} - If a player with the given ID already exists.
 	 * @returns The minimal player object with the given properties and the generated ID.
 	 */
-	private addMinimalPlayer({id, currentName, publishedName, tokens, inventory, lastClaimedRefillTime}:
+	private addMinimalPlayer({id, currentName, publishedName, tokens, role, inventory, lastClaimedRefillTime}:
 		WithOptional<MinimalPlayer, 'id'>
 	): MinimalPlayer {
 		if (id === undefined) {
@@ -520,17 +527,17 @@ export class PlayerRepository {
 		}
 
 		this.db.run(
-			`INSERT INTO player (id, currentName, publishedName, tokens, inventory, lastClaimedRefillTime)
-			VALUES (@id, @currentName, @publishedName, @tokens, @inventory, @lastClaimedRefillTime)`,
+			`INSERT INTO player (id, currentName, publishedName, tokens, role, inventory, lastClaimedRefillTime)
+			VALUES (@id, @currentName, @publishedName, @tokens, @role, @inventory, @lastClaimedRefillTime)`,
 			{
-				id, currentName, publishedName, tokens, inventory,
+				id, currentName, publishedName, tokens, role, inventory,
 				lastClaimedRefillTime:
 					lastClaimedRefillTime?.getTime() ?? null
 			}
 		);
 
 
-		return {id, currentName, publishedName, tokens, inventory, lastClaimedRefillTime};
+		return this.getMinimalPlayerOrThrow(id);
 	}
 
 	/**
@@ -554,13 +561,16 @@ export class PlayerRepository {
 		role: maybeRoleResolvable,
 		perks: perkResolvables
 	}: PlayerDefinition) {
-		const minimalPlayer = this.addMinimalPlayer({id, currentName, publishedName, tokens, inventory, lastClaimedRefillTime});
-
 		let roleID: RoleID | null = null;
 		if (maybeRoleResolvable !== null) {
 			const roleResolvable = maybeRoleResolvable;
 			roleID = this.roleRepository.resolveID(roleResolvable);
 		}
+
+		const minimalPlayer = this.addMinimalPlayer({
+			id, currentName, publishedName, tokens, role: roleID, inventory, lastClaimedRefillTime
+		});
+
 		this.db.run(
 			`UPDATE player
 			SET role = @role

@@ -1,7 +1,7 @@
 import { toDefinedPropertyValues } from "../../../../utilities/data-structure-utils";
 import { DeepReadonly, WithID } from "../../../../utilities/types/generic-types";
 import { QuestRepository } from "../../repositories/quest.repository";
-import { DBQuest, QuestDefinition } from "../../types/quest.types";
+import { asDBQuests, QuestDefinition } from "../../types/quest.types";
 import { DatabaseQuerier, toPlaceholdersList } from "../database-querier";
 
 /**
@@ -31,14 +31,16 @@ export function syncQuestsToDB(
 			...questNames
 		);
 
-		const existingDBQuests = db.getRows(
-			`SELECT * FROM quest
-			WHERE
-				id IN ${toPlaceholdersList(questIDs)}
-				OR name IN ${toPlaceholdersList(questNames)}`,
-			...questIDs,
-			...questNames
-		) as DBQuest[];
+		const existingDBQuests = asDBQuests(
+			db.getRows(
+				`SELECT * FROM quest
+				WHERE
+					id IN ${toPlaceholdersList(questIDs)}
+					OR name IN ${toPlaceholdersList(questNames)}`,
+				...questIDs,
+				...questNames
+			)
+		);
 
 		const existingQuestDefinitions: WithID<QuestDefinition>[] = [];
 		const newQuestDefinitions: QuestDefinition[] = [];

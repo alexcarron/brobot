@@ -3,7 +3,7 @@ import { WithRequiredAndOneOther } from "../../../utilities/types/generic-types"
 import { isNumber, isObject } from "../../../utilities/types/type-guards";
 import { DatabaseQuerier, toParameterSetClause } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
-import { DBRecipe, Recipe, RecipeDefinition, RecipeID, RecipeResolvable } from "../types/recipe.types";
+import { asRecipe, asRecipes, Recipe, RecipeDefinition, RecipeID, RecipeResolvable } from "../types/recipe.types";
 import { RecipeAlreadyExistsError, RecipeNotFoundError } from "../utilities/error.utility";
 
 /**
@@ -32,8 +32,9 @@ export class RecipeRepository {
 	 * @returns An array of all recipe objects stored in the database.
 	 */
 	getRecipes(): Recipe[] {
-		const query = "SELECT * FROM recipe";
-		return this.db.getRows(query) as DBRecipe[];
+		return asRecipes(
+			this.db.getRows('SELECT * FROM recipe')
+		);
 	}
 
 	/**
@@ -42,9 +43,11 @@ export class RecipeRepository {
 	 * @returns The recipe object with the specified ID, or null if no such recipe exists.
 	 */
 	getRecipeByID(id: RecipeID): Recipe | null {
-		const query = "SELECT * FROM recipe WHERE id = @id";
-		const recipe = this.db.getRow(query, { id }) as DBRecipe | undefined;
-		return recipe ?? null;
+		const row = this.db.getRow(
+			'SELECT * FROM recipe WHERE id = ?', id
+		);
+		if (row === undefined) return null;
+		return asRecipe(row);
 	}
 
 	/**
@@ -71,8 +74,12 @@ export class RecipeRepository {
 		if (inputCharacters === '')
 			throw new InvalidArgumentError('getRecipesWithInputs: inputCharacters cannot be empty.');
 
-		const query = "SELECT * FROM recipe WHERE inputCharacters = @inputCharacters";
-		return this.db.getRows(query, { inputCharacters }) as DBRecipe[];
+		return asRecipes(
+			this.db.getRows(
+				'SELECT * FROM recipe WHERE inputCharacters = @inputCharacters',
+				{ inputCharacters }
+			)
+		);
 	}
 
 	/**
@@ -81,8 +88,12 @@ export class RecipeRepository {
 	 * @returns An array of recipe objects with the given output characters.
 	 */
 	getRecipesWithOutputs(outputCharacters: string): Recipe[] {
-		const query = "SELECT * FROM recipe WHERE outputCharacters = @outputCharacters";
-		return this.db.getRows(query, { outputCharacters }) as DBRecipe[];
+		return asRecipes(
+			this.db.getRows(
+				'SELECT * FROM recipe WHERE outputCharacters = @outputCharacters',
+				{ outputCharacters }
+			)
+		);
 	}
 
 	/**
