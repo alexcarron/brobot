@@ -2,9 +2,8 @@ import { returnNonNullOrThrow } from "../../../utilities/error-utils";
 import { WithRequiredAndOneOther } from "../../../utilities/types/generic-types";
 import { isNumber, isString } from "../../../utilities/types/type-guards";
 import { DatabaseQuerier, toParameterSetClause } from "../database/database-querier";
-import { DBQuest, Quest, QuestDefinition, QuestID, QuestName, QuestResolvable } from "../types/quest.types";
+import { asQuest, asQuests, Quest, QuestDefinition, QuestID, QuestName, QuestResolvable } from "../types/quest.types";
 import { QuestAlreadyExistsError, QuestNotFoundError } from "../utilities/error.utility";
-import { toQuest } from '../utilities/quest.utility';
 import { toDBBool, toOptionalDBBool } from "../utilities/db.utility";
 import { createMockDB } from "../mocks/mock-database";
 
@@ -30,23 +29,13 @@ export class QuestRepository {
 	}
 
 	/**
-	 * @param dbQuest - The DB representation of a quest to convert.
-	 * @returns The converted quest.
-	 */
-	private toQuestFromDB(dbQuest: DBQuest): Quest {
-		return toQuest(dbQuest);
-	}
-
-	/**
 	 * Returns all quests in the database.
 	 * @returns An array of all quest objects.
 	 */
 	getQuests(): Quest[] {
-		const dbQuests = this.db.getRows(
-			"SELECT * FROM quest"
-		) as DBQuest[];
-		return dbQuests
-			.map(dbQuest => this.toQuestFromDB(dbQuest));
+		return asQuests(
+			this.db.getRows("SELECT * FROM quest")
+		);
 	}
 
 	/**
@@ -55,14 +44,14 @@ export class QuestRepository {
 	 * @returns The quest object with the given ID, or null if no such quest exists.
 	 */
 	getQuestByID(id: QuestID): Quest | null {
-		const dbQuest = this.db.getRow(
+		const row = this.db.getRow(
 			"SELECT * FROM quest WHERE id = ?", id
-		) as DBQuest | undefined;
+		);
 
-		if (dbQuest === undefined)
+		if (row === undefined)
 			return null;
 
-		return this.toQuestFromDB(dbQuest);
+		return asQuest(row);
 	}
 
 	/**
@@ -84,14 +73,14 @@ export class QuestRepository {
 	 * @returns The quest object with the given name, or null if no such quest exists.
 	 */
 	getQuestByName(name: string): Quest | null {
-		const dbQuest = this.db.getRow(
+		const row = this.db.getRow(
 			"SELECT * FROM quest WHERE name = ?", name
-		) as DBQuest | undefined;
+		);
 
-		if (dbQuest === undefined)
+		if (row === undefined)
 			return null;
 
-		return this.toQuestFromDB(dbQuest);
+		return asQuest(row);
 	}
 
 	/**

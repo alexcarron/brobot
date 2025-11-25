@@ -2,7 +2,7 @@ import { toPropertyValues } from "../../../../utilities/data-structure-utils";
 import { DeepReadonly } from "../../../../utilities/types/generic-types";
 import { isNotUndefined } from "../../../../utilities/types/type-guards";
 import { RoleRepository } from "../../repositories/role.repository";
-import { DBRole, RoleDefinition } from "../../types/role.types";
+import { asMinimalRoles, RoleDefinition } from "../../types/role.types";
 import { DatabaseQuerier, toPlaceholdersList } from "../database-querier";
 
 
@@ -31,15 +31,19 @@ export function syncRolesToDB(
 		`);
 		deleteRolesNotDefined.run(...roleIDs, ...roleNames);
 
-		const findExistingRoles = db.getQuery(`
-			SELECT * FROM role
-			WHERE
-				id IN ${toPlaceholdersList(roleIDs)}
-				OR name IN ${toPlaceholdersList(roleNames)}
-		`);
-		const existingDBRoles = findExistingRoles.getRows(
-			...roleIDs, ...roleNames
-		) as DBRole[];
+		const findExistingRoles =
+			db.getQuery(`
+				SELECT * FROM role
+				WHERE
+					id IN ${toPlaceholdersList(roleIDs)}
+					OR name IN ${toPlaceholdersList(roleNames)}
+			`);
+
+		const existingDBRoles = asMinimalRoles(
+			findExistingRoles.getRows(
+				...roleIDs, ...roleNames
+			)
+		);
 
 		for (const existingDBRole of existingDBRoles) {
 			const roleDefinition = roleDefinitions.find(role =>

@@ -1,6 +1,6 @@
 import { DatabaseQuerier, toParameterSetClause } from "../database/database-querier";
 import { PlayerID } from "../types/player.types";
-import { DBTrade, Trade, TradeDefintion, TradeID, TradeStatus } from "../types/trade.types";
+import { asMinimalTrade, asMinimalTrades, MinimalTrade, Trade, TradeDefintion, TradeID, TradeStatus } from "../types/trade.types";
 import { CannotCreateTradeError, TradeAlreadyExistsError, TradeNotFoundError } from "../utilities/error.utility";
 import { WithRequiredAndOneOther } from '../../../utilities/types/generic-types';
 import { PlayerRepository } from "./player.repository";
@@ -32,23 +32,23 @@ export class TradeRepository {
 
 	/**
 	 * Converts a DBTrade object to a Trade object.
-	 * @param dbTrade - The DBTrade object to convert.
+	 * @param minimalTrade - The DBTrade object to convert.
 	 * @returns The converted Trade object.
 	 * @throws {PlayerNotFoundError} If either of the player IDs in the DBTrade object do not correspond to a player in the database.
 	 */
-	private toTradeFromDB(dbTrade: DBTrade): Trade {
-		const initiatingPlayer = this.playerRepository.getPlayerOrThrow(dbTrade.initiatingPlayerID);
-		const recipientPlayer = this.playerRepository.getPlayerOrThrow(dbTrade.recipientPlayerID);
+	private toTradeFromMinimal(minimalTrade: MinimalTrade): Trade {
+		const initiatingPlayer = this.playerRepository.getPlayerOrThrow(minimalTrade.initiatingPlayerID);
+		const recipientPlayer = this.playerRepository.getPlayerOrThrow(minimalTrade.recipientPlayerID);
 
 		return {
-			...dbTrade,
+			...minimalTrade,
 			initiatingPlayer,
 			recipientPlayer
 		};
 	}
 
-	private toTradesFromDB(dbTrades: DBTrade[]): Trade[] {
-		return dbTrades.map(dbTrade => this.toTradeFromDB(dbTrade));
+	private toTradesFromMinimal(minimalTrades: MinimalTrade[]): Trade[] {
+		return minimalTrades.map(minimalTrade => this.toTradeFromMinimal(minimalTrade));
 	}
 
 	/**
@@ -56,11 +56,13 @@ export class TradeRepository {
 	 * @returns An array of all trade objects
 	 */
 	getTrades(): Trade[] {
-		const dbTrades = this.db.getRows(
+		const rows = this.db.getRows(
 			'SELECT * FROM trade'
-		) as DBTrade[];
+		);
 
-		return this.toTradesFromDB(dbTrades);
+		return this.toTradesFromMinimal(
+			asMinimalTrades(rows)
+		);
 	}
 
 	/**
@@ -68,18 +70,18 @@ export class TradeRepository {
 	 * @param tradeID - The ID of the DBTrade to be retrieved.
 	 * @returns The DBTrade object with the given ID, or null if it does not exist.
 	 */
-	getDBTradeByID(tradeID: TradeID): DBTrade | null {
-		const dbTrade = this.db.getRow(
+	getMinimalTradeByID(tradeID: TradeID): MinimalTrade | null {
+		const row = this.db.getRow(
 			`SELECT * FROM trade WHERE id = @id`,
 			{ id: tradeID }
-		) as DBTrade | undefined;
-
-		return dbTrade ?? null;
+		);
+		if (row === undefined) return null
+		return asMinimalTrade(row);
 	}
 
-	getDBTradeOrThrow(tradeID: TradeID): DBTrade {
+	getMinimalTradeOrThrow(tradeID: TradeID): MinimalTrade {
 		return returnNonNullOrThrow(
-			this.getDBTradeByID(tradeID),
+			this.getMinimalTradeByID(tradeID),
 			new TradeNotFoundError(tradeID)
 		)
 	}
@@ -93,11 +95,11 @@ export class TradeRepository {
 		const dbTrade = this.db.getRow(
 			`SELECT * FROM trade WHERE id = @id`,
 			{ id: tradeID }
-		) as DBTrade | undefined;
+		) as MinimalTrade | undefined;
 
 		if (dbTrade === undefined) return null;
 
-		return this.toTradeFromDB(dbTrade);
+		return this.toTradeFromMinimal(dbTrade);
 	}
 
 	/**
@@ -151,7 +153,7 @@ export class TradeRepository {
 	 * @throws {TradeNotFoundError} - If the trade does not exist.
 	 */
 	getInitiatingPlayerID(tradeID: TradeID): PlayerID {
-		const dbTrade = this.getDBTradeOrThrow(tradeID);
+		const dbTrade = this.getMinimalTradeOrThrow(tradeID);
 		return dbTrade.initiatingPlayerID
 	}
 
@@ -162,7 +164,7 @@ export class TradeRepository {
 	 * @throws {TradeNotFoundError} - If the trade does not exist.
 	 */
 	getRecipientPlayerID(tradeID: TradeID): PlayerID {
-		const dbTrade = this.getDBTradeOrThrow(tradeID);
+		const dbTrade = this.getMinimalTradeOrThrow(tradeID);
 		return dbTrade.recipientPlayerID
 	}
 
@@ -173,7 +175,7 @@ export class TradeRepository {
 	 * @throws {TradeNotFoundError} - If the trade does not exist.
 	 */
 	getOfferedCharacters(tradeID: TradeID): string {
-		const dbTrade = this.getDBTradeOrThrow(tradeID);
+		const dbTrade = this.getMinimalTradeOrThrow(tradeID);
 		return dbTrade.offeredCharacters
 	}
 
@@ -206,7 +208,7 @@ export class TradeRepository {
 	 * @throws {TradeNotFoundError} - If the trade does not exist.
 	 */
 	getRequestedCharacters(tradeID: TradeID): string {
-		const dbTrade = this.getDBTradeOrThrow(tradeID);
+		const dbTrade = this.getMinimalTradeOrThrow(tradeID);
 		return dbTrade.requestedCharacters
 	}
 
@@ -239,7 +241,7 @@ export class TradeRepository {
 	 * @throws {TradeNotFoundError} - If the trade does not exist.
 	 */
 	getStatus(tradeID: TradeID): TradeStatus {
-		const dbTrade = this.getDBTradeOrThrow(tradeID);
+		const dbTrade = this.getMinimalTradeOrThrow(tradeID);
 		return dbTrade.status
 	}
 

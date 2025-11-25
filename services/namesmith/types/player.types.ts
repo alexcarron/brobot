@@ -1,6 +1,21 @@
-import { Override, Without } from "../../../utilities/types/generic-types";
+import { ExtractDomainType, number, object, string } from "../../../utilities/runtime-types-utils";
+import { Override } from "../../../utilities/types/generic-types";
+import { DBDate } from "../utilities/db.utility";
 import { Perk, PerkResolvable } from "./perk.types";
 import { Role, RoleResolvable } from "./role.types";
+
+export const DBPlayerType = object.asTransformableType('MinimalPlayer', {
+	id: string,
+	currentName: string,
+	publishedName: string.orNull,
+	tokens: number,
+	role: number.orNull,
+	inventory: string,
+	lastClaimedRefillTime: DBDate.orNull,
+});
+export const asMinimalPlayer = DBPlayerType.toMinimalPlayer;
+export const asMinimalPlayers = DBPlayerType.toMinimalPlayers;
+export type MinimalPlayer = ExtractDomainType<typeof DBPlayerType>
 
 export type Player = {
 	id: string;
@@ -12,13 +27,6 @@ export type Player = {
 	role: Role | null;
 	perks: Perk[];
 }
-
-export type MinimalPlayer = Without<Player, "role" | "perks">;
-
-export type DBPlayer = Override<Player, {
-	lastClaimedRefillTime: string | null,
-	perks: undefined,
-}>;
 
 export type PlayerDefinition = Override<Player, {
 	id?: string,

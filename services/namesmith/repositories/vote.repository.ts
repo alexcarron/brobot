@@ -3,7 +3,7 @@ import { WithRequiredAndOneOther } from '../../../utilities/types/generic-types'
 import { isString } from "../../../utilities/types/type-guards";
 import { DatabaseQuerier } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
-import { DBVote, Vote, VoteDefinition, VoteID, VoteResolvable } from "../types/vote.types";
+import { asMinimalVote, asMinimalVotes, MinimalVote, Vote, VoteDefinition, VoteID, VoteResolvable } from "../types/vote.types";
 import { VoteAlreadyExistsError, VoteNotFoundError } from "../utilities/error.utility";
 import { PlayerRepository } from "./player.repository";
 
@@ -30,17 +30,17 @@ export class VoteRepository {
 		return VoteRepository.fromDB(db);
 	}
 
-	private toVoteFromDB(dbVote: DBVote): Vote {
-		const playerVotedFor = this.playerRepository.resolvePlayer(dbVote.playerVotedForID);
+	private toVoteFromMinimal(minimalVote: MinimalVote): Vote {
+		const playerVotedFor = this.playerRepository.resolvePlayer(minimalVote.playerVotedForID);
 
 		return {
-			voterID: dbVote.voterID,
+			voterID: minimalVote.voterID,
 			playerVotedFor,
 		};
 	}
 
-	private toVotesFromDB(dbVotes: DBVote[]): Vote[] {
-		return dbVotes.map(dbVote => this.toVoteFromDB(dbVote));
+	private toVotesFromMinimal(minimalVotes: MinimalVote[]): Vote[] {
+		return minimalVotes.map(dbVote => this.toVoteFromMinimal(dbVote));
 	}
 
 	/**
@@ -48,11 +48,13 @@ export class VoteRepository {
 	 * @returns An array of vote objects.
 	 */
 	getVotes(): Vote[] {
-		const dbVotes = this.db.getRows(
+		const rows = this.db.getRows(
 			'SELECT * FROM vote'
-		) as DBVote[];
+		);
 
-		return this.toVotesFromDB(dbVotes);
+		return this.toVotesFromMinimal(
+			asMinimalVotes(rows)
+		);
 	}
 
 	/**
@@ -61,14 +63,17 @@ export class VoteRepository {
 	 * @returns A vote object if found, otherwise undefined.
 	 */
 	getVoteByVoterID(voterID: string): Vote | null {
-		const vote = this.db.getRow(
+		const row = this.db.getRow(
 			'SELECT * FROM vote WHERE voterID = @voterID',
 			{ voterID }
-		) as DBVote | undefined;
+		);
 
-		if (vote === undefined) return null;
+		if (row === undefined)
+			return null;
 
-		return this.toVoteFromDB(vote);
+		return this.toVoteFromMinimal(
+			asMinimalVote(row)
+		);
 	}
 
 	/**

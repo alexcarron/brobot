@@ -1,12 +1,21 @@
+import { inspect } from "util";
 import { hasProperty, isNull, isObject, isUndefined } from "./types/type-guards";
 
 export class InvalidTypeError extends Error {
-	constructor(value: unknown, expectedType: string) {
-		super(`Expected value to be a ${expectedType}, but got: ${value}`);
-	}
+  constructor(value: unknown, expectedType: string) {
+    const prettyValue = inspect(value, {
+			depth: null,
+			colors: true,
+			compact: false
+		});
+    super(`Runtime type error: Expected value to be a ${expectedType}, but got:\n${prettyValue}`);
+
+    this.name = 'InvalidTypeError';
+  }
 }
 
 type RuntimeType<Type> = {
+	orNull: RuntimeType<Type | null>;
 	isType(value: unknown): value is Type;
 	from(value: unknown): Type;
 	fromAll(values: unknown[]): Type[];
@@ -28,6 +37,7 @@ type RuntimeType<Type> = {
 type TransformableRuntimeType<RawType, DomainType> =
 	& RuntimeType<RawType>
 	& {
+		orNull: TransformableRuntimeType<RawType | null, DomainType | null>;
 		toDomain: (rawValue: unknown) => DomainType;
 		toDomains: (rawValues: unknown[]) => DomainType[];
 		fromDomain: (domainValue: DomainType) => RawType;
@@ -40,6 +50,9 @@ type NamedTransformableRuntimeType<
 	DomainName extends string,
 > =
 	& RuntimeType<RawType>
+	& {
+		orNull: NamedTransformableRuntimeType<RawType | null, DomainType | null, DomainName>;
+	}
 	& {
 		[Key in
 			| `to${DomainName}s`
@@ -66,19 +79,17 @@ export type ExtractType<SomeRuntimeType> =
 		? UnderlyingType
 		: never;
 
-export type ExtractRawType<SomeRuntimeType> =
-	SomeRuntimeType extends TransformableRuntimeType<infer RawType, any>
-		? RawType
-	: SomeRuntimeType extends NamedTransformableRuntimeType<infer RawType, any, any>
-		? RawType
-	: ExtractType<SomeRuntimeType>;
+export type ExtractRawType<SomeRuntimeType> = ExtractType<SomeRuntimeType>;
 
 export type ExtractDomainType<SomeRuntimeType> =
-	SomeRuntimeType extends TransformableRuntimeType<any, infer DomainType>
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	SomeRuntimeType extends NamedTransformableRuntimeType<infer RawType, infer DomainType, infer DomainName>
 		? DomainType
-	: SomeRuntimeType extends NamedTransformableRuntimeType<any, infer DomainType, any>
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	: SomeRuntimeType extends TransformableRuntimeType<infer RawType, infer DomainType>
 		? DomainType
-	: ExtractType<SomeRuntimeType>;
+		: ExtractType<SomeRuntimeType>;
+
 
 /**
  * Asserts that the given value is of the given type, or throws an InvalidTypeError if it is not.
@@ -158,7 +169,7 @@ function createRuntimeType<Type>(
 	expectedType: string,
 	predicate: (value: unknown) => value is Type
 ): RuntimeType<Type> {
-	return {
+	const partialRuntimeType = {
 		isType: (value: unknown): value is Type => predicate(value),
 		from: (value: unknown): Type => {
 			return returnTypeOrThrow(value, predicate, expectedType);
@@ -187,7 +198,32 @@ function createRuntimeType<Type>(
 					fromDomainType
 				),
 		}),
-	}
+	};
+
+	Object.defineProperty(partialRuntimeType, "orNull", {
+		get() {
+			if (partialRuntimeType.isType(null)) {
+				return partialRuntimeType;
+			}
+
+      const createdRuntimeType = createRuntimeType<Type | null>(
+        `${expectedType} or null`,
+        (value): value is Type | null =>
+					value === null || predicate(value)
+      );
+
+      Object.defineProperty(partialRuntimeType, 'orNull', {
+				value: createdRuntimeType,
+				configurable: true,
+				writable: false
+			});
+
+      return createdRuntimeType;
+    },
+    configurable: true,
+	});
+
+	return partialRuntimeType as RuntimeType<Type>;
 }
 
 function createTransformableRuntimeType<RawType, DomainType>(
@@ -197,7 +233,7 @@ function createTransformableRuntimeType<RawType, DomainType>(
 	fromDomainType: (domainValue: DomainType) => RawType
 ): TransformableRuntimeType<RawType, DomainType> {
 	const runtimeType = createRuntimeType<RawType>("RawType", predicate);
-	return Object.assign(runtimeType, {
+	const transformableRuntimeType = Object.assign(runtimeType, {
 		toDomain: (value: unknown) => {
 			throwIfNotType(value, predicate, expectedType);
 			return toDomainType(value);
@@ -211,6 +247,52 @@ function createTransformableRuntimeType<RawType, DomainType>(
 		fromDomains: (domainValues: DomainType[]) =>
 			domainValues.map(fromDomainType),
 	});
+
+	Object.defineProperty(transformableRuntimeType, "orNull", {
+    get() {
+      if (transformableRuntimeType.isType(null)) {
+        return transformableRuntimeType;
+      }
+
+      const nullablePredicate =
+				(value: unknown): value is RawType | null =>
+					value === null || predicate(value);
+
+      const nullableToDomain = (raw: RawType | null) => {
+				if (raw === null) {
+					return null;
+				}
+
+				return toDomainType(raw);
+			}
+
+      const nullableFromDomain = (domain: DomainType | null) => {
+				if (domain === null) {
+					return null;
+				}
+
+				return fromDomainType(domain);
+			}
+
+      const createdRuntimeType = createTransformableRuntimeType<RawType | null, DomainType | null>(
+        `${expectedType} or null`,
+        nullablePredicate,
+        nullableToDomain,
+        nullableFromDomain
+      );
+
+      Object.defineProperty(transformableRuntimeType, "orNull", {
+        value: createdRuntimeType,
+        writable: false,
+        configurable: true,
+      });
+
+      return createdRuntimeType as RuntimeType<RawType | null>;
+    },
+    configurable: true,
+  });
+
+	return transformableRuntimeType as any;
 }
 
 function createNamedTransformableRuntimeType<
@@ -224,7 +306,7 @@ function createNamedTransformableRuntimeType<
 	fromDomainType: (domainValue: DomainType) => RawType
 ): NamedTransformableRuntimeType<RawType, DomainType, DomainName> {
 	const runtimeType = createRuntimeType(domainName, predicate);
-	return Object.assign(runtimeType, {
+	const namedTransformableRuntimeType = Object.assign(runtimeType, {
 		[`to${domainName}`]: (value: unknown) => {
 			throwIfNotType(value, predicate, domainName);
 			return toDomainType(value);
@@ -238,6 +320,52 @@ function createNamedTransformableRuntimeType<
 		[`from${domainName}s`]: (domainValues: DomainType[]) =>
 			domainValues.map(fromDomainType),
 	}) as NamedTransformableRuntimeType<RawType, DomainType, DomainName>;
+
+	Object.defineProperty(namedTransformableRuntimeType, "orNull", {
+		get() {
+			if (namedTransformableRuntimeType.isType(null)) {
+				return namedTransformableRuntimeType;
+			}
+
+			const nullablePredicate =
+				(value: unknown): value is RawType | null =>
+					value === null || predicate(value);
+
+			const nullableToDomain = (raw: RawType | null) => {
+				if (raw === null) {
+					return null;
+				}
+
+				return toDomainType(raw);
+			}
+
+			const nullableFromDomain = (domain: DomainType | null) => {
+				if (domain === null) {
+					return null;
+				}
+
+				return fromDomainType(domain);
+			}
+
+			const createdRuntimeType = createNamedTransformableRuntimeType<RawType | null, DomainType | null, DomainName>(
+				domainName,
+				nullablePredicate,
+				nullableToDomain,
+				nullableFromDomain
+			);
+
+			Object.defineProperty(namedTransformableRuntimeType, "orNull", {
+				value: createdRuntimeType,
+				writable: false,
+				configurable: true,
+			});
+
+			return createdRuntimeType as RuntimeType<RawType | null>;
+		},
+		configurable: true,
+	});
+
+	return namedTransformableRuntimeType;
 }
 
 export const number = createRuntimeType<number>("number",
@@ -258,6 +386,21 @@ export const zeroOrOne = createRuntimeType<0 | 1>("0 or 1",
 		(value === 0 || value === 1)
 );
 
+export const date = createRuntimeType<Date>("Date",
+	(value): value is Date =>
+		value instanceof Date &&
+		!isNaN(value.getTime())
+);
+
+export const strings = <const Strings extends readonly string[]>(...strings: Strings) => {
+	const allowedStrings = new Set<string>(strings as readonly string[]);
+	const typeName = strings.map(str => `"${str}"`).join(' | ');
+	return createRuntimeType<Strings[number]>(typeName,
+		(value): value is Strings[number] =>
+			allowedStrings.has(value as string)
+	);
+}
+
 export const object = {
 	isType: (value: unknown): value is object => isObject(value),
 	from: (value: unknown): object => {
@@ -273,6 +416,8 @@ export const object = {
 	): RuntimeType<ObjectType> {
 		return createRuntimeType<ObjectType>("object",
 			(value): value is ObjectType => {
+				console.log({value});
+
 				if (!isObject(value))
 					return false;
 
@@ -301,18 +446,43 @@ export const object = {
 	},
 	asTransformableType:<
 		DomainName extends string,
-		RawObjectType extends Record<string, any>,
-		DomainObjectType extends Record<keyof RawObjectType, any>
-	>(
-		domainName: DomainName,
-		keyToRuntimeType: {
-			[Key in keyof RawObjectType]:
-				| RuntimeType<DomainObjectType[Key]>
-				| TransformableRuntimeType<RawObjectType[Key], DomainObjectType[Key]>
+		KeyToRuntime extends {
+			[K in keyof KeyToRuntime]:
+				| RuntimeType<any>
+				| TransformableRuntimeType<any, any>
+				| NamedTransformableRuntimeType<any, any, string>
 				| null
 				| undefined;
 		},
+		RawObjectType = {
+			[Key in keyof KeyToRuntime]:
+				KeyToRuntime[Key] extends RuntimeType<infer InnerType>
+					? InnerType
+				: KeyToRuntime[Key] extends null
+					? null
+				: KeyToRuntime[Key] extends undefined
+					? undefined
+				: never;
+		},
+		DomainObjectType = {
+			[Key in keyof KeyToRuntime]:
+				KeyToRuntime[Key] extends TransformableRuntimeType<any, infer DomainType>
+					? DomainType
+				: KeyToRuntime[Key] extends NamedTransformableRuntimeType<any, infer DomainType, any>
+					? DomainType
+				: KeyToRuntime[Key] extends RuntimeType<infer InnerType>
+					? InnerType
+				: KeyToRuntime[Key] extends null
+					? null
+				: KeyToRuntime[Key] extends undefined
+					? undefined
+				: never;
+		},
+	>(
+		domainName: DomainName,
+		keyToRuntimeType: KeyToRuntime,
 	) => {
+
 		return createNamedTransformableRuntimeType<RawObjectType, DomainObjectType, DomainName>(
 			domainName,
 			(value): value is RawObjectType => {
@@ -345,6 +515,7 @@ export const object = {
 				const domainObject = {} as any;
 				for (const key in keyToRuntimeType) {
 					const runtimeType = keyToRuntimeType[key];
+					// @ts-ignore
 					const propertyValue = value[key];
 
 					if (isNull(runtimeType)) {
@@ -367,6 +538,7 @@ export const object = {
 				const rawObject = {} as any;
 				for (const key in keyToRuntimeType) {
 					const runtimeType = keyToRuntimeType[key];
+					// @ts-ignore
 					const propertyValue = value[key];
 
 					if (isNull(runtimeType)) {

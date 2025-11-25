@@ -3,7 +3,7 @@ import { InvalidArgumentError } from "../../../../utilities/error-utils";
 import { isOneSymbol } from "../../../../utilities/string-checks-utils";
 import { isNotUndefined } from "../../../../utilities/types/type-guards";
 import { CharacterRepository } from "../../repositories/character.repository";
-import { CharacterDefintion, DBCharacter } from '../../types/character.types';
+import { asMinimalCharacters, CharacterDefintion } from '../../types/character.types';
 import { getCharacterValueFromID, getIDfromCharacterValue } from "../../utilities/character.utility";
 import { DatabaseQuerier, toPlaceholdersList } from "../database-querier";
 
@@ -37,9 +37,11 @@ export const syncCharactersToDB = (
 				id IN ${toPlaceholdersList(characterIDs)}
 				OR value IN ${toPlaceholdersList(characterValues)}`,
 		);
-		const existingDBCharacters = findExistingCharacters.getRows(
-			...characterIDs, ...characterValues
-		) as DBCharacter[];
+		const existingDBCharacters = asMinimalCharacters(
+			findExistingCharacters.getRows(
+				...characterIDs, ...characterValues
+			)
+		);
 
 		const existingCharacterDefinitions: CharacterDefintion[] = [];
 		const newCharacterDefinitions: CharacterDefintion[] = [];

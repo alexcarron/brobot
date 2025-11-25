@@ -1,7 +1,7 @@
 import { WithRequiredAndOneOther } from "../../../utilities/types/generic-types";
 import { DatabaseQuerier, toParameterSetClause } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
-import { Character, DBCharacter, CharacterID, CharacterDefintion } from "../types/character.types";
+import { Character, CharacterID, CharacterDefintion, asMinimalCharacters, asMinimalCharacter } from "../types/character.types";
 import { getIDfromCharacterValue } from "../utilities/character.utility";
 import { CharacterAlreadyExistsError, CharacterNotFoundError } from "../utilities/error.utility";
 
@@ -9,7 +9,6 @@ import { CharacterAlreadyExistsError, CharacterNotFoundError } from "../utilitie
  * Provides access to all static character data.
  */
 export class CharacterRepository {
-
 	constructor(
 		public db: DatabaseQuerier,
 	) {}
@@ -28,8 +27,9 @@ export class CharacterRepository {
 	 * @returns An array of character objects.
 	 */
 	getCharacters(): Character[] {
-		const query = 'SELECT * FROM character';
-		return this.db.getRows(query) as DBCharacter[];
+		return asMinimalCharacters(
+			this.db.getRows('SELECT * FROM character')
+		);
 	}
 
 	/**
@@ -38,11 +38,13 @@ export class CharacterRepository {
 	 * @returns The character with the given ID, or null if no such character exists.
 	 */
 	getCharacterByID(id: number): Character | null {
-		const character = this.db.getRow(
+		const row = this.db.getRow(
 			'SELECT * FROM character WHERE id = ?', id
-		) as DBCharacter | undefined;
+		);
 
-		return character ?? null;
+		if (row === undefined) return null;
+
+		return asMinimalCharacter(row);
 	}
 
 	/**

@@ -1,3 +1,4 @@
+import { GameStateInitializationError } from "../utilities/error.utility";
 import { GameStateRepository } from "./game-state.repository";
 
 describe('GameStateRepository', () => {
@@ -12,7 +13,7 @@ describe('GameStateRepository', () => {
 
   describe('getGameState()', () => {
     it('should throw an error if the game state is not set', () => {
-			expect(() => gameStateRepo.getGameState()).toThrow();
+			expect(() => gameStateRepo.getDefinedGameState()).toThrow();
     });
 
     it('should return an object with timeStarted, timeEnding, and timeVoteIsEnding properties when set', () => {
@@ -22,12 +23,41 @@ describe('GameStateRepository', () => {
 				timeVoteIsEnding: TEST_DATE,
 			});
 
-      const gameState = gameStateRepo.getGameState();
+      const gameState = gameStateRepo.getDefinedGameState();
 
 			expect(gameState).toHaveProperty('timeStarted', TEST_DATE);
 			expect(gameState).toHaveProperty('timeEnding', TEST_DATE);
 			expect(gameState).toHaveProperty('timeVoteIsEnding', TEST_DATE);
     });
+	});
+
+	describe('throwIfNotDefined()', () => {
+		it('should throw a GameStateInitializationError if the game state is not set', () => {
+			const undefinedGameState = {
+				timeStarted: null,
+				timeEnding: null,
+				timeVoteIsEnding: null,
+			}
+			expect(() => gameStateRepo.throwIfNotDefined(undefinedGameState)).toThrow(GameStateInitializationError);
+		});
+
+		it('should throw a GameStateInitializationError if only one of the game state properties is set', () => {
+			const undefinedGameState = {
+				timeStarted: null,
+				timeEnding: TEST_DATE,
+				timeVoteIsEnding: TEST_DATE,
+			}
+			expect(() => gameStateRepo.throwIfNotDefined(undefinedGameState)).toThrow(GameStateInitializationError);
+		});
+
+		it('should not throw a GameStateInitializationError if all of the game state properties are set', () => {
+			const undefinedGameState = {
+				timeStarted: TEST_DATE,
+				timeEnding: TEST_DATE,
+				timeVoteIsEnding: TEST_DATE,
+			}
+			expect(() => gameStateRepo.throwIfNotDefined(undefinedGameState)).not.toThrow();
+		});
 	});
 
 	describe('setGameState()', () => {
@@ -38,7 +68,7 @@ describe('GameStateRepository', () => {
 				timeVoteIsEnding: TEST_DATE,
 			});
 
-			const gameState = gameStateRepo.getGameState();
+			const gameState = gameStateRepo.getDefinedGameState();
 
 			expect(gameState).toHaveProperty('timeStarted', TEST_DATE);
 			expect(gameState).toHaveProperty('timeEnding', TEST_DATE);
@@ -54,7 +84,7 @@ describe('GameStateRepository', () => {
 			gameStateRepo.setGameState({
 				timeStarted: DIFFERENT_DATE,
 			});
-			const gameState = gameStateRepo.getGameState();
+			const gameState = gameStateRepo.getDefinedGameState();
 
 			expect(gameState).toHaveProperty('timeStarted',
 				DIFFERENT_DATE
@@ -90,7 +120,7 @@ describe('GameStateRepository', () => {
 
 			gameStateRepo.setTimeStarted(DIFFERENT_DATE);
 
-			const gameState = gameStateRepo.getGameState();
+			const gameState = gameStateRepo.getDefinedGameState();
 			expect(gameState.timeStarted).toEqual(DIFFERENT_DATE);
 		});
 	});
@@ -116,7 +146,7 @@ describe('GameStateRepository', () => {
 			});
 
 			gameStateRepo.setTimeVoting(DIFFERENT_DATE);
-			const gameState = gameStateRepo.getGameState();
+			const gameState = gameStateRepo.getDefinedGameState();
 			expect(gameState.timeEnding).toEqual(DIFFERENT_DATE);
 		});
 	});
@@ -142,7 +172,7 @@ describe('GameStateRepository', () => {
 				timeVoteIsEnding: TEST_DATE,
 			});
 			gameStateRepo.setTimeVotingEnds(DIFFERENT_DATE);
-			const gameState = gameStateRepo.getGameState();
+			const gameState = gameStateRepo.getDefinedGameState();
 			expect(gameState.timeVoteIsEnding).toEqual(DIFFERENT_DATE);
 		});
 	});

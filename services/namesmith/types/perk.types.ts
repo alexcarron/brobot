@@ -1,25 +1,19 @@
-import { object, number, string } from '../../../utilities/runtime-types-utils';
+import { object, number, string, ExtractDomainType } from '../../../utilities/runtime-types-utils';
 import { WithOptional } from '../../../utilities/types/generic-types';
 import { DBBoolean } from '../utilities/db.utility';
-export type Perk = {
-	id: number;
-	name: string;
-	description: string;
-	wasOffered: boolean;
-	isBeingOffered: boolean;
-}
 
-const dbPerkType = object.asTransformableType('Perk', {
+const DBPerkType = object.asTransformableType('Perk', {
 	id: number,
 	name: string,
 	description: string,
 	wasOffered: DBBoolean,
 	isBeingOffered: DBBoolean,
 });
-export const asDBPerk = dbPerkType.from;
-export const asDBPerks = dbPerkType.fromAll;
-export const toPerk = dbPerkType.toPerk;
-export const toPerks = dbPerkType.toPerks;
+export const asDBPerk = DBPerkType.from;
+export const asDBPerks = DBPerkType.fromAll;
+export const toPerk = DBPerkType.toPerk;
+export const toPerks = DBPerkType.toPerks;
+export type Perk = ExtractDomainType<typeof DBPerkType>
 
 export type PerkDefintion = WithOptional<Perk,
 	| 'id'
@@ -33,9 +27,3 @@ export type PerkResolvable =
 	| {id: PerkID}
 	| PerkID
 	| PerkName;
-
-
-export type DBPlayerPerk = {
-	playerID: string;
-	perkID: number;
-}

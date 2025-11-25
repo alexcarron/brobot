@@ -1,16 +1,19 @@
-import { Override, Without } from '../../../utilities/types/generic-types';
+import { ExtractType, number, object, string } from '../../../utilities/runtime-types-utils';
+import { Override } from '../../../utilities/types/generic-types';
 import { Perk, PerkID, PerkResolvable } from './perk.types';
 
-export interface Role {
-	id: number;
-	name: string;
-	description: string;
-	perks: Perk[];
-}
+const DBRoleType = object.asType({
+	id: number,
+	name: string,
+	description: string,
+});
+export const asMinimalRole = DBRoleType.from;
+export const asMinimalRoles = DBRoleType.fromAll;
+export type MinimalRole = ExtractType<typeof DBRoleType>;
 
-export type MinimalRole = Without<Role, "perks">;
-
-export type DBRole = MinimalRole;
+export type Role =
+	& MinimalRole
+	& { perks: Perk[] }
 
 export type RoleDefinition = Override<Role, {
 	id?: RoleID;

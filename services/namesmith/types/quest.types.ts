@@ -1,20 +1,21 @@
 import { toEnumFromStrings, ValuesOf } from "../../../utilities/enum-utilts";
-import { Override, WithOptional } from "../../../utilities/types/generic-types"
+import { object, number, string, ExtractDomainType } from "../../../utilities/runtime-types-utils";
+import { WithOptional } from "../../../utilities/types/generic-types"
+import { DBBoolean } from "../utilities/db.utility";
 
-export type Quest = {
+export const DBQuestType = object.asTransformableType('Quest', {
 	id: number,
 	name: string,
 	description: string,
 	tokensReward: number,
 	charactersReward: string,
-	wasShown: boolean,
-	isShown: boolean,
-}
-
-export type DBQuest = Override<Quest, {
-	wasShown: 0 | 1,
-	isShown: 0 | 1,
-}>
+	wasShown: DBBoolean,
+	isShown: DBBoolean,
+});
+export const asDBQuests = DBQuestType.fromAll;
+export const asQuest = DBQuestType.toQuest;
+export const asQuests = DBQuestType.toQuests;
+export type Quest = ExtractDomainType<typeof DBQuestType>
 
 /**
  * @example

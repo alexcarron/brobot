@@ -1,7 +1,7 @@
 import { toDefinedPropertyValues } from "../../../../utilities/data-structure-utils";
 import { WithRequired } from "../../../../utilities/types/generic-types";
 import { RecipeRepository } from "../../repositories/recipe.repository";
-import { DBRecipe, RecipeDefinition } from "../../types/recipe.types";
+import { asRecipes, RecipeDefinition } from "../../types/recipe.types";
 import { DatabaseQuerier, toPlaceholdersList } from "../database-querier";
 
 /**
@@ -25,11 +25,13 @@ export const syncRecipesToDB = (
 			...recipeIDs
 		);
 
-		const existingDBRecipes = db.getRows(
-			`SELECT id FROM recipe
-			WHERE id IN ${toPlaceholdersList(recipeIDs)}`,
-			...recipeIDs
-		) as DBRecipe[];
+		const existingDBRecipes = asRecipes(
+			db.getRows(
+				`SELECT * FROM recipe
+				WHERE id IN ${toPlaceholdersList(recipeIDs)}`,
+				...recipeIDs
+			)
+		);
 
 		const existingRecipeDefinitions: WithRequired<RecipeDefinition, "id">[] = [];
 		const newRecipeDefinitions: RecipeDefinition[] = [];

@@ -1,7 +1,7 @@
 import { toDefinedPropertyValues } from "../../../../utilities/data-structure-utils";
 import { WithRequired } from "../../../../utilities/types/generic-types";
 import { MysteryBoxRepository } from "../../repositories/mystery-box.repository";
-import { DBMysteryBox, MysteryBoxDefinition } from "../../types/mystery-box.types";
+import { asMinimalMysteryBoxes, MysteryBoxDefinition } from "../../types/mystery-box.types";
 import { DatabaseQuerier, toPlaceholdersList } from "../database-querier";
 
 /**
@@ -26,11 +26,13 @@ export const syncMysteryBoxesToDB = (
 			...mysertyBoxIDs
 		);
 
-		const existingDBMysteryBoxes = db.getRows(
-			`SELECT id FROM mysteryBox
-			WHERE id IN ${toPlaceholdersList(mysertyBoxIDs)}`,
-			...mysertyBoxIDs
-		) as DBMysteryBox[];
+		const existingDBMysteryBoxes = asMinimalMysteryBoxes(
+			db.getRows(
+				`SELECT * FROM mysteryBox
+				WHERE id IN ${toPlaceholdersList(mysertyBoxIDs)}`,
+				...mysertyBoxIDs
+			)
+		);
 
 		const existingMysteryBoxDefinitions: WithRequired<MysteryBoxDefinition, 'id'>[] = [];
 		const newMysteryBoxDefinitions: MysteryBoxDefinition[] = [];
