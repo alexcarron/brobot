@@ -9,7 +9,7 @@ import { fetchNamesmithChannel } from "../../utilities/discord-fetch.utility";
 import { ids } from "../../../../bot-config/discord-ids";
 import { ignoreError } from "../../../../utilities/error-utils";
 import { replyToInteraction } from "../../../../utilities/discord-action-utils";
-import { completeQuest } from "../../workflows/complete-quest.workflow";
+import { completeQuest } from "../../workflows/quests/complete-quest.workflow";
 
 /**
  * Creates a message with details about the given quest and a button to complete it.
@@ -40,21 +40,75 @@ export function toQuestButton(quest: Quest) {
 				return await replyToInteraction(buttonInteraction,
 					'You are not a player, so you cannot complete a quest.'
 				);
-
-			if (result.isQuestDoesNotExist())
+			else if (result.isQuestDoesNotExist())
 				return await replyToInteraction(buttonInteraction,
 					`This quest no longer exists, so you cannot complete it.`
 				);
-
-			if (result.isAlreadyCompletedQuest())
+			else if (result.isAlreadyCompletedQuest())
 				return await replyToInteraction(buttonInteraction,
 					`You already completed this quest! You cannot claim the rewards again.`
 				);
-
-			if (result.isNotEligibleToCompleteQuest()) {
+			else if (result.isQuestCriteriaNotDefined()) {
 				const { questName } = result;
 				return await replyToInteraction(buttonInteraction,
-					`Sorry, you haven't meet the requirements to complete the ${questName} quest yet.`
+					`The criteria for completing the ${questName} quest has not been defined yet! Alert the host and please try again later.`
+				);
+			}
+			else if (result.isNotEnoughCrafts()) {
+				const {numHas, numNeeded} = result;
+				return await replyToInteraction(buttonInteraction,
+					`You have need to craft at least ${numNeeded} times to complete the ${quest.name} quest, but you have only crafted ${numHas} times. You need to craft ${numNeeded - numHas} more times.`
+				);
+			}
+			else if (result.isNotEnoughUniqueRecipes()) {
+				const {numHas, numNeeded} = result;
+				return await replyToInteraction(buttonInteraction,
+					`You have to craft at least ${numNeeded} different recipes to complete the ${quest.name} quest, but you have only crafted ${numHas}. You need to craft ${numNeeded - numHas} more recipes you have not used before.`
+				);
+			}
+			else if (result.isNameNotPublished())
+				return await replyToInteraction(buttonInteraction,
+					`You have not published your name yet. Your name must be published before you can complete the ${quest.name} quest.`
+				);
+			else if (result.isNameHasNoEmojis())
+				return await replyToInteraction(buttonInteraction,
+					`Your name must have at least one emoji before you can complete the ${quest.name} quest.`
+				);
+			else if (result.isNameHasNoSymbols())
+				return await replyToInteraction(buttonInteraction,
+					`Your name must have at least one symbol before you can complete the ${quest.name} quest.`
+				);
+			else if (result.isNameHasNoLetters())
+				return await replyToInteraction(buttonInteraction,
+					`Your name must have at least one letter before you can complete the ${quest.name} quest.`
+				);
+			else if (result.isNotEnoughTradesMade()) {
+				const {numHas, numNeeded} = result;
+				return await replyToInteraction(buttonInteraction,
+					`You need to make at least ${numNeeded} trades to complete the ${quest.name} quest, but you have only made ${numHas}. You need to trade with ${numNeeded - numHas} more players.`
+				);
+			}
+			else if (result.isNotEnoughUniquePlayersAccepted()) {
+				const {numHas, numNeeded} = result;
+				return await replyToInteraction(buttonInteraction,
+					`You need to have at least ${numNeeded} different player accept your trades to complete the ${quest.name} quest, but only ${numHas} have. You need ${numNeeded - numHas} more unique players to accept your trades.`
+				);
+			}
+			else if (result.isNameNotSharedByAnyone()) {
+				return await replyToInteraction(buttonInteraction,
+					`Nobody has the same name as you. You must have at least one player that shares the same published name as you to complete the ${quest.name} quest.`
+				);
+			}
+			else if (result.isNameTooShort()) {
+				const {currentLength, lengthNeeded} = result;
+				return await replyToInteraction(buttonInteraction,
+					`Your published name needs to have at least ${lengthNeeded} characters to complete the ${quest.name} quest, but it only has ${currentLength}. You need ${lengthNeeded - currentLength} more.`
+				);
+			}
+			else if (result.isNotEnoughTokensEarned()) {
+				const {numHas, numNeeded} = result;
+				return await replyToInteraction(buttonInteraction,
+					`You need to earn at least ${numNeeded} tokens to complete the ${quest.name} quest, but you only have ${numHas}. You need to earn ${numNeeded - numHas} more.`
 				);
 			}
 

@@ -416,8 +416,6 @@ export const object = {
 	): RuntimeType<ObjectType> {
 		return createRuntimeType<ObjectType>("object",
 			(value): value is ObjectType => {
-				console.log({value});
-
 				if (!isObject(value))
 					return false;
 
