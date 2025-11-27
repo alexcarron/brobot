@@ -1,7 +1,7 @@
-import { DatabaseQuerier, toParameterSetClause } from "../database/database-querier";
+import { DatabaseQuerier } from "../database/database-querier";
 import { PlayerID } from "../types/player.types";
 import { asMinimalTrade, asMinimalTrades, MinimalTrade, Trade, TradeDefintion, TradeID, TradeStatus } from "../types/trade.types";
-import { CannotCreateTradeError, TradeAlreadyExistsError, TradeNotFoundError } from "../utilities/error.utility";
+import { TradeAlreadyExistsError, TradeNotFoundError } from "../utilities/error.utility";
 import { WithRequiredAndOneOther } from '../../../utilities/types/generic-types';
 import { PlayerRepository } from "./player.repository";
 import { returnNonNullOrThrow } from "../../../utilities/error-utils";
@@ -117,11 +117,11 @@ export class TradeRepository {
 
 	/**
 	 * Checks if a trade exists in the database.
-	 * @param tradeID - The ID of the trade to check.
+	 * @param id - The ID of the trade to check.
 	 * @returns true if the trade exists, false otherwise.
 	 */
-	doesTradeExist(tradeID: TradeID): boolean {
-		return this.getTradeByID(tradeID) !== null;
+	doesTradeExist(id: TradeID): boolean {
+		return this.db.doesExistInTable('trade', { id })
 	}
 
 	createTrade(trade: {
@@ -130,20 +130,8 @@ export class TradeRepository {
 		offeredCharacters: string,
 		requestedCharacters: string
 	}): TradeID {
-		const query = `INSERT INTO trade (
-			initiatingPlayerID,
-			recipientPlayerID,
-			offeredCharacters,
-			requestedCharacters
-		)
-		VALUES (@initiatingPlayerID, @recipientPlayerID, @offeredCharacters, @requestedCharacters)`;
-
-		const runResult = this.db.run(query, trade);
-
-		if (runResult.changes === 0)
-			throw new CannotCreateTradeError(trade);
-
-		return runResult.lastInsertRowid as TradeID
+		const id = this.db.insertIntoTable('trade', trade);
+		return id;
 	}
 
 	/**
@@ -297,22 +285,11 @@ export class TradeRepository {
 		if (id !== undefined) {
 			if (this.doesTradeExist(id))
 				throw new TradeAlreadyExistsError(id);
-
-			this.db.run(
-				`INSERT INTO trade (id, initiatingPlayerID, recipientPlayerID, offeredCharacters, requestedCharacters, status)
-				VALUES (@id, @initiatingPlayerID, @recipientPlayerID, @offeredCharacters, @requestedCharacters, @status)`,
-				{id, initiatingPlayerID, recipientPlayerID, offeredCharacters, requestedCharacters, status}
-			)
 		}
-		else {
-			const result = this.db.run(
-				`INSERT INTO trade (initiatingPlayerID, recipientPlayerID, offeredCharacters, requestedCharacters, status)
-				VALUES (@initiatingPlayerID, @recipientPlayerID, @offeredCharacters, @requestedCharacters, @status)`,
-				{initiatingPlayerID, recipientPlayerID, offeredCharacters, requestedCharacters, status}
-			);
 
-			id = Number(result.lastInsertRowid);
-		}
+		id = this.db.insertIntoTable('trade', {
+			id, initiatingPlayerID, recipientPlayerID, offeredCharacters, requestedCharacters, status
+		});
 
 		return this.getTradeOrThrow(id);
 	}
@@ -353,27 +330,23 @@ export class TradeRepository {
 		if (recipientPlayerResolvable != undefined)
 			recipientPlayerID = this.playerRepository.resolveID(recipientPlayerResolvable);
 
-		this.db.run(
-			`UPDATE trade
-			SET ${toParameterSetClause({ initiatingPlayerID, recipientPlayerID, offeredCharacters, requestedCharacters, status })}
-			WHERE id = @id`,
-			{ id, initiatingPlayerID, recipientPlayerID, offeredCharacters, requestedCharacters, status }
-		);
+		this.db.updateInTable('trade', {
+			fieldsUpdating: { initiatingPlayerID, recipientPlayerID, offeredCharacters, requestedCharacters, status },
+			identifiers: { id }
+		});
 
 		return this.getTradeOrThrow(id);
 	}
 
 	/**
 	 * Removes the trade with the given ID from the database.
-	 * @param tradeID - The ID of the trade to be removed.
+	 * @param id - The ID of the trade to be removed.
 	 * @throws {TradeNotFoundError} - If the trade does not exist.
 	 */
-	removeTrade(tradeID: TradeID) {
-		const result = this.db.run(
-			`DELETE FROM trade WHERE id = ?`, tradeID
-		);
+	removeTrade(id: TradeID) {
+		const result = this.db.deleteFromTable('trade', { id })
 
 		if (result.changes === 0)
-			throw new TradeNotFoundError(tradeID);
+			throw new TradeNotFoundError(id);
 	}
 }

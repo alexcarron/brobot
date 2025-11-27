@@ -517,4 +517,82 @@ export class DatabaseQuerier {
 	close(): Database {
 		return this.db.close();
 	}
+
+	/**
+	 * Inserts a new row into a table in the database
+	 * @param tableName - The name of the table to insert into
+	 * @param insertedFieldToValue - An object of column/field names to the values to insert
+	 * @returns The id of the inserted row
+	 */
+	insertIntoTable(
+		tableName: string,
+		insertedFieldToValue: Record<string, unknown>
+	): number {
+		const runResult = this.run(
+			`INSERT INTO ${tableName} ${toParameterInsertClause(insertedFieldToValue)}`,
+			insertedFieldToValue
+		);
+
+		return Number(runResult.lastInsertRowid);
+	}
+
+	/**
+	 * Updates a row in a table in the database
+	 * @param tableName - The name of the table to update
+	 * @param parameters - An object containing the following parameters:
+	 * @param parameters.fieldsUpdating - An object of column/field names to the updated values
+	 * @param parameters.identifiers - An object of column/field names to the values to use as identifiers in the WHERE clause
+	 * @returns The result of the update query
+	 */
+	updateInTable(
+		tableName: string,
+		{fieldsUpdating, identifiers}: {
+			fieldsUpdating: Record<string, unknown>,
+			identifiers: Record<string, unknown>,
+		}
+	): RunResult {
+		return this.run(
+			`UPDATE ${tableName} ${toParameterUpdateClause({
+				updatingFields: fieldsUpdating,
+				identifiers: identifiers
+			})}`,
+			{...identifiers, ...fieldsUpdating}
+		);
+	}
+
+	/**
+	 * Deletes a row from a table in the database
+	 * @param tableName - The name of the table to delete from
+	 * @param identifiers - An object of column/field names to the values to use as identifiers in the WHERE clause
+	 * @returns The result of the delete query
+	 */
+	deleteFromTable(
+		tableName: string,
+		identifiers: Record<string, unknown>
+	): RunResult {
+		return this.run(
+			`DELETE FROM ${tableName}
+			WHERE ${toParameterORWhereClause(identifiers)}`,
+			identifiers
+		);
+	}
+
+	/**
+	 * Determines whether a row exists in the given table that has one of the given identifier values
+	 * @param tableName - The name of the table to check
+	 * @param identifiers - An object of column/field names to the values to use as identifiers in the WHERE clause
+	 * @returns True if the row exists, false otherwise
+	 */
+	doesExistInTable(
+		tableName: string,
+		identifiers: Record<string, unknown>
+	): boolean {
+		return this.getValue(
+			`SELECT 1
+			FROM ${tableName}
+			WHERE ${toParameterORWhereClause(identifiers)}
+			LIMIT 1`,
+			identifiers
+		) === 1;
+	}
 }

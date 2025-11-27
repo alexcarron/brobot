@@ -1,8 +1,8 @@
 import { InvalidArgumentError, toNullOnError } from "../../../utilities/error-utils";
-import { DatabaseQuerier, toParameterORWhereClause, toParameterSetClause } from "../database/database-querier";
+import { DatabaseQuerier } from "../database/database-querier";
 import { PlayerID } from "../types/player.types";
 import { asMinimalRoles, MinimalRole, Role, RoleDefinition, RoleID, RoleName, RoleResolvable, asMinimalRole } from "../types/role.types";
-import { PlayerNotFoundError, RoleNotFoundError } from "../utilities/error.utility";
+import { PlayerNotFoundError, RoleAlreadyExistsError, RoleNotFoundError } from "../utilities/error.utility";
 import { WithAtLeast, WithOptional } from '../../../utilities/types/generic-types';
 import { PerkRepository } from "./perk.repository";
 import { isNumber, isString } from "../../../utilities/types/type-guards";
@@ -192,17 +192,11 @@ export class RoleRepository {
 	doesRoleExist(idOrName: RoleID | RoleName): boolean {
 		if (isNumber(idOrName)) {
 			const id = idOrName;
-			return this.db.getValue(
-				'SELECT 1 FROM role WHERE id = @id LIMIT 1',
-				{ id: id }
-			) === 1;
+			return this.db.doesExistInTable('role', { id });
 		}
 		else {
 			const name = idOrName;
-			return this.db.getValue(
-				'SELECT 1 FROM role WHERE name = @name LIMIT 1',
-				{ name: name }
-			) === 1;
+			return this.db.doesExistInTable('role', { name });
 		}
 	}
 
@@ -273,21 +267,14 @@ export class RoleRepository {
 	private addMinimalRole(
 		{ id, name, description }: WithOptional<MinimalRole, 'id'>
 	): MinimalRole {
-		if (id === undefined) {
-			const result = this.db.run(
-				`INSERT INTO role (name, description)
-				VALUES (@name, @description)`,
-				{ name, description }
-			)
-			id = Number(result.lastInsertRowid);
+		if (id !== undefined) {
+			if (this.doesRoleExist(id))
+				throw new RoleAlreadyExistsError(id);
 		}
-		else {
-			this.db.run(
-				`INSERT INTO role (id, name, description)
-				VALUES (@id, @name, @description)`,
-				{ id, name, description }
-			)
-		}
+
+		id = this.db.insertIntoTable('role', {
+			id, name, description
+		});
 
 		return { id, name, description };
 	}
@@ -337,13 +324,10 @@ export class RoleRepository {
 
 
 		if (name !== undefined || description !== undefined) {
-			const updateQuery = `
-				UPDATE role
-				SET ${toParameterSetClause({ name, description })}
-				WHERE ${toParameterORWhereClause({ id, name })}
-			`;
-
-			this.db.run(updateQuery, {id, name, description});
+			this.db.updateInTable('role', {
+				fieldsUpdating: { name, description },
+				identifiers: { id, name },
+			});
 		}
 
 		let minimalRole = null;

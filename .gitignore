@@ -21,3 +21,6 @@ local/
 
 # Lite Databases
 *.db*
+
+# ES Lint
+.eslintcache
