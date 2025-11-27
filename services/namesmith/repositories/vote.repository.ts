@@ -95,10 +95,7 @@ export class VoteRepository {
 	 * @returns A promise that resolves with a boolean indicating if the vote exists.
 	 */
 	doesVoteExist(id: VoteID): boolean {
-		return this.db.getValue(
-			'SELECT 1 FROM vote WHERE voterID = @voterID LIMIT 1',
-			{ voterID: id }
-		) === 1;
+		return this.db.doesExistInTable('vote', { voterID: id });
 	}
 
 	/**
@@ -166,11 +163,9 @@ export class VoteRepository {
 		if (this.doesVoteExist(voterID))
 			throw new VoteAlreadyExistsError(voterID);
 
-		this.db.run(
-			`INSERT INTO vote (voterID, playerVotedForID)
-			VALUES (@voterID, @playerVotedForID)`,
-			{ voterID, playerVotedForID }
-		);
+		this.db.insertIntoTable('vote', {
+			voterID, playerVotedForID
+		});
 
 		return this.getVoteOrThrow(voterID);
 	}
@@ -194,13 +189,10 @@ export class VoteRepository {
 		if (!this.doesVoteExist(voterID))
 			throw new VoteNotFoundError(voterID);
 
-
-		this.db.run(
-			`UPDATE vote
-			SET playerVotedForID = @playerVotedForID
-			WHERE voterID = @voterID`,
-			{ voterID, playerVotedForID }
-		);
+		this.db.updateInTable('vote', {
+			fieldsUpdating: { playerVotedForID },
+			identifiers: { voterID }
+		});
 
 		return this.getVoteOrThrow(voterID);
 	}
@@ -210,10 +202,9 @@ export class VoteRepository {
 	 * @param voterID - The ID of the user who voted.
 	 */
 	removeVote(voterID: VoteID) {
-		const query = `DELETE FROM vote WHERE voterID = @voterID`;
-		const deleteVote = this.db.prepare(query);
-		const vote = deleteVote.run({ voterID });
-		if (vote.changes === 0)
+		const runResult = this.db.deleteFromTable('vote', { voterID });
+
+		if (runResult.changes === 0)
 			throw new VoteNotFoundError(voterID);
 	}
 

@@ -125,10 +125,7 @@ export class ActivityLogRepository {
 	 * @returns True if the activity log exists, false otherwise.
 	 */
 	private doesActivityLogExist(id: ActivityLogID): boolean {
-		return this.db.getValue(
-			"SELECT 1 FROM activityLog WHERE id = @id LIMIT 1",
-			{ id }
-		) === 1;
+		return this.db.doesExistInTable('activityLog', { id });
 	}
 
 	toPartialDBActivityLog(
@@ -178,8 +175,12 @@ export class ActivityLogRepository {
 		if (isNotNullable(involvedQuest)) {
 			this.questRepository.resolveQuest(involvedQuest);
 		}
+		if (id !== undefined) {
+			if (this.doesActivityLogExist(id))
+				throw new ActivityLogAlreadyExistsError(id);
+		}
 
-		const queryParameters = this.toPartialDBActivityLog({
+		const insertedFields = this.toPartialDBActivityLog({
 			id,
 			player,
 			type,
@@ -189,27 +190,7 @@ export class ActivityLogRepository {
 			involvedQuest,
 		});
 
-		if (id === undefined) {
-			const result = this.db.run(
-				`INSERT INTO activityLog (playerID, type, tokensDifference, involvedPlayerID, involvedRecipeID, involvedQuestID)
-				VALUES (@playerID, @type, @tokensDifference, @involvedPlayerID, @involvedRecipeID, @involvedQuestID)`,
-				queryParameters
-			);
-
-			id = Number(result.lastInsertRowid);
-		}
-		else {
-			if (this.doesActivityLogExist(id)) {
-				throw new ActivityLogAlreadyExistsError(id);
-			}
-
-			this.db.run(
-				`INSERT INTO activityLog (id, playerID, type, tokensDifference, involvedPlayerID, involvedRecipeID, involvedQuestID)
-				VALUES (@id, @playerID, @type, @tokensDifference, @involvedPlayerID, @involvedRecipeID, @involvedQuestID)`,
-				{ ...queryParameters, id }
-			);
-		}
-
+		id = this.db.insertIntoTable('activityLog', insertedFields);
 		return this.getActivityLogOrThrow(id);
 	}
 

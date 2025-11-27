@@ -1,10 +1,10 @@
 import { returnNonNullOrThrow } from "../../../utilities/error-utils";
 import { WithRequiredAndOneOther } from "../../../utilities/types/generic-types";
 import { isNumber, isString } from "../../../utilities/types/type-guards";
-import { DatabaseQuerier, toParameterSetClause } from "../database/database-querier";
+import { DatabaseQuerier } from "../database/database-querier";
 import { asQuest, asQuests, Quest, QuestDefinition, QuestID, QuestName, QuestResolvable } from "../types/quest.types";
 import { QuestAlreadyExistsError, QuestNotFoundError } from "../utilities/error.utility";
-import { toDBBool, toOptionalDBBool } from "../utilities/db.utility";
+import { toDBBool } from "../utilities/db.utility";
 import { createMockDB } from "../mocks/mock-database";
 
 /**
@@ -150,17 +150,11 @@ export class QuestRepository {
 	doesQuestExist(idOrName: QuestID | QuestName): boolean {
 		if (isNumber(idOrName)) {
 			const id = idOrName;
-			return this.db.getValue(
-				'SELECT 1 FROM quest WHERE id = @id LIMIT 1',
-				{ id }
-			) === 1;
+			return this.db.doesExistInTable('quest', { id });
 		}
 		else {
 			const name = idOrName;
-			return this.db.getValue(
-				'SELECT 1 FROM quest WHERE name = @name LIMIT 1',
-				{ name }
-			) === 1;
+			return this.db.doesExistInTable('quest', { name });
 		}
 	}
 
@@ -181,7 +175,13 @@ export class QuestRepository {
 		if (this.doesQuestExist(name))
 			throw new QuestAlreadyExistsError(name);
 
-		const queryParameters = {
+		if (id !== undefined) {
+			if (this.doesQuestExist(id))
+				throw new QuestAlreadyExistsError(id);
+		}
+
+		const insertedFields = {
+			id,
 			name,
 			description,
 			tokensReward: tokensReward ?? 0,
@@ -190,24 +190,7 @@ export class QuestRepository {
 			isShown: toDBBool(isShown),
 		};
 
-		if (id === undefined) {
-			const result = this.db.run(
-				`INSERT INTO quest (name, description, tokensReward, charactersReward, wasShown, isShown)
-				VALUES (@name, @description, @tokensReward, @charactersReward, @wasShown, @isShown)`,
-				queryParameters
-			);
-			id = Number(result.lastInsertRowid);
-		}
-		else {
-			if (this.doesQuestExist(id))
-				throw new QuestAlreadyExistsError(id);
-
-			this.db.run(
-				`INSERT INTO quest (id, name, description, tokensReward, charactersReward, wasShown, isShown)
-				VALUES (@id, @name, @description, @tokensReward, @charactersReward, @wasShown, @isShown)`,
-				{ ...queryParameters, id }
-			);
-		}
+		id = this.db.insertIntoTable('quest', insertedFields);
 
 		return this.getQuestOrThrow(id);
 	}
@@ -238,25 +221,14 @@ export class QuestRepository {
 				throw new QuestNotFoundError(name);
 		}
 
-		this.db.run(
-			`UPDATE quest
-			SET ${toParameterSetClause({
-				name,
-				description,
-				tokensReward,
-				charactersReward,
-				wasShown,
-				isShown
-			})}
-			WHERE
-				id = @id
-				OR name = @name`,
-			{
-				id, name, description, tokensReward, charactersReward,
-				wasShown: toOptionalDBBool(wasShown),
-				isShown: toOptionalDBBool(isShown)
-			}
-		);
+		this.db.updateInTable('quest', {
+			fieldsUpdating: {
+				name, description, tokensReward, charactersReward,
+				wasShown: toDBBool(wasShown),
+				isShown: toDBBool(isShown),
+			},
+			identifiers: { id, name },
+		});
 
 		if (id !== undefined)
 			return this.getQuestOrThrow(id);

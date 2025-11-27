@@ -1,5 +1,5 @@
 import { WithRequiredAndOneOther } from "../../../utilities/types/generic-types";
-import { DatabaseQuerier, toParameterSetClause } from "../database/database-querier";
+import { DatabaseQuerier } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
 import { Character, CharacterID, CharacterDefintion, asMinimalCharacters, asMinimalCharacter } from "../types/character.types";
 import { getIDfromCharacterValue } from "../utilities/character.utility";
@@ -83,10 +83,7 @@ export class CharacterRepository {
 	 * @returns True if the character exists, false otherwise.
 	 */
 	doesCharacterExist(id: CharacterID): boolean {
-		return this.db.getValue(
-			'SELECT 1 FROM character WHERE id = @id LIMIT 1',
-			{ id }
-		) === 1;
+		return this.db.doesExistInTable('character', { id });
 	}
 
 	/**
@@ -108,11 +105,9 @@ export class CharacterRepository {
 			throw new CharacterAlreadyExistsError(id);
 		}
 
-		this.db.run(
-			`INSERT INTO character (id, value, rarity)
-			VALUES (@id, @value, @rarity)`,
-			{ id, value, rarity }
-		);
+		this.db.insertIntoTable('character', {
+			id, value, rarity
+		});
 
 		return { id, value, rarity };
 	}
@@ -129,12 +124,10 @@ export class CharacterRepository {
 	updateCharacter({ id, value, rarity }:
 		WithRequiredAndOneOther<CharacterDefintion, 'id'>
 	): Character {
-		this.db.run(
-			`UPDATE character
-			SET ${toParameterSetClause({ value, rarity })}
-			WHERE id = @id`,
-			{ id, value, rarity }
-		);
+		this.db.updateInTable('character', {
+			fieldsUpdating: { value, rarity },
+			identifiers: { id }
+		});
 
 		return this.getCharacterOrThrow(id);
 	}
@@ -146,7 +139,7 @@ export class CharacterRepository {
 	 * @throws {CharacterNotFoundError} If no character with the given ID is found.
 	 */
 	removeCharacter(id: CharacterID) {
-		const result = this.db.run(`DELETE FROM character WHERE id = ?`, id);
+		const result = this.db.deleteFromTable('character', { id });
 
 		if (result.changes === 0)
 			throw new CharacterNotFoundError(id);

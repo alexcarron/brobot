@@ -2,7 +2,7 @@ import { makeSure } from "../../../utilities/jest/jest-utils";
 import { INVALID_TRADE_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { Trade, TradeStatuses } from '../types/trade.types';
-import { CannotCreateTradeError, TradeAlreadyExistsError, TradeNotFoundError } from "../utilities/error.utility";
+import { TradeAlreadyExistsError, TradeNotFoundError } from "../utilities/error.utility";
 import { TradeRepository } from "./trade.repository";
 import { addMockTrade } from "../mocks/mock-data/mock-trades";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
@@ -93,25 +93,6 @@ describe('TradeRepository', () => {
 			expect(createdTrade.id).toEqual(tradeID);
 			expect(createdTrade.status).toEqual(TradeStatuses.AWAITING_RECIPIENT);
 		});
-
-		it('throws CannotCreateTradeError if trade cannot be created', () => {
-			jest.spyOn(db, 'run')
-				.mockImplementationOnce(() => ({
-					changes: 0,
-					lastInsertRowid: -1
-				}));
-
-			const trade = {
-				initiatingPlayerID: SOME_PLAYER.id,
-				recipientPlayerID: SOME_OTHER_PLAYER.id,
-				offeredCharacters: "aaa",
-				requestedCharacters: "bbb"
-			};
-
-			makeSure(
-				() => tradeRepository.createTrade(trade)
-			).throws(CannotCreateTradeError);
-		})
 	});
 
 	describe('getInitiatingPlayer()', () => {

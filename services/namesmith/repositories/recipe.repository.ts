@@ -1,7 +1,7 @@
 import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { WithRequiredAndOneOther } from "../../../utilities/types/generic-types";
 import { isNumber, isObject } from "../../../utilities/types/type-guards";
-import { DatabaseQuerier, toParameterSetClause } from "../database/database-querier";
+import { DatabaseQuerier } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
 import { asRecipe, asRecipes, Recipe, RecipeDefinition, RecipeID, RecipeResolvable } from "../types/recipe.types";
 import { RecipeAlreadyExistsError, RecipeNotFoundError } from "../utilities/error.utility";
@@ -102,13 +102,7 @@ export class RecipeRepository {
 	 * @returns A boolean indicating if the recipe exists.
 	 */
 	doesRecipeExist(id: RecipeID): boolean {
-		const recipeID = this.db.getValue(
-			`SELECT id FROM recipe
-			WHERE id = @id`,
-			{ id }
-		) as number | undefined;
-
-		return recipeID !== undefined;
+		return this.db.doesExistInTable('recipe', { id });
 	}
 
 	/**
@@ -157,22 +151,11 @@ export class RecipeRepository {
 		if (id !== undefined) {
 			if (this.doesRecipeExist(id))
 				throw new RecipeAlreadyExistsError(id);
-
-			this.db.run(
-				`INSERT INTO recipe (id, inputCharacters, outputCharacters)
-				VALUES (@id, @inputCharacters, @outputCharacters)`,
-				{ id, inputCharacters, outputCharacters }
-			);
 		}
-		else {
-			const result = this.db.run(
-				`INSERT INTO recipe (inputCharacters, outputCharacters)
-				VALUES (@inputCharacters, @outputCharacters)`,
-				{ inputCharacters, outputCharacters }
-			);
 
-			id = Number(result.lastInsertRowid);
-		}
+		id = this.db.insertIntoTable('recipe', {
+			id, inputCharacters, outputCharacters
+		});
 
 		return { id, inputCharacters, outputCharacters };
 	}
@@ -191,12 +174,10 @@ export class RecipeRepository {
 		if (!this.doesRecipeExist(id))
 			throw new RecipeNotFoundError(id);
 
-		this.db.run(
-			`UPDATE recipe
-			SET ${toParameterSetClause({ inputCharacters, outputCharacters })}
-			WHERE id = @id`,
-			{ id, inputCharacters, outputCharacters }
-		);
+		this.db.updateInTable('recipe', {
+			fieldsUpdating: { inputCharacters, outputCharacters },
+			identifiers: { id }
+		});
 
 		return this.getRecipeOrThrow(id);
 	}
@@ -207,9 +188,7 @@ export class RecipeRepository {
 	 * @throws {RecipeNotFoundError} If no recipe with the given ID exists.
 	 */
 	removeRecipe(id: RecipeID) {
-		const result = this.db.run(
-			'DELETE FROM recipe WHERE id = ?', id
-		);
+		const result = this.db.deleteFromTable('recipe', { id });
 
 		if (result.changes === 0)
 			throw new RecipeNotFoundError(id);

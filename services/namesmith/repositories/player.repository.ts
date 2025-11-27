@@ -2,7 +2,7 @@ import { InvalidArgumentError, returnNonNullOrThrow } from "../../../utilities/e
 import { getRandomNumericUUID } from "../../../utilities/random-utils";
 import { Override, WithOptional, WithRequiredAndOneOther } from "../../../utilities/types/generic-types";
 import { MAX_NAME_LENGTH } from "../constants/namesmith.constants";
-import { DatabaseQuerier, toParameterSetClause } from "../database/database-querier";
+import { DatabaseQuerier } from "../database/database-querier";
 import { asMinimalPlayer, asMinimalPlayers, MinimalPlayer, Player, PlayerDefinition, PlayerID, PlayerResolvable } from "../types/player.types";
 import { RoleID } from "../types/role.types";
 import { PlayerNotFoundError, PlayerAlreadyExistsError } from "../utilities/error.utility";
@@ -184,15 +184,11 @@ export class PlayerRepository {
 
 	/**
 	 * Checks if a player exists in the database by their ID.
-	 * @param playerID - The ID of the player to check for existence.
+	 * @param id - The ID of the player to check for existence.
 	 * @returns True if the player exists, otherwise false.
 	 */
-	doesPlayerExist(playerID: string): boolean {
-		const query = `SELECT id FROM player WHERE id = @id LIMIT 1`;
-		const idOfPlayer = this.db.getRow(query, { id: playerID });
-		if (idOfPlayer === undefined)
-			return false;
-		return true;
+	doesPlayerExist(id: string): boolean {
+		return this.db.doesExistInTable('player', { id })
 	}
 
 	private getMinimalPlayersWithoutPublishedNames(): Override<MinimalPlayer, {
@@ -483,13 +479,10 @@ export class PlayerRepository {
 	 * @param playerID - The ID of the player to be added.
 	 */
 	createPlayer(playerID: string) {
-		const query = `
-			INSERT INTO player (id, currentName, publishedName, tokens, role, inventory)
-			VALUES (@id, @currentName, @publishedName, @tokens, @role, @inventory)
-		`;
+		if (this.doesPlayerExist(playerID))
+			throw new PlayerAlreadyExistsError(playerID);
 
-		const addPlayer = this.db.prepare(query);
-		const result = addPlayer.run({
+		this.db.insertIntoTable('player', {
 			id: playerID,
 			currentName: "",
 			publishedName: null,
@@ -497,9 +490,6 @@ export class PlayerRepository {
 			role: null,
 			inventory: ""
 		});
-
-		if (result.changes === 0)
-			throw new PlayerAlreadyExistsError(playerID);
 	}
 
 	/**
@@ -526,16 +516,10 @@ export class PlayerRepository {
 			throw new PlayerAlreadyExistsError(id);
 		}
 
-		this.db.run(
-			`INSERT INTO player (id, currentName, publishedName, tokens, role, inventory, lastClaimedRefillTime)
-			VALUES (@id, @currentName, @publishedName, @tokens, @role, @inventory, @lastClaimedRefillTime)`,
-			{
-				id, currentName, publishedName, tokens, role, inventory,
-				lastClaimedRefillTime:
-					lastClaimedRefillTime?.getTime() ?? null
-			}
-		);
-
+		this.db.insertIntoTable('player', {
+			id, currentName, publishedName, tokens, role, inventory,
+			lastClaimedRefillTime: lastClaimedRefillTime?.getTime() ?? null
+		});
 
 		return this.getMinimalPlayerOrThrow(id);
 	}
@@ -571,12 +555,10 @@ export class PlayerRepository {
 			id, currentName, publishedName, tokens, role: roleID, inventory, lastClaimedRefillTime
 		});
 
-		this.db.run(
-			`UPDATE player
-			SET role = @role
-			WHERE id = @id`,
-			{ role: roleID, id: minimalPlayer.id }
-		);
+		this.db.updateInTable('player', {
+			fieldsUpdating: { role: roleID },
+			identifiers: { id: minimalPlayer.id }
+		});
 
 		for (const perk of perkResolvables) {
 			const perkID = this.perkRepository.resolveID(perk);
@@ -606,16 +588,13 @@ export class PlayerRepository {
 			throw new PlayerNotFoundError(id);
 		}
 
-		this.db.run(
-			`UPDATE player
-			SET ${toParameterSetClause({ currentName, publishedName, tokens, inventory, lastClaimedRefillTime })}
-			WHERE id = @id`,
-			{
-				id, currentName, publishedName, tokens, inventory,
-				lastClaimedRefillTime:
-					lastClaimedRefillTime?.getTime() ?? null
-			}
-		);
+		this.db.updateInTable('player', {
+			fieldsUpdating: {
+				currentName, publishedName, tokens, inventory,
+				lastClaimedRefillTime: lastClaimedRefillTime?.getTime() ?? null
+			},
+			identifiers: { id }
+		});
 
 		return this.getMinimalPlayerOrThrow(id);
 	}
@@ -656,16 +635,14 @@ export class PlayerRepository {
 
 	/**
 	 * Removes a player from the game's database.
-	 * @param playerID - The ID of the player to be removed.
+	 * @param id - The ID of the player to be removed.
 	 * @throws {PlayerNotFoundError} - If the player with the specified ID is not found.
 	 */
-	removePlayer(playerID: string) {
-		const result = this.db.run(
-			`DELETE FROM player WHERE id = ?`, playerID
-		)
+	removePlayer(id: string) {
+		const result = this.db.deleteFromTable('player', { id });
 
 		if (result.changes === 0)
-			throw new PlayerNotFoundError(playerID);
+			throw new PlayerNotFoundError(id);
 	}
 
 	/**

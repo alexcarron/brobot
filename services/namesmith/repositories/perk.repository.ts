@@ -1,7 +1,7 @@
 import { toNullOnError } from "../../../utilities/error-utils";
 import { Override, WithAtLeast } from "../../../utilities/types/generic-types";
 import { isNumber, isString } from "../../../utilities/types/type-guards";
-import { DatabaseQuerier, toParameterInsertClause, toParameterUpdateClause } from "../database/database-querier";
+import { DatabaseQuerier } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
 import { Perk, PerkDefintion, PerkID, PerkName, PerkResolvable, toPerk, toPerks } from "../types/perk.types";
 import { PlayerID } from "../types/player.types";
@@ -154,17 +154,11 @@ export class PerkRepository {
 	doesPerkExist(idOrName: PerkID | PerkName): boolean {
 		if (isNumber(idOrName)) {
 			const id = idOrName;
-			return this.db.getValue(
-				'SELECT 1 FROM perk WHERE id = @id LIMIT 1',
-				{ id }
-			) === 1;
+			return this.db.doesExistInTable('perk', { id });
 		}
 		else {
 			const name = idOrName;
-			return this.db.getValue(
-				'SELECT 1 FROM perk WHERE name = @name LIMIT 1',
-				{ name }
-			) === 1;
+			return this.db.doesExistInTable('perk', { name });
 		}
 	}
 
@@ -198,15 +192,7 @@ export class PerkRepository {
 			isBeingOffered: toDBBool(perkDefinition.isBeingOffered),
 		};
 
-		const result = this.db.run(
-			`INSERT INTO perk ${toParameterInsertClause(queryParameters)}`,
-			queryParameters
-		);
-
-		if (id === undefined) {
-			id = Number(result.lastInsertRowid);
-		}
-
+		id = this.db.insertIntoTable('perk', queryParameters);
 		return this.getPerkOrThrow(id);
 	}
 
@@ -227,7 +213,7 @@ export class PerkRepository {
 			| WithAtLeast<PerkDefintion, 'name'>
 	): Perk {
 		const {id, name} = perkDefinition;
-		const queryParameters = {
+		const updatingFields = {
 			...perkDefinition,
 			wasOffered: toOptionalDBBool(perkDefinition.wasOffered),
 			isBeingOffered: toOptionalDBBool(perkDefinition.isBeingOffered)
@@ -242,13 +228,10 @@ export class PerkRepository {
 				throw new PerkNotFoundError(name);
 		}
 
-		this.db.run(
-			`UPDATE perk ${toParameterUpdateClause({
-				updatingFields: queryParameters,
-				identifiers: { id, name },
-			})}`,
-			queryParameters,
-		);
+		this.db.updateInTable('perk', {
+			fieldsUpdating: updatingFields,
+			identifiers: { id, name }
+		});
 
 		if (id !== undefined) {
 			return this.getPerkOrThrow(id);
@@ -265,7 +248,7 @@ export class PerkRepository {
 	 * @throws PerkNotFoundError - If the perk does not exist.
 	 */
 	removePerk(id: PerkID) {
-		const result = this.db.run("DELETE FROM perk WHERE id = ?", id);
+		const result = this.db.deleteFromTable('perk', { id });
 
 		if (result.changes === 0)
 			throw new PerkNotFoundError(id);

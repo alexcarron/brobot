@@ -6,10 +6,21 @@
 	"type": "commonjs",
 	"scripts": {
 		"prepare": "husky",
-		"validate": "npm run lint && npm run typecheck && npm run test",
-		"test": "node -r ts-node/register ./node_modules/jest/bin/jest.js --runInBand --silent",
-		"lint": "eslint . --ignore-path .gitignore",
-		"typecheck": "tsc --noEmit",
+
+		"lint:fast": "eslint \"**/*.{ts,tsx,js,jsx}\" --ignore-path .gitignore --cache --cache-location .eslintcache --max-warnings=0",
+		"lint:full": "eslint . --ignore-path .gitignore --cache --cache-location .eslintcache --config .eslintrc.full.cjs",
+		"lint": "npm run lint:fast",
+
+		"typecheck:fast": "tsc --noEmit --incremental",
+		"typecheck:ci": "tsc --noEmit -b",
+		"typecheck": "npm run typecheck:fast",
+
+		"test:dev": "jest --maxWorkers=50% --silent",
+		"test:ci": "jest --runInBand --silent",
+		"test": "npm run test:dev",
+
+		"validate": "npm run lint:fast && npm run typecheck:fast && npm run test:dev",
+
 		"build": "node -r ts-node/register build.ts",
 		"build:guild": "npm run build -- --guild-commands-only",
 		"build:dev": "npm run build -- --development",

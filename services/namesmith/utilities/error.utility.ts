@@ -1,3 +1,4 @@
+import { inspect } from 'util';
 import { getCharacterDifferences } from '../../../utilities/data-structure-utils';
 import { CustomError } from '../../../utilities/error-utils';
 import { escapeDiscordMarkdown } from '../../../utilities/string-manipulation-utils';
@@ -24,7 +25,9 @@ export class NamesmithError extends CustomError {}
 export class QueryUsageError extends NamesmithError {
 	constructor(message: string, sqlQuery: string, params?: object | unknown[]) {
 		super({
-			message,
+			message: `${message}\n\n` +
+				`SQL Query: ${sqlQuery}\n\n` +
+				`Parameters: ${inspect(params)}`,
 			relevantData: {
 				sqlQuery,
 				params
@@ -321,7 +324,7 @@ export class PerkAlreadyExistsError extends ResourceAlreadyExistsError {
 		perkID?: PerkID
 		perkName?: PerkName
 	}
-	
+
 	constructor(perkIDOrName: PerkID | PerkName) {
 		const isID = isNumber(perkIDOrName);
 
