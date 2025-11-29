@@ -1,6 +1,6 @@
 import { DBBoolean } from "../services/namesmith/utilities/db.utility";
 import { makeSure } from "./jest/jest-utils";
-import { boolean, date, InvalidTypeError, number, object, string, strings, zeroOrOne } from './runtime-types-utils';
+import { boolean, date, RuntimeTypeError, number, object, string, strings, zeroOrOne } from './runtime-types-utils';
 
 describe('runtime-types-utils.test.ts', () => {
 	describe('number', () => {
@@ -25,14 +25,14 @@ describe('runtime-types-utils.test.ts', () => {
 			const value: unknown = '10';
 			makeSure(() =>
 				number.from(value)
-			).throws(InvalidTypeError);
+			).throws(RuntimeTypeError);
 		});
 
 		it('fromAll() throws if not a number', () => {
 			const values: unknown[] = [10, '20'];
 			makeSure(() =>
 				number.fromAll(values)
-			).throws(InvalidTypeError);
+			).throws(RuntimeTypeError);
 		});
 
 		it('fromAll() accepts only numbers', () => {
@@ -43,7 +43,7 @@ describe('runtime-types-utils.test.ts', () => {
 
 		it('fromAll() throws if any value is invalid', () => {
 			const values: unknown[] = [1, '2', 3];
-			makeSure(() => number.fromAll(values)).throws(InvalidTypeError);
+			makeSure(() => number.fromAll(values)).throws(RuntimeTypeError);
 		});
 	});
 
@@ -59,14 +59,14 @@ describe('runtime-types-utils.test.ts', () => {
 			const value: unknown = 10;
 			makeSure(() =>
 				string.from(value)
-			).throws(InvalidTypeError);
+			).throws(RuntimeTypeError);
 		});
 
 		it('fromAll() throws if not a string', () => {
 			const values: unknown[] = [10, 20];
 			makeSure(() =>
 				string.fromAll(values)
-			).throws(InvalidTypeError);
+			).throws(RuntimeTypeError);
 		});
 
 		it('fromAll() accepts only strings', () => {
@@ -77,7 +77,7 @@ describe('runtime-types-utils.test.ts', () => {
 
 		it('fromAll() throws if any value is invalid', () => {
 			const values: unknown[] = ['a', 2, 'c'];
-			makeSure(() => string.fromAll(values)).throws(InvalidTypeError);
+			makeSure(() => string.fromAll(values)).throws(RuntimeTypeError);
 		});
 
 		it('to() and from() provides a transformable type', () => {
@@ -100,8 +100,8 @@ describe('runtime-types-utils.test.ts', () => {
 				.to(stringID => Number(stringID))
 				.from(numberID => numberID.toString());
 
-			makeSure(() => rawUserID.toDomain(10)).throws(InvalidTypeError);
-			makeSure(() => rawUserID.toDomains(['10', 20])).throws(InvalidTypeError);
+			makeSure(() => rawUserID.toDomain(10)).throws(RuntimeTypeError);
+			makeSure(() => rawUserID.toDomains(['10', 20])).throws(RuntimeTypeError);
 		});
 	});
 
@@ -131,7 +131,7 @@ describe('runtime-types-utils.test.ts', () => {
 				const value: unknown = 'cheese';
 				makeSure(() =>
 					Colors.from(value)
-				).throws(InvalidTypeError);
+				).throws(RuntimeTypeError);
 			});
 		});
 
@@ -146,7 +146,7 @@ describe('runtime-types-utils.test.ts', () => {
 				const values: unknown[] = ['red', 'cheese', 'blue'];
 				makeSure(() =>
 					Colors.fromAll(values)
-				).throws(InvalidTypeError);
+				).throws(RuntimeTypeError);
 			})
 		});
 
@@ -210,7 +210,7 @@ describe('runtime-types-utils.test.ts', () => {
 			const value: unknown = 'true';
 			makeSure(() =>
 				boolean.from(value)
-			).throws(InvalidTypeError);
+			).throws(RuntimeTypeError);
 		});
 
 		it('fromAll() accepts only booleans', () => {
@@ -221,7 +221,7 @@ describe('runtime-types-utils.test.ts', () => {
 
 		it('fromAll() throws if any value is invalid', () => {
 			const values: unknown[] = [true, 'false'];
-			makeSure(() => boolean.fromAll(values)).throws(InvalidTypeError);
+			makeSure(() => boolean.fromAll(values)).throws(RuntimeTypeError);
 		});
 	});
 
@@ -232,8 +232,8 @@ describe('runtime-types-utils.test.ts', () => {
 		});
 
 		it('from() throws on other numbers', () => {
-			makeSure(() => zeroOrOne.from(2)).throws(InvalidTypeError);
-			makeSure(() => zeroOrOne.from(-1)).throws(InvalidTypeError);
+			makeSure(() => zeroOrOne.from(2)).throws(RuntimeTypeError);
+			makeSure(() => zeroOrOne.from(-1)).throws(RuntimeTypeError);
 		});
 
 		it('toDomain and fromDomain transformation', () => {
@@ -258,8 +258,8 @@ describe('runtime-types-utils.test.ts', () => {
 				.to(zeroOrOne => zeroOrOne === 1)
 				.from(boolean => boolean ? 1 : 0);
 
-			makeSure(() => dbBoolean.toDomain(2)).throws(InvalidTypeError);
-			makeSure(() => dbBoolean.toDomains([0, 15])).throws(InvalidTypeError);
+			makeSure(() => dbBoolean.toDomain(2)).throws(RuntimeTypeError);
+			makeSure(() => dbBoolean.toDomains([0, 15])).throws(RuntimeTypeError);
 		});
 
 		it('fromAll() accepts only 0 or 1', () => {
@@ -270,7 +270,7 @@ describe('runtime-types-utils.test.ts', () => {
 
 		it('fromAll() throws if invalid numbers exist', () => {
 			const values: unknown[] = [0, 1, 2];
-			makeSure(() => zeroOrOne.fromAll(values)).throws(InvalidTypeError);
+			makeSure(() => zeroOrOne.fromAll(values)).throws(RuntimeTypeError);
 		});
 	});
 
@@ -298,7 +298,7 @@ describe('runtime-types-utils.test.ts', () => {
 
 			it('throws if not a date', () => {
 				const value: unknown = 'not a date';
-				makeSure(() => date.from(value)).throws(InvalidTypeError);
+				makeSure(() => date.from(value)).throws(RuntimeTypeError);
 			})
 		});
 
@@ -313,7 +313,7 @@ describe('runtime-types-utils.test.ts', () => {
 
 			it('throws if any value is not a date', () => {
 				const values: unknown[] = [new Date(), 'not a date'];
-				makeSure(() => date.fromAll(values)).throws(InvalidTypeError);
+				makeSure(() => date.fromAll(values)).throws(RuntimeTypeError);
 			})
 		});
 	})
@@ -395,7 +395,7 @@ describe('runtime-types-utils.test.ts', () => {
 				const value: unknown = 10;
 				makeSure(() =>
 					object.from(value)
-				).throws(InvalidTypeError);
+				).throws(RuntimeTypeError);
 			});
 
 			it('throws if not an object with all properties', () => {
@@ -415,7 +415,7 @@ describe('runtime-types-utils.test.ts', () => {
 						nullProperty: null,
 						undefinedProperty: undefined
 					})
-				).throws(InvalidTypeError);
+				).throws(RuntimeTypeError);
 
 				makeSure(() =>
 					allInfo.from({
@@ -425,7 +425,7 @@ describe('runtime-types-utils.test.ts', () => {
 						nullProperty: null,
 						undefinedProperty: undefined
 					})
-				).throws(InvalidTypeError);
+				).throws(RuntimeTypeError);
 
 				makeSure(() =>
 					allInfo.from({
@@ -435,7 +435,7 @@ describe('runtime-types-utils.test.ts', () => {
 						nullProperty: null,
 						undefinedProperty: undefined
 					})
-				).throws(InvalidTypeError);
+				).throws(RuntimeTypeError);
 
 				makeSure(() =>
 					allInfo.from({
@@ -445,7 +445,7 @@ describe('runtime-types-utils.test.ts', () => {
 						nullProperty: undefined,
 						undefinedProperty: undefined
 					})
-				).throws(InvalidTypeError);
+				).throws(RuntimeTypeError);
 
 				makeSure(() =>
 					allInfo.from({
@@ -455,7 +455,7 @@ describe('runtime-types-utils.test.ts', () => {
 						nullProperty: null,
 						undefinedProperty: null
 					})
-				).throws(InvalidTypeError);
+				).throws(RuntimeTypeError);
 			});
 		});
 
@@ -523,12 +523,12 @@ describe('runtime-types-utils.test.ts', () => {
 					id: 1,
 					name: 'Speed',
 					wasOffered: true
-				})).throws(InvalidTypeError);
+				})).throws(RuntimeTypeError);
 
 				makeSure(() => dbPerkType.toPerks([
 					{ id: 1, name: 'Speed', wasOffered: 0 },
 					{ id: 2, name: 'Strength', wasOffered: false }
-				])).throws(InvalidTypeError);
+				])).throws(RuntimeTypeError);
 			});
 
 
@@ -568,7 +568,7 @@ describe('runtime-types-utils.test.ts', () => {
 					{ a: '2' }
 				];
 				const type = object.asType({ a: number });
-				makeSure(() => type.fromAll(values)).throws(InvalidTypeError);
+				makeSure(() => type.fromAll(values)).throws(RuntimeTypeError);
 			});
 		});
 	});
@@ -585,7 +585,7 @@ describe('runtime-types-utils.test.ts', () => {
 			makeSure(number.orNull.fromAll([nullValue, numValue])).is([null, 5]);
 
 			// invalid non-null still throws
-			makeSure(() => number.orNull.from('x' as unknown)).throws(InvalidTypeError);
+			makeSure(() => number.orNull.from('x' as unknown)).throws(RuntimeTypeError);
 		});
 
 		it('transformable primitive: string.to(...).from(...).orNull supports toDomain/fromDomain and arrays', () => {
@@ -607,8 +607,8 @@ describe('runtime-types-utils.test.ts', () => {
 			makeSure(nullable.fromDomain(20)).is('20');
 
 			// invalid non-null still throws
-			makeSure(() => nullable.toDomain(42)).throws(InvalidTypeError);
-			makeSure(() => nullable.toDomains([null, 42])).throws(InvalidTypeError);
+			makeSure(() => nullable.toDomain(42)).throws(RuntimeTypeError);
+			makeSure(() => nullable.toDomains([null, 42])).throws(RuntimeTypeError);
 		});
 
 		it('named transformable (strings.asTransformableType) .orNull provides named methods that accept null', () => {
@@ -636,7 +636,7 @@ describe('runtime-types-utils.test.ts', () => {
 			makeSure(NullableColor.fromRGBs([null, [0, 255, 0]])).is([null, 'green']);
 
 			// invalid non-null still throws (e.g., passing object to toRGB)
-			makeSure(() => NullableColor.toRGB(123)).throws(InvalidTypeError);
+			makeSure(() => NullableColor.toRGB(123)).throws(RuntimeTypeError);
 		});
 
 		it('object.asTransformableType .orNull returns nullable named transformable methods', () => {
@@ -663,7 +663,7 @@ describe('runtime-types-utils.test.ts', () => {
 			makeSure(back).is([null, rawPerk]);
 
 			// invalid shapes still throw when non-null
-			makeSure(() => nullablePerk.toPerk({ id: 'x', name: 'N', wasOffered: 1 })).throws(InvalidTypeError);
+			makeSure(() => nullablePerk.toPerk({ id: 'x', name: 'N', wasOffered: 1 })).throws(RuntimeTypeError);
 		});
 
 		it('object.asTransformableType with transformable property .orNull preserves nested nullable transformable behavior', () => {
@@ -694,7 +694,7 @@ describe('runtime-types-utils.test.ts', () => {
 			makeSure(back2).is(raw2);
 
 			// invalid non-null in nested still throws
-			makeSure(() => dbPerkType.toPerk({ id: 3, name: 'X', wasOffered: 5 })).throws(InvalidTypeError);
+			makeSure(() => dbPerkType.toPerk({ id: 3, name: 'X', wasOffered: 5 })).throws(RuntimeTypeError);
 		});
 
 		it('orNull property is idempotent and safe to chain (accessing multiple times does not throw / behaves same)', () => {
@@ -727,8 +727,8 @@ describe('runtime-types-utils.test.ts', () => {
 			makeSure(nullableDbBoolean.toDomain(null)).is(null);
 
 			// invalid non-null should throw
-			makeSure(() => nullableDbBoolean.toDomain('x' as unknown)).throws(InvalidTypeError);
-			makeSure(() => nullableDbBoolean.toDomains([null, 'x' as unknown])).throws(InvalidTypeError);
+			makeSure(() => nullableDbBoolean.toDomain('x' as unknown)).throws(RuntimeTypeError);
+			makeSure(() => nullableDbBoolean.toDomains([null, 'x' as unknown])).throws(RuntimeTypeError);
 		});
 
 		it('compound arrays mapping/roundtrip with mixed nulls and values', () => {
@@ -822,8 +822,8 @@ describe('runtime-types-utils.test.ts', () => {
 				configToggle: false
 			});
 
-			makeSure(() => infoType.from({})).throws(InvalidTypeError);
-			makeSure(() => infoType.from(undefined)).throws(InvalidTypeError);
+			makeSure(() => infoType.from({})).throws(RuntimeTypeError);
+			makeSure(() => infoType.from(undefined)).throws(RuntimeTypeError);
 		});
 
 		it('fromAll() converts given values using logic from all previous test scenarios', () => {
@@ -955,6 +955,180 @@ describe('runtime-types-utils.test.ts', () => {
 				age: 18,
 				configToggle: false
 			});
+		});
+	});
+
+	describe('.includesNull', () => {
+		it('should return false if the primitive type does not include null', () => {
+			makeSure(number.includesNull).isFalse();
+			makeSure(boolean.includesNull).isFalse();
+			makeSure(string.includesNull).isFalse();
+			makeSure(zeroOrOne.includesNull).isFalse();
+		});
+
+		it('should return true if the primitive type includes null', () => {
+			makeSure(number.orNull.includesNull).isTrue();
+			makeSure(boolean.orNull.includesNull).isTrue();
+			makeSure(string.orNull.includesNull).isTrue();
+			makeSure(zeroOrOne.orNull.includesNull).isTrue();
+		});
+
+		it('should return true on multiple chainings of orNull', () => {
+			makeSure(number.orNull.orNull.includesNull).isTrue();
+			makeSure(boolean.orNull.orNull.orNull.includesNull).isTrue();
+			makeSure(string.orNull.orNull.orNull.orNull.includesNull).isTrue();
+			makeSure(zeroOrOne.orNull.orNull.orNull.orNull.orNull.includesNull).isTrue();
+		});
+
+		it('should return false on object.asType()', () => {
+			const InfoType = object.asType({
+				age: number,
+				name: string,
+				configToggle: boolean,
+			});
+
+			makeSure(InfoType.includesNull).isFalse();
+		});
+
+		it('should return true on object.asType().orNull', () => {
+			const InfoType = object.asType({
+				age: number,
+				name: string,
+				configToggle: boolean,
+			}).orNull;
+
+			makeSure(InfoType.includesNull).isTrue();
+		});
+
+		it('should return false on object.asTransformableType()', () => {
+			const InfoType = object.asTransformableType('Info', {
+				age: number,
+				name: string,
+				configToggle: DBBoolean,
+			});
+
+			makeSure(InfoType.includesNull).isFalse();
+		});
+
+		it('should return true on object.asTransformableType().orNull', () => {
+			const InfoType = object.asTransformableType('Info', {
+				age: number,
+				name: string,
+				configToggle: DBBoolean,
+			}).orNull;
+
+			makeSure(InfoType.includesNull).isTrue();
+		});
+	});
+
+	describe('throws meaningful errors', () => {
+		it('when the .from() method on a primitive type is called with an invalid value', () => {
+			makeSure(() => number.from('string')).throws(RuntimeTypeError);
+			makeSure(() => string.from(1)).throws(RuntimeTypeError);
+			makeSure(() => boolean.from(1)).throws(RuntimeTypeError);
+			makeSure(() => date.from(1)).throws(RuntimeTypeError);
+			makeSure(() => zeroOrOne.from(2)).throws(RuntimeTypeError);
+		});
+
+		it('when the .fromAll() method on a primitive type is called with an invalid value', () => {
+			makeSure(() => number.fromAll(['string'])).throws(RuntimeTypeError);
+			makeSure(() => number.fromAll([10, 'string', 10])).throws(RuntimeTypeError);
+			makeSure(() => number.fromAll(['string', 'string2', 'string3', 10])).throws(RuntimeTypeError);
+			makeSure(() => string.fromAll(['string', 25])).throws(RuntimeTypeError);
+			makeSure(() => boolean.fromAll([true, 'not a boolean'])).throws(RuntimeTypeError);
+			makeSure(() => zeroOrOne.fromAll([1, false])).throws(RuntimeTypeError);
+			makeSure(() => date.fromAll([new Date(), 'not a date'])).throws(RuntimeTypeError);
+		});
+
+		it('when the .throwIfNotType() method on a primitive type is called with an invalid value', () => {
+			makeSure(() => number.throwIfNotType('string')).throws(RuntimeTypeError);
+			makeSure(() => string.throwIfNotType(1)).throws(RuntimeTypeError);
+			makeSure(() => boolean.throwIfNotType(new Map())).throws(RuntimeTypeError);
+			makeSure(() => date.throwIfNotType({ date: new Date() })).throws(RuntimeTypeError);
+			makeSure(() => zeroOrOne.throwIfNotType(false)).throws(RuntimeTypeError);
+		});
+
+		it('when nonsense and extremely long values are given', () => {
+			makeSure(() => number.from(
+				'a'.repeat(1000)
+			)).throws(RuntimeTypeError);
+
+			makeSure(() => number.from(
+				`You're not a player, so you can't craft characters. Please run this command again when you have transformed into a player.`
+			)).throws(RuntimeTypeError);
+
+			makeSure(() => string.from(
+				919238837100000000000000000000000000000000
+			)).throws(RuntimeTypeError);
+
+			makeSure(() => boolean.from(
+				new Date(8640000000000000)
+			)).throws(RuntimeTypeError);
+
+			makeSure(() => date.from(
+				// @ts-ignore
+				new Map(
+					[
+						[
+							'key'.repeat(1000),
+							new Date(8640000000000000)
+						],
+						[
+							'key2'.repeat(1000),
+							`You're not a player, so you can't craft characters. Please run this command again when you have transformed into a player.`.repeat(10)
+						]
+					]
+				)
+			)).throws(RuntimeTypeError);
+
+			makeSure(() => zeroOrOne.from({
+				['key'.repeat(1000)]: new Date(8640000000000000),
+				['key2'.repeat(1000)]: `You're not a player, so you can't craft characters. Please run this command again when you have transformed into a player.`.repeat(10)
+			})).throws(RuntimeTypeError);
+		});
+
+		it('when .toDomain() or .toDomains() is called on a primitive type with an invalid value', () => {
+			makeSure(() => DBBoolean.toDomain('string')).throws(RuntimeTypeError);
+			makeSure(() => DBBoolean.toDomains(['string'])).throws(RuntimeTypeError);
+			makeSure(() => DBBoolean.toDomains([0, 'string'])).throws(RuntimeTypeError);
+		});
+
+		it('when to`${DomainName}` or to`${DomainName}s` is called on a object type with an invalid value', () => {
+			const dbPerkType = object.asTransformableType('Perk', {
+				id: number,
+				name: string,
+				wasOffered: zeroOrOne
+					.to(zeroOrOne => zeroOrOne === 1)
+					.from(boolean => boolean ? 1 : 0),
+			});
+
+			makeSure(() => dbPerkType.toPerk('string')).throws(RuntimeTypeError);
+			makeSure(() => dbPerkType.toPerk({})).throws(RuntimeTypeError);
+			makeSure(() => dbPerkType.toPerk({
+				id: 1
+			})).throws(RuntimeTypeError);
+			makeSure(() => dbPerkType.toPerk({
+				id: 1,
+				name: 'someName',
+				wasOffered: true,
+			})).throws(RuntimeTypeError);
+			makeSure(() => dbPerkType.toPerk({
+				id: 'string',
+				name: 120,
+				wasOffered: 0,
+			})).throws(RuntimeTypeError);
+			makeSure(() => dbPerkType.toPerks([
+				{
+					id: 1,
+					name: 'someName',
+					wasOffered: 0,
+				},
+				{
+					id: 'string',
+					name: 120,
+					wasOffered: 0,
+				}
+			])).throws(RuntimeTypeError);
 		});
 	});
 });

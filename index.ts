@@ -6,7 +6,6 @@ import { onClientReady } from './bot-config/on-ready.js';
 import { setupAndDeployCommands, setupCommands } from "./bot-config/setup-commands";
 import { setupClient } from "./bot-config/setup-client";
 
-
 const DEPLOY_GUILD_COMMANDS_OPTIONS = [
 	'--deploy-guild-commands',
 	'--deployGuildCommands',

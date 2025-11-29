@@ -300,6 +300,9 @@ export type UndefinedAsOptional<ObjectType> =
 		]?: ObjectType[Key]
 	};
 
+export type IncludesNull<Type> =
+	Extract<Type, null> extends never ? false : true;
+
 export type ToTypeName<Type> =
 	Type extends string ? "string" :
 	Type extends number ? "number" :

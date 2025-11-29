@@ -1,5 +1,6 @@
+import { inspect } from "util";
 import { makeSure } from "./jest/jest-utils";
-import { areCharactersInString, getCharacterCounts, hasEmoji, hasLetter, hasNumber, hasSymbol, isIntegerString, isOneSymbol, isUnicodeCodePoint } from "./string-checks-utils";
+import { areCharactersInString, getCharacterCounts, hasEmoji, hasLetter, hasNumber, hasSymbol, isIntegerString, isMultiLine, isOneSymbol, isUnicodeCodePoint } from "./string-checks-utils";
 
 describe('string-checks-utils', () => {
 	describe('areCharactersInString()', () => {
@@ -596,6 +597,46 @@ describe('string-checks-utils', () => {
 			makeSure(isUnicodeCodePoint(0)).isFalse();
 			makeSure(isUnicodeCodePoint(-1)).isFalse();
 			makeSure(isUnicodeCodePoint(0x110000)).isFalse(); // > U+10FFFF
+		});
+	});
+
+	describe('isMultiLine()', () => {
+		it('returns true for a string with newlines', () => {
+			makeSure(isMultiLine('a\nb')).is(true);
+		});
+
+		it('returns false for a string without newlines', () => {
+			makeSure(isMultiLine('abc')).is(false);
+		});
+
+		it('returns false for an empty string', () => {
+			makeSure(isMultiLine('')).is(false);
+		});
+
+		it('returns false for a string with whitespace', () => {
+			makeSure(isMultiLine(' 1')).is(false);
+			makeSure(isMultiLine('1 ')).is(false);
+			makeSure(isMultiLine('1 2')).is(false);
+		});
+
+		it('returns true for a string with many newlines', () => {
+			makeSure(isMultiLine(`Hello
+				This is a string
+				with many
+				new lines
+			`)).is(true);
+		});
+
+		it('returns false when using inspect with single value', () => {
+			makeSure(isMultiLine(inspect('a'))).is(false);
+		});
+
+		it('returns true when using inspect with a large object', () => {
+			makeSure(isMultiLine(inspect({
+				ageOfTheuser: 18,
+				nameOfThisPerson: 'Johnathon Jeffery',
+				longEmail: 'anEmailWithManyCharactersOwJ3T@example.com',
+			}))).is(true);
 		});
 	});
 });
