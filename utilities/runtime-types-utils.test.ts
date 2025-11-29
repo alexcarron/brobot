@@ -1,5 +1,5 @@
 import { makeSure } from "./jest/jest-utils";
-import { boolean, date, InvalidTypeError, number, object, string, strings, zeroOrOne } from "./runtime-types-utils";
+import { boolean, date, InvalidTypeError, number, object, string, strings, zeroOrOne } from './runtime-types-utils';
 
 describe('runtime-types-utils.test.ts', () => {
 	describe('number', () => {
@@ -149,9 +149,9 @@ describe('runtime-types-utils.test.ts', () => {
 			})
 		});
 
-		describe('asTranformableType()', () => {
+		describe('asTransformableType()', () => {
 			it('allows you to transfer a union of strings into a different type', () => {
-				const ColorNames = Colors.asTranformableType(
+				const ColorNames = Colors.asTransformableType(
 					'RGBValue',
 					(color) => {
 						switch (color) {
@@ -610,8 +610,8 @@ describe('runtime-types-utils.test.ts', () => {
 			makeSure(() => nullable.toDomains([null, 42])).throws(InvalidTypeError);
 		});
 
-		it('named transformable (strings.asTranformableType) .orNull provides named methods that accept null', () => {
-			const ColorNames = strings('red', 'green', 'blue').asTranformableType(
+		it('named transformable (strings.asTransformableType) .orNull provides named methods that accept null', () => {
+			const ColorNames = strings('red', 'green', 'blue').asTransformableType(
 				'RGB',
 				(color) => {
 					switch (color) {
@@ -743,6 +743,195 @@ describe('runtime-types-utils.test.ts', () => {
 
 			const back = nullable.fromDomains(domains);
 			makeSure(back).is(['1', null, '2']);
+		});
+	});
+
+	describe('.default()', () => {
+		it('.from() returns the default value when undefined is given for a primitive runtime type', () => {
+			const ageType = number.default(18);
+			makeSure(ageType.from(undefined)).is(18);
+
+			const nameType = string.default('John Doe');
+			makeSure(nameType.from(undefined)).is('John Doe');
+
+			const configToggleType = boolean.default(false);
+			makeSure(configToggleType.from(undefined)).is(false);
+		});
+
+		it('.fromAll() returns the default value when undefined is given in the array for a primitive runtime type', () => {
+			const ageType = number.default(18);
+			makeSure(
+				ageType.fromAll([undefined, 10, undefined])
+			).is([18, 10, 18]);
+
+			const nameType = string.default('John Doe');
+			makeSure(
+				nameType.fromAll([undefined, 'Jane Doe', undefined])
+			).is(['John Doe', 'Jane Doe', 'John Doe']);
+
+			const configToggleType = boolean.default(false);
+			makeSure(
+				configToggleType.fromAll([undefined, true, undefined])
+			).is([false, true, false]);
+		});
+
+		it('.isType() does not incorrect treat undefined as the correct type for a primitive runtime type', () => {
+			const ageType = number.default(18);
+			makeSure(ageType.isType(undefined)).is(false);
+
+			const nameType = string.default('John Doe');
+			makeSure(nameType.isType(undefined)).is(false);
+
+			const configToggleType = boolean.default(false);
+			makeSure(configToggleType.isType(undefined)).is(false);
+		});
+
+		it('from() returns the default value when undefined is given for properties on an object runtime type', () => {
+			const infoType = object.asType({
+				age: number.default(18),
+				name: string.default('John Doe'),
+				configToggle: boolean.default(false)
+			});
+
+			makeSure(infoType.from(undefined)).is({
+				age: 18,
+				name: 'John Doe',
+				configToggle: false
+			});
+
+			makeSure(infoType.from({})).is({
+				age: 18,
+				name: 'John Doe',
+				configToggle: false
+			});
+		});
+
+		it('from() returns default values for some properties of an object type', () => {
+			const infoType = object.asType({
+				age: number,
+				name: string.default('John Doe'),
+				configToggle: boolean.default(false)
+			});
+
+			makeSure(infoType.from({
+				age: 12
+			})).is({
+				age: 12,
+				name: 'John Doe',
+				configToggle: false
+			});
+
+			makeSure(() => infoType.from({})).throws(InvalidTypeError);
+			makeSure(() => infoType.from(undefined)).throws(InvalidTypeError);
+		});
+
+		it('fromAll() converts given values using logic from all previous test scenarios', () => {
+			const infoType = object.asType({
+				age: number,
+				name: string.default('John Doe'),
+				configToggle: boolean.default(false)
+			});
+
+			makeSure(infoType.fromAll([
+				{
+					age: 12,
+					configToggle: true
+				},
+				{ age: 8 }
+			])).is([
+				{
+					age: 12,
+					name: 'John Doe',
+					configToggle: true
+				},
+				{
+					age: 8,
+					name: 'John Doe',
+					configToggle: false
+				}
+			]);
+		});
+
+		it('toDomain() and fromDomain() converts undefined values to default values and then to domain value if default is before the conversion', () => {
+			const dbPerkType = object.asTransformableType('Perk', {
+				id: number,
+				name: string,
+				description: string,
+				wasOffered: zeroOrOne.default(0)
+					.to(zeroOrOne => zeroOrOne === 1)
+					.from(boolean => boolean ? 1 : 0),
+				isBeingOffered: zeroOrOne.default(0)
+					.to(zeroOrOne => zeroOrOne === 1)
+					.from(boolean => boolean ? 1 : 0),
+			});
+
+			makeSure(dbPerkType.toPerk({
+				id: 10,
+				name: 'Name Here',
+				description: 'Description',
+				wasOffered: 1,
+			})).is({
+				id: 10,
+				name: 'Name Here',
+				description: 'Description',
+				wasOffered: true,
+				isBeingOffered: false
+			});
+
+			makeSure(dbPerkType.fromPerk({
+				id: 10,
+				name: 'Name Here',
+				description: 'Description',
+				wasOffered: true,
+			})).is({
+				id: 10,
+				name: 'Name Here',
+				description: 'Description',
+				wasOffered: 1,
+				isBeingOffered: 0
+			});
+		});
+
+		it('toDomain() and fromDomain() converts undefined values to default value not converting them  to the domain value if the default method is after the conversion', () => {
+			const dbPerkType = object.asTransformableType('Perk', {
+				id: number,
+				name: string,
+				description: string,
+				wasOffered: zeroOrOne
+					.to(zeroOrOne => zeroOrOne === 1)
+					.from(boolean => boolean ? 1 : 0)
+					.default(false),
+				isBeingOffered: zeroOrOne
+					.to(zeroOrOne => zeroOrOne === 1)
+					.from(boolean => boolean ? 1 : 0)
+					.default(false),
+			});
+
+			makeSure(dbPerkType.toPerk({
+				id: 10,
+				name: 'Name Here',
+				description: 'Description',
+				wasOffered: 1,
+			})).is({
+				id: 10,
+				name: 'Name Here',
+				description: 'Description',
+				wasOffered: true,
+				isBeingOffered: false
+			});
+
+			makeSure(dbPerkType.fromPerk({
+				id: 10,
+				name: 'Name Here',
+				description: 'Description',
+				wasOffered: true,
+			})).is({
+				id: 10,
+				name: 'Name Here',
+				description: 'Description',
+				wasOffered: 1,
+				isBeingOffered: 0
+			});
 		});
 	});
 });

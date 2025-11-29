@@ -170,29 +170,22 @@ export class PerkRepository {
 	 * @returns The added perk object.
 	 */
 	addPerk(perkDefinition: PerkDefintion): Perk {
-		if (this.doesPerkExist(perkDefinition.name)) {
-			console.log(`A perk with the name "${perkDefinition.name}" already exists.`);
 		if (this.doesPerkExist(perkDefinition.name))
 			throw new PerkAlreadyExistsError(perkDefinition.name);
-		}
-
-		if (perkDefinition.id !== undefined) {
-			if (this.doesPerkExist(perkDefinition.id)) {
-				console.log(`A perk with the ID "${perkDefinition.id}" already exists.`);
-		if (perkDefinition.id !== undefined)
-			if (this.doesPerkExist(perkDefinition.id))
-				throw new PerkAlreadyExistsError(perkDefinition.id);
-			}
-		}
 
 		let id = perkDefinition.id;
-		const queryParameters = {
+		if (id !== undefined) {
+			if (this.doesPerkExist(id))
+				throw new PerkAlreadyExistsError(id);
+		}
+
+		const dbPerk = {
 			...perkDefinition,
 			wasOffered: toDBBool(perkDefinition.wasOffered),
 			isBeingOffered: toDBBool(perkDefinition.isBeingOffered),
 		};
 
-		id = this.db.insertIntoTable('perk', queryParameters);
+		id = this.db.insertIntoTable('perk', dbPerk);
 		return this.getPerkOrThrow(id);
 	}
 

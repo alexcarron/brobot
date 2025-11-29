@@ -1,6 +1,6 @@
 import { toPropertyValues } from "../../../../utilities/data-structure-utils";
 import { DeepReadonly } from "../../../../utilities/types/generic-types";
-import { isNotUndefined } from "../../../../utilities/types/type-guards";
+import { isDefined } from "../../../../utilities/types/type-guards";
 import { RoleRepository } from "../../repositories/role.repository";
 import { asMinimalRoles, RoleDefinition } from "../../types/role.types";
 import { DatabaseQuerier, toPlaceholdersList } from "../database-querier";
@@ -17,8 +17,8 @@ export function syncRolesToDB(
 ) {
 	const roleRepository = RoleRepository.fromDB(db);
 
-	const roleIDs = toPropertyValues([...roleDefinitions], "id").filter(isNotUndefined);
-	const roleNames = toPropertyValues([...roleDefinitions], "name").filter(isNotUndefined);
+	const roleIDs = toPropertyValues([...roleDefinitions], "id").filter(isDefined);
+	const roleNames = toPropertyValues([...roleDefinitions], "name").filter(isDefined);
 
 	const runTransaction = db.getTransaction((
 		roleDefinitions: RoleDefinition[]

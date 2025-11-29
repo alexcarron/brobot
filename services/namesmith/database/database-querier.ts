@@ -2,7 +2,7 @@ import DatabasePkg, { Database, PragmaOptions, RunResult, Statement, Transaction
 import { ForeignKeyConstraintError, MultiStatementQueryError, QueryUsageError } from "../utilities/error.utility";
 import { AnyFunction } from "../../../utilities/types/generic-types";
 import { attempt } from '../../../utilities/error-utils';
-import { isArray, isNotUndefined, isObject } from "../../../utilities/types/type-guards";
+import { isArray, isDefined, isObject } from "../../../utilities/types/type-guards";
 
 /**
  * A union type representing a set of possible values that can be used as the rest parameter of a DatabaseQuerier query function.
@@ -150,12 +150,12 @@ export function toParameterInsertClause(
 ): string {
 	const columnNames =
 		Object.keys(fieldToValue)
-			.filter(isNotUndefined)
+			.filter(isDefined)
 			.join(", ");
 
 	const parameters =
 		Object.keys(fieldToValue)
-			.filter(isNotUndefined)
+			.filter(isDefined)
 			.map(key => `@${key}`)
 			.join(", ");
 
