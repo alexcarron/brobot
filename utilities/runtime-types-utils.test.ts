@@ -1,3 +1,4 @@
+import { DBBoolean } from "../services/namesmith/utilities/db.utility";
 import { makeSure } from "./jest/jest-utils";
 import { boolean, date, InvalidTypeError, number, object, string, strings, zeroOrOne } from './runtime-types-utils';
 
@@ -931,6 +932,28 @@ describe('runtime-types-utils.test.ts', () => {
 				description: 'Description',
 				wasOffered: 1,
 				isBeingOffered: 0
+			});
+		});
+	});
+
+	describe('.without()', () => {
+		it('removes a property from a transformable object type', () => {
+			const infoType = object.asTransformableType('Info', {
+				age: number,
+				name: string,
+				configToggle: DBBoolean
+			});
+
+			const noNameInfoType = infoType.without('name');
+
+			makeSure(
+				noNameInfoType.toInfo({
+					age: 18,
+					configToggle: 0
+				})
+			).is({
+				age: 18,
+				configToggle: false
 			});
 		});
 	});
