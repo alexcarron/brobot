@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { inspect } from "util";
 import { hasProperty, isDefined, isNotNullable, isNull, isObject, isUndefined } from "./types/type-guards";
-import { Expand, IsAnyPropertyNever, UndefinedAsOptional } from "./types/generic-types";
+import { Expand, IsAnyPropertyNever, UndefinedAsOptional, Without } from "./types/generic-types";
 
 /* ————— Error ————— */
 
@@ -128,13 +128,22 @@ type NamedTransformableRuntimeType<
   };
 
 type NamedTransformableRuntimeTypeFromResolvable<
-	RawType,
-	DomainType,
+	RawType extends Record<keyof Resolvable, unknown>,
+	DomainType extends Record<keyof Resolvable, unknown>,
 	DomainName extends string,
 	Resolvable extends ObjectRuntimeTypeResolvable,
 > =
   & RuntimeType<RawType>
   & {
+		without: <
+			Keys extends Array<keyof Resolvable>
+		>(...keys: Keys) => NamedTransformableRuntimeTypeFromResolvable<
+			// @ts-ignore
+			Expand<Without<RawType, Keys[number]>>,
+			Expand<Without<DomainType, Keys[number]>>,
+			DomainName,
+			Expand<Without<Resolvable, Keys[number]>>
+		>;
     orNull: NamedTransformableRuntimeType<
 			RawType | null,
 			DomainType | null,
@@ -944,10 +953,10 @@ export const object = {
   asTransformableType: function<
     DomainName extends string,
     KeyToRuntimeResolvable extends ObjectRuntimeTypeResolvable,
-    RawObjectType = {
+    RawObjectType extends Record<keyof KeyToRuntimeResolvable, unknown> = {
       [Key in keyof KeyToRuntimeResolvable]: ExtractTypeFromResolvable<KeyToRuntimeResolvable[Key]>
     },
-    DomainObjectType = {
+    DomainObjectType extends Record<keyof KeyToRuntimeResolvable, unknown> = {
       [Key in keyof KeyToRuntimeResolvable]: ExtractDomainTypeFromResolvable<KeyToRuntimeResolvable[Key]>
     }
   >(
@@ -986,11 +995,29 @@ export const object = {
       return rawObject;
     };
 
-    return createNamedTransformableRuntimeType(
+    const baseRuntimeType = createNamedTransformableRuntimeType(
       domainName,
       isRawObject,
       rawToDomain,
       domainToRaw
-    ) as any;
+    )
+
+		Object.defineProperty(baseRuntimeType, 'without', {
+			value: function<
+				Keys extends Array<keyof KeyToRuntimeResolvable>
+			>(...keys: Keys) {
+				const newKeyToRuntimeType = keyToRuntimeType
+				for (const key of keys) {
+					delete newKeyToRuntimeType[key]
+				}
+
+				return object.asTransformableType(
+					domainName,
+					newKeyToRuntimeType as Without<KeyToRuntimeResolvable, Keys[number]>
+				)
+			}
+		});
+
+		return baseRuntimeType as any;
   },
 };
