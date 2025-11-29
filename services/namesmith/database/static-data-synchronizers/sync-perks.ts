@@ -1,6 +1,6 @@
 import { toPropertyValues } from "../../../../utilities/data-structure-utils";
 import { WithOptional } from "../../../../utilities/types/generic-types";
-import { isNotUndefined } from "../../../../utilities/types/type-guards";
+import { isDefined } from "../../../../utilities/types/type-guards";
 import { PerkRepository } from "../../repositories/perk.repository";
 import { PerkDefintion, Perk, asDBPerks } from "../../types/perk.types";
 import { DatabaseQuerier, toPlaceholdersList } from "../database-querier";
@@ -16,8 +16,8 @@ export function syncPerksToDB(
 ) {
 	const perkRepository = new PerkRepository(db);
 
-	const perkIDs = toPropertyValues([...perks], "id").filter(isNotUndefined);
-	const perkNames = toPropertyValues([...perks], "name").filter(isNotUndefined);
+	const perkIDs = toPropertyValues([...perks], "id").filter(isDefined);
+	const perkNames = toPropertyValues([...perks], "name").filter(isDefined);
 
 	const runDBTransaction = db.getTransaction((perkDefinitions: WithOptional<Perk, "id">[]) => {
 		const deletePerksNotDefined = db.getQuery(`

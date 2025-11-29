@@ -204,7 +204,7 @@ export function isUndefined(
  * expect(isNotUndefined(null)).toBe(false);
  * expect(isNotUndefined(0)).toBe(true);
  */
-export function isNotUndefined<
+export function isDefined<
   TypeOrUndefined
 >(
 	value: TypeOrUndefined

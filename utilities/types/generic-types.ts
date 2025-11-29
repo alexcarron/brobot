@@ -250,6 +250,56 @@ export type KeysOf<
 	[Index in keyof SpecificArray]: keyof SpecificArray[Index]
 }[number];
 
+export type PropertyToIsTypeOf<Type, ObjectType> = {
+  [Key in keyof ObjectType]:
+		undefined extends Type
+			? undefined extends [ObjectType[Key]]
+				? true
+				: false
+			: [ObjectType[Key]] extends [Type]
+				? true
+				: false;
+};
+
+export type PropertyToIsUndefinedOf<ObjectType> = {
+  [Key in keyof ObjectType]:
+		[undefined] extends [ObjectType[Key]]
+			? true
+			: false;
+};
+
+export type IsAnyPropertyUndefined<ObjectType> =
+	PropertyToIsUndefinedOf<ObjectType>[keyof ObjectType] extends false
+		? false
+		: true;
+
+export type IsAnyPropertyOfType<Type, ObjectType> =
+	PropertyToIsTypeOf<Type, ObjectType>[keyof ObjectType] extends false
+		? false
+		: true;
+
+export type IsAnyPropertyNever<ObjectType> =
+	PropertyToIsTypeOf<never, ObjectType>[keyof ObjectType] extends false
+		? false
+		: true;
+
+/**
+ * Converts all undefined properties to optional properties
+ */
+export type UndefinedAsOptional<ObjectType> =
+  & {
+		[Key in keyof ObjectType as undefined extends ObjectType[Key]
+			? never
+			: Key
+		]: ObjectType[Key]
+	}
+  & {
+		[Key in keyof ObjectType as undefined extends ObjectType[Key]
+			? Key
+			: never
+		]?: ObjectType[Key]
+	};
+
 export type ToTypeName<Type> =
 	Type extends string ? "string" :
 	Type extends number ? "number" :

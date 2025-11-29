@@ -1,7 +1,7 @@
 import { toPropertyValues } from "../../../../utilities/data-structure-utils";
 import { InvalidArgumentError } from "../../../../utilities/error-utils";
 import { isOneSymbol } from "../../../../utilities/string-checks-utils";
-import { isNotUndefined } from "../../../../utilities/types/type-guards";
+import { isDefined } from "../../../../utilities/types/type-guards";
 import { CharacterRepository } from "../../repositories/character.repository";
 import { asMinimalCharacters, CharacterDefintion } from '../../types/character.types';
 import { getCharacterValueFromID, getIDfromCharacterValue } from "../../utilities/character.utility";
@@ -19,8 +19,8 @@ export const syncCharactersToDB = (
 ) => {
 	const characterRepository = new CharacterRepository(db);
 
-	const characterIDs = toPropertyValues([...characterDefintions], 'id').filter(isNotUndefined);
-	const characterValues = toPropertyValues([...characterDefintions], 'value').filter(isNotUndefined);
+	const characterIDs = toPropertyValues([...characterDefintions], 'id').filter(isDefined);
+	const characterValues = toPropertyValues([...characterDefintions], 'value').filter(isDefined);
 
 	db.runTransaction(() => {
 		const deleteCharactersNotDefined = db.getQuery(
