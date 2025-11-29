@@ -532,6 +532,23 @@ export function throwIfNotError(error: unknown): asserts error is Error {
 }
 
 /**
+ * Returns the given value if it is an instance of the built-in Error class, or undefined if it is not.
+ * This is useful for handling cases where a function may return an Error or undefined.
+ * @param error - The value to check.
+ * @returns The value if it's an Error, or undefined if it's not.
+ * @example
+ * const maybeMoney: number | Error = calculateMoney();
+ * const errorOrUndefined = asErrorOrUndefined(maybeMoney);
+ * if (errorOrUndefined instanceof Error) {
+ *   console.warn(errorOrUndefined.message);
+ * }
+ */
+export function asErrorOrUndefined(error: unknown): Error | undefined {
+	if (error instanceof Error) return error;
+	return undefined;
+}
+
+/**
  * Throws the given value if it is an instance of the built-in Error class.
  * After calling this, the value is known to not be an Error.
  * @param valueOrError - The value to check.

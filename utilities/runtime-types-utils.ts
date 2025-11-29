@@ -2,25 +2,160 @@
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { inspect } from "util";
-import { hasProperty, isDefined, isNotNullable, isNull, isObject, isUndefined } from "./types/type-guards";
-import { Expand, IsAnyPropertyNever, UndefinedAsOptional, Without } from "./types/generic-types";
+import { hasProperty, isDefined, isNotNullable, isNull, isObject, isPrimitive, isString, isUndefined } from "./types/type-guards";
+import { Expand, IsAnyPropertyNever, UndefinedAsOptional, Without, IncludesNull } from './types/generic-types';
+import { isMultiLine } from "./string-checks-utils";
 
 /* ————— Error ————— */
 
-export class InvalidTypeError extends Error {
-  constructor(value: unknown, typeName: string) {
-    const prettyValue = inspect(value, {
-      depth: null,
-      colors: true,
-      compact: false,
-    });
+const brightBlack = (s: string) => `\x1b[90m${s}\x1b[0m`;
+export class RuntimeTypeError extends Error {
+  public readonly expectedTypeName?: string;
+  public readonly atIndex?: number;
+  public readonly fromMethod?: string;
+  public readonly givenValue?: unknown;
+  public readonly suggestionToFix?: string;
+  public readonly originalError?: Error | undefined;
+
+  constructor(
+		givenValue: unknown,
+		expectedTypeName: string,
+		{ atIndex, fromMethod, suggestionToFix, originalError }: {
+			atIndex?: number,
+			fromMethod?: string,
+			suggestionToFix?: string,
+			originalError?: Error
+		} = {}
+	) {
+    const prettyValue = inspect(givenValue, {
+			depth: null,
+			colors: true,
+			compact: false
+		});
+
+		let cannotFitValue = false;
+    const givenTypeSummary = (() => {
+			const MAX_CHARACTERS = 35;
+
+			if (
+				typeof givenValue === "object" &&
+				givenValue !== null
+			) {
+				if (isNull(givenValue))
+					return "null";
+
+				return givenValue.constructor?.name ?? "object";
+			}
+
+			let stringValue = String(givenValue);
+			if (stringValue.length > MAX_CHARACTERS) {
+				cannotFitValue = true;
+				stringValue = `${stringValue.slice(0, MAX_CHARACTERS - 3)}...`;
+			}
+
+			if (isString(givenValue))
+				return `"${stringValue}"`;
+
+			return `${stringValue} (${typeof givenValue})`;
+    })();
+
+    const atIndexPart = atIndex !== undefined
+			? ` at index ${brightBlack(atIndex.toString())}`
+			: "";
+
+		const fromMethodPart = fromMethod !== undefined
+			? ` while using ${brightBlack(fromMethod)} method`
+			: "";
+
+    const suggestionPart = suggestionToFix
+			? `Suggestion: ${suggestionToFix}\n`
+			: "";
+
+		const maybeNewLine =
+			isPrimitive(givenValue) ? "\n" : "";
+
+		const fullGivenValuePart =
+			!isPrimitive(givenValue) || cannotFitValue
+				? `Full Given Value: ${maybeNewLine}${prettyValue}`
+				: "";
+
+    const message =
+      `Expected ${brightBlack(expectedTypeName)} but got ${brightBlack(givenTypeSummary)}${atIndexPart}${fromMethodPart}.\n` +
+			suggestionPart +
+			fullGivenValuePart;
 
     super(
-      `Runtime type error: Expected value to be a ${typeName}, but got:\n${prettyValue}`
-    );
+			message,
+			originalError ? { cause: originalError } : undefined
+		);
 
-    this.name = "InvalidTypeError";
+    this.name = "RuntimeTypeError";
+    this.expectedTypeName = expectedTypeName;
+    this.atIndex = atIndex;
+		this.fromMethod = fromMethod;
+    this.givenValue = givenValue;
+    this.suggestionToFix = suggestionToFix;
+    this.originalError = originalError;
   }
+}
+
+/**
+ * Rebuilds an error to include additional information for debugging purposes.
+ * @param error The error to rebuild.
+ * @param context The context information to include in the rebuilt error.
+ */
+function toInvalidTypeError(
+	error: unknown,
+	context: {
+		atIndex?: number;
+		fromMethod?: string;
+		expectedTypeName?: string;
+		suggestionToFix?: string;
+	}
+): RuntimeTypeError {
+  if (error instanceof RuntimeTypeError) {
+    // create a new error that includes the previous as cause
+    const rebuilt = new RuntimeTypeError(
+			error.givenValue ?? error,
+			error.expectedTypeName ??
+				(context.expectedTypeName ?? "unknown"),
+			{
+				atIndex: context.atIndex ?? error.atIndex,
+				fromMethod: context.fromMethod ?? error.fromMethod,
+				suggestionToFix: context.suggestionToFix ?? error.suggestionToFix,
+				originalError: error
+			}
+		);
+
+		// Keeps the original stack
+    (rebuilt as any).originalStack = error.stack;
+
+    return rebuilt;
+  }
+	else if (error instanceof Error) {
+    return new RuntimeTypeError(
+			error instanceof Error
+				? (error as any).received ?? null
+				: null,
+			context.expectedTypeName ?? "unknown",
+			{
+				atIndex: context.atIndex,
+				fromMethod: context.fromMethod,
+				suggestionToFix: context.suggestionToFix,
+				originalError: error
+			});
+  }
+
+  // otherwise create a plain InvalidTypeError
+  return new RuntimeTypeError(
+		(error as any) ?? null,
+		context.expectedTypeName ?? "unknown",
+		{
+			atIndex: context.atIndex,
+			fromMethod: context.fromMethod,
+			suggestionToFix: context.suggestionToFix
+		}
+	);
 }
 
 /* ————— Types ————— */
@@ -29,7 +164,9 @@ type RuntimeType<
 	Type,
 	DefaultValue extends Type | undefined = undefined
 > = {
-  orNull: RuntimeType<Type | null>;
+  orNull: RuntimeType<Type | null, DefaultValue>;
+	includesNull: Extract<Type, null> extends never ? false : true;
+
 	default<NewDefaultValue extends Type>(
 		defaultValue: NewDefaultValue
 	): RuntimeType<Type, NewDefaultValue>;
@@ -310,28 +447,32 @@ function doesRuntimeTypeObjectHaveAllDefaults<
 
 function throwIfNotType<Type>(
 	value: unknown,
-	{ isType, typeName }: {
+	{ isType, typeName, fromMethod, atIndex }: {
 		isType: (value: unknown) => value is Type,
 		typeName: string,
+		fromMethod?: string
+		atIndex?: number,
 	}
 ): asserts value is Type {
   if (!isType(value)) {
-    throw new InvalidTypeError(value, typeName);
+    throw new RuntimeTypeError(value, typeName, {atIndex, fromMethod});
   }
 }
 
 function returnTypeOrThrow<Type>(
   value: unknown,
-	{isType, typeName, defaultValue}: {
+	{isType, typeName, defaultValue, fromMethod, atIndex, }: {
 		isType: (value: unknown) => value is Type,
 		typeName: string,
-		defaultValue?: Type
+		defaultValue?: Type,
+		fromMethod?: string
+		atIndex?: number,
 	}
 ): Type {
 	if (isDefined(defaultValue) && isUndefined(value))
 		return defaultValue;
 
-  throwIfNotType(value, { isType: isType, typeName: typeName });
+  throwIfNotType(value, { isType, typeName, atIndex, fromMethod });
   return value;
 }
 
@@ -344,18 +485,22 @@ function returnTypeOrThrow<Type>(
  * @param parameters.typeName - The name of the type.
  * @param parameters.defaultValue - The default value to return if a value is undefined.
  * @returns An array of values of the given type.
- * @throws {InvalidTypeError} If any of the values are not of the given type.
+ * @throws {RuntimeTypeError} If any of the values are not of the given type.
  */
 function returnArrayOfTypeOrThrow<Type>(
 	values: unknown[],
-	{isType, typeName, defaultValue}: {
+	{isType, typeName, defaultValue, fromMethod}: {
 		isType: (value: unknown) => value is Type,
 		typeName: string,
-		defaultValue?: Type
+		defaultValue?: Type,
+		fromMethod?: string
 	}
 ): Type[] {
-	return values.map((value) => {
-		return returnTypeOrThrow(value, { isType, typeName, defaultValue });
+	return values.map((value, index) => {
+		return returnTypeOrThrow(value, {
+			isType, typeName, defaultValue, fromMethod,
+			atIndex: index
+		});
 	});
 }
 
@@ -384,21 +529,30 @@ function returnArrayOfConvertedTypesOrThrow<
 		defaultOutputValue?: DefaultOutputValue
 	}
 ): OutputType[] {
-  return values.map((value) => {
-		if (isUndefined(value)) {
-			if (isDefined(defaultInputValue))
-				return toOutputType(defaultInputValue);
+  return values.map((value, index) => {
+		try {
+			if (isUndefined(value)) {
+				if (isDefined(defaultInputValue))
+					return toOutputType(defaultInputValue);
 
-			if (isDefined(defaultOutputValue))
-				return defaultOutputValue;
+				if (isDefined(defaultOutputValue))
+					return defaultOutputValue;
+			}
+
+			throwIfNotType(value, {
+				isType: isInputType,
+				typeName: inputTypeName
+			});
+
+			return toOutputType(value);
 		}
-
-    throwIfNotType(value, {
-			isType: isInputType,
-			typeName: inputTypeName
-		});
-
-		return toOutputType(value);
+		catch (error) {
+			throw toInvalidTypeError(error, {
+				atIndex: index,
+				expectedTypeName: inputTypeName,
+				suggestionToFix: `Provide a ${inputTypeName} at array index ${index}, or supply a default value for the type`,
+			});
+		}
   });
 }
 
@@ -444,15 +598,14 @@ function toFromDomainOrNull<RawType, DomainType>(
  * The createNullable function may create a variant with different generic parameters,
  * so we use a local assertion when caching/returning to satisfy TypeScript.
  */
-function attachOrNullGetter<Target extends { isType(value: unknown): boolean }>(
+function attachNullRelatedProperties<Target extends { isType(value: unknown): boolean }>(
   targetObject: Target,
   createNullable: () => unknown
 ): void {
   Object.defineProperty(targetObject, "orNull", {
     get() {
-      // If the target already accepts `null`, return the target itself.
+			// If the runtime type already includes null then return it
       if (targetObject.isType(null)) {
-        // We return `targetObject` — caller expects some RuntimeType-like object.
         return targetObject as unknown;
       }
 
@@ -486,7 +639,8 @@ function createRuntimeType<
 		defaultValue?: DefaultValue
 	}
 ): RuntimeType<Type, DefaultValue> {
-  const baseRuntime = {
+  const baseRuntimeType = {
+		includesNull: isType(null),
 		default: function<NewDefaultValue extends Type>(
 			defaultValue: NewDefaultValue
 		): RuntimeType<Type, NewDefaultValue> {
@@ -495,15 +649,19 @@ function createRuntimeType<
 		defaultValue: defaultValue,
 
     isType: (value: unknown): value is Type => isType(value),
-		throwIfNotType: (value: unknown) => throwIfNotType(value, {isType, typeName}),
+		throwIfNotType: (value: unknown) => throwIfNotType(value, {
+			isType, typeName, fromMethod: `.throwIfNotType()`,
+		}),
     from: (value: unknown): Type => {
-      return returnTypeOrThrow(value, {isType, typeName, defaultValue});
+      return returnTypeOrThrow(value, {
+				isType, typeName, defaultValue, fromMethod: `.from()`
+			});
     },
 
     fromAll: (values: unknown[]): Type[] => {
-      return returnArrayOfTypeOrThrow<Type>(values,
-				{isType, typeName, defaultValue},
-      );
+      return returnArrayOfTypeOrThrow<Type>(values, {
+				isType, typeName, defaultValue, fromMethod: `.fromAll()`
+			});
     },
 
     asTransformableType: <DomainType, DomainName extends string>(
@@ -533,15 +691,15 @@ function createRuntimeType<
   };
 
   // attach orNull lazily via helper
-  attachOrNullGetter(baseRuntime, () =>
-    createRuntimeType({
+  attachNullRelatedProperties(baseRuntimeType,
+		() => createRuntimeType({
       typeName: `${typeName} or null`,
       isType: toIsTypeOrNull(isType),
 			defaultValue,
     })
   );
 
-  return baseRuntime as unknown as RuntimeType<Type, DefaultValue>;
+  return baseRuntimeType as unknown as RuntimeType<Type, DefaultValue>;
 }
 
 function createTransformableRuntimeType<
@@ -568,7 +726,11 @@ function createTransformableRuntimeType<
   const baseProperties = {
 		defaultDomainValue,
 
-    toDomain: (value: unknown): DomainType => {
+    toDomain: (
+			value: unknown,
+			fromMethod: string = `.toDomain()`,
+			atIndex?: number,
+		): DomainType => {
 			if (isUndefined(value)) {
 				if (isDefined(defaultRawValue))
 					return toDomainType(defaultRawValue);
@@ -577,7 +739,9 @@ function createTransformableRuntimeType<
 					return defaultDomainValue;
 			}
 
-      throwIfNotType(value, {isType, typeName});
+      throwIfNotType(value, {
+				isType, typeName, atIndex, fromMethod,
+			});
       return toDomainType(value);
     },
 
@@ -593,9 +757,12 @@ function createTransformableRuntimeType<
       return fromDomainType(domainValue!);
     },
 
-    toDomains: (values: unknown[]): DomainType[] => {
-      return values.map(value =>
-				baseProperties.toDomain(value)
+    toDomains: (
+			values: unknown[],
+			fromMethod: string = `.toDomains()`
+		): DomainType[] => {
+      return values.map((value, index) =>
+				baseProperties.toDomain(value, fromMethod, index)
 			);
     },
 
@@ -609,7 +776,7 @@ function createTransformableRuntimeType<
   const transformableRuntime = Object.assign(runtimeBase, baseProperties);
 
   // attach orNull lazily; create nullable predicate and wrapped converters
-  attachOrNullGetter(transformableRuntime, () => {
+  attachNullRelatedProperties(transformableRuntime, () => {
     const isTypeOrNull = toIsTypeOrNull(isType);
     const toDomainOrNull = toToDomainOrNull(toDomainType);
     const fromDomainOrNull = toFromDomainOrNull(fromDomainType);
@@ -679,13 +846,19 @@ function createNamedTransformableRuntimeType<
   const pluralFromMethodName = (`from${domainName}s` as unknown) as keyof any;
 
   // Attach named methods as small delegating wrappers
-  (transformable as any)[singleToMethodName] = (value: unknown) => transformable.toDomain(value);
-  (transformable as any)[pluralToMethodName] = (values: unknown[]) => transformable.toDomains(values);
+  (transformable as any)[singleToMethodName] = (value: unknown) =>
+		// @ts-expect-error
+		transformable.toDomain(value, `.${singleToMethodName}()`);
+
+  (transformable as any)[pluralToMethodName] = (values: unknown[]) =>
+		// @ts-expect-error
+		transformable.toDomains(values, `.${pluralToMethodName}()`);
+
   (transformable as any)[singleFromMethodName] = (domainValue: DomainType) => transformable.fromDomain(domainValue);
   (transformable as any)[pluralFromMethodName] = (domainValues: DomainType[]) => transformable.fromDomains(domainValues);
 
   // Now attach a specialized `orNull` getter that returns a NamedTransformable type
-  attachOrNullGetter(transformable, () => {
+  attachNullRelatedProperties(transformable, () => {
     const isTypeOrNull = toIsTypeOrNull(isType);
     const toDomainOrNull = toToDomainOrNull(toDomainType);
     const fromDomainOrNull = toFromDomainOrNull(fromDomainType);
@@ -881,7 +1054,8 @@ export const object = {
   from: (value: unknown): object => {
     return returnTypeOrThrow(value, {
 			isType: isObject,
-			typeName: "object"
+			typeName: "object",
+			fromMethod: `.from()`
 		});
   },
 
@@ -889,6 +1063,7 @@ export const object = {
     return returnArrayOfTypeOrThrow(values, {
       isType: isObject,
       typeName: "object",
+			fromMethod: `.fromAll()`
     });
   },
 

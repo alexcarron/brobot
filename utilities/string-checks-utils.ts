@@ -233,3 +233,13 @@ export function isReasonableCodePoint(codePoint: number): boolean {
   // Otherwise reject (includes separators, control chars, marks-only, unassigned, etc.)
   return false;
 }
+
+/**
+ * Determines if a given string is a multi-line string.
+ * A multi-line string is a string that contains at least one newline character.
+ * @param string - The string to check.
+ * @returns Whether or not the string is a multi-line string.
+ */
+export function isMultiLine(string: string): boolean {
+	return string.includes('\n');
+}

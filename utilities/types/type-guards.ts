@@ -27,6 +27,119 @@ export function isNumber(
 }
 
 /**
+ * Checks if a given value is a boolean.
+ * @param value - The value to check.
+ * @returns If the value is a boolean.
+ */
+export function isBoolean(
+	value: unknown
+): value is boolean {
+	return typeof value === "boolean";
+}
+
+/**
+ * Checks if a given value is a BigInt.
+ * @param value - The value to check.
+ * @returns If the value is a BigInt.
+ * @example
+ * isBigint(123n) // true
+ * isBigint(123) // false
+ * isBigint("123") // false
+ */
+export function isBigint(
+	value: unknown
+): value is bigint {
+	return typeof value === "bigint";
+}
+
+/**
+ * Checks if a given value is a symbol.
+ * @param value - The value to check.
+ * @returns If the value is a symbol.
+ */
+export function isSymbol(
+	value: unknown
+): value is symbol {
+	return typeof value === "symbol";
+}
+
+/**
+ * Checks if a given value is null.
+ * @param value - The value to check.
+ * @returns If the value is null.
+ */
+export function isNull(
+	value: unknown
+): value is null {
+	return value === null;
+}
+
+/**
+ * Checks if a given value is undefined.
+ * @param value - The value to check.
+ * @returns If the value is undefined.
+ */
+export function isUndefined(
+	value: unknown
+): value is undefined {
+	return value === undefined;
+}
+
+/**
+ * Checks if a given value is not undefined.
+ * @param value - The value to check.
+ * @returns If the value is not undefined.
+ * @example
+ * expect(isNotUndefined(undefined)).toBe(false);
+ * expect(isNotUndefined(null)).toBe(false);
+ * expect(isNotUndefined(0)).toBe(true);
+ */
+export function isDefined<
+  TypeOrUndefined
+>(
+	value: TypeOrUndefined
+): value is Exclude<TypeOrUndefined, undefined> {
+	return !isUndefined(value);
+}
+
+/**
+ * Checks if a given value is neither null nor undefined.
+ * @param value - The value to check.
+ * @returns If the value is neither null nor undefined.
+ * @example
+ * expect(isNotNullable(undefined)).toBe(false);
+ * expect(isNotNullable(null)).toBe(false);
+ * expect(isNotNullable(0)).toBe(true);
+ */
+export function isNotNullable<
+	TypeOrNullOrUndefined
+>(
+	value: TypeOrNullOrUndefined
+): value is Exclude<TypeOrNullOrUndefined, null | undefined> {
+	return !isNull(value) && !isUndefined(value);
+}
+
+/**
+ * Checks if a given value is a primitive type.
+ * Primitive types include string, number, boolean, bigint, symbol, null, and undefined.
+ * @param value - The value to check.
+ * @returns If the value is a primitive type.
+ */
+export function isPrimitive(
+	value: unknown
+): value is string | number | boolean | bigint | symbol | null | undefined {
+	return (
+		isString(value) ||
+		isNumber(value) ||
+		isBoolean(value) ||
+		isBigint(value) ||
+		isSymbol(value) ||
+		isNull(value) ||
+		isUndefined(value)
+	);
+}
+
+/**
  * Checks if a given value is an array.
  * @param value - The value to check.
  * @returns If the value is an array.
@@ -171,60 +284,4 @@ export function isFunction(
 	value: unknown
 ): value is (...args: unknown[]) => unknown {
 	return typeof value === "function";
-}
-
-/**
- * Checks if a given value is null.
- * @param value - The value to check.
- * @returns If the value is null.
- */
-export function isNull(
-	value: unknown
-): value is null {
-	return value === null;
-}
-
-/**
- * Checks if a given value is undefined.
- * @param value - The value to check.
- * @returns If the value is undefined.
- */
-export function isUndefined(
-	value: unknown
-): value is undefined {
-	return value === undefined;
-}
-
-/**
- * Checks if a given value is not undefined.
- * @param value - The value to check.
- * @returns If the value is not undefined.
- * @example
- * expect(isNotUndefined(undefined)).toBe(false);
- * expect(isNotUndefined(null)).toBe(false);
- * expect(isNotUndefined(0)).toBe(true);
- */
-export function isDefined<
-  TypeOrUndefined
->(
-	value: TypeOrUndefined
-): value is Exclude<TypeOrUndefined, undefined> {
-	return !isUndefined(value);
-}
-
-/**
- * Checks if a given value is neither null nor undefined.
- * @param value - The value to check.
- * @returns If the value is neither null nor undefined.
- * @example
- * expect(isNotNullable(undefined)).toBe(false);
- * expect(isNotNullable(null)).toBe(false);
- * expect(isNotNullable(0)).toBe(true);
- */
-export function isNotNullable<
-	TypeOrNullOrUndefined
->(
-	value: TypeOrNullOrUndefined
-): value is Exclude<TypeOrNullOrUndefined, null | undefined> {
-	return !isNull(value) && !isUndefined(value);
 }
