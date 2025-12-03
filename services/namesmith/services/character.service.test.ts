@@ -13,7 +13,7 @@ describe('CharacterService', () => {
 	beforeEach(() => {
 		characterService = CharacterService.asMock();
 
-		CHARACTER_A = characterService.characterRepository.getCharacterByValueOrThrow('A');
+		CHARACTER_A = characterService.characterRepository.getCharacterByValueOrThrow('a');
 		CHARACTER_A_ID = CHARACTER_A.id;
 		CHARACTER_A_VALUE = CHARACTER_A.value;
 	});

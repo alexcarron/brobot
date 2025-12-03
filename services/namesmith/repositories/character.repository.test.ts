@@ -25,9 +25,9 @@ describe('CharacterRepository', () => {
 
 	describe('getCharacterByID()', () => {
 		it('returns a character object', async () => {
-			const character = await characterRepo.getCharacterByID(65);
-			expect(character).toHaveProperty('id', 65);
-			expect(character).toHaveProperty('value', 'A');
+			const character = await characterRepo.getCharacterByID(97);
+			expect(character).toHaveProperty('id', 97);
+			expect(character).toHaveProperty('value', 'a');
 			expect(character).toHaveProperty('rarity', expect.any(Number));
 		});
 
@@ -39,9 +39,9 @@ describe('CharacterRepository', () => {
 
 	describe('getCharacterByValue()', () => {
 		it('returns a character object', async () => {
-			const character = await characterRepo.getCharacterByValueOrThrow('A');
-			expect(character).toHaveProperty('id', 65);
-			expect(character).toHaveProperty('value', 'A');
+			const character = await characterRepo.getCharacterByValueOrThrow('a');
+			expect(character).toHaveProperty('id', 97);
+			expect(character).toHaveProperty('value', 'a');
 			expect(character).toHaveProperty('rarity', expect.any(Number));
 		});
 
@@ -57,7 +57,7 @@ describe('CharacterRepository', () => {
 	describe('doesCharacterExist()', () => {
 		it('returns true if the character exists', () => {
 			expect(characterRepo.doesCharacterExist(
-				getIDfromCharacterValue('A')
+				getIDfromCharacterValue('a')
 			)).toBe(true);
 		});
 
@@ -103,25 +103,51 @@ describe('CharacterRepository', () => {
 
 		it('should throw a CharacterAlreadyExistsError if the character already exists', () => {
 			expect(() =>
-				characterRepo.addCharacter({ id: 65, value: 'A', rarity: 1 })
+				characterRepo.addCharacter({ id: 97, value: 'a', rarity: 1 })
 			).toThrow(CharacterAlreadyExistsError);
+		});
+	});
+
+	describe('addCharacterIfNotExists()', () => {
+		it('should add a character to the database if it does not already exist', () => {
+			const character = characterRepo.addCharacterIfNotExists({ id: 1009, value: '❌', rarity: 1 });
+			makeSure(character).is({
+				id: 1009,
+				value: '❌',
+				rarity: 1
+			});
+
+			const resolvedCharacter = characterRepo.getCharacterByID(character.id);
+			makeSure(resolvedCharacter).is({
+				id: 1009,
+				value: '❌',
+				rarity: 1
+			})
+		});
+
+		it('should return the existing character if it already exists', () => {
+			const existingCharacter = characterRepo.getCharacterByValueOrThrow('a');
+			const character = characterRepo.addCharacterIfNotExists({
+				id: 97, value: 'a', rarity: 1
+			});
+			makeSure(character).is(existingCharacter);
 		});
 	});
 
 	describe('updateCharacter()', () => {
 		it('should update a character in the database', () => {
 			const character = characterRepo.updateCharacter({
-				id: 65, value: 'C', rarity: 10
+				id: 97, value: 'C', rarity: 10
 			});
 			makeSure(character).is({
-				id: 65,
+				id: 97,
 				value: 'C',
 				rarity: 10
 			});
 
 			const resolvedCharacter = characterRepo.getCharacterByID(character.id);
 			makeSure(resolvedCharacter).is({
-				id: 65,
+				id: 97,
 				value: 'C',
 				rarity: 10
 			})
@@ -129,18 +155,18 @@ describe('CharacterRepository', () => {
 
 		it('should partially update a character in the database', () => {
 			const character = characterRepo.updateCharacter({
-				id: 65, rarity: 10
+				id: 97, rarity: 10
 			});
 			makeSure(character).is({
-				id: 65,
-				value: 'A',
+				id: 97,
+				value: 'a',
 				rarity: 10
 			});
 
 			const resolvedCharacter = characterRepo.getCharacterByID(character.id);
 			makeSure(resolvedCharacter).is({
-				id: 65,
-				value: 'A',
+				id: 97,
+				value: 'a',
 				rarity: 10
 			})
 		});
@@ -149,7 +175,7 @@ describe('CharacterRepository', () => {
 			expect(() =>
 				characterRepo.updateCharacter({
 					id: INVALID_CHARACTER_ID,
-					value: 'A', rarity: 1
+					value: 'a', rarity: 1
 				})
 			).toThrow(CharacterNotFoundError);
 		});
@@ -157,8 +183,9 @@ describe('CharacterRepository', () => {
 
 	describe('removeCharacter()', () => {
 		it('should remove a character from the database', () => {
-			characterRepo.removeCharacter(65);
-			const character = characterRepo.getCharacterByID(65);
+			const id = getIDfromCharacterValue('a');
+			characterRepo.removeCharacter(id);
+			const character = characterRepo.getCharacterByID(id);
 			makeSure(character).isNull();
 		});
 
@@ -169,8 +196,9 @@ describe('CharacterRepository', () => {
 
 	describe('removeCharacterByValue()', () => {
 		it('should remove a character from the database', () => {
-			characterRepo.removeCharacterByValue('A');
-			const character = characterRepo.getCharacterByID(65);
+			const id = getIDfromCharacterValue('a');
+			characterRepo.removeCharacterByValue('a');
+			const character = characterRepo.getCharacterByID(id);
 			makeSure(character).isNull();
 		});
 

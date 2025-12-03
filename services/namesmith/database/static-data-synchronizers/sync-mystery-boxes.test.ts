@@ -1,5 +1,4 @@
 import { makeSure } from "../../../../utilities/jest/jest-utils";
-import { createMockDB } from "../../mocks/mock-database";
 import { MysteryBoxRepository } from "../../repositories/mystery-box.repository";
 import { DatabaseQuerier } from "../database-querier";
 import { syncMysteryBoxesToDB } from "./sync-mystery-boxes";
@@ -9,8 +8,8 @@ describe('sync-mystery-boxes.ts', () => {
 	let mysteryBoxRepository: MysteryBoxRepository;
 
 	beforeEach(() => {
-		db = createMockDB();
-		mysteryBoxRepository = new MysteryBoxRepository(db);
+		mysteryBoxRepository = MysteryBoxRepository.asMock();
+		db = mysteryBoxRepository.db;
 	});
 
 	describe('syncMysteryBoxesToDB()', () => {
