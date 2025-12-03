@@ -113,6 +113,30 @@ export class CharacterRepository {
 	}
 
 	/**
+	 * Adds a character to the database if it does not already exist.
+	 * If a character with the given ID already exists, does nothing and returns the existing character.
+	 * If a character with the given value already exists, does nothing and returns the existing character.
+	 * If no character with the given ID or value exists, adds the character to the database with the given value and rarity.
+	 * @param characterDefintion - The character to add to the database.
+	 * @param characterDefintion.id - The ID of the character to add to the database.
+	 * @param characterDefintion.value - The value of the character to add to the database.
+	 * @param characterDefintion.rarity - The rarity of the character to add to the database.
+	 * @returns The character that was added or already existed, with the generated ID if applicable.
+	 */
+	addCharacterIfNotExists({id, value, rarity}: CharacterDefintion): Character {
+		try {
+			return this.addCharacter({id, value, rarity});
+		}
+		catch (error) {
+			if (error instanceof CharacterAlreadyExistsError) {
+				return this.getCharacterByValueOrThrow(value);
+			}
+
+			throw error;
+		}
+	}
+
+	/**
 	 * Updates a character in the database.
 	 * @param characterDefintion - The character to update in the database.
 	 * @param characterDefintion.id - The ID of the character to update in the database.

@@ -1,9 +1,9 @@
-import { ignoreError, returnNonNullOrThrow } from "../../../utilities/error-utils";
+import { returnNonNullOrThrow } from "../../../utilities/error-utils";
 import { WithRequiredAndOneOther } from "../../../utilities/types/generic-types";
 import { DatabaseQuerier, } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
 import { CharacterOdds, MinimalMysteryBox, MysteryBoxID, MysteryBox, MysteryBoxDefinition, MinimalMysteryBoxDefinition, asMinimalMysteryBoxes, asDBCharacterOdds, asMinimalMysteryBox } from "../types/mystery-box.types";
-import { getCharacterValueFromID, getIDfromCharacterValue } from "../utilities/character.utility";
+import { getCharacterValueFromID } from "../utilities/character.utility";
 import { MysteryBoxAlreadyExistsError, MysteryBoxNotFoundError } from "../utilities/error.utility";
 import { CharacterRepository } from "./character.repository";
 
@@ -14,13 +14,17 @@ export class MysteryBoxRepository {
 
 	/**
 	 * @param db - The database querier instance used for executing SQL statements.
+	 * @param characterRepository - The character repository instance used for retrieving character data.
 	 */
 	constructor(
-		public db: DatabaseQuerier
+		public db: DatabaseQuerier,
+		public characterRepository: CharacterRepository
 	) {}
 
 	static fromDB(db: DatabaseQuerier) {
-		return new MysteryBoxRepository(db);
+		return new MysteryBoxRepository(db,
+			CharacterRepository.fromDB(db)
+		);
 	}
 
 	static asMock() {
@@ -214,15 +218,11 @@ export class MysteryBoxRepository {
 
 		for (const characterValue in characterOdds) {
 			const weight = characterOdds[characterValue];
-			const characterID = getIDfromCharacterValue(characterValue);
-
-			ignoreError(() =>
-				new CharacterRepository(this.db).addCharacter({
-					id: characterID,
-					value: characterValue,
-					rarity: weight
-				})
-			);
+			const character = this.characterRepository.addCharacterIfNotExists({
+				value: characterValue,
+				rarity: weight
+			});
+			const characterID = character.id;
 
 			this.db.insertIntoTable('mysteryBoxCharacterOdds', {
 				mysteryBoxID: minimalMysteryBox.id,
@@ -279,7 +279,11 @@ export class MysteryBoxRepository {
 
 			for (const characterValue in characterOdds) {
 				const weight = characterOdds[characterValue];
-				const characterID = getIDfromCharacterValue(characterValue);
+				const character = this.characterRepository.addCharacterIfNotExists({
+					value: characterValue,
+					rarity: weight
+				});
+				const characterID = character.id;
 
 				this.db.insertIntoTable('mysteryBoxCharacterOdds', {
 					mysteryBoxID: id,

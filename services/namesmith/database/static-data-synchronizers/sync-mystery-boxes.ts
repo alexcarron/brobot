@@ -15,7 +15,7 @@ export const syncMysteryBoxesToDB = (
 		MysteryBoxDefinition[]
 	>
 ) => {
-	const mysteryBoxRepository = new MysteryBoxRepository(db);
+	const mysteryBoxRepository = MysteryBoxRepository.fromDB(db);
 
 	const mysertyBoxIDs = toDefinedPropertyValues([...mysteryBoxDefinitions], "id");
 
