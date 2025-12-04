@@ -585,3 +585,14 @@ export function makeSure<
 		},
 	};
 }
+
+/**
+ * Fails a test with the given message.
+ * @param message - The message to include in the error.
+ * @example
+ * failTest('Test failed due to invalid input.');
+ * @throws {Error} - Always throws an error, which will cause the test to fail.
+ */
+export function failTest(message: string): never {
+	throw new Error(`Jest test explicitly failed: ${message}`);
+}

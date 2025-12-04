@@ -1,15 +1,15 @@
-import { makeSure } from "../../../utilities/jest/jest-utils";
+import { failTest, makeSure } from "../../../utilities/jest/jest-utils";
 import { Roles } from "../constants/roles.constants";
 import { INVALID_PLAYER_ID, INVALID_ROLE_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
-import { setupMockNamesmith } from "../mocks/mock-setup"
+import { setupMockNamesmith } from "../mocks/mock-setup";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { RoleService } from "../services/role.service";
 import { Player } from "../types/player.types";
 import { RoleID } from "../types/role.types";
 import { returnIfNotFailure } from "../utilities/workflow.utility";
-import { chooseRole } from "./choose-role.workflow";
+import { chooseRole } from './choose-role.workflow';
 
 describe('choose-role.workflow', () => {
 	let roleService: RoleService;
@@ -44,7 +44,7 @@ describe('choose-role.workflow', () => {
 			makeSure(role!.id).is(SOME_ROLE_ID);
 		});
 
-		it('should return result.isNewRole as true if the player did not have a role before', () => {
+		it('should return nothing if it is a success', () => {
 			const result = returnIfNotFailure(
 				chooseRole({
 					...getNamesmithServices(),
@@ -54,24 +54,27 @@ describe('choose-role.workflow', () => {
 			);
 
 			makeSure(result).isAnObject();
-			makeSure(result.isNewRole).isTrue();
 		});
 
-		it('should return result.isNewRole as false if the player had the same role before', () => {
+		it('should return a roleAlreadyChosen failure if the player already has a role', () => {
 			const player = addMockPlayer(db, {
 				role: SOME_ROLE_ID
 			});
 
-			const result = returnIfNotFailure(
+			const result =
 				chooseRole({
 					...getNamesmithServices(),
 					player: player,
 					role: SOME_ROLE_ID
 				})
-			);
 
 			makeSure(result).isAnObject();
-			makeSure(result.isNewRole).isFalse();
+			makeSure(result.isFailure()).isTrue();
+			if (!result.isRoleAlreadyChosen()) {
+				failTest('Expected roleAlreadyChosen failure');
+			}
+
+			makeSure(result.chosenRole.id).is(SOME_ROLE_ID);
 		});
 
 		it('should return nonPlayer failure if the player does not exist', () => {

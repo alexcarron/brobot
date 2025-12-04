@@ -4,6 +4,7 @@ import { Roles } from "../constants/roles.constants";
 import { INVALID_ROLE_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
+import { Player } from "../types/player.types";
 import { Role } from "../types/role.types";
 import { RoleService } from "./role.service";
 
@@ -12,10 +13,20 @@ describe('RoleService', () => {
 	let db: DatabaseQuerier;
 
 	const SOME_ROLE = Roles.PROSPECTOR;
+	let PLAYER_WITH_ROLE: Player;
+	let PLAYER_WITHOUT_ROLE: Player;
+
 
 	beforeEach(() => {
 		roleService = RoleService.asMock();
 		db = roleService.roleRepository.db;
+
+		PLAYER_WITH_ROLE = addMockPlayer(db, {
+			role: SOME_ROLE
+		});
+		PLAYER_WITHOUT_ROLE = addMockPlayer(db, {
+			role: null
+		})
 	});
 
 	describe('resolveRole()', () => {
@@ -116,31 +127,35 @@ describe('RoleService', () => {
 
 	describe('doesPlayerHave()', () => {
 		it('should return true if the player has the role', () => {
-			const player = addMockPlayer(db, {
-				role: SOME_ROLE
-			});
-
 			const hasRole = roleService.doesPlayerHave(
 				SOME_ROLE,
-				player
+				PLAYER_WITH_ROLE
 			);
 
 			makeSure(hasRole).isTrue();
 		});
 
 		it('should return false if the player does not have the role', () => {
-			const player = addMockPlayer(db, {
-				role: null
-			});
-
 			const hasRole = roleService.doesPlayerHave(
 				SOME_ROLE,
-				player
+				PLAYER_WITHOUT_ROLE
 			);
 
 			makeSure(hasRole).isFalse();
 		});
-	})
+	});
+
+	describe('doesPlayerHaveARole()', () => {
+		it('should return true if the player has a role', () => {
+			const hasRole = roleService.doesPlayerHaveARole(PLAYER_WITH_ROLE);
+			makeSure(hasRole).isTrue();
+		});
+
+		it('should return false if the player does not have a role', () => {
+			const hasRole = roleService.doesPlayerHaveARole(PLAYER_WITHOUT_ROLE);
+			makeSure(hasRole).isFalse();
+		});
+	});
 
 	describe('setPlayerRole()', () => {
 		it('should assign a role to a player', () => {

@@ -80,6 +80,11 @@ export class RoleService {
 		return this.roleRepository.getRoleIDOfPlayerID(playerID) === roleID;
 	}
 
+	doesPlayerHaveARole(player: PlayerResolvable): boolean {
+		const playerID = this.playerService.resolveID(player);
+		return this.roleRepository.getRoleIDOfPlayerID(playerID) !== null;
+	}
+
 	/**
 	 * Assigns a role to a player.
 	 * @param role - The role to assign. Can be a number (the role's ID), a string (the role's name), or a role object.
