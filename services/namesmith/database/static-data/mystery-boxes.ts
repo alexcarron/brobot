@@ -147,5 +147,19 @@ export const mysteryBoxes = [
 			"🥵": 0.8,
 			"🪙": 0.5
 		}
-	}
+	},
+  {
+    "name": "Recipe Utilities",
+    "tokenCost": 50,
+    "characterOdds": {
+			"⇋": 100,
+			"↻": 85,
+			"✂": 85,
+			"⤡": 50,
+			"↹": 50,
+			"⚭": 35,
+			"⇔": 35,
+			"⤻": 15,
+		}
+  },
 ] as const;
