@@ -1,16 +1,19 @@
 import { getNamesmithServices } from "../services/get-namesmith-services";
-import { PlayerResolvable } from "../types/player.types";
-import { RoleResolvable } from "../types/role.types";
+import { Player, PlayerResolvable } from "../types/player.types";
+import { Role, RoleResolvable } from "../types/role.types";
 import { getWorkflowResultCreator, provides } from "./workflow-result-creator";
 
 
 const result = getWorkflowResultCreator({
 	success: provides<{
-		isNewRole: boolean
+		player: Player,
 	}>(),
 
 	notAPlayer: null,
 	roleDoesNotExist: null,
+	roleAlreadyChosen: provides<{
+		chosenRole: Role,
+	}>(),
 })
 
 /**
@@ -38,15 +41,15 @@ export function chooseRole(
 		return result.failure.roleDoesNotExist();
 	}
 
-	const previousRole = roleService.getRoleOfPlayer(player);
+	const currentRole = roleService.getRoleOfPlayer(player);
+	if (currentRole !== null) {
+		return result.failure.roleAlreadyChosen({
+			chosenRole: currentRole
+		});
+	}
+
 	roleService.setPlayerRole(role, player);
-
-	const isNewRole = (
-		previousRole === null ||
-		previousRole.id !== roleService.resolveID(role)
-	);
-
 	return result.success({
-		isNewRole
+		player: playerService.resolvePlayer(player),
 	});
 }

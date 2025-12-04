@@ -1,4 +1,4 @@
-const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionFlagsBits, CategoryChannel, ChatInputCommandInteraction, Message, GuildChannel, ButtonInteraction, InteractionResponse, CommandInteraction, MessageComponentInteraction, ModalSubmitInteraction, Attachment, MessageFlags } = require('discord.js');
+const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionFlagsBits, CategoryChannel, ChatInputCommandInteraction, Message, GuildChannel, ButtonInteraction, InteractionResponse, CommandInteraction, MessageComponentInteraction, ModalSubmitInteraction, Attachment, MessageFlags, BitField } = require('discord.js');
 const { Role } = require('../services/rapid-discord-mafia/role');
 const { fetchChannel, fetchChannelsInCategory, getEveryoneRole, fetchAllMessagesInChannel, fetchCategory } = require('./discord-fetch-utils');
 const { incrementEndNumber, joinLines } = require('./string-manipulation-utils');
@@ -6,6 +6,7 @@ const { logInfo, logError, logWarning } = require('./logging-utils');
 const { getShuffledArray } = require('./data-structure-utils');
 const { InvalidArgumentTypeError } = require('./error-utils');
 const { ids } = require('../bot-config/discord-ids');
+const { isArrayOfOneObject } = require('./types/type-guards');
 
 
 
@@ -186,13 +187,22 @@ const deferInteraction = async (
 };
 
 /**
- * Replies to an interaction with the provided message content.
+ * Replies to an interaction with the provided message content or edits the reply with the provided message content if the interaction has already been replied to.
  * @param {CommandInteraction | MessageComponentInteraction | ModalSubmitInteraction | ButtonInteraction} interaction - The interaction to reply to.
- * @param {(string | string[] | null | undefined)[]} lines - The content of the message to reply with.
+ * @param {(string | string[] | null | undefined)[] | [import('discord.js').MessageCreateOptions]} lines - The content of the message to reply with.
  * @returns {Promise<InteractionResponse | Message>} A promise that resolves when the message is sent.
  */
 const replyToInteraction = async (interaction, ...lines) => {
-	const messageContent = joinLines(...lines);
+	/**
+	 * @type {import('discord.js').InteractionReplyOptions}
+	 */
+	let interactionReplyOptions;
+	if (isArrayOfOneObject(lines)) {
+		interactionReplyOptions = toInteractionReplyFromMessageCreateOptions(lines[0]);
+	}
+	else {
+		interactionReplyOptions = { content: joinLines(...lines) };
+	}
 
 	try {
 		if (
@@ -201,7 +211,7 @@ const replyToInteraction = async (interaction, ...lines) => {
 			typeof interaction.reply === "function"
 		) {
 			return await interaction.reply({
-				content: messageContent,
+				...interactionReplyOptions,
 				flags: MessageFlags.Ephemeral,
 			});
 		}
@@ -214,7 +224,7 @@ const replyToInteraction = async (interaction, ...lines) => {
 		});
 	}
 	catch (error) {
-		return editReplyToInteraction(interaction, messageContent);
+		return editReplyToInteraction(interaction, interactionReplyOptions);
 	}
 }
 
@@ -226,6 +236,12 @@ const replyToInteraction = async (interaction, ...lines) => {
  */
 const editReplyToInteraction = async (interaction, newMessageContents) => {
 	if (interaction && (interaction.replied || interaction.deferred)) {
+		if (typeof newMessageContents === "string")
+			newMessageContents = {
+				content: newMessageContents,
+				components: [],
+			};
+			
 		return await interaction.editReply(newMessageContents);
 	}
 
@@ -843,6 +859,119 @@ function toMessageEditFromCreateOptions(createOptions) {
 }
 
 /**
+ * Converts a MessageCreateOptions object into an InteractionReplyOptions object.
+ * @param {import('discord.js').MessageCreateOptions} createOptions - The object to convert.
+ * @returns {import('discord.js').InteractionReplyOptions} The converted object.
+ */
+function toInteractionReplyFromMessageCreateOptions(createOptions) {
+	const reply = {};
+
+  if ('content' in createOptions && createOptions.content !== undefined) {
+    reply.content = createOptions.content;
+  }
+
+  if ('embeds' in createOptions && createOptions.embeds) {
+    reply.embeds = createOptions.embeds;
+  }
+
+  if ('allowedMentions' in createOptions && createOptions.allowedMentions) {
+    reply.allowedMentions = createOptions.allowedMentions;
+  }
+
+  if ('components' in createOptions && createOptions.components) {
+    reply.components = createOptions.components;
+  }
+
+  if ('files' in createOptions && createOptions.files) {
+    // InteractionReplyOptions uses the same "files" shape as BaseMessageOptions, so pass through
+    reply.files = createOptions.files;
+  }
+
+  if ('poll' in createOptions && createOptions.poll) {
+    reply.poll = createOptions.poll;
+  }
+
+  // Directly copy tts if present
+  if ('tts' in createOptions && createOptions.tts !== undefined) {
+    reply.tts = createOptions.tts;
+  }
+
+  // Normalize response flags:
+  // - prefer explicit withResponse if given
+  // - otherwise map deprecated fetchReply into withResponse
+  if ('withResponse' in createOptions && createOptions.withResponse !== undefined) {
+    reply.withResponse = createOptions.withResponse;
+  }
+	else if ('fetchReply' in createOptions && createOptions.fetchReply !== undefined) {
+    // fetchReply is deprecated -> withResponse
+    reply.withResponse = createOptions.fetchReply;
+  }
+
+  // Handle flags and deprecated ephemeral boolean.
+  // If createOptions.flags exists, pass-through and merge ephemeral bit if ephemeral === true.
+  // Otherwise, if ephemeral === true, set flags to Ephemeral.
+  const srcFlags = createOptions.flags;
+  // @ts-ignore
+  const ephemeralFlagRequested = !!createOptions.ephemeral;
+
+  if (srcFlags !== undefined) {
+    // If the caller supplied flags, preserve them. If they also set ephemeral boolean,
+    // try to merge ephemeral into the supplied flags when possible.
+    if (ephemeralFlagRequested) {
+      try {
+        // Use BitField to merge in a robust way if available
+        // (the BitField constructor accepts BitFieldResolvable).
+        const merged = new BitField(srcFlags);
+        // @ts-ignore
+        merged.add(MessageFlags.Ephemeral);
+        // Keep the same type that InteractionReplyOptions accepts (BitFieldResolvable)
+        reply.flags = merged.freeze();
+      }
+			catch {
+        // If BitField is not usable for some reason, fall back to ORing numbers.
+        // Attempt numeric resolution
+        try {
+          const resolved = BitField.resolve(srcFlags);
+          // numeric OR with ephemeral
+          // prefer bigint if resolved is bigint
+          if (typeof resolved === 'bigint') {
+            reply.flags = (
+							resolved | BigInt(MessageFlags.Ephemeral)
+						).toString();
+          }
+					else {
+            reply.flags = (resolved | MessageFlags.Ephemeral);
+          }
+        }
+				catch {
+          // Last-resort: set flags to Ephemeral only (best-effort)
+          reply.flags = MessageFlags.Ephemeral;
+        }
+      }
+    }
+		else {
+      // No ephemeral requested, just pass through the provided flags
+      reply.flags = srcFlags;
+    }
+  }
+	else if (ephemeralFlagRequested) {
+    // No flags given, but ephemeral boolean requested: set flags to Ephemeral
+    reply.flags = MessageFlags.Ephemeral;
+  }
+
+  // Also preserve deprecated ephemeral boolean in the reply for compatibility.
+  // Some consumers may still read `ephemeral` property on InteractionReplyOptions.
+  // @ts-ignore
+  if (createOptions.ephemeral !== undefined) {
+    // @ts-ignore
+    reply.ephemeral = Boolean(createOptions.ephemeral);
+  }
+
+  // @ts-ignore
+  return reply;
+}
+
+/**
  * Deletes all messages in a channel.
  * @param {import('discord.js').TextBasedChannel} channel - The channel to delete all messages from.
  * @returns {Promise<void>} A promise that resolves when all messages have been deleted.
@@ -944,6 +1073,7 @@ module.exports = {
 	shuffleCategoryChannels,
 	setChannelMessage,
 	toMessageEditFromCreateOptions,
+	toInteractionReplyFromMessageCreateOptions,
 	deleteAllMessagesInChannel,
 	moveChannelToCategory,
 };

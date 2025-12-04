@@ -1,7 +1,60 @@
-import { ComponentBuilder, Message, MessageCreateOptions, TextBasedChannel, TextChannel } from "discord.js";
-import { setChannelMessage, toMessageEditFromCreateOptions } from "../discord-action-utils";
+import { ComponentBuilder, Message, MessageCreateOptions, TextBasedChannel, TextChannel, ButtonInteraction, ButtonStyle, CommandInteraction, MessageComponentInteraction, ModalSubmitInteraction } from 'discord.js';
+import { editReplyToInteraction, replyToInteraction, setChannelMessage, toMessageEditFromCreateOptions } from "../discord-action-utils";
 import { fetchMessageWithComponent } from "../discord-fetch-utils";
 import { InvalidArgumentError } from "../error-utils";
+import { DiscordButtons } from './discord-buttons';
+import { getRandomUUID } from '../random-utils';
+
+export async function confirmInteraction(
+	{interactionToConfirm, confirmPromptText, confirmButtonText, cancelButtonText, onConfirm, onCancel}: {
+		interactionToConfirm: CommandInteraction | MessageComponentInteraction | ModalSubmitInteraction | ButtonInteraction;
+		confirmPromptText: string;
+		confirmButtonText: string;
+		cancelButtonText: string;
+		onConfirm: string | ((buttonInteraction: ButtonInteraction) => any);
+		onCancel: string | ((buttonInteraction: ButtonInteraction) => any);
+	}
+) {
+	const buttons = new DiscordButtons({
+		promptText: confirmPromptText,
+		buttons: [
+			{
+				id: `confirm-${getRandomUUID()}`,
+				label: confirmButtonText,
+				style: ButtonStyle.Success,
+				onButtonPressed: async (buttonInteraction: ButtonInteraction) => {
+					if (typeof onConfirm === 'string') {
+						return await editReplyToInteraction(interactionToConfirm, {
+							content: onConfirm,
+							components: [],
+						});
+					}
+					else {
+						return await onConfirm(buttonInteraction);
+					}
+				}
+			},
+			{
+				id: `cancel-${getRandomUUID()}`,
+				label: cancelButtonText,
+				style: ButtonStyle.Danger,
+				onButtonPressed: async (buttonInteraction: ButtonInteraction) => {
+					if (typeof onCancel === 'string') {
+						return await editReplyToInteraction(interactionToConfirm, {
+							content: onCancel,
+							components: [],
+						});
+					}
+					else {
+						return await onCancel(buttonInteraction);
+					}
+				}
+			}
+		]
+	});
+
+	await replyToInteraction(interactionToConfirm, buttons.getMessageContents());
+}
 
 /**
  * Represents a Discord interface that can be created, sent to a channel, regenerated, and deleted.

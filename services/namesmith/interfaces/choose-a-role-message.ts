@@ -4,13 +4,14 @@ import { EMPTY } from "../../../utilities/constants/discord-interface.constants"
 import { joinLines } from "../../../utilities/string-manipulation-utils";
 import { Role } from "../types/role.types";
 import { chooseRole } from "../workflows/choose-role.workflow";
-import { replyToInteraction } from "../../../utilities/discord-action-utils";
+import { editReplyToInteraction } from "../../../utilities/discord-action-utils";
 import { fetchNamesmithChannel } from "../utilities/discord-fetch.utility";
 import { toPerkBulletPoint } from "./pick-a-perk-message";
 import { ignoreError } from "../../../utilities/error-utils";
 import { DiscordButtonDefinition } from "../../../utilities/discord-interfaces/discord-button";
 import { DiscordButtons } from "../../../utilities/discord-interfaces/discord-buttons";
 import { getNamesmithServices } from "../services/get-namesmith-services";
+import { confirmInteraction } from "../../../utilities/discord-interfaces/discord-interface";
 
 /**
  * Generates a message that asks the user to choose one of the given roles.
@@ -59,35 +60,42 @@ export function toRoleButton(
 		label: `Become ${role.name}`,
 		style: ButtonStyle.Primary,
 		onButtonPressed: async (buttonInteraction) => {
-			const result = chooseRole({
-				player: buttonInteraction.user.id,
-				role
+			await confirmInteraction({
+				interactionToConfirm: buttonInteraction,
+				confirmPromptText: `Are you sure you want to choose the ${role.name} role? You will NOT be able to switch roles after choosing one.`,
+				confirmButtonText: `Permanently Become ${role.name}`,
+				cancelButtonText: `Cancel`,
+				onCancel: `Cancelled choosing the ${role.name} role.`,
+				onConfirm: async (confirmInteraction) => {
+					const result = chooseRole({
+						player: confirmInteraction.user.id,
+						role
+					});
+
+					if (result.isNotAPlayer()) {
+						return await editReplyToInteraction(buttonInteraction,
+							`You are not a player, so you cannot choose a role.`
+						);
+					}
+
+					if (result.isRoleDoesNotExist()) {
+						return await editReplyToInteraction(buttonInteraction,
+							`The role ${role.name} does not exist.`
+						);
+					}
+
+					if (result.isRoleAlreadyChosen()) {
+						const {chosenRole} = result;
+						return await editReplyToInteraction(buttonInteraction,
+							`You have already chosen the ${chosenRole.name} role. You cannot switch roles after choosing one.`
+						);
+					}
+
+					await editReplyToInteraction(buttonInteraction,
+						`You have chosen the ${role.name} role! You are now a ${role.name}`
+					);
+				}
 			});
-
-			if (result.isNotAPlayer()) {
-				return await replyToInteraction(buttonInteraction,
-					`You are not a player, so you cannot choose a role.`
-				);
-			}
-
-			else if (result.isRoleDoesNotExist()) {
-				return await replyToInteraction(buttonInteraction,
-					`The role ${role.name} does not exist.`
-				);
-			}
-
-			const {isNewRole} = result;
-
-			if (isNewRole) {
-				await replyToInteraction(buttonInteraction,
-					`Your role is now ${role.name}!`
-				);
-			}
-			else {
-				await replyToInteraction(buttonInteraction,
-					`Your role is already ${role.name}.`
-				);
-			}
 		}
 	}
 }
