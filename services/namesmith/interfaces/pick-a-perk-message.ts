@@ -4,12 +4,13 @@ import { joinLines, toAmountOfNoun } from "../../../utilities/string-manipulatio
 import { Perk } from "../types/perk.types";
 import { fetchNamesmithChannel } from "../utilities/discord-fetch.utility";
 import { pickPerk } from "../workflows/pick-perk.workflow";
-import { replyToInteraction } from "../../../utilities/discord-action-utils";
+import { editReplyToInteraction } from "../../../utilities/discord-action-utils";
 import { DiscordButtons } from "../../../utilities/discord-interfaces/discord-buttons";
 import { DiscordButtonDefinition } from '../../../utilities/discord-interfaces/discord-button';
 import { ignoreError } from "../../../utilities/error-utils";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { sortByAscendingProperty } from "../../../utilities/data-structure-utils";
+import { confirmInteraction } from "../../../utilities/discord-interfaces/discord-interface";
 
 /**
  * Generates a messaeg that prompts the user to pick a perk.
@@ -28,6 +29,8 @@ export function createPickAPerkMessage(
 		'# Pick a Perk',
 		'Choose one of the three perks below to gain a unique, permanent enhancement to your Namesmith gameplay.',
 		threePerks.map(toPerkBulletPoint),
+		'',
+		'-# ⚠️ **Warning**: Once you pick a perk, you CANNOT change it. The choice is permanent.',
 	);
 
 	return new DiscordButtons({
@@ -64,47 +67,54 @@ export function toPerkButton(
 		label: `Get ${perk.name} Perk`,
 		style: ButtonStyle.Secondary,
 		onButtonPressed: async (buttonInteraction) => {
-			const result = pickPerk({
-				player: buttonInteraction.user.id,
-				pickedPerk: perk,
-				perksPickingFrom
+			await confirmInteraction({
+				interactionToConfirm: buttonInteraction,
+				confirmPromptText: `Are you sure you want to pick the ${perk.name} perk? You will NOT be able to switch perks after choosing one.`,
+				confirmButtonText: `Lock In ${perk.name} Perk`,
+				cancelButtonText: `Cancel`,
+				onCancel: `Cancelled picking the ${perk.name} perk.`,
+				onConfirm: async (confirmationInteraction) => {
+					const result = pickPerk({
+						player: confirmationInteraction.user.id,
+						pickedPerk: perk,
+						perksPickingFrom
+					});
+
+					if (result.isNotAPlayer())
+						return await editReplyToInteraction(buttonInteraction,
+							'You are not a player, so you cannot pick a perk.'
+						);
+
+					if (result.isPerkDoesNotExist())
+						return await editReplyToInteraction(buttonInteraction,
+							`The perk "${perk.name}" does not exist, so you cannot pick it.`
+						);
+
+					if (result.isPerkAlreadyChosen()) {
+						const { chosenPerk } = result;
+
+						return await editReplyToInteraction(buttonInteraction,
+							`You already picked the "${chosenPerk.name}" perk. You cannot switch perks after picking one.`
+						);
+					}
+
+					const {freeTokensEarned} = result;
+
+					const lostTokensLine = (freeTokensEarned < 0)
+						? `**-${toAmountOfNoun(-freeTokensEarned, 'Token')}**`
+						: null;
+
+					if (freeTokensEarned > 0)
+						return await editReplyToInteraction(buttonInteraction,
+							`**+${toAmountOfNoun(freeTokensEarned, 'Token')}**`, '🪙'.repeat(freeTokensEarned)
+						);
+					else
+						return await editReplyToInteraction(buttonInteraction,
+							lostTokensLine,
+							`You now have the "${perk.name}" perk!`
+						);
+				}
 			});
-
-			if (result.isNotAPlayer())
-				return await replyToInteraction(buttonInteraction,
-					'You are not a player, so you cannot pick a perk.'
-				);
-
-			if (result.isPerkDoesNotExist())
-				return await replyToInteraction(buttonInteraction,
-					`The perk "${perk.name}" does not exist, so you cannot pick it.`
-				);
-
-			if (result.isPlayerAlreadyHasThatPerk())
-				return await replyToInteraction(buttonInteraction,
-					`You already picked the "${perk.name}" perk!`
-				);
-
-			const {perkBeingReplaced, freeTokensEarned} = result;
-
-			const lostTokensLine = (freeTokensEarned < 0)
-				? `**-${toAmountOfNoun(-freeTokensEarned, 'Token')}**`
-				: null;
-
-			if (freeTokensEarned > 0)
-				return await replyToInteraction(buttonInteraction,
-					`**+${toAmountOfNoun(freeTokensEarned, 'Token')}**`, '🪙'.repeat(freeTokensEarned)
-				);
-			else if (perkBeingReplaced === null)
-				return await replyToInteraction(buttonInteraction,
-					lostTokensLine,
-					`You now have the "${perk.name}" perk!`
-				);
-			else
-				return await replyToInteraction(buttonInteraction,
-					lostTokensLine,
-					`You have replaced the "${perkBeingReplaced.name}" perk with the "${perk.name}" perk.`
-				);
 		},
 	};
 }
@@ -112,12 +122,12 @@ export function toPerkButton(
 /**
  * Sends a message to the 'Pick A Perk' channel asking the user to choose one of the given perks.
  * The message lists the perks and describes the benefits of choosing one.
+ * @param threePerks - The perks to be displayed in the message.
  * @returns A promise that resolves once the message has been sent.
  */
-export async function sendPickAPerkMessage(): Promise<void> {
-	const {perkService} = getNamesmithServices();
-
-	const threePerks = perkService.offerThreeRandomNewPerks();
+export async function sendPickAPerkMessage(
+	threePerks: Perk[],
+): Promise<void> {
 	const pickAPerkMessage = createPickAPerkMessage({threePerks});
 	const channel = await fetchNamesmithChannel(ids.namesmith.channels.PICK_A_PERK);
 	await pickAPerkMessage.setIn(channel);

@@ -8,7 +8,7 @@ import { NamesmithEvents, RelevantDataOf } from "./namesmith-events";
  * @returns A promise that resolves once the player's name has been changed in Discord.
  */
 export async function onNamePublish({player}:
-	RelevantDataOf<typeof NamesmithEvents.NamePublish>
+	RelevantDataOf<typeof NamesmithEvents.PublishName>
 ) {
 	await sendPublishedNameMessage({player});
 }

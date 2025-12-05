@@ -48,6 +48,7 @@ import { GameStateService } from "./game-state.service";
 import { PlayerService } from "./player.service";
 import { VoteService } from "./vote.service";
 import { DAYS_TO_BUILD_NAME, DAYS_TO_VOTE } from "../constants/namesmith.constants";
+import { addDays } from "../../../utilities/date-time-utils";
 
 
 describe('GameStateService', () => {
@@ -108,6 +109,27 @@ describe('GameStateService', () => {
 				expectedEndTime,
 				expect.any(Function)
 			);
+		});
+	});
+
+	describe('getTimesPickAPerkStarts()', () => {
+		it('should return an array of dates representing the start of each week\'s "pick a perk" phase', () => {
+			const startDate = new Date('2025-07-12T12:00:00.000Z');
+			const expectedDates = [
+				new Date('2025-07-15T12:00:00.000Z'),
+				new Date('2025-07-18T12:00:00.000Z'),
+				new Date('2025-07-22T12:00:00.000Z'),
+				new Date('2025-07-25T12:00:00.000Z'),
+				new Date('2025-07-29T12:00:00.000Z'),
+				new Date('2025-08-01T12:00:00.000Z'),
+				new Date('2025-08-05T12:00:00.000Z'),
+				new Date('2025-08-08T12:00:00.000Z'),
+			];
+			expect(gameStateService.getTimesPickAPerkStarts(
+				startDate,
+				addDays(startDate, 7*4),
+				[3, 6]
+			)).toEqual(expectedDates);
 		});
 	});
 });

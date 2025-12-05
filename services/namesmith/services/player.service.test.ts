@@ -206,7 +206,7 @@ describe('PlayerService', () => {
 
   describe('changeCurrentName()', () => {
     it('should change the current name of a player', () => {
-      const announceNameChangeEvent = jest.spyOn(NamesmithEvents.NameChange, "triggerEvent");
+      const announceNameChangeEvent = jest.spyOn(NamesmithEvents.ChangeName, "triggerEvent");
 
       playerService.changeCurrentName(SOME_PLAYER.id, "new name");
       const result = playerService.getCurrentName(SOME_PLAYER.id);
@@ -220,7 +220,7 @@ describe('PlayerService', () => {
     });
 
     it('should change the current name to an empty name', () => {
-      const announceNameChangeEvent = jest.spyOn(NamesmithEvents.NameChange, "triggerEvent");
+      const announceNameChangeEvent = jest.spyOn(NamesmithEvents.ChangeName, "triggerEvent");
 
       playerService.changeCurrentName(SOME_PLAYER.id, "");
       const result = playerService.getCurrentName(SOME_PLAYER.id);
@@ -247,7 +247,7 @@ describe('PlayerService', () => {
 
   describe('giveCharacter()', () => {
     it('should add a character to the current name of a player', async () => {
-      const announceNameChangeEvent = jest.spyOn(NamesmithEvents.NameChange, "triggerEvent");
+      const announceNameChangeEvent = jest.spyOn(NamesmithEvents.ChangeName, "triggerEvent");
 
       await playerService.giveCharacter(SOME_PLAYER.id, "a");
       const currentName = playerService.getCurrentName(SOME_PLAYER.id);
@@ -272,7 +272,7 @@ describe('PlayerService', () => {
 
   describe('giveCharacters()', () => {
     it('should add characters to the current name of a player', async () => {
-      const announceNameChangeEvent = jest.spyOn(NamesmithEvents.NameChange, "triggerEvent");
+      const announceNameChangeEvent = jest.spyOn(NamesmithEvents.ChangeName, "triggerEvent");
 
       const player = addMockPlayer(db, {
         inventory: "abdegHJlmo",
@@ -449,7 +449,7 @@ describe('PlayerService', () => {
     });
 
     it('should call the name change event only once', () => {
-      const announceNameChangeEvent = jest.spyOn(NamesmithEvents.NameChange, "triggerEvent");
+      const announceNameChangeEvent = jest.spyOn(NamesmithEvents.ChangeName, "triggerEvent");
 
       const player = addMockPlayer(db, {
         inventory: "abcdefgh",
@@ -506,7 +506,7 @@ describe('PlayerService', () => {
   });
 
   describe(".publishName()", () => {
-    const announceNamePublishEvent = jest.spyOn(NamesmithEvents.NamePublish, "triggerEvent");
+    const announceNamePublishEvent = jest.spyOn(NamesmithEvents.PublishName, "triggerEvent");
 
     it("should publish the player's current name", () => {
       playerService.publishName(NAMED_PLAYER.id);

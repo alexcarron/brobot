@@ -7,13 +7,14 @@ import { getWorkflowResultCreator, provides } from "./workflow-result-creator";
 
 const result = getWorkflowResultCreator({
 	success: provides<{
-		perkBeingReplaced: Perk | null,
 		freeTokensEarned: number,
 	}>(),
-	
+
 	notAPlayer: null,
 	perkDoesNotExist: null,
-	playerAlreadyHasThatPerk: null,
+	perkAlreadyChosen: provides<{
+		chosenPerk: Perk,
+	}>(),
 })
 
 /**
@@ -43,16 +44,11 @@ export function pickPerk(
 		return result.failure.perkDoesNotExist();
 	}
 
-	if (perkService.doesPlayerHave(pickedPerk, player)) {
-		return result.failure.playerAlreadyHasThatPerk();
-	}
-
-	let perkBeingReplaced = null;
 	for (const possiblePerk of perksPickingFrom) {
-		const wasPerkRemoved = perkService.removeIfPlayerHas(possiblePerk, player);
-
-		if (wasPerkRemoved) {
-			perkBeingReplaced = perkService.resolvePerk(possiblePerk);
+		if (perkService.doesPlayerHave(possiblePerk, player)) {
+			return result.failure.perkAlreadyChosen({
+				chosenPerk: perkService.resolvePerk(possiblePerk),
+			})
 		}
 	}
 
@@ -65,18 +61,12 @@ export function pickPerk(
 		playerService.giveTokens(player, freeTokensEarned);
 	});
 
-	if (perkBeingReplaced?.id === Perks.FREE_TOKENS.id) {
-		freeTokensEarned = -500;
-		playerService.takeTokens(player, -freeTokensEarned);
-	}
-
 	activityLogService.logPickPerk({
 		playerPickingPerk: player,
 		tokensEarned: freeTokensEarned,
 	});
 
 	return result.success({
-		perkBeingReplaced,
 		freeTokensEarned,
 	});
 }

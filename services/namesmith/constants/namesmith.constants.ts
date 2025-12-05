@@ -14,6 +14,13 @@ export const DISCORD_NICKNAME_FOR_NO_NAME = "˙";
 export const DAYS_TO_BUILD_NAME = 7 * 4; // 4 Weeks
 
 /**
+ * The day offsets from the start of the week when perk events occur.
+ * Each event reveals three new perks for players to choose.
+ * The start of the week depends on the day the player begins the game.
+ */
+export const BIWEEKLY_PERK_DAYS_FROM_WEEK_START = [3, 6];
+
+/**
  * The number of days players will have to vote on their favorite name before the game ends.
  */
 export const DAYS_TO_VOTE = 3; // 3 Days
