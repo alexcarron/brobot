@@ -26,7 +26,9 @@ export function getChooseARoleMessage(): DiscordButtons {
 	const message = joinLines(
 		'# Choose Your Role!',
 		'Choose one of the three roles below to define your Namesmith journey. Each role gives you unique, permanent perks that enhance different parts of the game. Pick the one that best matches your playstyle!',
-		...roles.map(toRoleMessage)
+		...roles.map(toRoleMessage),
+		'',
+		'-# ⚠️ **Warning**: Once you choose a role, you CANNOT change it. The choice is permanent.',
 	);
 
 	return new DiscordButtons({
@@ -66,9 +68,9 @@ export function toRoleButton(
 				confirmButtonText: `Permanently Become ${role.name}`,
 				cancelButtonText: `Cancel`,
 				onCancel: `Cancelled choosing the ${role.name} role.`,
-				onConfirm: async (confirmInteraction) => {
+				onConfirm: async (confirmationInteraction) => {
 					const result = chooseRole({
-						player: confirmInteraction.user.id,
+						player: confirmationInteraction.user.id,
 						role
 					});
 

@@ -71,7 +71,7 @@ describe('choose-role.workflow', () => {
 			makeSure(result).isAnObject();
 			makeSure(result.isFailure()).isTrue();
 			if (!result.isRoleAlreadyChosen()) {
-				failTest('Expected roleAlreadyChosen failure');
+				failTest('Returned result is not a roleAlreadyChosen failure');
 			}
 
 			makeSure(result.chosenRole.id).is(SOME_ROLE_ID);

@@ -11,8 +11,8 @@ import { getNamesmithServices } from '../services/get-namesmith-services';
 export async function onVotingStart() {
 	const { playerService, voteService } = getNamesmithServices();
 
-	await playerService.publishUnpublishedNames();
-	await playerService.finalizeAllNames();
+	playerService.publishUnpublishedNames();
+	playerService.finalizeAllNames();
 
 	await closePublishedNamesChannel();
 

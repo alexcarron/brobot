@@ -144,7 +144,7 @@ export class PlayerService {
 
 		this.playerRepository.changeCurrentName(playerID, newName);
 
-		NamesmithEvents.NameChange.triggerEvent({
+		NamesmithEvents.ChangeName.triggerEvent({
 			playerID, oldName, newName
 		});
 	}
@@ -413,7 +413,7 @@ export class PlayerService {
 
 		this.playerRepository.setPublishedName(playerID, currentName);
 
-		NamesmithEvents.NamePublish.triggerEvent({
+		NamesmithEvents.PublishName.triggerEvent({
 			player: this.resolvePlayer(playerID)
 		});
 	}

@@ -14,7 +14,7 @@ import { logWarning } from "../../../utilities/logging-utils";
  */
 export const onNameChange = withRapidCallDetector(
 	async function ({playerID, newName}:
-		RelevantDataOf<typeof NamesmithEvents.NameChange>
+		RelevantDataOf<typeof NamesmithEvents.ChangeName>
 	) {
 		await changeDiscordNameOfPlayer(playerID, newName);
 	},

@@ -231,17 +231,25 @@ const replyToInteraction = async (interaction, ...lines) => {
 /**
  * Edits the reply to an interaction with new message contents.
  * @param {CommandInteraction | MessageComponentInteraction | ModalSubmitInteraction} interaction - The interaction whose reply is being updated.
- * @param {string | object} newMessageContents - The new contents for the message.
+ * @param {(string | string[] | null | undefined)[] | [object]} lines - The content of the message to reply with.
  * @returns {Promise<Message<boolean>>} A promise that resolves when the message is edited.
  */
-const editReplyToInteraction = async (interaction, newMessageContents) => {
+const editReplyToInteraction = async (interaction, ...lines) => {
+	let newMessageContents;
+	if (isArrayOfOneObject(lines)) {
+		newMessageContents = lines[0];
+	}
+	else {
+		newMessageContents = joinLines(...lines);
+	}
+
 	if (interaction && (interaction.replied || interaction.deferred)) {
 		if (typeof newMessageContents === "string")
 			newMessageContents = {
 				content: newMessageContents,
 				components: [],
 			};
-			
+
 		return await interaction.editReply(newMessageContents);
 	}
 

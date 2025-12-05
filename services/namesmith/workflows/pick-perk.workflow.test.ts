@@ -1,4 +1,4 @@
-import { makeSure } from "../../../utilities/jest/jest-utils";
+import { failTest, makeSure } from "../../../utilities/jest/jest-utils";
 import { Perks } from "../constants/perks.constants";
 import { INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
@@ -49,32 +49,25 @@ describe('pick-perk.workflow', () => {
 			makeSure(hasPerk).is(true);
 		});
 
-		it('should remove previously picked perks', () => {
-			let player = addMockPlayer(db, {
+		it('should return perkAlreadyChosen failure if the player already has one of the perks', () => {
+			const player = addMockPlayer(db, {
 				perks: [Perks.REFILL_BONUS.id]
 			});
 
-			pickPerk({
-				player: NO_PERKS_PLAYER,
+			const result = pickPerk({
+				player: player,
 				pickedPerk: Perks.MINE_BONUS,
 				perksPickingFrom: PERKS_PICKING_FROM,
 			});
 
-			player = playerService.resolvePlayer(NO_PERKS_PLAYER.id);
-			const hasMineBonus = perkService.doesPlayerHave(Perks.MINE_BONUS.id, player.id);
-			const hasRefillBonus = perkService.doesPlayerHave(Perks.REFILL_BONUS.id, player.id);
+			makeSure(result.isFailure()).isTrue();
+			if (!result.isPerkAlreadyChosen())
+				failTest('Returned result is not a perkAlreadyChosen failure');
 
-			makeSure(player.perks).hasAnItemWhere(perk =>
-				perk.id === Perks.MINE_BONUS.id
-			);
-			makeSure(player.perks).hasNoItemsWhere(perk =>
-				perk.id === Perks.REFILL_BONUS.id
-			);
-			makeSure(hasMineBonus).is(true);
-			makeSure(hasRefillBonus).is(false);
+			makeSure(result.chosenPerk.id).is(Perks.REFILL_BONUS.id);
 		});
 
-		it('should return any previously picked perks and any free tokens earned', () => {
+		it('should return any free tokens earned', () => {
 			const result = returnIfNotFailure(
 				pickPerk({
 					player: NO_PERKS_PLAYER,
@@ -84,21 +77,7 @@ describe('pick-perk.workflow', () => {
 			);
 
 			makeSure(result.isFailure()).isFalse();
-			makeSure(result.perkBeingReplaced).isNull();
 			makeSure(result.freeTokensEarned).is(0);
-
-			const result2 = returnIfNotFailure(
-				pickPerk({
-					player: NO_PERKS_PLAYER,
-					pickedPerk: Perks.REFILL_BONUS,
-					perksPickingFrom: PERKS_PICKING_FROM,
-				})
-			);
-
-			const mineBonusPerk = perkService.resolvePerk(Perks.MINE_BONUS.id);
-
-			makeSure(result2.isFailure()).isFalse();
-			makeSure(result2.perkBeingReplaced).is(mineBonusPerk);
 		});
 
 		it('should give free token if player choose the free tokens perk', () => {
@@ -113,7 +92,6 @@ describe('pick-perk.workflow', () => {
 			const player = playerService.resolvePlayer(NO_PERKS_PLAYER.id);
 
 			makeSure(result.isFailure()).isFalse();
-			makeSure(result.perkBeingReplaced).isNull();
 			makeSure(result.freeTokensEarned).is(500);
 			makeSure(player.tokens).is(500);
 		});
@@ -128,21 +106,17 @@ describe('pick-perk.workflow', () => {
 			let player = playerService.resolvePlayer(NO_PERKS_PLAYER.id);
 			makeSure(player.tokens).is(500);
 
-			const result = returnIfNotFailure(
+			const result =
 				pickPerk({
 					player: NO_PERKS_PLAYER,
 					pickedPerk: Perks.MINE_BONUS,
 					perksPickingFrom: PERKS_PICKING_FROM,
-				})
-			);
+				});
 
 			player = playerService.resolvePlayer(NO_PERKS_PLAYER.id);
 
-			makeSure(result.isFailure()).isFalse();
-			makeSure(result.perkBeingReplaced).isNotNull();
-			makeSure(result.perkBeingReplaced!.id).is(Perks.FREE_TOKENS.id);
-			makeSure(result.freeTokensEarned).is(-500);
-			makeSure(player.tokens).is(0);
+			makeSure(result.isFailure()).isTrue();
+			makeSure(result.isPerkAlreadyChosen()).isTrue();
 		})
 
 		it('should return nonPlayer failure if the player does not exist', () => {
@@ -167,22 +141,6 @@ describe('pick-perk.workflow', () => {
 
 			makeSure(result.isFailure()).isTrue();
 			makeSure(result.isPerkDoesNotExist()).isTrue();
-		});
-
-		it('should return playerAlreadyHasThatPerk failure if the player already has that perk', () => {
-			const playerWithAllPerks = addMockPlayer(db, {
-				perks: PERKS_PICKING_FROM.map(perk => perk.id)
-			})
-
-			const result =
-				pickPerk({
-					player: playerWithAllPerks,
-					pickedPerk: Perks.MINE_BONUS,
-					perksPickingFrom: PERKS_PICKING_FROM,
-				});
-
-			makeSure(result.isFailure()).isTrue();
-			makeSure(result.isPlayerAlreadyHasThatPerk()).isTrue();
 		});
 	});
 })
