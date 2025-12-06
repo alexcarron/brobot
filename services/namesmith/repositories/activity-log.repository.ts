@@ -1,13 +1,14 @@
 import { returnNonNullOrThrow } from "../../../utilities/error-utils";
 import { resolveOptional } from "../../../utilities/optional-utils";
-import { WithAllOptional, WithAtLeastOneProperty } from '../../../utilities/types/generic-types';
+import { WithAtLeastOneProperty } from '../../../utilities/types/generic-types';
 import { isNotNullable } from "../../../utilities/types/type-guards";
 import { DatabaseQuerier, toParameterANDWhereClause } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
-import { ActivityLogID as ActivityLogID, ActivityLog, DBActivityLog, ActivityLogDefinition } from "../types/activity-log.types";
+import { ActivityLogID as ActivityLogID, ActivityLog, ActivityLogDefinition, MinimalActivityLog, asMinimalActivityLog, asMinimalActivityLogs, DBActivityLog } from "../types/activity-log.types";
 import { Player } from "../types/player.types";
 import { Quest } from "../types/quest.types";
 import { Recipe } from "../types/recipe.types";
+import { DBDate } from "../utilities/db.utility";
 import { ActivityLogAlreadyExistsError, ActivityLogNotFoundError } from "../utilities/error.utility";
 import { PlayerRepository } from "./player.repository";
 import { QuestRepository } from "./quest.repository";
@@ -47,13 +48,13 @@ export class ActivityLogRepository {
 
 	/**
 	 * Converts a DBActivityLog object to an ActivityLog object.
-	 * @param dbActivityLog - The DBActivityLog object to convert.
+	 * @param minimalActivityLog - The minimal ActivityLog object to convert.
 	 * @returns The converted ActivityLog object.
 	 */
-	private toActivityLogFromDB(dbActivityLog: DBActivityLog): ActivityLog {
-		const player = this.playerRepository.getPlayerOrThrow(dbActivityLog.playerID);
+	private toActivityLogFromMinimal(minimalActivityLog: MinimalActivityLog): ActivityLog {
+		const player = this.playerRepository.getPlayerOrThrow(minimalActivityLog.playerID);
 
-		const involvedPlayerID = dbActivityLog.involvedPlayerID;
+		const involvedPlayerID = minimalActivityLog.involvedPlayerID;
 		let involvedPlayer: Player | null = null;
 		if (involvedPlayerID !== null) {
 			if (involvedPlayer === player.id) {
@@ -64,20 +65,20 @@ export class ActivityLogRepository {
 			}
 		}
 
-		const involvedRecipeID = dbActivityLog.involvedRecipeID;
+		const involvedRecipeID = minimalActivityLog.involvedRecipeID;
 		let involvedRecipe: Recipe | null = null;
 		if (involvedRecipeID !== null) {
 			involvedRecipe = this.recipeRepository.getRecipeOrThrow(involvedRecipeID);
 		}
 
-		const involvedQuestID = dbActivityLog.involvedQuestID;
+		const involvedQuestID = minimalActivityLog.involvedQuestID;
 		let involvedQuest: Quest | null = null;
 		if (involvedQuestID !== null) {
 			involvedQuest = this.questRepository.getQuestOrThrow(involvedQuestID);
 		}
 
 		return {
-			...dbActivityLog,
+			...minimalActivityLog,
 			player,
 			involvedPlayer,
 			involvedRecipe,
@@ -86,24 +87,28 @@ export class ActivityLogRepository {
 	}
 
 	getActivityLogs(): ActivityLog[] {
-		const dbActivityLogs = this.db.getRows(
-			"SELECT * FROM activityLog"
-		) as DBActivityLog[];
+		const minimalActivityLogs = asMinimalActivityLogs(
+			this.db.getRows("SELECT * FROM activityLog")
+		)
 
-		return dbActivityLogs.map(dbActivityLog => this.toActivityLogFromDB(dbActivityLog));
+		return minimalActivityLogs.map(log =>
+			this.toActivityLogFromMinimal(log)
+		);
 	}
 
 	private getActivityLogByID(id: ActivityLogID): ActivityLog | null {
-		const dbActivityLog = this.db.getRow(
+		const row = this.db.getRow(
 			"SELECT * FROM activityLog WHERE id = @id LIMIT 1",
 			{ id }
-		) as DBActivityLog | undefined;
+		);
 
-		if (dbActivityLog === undefined) {
+		if (row === undefined) {
 			return null;
 		}
 
-		return this.toActivityLogFromDB(dbActivityLog);
+		return this.toActivityLogFromMinimal(
+			asMinimalActivityLog(row)
+		);
 	}
 
 	/**
@@ -129,8 +134,8 @@ export class ActivityLogRepository {
 	}
 
 	toPartialDBActivityLog(
-		{ id, player, type, tokensDifference, involvedPlayer, involvedRecipe, involvedQuest }: Partial<ActivityLogDefinition>
-	): WithAllOptional<DBActivityLog> {
+		{ id, timeOccured, player, type, tokensDifference, involvedPlayer, involvedRecipe, involvedQuest }: Partial<ActivityLogDefinition>
+	): Partial<DBActivityLog> {
 		const playerID = resolveOptional(player,
 			this.playerRepository.resolveID.bind(this.playerRepository)
 		);
@@ -146,6 +151,7 @@ export class ActivityLogRepository {
 
 		return {
 			id,
+			timeOccured: DBDate.orUndefined.fromDomain(timeOccured),
 			playerID,
 			type,
 			tokensDifference,
@@ -162,9 +168,11 @@ export class ActivityLogRepository {
 	 * @throws {ActivityLogAlreadyExistsError} If an activity log with the given ID already exists.
 	 */
 	addActivityLog(
-		{id, player, type, tokensDifference, involvedPlayer, involvedRecipe, involvedQuest}:
+		{id, timeOccured, player, type, tokensDifference, involvedPlayer, involvedRecipe, involvedQuest}:
 			ActivityLogDefinition
 	) {
+		if (timeOccured === undefined) timeOccured = new Date();
+		
 		this.playerRepository.resolvePlayer(player);
 		if (isNotNullable(involvedPlayer)) {
 			this.playerRepository.resolvePlayer(involvedPlayer);
@@ -182,6 +190,7 @@ export class ActivityLogRepository {
 
 		const insertedFields = this.toPartialDBActivityLog({
 			id,
+			timeOccured,
 			player,
 			type,
 			tokensDifference: tokensDifference ?? 0,
@@ -198,6 +207,7 @@ export class ActivityLogRepository {
 	 * Finds all activity logs where all of the given properties is equal to the given value.
 	 * @param queryParameters - An object with properties that are equal to the given value.
 	 * @param queryParameters.id - The ID of the activity log.
+	 * @param queryParameters.timeOccured - The time the activity log occurred.
 	 * @param queryParameters.player - The player.
 	 * @param queryParameters.type - The type of activity.
 	 * @param queryParameters.tokensDifference - The difference in tokens.
@@ -207,7 +217,7 @@ export class ActivityLogRepository {
 	 * @returns An array of activity logs that have all of the given properties equal to the given value.
 	 */
 	findActivityLogsWhere(
-		{ id, player, type, tokensDifference, involvedPlayer, involvedRecipe, involvedQuest }:
+		{ id, timeOccured, player, type, tokensDifference, involvedPlayer, involvedRecipe, involvedQuest }:
 			WithAtLeastOneProperty<ActivityLogDefinition>
 	): ActivityLog[] {
 		if (isNotNullable(player)) {
@@ -224,17 +234,19 @@ export class ActivityLogRepository {
 		}
 
 		const queryParameters = this.toPartialDBActivityLog({
-			id, player, type, tokensDifference, involvedPlayer, involvedRecipe, involvedQuest,
+			id, timeOccured, player, type, tokensDifference, involvedPlayer, involvedRecipe, involvedQuest,
 		});
 
-		const dbActivityLogs = this.db.getRows(
-			`SELECT * FROM activityLog
-			WHERE
-				${toParameterANDWhereClause(queryParameters)}
-			`,
-			queryParameters
-		) as DBActivityLog[];
+		const minimalActivityLogs = asMinimalActivityLogs(
+			this.db.getRows(
+				`SELECT * FROM activityLog
+				WHERE
+					${toParameterANDWhereClause(queryParameters)}
+				`,
+				queryParameters
+			)
+		);
 
-		return dbActivityLogs.map(dbActivityLog => this.toActivityLogFromDB(dbActivityLog));
+		return minimalActivityLogs.map(dbActivityLog => this.toActivityLogFromMinimal(dbActivityLog));
 	}
 }

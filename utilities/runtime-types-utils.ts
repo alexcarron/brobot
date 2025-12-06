@@ -3,8 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { inspect } from "util";
 import { hasProperty, isDefined, isNotNullable, isNull, isObject, isPrimitive, isString, isUndefined } from "./types/type-guards";
-import { Expand, IsAnyPropertyNever, UndefinedAsOptional, Without, IncludesNull } from './types/generic-types';
-import { isMultiLine } from "./string-checks-utils";
+import { Expand, IsAnyPropertyNever, UndefinedAsOptional, WithAllOptional, Without } from './types/generic-types';
 
 /* ————— Error ————— */
 
@@ -164,8 +163,13 @@ type RuntimeType<
 	Type,
 	DefaultValue extends Type | undefined = undefined
 > = {
+	name: string;
+
   orNull: RuntimeType<Type | null, DefaultValue>;
+	orUndefined: RuntimeType<Type | undefined, DefaultValue>;
+
 	includesNull: Extract<Type, null> extends never ? false : true;
+	includesUndefined: Extract<Type, undefined> extends never ? false : true;
 
 	default<NewDefaultValue extends Type>(
 		defaultValue: NewDefaultValue
@@ -191,6 +195,29 @@ type RuntimeType<
   };
 };
 
+type ObjectRuntimeType<
+	Type extends Record<keyof Resolvable, unknown>,
+	DefaultValue extends Type | undefined,
+	Resolvable extends ObjectRuntimeTypeResolvable
+> =
+  & RuntimeType<Type, DefaultValue>
+  & {
+		without: <
+			Keys extends Array<keyof Resolvable>
+		>(...keys: Keys) => RuntimeType<
+			Expand<Without<Type, Keys[number]>>,
+			DefaultValue extends Type
+				? Expand<Without<DefaultValue, Keys[number]>>
+				: undefined
+		>;
+		withAllOptional: () => RuntimeType<
+			WithAllOptional<Type>,
+			DefaultValue extends Type
+				? WithAllOptional<DefaultValue>
+				: undefined
+		>;
+  };
+
 type TransformableRuntimeType<
 	RawType,
 	DomainType,
@@ -211,6 +238,13 @@ type TransformableRuntimeType<
 			DefaultRawValue,
 			DefaultDomainValue
 		>;
+		orUndefined: TransformableRuntimeType<
+			RawType | undefined,
+			DomainType | undefined,
+			DefaultRawValue,
+			DefaultDomainValue
+		>;
+
 		default: <NewDefaultValue extends DomainType>(
 			defaultValue: NewDefaultValue
 		) => TransformableRuntimeType<RawType, DomainType, DefaultRawValue, NewDefaultValue>;
@@ -245,6 +279,13 @@ type NamedTransformableRuntimeType<
 			DefaultRawValue,
 			DefaultDomainValue
 		>;
+		orUndefined: NamedTransformableRuntimeType<
+			RawType | undefined,
+			DomainType | undefined,
+			DomainName,
+			DefaultRawValue,
+			DefaultDomainValue
+		>;
   }
   & {
     [Key in
@@ -264,7 +305,7 @@ type NamedTransformableRuntimeType<
       : never;
   };
 
-type NamedTransformableRuntimeTypeFromResolvable<
+type NamedTransformableObjectRuntimeType<
 	RawType extends Record<keyof Resolvable, unknown>,
 	DomainType extends Record<keyof Resolvable, unknown>,
 	DomainName extends string,
@@ -274,16 +315,28 @@ type NamedTransformableRuntimeTypeFromResolvable<
   & {
 		without: <
 			Keys extends Array<keyof Resolvable>
-		>(...keys: Keys) => NamedTransformableRuntimeTypeFromResolvable<
+		>(...keys: Keys) => NamedTransformableObjectRuntimeType<
 			// @ts-ignore
 			Expand<Without<RawType, Keys[number]>>,
 			Expand<Without<DomainType, Keys[number]>>,
 			DomainName,
 			Expand<Without<Resolvable, Keys[number]>>
 		>;
+		withAllOptional: () => NamedTransformableObjectRuntimeType<
+			// @ts-ignore
+			WithAllOptional<RawType>,
+			WithAllOptional<DomainType>,
+			DomainName,
+			WithAllOptional<Resolvable>
+		>;
     orNull: NamedTransformableRuntimeType<
 			RawType | null,
 			DomainType | null,
+			DomainName
+		>;
+		orUndefined: NamedTransformableRuntimeType<
+			RawType | undefined,
+			DomainType | undefined,
 			DomainName
 		>;
   }
@@ -313,7 +366,7 @@ export type ExtractType<SomeRuntimeType> =
 export type ExtractRawType<SomeRuntimeType> = ExtractType<SomeRuntimeType>;
 
 export type ExtractDomainType<SomeRuntimeType> =
-  SomeRuntimeType extends NamedTransformableRuntimeTypeFromResolvable<infer RawType, infer DomainType, infer DomainName, infer Resolvable>
+  SomeRuntimeType extends NamedTransformableObjectRuntimeType<infer RawType, infer DomainType, infer DomainName, infer Resolvable>
     ? DomainType
   : SomeRuntimeType extends NamedTransformableRuntimeType<infer RawType, infer DomainType, infer DomainName, infer DefaultRawValue, infer DefaultDomainValue, infer AcceptableDomainType>
     ? DomainType
@@ -400,6 +453,37 @@ type AcceptableObjectOfResolvable<
 	[Key in keyof Resolvable]: ExtractAcceptableDomainType<ResolveRuntimeType<Resolvable[Key]>>;
 }>>;
 
+
+/* ————— Resolvable helpers ————— */
+
+function resolveRuntimeType<
+	SpecificResolvable extends RuntimeTypeResolvable
+>(
+	runtimeTypeResolvable: SpecificResolvable
+): ResolveRuntimeType<SpecificResolvable> {
+	if (runtimeTypeResolvable === undefined) {
+		return Undefined as any;
+	}
+	else if (runtimeTypeResolvable === null) {
+		return Null as any;
+	}
+	else {
+		return runtimeTypeResolvable as any;
+	}
+}
+
+function getNameOfObjectRuntimeType<
+	SpecificResolvable extends ObjectRuntimeTypeResolvable
+>(runtimeTypeResolvable: SpecificResolvable): string {
+	const properties: string[] = [];
+	for (const key in runtimeTypeResolvable) {
+		const runtimeType = resolveRuntimeType(runtimeTypeResolvable[key]);
+
+		properties.push(`${key}: ${runtimeType.name}`);
+	}
+	return '{' + properties.join(', ') + '}';
+}
+
 /* ————— Assertion helpers ————— */
 
 
@@ -443,6 +527,20 @@ function doesRuntimeTypeObjectHaveAllDefaults<
 
 			return false;
 		}) as any;
+}
+
+function doesRuntimeTypeObjectHaveAllOptional<
+	DefaultValueOrUndefined
+>(
+	keyToRuntimeType: Record<
+		string,
+		RuntimeType<unknown, DefaultValueOrUndefined> | null | undefined
+	>
+): keyToRuntimeType is Record<string,
+	RuntimeType<unknown, Exclude<DefaultValueOrUndefined, undefined>>
+> {
+	return Object.values(keyToRuntimeType)
+		.every(runtimeType => isUndefined(runtimeType)) as any;
 }
 
 function throwIfNotType<Type>(
@@ -504,58 +602,6 @@ function returnArrayOfTypeOrThrow<Type>(
 	});
 }
 
-/**
- * Asserts that the values are of the expected type and converts them to the output type if a type converter function is provided
- * @param values - The values to assert and convert
- * @param parameters - An object of the following parameters
- * @param parameters.isInputType - The type guard function to check the input values against
- * @param parameters.inputTypeName - The name of the input type
- * @param parameters.toOutputType - The function to convert the input type to the output type if you want to convert the given values
- * @param parameters.defaultValue - The default value to return if a value is undefined
- * @returns An array of the values, converted if a type converter funciton is provided
- */
-function returnArrayOfConvertedTypesOrThrow<
-  InputType,
-  OutputType,
-	DefaultInputValue extends InputType,
-	DefaultOutputValue extends OutputType,
->(
-  values: unknown[],
-	{isInputType, inputTypeName, toOutputType, defaultInputValue, defaultOutputValue}: {
-		isInputType: (value: unknown) => value is InputType,
-		inputTypeName: string,
-		toOutputType: (value: InputType) => OutputType,
-		defaultInputValue?: DefaultInputValue,
-		defaultOutputValue?: DefaultOutputValue
-	}
-): OutputType[] {
-  return values.map((value, index) => {
-		try {
-			if (isUndefined(value)) {
-				if (isDefined(defaultInputValue))
-					return toOutputType(defaultInputValue);
-
-				if (isDefined(defaultOutputValue))
-					return defaultOutputValue;
-			}
-
-			throwIfNotType(value, {
-				isType: isInputType,
-				typeName: inputTypeName
-			});
-
-			return toOutputType(value);
-		}
-		catch (error) {
-			throw toInvalidTypeError(error, {
-				atIndex: index,
-				expectedTypeName: inputTypeName,
-				suggestionToFix: `Provide a ${inputTypeName} at array index ${index}, or supply a default value for the type`,
-			});
-		}
-  });
-}
-
 /* ------------------------- Nullable wrapper helpers --------------------- */
 
 /**
@@ -570,6 +616,13 @@ function toIsTypeOrNull<Type>(
 		(value === null) || isType(value);
 }
 
+function toIsTypeOrUndefined<Type>(
+	isType: (value: unknown) => value is Type
+): (value: unknown) => value is Type | undefined {
+	return (value: unknown): value is Type | undefined =>
+		(value === undefined) || isType(value);
+}
+
 /**
  * Wrap a raw->domain converter so it passes through `null` unchanged.
  */
@@ -582,13 +635,34 @@ function toToDomainOrNull<RawType, DomainType>(
 			: toDomain(rawValue);
 }
 
+function toToDomainOrUndefined<RawType, DomainType>(
+	toDomain: (rawValue: RawType) => DomainType
+): (rawValue: RawType | undefined) => DomainType | undefined {
+	return (rawValue: RawType | undefined) =>
+		rawValue === undefined
+			? undefined
+			: toDomain(rawValue);
+}
+
 /**
  * Wrap a domain->raw converter so it passes through `null` unchanged.
  */
 function toFromDomainOrNull<RawType, DomainType>(
   fromDomain: (domainValue: DomainType) => RawType
 ): (domainValue: DomainType | null) => RawType | null {
-  return (domainValue: DomainType | null) => domainValue === null ? null : fromDomain(domainValue);
+  return (domainValue: DomainType | null) =>
+		domainValue === null
+			? null
+			: fromDomain(domainValue);
+}
+
+function toFromDomainOrUndefined<RawType, DomainType>(
+	fromDomain: (domainValue: DomainType) => RawType
+): (domainValue: DomainType | undefined) => RawType | undefined {
+	return (domainValue: DomainType | undefined) =>
+		domainValue === undefined
+			? undefined
+			: fromDomain(domainValue);
 }
 
 /* ————— Shared property helper ————— */
@@ -598,9 +672,11 @@ function toFromDomainOrNull<RawType, DomainType>(
  * The createNullable function may create a variant with different generic parameters,
  * so we use a local assertion when caching/returning to satisfy TypeScript.
  */
-function attachNullRelatedProperties<Target extends { isType(value: unknown): boolean }>(
+function attachOrNull<
+	Target extends { isType(value: unknown): boolean }
+>(
   targetObject: Target,
-  createNullable: () => unknown
+  toOrNullRuntimeType: () => unknown
 ): void {
   Object.defineProperty(targetObject, "orNull", {
     get() {
@@ -609,25 +685,112 @@ function attachNullRelatedProperties<Target extends { isType(value: unknown): bo
         return targetObject as unknown;
       }
 
-      const createdNullable = createNullable();
+      const orNullRuntimeType = toOrNullRuntimeType();
 
       // Cache the created nullable variant (we assert its type here).
       // Using the `as unknown` assertion is required because TypeScript cannot
       // prove the createdNullable's `isType` predicate matches the original generic.
       Object.defineProperty(targetObject, "orNull", {
-        value: createdNullable as unknown,
+        value: orNullRuntimeType as unknown,
         configurable: true,
         writable: false,
       });
 
-      return createdNullable as unknown;
+      return orNullRuntimeType as unknown;
     },
     configurable: true,
   });
 }
 
-/* ————— Runtime factories ————— */
+function attachOrUndefined<
+	Target extends { isType(value: unknown): boolean }
+>(
+	targetObject: Target,
+	toOrUndefinedRuntimeType: () => unknown
+): void {
+	Object.defineProperty(targetObject, "orUndefined", {
+		get() {
+			if (targetObject.isType(undefined)) {
+				return targetObject as unknown;
+			}
 
+			const orUndefinedRuntimeType = toOrUndefinedRuntimeType();
+
+			Object.defineProperty(targetObject, "orUndefined", {
+				value: orUndefinedRuntimeType as unknown,
+				configurable: true,
+				writable: false,
+			});
+
+			return orUndefinedRuntimeType as unknown;
+		},
+		configurable: true,
+	});
+}
+
+/**
+ * Attaches a new property to the given runtime type that, when invoked, creates a new runtime type
+ * by removing the given keys from the original runtime type's resolvable.
+ * The new runtime type is created by calling the given `toRuntimeTypeFromResolvable` function.
+ * The new property is named "without".
+ * @param baseRuntimeType The runtime type to attach the new property to.
+ * @param baseResolvable The resolvable of the original runtime type.
+ * @param toRuntimeTypeFromResolvable A function that takes a resolvable and returns a new runtime type.
+ */
+function attachWithout<
+	KeyToRuntimeResolvable extends ObjectRuntimeTypeResolvable
+>(
+	baseRuntimeType: RuntimeType<unknown, unknown>,
+	baseResolvable: KeyToRuntimeResolvable,
+	toRuntimeTypeFromResolvable: (resolvable: ObjectRuntimeTypeResolvable) => RuntimeType<unknown, unknown>
+) {
+	Object.defineProperty(baseRuntimeType, "without", {
+		value: function<
+				Keys extends Array<keyof KeyToRuntimeResolvable>
+		>(...keys: Keys) {
+			const newResolvable = baseResolvable
+			for (const key of keys) {
+				delete newResolvable[key]
+			}
+
+			return toRuntimeTypeFromResolvable(
+				newResolvable as Without<KeyToRuntimeResolvable, Keys[number]>
+			);
+		}
+	});
+}
+
+/**
+ * Attaches a new property to the given runtime type that, when invoked, creates a new runtime type
+ * by making all properties of the original runtime type's resolvable optional.
+ * The new runtime type is created by calling the given `toRuntimeTypeFromResolvable` function.
+ * The new property is named "withAllOptional".
+ * @param baseRuntimeType The runtime type to attach the new property to.
+ * @param baseResolvable The resolvable of the original runtime type.
+ * @param toRuntimeTypeFromResolvable A function that takes a resolvable and returns a new runtime type.
+ */
+function attachWithAllOptional<
+	KeyToRuntimeResolvable extends ObjectRuntimeTypeResolvable
+>(
+	baseRuntimeType: RuntimeType<unknown, unknown>,
+	baseResolvable: KeyToRuntimeResolvable,
+	toRuntimeTypeFromResolvable: (resolvable: ObjectRuntimeTypeResolvable) => RuntimeType<unknown, unknown>
+) {
+	Object.defineProperty(baseRuntimeType, "withAllOptional", {
+		value: function() {
+			const newResolvable = {} as any;
+
+			for (const key of Object.keys(baseResolvable)) {
+				const runtimeType = resolveRuntimeType(baseResolvable[key]);
+				newResolvable[key] = runtimeType.orUndefined;
+			}
+
+			return toRuntimeTypeFromResolvable(newResolvable);
+		}
+	});
+}
+
+/* ————— Runtime factories ————— */
 
 function createRuntimeType<
 	Type,
@@ -640,7 +803,10 @@ function createRuntimeType<
 	}
 ): RuntimeType<Type, DefaultValue> {
   const baseRuntimeType = {
+		name: typeName,
 		includesNull: isType(null),
+		includesUndefined: isType(undefined),
+
 		default: function<NewDefaultValue extends Type>(
 			defaultValue: NewDefaultValue
 		): RuntimeType<Type, NewDefaultValue> {
@@ -691,13 +857,21 @@ function createRuntimeType<
   };
 
   // attach orNull lazily via helper
-  attachNullRelatedProperties(baseRuntimeType,
+  attachOrNull(baseRuntimeType,
 		() => createRuntimeType({
       typeName: `${typeName} or null`,
       isType: toIsTypeOrNull(isType),
 			defaultValue,
     })
   );
+
+	attachOrUndefined(baseRuntimeType,
+		() => createRuntimeType({
+			typeName: `${typeName} or undefined`,
+			isType: toIsTypeOrUndefined(isType),
+			defaultValue,
+		})
+	);
 
   return baseRuntimeType as unknown as RuntimeType<Type, DefaultValue>;
 }
@@ -776,7 +950,7 @@ function createTransformableRuntimeType<
   const transformableRuntime = Object.assign(runtimeBase, baseProperties);
 
   // attach orNull lazily; create nullable predicate and wrapped converters
-  attachNullRelatedProperties(transformableRuntime, () => {
+  attachOrNull(transformableRuntime, () => {
     const isTypeOrNull = toIsTypeOrNull(isType);
     const toDomainOrNull = toToDomainOrNull(toDomainType);
     const fromDomainOrNull = toFromDomainOrNull(fromDomainType);
@@ -790,6 +964,21 @@ function createTransformableRuntimeType<
 			defaultDomainValue,
     );
   });
+
+	attachOrUndefined(transformableRuntime, () => {
+		const isTypeOrUndefined = toIsTypeOrUndefined(isType);
+		const toDomainOrUndefined = toToDomainOrUndefined(toDomainType);
+		const fromDomainOrUndefined = toFromDomainOrUndefined(fromDomainType);
+
+		return createTransformableRuntimeType(
+			`${typeName} or undefined`,
+			isTypeOrUndefined,
+			toDomainOrUndefined,
+			fromDomainOrUndefined,
+			defaultRawValue,
+			defaultDomainValue,
+		);
+	});
 
 	Object.defineProperty(transformableRuntime, 'default',
 		{
@@ -858,7 +1047,7 @@ function createNamedTransformableRuntimeType<
   (transformable as any)[pluralFromMethodName] = (domainValues: DomainType[]) => transformable.fromDomains(domainValues);
 
   // Now attach a specialized `orNull` getter that returns a NamedTransformable type
-  attachNullRelatedProperties(transformable, () => {
+  attachOrNull(transformable, () => {
     const isTypeOrNull = toIsTypeOrNull(isType);
     const toDomainOrNull = toToDomainOrNull(toDomainType);
     const fromDomainOrNull = toFromDomainOrNull(fromDomainType);
@@ -875,6 +1064,21 @@ function createNamedTransformableRuntimeType<
 
     return nullableTransformable;
   });
+
+	attachOrUndefined(transformable, () => {
+		const isTypeOrUndefined = toIsTypeOrUndefined(isType);
+		const toDomainOrUndefined = toToDomainOrUndefined(toDomainType);
+		const fromDomainOrUndefined = toFromDomainOrUndefined(fromDomainType);
+
+		return createNamedTransformableRuntimeType(
+			domainName,
+			isTypeOrUndefined,
+			toDomainOrUndefined,
+			fromDomainOrUndefined,
+			defaultRawValue,
+			defaultDomainValue,
+		);
+	});
 
   return transformable as unknown as NamedTransformableRuntimeType<RawType, DomainType, DomainName, DefaultRawValue, DefaultDomainValue, AcceptableDomainType>;
 }
@@ -897,6 +1101,18 @@ export const boolean = createRuntimeType<boolean>({
 	typeName: "boolean",
 	isType: (value): value is boolean =>
 		typeof value === "boolean"
+});
+
+export const Null = createRuntimeType<null>({
+	typeName: "null",
+	isType: (value): value is null =>
+		value === null
+});
+
+export const Undefined = createRuntimeType<undefined>({
+	typeName: "undefined",
+	isType: (value): value is undefined =>
+		value === undefined
 });
 
 export const zeroOrOne = createRuntimeType<0 | 1>({
@@ -946,39 +1162,26 @@ function validateObjectAgainstKeyToRuntimeType<
 			: unknown;
 } {
 	const hasAllDefaultProperties = doesRuntimeTypeObjectHaveAllDefaults(keyToRuntimeMap);
+	const hasAllOptionalProperties = doesRuntimeTypeObjectHaveAllOptional(keyToRuntimeMap);
 
-	if (hasAllDefaultProperties)
+	if (hasAllDefaultProperties || hasAllOptionalProperties)
 		return true;
 
   if (!isObject(candidateValue)) return false;
 
-  for (const key in keyToRuntimeMap as object) {
-    const runtimeOrNullOrUndefined: any = (keyToRuntimeMap as any)[key];
+  for (const key in keyToRuntimeMap) {
+		const runtimeType = resolveRuntimeType(keyToRuntimeMap[key]);
     const propertyValue: any = (candidateValue as any)[key];
-
-		const hasDefault =
-			isNotNullable(runtimeOrNullOrUndefined) &&
-			doesRuntimeTypeHaveDefault(runtimeOrNullOrUndefined);
+		const hasDefault = doesRuntimeTypeHaveDefault(runtimeType);
 
     if (!hasProperty(candidateValue, key)) {
-			if (hasDefault)
+			if (hasDefault || runtimeType.includesUndefined)
 				continue;
 			else
 				return false;
 		}
 
-    if (isNull(runtimeOrNullOrUndefined)) {
-      if (!isNull(propertyValue)) return false;
-      continue;
-    }
-
-    if (isUndefined(runtimeOrNullOrUndefined)) {
-      if (!isUndefined(propertyValue)) return false;
-      continue;
-    }
-
-    // runtimeOrNullOrUndefined is a RuntimeType-like object
-    if (!runtimeOrNullOrUndefined.isType(propertyValue)) return false;
+    if (!runtimeType.isType(propertyValue)) return false;
   }
 
   return true;
@@ -1071,13 +1274,15 @@ export const object = {
 		KeyToRuntimeResolvable extends ObjectRuntimeTypeResolvable,
 	>(
     keyToRuntimeType: KeyToRuntimeResolvable,
-  ): RuntimeType<
+  ): ObjectRuntimeType<
 		ObjectTypeOfResolvable<KeyToRuntimeResolvable>,
-		DefaultObjectOfResolvable<KeyToRuntimeResolvable>
+		DefaultObjectOfResolvable<KeyToRuntimeResolvable>,
+		KeyToRuntimeResolvable
 	> {
 		type ObjectType = ObjectTypeOfResolvable<KeyToRuntimeResolvable>;
 		type DefaultObject = DefaultObjectOfResolvable<KeyToRuntimeResolvable>;
 
+		const name = getNameOfObjectRuntimeType(keyToRuntimeType);
 		const hasAllDefaults = doesRuntimeTypeObjectHaveAllDefaults(keyToRuntimeType);
 
 		let defaultValue: DefaultObject | undefined = undefined;
@@ -1090,14 +1295,18 @@ export const object = {
 		}
 
     const baseRuntimeType: RuntimeType<ObjectType, DefaultObject> = createRuntimeType({
-			typeName: "object",
+			typeName: name,
 			isType: (value): value is ObjectType =>
 				validateObjectAgainstKeyToRuntimeType(value, keyToRuntimeType),
 			defaultValue: defaultValue,
     });
 
 		baseRuntimeType.from = (value: unknown): ObjectType => {
-			baseRuntimeType.throwIfNotType(value);
+			throwIfNotType(value, {
+				isType: baseRuntimeType.isType,
+				typeName: name,
+				fromMethod: `.from()`,
+			});
 
 			if (isUndefined(value) && isDefined(defaultValue))
 				return defaultValue;
@@ -1122,7 +1331,10 @@ export const object = {
 		baseRuntimeType.fromAll = (values: unknown[]): ObjectType[] =>
 			values.map((value) => baseRuntimeType.from(value));
 
-		return baseRuntimeType;
+		attachWithout(baseRuntimeType, keyToRuntimeType, object.asType);
+		attachWithAllOptional(baseRuntimeType, keyToRuntimeType, object.asType);
+
+		return baseRuntimeType as any;
   },
 
   asTransformableType: function<
@@ -1137,7 +1349,7 @@ export const object = {
   >(
     domainName: DomainName,
     keyToRuntimeType: KeyToRuntimeResolvable
-  ): NamedTransformableRuntimeTypeFromResolvable<RawObjectType, DomainObjectType, DomainName, KeyToRuntimeResolvable> {
+  ): NamedTransformableObjectRuntimeType<RawObjectType, DomainObjectType, DomainName, KeyToRuntimeResolvable> {
     // Predicate for raw object shape
     const isRawObject = (value: unknown): value is RawObjectType =>
       validateObjectAgainstKeyToRuntimeType(value, keyToRuntimeType as unknown as KeyToRuntimeResolvable);
@@ -1177,21 +1389,16 @@ export const object = {
       domainToRaw
     )
 
-		Object.defineProperty(baseRuntimeType, 'without', {
-			value: function<
-				Keys extends Array<keyof KeyToRuntimeResolvable>
-			>(...keys: Keys) {
-				const newKeyToRuntimeType = keyToRuntimeType
-				for (const key of keys) {
-					delete newKeyToRuntimeType[key]
-				}
-
-				return object.asTransformableType(
-					domainName,
-					newKeyToRuntimeType as Without<KeyToRuntimeResolvable, Keys[number]>
-				)
-			}
-		});
+		attachWithout(baseRuntimeType, keyToRuntimeType,
+			(resolvable) => object.asTransformableType(
+				domainName, resolvable
+			)
+		);
+		attachWithAllOptional(baseRuntimeType, keyToRuntimeType,
+			(resolvable) => object.asTransformableType(
+				domainName, resolvable
+			)
+		);
 
 		return baseRuntimeType as any;
   },

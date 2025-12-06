@@ -530,8 +530,10 @@ describe("Mock Utilities", () => {
 		});
 
 		it('adds the activity log to the database', () => {
+			const TIME = new Date();
 			addMockActivityLog(db, {
 				id: 1000000001,
+				timeOccured: TIME,
 				player: SOME_PLAYER.id,
 				type: ActivityTypes.COMPLETE_QUEST,
 				tokensDifference: 10,
@@ -543,6 +545,7 @@ describe("Mock Utilities", () => {
 			const activityLogs = db.getRows("SELECT * FROM activityLog");
 			makeSure(activityLogs).contains({
 				id: 1000000001,
+				timeOccured: TIME.getTime().toString(),
 				playerID: SOME_PLAYER.id,
 				type: ActivityTypes.COMPLETE_QUEST,
 				tokensDifference: 10,
