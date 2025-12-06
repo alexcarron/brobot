@@ -215,4 +215,20 @@ export class ActivityLogService {
 			type: ActivityTypes.ACCEPT_TRADE,
 		});
 	}
+
+	/**
+	 * Retrieves the number of mines a player has made since a given time.
+	 * @param player - The player to retrieve the number of mines for.
+	 * @param minimumTime - The time to retrieve the number of mines since.
+	 * @returns The number of mines the player has made since the given time.
+	 */
+	getTimesPlayerMinedSince(
+		player: PlayerResolvable,
+		minimumTime: Date,
+	): number {
+		return this.activityLogRepository.findActivityLogsAfterTimeWhere(minimumTime, {
+			player: player,
+			type: ActivityTypes.MINE_TOKENS,
+		}).length;
+	}
 }

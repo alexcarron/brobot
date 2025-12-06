@@ -1,7 +1,7 @@
 import { ApplicationCommandOptionBase, Attachment, GuildMember, Role, SlashCommandBuilder, SlashCommandSubcommandBuilder, SlashCommandSubcommandGroupBuilder, TextChannel, User } from 'discord.js';
 import { toTitleCase } from '../../utilities/string-manipulation-utils';
 import { ToCamelCase } from '../../utilities/types/casing-types';
-import { isStringToStringRecord } from '../../utilities/types/type-guards';
+import { isFunction, isStringToStringRecord } from '../../utilities/types/type-guards';
 import { AutocompleteChoicesResolvable } from './autocomplete-utils';
 
 export const ParameterTypes = Object.freeze({
@@ -207,7 +207,7 @@ export class Parameter<
 					)
 						option.setAutocomplete(
 							(this.isAutocomplete ?? false) ||
-							(this.autocomplete !== undefined)
+							(isFunction(this.autocomplete))
 						);
 					else
 						throw new Error(`Option ${option.name} does not support autocomplete.`);

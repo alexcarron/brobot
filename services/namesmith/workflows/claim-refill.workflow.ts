@@ -92,7 +92,7 @@ export const claimRefill = (
 	// Set new last refill time
 	perkService.doIfPlayerHas(Perks.FASTER_REFILL, playerRefilling, () => {
 		newLastRefillTime = addHours(newLastRefillTime, -1);
-	})
+	});
 
 	playerService.setLastRefillTime(playerRefilling, newLastRefillTime);
 

@@ -1,3 +1,4 @@
+import { addDays } from "../../../utilities/date-time-utils";
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { INVALID_ACTIVITY_LOG_ID, INVALID_PLAYER_ID, INVALID_QUEST_ID, INVALID_RECIPE_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
@@ -422,6 +423,35 @@ describe('ActivityLogRepository', () => {
 				involvedRecipeID: undefined,
 				involvedQuestID: undefined,
 			});
+		});
+	});
+
+	describe('findActivityLogsAfterTimeWhere()', () => {
+		it('finds activity logs after a given time', () => {
+			const SOME_TIME = addDays(SOME_ACTIVITY_LOG.timeOccured, -1);
+			const foundActivityLogs = activityLogRepository.findActivityLogsAfterTimeWhere(SOME_TIME, {
+				player: SOME_PLAYER,
+				involvedPlayer: INVOLVED_PLAYER,
+				involvedRecipe: SOME_RECIPE,
+				involvedQuest: SOME_QUEST,
+			});
+
+			makeSure(foundActivityLogs).hasLengthOf(1);
+			makeSure(foundActivityLogs[0]).hasProperties({
+				id: SOME_ACTIVITY_LOG.id,
+			});
+		});
+
+		it('returns no activity logs if there are none after the given time', () => {
+			const SOME_TIME = addDays(SOME_ACTIVITY_LOG.timeOccured, 1);
+			const foundActivityLogs = activityLogRepository.findActivityLogsAfterTimeWhere(SOME_TIME, {
+				player: SOME_PLAYER,
+				involvedPlayer: INVOLVED_PLAYER,
+				involvedRecipe: SOME_RECIPE,
+				involvedQuest: SOME_QUEST,
+			});
+
+			makeSure(foundActivityLogs).hasLengthOf(0);
 		});
 	});
 });

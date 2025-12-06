@@ -1,6 +1,8 @@
+import { getToday, getTomorrow, getYesterday } from "../../../utilities/date-time-utils";
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { INVALID_PLAYER_ID, INVALID_QUEST_ID, INVALID_RECIPE_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
+import { addMockActivityLog } from "../mocks/mock-data/mock-activity-logs";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { addMockQuest } from "../mocks/mock-data/mock-quests";
 import { addMockRecipe } from "../mocks/mock-data/mock-recipes";
@@ -321,6 +323,57 @@ describe('ActivityLogService', () => {
 			makeSure(
 				activityLogService.hasPlayerAlreadyCompletedQuest(SOME_PLAYER.id, SOME_QUEST.id)
 			).isFalse();
+		});
+	});
+
+	describe('getNumMinesSince()', () => {
+		it('returns one when the player has mined since the last time the player completed a quest', () => {
+			const YESTERDAY = getYesterday();
+			activityLogService.logMineTokens({
+				playerMining: SOME_PLAYER.id,
+				tokensEarned: 10
+			});
+
+			makeSure(activityLogService.getTimesPlayerMinedSince(
+				SOME_PLAYER.id, YESTERDAY
+			)).is(1);
+		});
+
+		it('returns zero when the player has not mined', () => {
+			makeSure(activityLogService.getTimesPlayerMinedSince(
+				SOME_PLAYER.id, getYesterday()
+			)).is(0);
+		});
+
+		it('returns zero when the player mined before the given time', () => {
+			const TOMORROW = getTomorrow();
+			activityLogService.logMineTokens({
+				playerMining: SOME_PLAYER.id,
+				tokensEarned: 10
+			});
+
+			makeSure(activityLogService.getTimesPlayerMinedSince(
+				SOME_PLAYER.id, TOMORROW
+			)).is(0);
+		});
+
+		it('returns one when player mined once after time and once before time', () => {
+			const YESTERDAY = getYesterday();
+			const TODAY = getToday();
+			const TOMORROW = getTomorrow();
+			addMockActivityLog(db, {
+				timeOccured: YESTERDAY,
+				player: SOME_PLAYER.id,
+				type: ActivityTypes.MINE_TOKENS,
+			});
+			addMockActivityLog(db, {
+				timeOccured: TOMORROW,
+				player: SOME_PLAYER.id,
+				type: ActivityTypes.MINE_TOKENS,
+			});
+			makeSure(activityLogService.getTimesPlayerMinedSince(
+				SOME_PLAYER.id, TODAY
+			)).is(1);
 		});
 	});
 });

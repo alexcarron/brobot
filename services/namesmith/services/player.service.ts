@@ -551,6 +551,19 @@ export class PlayerService {
 		return addHours(lastRefillTime, REFILL_COOLDOWN_HOURS);
 	}
 
+	getLastClaimedRefillTime(playerResolvable: PlayerResolvable): Date | null {
+		const playerID = this.resolveID(playerResolvable);
+		return this.playerRepository.getLastClaimedRefillTime(playerID);
+	}
+
+	setLastClaimedRefillTime(
+		playerResolvable: PlayerResolvable,
+		lastClaimedRefillTime: Date,
+	) {
+		const playerID = this.resolveID(playerResolvable);
+		this.playerRepository.setLastClaimedRefillTime(playerID, lastClaimedRefillTime);
+	}
+
 	/**
 	 * Adds a new player to the game.
 	 * @param playerResolvable - The player resolvable to add to the game.
