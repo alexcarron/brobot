@@ -1,6 +1,6 @@
 import { DBBoolean } from "../services/namesmith/utilities/db.utility";
 import { makeSure } from "./jest/jest-utils";
-import { boolean, date, RuntimeTypeError, number, object, string, strings, zeroOrOne } from './runtime-types-utils';
+import { boolean, date, RuntimeTypeError, number, object, string, strings, zeroOrOne, Null, Undefined } from './runtime-types-utils';
 
 describe('runtime-types-utils.test.ts', () => {
 	describe('number', () => {
@@ -222,6 +222,54 @@ describe('runtime-types-utils.test.ts', () => {
 		it('fromAll() throws if any value is invalid', () => {
 			const values: unknown[] = [true, 'false'];
 			makeSure(() => boolean.fromAll(values)).throws(RuntimeTypeError);
+		});
+	});
+
+	describe('Null', () => {
+		it('from() throws if not null, returns null otherwise', () => {
+			makeSure(() => Null.from('null')).throws(RuntimeTypeError);
+			makeSure(Null.from(null)).is(null);
+		});
+
+		it('fromAll() throws if any value is invalid, returns nulls otherwise', () => {
+			makeSure(() =>
+				Null.fromAll([null, 'null'])
+			).throws(RuntimeTypeError);
+			makeSure(Null.fromAll([null, null])).is([null, null]);
+		});
+
+		it('isType() returns true or null, false otherwise', () => {
+			makeSure(Null.isType(null)).is(true);
+			makeSure(Null.isType('null')).is(false);
+		});
+
+		it('throwIfNotType() throws if not null, does nothing otherwise', () => {
+			makeSure(() => Null.throwIfNotType('null')).throws(RuntimeTypeError);
+			makeSure(() => Null.throwIfNotType(null)).doesNotThrow();
+		});
+	});
+
+	describe('Undefined', () => {
+		it('from() throws if not undefined, returns undefined otherwise', () => {
+			makeSure(() => Undefined.from('undefined')).throws(RuntimeTypeError);
+			makeSure(Undefined.from(undefined)).is(undefined);
+		});
+
+		it('fromAll() throws if any value is invalid, returns undefineds otherwise', () => {
+			makeSure(() =>
+				Undefined.fromAll([undefined, 'undefined'])
+			).throws(RuntimeTypeError);
+			makeSure(Undefined.fromAll([undefined, undefined])).is([undefined, undefined]);
+		});
+
+		it('isType() returns true or undefined, false otherwise', () => {
+			makeSure(Undefined.isType(undefined)).is(true);
+			makeSure(Undefined.isType('undefined')).is(false);
+		});
+
+		it('throwIfNotType() throws if not undefined, does nothing otherwise', () => {
+			makeSure(() => Undefined.throwIfNotType('undefined')).throws(RuntimeTypeError);
+			makeSure(() => Undefined.throwIfNotType(undefined)).doesNotThrow();
 		});
 	});
 
@@ -573,7 +621,7 @@ describe('runtime-types-utils.test.ts', () => {
 		});
 	});
 
-	describe('orNull property (nullable variants)', () => {
+	describe('.orNull', () => {
 		it('primitive runtime types: number.orNull works for isType, from, fromAll', () => {
 			const nullValue: unknown = null;
 			const numValue: unknown = 5;
@@ -744,6 +792,202 @@ describe('runtime-types-utils.test.ts', () => {
 
 			const back = nullable.fromDomains(domains);
 			makeSure(back).is(['1', null, '2']);
+		});
+	});
+
+	describe('.orUndefined', () => {
+		it('allows undefined on primitive runtime types', () => {
+			const ageType = number.orUndefined;
+
+			makeSure(ageType.isType(10)).is(true);
+			makeSure(ageType.isType(undefined)).is(true);
+
+			makeSure(ageType.from(10)).is(10);
+			makeSure(ageType.from(undefined)).is(undefined);
+
+			makeSure(ageType.fromAll([undefined, 10, undefined])).is([undefined, 10, undefined]);
+
+			makeSure(() => ageType.throwIfNotType(10)).doesNotThrow();
+			makeSure(() => ageType.throwIfNotType(undefined)).doesNotThrow();
+			makeSure(() => ageType.throwIfNotType('string')).throws(RuntimeTypeError);
+
+			makeSure(ageType.includesNull).is(false);
+			makeSure(ageType.includesUndefined).is(true);
+		});
+
+		it('transformable primitive: string.to(...).from(...).orUndefined  supports toDomain/fromDomain and arrays', () => {
+			const rawUserID = string
+				.to((stringID) => Number(stringID))
+				.from((numberID) => numberID.toString());
+
+			const MaybeUserID = rawUserID.orUndefined;
+
+			// null handling
+			makeSure(MaybeUserID.isType(undefined)).is(true);
+			makeSure(MaybeUserID.from(undefined)).is(undefined);
+			makeSure(MaybeUserID.toDomain(undefined)).is(undefined);
+			makeSure(MaybeUserID.toDomains([undefined, '10'])).is([undefined, 10]);
+			makeSure(MaybeUserID.fromDomains([undefined, 10])).is([undefined, '10']);
+
+			// valid non-null still works
+			makeSure(MaybeUserID.toDomain('20')).is(20);
+			makeSure(MaybeUserID.fromDomain(20)).is('20');
+
+			// invalid non-null still throws
+			makeSure(() => MaybeUserID.toDomain(42)).throws(RuntimeTypeError);
+			makeSure(() => MaybeUserID.toDomains([undefined, 42])).throws(RuntimeTypeError);
+		});
+
+		it('named transformable (strings.asTransformableType) .orUndefined provides named methods that accept undefined', () => {
+			const ColorNames = strings('red', 'green', 'blue').asTransformableType(
+				'RGB',
+				(color) => {
+					switch (color) {
+						case 'red': return [255, 0, 0] as const;
+						case 'green': return [0, 255, 0] as const;
+						default: return [0, 0, 255] as const;
+					}
+				},
+				(rgb) => {
+					if (rgb[0] === 255) return 'red';
+					if (rgb[1] === 255) return 'green';
+					return 'blue';
+				}
+			);
+
+			const MaybeColor = ColorNames.orUndefined;
+
+			makeSure(MaybeColor.toRGB(undefined)).is(undefined);
+			makeSure(MaybeColor.fromRGB(undefined)).is(undefined);
+			makeSure(
+				MaybeColor.toRGBs([undefined, 'red'])
+			).is([undefined, [255, 0, 0]]);
+
+			makeSure(
+				MaybeColor.fromRGBs([undefined, [0, 255, 0]])
+			).is([undefined, 'green']);
+
+			// invalid non-null still throws (e.g., passing object to toRGB)
+			makeSure(() => MaybeColor.toRGB(123)).throws(RuntimeTypeError);
+		});
+
+		it('object.asTransformableType .orUndefined returns undefined named transformable methods', () => {
+			const dbPerkType = object.asTransformableType('Perk', {
+				id: number,
+				name: string,
+				wasOffered: zeroOrOne
+					.to(zeroOrOne => zeroOrOne === 1)
+					.from(boolean => boolean ? 1 : 0),
+			});
+
+			const rawPerk: unknown = {
+				id: 1, name: 'Speed', wasOffered: 1
+			};
+			const maybePerk = dbPerkType.orUndefined;
+
+			makeSure(maybePerk.toPerk(undefined)).is(undefined);
+			makeSure(maybePerk.fromPerk(undefined)).is(undefined);
+
+			// arrays with nulls
+			const rawPerks: unknown[] = [undefined, rawPerk];
+			const convertedPerks = maybePerk.toPerks(rawPerks);
+			makeSure(convertedPerks).is([
+				undefined,
+				{ id: 1, name: 'Speed', wasOffered: true }
+			]);
+
+			const backToRawPerks = maybePerk.fromPerks(convertedPerks);
+			makeSure(backToRawPerks).is([undefined, rawPerk]);
+
+			// invalid shapes still throw when non-null
+			makeSure(() => maybePerk.toPerk(
+				{ id: 'string', name: 'Name', wasOffered: 1 }
+			)).throws(RuntimeTypeError);
+		});
+
+		it('object.asTransformableType with transformable property .orUndefined preserves nested orUndefined transformable behavior', () => {
+			// make wasOffered nullable transformable
+			const DBBoolean = zeroOrOne
+				.to(zeroOrOne => zeroOrOne === 1)
+				.from(boolean => boolean ? 1 : 0)
+				.orUndefined;
+
+			const dbPerkType = object.asTransformableType('Perk', {
+				id: number,
+				name: string,
+				wasOffered: DBBoolean,
+			});
+
+			const rawPerk: unknown = {
+				id: 1, name: 'Speed', wasOffered: undefined
+			};
+			const domainPerk = dbPerkType.toPerk(rawPerk);
+			makeSure(domainPerk).is({
+				id: 1, name: 'Speed', wasOffered: undefined
+			});
+
+			const rawDefinedPerk: unknown = { id: 2, name: 'Strength', wasOffered: 1 };
+			const domainDefinedPerk = dbPerkType.toPerk(rawDefinedPerk);
+			makeSure(domainDefinedPerk).is({ id: 2, name: 'Strength', wasOffered: true });
+
+			// roundtrip
+			const backToRawPerk = dbPerkType.fromPerk(domainPerk);
+			makeSure(backToRawPerk).is(rawPerk);
+			const backToRawDefinedPerk = dbPerkType.fromPerk(domainDefinedPerk);
+			makeSure(backToRawDefinedPerk).is(rawDefinedPerk);
+
+			// invalid non-null in nested still throws
+			makeSure(() => dbPerkType.toPerk({ id: 3, name: 'Name', wasOffered: 5 })).throws(RuntimeTypeError);
+		});
+
+		it('orUndefined property is idempotent and safe to chain (accessing multiple times does not throw / behaves same)', () => {
+			const rawUserID = string
+				.to((string) => Number(string))
+				.from((number) => number.toString());
+
+			const rawUserID1 = rawUserID.orUndefined;
+			const rawUserID2 = (rawUserID1 as any).orUndefined; // second access
+			const rawUserID3 = (rawUserID2 as any).orUndefined; // third access
+
+			makeSure(rawUserID1.isType(undefined)).is(true);
+			makeSure(rawUserID2.isType(undefined)).is(true);
+			makeSure(rawUserID3.isType(undefined)).is(true);
+
+			makeSure(rawUserID1.from(undefined)).is(undefined);
+			makeSure(rawUserID2.from(undefined)).is(undefined);
+			makeSure(rawUserID3.from(undefined)).is(undefined);
+		});
+
+
+		it('orUndefined transformable toDomain/fromDomain throws for invalid non-undefined inputs but accepts undefined', () => {
+			const DBBoolean = zeroOrOne
+				.to(zeroOrOne => zeroOrOne === 1)
+				.from(boolean => boolean ? 1 : 0);
+
+			const DBBooleanOrUndefined = DBBoolean.orUndefined;
+
+			// valid
+			makeSure(DBBooleanOrUndefined.toDomain(1)).is(true);
+			makeSure(DBBooleanOrUndefined.toDomain(undefined)).is(undefined);
+
+			// invalid non-null should throw
+			makeSure(() => DBBooleanOrUndefined.toDomain('x' as unknown)).throws(RuntimeTypeError);
+			makeSure(() => DBBooleanOrUndefined.toDomains([undefined, 'x' as unknown])).throws(RuntimeTypeError);
+		});
+
+		it('compound arrays mapping/roundtrip with mixed undefined and values', () => {
+			const rawUserID = string
+				.to((string) => Number(string))
+				.from((number) => number.toString());
+
+			const UserIDOrUndefined = rawUserID.orUndefined;
+
+			const inputs: unknown[] = ['1', undefined, '2'];
+			const domains = UserIDOrUndefined.toDomains(inputs);
+			makeSure(domains).is([1, undefined, 2]);
+
+			const back = UserIDOrUndefined.fromDomains(domains);
+			makeSure(back).is(['1', undefined, '2']);
 		});
 	});
 
@@ -937,6 +1181,24 @@ describe('runtime-types-utils.test.ts', () => {
 	});
 
 	describe('.without()', () => {
+		it('removes a property from a non-transformable object type', () => {
+			const infoType = object.asType({
+				age: number,
+				name: string,
+				configToggle: boolean
+			});
+
+			const noNameInfoType = infoType.without('name');
+
+			makeSure(noNameInfoType.from({
+				age: 18,
+				configToggle: true
+			})).is({
+				age: 18,
+				configToggle: true
+			});
+		});
+
 		it('removes a property from a transformable object type', () => {
 			const infoType = object.asTransformableType('Info', {
 				age: number,
@@ -956,6 +1218,84 @@ describe('runtime-types-utils.test.ts', () => {
 				configToggle: false
 			});
 		});
+	});
+
+	describe('.withAllOptional()', () => {
+		it('makes all properties of a type optional from a non-transformable object', () => {
+			const infoType = object.asType({
+				age: number,
+				name: string,
+				configToggle: boolean,
+			});
+
+			const optionalInfoType = infoType.withAllOptional();
+
+			makeSure(optionalInfoType.from({})).is({});
+			makeSure(optionalInfoType.from({
+				age: 17,
+			})).is({age: 17});
+			makeSure(optionalInfoType.isType({})).isTrue();
+			makeSure(optionalInfoType.isType({
+				age: 18,
+			})).isTrue();
+			makeSure(optionalInfoType.isType({
+				age: 18,
+				name: 'name',
+			})).isTrue();
+			makeSure(optionalInfoType.isType({
+				age: 18,
+				name: 'name',
+				configToggle: true,
+			})).isTrue();
+		});
+
+		it('makes all properties of a transformable object type optional', () => {
+			const infoType = object.asTransformableType('Info', {
+				age: number,
+				name: string,
+				configToggle: DBBoolean
+			});
+
+			const optionalInfoType = infoType.withAllOptional();
+
+			makeSure(
+				optionalInfoType.toInfo({})
+			).is({
+				age: undefined,
+				name: undefined,
+			});
+
+			makeSure(
+				optionalInfoType.toInfo({
+					age: 17,
+				})
+			).is({
+				age: 17,
+				name: undefined,
+			});
+
+			makeSure(
+				optionalInfoType.toInfo({ configToggle: 0 })
+			).is({ configToggle: false });
+
+			makeSure(
+				optionalInfoType.fromInfo({ configToggle: true })
+			).is({ configToggle: 1 });
+
+			makeSure(optionalInfoType.isType({})).isTrue();
+			makeSure(optionalInfoType.isType({
+				age: 18,
+			})).isTrue();
+			makeSure(optionalInfoType.isType({
+				age: 18,
+				name: 'name',
+			})).isTrue();
+			makeSure(optionalInfoType.isType({
+				age: 18,
+				name: 'name',
+				configToggle: 0,
+			})).isTrue();
+		})
 	});
 
 	describe('.includesNull', () => {

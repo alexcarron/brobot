@@ -1,4 +1,6 @@
 import { toEnumFromStrings, ValuesOf } from "../../../utilities/enum-utilts";
+import { ExtractDomainType, ExtractType, number, object, string, strings } from "../../../utilities/runtime-types-utils";
+import { DBDate } from "../utilities/db.utility";
 import { Player, PlayerResolvable } from "./player.types";
 import { Quest, QuestResolvable } from "./quest.types";
 import { Recipe, RecipeResolvable } from "./recipe.types";
@@ -14,9 +16,26 @@ export const ActivityTypes = toEnumFromStrings(
 );
 
 export type ActivityType = ValuesOf<typeof ActivityTypes>;
+export const activityTypes: ActivityType[] = Object.values(ActivityTypes);
+
+export const DBActivityLogType = object.asTransformableType('MinimalActivityLog', {
+	id: number,
+	timeOccured: DBDate,
+	playerID: string,
+	type: strings(...activityTypes),
+	tokensDifference: number,
+	involvedPlayerID: string.orNull,
+	involvedRecipeID: number.orNull,
+	involvedQuestID: number.orNull
+});
+export const asMinimalActivityLog = DBActivityLogType.toMinimalActivityLog;
+export const asMinimalActivityLogs = DBActivityLogType.toMinimalActivityLogs;
+export type DBActivityLog = ExtractType<typeof DBActivityLogType>;
+export type MinimalActivityLog = ExtractDomainType<typeof DBActivityLogType>;
 
 export type ActivityLog = {
 	id: number;
+	timeOccured: Date;
 	player: Player;
 	type: ActivityType;
 	tokensDifference: number;
@@ -25,18 +44,9 @@ export type ActivityLog = {
 	involvedQuest: Quest | null;
 }
 
-export type DBActivityLog = {
-	id: number;
-	playerID: string;
-	type: ActivityType;
-	tokensDifference: number;
-	involvedPlayerID: string | null;
-	involvedRecipeID: number | null;
-	involvedQuestID: number | null;
-}
-
 export type ActivityLogDefinition = {
 	id?: number;
+	timeOccured?: Date;
 	player: PlayerResolvable;
 	type: ActivityType;
 	tokensDifference?: number;

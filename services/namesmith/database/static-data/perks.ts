@@ -48,5 +48,10 @@ export const perks = [
 		id: 10,
 		name: "Free Tokens",
 		description: "Gain 500 tokens."
+	},
+	{
+		id: 11,
+		name: "Mining For Refills",
+		description: "Your current refill cooldown is reduced by 1 minute each time you mine tokens after all other perks are applied"
 	}
 ] as const;
