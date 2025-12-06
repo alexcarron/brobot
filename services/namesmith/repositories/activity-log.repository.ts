@@ -172,7 +172,7 @@ export class ActivityLogRepository {
 			ActivityLogDefinition
 	) {
 		if (timeOccured === undefined) timeOccured = new Date();
-		
+
 		this.playerRepository.resolvePlayer(player);
 		if (isNotNullable(involvedPlayer)) {
 			this.playerRepository.resolvePlayer(involvedPlayer);
@@ -244,6 +244,43 @@ export class ActivityLogRepository {
 					${toParameterANDWhereClause(queryParameters)}
 				`,
 				queryParameters
+			)
+		);
+
+		return minimalActivityLogs.map(dbActivityLog => this.toActivityLogFromMinimal(dbActivityLog));
+	}
+
+	findActivityLogsAfterTimeWhere(minimumTimeOccured: Date,
+		activityLogDefinition: WithAtLeastOneProperty<ActivityLogDefinition>): ActivityLog[]
+	{
+		const { player, involvedPlayer, involvedRecipe, involvedQuest } = activityLogDefinition;
+
+		if (isNotNullable(player)) {
+			this.playerRepository.resolvePlayer(player);
+		}
+		if (isNotNullable(involvedPlayer)) {
+			this.playerRepository.resolvePlayer(involvedPlayer);
+		}
+		if (isNotNullable(involvedRecipe)) {
+			this.recipeRepository.resolveRecipe(involvedRecipe);
+		}
+		if (isNotNullable(involvedQuest)) {
+			this.questRepository.resolveQuest(involvedQuest);
+		}
+
+		const queryParameters = this.toPartialDBActivityLog(activityLogDefinition);
+
+		const minimalActivityLogs = asMinimalActivityLogs(
+			this.db.getRows(
+				`SELECT * FROM activityLog
+				WHERE
+					timeOccured > @minimumTimeOccured AND
+					${toParameterANDWhereClause(queryParameters)}
+				`,
+				{
+					...queryParameters,
+					minimumTimeOccured: DBDate.fromDomain(minimumTimeOccured),
+				}
 			)
 		);
 

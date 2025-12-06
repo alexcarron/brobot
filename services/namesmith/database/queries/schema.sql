@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS gameState (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	timeStarted TEXT,
-	timeEnding TEXT,
-	timeVoteIsEnding TEXT
+	timeStarted NUMBER,
+	timeEnding NUMBER,
+	timeVoteIsEnding NUMBER
 );
 
 CREATE TABLE IF NOT EXISTS character (
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS player (
 	role INTEGER REFERENCES role(id)
 		ON DELETE SET NULL ON UPDATE CASCADE,
 	inventory TEXT NOT NULL DEFAULT '',
-	lastClaimedRefillTime TEXT
+	lastClaimedRefillTime NUMBER
 );
 
 CREATE TABLE IF NOT EXISTS playerPerk (
@@ -104,7 +104,7 @@ CREATE TABLE IF NOT EXISTS quest (
 
 CREATE TABLE IF NOT EXISTS activityLog (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	timeOccured TEXT NOT NULL,
+	timeOccured NUMBER NOT NULL,
 	playerID TEXT NOT NULL REFERENCES player(id)
 		ON DELETE CASCADE ON UPDATE CASCADE,
 	type TEXT NOT NULL CHECK(type IN

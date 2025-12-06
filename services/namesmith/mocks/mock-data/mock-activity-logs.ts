@@ -19,6 +19,7 @@ export function addMockActivityLog(
 	let { player = undefined } = activityLogDefinition;
 	const {
 		id = undefined,
+		timeOccured = new Date(),
 		type = ActivityTypes.MINE_TOKENS,
 		tokensDifference = 0,
 		involvedPlayer = null,
@@ -31,6 +32,7 @@ export function addMockActivityLog(
 
 	return activitylogRepository.addActivityLog({
 		id,
+		timeOccured,
 		player,
 		type,
 		tokensDifference,

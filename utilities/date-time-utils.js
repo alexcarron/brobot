@@ -61,6 +61,20 @@ const addHours = (date, hours) => {
 }
 
 /**
+ * Adds a specified number of minutes to a given Date object.
+ * @param {Date} date - The Date object to modify.
+ * @param {number} minutes - The number of minutes to add to the given Date object.
+ * @returns {Date} A new Date object with the specified number of minutes added to the original date.
+ * @example
+ * const fiveMinutesLater = addMinutes(new Date(), 5);
+ */
+const addMinutes = (date, minutes) => {
+	const newDate = new Date(date.getTime());
+	newDate.setMinutes(newDate.getMinutes() + minutes);
+	return newDate;
+}
+
+/**
  * Adds a specified number of seconds to a given Date object.
  * @param {Date} date - The Date object to modify.
  * @param {number} seconds - The number of seconds to add to the given Date object.
@@ -96,4 +110,8 @@ const toDateFromTimeString = (timeString) => {
 	return date;
 }
 
-module.exports = { toUnixTimestamp, createNowUnixTimestamp, toCronExpression, addDays, addHours, addSeconds, toDateFromTimeString };
+const getYesterday = () => addDays(new Date(), -1);
+const getToday = () => new Date();
+const getTomorrow = () => addDays(new Date(), 1);
+
+module.exports = { toUnixTimestamp, createNowUnixTimestamp, toCronExpression, addDays, addHours, addMinutes, addSeconds, toDateFromTimeString, getYesterday, getToday, getTomorrow };

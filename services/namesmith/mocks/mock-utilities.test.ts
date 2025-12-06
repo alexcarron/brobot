@@ -545,7 +545,7 @@ describe("Mock Utilities", () => {
 			const activityLogs = db.getRows("SELECT * FROM activityLog");
 			makeSure(activityLogs).contains({
 				id: 1000000001,
-				timeOccured: TIME.getTime().toString(),
+				timeOccured: TIME.getTime(),
 				playerID: SOME_PLAYER.id,
 				type: ActivityTypes.COMPLETE_QUEST,
 				tokensDifference: 10,

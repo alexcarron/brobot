@@ -1,3 +1,4 @@
+import { addMinutes } from "../../../utilities/date-time-utils";
 import { getAnticipatedRandomNum } from "../../../utilities/random-utils";
 import { MIN_TOKENS_FOR_MINING as MIN_TOKENS_FROM_MINING, MINING_EXPECTED_VALUE as AVERAGE_TOKENS_FROM_MINING } from "../constants/namesmith.constants";
 import { Perks } from "../constants/perks.constants";
@@ -43,6 +44,13 @@ export const mineTokens = (
 
 	perkService.doIfPlayerHas(Perks.MINE_BONUS, playerMining, () => {
 		tokensEarned += 1;
+	});
+	perkService.doIfPlayerHas(Perks.MINING_FOR_REFILLS, playerMining, () => {
+		const lastRefillTime = playerService.getLastClaimedRefillTime(playerMining);
+		if (lastRefillTime !== null) {
+			const newLastRefillTime = addMinutes(lastRefillTime, -1);
+			playerService.setLastClaimedRefillTime(playerMining, newLastRefillTime);
+		}
 	});
 
 	if (tokenOverride !== undefined) {
