@@ -132,4 +132,20 @@ describe('GameStateService', () => {
 			)).toEqual(expectedDates);
 		});
 	});
+
+	describe('getTimesDayStarts()', () => {
+		it('should return an array of dates representing the start of each day', () => {
+			const startDate = new Date('2025-07-12T12:00:00.000Z');
+			const expectedDates = [
+				new Date('2025-07-12T12:00:00.000Z'),
+				new Date('2025-07-13T12:00:00.000Z'),
+				new Date('2025-07-14T12:00:00.000Z'),
+				new Date('2025-07-15T12:00:00.000Z'),
+				new Date('2025-07-16T12:00:00.000Z'),
+				new Date('2025-07-17T12:00:00.000Z'),
+				new Date('2025-07-18T12:00:00.000Z'),
+			];
+			expect(gameStateService.getTimesDayStarts(startDate, addDays(startDate, 7))).toEqual(expectedDates);
+		});
+	});
 });

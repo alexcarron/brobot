@@ -83,6 +83,7 @@ describe('buy-mystery-box.workflow', () => {
 			makeSure(result.mysteryBox).is(defaultMysteryBox);
 			makeSure(result.wasRefunded).isFalse();
 			makeSure(result.gotDuplicate).isFalse();
+			makeSure(result.gotAnotherCharacter).isFalse();
 		});
 
 		it('should change the player\'s Discord name to their current name plus that recieved character', () => {

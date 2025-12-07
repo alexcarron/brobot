@@ -11,6 +11,7 @@ export const NamesmithEvents = {
 		player: Player;
 	}>(),
 
+	DayStart: createEventHandler<{}>(),
 	StartVoting: createEventHandler<{}>(),
 	EndVoting: createEventHandler<{}>(),
 

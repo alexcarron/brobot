@@ -113,6 +113,20 @@ export class PerkService {
 		return playerHasPerk;
 	}
 
+	async doForAllPlayersWithPerk(
+		perkResolvable: PerkResolvable,
+		onPlayerHasPerk: (player: Player, perk: Perk) => any,
+	): Promise<void> {
+		const perkID = this.resolveID(perkResolvable);
+		const playerIDs = this.perkRepository.getIDsofPlayersWithPerkID(perkID);
+
+		for (const playerID of playerIDs) {
+			const player = this.playerService.resolvePlayer(playerID);
+			const perk = this.resolvePerk(perkResolvable);
+			await onPlayerHasPerk(player, perk);
+		}
+	}
+
 	/**
 	 * Adds a perk to a player in the database.
 	 * @param perk - The perk to be added to the player.

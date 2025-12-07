@@ -231,4 +231,27 @@ export class ActivityLogService {
 			type: ActivityTypes.MINE_TOKENS,
 		}).length;
 	}
+
+	/**
+	 * Retrieves the total amount of tokens a player has spent since a given time.
+	 * @param player - The player to retrieve the total amount of tokens spent for.
+	 * @param minimumTime - The time to retrieve the total amount of tokens spent since.
+	 * @returns The total amount of tokens the player has spent since the given time.
+	 */
+	getTokensPlayerSpentSince(
+		player: PlayerResolvable,
+		minimumTime: Date,
+	): number {
+		const logs = this.activityLogRepository.findActivityLogsAfterTimeWhere(
+			minimumTime, {player}
+		);
+
+		let totalTokensSpent = 0;
+		for (const log of logs) {
+			if (log.tokensDifference < 0)
+				totalTokensSpent += -log.tokensDifference;
+		}
+
+		return totalTokensSpent;
+	}
 }

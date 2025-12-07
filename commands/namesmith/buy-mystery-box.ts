@@ -63,13 +63,13 @@ export const command = new SlashCommand({
 			);
 		}
 
-		const { recievedCharacterValues, mysteryBox, tokenCost, player, wasRefunded, gotDuplicate } = result;
+		const { recievedCharacterValues, mysteryBox, tokenCost, player, wasRefunded, gotDuplicate, gotAnotherCharacter } = result;
 		const newTokenCount = player.tokens;
 		const newInventory = player.inventory;
 
 		const luckyRefundLine = (wasRefunded)
 			? joinLines(
-				`**Lucky Refund!** You also get your ${toAmountOfNoun(tokenCost, 'token')} back.`,
+				`**Lucky Refund!** You also got your ${toAmountOfNoun(tokenCost, 'token')} back.`,
 				'🪙'.repeat(tokenCost),
 				'',
 			)
@@ -82,10 +82,19 @@ export const command = new SlashCommand({
 			)
 			: null;
 
+
+		const luckyDoubleLine = (gotAnotherCharacter)
+			? joinLines(
+				'**Lucky Double!** You also got another character.',
+				''
+			)
+			: null;
+
 		return joinLines(
 			`You opened a ${mysteryBox.name} mystery box and received:`,
 			`\`\`\`${recievedCharacterValues}\`\`\``,
 			luckyDuplicateLine,
+			luckyDoubleLine,
 			luckyRefundLine,
 			`-# You now have ${toAmountOfNoun(newTokenCount, 'token')}`,
 			`-# Your inventory now contains: ${newInventory}`,

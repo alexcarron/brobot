@@ -18,6 +18,7 @@ export class GameStateService {
 	private endGameCronJob?: CronJob;
 	private voteIsEndingCronJob?: CronJob;
 	private pickAPerkCronJobs: CronJob[] = [];
+	private dayStartCronJobs: CronJob[] = [];
 
 	/**
 	 * Constructs a new GameStateService instance.
@@ -74,32 +75,43 @@ export class GameStateService {
 		endDate: Date,
 		pickAPerkDaysFromWeekStart: number[]
 	): Date[] {
-		console.log(`Calculating pick a perk times based on start date ${startDate.toDateString()}`);
 		const pickAPerkTimes: Date[] = [];
-		console.log(`Build name end date is ${endDate.toDateString()}`);
 
 		let currentWeekStart = startDate;
-		console.log(`Current week start is ${currentWeekStart.toDateString()}`);
 		while (currentWeekStart < endDate) {
 			for (const daysOffset of pickAPerkDaysFromWeekStart) {
-				console.log(`Calculating pick a perk time based on current week start ${currentWeekStart.toDateString()} and days offset ${daysOffset}`);
 				const pickAPerkTime = addDays(currentWeekStart, daysOffset);
-				console.log(`Pick a perk time is ${pickAPerkTime.toDateString()}`);
 
 				if (pickAPerkTime >= endDate) {
-					console.log("Returning pick a perk times since build name end date has been reached");
 					return pickAPerkTimes;
 				}
 				else {
 					pickAPerkTimes.push(pickAPerkTime);
-					console.log(`Added pick a perk time ${pickAPerkTime.toDateString()} to pick a perk times`);
 				}
 			}
 			currentWeekStart = addDays(currentWeekStart, 7);
-			console.log(`Updated current week start to ${currentWeekStart.toDateString()}`);
 		}
 
 		return pickAPerkTimes;
+	}
+
+	/**
+	 * Returns an array of dates representing the start of each day from the given start date to the given end date.
+	 * @param startDate - The start date of the game.
+	 * @param endDate - The end date of the game.
+	 * @returns An array of dates representing the start of each day from the given start date to the given end date.
+	 */
+	getTimesDayStarts(
+		startDate: Date,
+		endDate: Date,
+	): Date[] {
+		const times: Date[] = [];
+		let currentDayStart = startDate;
+		while (currentDayStart < endDate) {
+			times.push(currentDayStart);
+			currentDayStart = addDays(currentDayStart, 1);
+		}
+		return times;
 	}
 
 	/**
@@ -167,7 +179,13 @@ export class GameStateService {
 		}
 	}
 
-	startPickAPerkCronJob(pickAPerkTimes: Date[]) {
+	/**
+	 * Starts a cron job for each of the given pick a perk times, which will trigger the NamesmithEvents.PickAPerk event when the time is reached.
+	 * If the current time is before the pick a perk time, the job will be started.
+	 * If the pick a perk cron job has already been started, a warning will be logged and the job will not be started again.
+	 * @param pickAPerkTimes - The times at which to trigger the NamesmithEvents.PickAPerk event.
+	 */
+	startPickAPerkCronJobs(pickAPerkTimes: Date[]) {
 		if (this.pickAPerkCronJobs.length > 0) {
 			logWarning(`The pick a perk cron job has already been started, so it will not be started again.`);
 			return;
@@ -185,6 +203,28 @@ export class GameStateService {
 			if (now < pickAPerkTime) {
 				pickAPerkCronJob.start();
 				this.pickAPerkCronJobs.push(pickAPerkCronJob);
+			}
+		}
+	}
+
+	/**
+	 * Starts a cron job for each of the given day start times, which will trigger the NamesmithEvents.DayStart event when the time is reached.
+	 * If the current time is before the day start time, the job will be started.
+	 * If the day start cron job has already been started, a warning will be logged and the job will not be started again.
+	 * @param dayStartTimes - The times at which to trigger the NamesmithEvents.DayStart event.
+	 */
+	startDayStartCronJobs(dayStartTimes: Date[]) {
+		for (const dayStartTime of dayStartTimes) {
+			const dayStartCronJob = new CronJob(
+				dayStartTime,
+				() => {
+					NamesmithEvents.DayStart.triggerEvent({});
+				},
+			);
+
+			if (!this.dayStartCronJobs.includes(dayStartCronJob)) {
+				dayStartCronJob.start();
+				this.dayStartCronJobs.push(dayStartCronJob);
 			}
 		}
 	}
@@ -209,7 +249,8 @@ export class GameStateService {
 		const pickAPerkTimes = this.getTimesPickAPerkStarts(
 			startTime, endTime, BIWEEKLY_PERK_DAYS_FROM_WEEK_START,
 		);
-		this.startPickAPerkCronJob(pickAPerkTimes);
+		this.startPickAPerkCronJobs(pickAPerkTimes);
+		this.startDayStartCronJobs(pickAPerkTimes);
 	}
 
 	/**

@@ -36,7 +36,7 @@ export const perks = [
 	},
 	{
 		id: 8,
-		name: "Lucky Double",
+		name: "Lucky Double Tokens",
 		description: "Have a 2% chance to double the amount of tokens you currently have anytime you claim refills."
 	},
 	{
@@ -52,6 +52,26 @@ export const perks = [
 	{
 		id: 11,
 		name: "Mining For Refills",
-		description: "Your current refill cooldown is reduced by 1 minute each time you mine tokens after all other perks are applied"
-	}
+		description: "Your current refill cooldown is reduced by 1 minute each time you mine tokens after all other perks are applied."
+	},
+	{
+		id: 12,
+		name: "Investment",
+		description: "Earn two tokens for each 100 tokens held at the start of every day."
+	},
+	{
+		id: 13,
+		name: "Lucky Double Box",
+		description: "Have a 5% chance of earning two characters from a mystery box."
+	},
+	{
+		id: 14,
+		name: "Idle Interest",
+		description: "Earn 150 tokens at the start of evert day if you did not spend any tokens yesterday."
+	},
+	{
+		id: 15,
+		name: "Hoarding Bonus",
+		description: "Earn a token for every character in your inventory at the start of every day."
+	},
 ] as const;

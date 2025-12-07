@@ -2,6 +2,7 @@ import { ids } from "../../bot-config/discord-ids";
 import { Parameter, ParameterTypes } from "../../services/command-creation/parameter";
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { Perks } from "../../services/namesmith/constants/perks.constants";
+import { NamesmithEvents } from "../../services/namesmith/event-listeners/namesmith-events";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { resolveTargetPlayer } from "../../services/namesmith/utilities/interface.utility";
 import { mapToObject } from "../../utilities/data-structure-utils";
@@ -47,7 +48,13 @@ export const command = new SlashCommand({
 			return `Could not find player. Given player identifier was an invalid name, username, or ID, and/or you are not a player.`;
 		}
 
+		NamesmithEvents.DayStart.triggerEvent({});
+
 		const player = maybePlayer;
+		if (perkService.doesPlayerHave(perkID, player)) {
+			return `${maybePlayer.currentName} already has the ${perk.name} perk.`;
+		}
+
 		perkService.giveToPlayer(perkID, player);
 
 		return `${maybePlayer.currentName} has been given the ${perk.name} perk.`;

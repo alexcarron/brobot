@@ -295,6 +295,16 @@ export class PerkRepository {
 	}
 
 	/**
+	 * Checks if a player has a perk with the given ID.
+	 * @param playerID - The ID of the player to be checked.
+	 * @param perkID - The ID of the perk to be checked for.
+	 * @returns True if the player has a perk with the given ID, false otherwise.
+	 */
+	doesPlayerIDHavePerkID(playerID: PlayerID, perkID: PerkID) {
+		return this.db.doesExistInTable('playerPerk', { playerID, perkID });
+	}
+
+	/**
 	 * Adds a perk ID to a player ID in the database.
 	 * @param perkID - The ID of the perk to be added.
 	 * @param playerID - The ID of the player to have the perk added.
