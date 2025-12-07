@@ -36,10 +36,7 @@ export function createPickAPerkMessage(
 	return new DiscordButtons({
 		promptText: message,
 		buttons: threePerks.map(perk =>
-			toPerkButton({
-				perk,
-				perksPickingFrom: threePerks
-			})
+			toPerkButton({perk})
 		),
 	});
 }
@@ -57,9 +54,8 @@ export const toPerkBulletPoint = (perk: Perk) =>
  * @returns A DiscordButtonDefinition with the specified properties.
  */
 export function toPerkButton(
-	{perk, perksPickingFrom}: {
+	{perk}: {
 		perk: Perk,
-		perksPickingFrom: Perk[],
 	}
 ): DiscordButtonDefinition {
 	return {
@@ -77,7 +73,6 @@ export function toPerkButton(
 					const result = pickPerk({
 						player: confirmationInteraction.user.id,
 						pickedPerk: perk,
-						perksPickingFrom
 					});
 
 					if (result.isNotAPlayer())
@@ -91,10 +86,8 @@ export function toPerkButton(
 						);
 
 					if (result.isPerkAlreadyChosen()) {
-						const { chosenPerk } = result;
-
 						return await editReplyToInteraction(buttonInteraction,
-							`You already picked the "${chosenPerk.name}" perk. You cannot switch perks after picking one.`
+							`You already picked a perk. You cannot switch perks after picking one.`
 						);
 					}
 

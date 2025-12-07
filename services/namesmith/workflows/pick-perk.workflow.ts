@@ -1,6 +1,6 @@
 import { Perks } from "../constants/perks.constants";
 import { getNamesmithServices } from "../services/get-namesmith-services";
-import { Perk, PerkResolvable } from "../types/perk.types";
+import { PerkResolvable } from "../types/perk.types";
 import { PlayerResolvable } from "../types/player.types";
 import { getWorkflowResultCreator, provides } from "./workflow-result-creator";
 
@@ -12,9 +12,7 @@ const result = getWorkflowResultCreator({
 
 	notAPlayer: null,
 	perkDoesNotExist: null,
-	perkAlreadyChosen: provides<{
-		chosenPerk: Perk,
-	}>(),
+	perkAlreadyChosen: null,
 })
 
 /**
@@ -28,10 +26,9 @@ const result = getWorkflowResultCreator({
  * @returns A result indicating if the perk was successfully picked or not.
  */
 export function pickPerk(
-	{player, pickedPerk, perksPickingFrom}: {
+	{player, pickedPerk}: {
 		player: PlayerResolvable,
 		pickedPerk: PerkResolvable,
-		perksPickingFrom: PerkResolvable[],
 	}
 ) {
 	const {playerService, perkService, activityLogService} = getNamesmithServices();
@@ -44,15 +41,12 @@ export function pickPerk(
 		return result.failure.perkDoesNotExist();
 	}
 
-	for (const possiblePerk of perksPickingFrom) {
-		if (perkService.doesPlayerHave(possiblePerk, player)) {
-			return result.failure.perkAlreadyChosen({
-				chosenPerk: perkService.resolvePerk(possiblePerk),
-			})
-		}
+	if (playerService.hasPickedPerk(player)) {
+		return result.failure.perkAlreadyChosen();
 	}
 
 	perkService.giveToPlayer(pickedPerk, player);
+	playerService.setHasPickedPerk(player, true);
 
 	// Handle Free Tokens perk
 	let freeTokensEarned = 0;

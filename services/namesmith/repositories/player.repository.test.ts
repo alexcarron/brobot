@@ -309,7 +309,7 @@ describe('PlayerRepository', () => {
 
 			const result = playerRepository.getPlayerByID("new-player-id");
 
-			expect(result).toEqual({
+			makeSure(result).hasProperties({
 				id: "new-player-id",
 				currentName: "",
 				publishedName: null,
@@ -379,7 +379,7 @@ describe('PlayerRepository', () => {
 				perks: [],
 			});
 
-			makeSure(player).toEqual({
+			makeSure(player).hasProperties({
 				id: "new-player-id",
 				currentName: "test",
 				publishedName: "test",
@@ -465,7 +465,7 @@ describe('PlayerRepository', () => {
 				currentName: "test",
 			});
 
-			makeSure(player).toEqual({
+			makeSure(player).hasProperties({
 				id: SOME_PLAYER.id,
 				currentName: "test",
 				publishedName: SOME_PLAYER.publishedName,
@@ -520,6 +520,45 @@ describe('PlayerRepository', () => {
 					currentName: "test",
 				})
 			).throws(PlayerNotFoundError);
+		});
+	});
+
+	describe('getHasPickedPerk()', () => {
+		it('returns true if the player has picked a perk', () => {
+			const player = addMockPlayer(db, {
+				hasPickedPerk: true
+			});
+			makeSure(playerRepository.getHasPickedPerk(player.id)).is(true);
+		});
+
+		it('returns false if the player has not picked a perk', () => {
+			makeSure(playerRepository.getHasPickedPerk(SOME_PLAYER.id)).is(false);
+		});
+	});
+
+	describe('setHasPickedPerk()', () => {
+		it('sets hasPickedPerk to true', () => {
+			playerRepository.setHasPickedPerk(SOME_PLAYER.id, true);
+			makeSure(playerRepository.getHasPickedPerk(SOME_PLAYER.id)).is(true);
+		});
+
+		it('sets hasPickedPerk to false', () => {
+			playerRepository.setHasPickedPerk(SOME_PLAYER.id, false);
+			makeSure(playerRepository.getHasPickedPerk(SOME_PLAYER.id)).is(false);
+		})
+
+		it('throws an error if the player is not found', () => {
+			expect(() => playerRepository.setHasPickedPerk(INVALID_PLAYER_ID, true)).toThrow();
+		});
+	});
+
+	describe('resetAllHasPickedPerk()', () => {
+		it('sets hasPickedPerk to false for all players', () => {
+			playerRepository.resetAllHasPickedPerk();
+			makeSure(playerRepository.getHasPickedPerk(SOME_PLAYER.id)).is(false);
+			for (const player of ALL_PLAYERS) {
+				makeSure(playerRepository.getHasPickedPerk(player.id)).is(false);
+			}
 		});
 	});
 });
