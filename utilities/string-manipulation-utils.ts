@@ -651,3 +651,23 @@ export function joinLines(
 export function capitalizeFirstLetter(string: string) {
 	return string.charAt(0).toUpperCase() + string.slice(1);
 }
+
+/**
+ * Truncates a given text to a maximum length, adding an overflow suffix
+ * if the text is longer than the maximum length.
+ * @param text - The text to truncate.
+ * @param maxLength - The maximum length of the text.
+ * @param overflowSuffix - The suffix to add if the text is longer than the maximum length.
+ * @returns The truncated text, or the original text if it is shorter than the maximum length.
+ */
+export function truncateText(
+	text: string,
+	maxLength: number,
+	overflowSuffix: string = '...'
+): string {
+	if (text.length <= maxLength)
+		return text;
+
+	const truncatedLength = maxLength - overflowSuffix.length;
+	return `${text.slice(0, truncatedLength)}${overflowSuffix}`;
+}
