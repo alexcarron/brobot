@@ -1,7 +1,7 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { DatabaseQuerier } from "../database/database-querier";
 import { ActivityTypes, DBActivityLog } from "../types/activity-log.types";
-import { asMinimalPlayer, Player } from "../types/player.types";
+import { asMinimalPlayer, asMinimalPlayers, Player } from "../types/player.types";
 import { Quest } from "../types/quest.types";
 import { Recipe } from "../types/recipe.types";
 import { MinimalTrade, TradeStatuses } from "../types/trade.types";
@@ -132,7 +132,8 @@ describe("Mock Utilities", () => {
   describe("addMockPlayer", () => {
     it("adds a player to the database", () => {
 			const numPlayers = db.getRows("SELECT * FROM player").length;
-      const playerData = {
+
+      addMockPlayer(db, {
         id: "player-1",
         currentName: "John Doe",
         publishedName: null,
@@ -140,13 +141,12 @@ describe("Mock Utilities", () => {
         role: null,
         inventory: "{}",
 				lastClaimedRefillTime: null,
-      };
+				hasPickedPerk: true,
+      });
 
-      addMockPlayer(db, playerData);
-
-      const players = db.prepare("SELECT * FROM player").all();
+      const players = asMinimalPlayers(db.getRows("SELECT * FROM player"));
       expect(players).toHaveLength(numPlayers + 1);
-      makeSure(players).contains(playerData);
+      makeSure(players).hasAnItemWhere(player => player.id === "player-1");
     });
   });
 

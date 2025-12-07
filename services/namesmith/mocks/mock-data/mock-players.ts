@@ -1,19 +1,14 @@
-import { InvalidArgumentError, returnNonNullOrThrow } from "../../../../utilities/error-utils";
+import { InvalidArgumentError } from "../../../../utilities/error-utils";
 import { getRandomNumericUUID } from "../../../../utilities/random-utils";
 import { WithAllOptional, WithAtLeast } from "../../../../utilities/types/generic-types";
-import { isNumber, isString } from "../../../../utilities/types/type-guards";
 import { DatabaseQuerier } from "../../database/database-querier";
-import { RoleRepository } from "../../repositories/role.repository";
-import { asDBPerk, Perk, toPerk } from "../../types/perk.types";
 import { asMinimalPlayer, MinimalPlayer, Player, PlayerDefinition, PlayerResolvable } from "../../types/player.types";
-import { PlayerAlreadyExistsError } from "../../utilities/error.utility";
-import { Role } from "../../types/role.types";
-import { PerkRepository } from "../../repositories/perk.repository";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { returnIfNotFailure } from "../../utilities/workflow.utility";
 import { mineTokens } from "../../workflows/mine-tokens.workflow";
 import { claimRefill } from "../../workflows/claim-refill.workflow";
 import { addDays } from "../../../../utilities/date-time-utils";
+import { PlayerRepository } from "../../repositories/player.repository";
 
 /**
  * Creates a mock player object with default values for optional properties.
@@ -26,6 +21,7 @@ import { addDays } from "../../../../utilities/date-time-utils";
  * @param options.perks - The perks the player has.
  * @param options.inventory - The player's inventory.
  * @param options.lastClaimedRefillTime - The last time the player claimed a refill.
+ * @param options.hasPickedPerk - Whether the player has picked a perk.
  * @returns A mock player object with the given properties and default values for optional properties.
  */
 export const createMockPlayerObject = ({
@@ -36,12 +32,13 @@ export const createMockPlayerObject = ({
 	role = null,
 	perks = [],
 	inventory = "",
-	lastClaimedRefillTime = null
+	lastClaimedRefillTime = null,
+	hasPickedPerk = false,
 }: WithAtLeast<Player, "id">): Player => {
 	if (id === undefined || typeof id !== "string")
 		throw new InvalidArgumentError(`createMockPlayerObject: player id must be a string, but got ${id}.`);
 
-	return {id, currentName, publishedName, tokens, role, perks, inventory, lastClaimedRefillTime};
+	return {id, currentName, publishedName, tokens, role, perks, inventory, lastClaimedRefillTime, hasPickedPerk};
 }
 
 /**
@@ -56,6 +53,7 @@ export const createMockPlayerObject = ({
  * @param playerData.inventory - The player's inventory.
  * @param playerData.lastClaimedRefillTime - The last time the player claimed a refill.
  * @param playerData.perks - An array of perks to give the player. Each perk can be a Perk object, ID, or name.
+ * @param playerData.hasPickedPerk - Whether the player has picked a perk.
  * @returns The player object that was added to the database.
  * @example
  * const db = new DatabaseQuerier(":memory:");
@@ -72,15 +70,13 @@ export const addMockPlayer = (
 		currentName = "",
 		publishedName = null,
 		tokens = 0,
-		role: roleResolvable = null,
+		role = null,
 		perks = [],
 		inventory = "",
 		lastClaimedRefillTime = null,
+		hasPickedPerk = false,
 	}: WithAllOptional<PlayerDefinition> = {},
 ): Player => {
-	const perkRepository = new PerkRepository(db);
-	const roleRepository = new RoleRepository(db, perkRepository);
-
 	if (id === undefined) {
 		id = getRandomNumericUUID();
 	}
@@ -88,90 +84,10 @@ export const addMockPlayer = (
 	if (inventory === "" && currentName !== "")
 		inventory = currentName;
 
-	const existingPlayer = db.getRow(
-		"SELECT id FROM player WHERE id = ?",
-		[id]
-	);
-
-	if (existingPlayer !== undefined) {
-		throw new PlayerAlreadyExistsError(id);
-	}
-
-	let role: Role | null = null;
-	if (isNumber(roleResolvable)) {
-		role = roleRepository.getRoleOrThrow(roleResolvable);
-	}
-	else if (isString(roleResolvable)) {
-		role = returnNonNullOrThrow(
-			roleRepository.getRoleByName(roleResolvable)
-		);
-
-	}
-	else if (roleResolvable !== null) {
-		role = roleRepository.getRoleOrThrow(roleResolvable.id);
-	}
-
-	const player = { id, currentName, publishedName, tokens, role, inventory, lastClaimedRefillTime};
-	const insertPlayer = db.prepare(`
-		INSERT INTO player (id, currentName, publishedName, tokens, role, inventory, lastClaimedRefillTime)
-		VALUES (@id, @currentName, @publishedName, @tokens, @role, @inventory, @lastClaimedRefillTime)
-	`);
-	insertPlayer.run({
-		id: id,
-		currentName: currentName,
-		publishedName: publishedName,
-		tokens: tokens,
-		role: role?.id ?? null,
-		inventory: inventory,
-		lastClaimedRefillTime:
-			lastClaimedRefillTime === null
-				? null
-				: lastClaimedRefillTime.getTime()
-	});
-
-	const givePlayerPerk = db.prepare(`
-		INSERT INTO playerPerk (playerID, perkID)
-		VALUES (@playerID, @perkID)
-	`);
-
-	const actualPerks: Perk[] = [];
-	for (const perkResolvable of perks) {
-		if (isNumber(perkResolvable)) {
-			const perkID = perkResolvable;
-			givePlayerPerk.run({ playerID: id, perkID });
-
-
-			const row = db.getRow(
-				"SELECT * FROM perk WHERE id = ?",
-				[perkID]
-			);
-
-			if (row === undefined) {
-				throw new InvalidArgumentError(`addMockPlayer: No perk found with ID ${perkID}.`);
-			}
-
-			actualPerks.push(toPerk(row));
-		}
-		else {
-			const perkName = perkResolvable;
-			const getPerkByName = db.prepare("SELECT * FROM perk WHERE name = @name");
-			const row = getPerkByName.get({ name: perkName });
-
-			if (row === undefined) {
-				throw new InvalidArgumentError(`addMockPlayer: No perk found with name ${perkName}.`);
-			}
-
-			const dbPerk = asDBPerk(row);
-			givePlayerPerk.run({ playerID: id, perkID: dbPerk.id });
-			actualPerks.push(toPerk(dbPerk));
-		}
-	}
-
-	return {
-		...player,
-		role: role,
-		perks: actualPerks,
-	};
+	const playerRepository = PlayerRepository.fromDB(db);
+	return playerRepository.addPlayer({
+		id, currentName, publishedName, tokens, role, perks, inventory, lastClaimedRefillTime, hasPickedPerk
+	})
 };
 
 export const editMockPlayer = (

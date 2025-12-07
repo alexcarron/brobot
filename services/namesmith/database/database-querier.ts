@@ -561,6 +561,23 @@ export class DatabaseQuerier {
 	}
 
 	/**
+	 * Updates all rows in a table in the database
+	 * @param tableName - The name of the table to update
+	 * @param fieldsUpdating - An object of column/field names to the updated values
+	 * @returns The result of the update query
+	 */
+	updateAllInTable(
+		tableName: string,
+		fieldsUpdating: Record<string, unknown>
+	): RunResult {
+		return this.run(
+			`UPDATE ${tableName}
+			SET ${toParameterSetClause(fieldsUpdating)}`,
+			fieldsUpdating
+		);
+	}
+
+	/**
 	 * Deletes a row from a table in the database
 	 * @param tableName - The name of the table to delete from
 	 * @param identifiers - An object of column/field names to the values to use as identifiers in the WHERE clause

@@ -56,7 +56,8 @@ CREATE TABLE IF NOT EXISTS player (
 	role INTEGER REFERENCES role(id)
 		ON DELETE SET NULL ON UPDATE CASCADE,
 	inventory TEXT NOT NULL DEFAULT '',
-	lastClaimedRefillTime NUMBER
+	lastClaimedRefillTime NUMBER,
+	hasPickedPerk BOOLEAN NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS playerPerk (

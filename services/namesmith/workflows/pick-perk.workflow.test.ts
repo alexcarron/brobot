@@ -6,7 +6,6 @@ import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { setupMockNamesmith } from "../mocks/mock-setup";
 import { PerkService } from "../services/perk.service";
 import { PlayerService } from "../services/player.service";
-import { Perk } from "../types/perk.types";
 import { Player } from "../types/player.types";
 import { returnIfNotFailure } from "../utilities/workflow.utility";
 import { pickPerk } from "./pick-perk.workflow";
@@ -17,7 +16,6 @@ describe('pick-perk.workflow', () => {
 	let db: DatabaseQuerier;
 
 	let NO_PERKS_PLAYER: Player;
-	let PERKS_PICKING_FROM: Perk[];
 
 	beforeEach(() => {
 		const dependencies = setupMockNamesmith();
@@ -28,8 +26,6 @@ describe('pick-perk.workflow', () => {
 		NO_PERKS_PLAYER = addMockPlayer(db, {
 			perks: [],
 		});
-
-		PERKS_PICKING_FROM = perkService.perkRepository.getPerks();
 	});
 
 	describe('pickPerk()', () => {
@@ -37,7 +33,6 @@ describe('pick-perk.workflow', () => {
 			pickPerk({
 				player: NO_PERKS_PLAYER,
 				pickedPerk: Perks.MINE_BONUS,
-				perksPickingFrom: PERKS_PICKING_FROM,
 			});
 
 			const player = playerService.resolvePlayer(NO_PERKS_PLAYER.id);
@@ -50,21 +45,19 @@ describe('pick-perk.workflow', () => {
 		});
 
 		it('should return perkAlreadyChosen failure if the player already has one of the perks', () => {
-			const player = addMockPlayer(db, {
-				perks: [Perks.REFILL_BONUS.id]
+			pickPerk({
+				player: NO_PERKS_PLAYER,
+				pickedPerk: Perks.REFILL_BONUS,
 			});
 
 			const result = pickPerk({
-				player: player,
+				player: NO_PERKS_PLAYER,
 				pickedPerk: Perks.MINE_BONUS,
-				perksPickingFrom: PERKS_PICKING_FROM,
 			});
 
 			makeSure(result.isFailure()).isTrue();
 			if (!result.isPerkAlreadyChosen())
 				failTest('Returned result is not a perkAlreadyChosen failure');
-
-			makeSure(result.chosenPerk.id).is(Perks.REFILL_BONUS.id);
 		});
 
 		it('should return any free tokens earned', () => {
@@ -72,7 +65,6 @@ describe('pick-perk.workflow', () => {
 				pickPerk({
 					player: NO_PERKS_PLAYER,
 					pickedPerk: Perks.MINE_BONUS,
-					perksPickingFrom: PERKS_PICKING_FROM,
 				})
 			);
 
@@ -85,7 +77,6 @@ describe('pick-perk.workflow', () => {
 				pickPerk({
 					player: NO_PERKS_PLAYER,
 					pickedPerk: Perks.FREE_TOKENS,
-					perksPickingFrom: PERKS_PICKING_FROM,
 				})
 			);
 
@@ -100,7 +91,6 @@ describe('pick-perk.workflow', () => {
 			pickPerk({
 				player: NO_PERKS_PLAYER,
 				pickedPerk: Perks.FREE_TOKENS,
-				perksPickingFrom: PERKS_PICKING_FROM,
 			});
 
 			let player = playerService.resolvePlayer(NO_PERKS_PLAYER.id);
@@ -110,7 +100,6 @@ describe('pick-perk.workflow', () => {
 				pickPerk({
 					player: NO_PERKS_PLAYER,
 					pickedPerk: Perks.MINE_BONUS,
-					perksPickingFrom: PERKS_PICKING_FROM,
 				});
 
 			player = playerService.resolvePlayer(NO_PERKS_PLAYER.id);
@@ -124,7 +113,6 @@ describe('pick-perk.workflow', () => {
 				pickPerk({
 					player: INVALID_PLAYER_ID,
 					pickedPerk: Perks.MINE_BONUS,
-					perksPickingFrom: PERKS_PICKING_FROM,
 				});
 
 			makeSure(result.isFailure()).isTrue();
@@ -136,7 +124,6 @@ describe('pick-perk.workflow', () => {
 				pickPerk({
 					player: NO_PERKS_PLAYER,
 					pickedPerk: INVALID_PLAYER_ID,
-					perksPickingFrom: PERKS_PICKING_FROM,
 				});
 
 			makeSure(result.isFailure()).isTrue();

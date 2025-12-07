@@ -603,6 +603,20 @@ export class PlayerService {
 		}
 	}
 
+	setHasPickedPerk(playerResolvable: PlayerResolvable, hasPickedPerk: boolean) {
+		const playerID = this.resolveID(playerResolvable);
+		this.playerRepository.setHasPickedPerk(playerID, hasPickedPerk);
+	}
+
+	hasPickedPerk(playerResolvable: PlayerResolvable): boolean {
+		const playerID = this.resolveID(playerResolvable);
+		return this.playerRepository.getHasPickedPerk(playerID);
+	}
+
+	resetAllHasPickedPerk() {
+		this.playerRepository.resetAllHasPickedPerk();
+	}
+
 	/**
 	 * Resets the player repository, clearing all stored players.
 	 */

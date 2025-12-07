@@ -11,6 +11,7 @@ import { PerkRepository } from './perk.repository';
 import { isString } from "../../../utilities/types/type-guards";
 import { isOneSymbol } from "../../../utilities/string-checks-utils";
 import { createMockDB } from "../mocks/mock-database";
+import { DBDate, DBBoolean } from "../utilities/db.utility";
 
 /**
  * Provides access to the dynamic player data.
@@ -434,6 +435,30 @@ export class PlayerRepository {
 			throw new PlayerNotFoundError(playerID);
 	}
 
+	getHasPickedPerk(playerID: PlayerID): boolean {
+		const hasPickedPerk = this.db.getValue(
+			"SELECT hasPickedPerk FROM player WHERE id = @id",
+			{ id: playerID }
+		);
+		return hasPickedPerk === 1;
+	}
+
+	setHasPickedPerk(playerID: PlayerID, hasPickedPerk: boolean) {
+		if (this.doesPlayerExist(playerID) === false)
+			throw new PlayerNotFoundError(playerID);
+
+		this.db.updateInTable('player', {
+			fieldsUpdating: { hasPickedPerk: DBBoolean.fromDomain(hasPickedPerk) },
+			identifiers: { id: playerID }
+		})
+	}
+
+	resetAllHasPickedPerk(): void {
+		this.db.updateAllInTable('player', {
+			hasPickedPerk: DBBoolean.fromDomain(false)
+		})
+	}
+
 	/**
 	 * Retrieves the role ID of a player from the namesmith database.
 	 * @param playerID - The ID of the player whose role ID is being retrieved.
@@ -502,10 +527,11 @@ export class PlayerRepository {
 	 * @param minimalPlayerDefinition.role - The role of the player (optional).
 	 * @param minimalPlayerDefinition.inventory - The player's inventory (optional).
 	 * @param minimalPlayerDefinition.lastClaimedRefillTime - The last time the player claimed a refill (optional).
+	 * @param minimalPlayerDefinition.hasPickedPerk - Whether the player has picked a perk (optional).
 	 * @throws {PlayerAlreadyExistsError} - If a player with the given ID already exists.
 	 * @returns The minimal player object with the given properties and the generated ID.
 	 */
-	private addMinimalPlayer({id, currentName, publishedName, tokens, role, inventory, lastClaimedRefillTime}:
+	private addMinimalPlayer({id, currentName, publishedName, tokens, role, inventory, lastClaimedRefillTime, hasPickedPerk}:
 		WithOptional<MinimalPlayer, 'id'>
 	): MinimalPlayer {
 		if (id === undefined) {
@@ -518,7 +544,8 @@ export class PlayerRepository {
 
 		this.db.insertIntoTable('player', {
 			id, currentName, publishedName, tokens, role, inventory,
-			lastClaimedRefillTime: lastClaimedRefillTime?.getTime() ?? null
+			lastClaimedRefillTime: DBDate.orNull.fromDomain(lastClaimedRefillTime),
+			hasPickedPerk: DBBoolean.fromDomain(hasPickedPerk)
 		});
 
 		return this.getMinimalPlayerOrThrow(id);
@@ -533,6 +560,7 @@ export class PlayerRepository {
 	 * @param playerDefinition.tokens - The number of tokens the player has (optional).
 	 * @param playerDefinition.inventory - The player's inventory (optional).
 	 * @param playerDefinition.lastClaimedRefillTime - The last time the player claimed a refill (optional).
+	 * @param playerDefinition.hasPickedPerk - Whether the player has picked a perk (optional).
 	 * @param playerDefinition.role - The role of the player (optional).
 	 * @param playerDefinition.perks - The perks of the player (optional).
 	 * @throws {PlayerAlreadyExistsError} - If a player with the given ID already exists.
@@ -541,7 +569,7 @@ export class PlayerRepository {
 	 * @returns The player object with the given properties and the generated ID.
 	 */
 	addPlayer({
-		id, currentName, publishedName, tokens, inventory, lastClaimedRefillTime,
+		id, currentName, publishedName, tokens, inventory, lastClaimedRefillTime, hasPickedPerk,
 		role: maybeRoleResolvable,
 		perks: perkResolvables
 	}: PlayerDefinition) {
@@ -552,7 +580,8 @@ export class PlayerRepository {
 		}
 
 		const minimalPlayer = this.addMinimalPlayer({
-			id, currentName, publishedName, tokens, role: roleID, inventory, lastClaimedRefillTime
+			id, currentName, publishedName, tokens, role: roleID, inventory, lastClaimedRefillTime,
+			hasPickedPerk: hasPickedPerk ?? false,
 		});
 
 		this.db.updateInTable('player', {
@@ -577,11 +606,12 @@ export class PlayerRepository {
 	 * @param minimalPlayerDefinition.tokens - The number of tokens the player has (optional).
 	 * @param minimalPlayerDefinition.inventory - The player's inventory (optional).
 	 * @param minimalPlayerDefinition.lastClaimedRefillTime - The last time the player claimed a refill (optional).
+	 * @param minimalPlayerDefinition.hasPickedPerk - Whether the player has picked a perk (optional).
 	 * @throws {PlayerNotFoundError} - If the player with the specified ID is not found.
 	 * @returns The minimal player object with the given properties and the generated ID.
 	 */
 	private updateMinimalPlayer(
-		{id, currentName, publishedName, tokens, inventory, lastClaimedRefillTime}:
+		{id, currentName, publishedName, tokens, inventory, lastClaimedRefillTime, hasPickedPerk}:
 			WithRequiredAndOneOther<Player, "id">
 	): MinimalPlayer {
 		if (this.doesPlayerExist(id) === false) {
@@ -591,7 +621,8 @@ export class PlayerRepository {
 		this.db.updateInTable('player', {
 			fieldsUpdating: {
 				currentName, publishedName, tokens, inventory,
-				lastClaimedRefillTime: lastClaimedRefillTime?.getTime() ?? null
+				lastClaimedRefillTime: DBDate.orNull.orUndefined.fromDomain(lastClaimedRefillTime),
+				hasPickedPerk: DBBoolean.orUndefined.fromDomain(hasPickedPerk)
 			},
 			identifiers: { id }
 		});
@@ -600,16 +631,16 @@ export class PlayerRepository {
 	}
 
 	updatePlayer({
-		id, currentName, publishedName, tokens, inventory, lastClaimedRefillTime,
+		id, currentName, publishedName, tokens, inventory, lastClaimedRefillTime, hasPickedPerk,
 		role: roleResolvable,
 		perks: perkResolvables
 	}:
 		WithRequiredAndOneOther<PlayerDefinition, "id">
 	) {
 		if (
-			[currentName, publishedName, tokens, inventory, lastClaimedRefillTime].some((value) => value !== undefined)
+			[currentName, publishedName, tokens, inventory, lastClaimedRefillTime, hasPickedPerk].some((value) => value !== undefined)
 		) {
-			this.updateMinimalPlayer({ id, currentName, publishedName, tokens: tokens!, inventory, lastClaimedRefillTime });
+			this.updateMinimalPlayer({ id, currentName, publishedName, tokens: tokens!, inventory, lastClaimedRefillTime, hasPickedPerk });
 		}
 
 		if (roleResolvable !== undefined) {
