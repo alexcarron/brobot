@@ -13,6 +13,7 @@ const result = getWorkflowResultCreator({
 		recievedCharacterValues: string,
 		wasRefunded: boolean,
 		gotDuplicate: boolean,
+		gotAnotherCharacter: boolean,
 	}>(),
 
 	notAPlayer: null,
@@ -77,22 +78,36 @@ export const buyMysteryBox = (
 	const characterValue = recievedCharacter.value;
 	let recievedCharacterValues = characterValue;
 
-	playerService.giveCharacter(playerResolvable, characterValue);
-
 	// Handle Lucky Duplicate Characters perk
 	let gotDuplicate = false;
 	perkService.doIfPlayerHas(Perks.LUCKY_DUPLICATE_CHARACTERS, playerResolvable, () => {
+		console.log('Lucky Duplicate Characters');
 		if (getRandomBoolean(0.10)) {
+			console.log('Lucky Duplicate Characters');
 			gotDuplicate = true;
 			recievedCharacterValues += characterValue;
-			playerService.giveCharacter(playerResolvable, characterValue);
 		}
-	})
+	});
+
+	let gotAnotherCharacter = false;
+	perkService.doIfPlayerHas(Perks.LUCKY_DOUBLE_BOX, playerResolvable, () => {
+		console.log('Lucky Double Box');
+		if (getRandomBoolean(0.05)) {
+			console.log('Lucky Double Box');
+			gotAnotherCharacter = true;
+			const secondCharacterValue = mysteryBoxService.openBox(mysteryBoxResolvable).value;
+			recievedCharacterValues += secondCharacterValue;
+		}
+	});
+
+	playerService.giveCharacters(playerResolvable, recievedCharacterValues);
 
 	// Handle Lucky Refund perk
 	let wasRefunded = false;
 	perkService.doIfPlayerHas(Perks.LUCKY_REFUND, playerResolvable, () => {
+		console.log('Lucky Refund');
 		if (getRandomBoolean(0.10)) {
+			console.log('Lucky Refund');
 			wasRefunded = true;
 			playerService.giveTokens(playerResolvable, tokenCost);
 		}
@@ -110,5 +125,6 @@ export const buyMysteryBox = (
 		recievedCharacterValues,
 		wasRefunded,
 		gotDuplicate,
+		gotAnotherCharacter,
 	});
 };

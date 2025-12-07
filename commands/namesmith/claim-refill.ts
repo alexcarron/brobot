@@ -26,13 +26,21 @@ export const command = new SlashCommand({
 			);
 		}
 
-		const { baseTokensEarned, newTokenCount, nextRefillTime, tokensFromRefillBonus, } = refillResult;
+		const { baseTokensEarned, newTokenCount, nextRefillTime, tokensFromRefillBonus, tokensFromLuckyDoubleTokens } = refillResult;
 
 
 		const baseTokensLine = joinLines(
 			`**+${toAmountOfNoun(baseTokensEarned, 'Token')}**`,
 			`${'🪙'.repeat(baseTokensEarned)}`,
 		)
+
+		const luckyDoubleTokensLine = (tokensFromLuckyDoubleTokens > 0)
+			? joinLines(
+				'',
+				`+${toAmountOfNoun(baseTokensEarned, 'Lucky Double Token')}`,
+				`${'🪙'.repeat(baseTokensEarned)}`,
+			)
+			: null;
 
 		const refillBonusLine = (tokensFromRefillBonus > 0)
 			? joinLines(
@@ -44,6 +52,7 @@ export const command = new SlashCommand({
 
 		return joinLines(
 			baseTokensLine,
+			luckyDoubleTokensLine,
 			refillBonusLine,
 			``,
 			`-# You now have ${toAmountOfNoun(newTokenCount, 'token')}`,

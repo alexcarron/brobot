@@ -17,6 +17,6 @@ export const roles = [
 		id: 3,
     name: "Fortune Seeker",
     description: "Risk-takers and luck-driven adventurers who chase rare opportunities and massive gains.",
-    perks: [Perks.LUCKY_DOUBLE.name, Perks.LUCKY_DUPLICATE_CHARACTERS.name]
+    perks: [Perks.LUCKY_DOUBLE_TOKENS.name, Perks.LUCKY_DUPLICATE_CHARACTERS.name]
   },
 ] as const;

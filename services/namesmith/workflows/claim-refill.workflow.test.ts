@@ -38,7 +38,7 @@ describe('claim-tokens.workflow', () => {
 				tokens: 10
 			});
 
-			const { newTokenCount, baseTokensEarned, nextRefillTime, tokensFromRefillBonus } =
+			const { newTokenCount, baseTokensEarned, nextRefillTime, tokensFromRefillBonus, tokensFromLuckyDoubleTokens } =
 				returnIfNotFailure(claimRefill({
 					...getNamesmithServices(),
 					playerRefilling: mockPlayer.id
@@ -50,6 +50,7 @@ describe('claim-tokens.workflow', () => {
 			const expectedDate = addHours(new Date(), REFILL_COOLDOWN_HOURS);
 			makeSure(nextRefillTime).isCloseToDate(expectedDate);
 			makeSure(tokensFromRefillBonus).is(0);
+			makeSure(tokensFromLuckyDoubleTokens).is(0);
 		});
 
 		it('should give the player tokens for refilling', () => {

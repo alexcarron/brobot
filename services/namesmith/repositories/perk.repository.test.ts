@@ -153,6 +153,24 @@ describe('PerkRepository', () => {
 		});
 	});
 
+	describe('doesPlayerIDHavePerkID()', () => {
+		it('returns true when the player has the perk with the given ID', () => {
+			const player = addMockPlayer(db, {
+				perks: [Perks.MINE_BONUS.id]
+			});
+			const hasPerk = perkRepository.doesPlayerIDHavePerkID(player.id, Perks.MINE_BONUS.id);
+			makeSure(hasPerk).isTrue();
+		});
+
+		it('returns false when the player does not have the perk with the given ID', () => {
+			const player = addMockPlayer(db, {
+				perks: []
+			});
+			const hasPerk = perkRepository.doesPlayerIDHavePerkID(player.id, Perks.MINE_BONUS.id);
+			makeSure(hasPerk).isFalse();
+		});
+	})
+
 	describe('addPerkIDToPlayer()', () => {
 		it('adds the given perk ID to the player', () => {
 			const player = addMockPlayer(db, {

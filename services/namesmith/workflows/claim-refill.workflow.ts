@@ -1,7 +1,7 @@
 
 import { PlayerResolvable } from '../types/player.types';
 import { AVERAGE_TOKENS_FROM_REFILLING, MIN_TOKENS_FROM_REFILLING, REFILL_COOLDOWN_HOURS } from '../constants/namesmith.constants';
-import { getAnticipatedRandomNum } from '../../../utilities/random-utils';
+import { getAnticipatedRandomNum, getRandomBoolean } from '../../../utilities/random-utils';
 import { addHours } from '../../../utilities/date-time-utils';
 import { getWorkflowResultCreator, provides } from './workflow-result-creator';
 import { Perks } from '../constants/perks.constants';
@@ -13,6 +13,7 @@ const result = getWorkflowResultCreator({
 		newTokenCount: number,
 		nextRefillTime: Date,
 		tokensFromRefillBonus: number,
+		tokensFromLuckyDoubleTokens: number,
 	}>(),
 
 	notAPlayer: null,
@@ -51,11 +52,11 @@ export const claimRefill = (
 	}
 
 	// Calculate tokens earned from refill
-	let totalTokensEarned = 0;
 	let baseTokensEarned = Math.round(getAnticipatedRandomNum({
 		expectedValue: AVERAGE_TOKENS_FROM_REFILLING,
 		minimumValue: MIN_TOKENS_FROM_REFILLING
 	}));
+	let totalTokensEarned = baseTokensEarned;
 
 	// Handle Refill Interest perk
 	perkService.doIfPlayerHas(Perks.REFILL_INTEREST, playerRefilling, () => {
@@ -63,27 +64,36 @@ export const claimRefill = (
 
 		baseTokensEarned = Math.round(getAnticipatedRandomNum({
 			expectedValue: currentTokenCount * 0.10,
-		}))
+		}));
+		totalTokensEarned = baseTokensEarned;
 	});
 
 	// Handle Refill Inventory Override perk
 	perkService.doIfPlayerHas(Perks.REFILL_INVENTORY_OVERRIDE, playerRefilling, () => {
 		const inventory = playerService.getInventory(playerRefilling);
 		baseTokensEarned = inventory.length;
+		totalTokensEarned = baseTokensEarned;
 	});
-	totalTokensEarned += baseTokensEarned;
+
+	let tokensFromLuckyDoubleTokens = 0;
+	perkService.doIfPlayerHas(Perks.LUCKY_DOUBLE_TOKENS, playerRefilling, () => {
+		if (getRandomBoolean(0.02)) {
+			tokensFromLuckyDoubleTokens = totalTokensEarned;
+			totalTokensEarned += tokensFromLuckyDoubleTokens;
+		}
+	})
 
 	// Handle Refill Bonus perk
 	let tokensFromRefillBonus = 0;
 	perkService.doIfPlayerHas(Perks.REFILL_BONUS, playerRefilling, () => {
-		tokensFromRefillBonus = Math.floor(baseTokensEarned * 0.25);
+		tokensFromRefillBonus = Math.floor(totalTokensEarned * 0.25);
 		totalTokensEarned += tokensFromRefillBonus;
 	});
 
 	if (tokenOverride !== undefined) {
 		baseTokensEarned = tokenOverride;
-		tokensFromRefillBonus = 0;
 		totalTokensEarned = tokenOverride;
+		tokensFromRefillBonus = 0;
 	}
 
 	// Actually give the tokens to the player
@@ -108,5 +118,6 @@ export const claimRefill = (
 		newTokenCount,
 		nextRefillTime,
 		tokensFromRefillBonus,
+		tokensFromLuckyDoubleTokens,
 	});
 }

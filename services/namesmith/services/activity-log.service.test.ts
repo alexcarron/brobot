@@ -21,6 +21,10 @@ describe('ActivityLogService', () => {
 	let SOME_RECIPE: Recipe;
 	let SOME_QUEST: Quest;
 
+	let YESTERDAY: Date;
+	let TODAY: Date;
+	let TOMORROW: Date;
+
 	beforeEach(() => {
 		activityLogService = ActivityLogService.asMock();
 		db = activityLogService.activityLogRepository.db;
@@ -28,6 +32,10 @@ describe('ActivityLogService', () => {
 		SOME_PLAYER = addMockPlayer(db);
 		SOME_RECIPE = addMockRecipe(db);
 		SOME_QUEST = addMockQuest(db);
+
+		YESTERDAY = getYesterday();
+		TODAY = getToday();
+		TOMORROW = getTomorrow();
 	});
 
 	describe('logCraftCharacter()', () => {
@@ -328,7 +336,6 @@ describe('ActivityLogService', () => {
 
 	describe('getNumMinesSince()', () => {
 		it('returns one when the player has mined since the last time the player completed a quest', () => {
-			const YESTERDAY = getYesterday();
 			activityLogService.logMineTokens({
 				playerMining: SOME_PLAYER.id,
 				tokensEarned: 10
@@ -346,7 +353,6 @@ describe('ActivityLogService', () => {
 		});
 
 		it('returns zero when the player mined before the given time', () => {
-			const TOMORROW = getTomorrow();
 			activityLogService.logMineTokens({
 				playerMining: SOME_PLAYER.id,
 				tokensEarned: 10
@@ -358,9 +364,6 @@ describe('ActivityLogService', () => {
 		});
 
 		it('returns one when player mined once after time and once before time', () => {
-			const YESTERDAY = getYesterday();
-			const TODAY = getToday();
-			const TOMORROW = getTomorrow();
 			addMockActivityLog(db, {
 				timeOccured: YESTERDAY,
 				player: SOME_PLAYER.id,
@@ -374,6 +377,71 @@ describe('ActivityLogService', () => {
 			makeSure(activityLogService.getTimesPlayerMinedSince(
 				SOME_PLAYER.id, TODAY
 			)).is(1);
+		});
+	});
+
+	describe('getTokensPlayerSpentSince()', () => {
+		it('returns zero when the player has not spent tokens', () => {
+			makeSure(activityLogService.getTokensPlayerSpentSince(
+				SOME_PLAYER.id, TODAY
+			)).is(0);
+		});
+
+		it('returns the tokens a player spent on a mystery box', () => {
+			activityLogService.logBuyMysteryBox({
+				playerBuyingBox: SOME_PLAYER.id,
+				tokensSpent: 10
+			});
+
+			makeSure(activityLogService.getTokensPlayerSpentSince(
+				SOME_PLAYER.id, YESTERDAY
+			)).is(10);
+		});
+
+		it('returns the sum of only tokens spent but not earned by a player', () => {
+			activityLogService.logBuyMysteryBox({
+				playerBuyingBox: SOME_PLAYER.id,
+				tokensSpent: 10
+			});
+
+			activityLogService.logMineTokens({
+				playerMining: SOME_PLAYER.id,
+				tokensEarned: 5
+			});
+
+			activityLogService.logBuyMysteryBox({
+				playerBuyingBox: SOME_PLAYER.id,
+				tokensSpent: 15
+			});
+
+			makeSure(activityLogService.getTokensPlayerSpentSince(
+				SOME_PLAYER.id, YESTERDAY
+			)).is(25);
+		});
+
+		it('returns the sum of spent tokens only after the given date', () => {
+			addMockActivityLog(db, {
+				timeOccured: YESTERDAY,
+				player: SOME_PLAYER.id,
+				type: ActivityTypes.BUY_MYSTERY_BOX,
+				tokensDifference: -10
+			});
+			addMockActivityLog(db, {
+				timeOccured: YESTERDAY,
+				player: SOME_PLAYER.id,
+				type: ActivityTypes.BUY_MYSTERY_BOX,
+				tokensDifference: -15
+			});
+			addMockActivityLog(db, {
+				timeOccured: TOMORROW,
+				player: SOME_PLAYER.id,
+				type: ActivityTypes.BUY_MYSTERY_BOX,
+				tokensDifference: -25
+			});
+
+			makeSure(activityLogService.getTokensPlayerSpentSince(
+				SOME_PLAYER.id, YESTERDAY
+			)).is(25);
 		});
 	});
 });
