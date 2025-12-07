@@ -1,5 +1,4 @@
 import { failTest, makeSure } from "../../../utilities/jest/jest-utils";
-import { Roles } from "../constants/roles.constants";
 import { INVALID_PLAYER_ID, INVALID_ROLE_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
@@ -16,7 +15,7 @@ describe('choose-role.workflow', () => {
 	let db: DatabaseQuerier;
 
 	let NO_ROLE_PLAYER: Player;
-	const SOME_ROLE_ID: RoleID = Roles.PROSPECTOR.id;
+	let SOME_ROLE_ID: RoleID;
 
 	beforeEach(() => {
 		const dependencies = setupMockNamesmith();
@@ -26,6 +25,7 @@ describe('choose-role.workflow', () => {
 		NO_ROLE_PLAYER = addMockPlayer(db, {
 			role: null
 		});
+		SOME_ROLE_ID = roleService.roleRepository.getRoles()[0].id;
 	});
 
 	describe('chooseRole()', () => {

@@ -1,9 +1,9 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { Perks } from "../constants/perks.constants";
-import { Roles } from "../constants/roles.constants";
 import { INVALID_ROLE_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
+import { addMockRole } from "../mocks/mock-data/mock-roles";
 import { Player } from "../types/player.types";
 import { Role } from "../types/role.types";
 import { RoleService } from "./role.service";
@@ -12,10 +12,10 @@ describe('RoleService', () => {
 	let roleService: RoleService;
 	let db: DatabaseQuerier;
 
-	const SOME_ROLE = Roles.PROSPECTOR;
+	let SOME_ROLE: Role;
+	let MINE_BONUS_ROLE: Role;
 	let PLAYER_WITH_ROLE: Player;
 	let PLAYER_WITHOUT_ROLE: Player;
-
 
 	beforeEach(() => {
 		roleService = RoleService.asMock();
@@ -26,7 +26,11 @@ describe('RoleService', () => {
 		});
 		PLAYER_WITHOUT_ROLE = addMockPlayer(db, {
 			role: null
-		})
+		});
+		SOME_ROLE = roleService.roleRepository.getRoles()[0];
+		MINE_BONUS_ROLE = addMockRole(db, {
+			perks: [Perks.MINE_BONUS]
+		});
 	});
 
 	describe('resolveRole()', () => {
@@ -49,7 +53,7 @@ describe('RoleService', () => {
 		});
 
 		it('should resolve a Role object to itself in its current state', () => {
-			const role = roleService.resolveRole(SOME_ROLE.id);
+			const role = roleService.resolveRole(MINE_BONUS_ROLE.id);
 
 			const outdatedRole: Role = {
 				...role,
@@ -60,10 +64,10 @@ describe('RoleService', () => {
 			const resolvedRole = roleService.resolveRole(outdatedRole);
 
 			makeSure(resolvedRole).isAnObject();
-			makeSure(resolvedRole.id).is(SOME_ROLE.id);
-			makeSure(resolvedRole.name).is(SOME_ROLE.name);
+			makeSure(resolvedRole.id).is(MINE_BONUS_ROLE.id);
+			makeSure(resolvedRole.name).is(MINE_BONUS_ROLE.name);
 			makeSure(resolvedRole).hasProperties('id', 'name', 'description', 'perks');
-			makeSure(resolvedRole.description).is(SOME_ROLE.description);
+			makeSure(resolvedRole.description).is(MINE_BONUS_ROLE.description);
 			makeSure(resolvedRole.perks).hasAnItemWhere(perk =>
 				perk.id === Perks.MINE_BONUS.id
 			);

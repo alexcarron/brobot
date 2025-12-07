@@ -3,20 +3,20 @@ import { Perks } from "../../constants/perks.constants";
 export const roles = [
 	{
 		id: 1,
-    name: "Prospector",
-    description: "Masters of mining and token collection, they always maximize their gains from raw resources.",
-    perks: [Perks.MINE_BONUS.name, Perks.REFILL_BONUS.name]
+    name: "The Passive Investor",
+    description: "Someone focused on saving tokens and hoarding money without effort.",
+    perks: [Perks.INVESTMENT.name, Perks.IDLE_INTEREST.name]
   },
   {
 		id: 2,
-    name: "Merchant",
-    description: "Savvy traders who save and profit from every transaction, ensuring maximum value from purchases.",
-    perks: [Perks.DISCOUNT.name, Perks.LUCKY_REFUND.name]
+    name: "The Grinder",
+    description: "Someone focused on earning tokens fast with consistent effort.",
+    perks: [Perks.MINE_BONUS.name, Perks.FASTER_REFILL.name]
   },
   {
 		id: 3,
-    name: "Fortune Seeker",
-    description: "Risk-takers and luck-driven adventurers who chase rare opportunities and massive gains.",
-    perks: [Perks.LUCKY_DOUBLE_TOKENS.name, Perks.LUCKY_DUPLICATE_CHARACTERS.name]
+    name: "The Gambling Artifactor",
+    description: "Someone focused on getting many characters through lucky occurances.",
+    perks: [Perks.LUCKY_DOUBLE_BOX.name, Perks.LUCKY_DUPLICATE_CHARACTERS.name]
   },
 ] as const;
