@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionChoiceData, AutocompleteInteraction } from "discord.js";
 import { isStrings, isStringToStringRecord } from "../../utilities/types/type-guards";
-import { findStringsContaining } from "../../utilities/string-manipulation-utils";
+import { findStringsContaining, truncateText } from "../../utilities/string-manipulation-utils";
 import { Parameter } from "./parameter";
 
 export type AutocompleteChoicesResolvable =
@@ -80,7 +80,7 @@ export function toAutocompleteChoices(
 	if (isStrings(autocompleteChoicesResolvable)) {
 		const autocompleteValues = autocompleteChoicesResolvable;
 		return autocompleteValues.map(value => ({
-			name: value,
+			name: truncateText(value, 100),
 			value: value
 		}));
 	}
@@ -88,13 +88,16 @@ export function toAutocompleteChoices(
 		const autocompleteNameToValue = autocompleteChoicesResolvable;
 		return Object.entries(autocompleteNameToValue).map(
 			([name, value]) => ({
-				name: name,
+				name: truncateText(name, 100),
 				value: value
 			})
 		);
 	}
 	else {
-		return autocompleteChoicesResolvable;
+		return autocompleteChoicesResolvable.map(choice => ({
+			...choice,
+			name: truncateText(choice.name, 100)
+		}));
 	}
 }
 

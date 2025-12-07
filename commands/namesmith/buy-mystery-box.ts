@@ -4,6 +4,7 @@ import { SlashCommand } from "../../services/command-creation/slash-command";
 import { Perks } from "../../services/namesmith/constants/perks.constants";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { buyMysteryBox } from "../../services/namesmith/workflows/buy-mystery-box.workflow";
+import { sortByAscendingProperty } from "../../utilities/data-structure-utils";
 import { addSIfPlural, joinLines, toAmountOfNoun } from "../../utilities/string-manipulation-utils";
 
 const Parameters = Object.freeze({
@@ -12,22 +13,27 @@ const Parameters = Object.freeze({
 		name: "mystery-box",
 		description: "The mystery box to buy",
 		autocomplete: ({user}) => {
-			const { mysteryBoxService, perkService } = getNamesmithServices()
+			const { mysteryBoxService, perkService, playerService } = getNamesmithServices();
+			if (playerService.isPlayer(user.id) === false) {
+				return ['You are not a player, so you cannot buy a mystery box.'];
+			}
+
 			const mysteryBoxes = mysteryBoxService.getMysteryBoxes();
-			return mysteryBoxes.map(mysteryBox => {
-				const {id, name, characterOdds} = mysteryBox;
-				let {tokenCost} = mysteryBox;
-				const characters = Object.keys(characterOdds);
+			return sortByAscendingProperty(mysteryBoxes, 'tokenCost')
+				.map(mysteryBox => {
+					const {id, name, characterOdds} = mysteryBox;
+					let {tokenCost} = mysteryBox;
+					const characters = Object.keys(characterOdds);
 
-				perkService.doIfPlayerHas(Perks.DISCOUNT, user.id, () => {
-					tokenCost = Math.ceil(tokenCost * 0.9);
+					perkService.doIfPlayerHas(Perks.DISCOUNT, user.id, () => {
+						tokenCost = Math.ceil(tokenCost * 0.9);
+					});
+
+					return {
+						name: `$${tokenCost} - ${name}: ${characters.sort().join("")}`,
+						value: id.toString()
+					}
 				});
-
-				return {
-					name: `$${tokenCost} - ${name}: ${characters.sort().join("")}`,
-					value: id.toString()
-				}
-			});
 		}
 	}),
 });

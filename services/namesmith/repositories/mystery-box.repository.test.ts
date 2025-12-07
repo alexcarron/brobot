@@ -134,17 +134,15 @@ describe('MysteryBoxRepository', () => {
 		});
 
 		it('should handle only minimal updates', () => {
+			const originalMysteryBox = mysteryBoxRepo.getMysteryBoxOrThrow(1);
 			const mysteryBoxDefinition = {
-				id: 1,
+				id: originalMysteryBox.id,
 				name: 'Test Box',
 				tokenCost: 50
 			}
 			const updatedMysteryBox = mysteryBoxRepo.updateMysteryBox(mysteryBoxDefinition);
-			makeSure(updatedMysteryBox).is({
-				...mysteryBoxDefinition,
-				characterOdds: MysteryBoxes.ALL_CHARACTERS.characterOdds
-			});
-
+			makeSure(updatedMysteryBox).hasProperties(mysteryBoxDefinition);
+			makeSure(updatedMysteryBox.characterOdds).is(originalMysteryBox.characterOdds);
 
 			const resolvedMysteryBox = mysteryBoxRepo.getMysteryBox(updatedMysteryBox.id);
 			makeSure(resolvedMysteryBox).is(updatedMysteryBox);

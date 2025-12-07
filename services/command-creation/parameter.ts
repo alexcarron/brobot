@@ -2,7 +2,7 @@ import { ApplicationCommandOptionBase, Attachment, GuildMember, Role, SlashComma
 import { toTitleCase } from '../../utilities/string-manipulation-utils';
 import { ToCamelCase } from '../../utilities/types/casing-types';
 import { isFunction, isStringToStringRecord } from '../../utilities/types/type-guards';
-import { AutocompleteChoicesResolvable } from './autocomplete-utils';
+import { AutocompleteChoicesResolvable, toAutocompleteChoices } from './autocomplete-utils';
 
 export const ParameterTypes = Object.freeze({
 	SUBCOMMAND: "subcommand",
@@ -242,12 +242,7 @@ export class Parameter<
 						typeof option.addChoices === 'function'
 					)
 						option.addChoices(
-							...Object.entries(this.autocomplete).map(entry => {
-								const name = entry[0];
-								const value = entry[1];
-
-								return {name, value};
-							})
+							toAutocompleteChoices(this.autocomplete)
 						)
 					else
 						throw new Error(`Option ${option.name} does not support autocomplete.`);

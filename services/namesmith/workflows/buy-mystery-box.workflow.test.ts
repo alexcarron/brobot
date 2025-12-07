@@ -25,6 +25,7 @@ import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { NamesmithEvents } from "../event-listeners/namesmith-events";
 import { Perks } from "../constants/perks.constants";
 import { returnIfNotFailure } from "../utilities/workflow.utility";
+import { isOneSymbol } from "../../../utilities/string-checks-utils";
 
 describe('buy-mystery-box.workflow', () => {
 	/**
@@ -72,7 +73,9 @@ describe('buy-mystery-box.workflow', () => {
 				})
 			);
 
-			makeSure(result.recievedCharacterValues).hasLengthOf(1);
+			makeSure(
+				isOneSymbol(result.recievedCharacterValues)
+			).isTrue();
 			makeSure(result.tokenCost).is(25);
 			makeSure(result.player).is({
 				...richPlayer,

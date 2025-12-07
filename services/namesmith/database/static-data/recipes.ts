@@ -3130,16 +3130,6 @@ export const recipes = [
     "outputCharacters": "ↄↄ"
   },
   {
-    "id": 627,
-    "inputCharacters": "@",
-    "outputCharacters": "ⓐ"
-  },
-  {
-    "id": 628,
-    "inputCharacters": "Oa⚭",
-    "outputCharacters": "ⓐ"
-  },
-  {
     "id": 629,
     "inputCharacters": "TM⤡",
     "outputCharacters": "™"
@@ -3203,11 +3193,6 @@ export const recipes = [
     "id": 641,
     "inputCharacters": "*",
     "outputCharacters": "×"
-  },
-  {
-    "id": 642,
-    "inputCharacters": "xx⚭",
-    "outputCharacters": "※"
   },
   {
     "id": 643,

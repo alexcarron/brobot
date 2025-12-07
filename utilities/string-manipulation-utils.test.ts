@@ -21,6 +21,7 @@ import {
 	toIdentifierSegments,
 	toKebabCase,
 	toPascalCase,
+	truncateText,
 } from "./string-manipulation-utils";
 import { createNowUnixTimestamp } from "./date-time-utils";
 import { makeSure } from "./jest/jest-utils";
@@ -818,4 +819,22 @@ describe('string-manipulation-utils', () => {
 			makeSure(capitalizeFirstLetter('a')).is('A');
 		});
 	});
+
+	describe('truncateText()', () => {
+		it('leaves short text alone', () => {
+			makeSure(truncateText('string', 100)).is('string');
+		});
+
+		it('truncates long text to 10 characteres', () => {
+			makeSure(
+				truncateText('A sentence with a lot of characters', 10)
+			).is('A sente...');
+		});
+
+		it('truncates long text to 10 characteres with a special overflow character', () => {
+			makeSure(
+				truncateText('A sentence with a lot of characters', 10, '—')
+			).is('A sentenc—');
+		});
+	})
 });
