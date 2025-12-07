@@ -5,6 +5,7 @@ import { INVALID_PERK_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { addMockRole } from "../mocks/mock-data/mock-roles";
+import { RoleID } from "../types/role.types";
 import { PerkNotFoundError } from "../utilities/error.utility";
 import { PerkRepository } from "./perk.repository";
 
@@ -12,11 +13,15 @@ describe('PerkRepository', () => {
 	let perkRepository: PerkRepository;
 	let db: DatabaseQuerier;
 
-	const MINE_BONUS_ROLE_ID = 1;
+	let MINE_BONUS_ROLE_ID: RoleID;
 
 	beforeEach(() => {
 		perkRepository = PerkRepository.asMock();
 		db = perkRepository.db;
+
+		MINE_BONUS_ROLE_ID = addMockRole(db, {
+			perks: [Perks.MINE_BONUS]
+		}).id;
 	});
 
 	describe('getPerks()', () => {

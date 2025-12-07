@@ -1,18 +1,19 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { Perks } from "../constants/perks.constants";
-import { Roles } from "../constants/roles.constants";
 import { INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { Player } from "../types/player.types";
+import { Role } from "../types/role.types";
 import { PlayerAlreadyExistsError, PlayerNotFoundError } from "../utilities/error.utility";
 import { PlayerRepository } from "./player.repository";
+import { RoleRepository } from "./role.repository";
 
 describe('PlayerRepository', () => {
 	let playerRepository: PlayerRepository;
 	let db: DatabaseQuerier;
 
-	const SOME_ROLE = Roles.PROSPECTOR;
+	let SOME_ROLE: Role;
 	let SOME_PLAYER: Player;
 	let SOME_OTHER_PLAYER: Player;
 	let ALL_PLAYERS: Player[];
@@ -24,6 +25,7 @@ describe('PlayerRepository', () => {
 		SOME_PLAYER = addMockPlayer(db);
 		SOME_OTHER_PLAYER = addMockPlayer(db);
 		ALL_PLAYERS = playerRepository.getPlayers();
+		SOME_ROLE = RoleRepository.asMock().getRoles()[0];
 	});
 
 	afterEach(() => {
@@ -400,7 +402,7 @@ describe('PlayerRepository', () => {
 				tokens: 100,
 				inventory: "currentNameAndInventory",
 				lastClaimedRefillTime: new Date('2023-01-01T00:00:00.000Z'),
-				role: Roles.FORTUNE_SEEKER,
+				role: SOME_ROLE,
 				perks: [Perks.DISCOUNT.id, Perks.FASTER_REFILL.name],
 			});
 
@@ -413,7 +415,7 @@ describe('PlayerRepository', () => {
 				lastClaimedRefillTime: new Date('2023-01-01T00:00:00.000Z')
 			});
 
-			makeSure(player.role?.id).is(Roles.FORTUNE_SEEKER.id);
+			makeSure(player.role?.id).is(SOME_ROLE.id);
 			makeSure(player.perks).hasAnItemWhere(perk =>
 				perk.id === Perks.DISCOUNT.id
 			);
@@ -486,7 +488,7 @@ describe('PlayerRepository', () => {
 				tokens: 100,
 				inventory: "currentNameAndInventory",
 				lastClaimedRefillTime: new Date('2023-01-01T00:00:00.000Z'),
-				role: Roles.FORTUNE_SEEKER,
+				role: SOME_ROLE,
 				perks: [Perks.DISCOUNT.id, Perks.FASTER_REFILL.name],
 			});
 
@@ -499,7 +501,7 @@ describe('PlayerRepository', () => {
 				lastClaimedRefillTime: new Date('2023-01-01T00:00:00.000Z')
 			});
 
-			makeSure(player.role?.id).is(Roles.FORTUNE_SEEKER.id);
+			makeSure(player.role?.id).is(SOME_ROLE.id);
 			makeSure(player.perks).hasAnItemWhere(perk =>
 				perk.id === Perks.DISCOUNT.id
 			);

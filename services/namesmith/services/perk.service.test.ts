@@ -1,11 +1,12 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { Perks } from "../constants/perks.constants";
-import { Roles } from "../constants/roles.constants";
 import { INVALID_PERK_ID, INVALID_PERK_NAME } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPerk } from "../mocks/mock-data/mock-perks";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
+import { addMockRole } from "../mocks/mock-data/mock-roles";
 import { Perk } from "../types/perk.types";
+import { Role } from "../types/role.types";
 import { PerkNotFoundError } from "../utilities/error.utility";
 import { PerkService } from "./perk.service";
 
@@ -13,9 +14,14 @@ describe('PerkService', () => {
 	let perkService: PerkService;
 	let db: DatabaseQuerier;
 
+	let MINE_BONUS_ROLE: Role;
+
 	beforeEach(() => {
 		perkService = PerkService.asMock();
 		db = perkService.perkRepository.db;
+		MINE_BONUS_ROLE = addMockRole(db, {
+			perks: [Perks.MINE_BONUS]
+		})
 	});
 
 	describe('resolvePerk()', () => {
@@ -131,7 +137,7 @@ describe('PerkService', () => {
 
 		it('should return true if perk is in role', () => {
 			const player = addMockPlayer(db, {
-				role: Roles.PROSPECTOR
+				role: MINE_BONUS_ROLE
 			});
 
 			const hasPerk = perkService.doesPlayerHave(Perks.MINE_BONUS, player);
