@@ -807,4 +807,14 @@ describe('PlayerService', () => {
 			);
 		});
 	});
+
+	describe('getDisplayedInventory()', () => {
+		it('should return the inventory of a player in a readable format', () => {
+			const mockPlayer = addMockPlayer(db, {
+				inventory: "4b!!3 c6a#",
+			});
+			const result = playerService.getDisplayedInventory(mockPlayer.id);
+			makeSure(result).is("abc346 !!#");
+		});
+	});
 });

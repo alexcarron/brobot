@@ -5,6 +5,7 @@ import { Perks } from "../../services/namesmith/constants/perks.constants";
 import { NamesmithEvents } from "../../services/namesmith/event-listeners/namesmith-events";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { resolveTargetPlayer } from "../../services/namesmith/utilities/interface.utility";
+import { fetchPlayerAutocompleteChoices } from "../../services/namesmith/utilities/player.utility";
 import { mapToObject } from "../../utilities/data-structure-utils";
 
 const Parameters = Object.freeze({
@@ -21,6 +22,7 @@ const Parameters = Object.freeze({
 		name: "player",
 		description: "The player to give the perk",
 		isRequired: false,
+		autocomplete: fetchPlayerAutocompleteChoices,
 	}),
 });
 

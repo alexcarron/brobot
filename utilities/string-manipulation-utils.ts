@@ -671,3 +671,7 @@ export function truncateText(
 	const truncatedLength = maxLength - overflowSuffix.length;
 	return `${text.slice(0, truncatedLength)}${overflowSuffix}`;
 }
+
+export function sortCharacters(string: string): string {
+	return [...string].sort().join('');
+}

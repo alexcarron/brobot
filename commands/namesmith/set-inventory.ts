@@ -3,6 +3,8 @@ import { Parameter, ParameterTypes } from "../../services/command-creation/param
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { resolveTargetPlayer } from "../../services/namesmith/utilities/interface.utility";
+import { fetchPlayerAutocompleteChoices } from "../../services/namesmith/utilities/player.utility";
+import { escapeDiscordMarkdown } from "../../utilities/string-manipulation-utils";
 
 const Parameters = Object.freeze({
 	INVENTORY: new Parameter({
@@ -15,6 +17,7 @@ const Parameters = Object.freeze({
 		name: "player",
 		description: "The player to give the inventory to",
 		isRequired: false,
+		autocomplete: fetchPlayerAutocompleteChoices,
 	}),
 });
 
@@ -44,6 +47,6 @@ export const command = new SlashCommand({
 
 		playerService.setInventory(player.id, inventory);
 
-		return `${player.currentName}'s inventory has been set to: ${inventory}`;
+		return `${player.currentName}'s inventory has been set to: ${escapeDiscordMarkdown(inventory)}`;
 	}
 })
