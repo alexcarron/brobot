@@ -13,8 +13,9 @@ describe('VoteService', () => {
 	let db: DatabaseQuerier;
 	let voteService: VoteService;
 
-	let SOME_PLAYER: Player;
-	let SOME_OTHER_PLAYER: Player;
+	let VOTER_PLAYER: Player;
+	let VOTED_PLAYER: Player;
+	let PLAYER_WITH_TOKENS: Player;
 	let FOUR_DIFFERENT_PLAYERS: [Player, Player, Player, Player];
 	let SOME_VOTE: Vote;
 
@@ -22,14 +23,14 @@ describe('VoteService', () => {
 		voteService = VoteService.asMock();
 		db = voteService.voteRepository.db;
 
-		SOME_PLAYER = addMockPlayer(db);
-		SOME_OTHER_PLAYER = addMockPlayer(db);
-		const SOME_THIRD_PLAYER = addMockPlayer(db);
+		VOTER_PLAYER = addMockPlayer(db);
+		VOTED_PLAYER = addMockPlayer(db);
+		PLAYER_WITH_TOKENS = addMockPlayer(db, { tokens: 100 });
 		const SOME_FOURTH_PLAYER = addMockPlayer(db);
-		FOUR_DIFFERENT_PLAYERS = [SOME_PLAYER, SOME_OTHER_PLAYER, SOME_THIRD_PLAYER, SOME_FOURTH_PLAYER];
+		FOUR_DIFFERENT_PLAYERS = [VOTER_PLAYER, VOTED_PLAYER, PLAYER_WITH_TOKENS, SOME_FOURTH_PLAYER];
 		SOME_VOTE = addMockVote(db, {
-			voter: SOME_PLAYER.id,
-			playerVotedFor: SOME_OTHER_PLAYER.id
+			voter: VOTER_PLAYER.id,
+			playerVotedFor: VOTED_PLAYER.id
 		});
 	});
 
@@ -135,9 +136,8 @@ describe('VoteService', () => {
 	});
 
 	describe('.getWinningPlayerID()', () => {
-		it('should return the ID of the player with the most votes', async () => {
-			const winningPlayerID = await voteService.getWinningPlayerID();
-
+		it('should return the ID of the player with the most votes', () => {
+			const winningPlayerID = voteService.getWinningPlayerID();
 			makeSure(winningPlayerID).is(FOUR_DIFFERENT_PLAYERS[1].id);
 		});
 
@@ -159,10 +159,20 @@ describe('VoteService', () => {
 			makeSure(winningPlayerID).is(FOUR_DIFFERENT_PLAYERS[3].id);
 		});
 
-		it('should not return anything when there is a tie', () => {
+		it('should return the player with more tokens when there is a tie', () => {
 			voteService.addVote({
 				voter: FOUR_DIFFERENT_PLAYERS[3].id,
-				playerVotedFor: FOUR_DIFFERENT_PLAYERS[2].id
+				playerVotedFor: PLAYER_WITH_TOKENS.id
+			});
+
+			const winningPlayerID = voteService.getWinningPlayerID();
+			makeSure(winningPlayerID).is(PLAYER_WITH_TOKENS.id);
+		});
+
+		it('should return null in a double tie', () => {
+			voteService.addVote({
+				voter: VOTED_PLAYER.id,
+				playerVotedFor: FOUR_DIFFERENT_PLAYERS[3].id
 			});
 
 			const winningPlayerID = voteService.getWinningPlayerID();

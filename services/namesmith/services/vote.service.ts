@@ -137,7 +137,20 @@ export class VoteService {
 				winningVoteCount = voteCount;
 			}
 			else if (voteCount === winningVoteCount) {
-				winningPlayerID = null;
+				if (winningPlayerID === null) {
+					winningPlayerID = playerID;
+					continue;
+				}
+
+				const currentWinningPlayerTokens = this.playerService.getTokens(winningPlayerID);
+				const currentPlayerTokens = this.playerService.getTokens(playerID);
+
+				if (currentPlayerTokens > currentWinningPlayerTokens) {
+					winningPlayerID = playerID;
+				}
+				else if (currentPlayerTokens === currentWinningPlayerTokens) {
+					winningPlayerID = null;
+				}
 			}
 		}
 
