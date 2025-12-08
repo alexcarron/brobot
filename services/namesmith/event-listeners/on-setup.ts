@@ -3,7 +3,6 @@ import { setupDatabase } from "../database/setup-database";
 import { regenerateChooseARoleMessage } from "../interfaces/choose-a-role-message";
 import { regeneratePickAPerkMessage } from "../interfaces/pick-a-perk-message";
 import { regenerateDailyQuestsMessage } from "../interfaces/quests/daily-quests-message";
-import { regenerateRecipeSelectMenu } from "../interfaces/recipe-select-menu";
 import { regenerateAllTradeMessages } from "../interfaces/trading/trade-message";
 import { regenerateVoteDisplay } from "../interfaces/voting/voting-messages";
 import { getNamesmithServices } from "../services/get-namesmith-services";
@@ -47,7 +46,6 @@ export const setupNamesmith = async () => {
 	if (gameStateService.hasStarted()) {
 		gameStateService.scheduleGameEvents();
 
-		await regenerateRecipeSelectMenu();
 		await regenerateVoteDisplay();
 		await regenerateAllTradeMessages();
 		await regenerateChooseARoleMessage();
