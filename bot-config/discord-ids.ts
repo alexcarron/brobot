@@ -297,12 +297,6 @@ export const ids = {
 					production: "1388286117786292284",
 				});
 			},
-			get RECIPES() {
-				return chooseByEnv({
-					development: "1403071809699713054",
-					production: "1403071766162833532",
-				});
-			},
 			get MINE_TOKENS() {
 				return chooseByEnv({
 					development: "1386449685497254133",

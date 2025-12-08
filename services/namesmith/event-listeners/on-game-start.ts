@@ -1,6 +1,5 @@
 import { sendChooseARoleMessage } from '../interfaces/choose-a-role-message';
 import { sendDailyQuestsMessage } from '../interfaces/quests/daily-quests-message';
-import { sendRecipeSelectMenu } from '../interfaces/recipe-select-menu';
 import { getNamesmithServices } from '../services/get-namesmith-services';
 import { clearNamesToVoteOnChannel, clearPublishedNamesChannel, clearTheWinnerChannel, closeNamesToVoteOnChannel, closeTheWinnerChannel, openPublishedNamesChannel } from '../utilities/discord-action.utility';
 import { NamesmithEvents } from './namesmith-events';
@@ -34,7 +33,6 @@ export async function startGame(): Promise<void> {
 	perkService.reset();
 
 	// Send the recipe select menu in the recipes channel
-	await sendRecipeSelectMenu();
 	await sendChooseARoleMessage();
 	await sendDailyQuestsMessage();
 

@@ -60,10 +60,6 @@ export const fetchTheWinnerChannel = async (): Promise<TextChannel> => {
 	return await fetchNamesmithChannel(ids.namesmith.channels.THE_WINNER);
 }
 
-export const fetchRecipesChannel = async (): Promise<TextChannel> => {
-	return await fetchNamesmithChannel(ids.namesmith.channels.RECIPES);
-}
-
 /**
  * Fetches a guild member from the Namesmith server by player ID.
  * @param playerID The ID of the player to fetch a guild member for.

@@ -26,10 +26,6 @@ jest.mock('../utilities/discord-fetch.utility', () => ({
 	fetchNamesToVoteOnChannel: jest.fn(() => Promise.resolve({})),
 }));
 
-jest.mock('../interfaces/recipe-select-menu', () => ({
-	sendRecipeSelectMenu: jest.fn(),
-}));
-
 jest.mock('../interfaces/voting/voting-messages', () => ({
 	sendVotingMessages: jest.fn(),
 }));
