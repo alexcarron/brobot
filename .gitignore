@@ -24,3 +24,6 @@ local/
 
 # ES Lint
 .eslintcache
+
+# TSC
+tsconfig.tsbuildinfo
