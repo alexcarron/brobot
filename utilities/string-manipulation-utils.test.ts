@@ -22,6 +22,7 @@ import {
 	toKebabCase,
 	toPascalCase,
 	truncateText,
+	sortCharacters,
 } from "./string-manipulation-utils";
 import { createNowUnixTimestamp } from "./date-time-utils";
 import { makeSure } from "./jest/jest-utils";
@@ -836,5 +837,27 @@ describe('string-manipulation-utils', () => {
 				truncateText('A sentence with a lot of characters', 10, '—')
 			).is('A sentenc—');
 		});
-	})
+	});
+
+	describe('sortCharacters()', () => {
+		it('sorts a string of characters', () => {
+			makeSure(sortCharacters('hello')).is('ehllo');
+		});
+
+		it('sorts an empty string', () => {
+			makeSure(sortCharacters('')).is('');
+		});
+
+		it('sorts a single character string', () => {
+			makeSure(sortCharacters('a')).is('a');
+		});
+
+		it('sorts a string with numbers', () => {
+			makeSure(sortCharacters('123')).is('123');
+		});
+
+		it('sorts a string with special characters', () => {
+			makeSure(sortCharacters('!@#')).is('!#@');
+		});
+	});
 });

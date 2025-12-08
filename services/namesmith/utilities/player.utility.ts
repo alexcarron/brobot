@@ -1,3 +1,5 @@
+import { fetchUser } from "../../../utilities/discord-fetch-utils";
+import { getNamesmithServices } from "../services/get-namesmith-services";
 import { Player } from "../types/player.types";
 
 /**
@@ -27,3 +29,23 @@ export const isPlayer = (value: unknown): value is Player => (
 	'inventory' in value &&
 	typeof value.inventory === 'string'
 );
+
+/**
+ * Fetches all players from the database and returns an array of autocomplete choices.
+ * Each autocomplete choice contains the display name of the player and their ID.
+ * @returns A promise that resolves to an array of autocomplete choices.
+ */
+export function fetchPlayerAutocompleteChoices() {
+	const { playerService } = getNamesmithServices();
+	const allPlayers = playerService.playerRepository.getPlayers();
+	return Promise.all(
+		allPlayers.map(async player => {
+			const id = player.id;
+			const user = await fetchUser(id);
+			return {
+				name: `${user.displayName}`,
+				value: id
+			}
+		})
+	);
+}

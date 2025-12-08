@@ -180,6 +180,16 @@ export function hasLetter(string: string): boolean {
 }
 
 /**
+ * Determines if a given string includes at least one whitespace character.
+ * @param string - The string to check.
+ * @returns Whether or not the string includes at least one whitespace character.
+ */
+export function hasSpace(string: string): boolean {
+	const spaceRegex = /\s/u;
+	return spaceRegex.test(string);
+}
+
+/**
  * Determines if a given code point is a valid Unicode code point.
  * @param codePoint - The code point to check.
  * @returns Whether or not the code point is a valid Unicode code point.

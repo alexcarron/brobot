@@ -6,7 +6,7 @@ import { attempt, ignoreError, InvalidArgumentError } from "../../../utilities/e
 import { PlayerAlreadyExistsError, NameTooLongError } from "../utilities/error.utility";
 import { Inventory, Player, PlayerID, PlayerResolvable } from '../types/player.types';
 import { removeCharactersAsGivenFromEnd, removeMissingCharacters } from "../../../utilities/string-manipulation-utils";
-import { areCharactersInString } from "../../../utilities/string-checks-utils";
+import { areCharactersInString, hasLetter, hasNumber, hasSpace } from "../../../utilities/string-checks-utils";
 import { MAX_NAME_LENGTH, REFILL_COOLDOWN_HOURS } from "../constants/namesmith.constants";
 import { addHours } from "../../../utilities/date-time-utils";
 import { NamesmithEvents } from "../event-listeners/namesmith-events";
@@ -112,6 +112,31 @@ export class PlayerService {
 	getInventory(playerResolvable: PlayerResolvable): Inventory {
 		const playerID = this.resolveID(playerResolvable);
 		return this.playerRepository.getInventory(playerID);
+	}
+
+	/**
+	 * Retrieves the inventory of a player, sorted alphabetically with letters first, then numbers, then spaces.
+	 * @param playerResolvable - The player resolvable whose inventory is being retrieved.
+	 * @returns The sorted inventory of the player.
+	 */
+	getDisplayedInventory(playerResolvable: PlayerResolvable): string {
+		const inventory = this.getInventory(playerResolvable);
+		return [...inventory].sort((char1, char2) => {
+			// Letters come first
+			if (hasLetter(char1) && !hasLetter(char2)) return -1;
+			if (!hasLetter(char1) && hasLetter(char2)) return 1;
+
+			// Numbers come second
+			if (hasNumber(char1) && !hasNumber(char2)) return -1;
+			if (!hasNumber(char1) && hasNumber(char2)) return 1;
+
+			// Spaces come third
+			if (hasSpace(char1) && !hasSpace(char2)) return -1;
+			if (!hasSpace(char1) && hasSpace(char2)) return 1;
+
+			// Otherwise, sort alphabetically
+			return char1.localeCompare(char2);
+		}).join("");
 	}
 
 	/**

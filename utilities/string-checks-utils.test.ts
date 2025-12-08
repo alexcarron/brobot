@@ -1,6 +1,6 @@
 import { inspect } from "util";
 import { makeSure } from "./jest/jest-utils";
-import { areCharactersInString, getCharacterCounts, hasEmoji, hasLetter, hasNumber, hasSymbol, isIntegerString, isMultiLine, isOneSymbol, isUnicodeCodePoint } from "./string-checks-utils";
+import { areCharactersInString, getCharacterCounts, hasEmoji, hasLetter, hasNumber, hasSpace, hasSymbol, isIntegerString, isMultiLine, isOneSymbol, isUnicodeCodePoint } from "./string-checks-utils";
 
 describe('string-checks-utils', () => {
 	describe('areCharactersInString()', () => {
@@ -549,6 +549,40 @@ describe('string-checks-utils', () => {
 
 		it('returns false for greek letters', () => {
 			makeSure(hasLetter('αβγ|𝑒ττℛ∫')).is(false);
+		});
+	});
+
+	describe('hasSpace()', () => {
+		it('returns true for a string with a space', () => {
+			makeSure(hasSpace('Hello world')).is(true);
+		});
+
+		it('returns true for a string with multiple spaces', () => {
+			makeSure(hasSpace('   Hello    world   ')).is(true);
+		});
+
+		it('returns false for a string with no spaces', () => {
+			makeSure(hasSpace('HelloWorld')).is(false);
+		});
+
+		it('returns false for an emoji', () => {
+			makeSure(hasSpace('😀')).is(false);
+		});
+
+		it('returns false for a multi-codepoint emoji', () => {
+			makeSure(hasSpace('👩‍👩‍👧‍👦')).is(false);
+		});
+
+		it('returns false for regional indicators used in flags', () => {
+			makeSure(hasSpace('🇺🇸')).is(false);
+		});
+
+		it('returns false for a symbol', () => {
+			makeSure(hasSpace('%')).is(false);
+		});
+
+		it('returns false for an empty string', () => {
+			makeSure(hasSpace('')).is(false);
 		});
 	});
 
