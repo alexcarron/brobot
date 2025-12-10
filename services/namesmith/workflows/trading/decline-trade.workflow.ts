@@ -1,4 +1,4 @@
-import { Trade, TradeResolveable, TradeStatuses } from '../../types/trade.types';
+import { Trade, TradeResolvable, TradeStatuses } from '../../types/trade.types';
 import { Player, PlayerResolvable } from '../../types/player.types';
 import { getWorkflowResultCreator, provides } from '../workflow-result-creator';
 import { getNamesmithServices } from '../../services/get-namesmith-services';
@@ -32,10 +32,10 @@ const result = getWorkflowResultCreator({
 export const declineTrade = (
 	{playerDeclining, trade: tradeResolvable}: {
 		playerDeclining: PlayerResolvable,
-		trade: TradeResolveable,
+		trade: TradeResolvable,
 	}
 ) => {
-	const {tradeService, playerService} = getNamesmithServices();
+	const {tradeService, playerService, activityLogService} = getNamesmithServices();
 
 	// Is the user who is declining the trade a player?
 	if (!playerService.isPlayer(playerDeclining)) {
@@ -71,6 +71,12 @@ export const declineTrade = (
 		trade.status === TradeStatuses.AWAITING_INITIATOR
 			? trade.recipientPlayer
 			: trade.initiatingPlayer;
+
+	activityLogService.logDeclineTrade({
+		playerDecliningTrade: playerDeclining,
+		playerAwaitingResponse: playerDeclinedID,
+		trade: tradeResolvable,
+	});
 
 	return result.success({
 		trade: tradeService.resolveTrade(trade.id),

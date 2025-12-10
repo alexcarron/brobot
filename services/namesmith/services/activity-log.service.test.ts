@@ -1,16 +1,18 @@
 import { getToday, getTomorrow, getYesterday } from "../../../utilities/date-time-utils";
 import { makeSure } from "../../../utilities/jest/jest-utils";
-import { INVALID_PLAYER_ID, INVALID_QUEST_ID, INVALID_RECIPE_ID } from "../constants/test.constants";
+import { INVALID_PLAYER_ID, INVALID_QUEST_ID, INVALID_RECIPE_ID, INVALID_TRADE_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockActivityLog } from "../mocks/mock-data/mock-activity-logs";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { addMockQuest } from "../mocks/mock-data/mock-quests";
 import { addMockRecipe } from "../mocks/mock-data/mock-recipes";
+import { addMockTrade } from "../mocks/mock-data/mock-trades";
 import { ActivityTypes } from "../types/activity-log.types";
 import { Player } from "../types/player.types";
 import { Quest } from "../types/quest.types";
 import { Recipe } from "../types/recipe.types";
-import { PlayerNotFoundError, QuestNotFoundError, RecipeNotFoundError } from "../utilities/error.utility";
+import { Trade } from "../types/trade.types";
+import { PlayerNotFoundError, QuestNotFoundError, RecipeNotFoundError, TradeNotFoundError } from "../utilities/error.utility";
 import { ActivityLogService } from "./activity-log.service";
 
 describe('ActivityLogService', () => {
@@ -18,8 +20,10 @@ describe('ActivityLogService', () => {
 	let db: DatabaseQuerier;
 
 	let SOME_PLAYER: Player;
+	let OTHER_PLAYER: Player;
 	let SOME_RECIPE: Recipe;
 	let SOME_QUEST: Quest;
+	let SOME_TRADE: Trade;
 
 	let YESTERDAY: Date;
 	let TODAY: Date;
@@ -30,8 +34,10 @@ describe('ActivityLogService', () => {
 		db = activityLogService.activityLogRepository.db;
 
 		SOME_PLAYER = addMockPlayer(db);
+		OTHER_PLAYER = addMockPlayer(db);
 		SOME_RECIPE = addMockRecipe(db);
 		SOME_QUEST = addMockQuest(db);
+		SOME_TRADE = addMockTrade(db);
 
 		YESTERDAY = getYesterday();
 		TODAY = getToday();
@@ -76,13 +82,35 @@ describe('ActivityLogService', () => {
 		});
 	});
 
+	describe('logInitiateTrade()', () => {
+		it('creates a new activity log for initiating a trade', () => {
+			const activityLog = activityLogService.logInitiateTrade({
+				playerInitiatingTrade: SOME_PLAYER.id,
+				recipientPlayer: OTHER_PLAYER.id,
+				trade: SOME_TRADE,
+			});
+
+			makeSure(activityLog).hasProperties({
+				player: SOME_PLAYER,
+				type: ActivityTypes.INITIATE_TRADE,
+				tokensDifference: 0,
+				involvedPlayer: OTHER_PLAYER,
+				involvedRecipe: null,
+				involvedQuest: null,
+				involvedTrade: SOME_TRADE,
+			});
+
+			const resolved = activityLogService.activityLogRepository.getActivityLogOrThrow(activityLog.id);
+			makeSure(resolved).is(activityLog);
+		});
+	});
+
 	describe('logAcceptTrade()', () => {
 		it('creates a new activity log for accepting a trade', () => {
-			const OTHER_PLAYER = addMockPlayer(db);
-
 			const activityLog = activityLogService.logAcceptTrade({
 				playerAcceptingTrade: SOME_PLAYER.id,
-				playerAwaitingAcceptance: OTHER_PLAYER.id
+				playerAwaitingResponse: OTHER_PLAYER.id,
+				trade: SOME_TRADE,
 			});
 
 			makeSure(activityLog).hasProperties({
@@ -92,6 +120,7 @@ describe('ActivityLogService', () => {
 				involvedPlayer: OTHER_PLAYER,
 				involvedRecipe: null,
 				involvedQuest: null,
+				involvedTrade: SOME_TRADE,
 			});
 
 			const resolved = activityLogService.activityLogRepository.getActivityLogOrThrow(activityLog.id);
@@ -104,7 +133,8 @@ describe('ActivityLogService', () => {
 			makeSure(() =>
 				activityLogService.logAcceptTrade({
 					playerAcceptingTrade: INVALID_PLAYER_ID,
-					playerAwaitingAcceptance: OTHER_PLAYER.id
+					playerAwaitingResponse: OTHER_PLAYER.id,
+				trade: SOME_TRADE,
 				})
 			).throws(PlayerNotFoundError);
 		});
@@ -113,9 +143,66 @@ describe('ActivityLogService', () => {
 			makeSure(() =>
 				activityLogService.logAcceptTrade({
 					playerAcceptingTrade: SOME_PLAYER.id,
-					playerAwaitingAcceptance: INVALID_PLAYER_ID
+					playerAwaitingResponse: INVALID_PLAYER_ID,
+					trade: SOME_TRADE,
 				})
 			).throws(PlayerNotFoundError);
+		});
+
+		it('throws TradeNotFoundError if trade is invalid', () => {
+			makeSure(() =>
+				activityLogService.logAcceptTrade({
+					playerAcceptingTrade: SOME_PLAYER.id,
+					playerAwaitingResponse: OTHER_PLAYER.id,
+					trade: INVALID_TRADE_ID,
+				})
+			).throws(TradeNotFoundError);
+		});
+	});
+
+	describe('logDeclineTrade()', () => {
+		it('creates a new activity log for declining a trade', () => {
+			const activityLog = activityLogService.logDeclineTrade({
+				playerDecliningTrade: SOME_PLAYER.id,
+				playerAwaitingResponse: OTHER_PLAYER.id,
+				trade: SOME_TRADE,
+			});
+
+			makeSure(activityLog).hasProperties({
+				player: SOME_PLAYER,
+				type: ActivityTypes.DECLINE_TRADE,
+				tokensDifference: 0,
+				involvedPlayer: OTHER_PLAYER,
+				involvedRecipe: null,
+				involvedQuest: null,
+				involvedTrade: SOME_TRADE,
+			});
+
+			const resolved = activityLogService.activityLogRepository.getActivityLogOrThrow(activityLog.id);
+			makeSure(resolved).is(activityLog);
+		});
+	});
+
+	describe('logModifyTrade()', () => {
+		it('creates a new activity log for modifying a trade', () => {
+			const activityLog = activityLogService.logModifyTrade({
+				playerModifyingTrade: SOME_PLAYER.id,
+				playerAwaitingResponse: OTHER_PLAYER.id,
+				trade: SOME_TRADE,
+			});
+
+			makeSure(activityLog).hasProperties({
+				player: SOME_PLAYER,
+				type: ActivityTypes.MODIFY_TRADE,
+				tokensDifference: 0,
+				involvedPlayer: OTHER_PLAYER,
+				involvedRecipe: null,
+				involvedQuest: null,
+				involvedTrade: SOME_TRADE,
+			});
+
+			const resolved = activityLogService.activityLogRepository.getActivityLogOrThrow(activityLog.id);
+			makeSure(resolved).is(activityLog);
 		});
 	});
 

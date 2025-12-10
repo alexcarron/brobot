@@ -25,6 +25,7 @@ export function addMockActivityLog(
 		involvedPlayer = null,
 		involvedRecipe = null,
 		involvedQuest = null,
+		involvedTrade = null
 	} = activityLogDefinition;
 
 	if (player === undefined)
@@ -39,5 +40,16 @@ export function addMockActivityLog(
 		involvedPlayer,
 		involvedRecipe,
 		involvedQuest,
+		involvedTrade
 	});
+}
+
+/**
+ * Retrieves the latest activity log from the database.
+ * @param db - The database to retrieve the latest activity log from.
+ * @returns The latest activity log object.
+ */
+export function getLatestActivityLog(db: DatabaseQuerier): ActivityLog {
+	const activitylogRepository = ActivityLogRepository.fromDB(db);
+	return activitylogRepository.getLatestActivityLog();
 }

@@ -42,7 +42,7 @@ export const initiateTrade = (
 		requestedCharacters: string
 	}
 ) => {
-	const {tradeService, playerService} = getNamesmithServices();
+	const {tradeService, playerService, activityLogService} = getNamesmithServices();
 
 	// Is the initiating user a player?
 	if (!playerService.isPlayer(initiatingPlayer)) {
@@ -82,6 +82,12 @@ export const initiateTrade = (
 		recipientPlayer,
 		offeredCharacters,
 		requestedCharacters
+	});
+
+	activityLogService.logInitiateTrade({
+		playerInitiatingTrade: initiatingPlayer,
+		recipientPlayer: recipientPlayer,
+		trade
 	});
 
 	return result.success({

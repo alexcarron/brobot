@@ -1,11 +1,12 @@
 import { DatabaseQuerier } from "../database/database-querier";
 import { PlayerID } from "../types/player.types";
-import { asMinimalTrade, asMinimalTrades, MinimalTrade, Trade, TradeDefintion, TradeID, TradeStatus } from "../types/trade.types";
+import { asMinimalTrade, asMinimalTrades, MinimalTrade, Trade, TradeDefintion, TradeID, TradeResolvable, TradeStatus } from "../types/trade.types";
 import { TradeAlreadyExistsError, TradeNotFoundError } from "../utilities/error.utility";
 import { WithRequiredAndOneOther } from '../../../utilities/types/generic-types';
 import { PlayerRepository } from "./player.repository";
 import { returnNonNullOrThrow } from "../../../utilities/error-utils";
 import { createMockDB } from "../mocks/mock-database";
+import { isObject } from "../../../utilities/types/type-guards";
 
 /**
  * Provides access to the dynamic trading data
@@ -122,6 +123,33 @@ export class TradeRepository {
 	 */
 	doesTradeExist(id: TradeID): boolean {
 		return this.db.doesExistInTable('trade', { id })
+	}
+
+	/**
+	 * Resolves a recipe resolvable to a recipe object.
+	 * @param tradeResolvable - The recipe resolvable to resolve.
+	 * @returns The resolved recipe object.
+	 * @throws {RecipeNotFoundError} If the recipe with the given ID is not found.
+	 */
+	resolveTrade(tradeResolvable: TradeResolvable): Trade {
+		const tradeID =
+			typeof tradeResolvable === 'object'
+				? tradeResolvable.id
+				: tradeResolvable;
+
+		return this.getTradeOrThrow(tradeID);
+	}
+
+	/**
+	 * Resolves a trade resolvable to a trade ID.
+	 * @param tradeResolvable - The trade resolvable to resolve.
+	 * @returns The resolved trade ID.
+	 */
+	resolveID(tradeResolvable: TradeResolvable): TradeID {
+		if (isObject(tradeResolvable))
+			return tradeResolvable.id;
+
+		return tradeResolvable;
 	}
 
 	createTrade(trade: {
