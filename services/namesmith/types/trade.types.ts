@@ -46,6 +46,6 @@ export type TradeDefintion = Override<Trade, {
 }>;
 
 export type TradeID = Trade['id'];
-export type TradeResolveable =
+export type TradeResolvable =
 	| { id: TradeID }
 	| TradeID;

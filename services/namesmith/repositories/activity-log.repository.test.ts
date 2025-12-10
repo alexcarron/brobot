@@ -454,4 +454,16 @@ describe('ActivityLogRepository', () => {
 			makeSure(foundActivityLogs).hasLengthOf(0);
 		});
 	});
+
+	describe('getLatestActivityLog()', () => {
+		it('returns the latest activity log', () => {
+			makeSure(activityLogRepository.getLatestActivityLog()).is(SOME_ACTIVITY_LOG);
+		});
+
+		it('returns any new latest activity log', () => {
+			const NEW_ACTIVITY_LOG = addMockActivityLog(db);
+
+			makeSure(activityLogRepository.getLatestActivityLog()).is(NEW_ACTIVITY_LOG);
+		});
+	});
 });

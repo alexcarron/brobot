@@ -26,11 +26,13 @@ jest.mock("../../../../utilities/discord-action-utils", () => ({
 import { makeSure } from "../../../../utilities/jest/jest-utils";
 import { INVALID_PLAYER_ID, INVALID_TRADE_ID } from "../../constants/test.constants";
 import { DatabaseQuerier } from "../../database/database-querier";
+import { getLatestActivityLog } from "../../mocks/mock-data/mock-activity-logs";
 import { addMockPlayer, editMockPlayer } from "../../mocks/mock-data/mock-players";
 import { addMockTrade } from "../../mocks/mock-data/mock-trades";
 import { setupMockNamesmith } from "../../mocks/mock-setup";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { TradeService } from "../../services/trade.service";
+import { ActivityTypes } from "../../types/activity-log.types";
 import { Player } from "../../types/player.types";
 import { Trade, TradeStatuses } from "../../types/trade.types";
 import { returnIfNotFailure } from "../../utilities/workflow.utility";
@@ -62,7 +64,21 @@ describe('accept-trade.workflow.ts', () => {
 				requestedCharacters: "Xx",
 			status: TradeStatuses.AWAITING_RECIPIENT,
 		});
-	})
+	});
+
+	it('creates an activity log with accurate information', () => {
+		acceptTrade({
+			playerAccepting: MOCK_RECIPIENT_PLAYER,
+			trade: MOCK_TRADE,
+		});
+
+		const activityLog = getLatestActivityLog(db);
+
+		makeSure(activityLog.player.id).is(MOCK_RECIPIENT_PLAYER.id);
+		makeSure(activityLog.type).is(ActivityTypes.ACCEPT_TRADE);
+		makeSure(activityLog.involvedPlayer!.id).is(MOCK_INITIATING_PLAYER.id);
+		makeSure(activityLog.involvedTrade!.id).is(MOCK_TRADE.id);
+	});
 
 	describe('acceptTrade()', () => {
 		it('returns the trade, initiating player, and recipient player', () => {

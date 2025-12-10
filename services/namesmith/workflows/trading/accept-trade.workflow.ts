@@ -1,4 +1,4 @@
-import { Trade, TradeResolveable } from '../../types/trade.types';
+import { Trade, TradeResolvable } from '../../types/trade.types';
 import { Player, PlayerResolvable } from '../../types/player.types';
 import { getWorkflowResultCreator, provides } from '../workflow-result-creator';
 import { getCharacterDifferences } from '../../../../utilities/data-structure-utils';
@@ -38,7 +38,7 @@ const result = getWorkflowResultCreator({
 export const acceptTrade = (
 	{playerAccepting, trade: tradeResolvable}: {
 		playerAccepting: PlayerResolvable,
-		trade: TradeResolveable,
+		trade: TradeResolvable,
 	}
 ) => {
 	const {tradeService, playerService, activityLogService} = getNamesmithServices();
@@ -112,7 +112,8 @@ export const acceptTrade = (
 
 	activityLogService.logAcceptTrade({
 		playerAcceptingTrade: playerAccepting,
-		playerAwaitingAcceptance,
+		playerAwaitingResponse: playerAwaitingAcceptance,
+		trade,
 	});
 
 	return result.success({

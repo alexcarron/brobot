@@ -8,11 +8,13 @@ import { ActivityLogID as ActivityLogID, ActivityLog, ActivityLogDefinition, Min
 import { Player } from "../types/player.types";
 import { Quest } from "../types/quest.types";
 import { Recipe } from "../types/recipe.types";
+import { Trade } from "../types/trade.types";
 import { DBDate } from "../utilities/db.utility";
 import { ActivityLogAlreadyExistsError, ActivityLogNotFoundError } from "../utilities/error.utility";
 import { PlayerRepository } from "./player.repository";
 import { QuestRepository } from "./quest.repository";
 import { RecipeRepository } from "./recipe.repository";
+import { TradeRepository } from './trade.repository';
 
 /**
  * Provides access to the activity log data.
@@ -24,12 +26,14 @@ export class ActivityLogRepository {
 	 * @param playerRepository - The player repository instance used for retrieving player data.
 	 * @param recipeRepository - The recipe repository instance used for retrieving recipe data.
 	 * @param questRepository - The quest repository instance used for retrieving quest data.
+	 * @param tradeRepository - The trade repository instance used for retrieving trade data.
 	 */
 	constructor(
 		public db: DatabaseQuerier,
 		public playerRepository: PlayerRepository,
 		public recipeRepository: RecipeRepository,
 		public questRepository: QuestRepository,
+		public tradeRepository: TradeRepository
 	) {}
 
 	static fromDB(db: DatabaseQuerier) {
@@ -38,6 +42,7 @@ export class ActivityLogRepository {
 			PlayerRepository.fromDB(db),
 			RecipeRepository.fromDB(db),
 			QuestRepository.fromDB(db),
+			TradeRepository.fromDB(db),
 		);
 	}
 
@@ -77,12 +82,19 @@ export class ActivityLogRepository {
 			involvedQuest = this.questRepository.getQuestOrThrow(involvedQuestID);
 		}
 
+		const involvedTradeID = minimalActivityLog.involvedTradeID;
+		let involvedTrade: Trade | null = null;
+		if (involvedTradeID !== null) {
+			involvedTrade = this.tradeRepository.getTradeOrThrow(involvedTradeID);
+		}
+
 		return {
 			...minimalActivityLog,
 			player,
 			involvedPlayer,
 			involvedRecipe,
 			involvedQuest,
+			involvedTrade,
 		};
 	}
 
@@ -134,7 +146,7 @@ export class ActivityLogRepository {
 	}
 
 	toPartialDBActivityLog(
-		{ id, timeOccured, player, type, tokensDifference, involvedPlayer, involvedRecipe, involvedQuest }: Partial<ActivityLogDefinition>
+		{ id, timeOccured, player, type, tokensDifference, involvedPlayer, involvedRecipe, involvedQuest, involvedTrade }: Partial<ActivityLogDefinition>
 	): Partial<DBActivityLog> {
 		const playerID = resolveOptional(player,
 			this.playerRepository.resolveID.bind(this.playerRepository)
@@ -148,6 +160,9 @@ export class ActivityLogRepository {
 		const involvedQuestID = resolveOptional(involvedQuest,
 			this.questRepository.resolveID.bind(this.questRepository)
 		);
+		const involvedTradeID = resolveOptional(involvedTrade,
+			this.tradeRepository.resolveID.bind(this.tradeRepository)
+		);
 
 		return {
 			id,
@@ -158,6 +173,7 @@ export class ActivityLogRepository {
 			involvedPlayerID,
 			involvedRecipeID,
 			involvedQuestID,
+			involvedTradeID,
 		};
 	}
 
@@ -168,10 +184,13 @@ export class ActivityLogRepository {
 	 * @throws {ActivityLogAlreadyExistsError} If an activity log with the given ID already exists.
 	 */
 	addActivityLog(
-		{id, timeOccured, player, type, tokensDifference, involvedPlayer, involvedRecipe, involvedQuest}:
-			ActivityLogDefinition
+		activityLogDefinition: ActivityLogDefinition
 	) {
-		if (timeOccured === undefined) timeOccured = new Date();
+		let {id, timeOccured} = activityLogDefinition;
+		const {player, tokensDifference, involvedPlayer, involvedRecipe, involvedQuest, involvedTrade} = activityLogDefinition;
+
+		if (timeOccured === undefined)
+			timeOccured = new Date();
 
 		this.playerRepository.resolvePlayer(player);
 		if (isNotNullable(involvedPlayer)) {
@@ -183,20 +202,18 @@ export class ActivityLogRepository {
 		if (isNotNullable(involvedQuest)) {
 			this.questRepository.resolveQuest(involvedQuest);
 		}
+		if (isNotNullable(involvedTrade)) {
+			this.tradeRepository.resolveTrade(involvedTrade);
+		}
 		if (id !== undefined) {
 			if (this.doesActivityLogExist(id))
 				throw new ActivityLogAlreadyExistsError(id);
 		}
 
 		const insertedFields = this.toPartialDBActivityLog({
-			id,
-			timeOccured,
-			player,
-			type,
+			...activityLogDefinition,
 			tokensDifference: tokensDifference ?? 0,
-			involvedPlayer,
-			involvedRecipe,
-			involvedQuest,
+			timeOccured: timeOccured,
 		});
 
 		id = this.db.insertIntoTable('activityLog', insertedFields);
@@ -205,21 +222,15 @@ export class ActivityLogRepository {
 
 	/**
 	 * Finds all activity logs where all of the given properties is equal to the given value.
-	 * @param queryParameters - An object with properties that are equal to the given value.
-	 * @param queryParameters.id - The ID of the activity log.
-	 * @param queryParameters.timeOccured - The time the activity log occurred.
-	 * @param queryParameters.player - The player.
-	 * @param queryParameters.type - The type of activity.
-	 * @param queryParameters.tokensDifference - The difference in tokens.
-	 * @param queryParameters.involvedPlayer - The involved player.
-	 * @param queryParameters.involvedRecipe - The involved recipe.
-	 * @param queryParameters.involvedQuest - The involved quest.
-	 * @returns An array of activity logs that have all of the given properties equal to the given value.
+	 * @param activityLogDefinition - The activity log definition to find.
+	 * @returns An array of activity log objects.
 	 */
 	findActivityLogsWhere(
-		{ id, timeOccured, player, type, tokensDifference, involvedPlayer, involvedRecipe, involvedQuest }:
+		activityLogDefinition:
 			WithAtLeastOneProperty<ActivityLogDefinition>
 	): ActivityLog[] {
+		const { player, involvedPlayer, involvedRecipe, involvedQuest, involvedTrade } = activityLogDefinition;
+
 		if (isNotNullable(player)) {
 			this.playerRepository.resolvePlayer(player);
 		}
@@ -232,10 +243,11 @@ export class ActivityLogRepository {
 		if (isNotNullable(involvedQuest)) {
 			this.questRepository.resolveQuest(involvedQuest);
 		}
+		if (isNotNullable(involvedTrade)) {
+			this.tradeRepository.resolveTrade(involvedTrade);
+		}
 
-		const queryParameters = this.toPartialDBActivityLog({
-			id, timeOccured, player, type, tokensDifference, involvedPlayer, involvedRecipe, involvedQuest,
-		});
+		const queryParameters = this.toPartialDBActivityLog(activityLogDefinition);
 
 		const minimalActivityLogs = asMinimalActivityLogs(
 			this.db.getRows(
@@ -253,7 +265,7 @@ export class ActivityLogRepository {
 	findActivityLogsAfterTimeWhere(minimumTimeOccured: Date,
 		activityLogDefinition: WithAtLeastOneProperty<ActivityLogDefinition>): ActivityLog[]
 	{
-		const { player, involvedPlayer, involvedRecipe, involvedQuest } = activityLogDefinition;
+		const { player, involvedPlayer, involvedRecipe, involvedQuest, involvedTrade } = activityLogDefinition;
 
 		if (isNotNullable(player)) {
 			this.playerRepository.resolvePlayer(player);
@@ -266,6 +278,9 @@ export class ActivityLogRepository {
 		}
 		if (isNotNullable(involvedQuest)) {
 			this.questRepository.resolveQuest(involvedQuest);
+		}
+		if (isNotNullable(involvedTrade)) {
+			this.tradeRepository.resolveTrade(involvedTrade);
 		}
 
 		const queryParameters = this.toPartialDBActivityLog(activityLogDefinition);
@@ -285,5 +300,21 @@ export class ActivityLogRepository {
 		);
 
 		return minimalActivityLogs.map(dbActivityLog => this.toActivityLogFromMinimal(dbActivityLog));
+	}
+
+	/**
+	 * Returns the latest activity log object from the database.
+	 * @returns The latest activity log object.
+	 */
+	getLatestActivityLog(): ActivityLog {
+		const minimalActivityLogs = asMinimalActivityLog(
+			this.db.getRow(`
+				SELECT * FROM activityLog
+				ORDER BY timeOccured DESC
+				LIMIT 1
+			`)
+		);
+
+		return this.toActivityLogFromMinimal(minimalActivityLogs);
 	}
 }

@@ -1,11 +1,13 @@
 import { makeSure } from "../../../../utilities/jest/jest-utils";
 import { INVALID_PLAYER_ID } from "../../constants/test.constants";
 import { DatabaseQuerier } from "../../database/database-querier";
+import { getLatestActivityLog } from "../../mocks/mock-data/mock-activity-logs";
 import { addMockPlayer } from "../../mocks/mock-data/mock-players";
 import { setupMockNamesmith } from "../../mocks/mock-setup";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { PlayerService } from "../../services/player.service";
 import { TradeService } from "../../services/trade.service";
+import { ActivityTypes } from "../../types/activity-log.types";
 import { Player } from "../../types/player.types";
 import { TradeStatuses } from "../../types/trade.types";
 import { returnIfNotFailure } from "../../utilities/workflow.utility";
@@ -13,21 +15,16 @@ import { initiateTrade } from "./initiate-trade.workflow";
 
 describe('initiate-trade.workflow.ts', () => {
 	let db: DatabaseQuerier;
-	let services: {
-		tradeService: TradeService,
-		playerService: PlayerService,
-	};
+	let tradeService: TradeService;
+	let playerService: PlayerService;
 
 	let SOME_INITIATING_PLAYER: Player;
 	let SOME_RECIPIENT_PLAYER: Player;
 
 	beforeEach(() => {
 		setupMockNamesmith();
-		const { tradeService, playerService } = getNamesmithServices();
-		services = {
-			tradeService,
-			playerService
-		};
+		({ tradeService, playerService } = getNamesmithServices());
+
 		db = playerService.playerRepository.db;
 
 		SOME_INITIATING_PLAYER = addMockPlayer(db, {
@@ -39,11 +36,10 @@ describe('initiate-trade.workflow.ts', () => {
 	})
 
 	describe('initiateTrade()', () => {
-		it('successfully initiates a trade between two players', () => {
+		it('logs an initiate trade activity log with accurate information', () => {
 			const result =
 				returnIfNotFailure(
 					initiateTrade({
-						...services,
 						initiatingPlayer: SOME_INITIATING_PLAYER,
 						recipientPlayer: SOME_RECIPIENT_PLAYER,
 						offeredCharacters: SOME_INITIATING_PLAYER.inventory,
@@ -51,7 +47,25 @@ describe('initiate-trade.workflow.ts', () => {
 					})
 				);
 
-			const { tradeService } = services;
+			const activityLog = getLatestActivityLog(db);
+
+			makeSure(activityLog.player.id).is(SOME_INITIATING_PLAYER.id);
+			makeSure(activityLog.type).is(ActivityTypes.INITIATE_TRADE);
+			makeSure(activityLog.involvedPlayer!.id).is(SOME_RECIPIENT_PLAYER.id);
+			makeSure(activityLog.involvedTrade!.id).is(result.trade.id);
+		});
+
+		it('successfully initiates a trade between two players', () => {
+			const result =
+				returnIfNotFailure(
+					initiateTrade({
+						initiatingPlayer: SOME_INITIATING_PLAYER,
+						recipientPlayer: SOME_RECIPIENT_PLAYER,
+						offeredCharacters: SOME_INITIATING_PLAYER.inventory,
+						requestedCharacters: SOME_RECIPIENT_PLAYER.inventory,
+					})
+				);
+
 			const trade = tradeService.resolveTrade(result.trade.id);
 			makeSure(trade).is(result.trade);
 
@@ -66,7 +80,6 @@ describe('initiate-trade.workflow.ts', () => {
 
 		it('returns initatorNotAPlayer if the initiating user is not a player', () => {
 			const result = initiateTrade({
-				...services,
 				initiatingPlayer: INVALID_PLAYER_ID,
 				recipientPlayer: SOME_RECIPIENT_PLAYER,
 				offeredCharacters: SOME_INITIATING_PLAYER.inventory,
@@ -80,7 +93,6 @@ describe('initiate-trade.workflow.ts', () => {
 
 		it('returns recipientNotAPlayer if the recipient user is not a player', () => {
 			const result = initiateTrade({
-				...services,
 				initiatingPlayer: SOME_INITIATING_PLAYER,
 				recipientPlayer: INVALID_PLAYER_ID,
 				offeredCharacters: SOME_INITIATING_PLAYER.inventory,
@@ -94,7 +106,6 @@ describe('initiate-trade.workflow.ts', () => {
 
 		it('returns TradeBetweenSamePlayersError if the initiating player attempts to trade with themselves', () => {
 			const result = initiateTrade({
-				...services,
 				initiatingPlayer: SOME_INITIATING_PLAYER,
 				recipientPlayer: SOME_INITIATING_PLAYER,
 				offeredCharacters: SOME_INITIATING_PLAYER.inventory,
@@ -108,7 +119,6 @@ describe('initiate-trade.workflow.ts', () => {
 
 		it('returns MissingOfferedCharactersError if the initiating player does not have the characters they are offering', () => {
 			const result = initiateTrade({
-				...services,
 				initiatingPlayer: SOME_INITIATING_PLAYER,
 				recipientPlayer: SOME_RECIPIENT_PLAYER,
 				offeredCharacters: SOME_INITIATING_PLAYER.inventory + 'z',
@@ -122,7 +132,6 @@ describe('initiate-trade.workflow.ts', () => {
 
 		it('returns MissingRequestedCharactersError if the recipient player does not have the characters they are requesting', () => {
 			const result = initiateTrade({
-				...services,
 				initiatingPlayer: SOME_INITIATING_PLAYER,
 				recipientPlayer: SOME_RECIPIENT_PLAYER,
 				offeredCharacters: SOME_INITIATING_PLAYER.inventory,

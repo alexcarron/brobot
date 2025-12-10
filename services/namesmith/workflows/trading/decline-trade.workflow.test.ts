@@ -10,6 +10,8 @@ import { declineTrade } from "./decline-trade.workflow";
 import { addMockTrade } from "../../mocks/mock-data/mock-trades";
 import { addMockPlayer } from "../../mocks/mock-data/mock-players";
 import { returnIfNotFailure } from "../../utilities/workflow.utility";
+import { getLatestActivityLog } from "../../mocks/mock-data/mock-activity-logs";
+import { ActivityTypes } from "../../types/activity-log.types";
 
 describe('decline-trade.workflow.ts', () => {
 	let MOCK_INITIATING_PLAYER: Player;
@@ -41,6 +43,20 @@ describe('decline-trade.workflow.ts', () => {
 	})
 
 	describe('declineTrade()', () => {
+		it('creates an activity log with accurate information', () => {
+			declineTrade({
+				playerDeclining: MOCK_RECIPIENT_PLAYER,
+				trade: MOCK_TRADE,
+			});
+
+			const activityLog = getLatestActivityLog(db);
+
+			makeSure(activityLog.player.id).is(MOCK_RECIPIENT_PLAYER.id);
+			makeSure(activityLog.type).is(ActivityTypes.DECLINE_TRADE);
+			makeSure(activityLog.involvedPlayer!.id).is(MOCK_INITIATING_PLAYER.id);
+			makeSure(activityLog.involvedTrade!.id).is(MOCK_TRADE.id);
+		});
+
 		it('returns the trade, initating player, and recipient player in their current states', () => {
 			const { trade, playerDeclining, playerDeclined } = returnIfNotFailure(declineTrade({
 				...getNamesmithServices(),

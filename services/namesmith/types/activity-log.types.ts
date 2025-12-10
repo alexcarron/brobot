@@ -4,10 +4,14 @@ import { DBDate } from "../utilities/db.utility";
 import { Player, PlayerResolvable } from "./player.types";
 import { Quest, QuestResolvable } from "./quest.types";
 import { Recipe, RecipeResolvable } from "./recipe.types";
+import { Trade, TradeResolvable } from "./trade.types";
 
 export const ActivityTypes = toEnumFromStrings(
 	'craftCharacters',
+	'initiateTrade',
 	'acceptTrade',
+	'declineTrade',
+	'modifyTrade',
 	'buyMysteryBox',
 	'mineTokens',
 	'claimRefill',
@@ -26,7 +30,8 @@ export const DBActivityLogType = object.asTransformableType('MinimalActivityLog'
 	tokensDifference: number,
 	involvedPlayerID: string.orNull,
 	involvedRecipeID: number.orNull,
-	involvedQuestID: number.orNull
+	involvedQuestID: number.orNull,
+	involvedTradeID: number.orNull,
 });
 export const asMinimalActivityLog = DBActivityLogType.toMinimalActivityLog;
 export const asMinimalActivityLogs = DBActivityLogType.toMinimalActivityLogs;
@@ -42,6 +47,7 @@ export type ActivityLog = {
 	involvedPlayer: Player | null;
 	involvedRecipe: Recipe | null;
 	involvedQuest: Quest | null;
+	involvedTrade: Trade | null;
 }
 
 export type ActivityLogDefinition = {
@@ -53,6 +59,7 @@ export type ActivityLogDefinition = {
 	involvedPlayer?: PlayerResolvable | null;
 	involvedRecipe?: RecipeResolvable | null;
 	involvedQuest?: QuestResolvable | null;
+	involvedTrade?: TradeResolvable | null;
 }
 
 export type ActivityLogID = ActivityLog['id'];

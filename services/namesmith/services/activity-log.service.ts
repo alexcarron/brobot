@@ -5,6 +5,7 @@ import { ActivityLog, ActivityTypes } from "../types/activity-log.types";
 import { PlayerResolvable } from "../types/player.types";
 import { QuestResolvable } from "../types/quest.types";
 import { RecipeResolvable } from "../types/recipe.types";
+import { TradeResolvable } from "../types/trade.types";
 
 /**
  * Provides methods for interacting with activity logs.
@@ -44,20 +45,86 @@ export class ActivityLogService {
 	}
 
 	/**
+	 * Logs an activity log when a player initiates a trade.
+	 * @param parameters - The parameters which include:
+	 * @param parameters.playerInitiatingTrade - The player who is initiating the trade.
+	 * @param parameters.recipientPlayer - The player who is receiving the trade.
+	 * @param parameters.trade - The trade being initiated.
+	 * @returns The created activity log object.
+	 */
+	logInitiateTrade({playerInitiatingTrade, recipientPlayer, trade}: {
+		playerInitiatingTrade: PlayerResolvable;
+		recipientPlayer: PlayerResolvable;
+		trade: TradeResolvable;
+	}): ActivityLog {
+		return this.activityLogRepository.addActivityLog({
+			type: ActivityTypes.INITIATE_TRADE,
+			player: playerInitiatingTrade,
+			involvedPlayer: recipientPlayer,
+			involvedTrade: trade,
+		});
+	}
+
+	/**
 	 * Logs an activity log when a player accepts a trade.
 	 * @param parameters - The parameters which include:
 	 * @param parameters.playerAcceptingTrade - The player who is accepting the trade.
-	 * @param parameters.playerAwaitingAcceptance - The player who is awaiting a response for the trade.
+	 * @param parameters.playerAwaitingResponse - The player who was awaiting a response for the trade.
+	 * @param parameters.trade - The trade being accepted.
 	 * @returns The created activity log object.
 	 */
-	logAcceptTrade({ playerAcceptingTrade, playerAwaitingAcceptance }: {
+	logAcceptTrade({ playerAcceptingTrade, playerAwaitingResponse, trade }: {
 		playerAcceptingTrade: PlayerResolvable;
-		playerAwaitingAcceptance: PlayerResolvable;
+		playerAwaitingResponse: PlayerResolvable;
+		trade: TradeResolvable;
 	}): ActivityLog {
 		return this.activityLogRepository.addActivityLog({
 			type: ActivityTypes.ACCEPT_TRADE,
 			player: playerAcceptingTrade,
-			involvedPlayer: playerAwaitingAcceptance,
+			involvedPlayer: playerAwaitingResponse,
+			involvedTrade: trade,
+		});
+	}
+
+	/**
+	 * Logs an activity log when a player declines a trade.
+	 * @param parameters - The parameters which include:
+	 * @param parameters.playerDecliningTrade - The player who is declining the trade.
+	 * @param parameters.playerAwaitingResponse - The player who was awaiting a response for the trade.
+	 * @param parameters.trade - The trade being declined.
+	 * @returns The created activity log object.
+	 */
+	logDeclineTrade({ playerDecliningTrade, playerAwaitingResponse, trade }: {
+		playerDecliningTrade: PlayerResolvable;
+		playerAwaitingResponse: PlayerResolvable;
+		trade: TradeResolvable;
+	}): ActivityLog {
+		return this.activityLogRepository.addActivityLog({
+			type: ActivityTypes.DECLINE_TRADE,
+			player: playerDecliningTrade,
+			involvedPlayer: playerAwaitingResponse,
+			involvedTrade: trade,
+		});
+	}
+
+	/**
+	 * Logs an activity log when a player modifies a trade.
+	 * @param parameters - The parameters which include:
+	 * @param parameters.playerModifyingTrade - The player who is modifying the trade.
+	 * @param parameters.playerAwaitingResponse - The player who was awaiting a response for the trade.
+	 * @param parameters.trade - The trade being modified.
+	 * @returns The created activity log object.
+	 */
+	logModifyTrade({ playerModifyingTrade, playerAwaitingResponse, trade }: {
+		playerModifyingTrade: PlayerResolvable;
+		playerAwaitingResponse: PlayerResolvable;
+		trade: TradeResolvable;
+	}): ActivityLog {
+		return this.activityLogRepository.addActivityLog({
+			type: ActivityTypes.MODIFY_TRADE,
+			player: playerModifyingTrade,
+			involvedPlayer: playerAwaitingResponse,
+			involvedTrade: trade,
 		});
 	}
 

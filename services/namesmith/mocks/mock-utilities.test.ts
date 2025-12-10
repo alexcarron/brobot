@@ -4,7 +4,7 @@ import { ActivityTypes, DBActivityLog } from "../types/activity-log.types";
 import { asMinimalPlayer, asMinimalPlayers, Player } from "../types/player.types";
 import { Quest } from "../types/quest.types";
 import { Recipe } from "../types/recipe.types";
-import { MinimalTrade, TradeStatuses } from "../types/trade.types";
+import { MinimalTrade, Trade, TradeStatuses } from "../types/trade.types";
 import { asDBVotes, asMinimalVotes } from "../types/vote.types";
 import { ActivityLogAlreadyExistsError, TradeAlreadyExistsError } from "../utilities/error.utility";
 import { createAllMocks } from "./all-mocks";
@@ -501,10 +501,12 @@ describe("Mock Utilities", () => {
 	describe('addMockActivityLog()', () => {
 		let SOME_RECIPE: Recipe;
 		let SOME_QUEST: Quest;
+		let SOME_TRADE: Trade;
 
 		beforeEach(() => {
 			SOME_RECIPE = addMockRecipe(db);
 			SOME_QUEST = addMockQuest(db);
+			SOME_TRADE = addMockTrade(db);
 		})
 
 		it('returns the added activity log', () => {
@@ -540,6 +542,7 @@ describe("Mock Utilities", () => {
 				involvedPlayer: SOME_OTHER_PLAYER.id,
 				involvedRecipe: SOME_RECIPE.id,
 				involvedQuest: SOME_QUEST.id,
+				involvedTrade: SOME_TRADE.id,
 			});
 
 			const activityLogs = db.getRows("SELECT * FROM activityLog");
@@ -552,6 +555,7 @@ describe("Mock Utilities", () => {
 				involvedPlayerID: SOME_OTHER_PLAYER.id,
 				involvedRecipeID: SOME_RECIPE.id,
 				involvedQuestID: SOME_QUEST.id,
+				involvedTradeID: SOME_TRADE.id,
 			});
 		});
 

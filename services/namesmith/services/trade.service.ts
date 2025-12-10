@@ -1,9 +1,8 @@
-import { isObject } from "../../../utilities/types/type-guards";
 import { DatabaseQuerier } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
 import { TradeRepository } from "../repositories/trade.repository";
 import { Player, PlayerResolvable } from "../types/player.types";
-import { Trade, TradeID, TradeResolveable, TradeStatuses } from "../types/trade.types";
+import { Trade, TradeID, TradeResolvable, TradeStatuses } from "../types/trade.types";
 import { InvalidStateError } from "../utilities/error.utility";
 import { PlayerService } from "./player.service";
 
@@ -34,13 +33,8 @@ export class TradeService {
 	 * @returns The resolved recipe object.
 	 * @throws {RecipeNotFoundError} If the recipe with the given ID is not found.
 	 */
-	resolveTrade(tradeResolvable: TradeResolveable): Trade {
-		const tradeID =
-			typeof tradeResolvable === 'object'
-				? tradeResolvable.id
-				: tradeResolvable;
-
-		return this.tradeRepository.getTradeOrThrow(tradeID);
+	resolveTrade(tradeResolvable: TradeResolvable): Trade {
+		return this.tradeRepository.resolveTrade(tradeResolvable);
 	}
 
 	/**
@@ -48,11 +42,8 @@ export class TradeService {
 	 * @param tradeResolvable - The trade resolvable to resolve.
 	 * @returns The resolved trade ID.
 	 */
-	resolveID(tradeResolvable: TradeResolveable): TradeID {
-		if (isObject(tradeResolvable))
-			return tradeResolvable.id;
-
-		return tradeResolvable;
+	resolveID(tradeResolvable: TradeResolvable): TradeID {
+		return this.tradeRepository.resolveID(tradeResolvable);
 	}
 
 	/**
@@ -92,7 +83,7 @@ export class TradeService {
 	 * Accepts a trade request, transferring characters between the two players.
 	 * @param trade - The trade request to accept.
 	 */
-	accept(trade: TradeResolveable): void {
+	accept(trade: TradeResolvable): void {
 		const tradeID = this.resolveID(trade);
 		this.tradeRepository.setStatus(
 			tradeID, TradeStatuses.ACCEPTED
@@ -103,7 +94,7 @@ export class TradeService {
 	 * Declines a trade request.
 	 * @param trade - The trade request to decline.
 	 */
-	decline(trade: TradeResolveable): void {
+	decline(trade: TradeResolvable): void {
 		const tradeID = this.resolveID(trade);
 		this.tradeRepository.setStatus(
 			tradeID, TradeStatuses.DECLINED
@@ -118,7 +109,7 @@ export class TradeService {
 	 * @throws {InvalidStateError} If the trade is not in the AWAITING_INITIATOR or AWAITING_RECIPIENT status.
 	 */
 	requestModification(
-		tradeResolvable: TradeResolveable,
+		tradeResolvable: TradeResolvable,
 		newOfferedCharacters: string,
 		newRequestedCharacters: string
 	): void {
@@ -158,7 +149,7 @@ export class TradeService {
 	 * Sets the status of the given trade to IGNORED.
 	 * @param trade - The trade to ignore.
 	 */
-	ignore(trade: TradeResolveable) {
+	ignore(trade: TradeResolvable) {
 		const tradeID = this.resolveID(trade);
 		this.tradeRepository.setStatus(
 			tradeID, TradeStatuses.IGNORED
@@ -170,7 +161,7 @@ export class TradeService {
 	 * @param tradeResolvable - The trade to check.
 	 * @returns True if the trade has been responded to, false otherwise.
 	 */
-	hasBeenRespondedTo(tradeResolvable: TradeResolveable): boolean {
+	hasBeenRespondedTo(tradeResolvable: TradeResolvable): boolean {
 		const trade = this.resolveTrade(tradeResolvable);
 		return (
 			trade.status !== TradeStatuses.AWAITING_INITIATOR && trade.status !== TradeStatuses.AWAITING_RECIPIENT
@@ -184,7 +175,7 @@ export class TradeService {
 	 * @returns True if the player can respond, false otherwise.
 	 */
 	canPlayerRespond(
-		trade: TradeResolveable,
+		trade: TradeResolvable,
 		player: PlayerResolvable
 	): boolean {
 		trade = this.resolveTrade(trade);
@@ -206,7 +197,7 @@ export class TradeService {
 	 * @param tradeResolvable - The trade to check.
 	 * @returns The player that is waiting for a response, or null if the trade has already been responded to.
 	 */
-	getPlayerWaitingForResponse(tradeResolvable: TradeResolveable): Player | null {
+	getPlayerWaitingForResponse(tradeResolvable: TradeResolvable): Player | null {
 		const trade = this.resolveTrade(tradeResolvable);
 
 		switch (trade.status) {
@@ -229,7 +220,7 @@ export class TradeService {
 	 * @param tradeResolvable - The trade to check.
 	 * @returns The player that is awaiting a response, or null if the trade has already been responded to.
 	 */
-	getPlayerAwaitingResponseFrom(tradeResolvable: TradeResolveable): Player | null {
+	getPlayerAwaitingResponseFrom(tradeResolvable: TradeResolvable): Player | null {
 		const trade = this.resolveTrade(tradeResolvable);
 
 		switch (trade.status) {
@@ -255,7 +246,7 @@ export class TradeService {
 	 * @param trade - The trade resolvable to check for existence.
 	 * @returns True if the given trade exists, false otherwise.
 	 */
-	isTrade(trade: TradeResolveable): boolean {
+	isTrade(trade: TradeResolvable): boolean {
 		const tradeID = this.resolveID(trade);
 		return this.tradeRepository.doesTradeExist(tradeID);
 	}
@@ -265,7 +256,7 @@ export class TradeService {
 	 * @param tradeResolvable - The trade request to check.
 	 * @returns True if the given trade request has been accepted, false otherwise.
 	 */
-	isAccepted(tradeResolvable: TradeResolveable): boolean {
+	isAccepted(tradeResolvable: TradeResolvable): boolean {
 		const trade = this.resolveTrade(tradeResolvable);
 		return trade.status === TradeStatuses.ACCEPTED;
 	}
@@ -275,7 +266,7 @@ export class TradeService {
 	 * @param tradeResolvable - The trade request to check.
 	 * @returns True if the given trade request has been declined, false otherwise.
 	 */
-	isDeclined(tradeResolvable: TradeResolveable): boolean {
+	isDeclined(tradeResolvable: TradeResolvable): boolean {
 		const trade = this.resolveTrade(tradeResolvable);
 		return trade.status === TradeStatuses.DECLINED;
 	}

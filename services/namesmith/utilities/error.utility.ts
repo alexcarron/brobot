@@ -11,7 +11,7 @@ import { Player } from '../types/player.types';
 import { QuestID, QuestName } from '../types/quest.types';
 import { Recipe, RecipeID } from '../types/recipe.types';
 import { RoleID, RoleName } from '../types/role.types';
-import { Trade, TradeID, TradeResolveable } from '../types/trade.types';
+import { Trade, TradeID, TradeResolvable } from '../types/trade.types';
 import { VoteID } from '../types/vote.types';
 
 /**
@@ -676,9 +676,9 @@ export class PlayerCantAffordMysteryBoxError extends UserActionError {
  * Error thrown when a player attempts to respond to a trade that does not exist
  */
 export class NonTradeRespondedToError extends UserActionError {
-	declare relevantData: { player: Player, trade: TradeResolveable };
+	declare relevantData: { player: Player, trade: TradeResolvable };
 
-	constructor(player: Player, trade: TradeResolveable) {
+	constructor(player: Player, trade: TradeResolvable) {
 		super({
 			message: `A player attempted to respond to a trade that does not exist.`,
 			userFriendlyMessage: `You cannot respond to this trade because it does not exist.`,

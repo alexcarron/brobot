@@ -1,4 +1,4 @@
-import { Trade, TradeResolveable, TradeStatuses } from '../../types/trade.types';
+import { Trade, TradeResolvable, TradeStatuses } from '../../types/trade.types';
 import { Player, PlayerResolvable } from '../../types/player.types';
 import { getWorkflowResultCreator, provides } from '../workflow-result-creator';
 import { getCharacterDifferences } from '../../../../utilities/data-structure-utils';
@@ -28,7 +28,7 @@ const result = getWorkflowResultCreator({
 export const checkIfPlayerCanModifyTrade = (
 	{playerModifying, trade: tradeResolvable}: {
 		playerModifying: PlayerResolvable,
-		trade: TradeResolveable,
+		trade: TradeResolvable,
 	}
 ) => {
 	const {tradeService, playerService} = getNamesmithServices();
@@ -87,12 +87,12 @@ export const checkIfPlayerCanModifyTrade = (
 export const modifyTrade = (
 	{playerModifying, trade: tradeResolvable, charactersGiving, charactersReceiving}: {
 		playerModifying: PlayerResolvable,
-		trade: TradeResolveable,
+		trade: TradeResolvable,
 		charactersGiving: string,
 		charactersReceiving: string,
 	}
 ) => {
-	const {tradeService, playerService} = getNamesmithServices();
+	const {tradeService, playerService, activityLogService} = getNamesmithServices();
 
 	const checkResult = checkIfPlayerCanModifyTrade({
 		playerModifying, trade: tradeResolvable
@@ -144,6 +144,12 @@ export const modifyTrade = (
 		trade.status === TradeStatuses.AWAITING_INITIATOR
 			? trade.recipientPlayer
 			: trade.initiatingPlayer;
+
+	activityLogService.logModifyTrade({
+		playerModifyingTrade: playerModifying,
+		playerAwaitingResponse: otherPlayerID,
+		trade: tradeResolvable,
+	});
 
 	return result.success({
 		trade: tradeService.resolveTrade(trade),

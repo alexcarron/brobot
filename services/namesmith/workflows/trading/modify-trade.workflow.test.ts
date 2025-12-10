@@ -10,6 +10,8 @@ import { modifyTrade } from "./modify-trade.workflow";
 import { addMockPlayer, editMockPlayer } from "../../mocks/mock-data/mock-players";
 import { addMockTrade } from "../../mocks/mock-data/mock-trades";
 import { returnIfNotFailure } from "../../utilities/workflow.utility";
+import { getLatestActivityLog } from "../../mocks/mock-data/mock-activity-logs";
+import { ActivityTypes } from "../../types/activity-log.types";
 
 describe('modifyTrade()', () => {
   let MOCK_INITIATING_PLAYER: Player;
@@ -40,11 +42,26 @@ describe('modifyTrade()', () => {
     });
   });
 
+	it('creates an activity log with accurate information', () => {
+		modifyTrade({
+			playerModifying: MOCK_RECIPIENT_PLAYER,
+			trade: MOCK_TRADE,
+			charactersGiving: "and",
+			charactersReceiving: "dove",
+		});
+
+		const activityLog = getLatestActivityLog(db);
+
+		makeSure(activityLog.player.id).is(MOCK_RECIPIENT_PLAYER.id);
+		makeSure(activityLog.type).is(ActivityTypes.MODIFY_TRADE);
+		makeSure(activityLog.involvedPlayer!.id).is(MOCK_INITIATING_PLAYER.id);
+		makeSure(activityLog.involvedTrade!.id).is(MOCK_TRADE.id);
+	});
+
 	it('returns the trade, initating player, and recipient player in their current states', () => {
 		const { trade, playerModifying, otherPlayer } =
 			returnIfNotFailure(
 				modifyTrade({
-					...getNamesmithServices(),
 					playerModifying: MOCK_RECIPIENT_PLAYER,
 					trade: MOCK_TRADE,
 					charactersGiving: "and",
