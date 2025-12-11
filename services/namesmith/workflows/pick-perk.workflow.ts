@@ -56,7 +56,8 @@ export function pickPerk(
 	});
 
 	activityLogService.logPickPerk({
-		playerPickingPerk: player,
+		player,
+		perk: pickedPerk,
 		tokensEarned: freeTokensEarned,
 	});
 

@@ -1,4 +1,3 @@
-import { WithAtLeastOneProperty } from "../../../../utilities/types/generic-types";
 import { Perk, PerkDefintion } from "../../types/perk.types";
 import { PerkRepository } from '../../repositories/perk.repository';
 import { DatabaseQuerier } from "../../database/database-querier";
@@ -14,7 +13,7 @@ import { getRandomNameUUID } from "../../../../utilities/random-utils";
  */
 export function addMockPerk(
 	db: DatabaseQuerier,
-	perkDefinition: WithAtLeastOneProperty<PerkDefintion>
+	perkDefinition: Partial<PerkDefintion> = {}
 ): Perk {
 	const perkRepository = new PerkRepository(db);
 

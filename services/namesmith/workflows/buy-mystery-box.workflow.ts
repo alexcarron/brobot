@@ -1,7 +1,7 @@
 import { getRandomBoolean } from "../../../utilities/random-utils";
 import { Perks } from "../constants/perks.constants";
 import { getNamesmithServices } from "../services/get-namesmith-services";
-import { MinimalMysteryBox, MysteryBoxResolveable } from '../types/mystery-box.types';
+import { MinimalMysteryBox, MysteryBoxResolvable } from '../types/mystery-box.types';
 import { Player, PlayerResolvable } from "../types/player.types";
 import { getWorkflowResultCreator, provides } from "./workflow-result-creator";
 
@@ -43,7 +43,7 @@ export const buyMysteryBox = (
 		mysteryBox: mysteryBoxResolvable = 1
 	}: {
 		player: PlayerResolvable,
-		mysteryBox?: MysteryBoxResolveable
+		mysteryBox?: MysteryBoxResolvable
 	}
 ) => {
 	const {mysteryBoxService, playerService, perkService, activityLogService} = getNamesmithServices();
@@ -115,6 +115,7 @@ export const buyMysteryBox = (
 
 	activityLogService.logBuyMysteryBox({
 		playerBuyingBox: playerResolvable,
+		mysteryBox: mysteryBoxResolvable,
 		tokensSpent: wasRefunded ? 0 : tokenCost,
 	});
 

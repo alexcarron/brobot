@@ -2,9 +2,12 @@ import { DatabaseQuerier } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
 import { ActivityLogRepository } from "../repositories/activity-log.repository";
 import { ActivityLog, ActivityTypes } from "../types/activity-log.types";
+import { MysteryBoxResolvable } from "../types/mystery-box.types";
+import { PerkResolvable } from "../types/perk.types";
 import { PlayerResolvable } from "../types/player.types";
 import { QuestResolvable } from "../types/quest.types";
 import { RecipeResolvable } from "../types/recipe.types";
+import { RoleResolvable } from "../types/role.types";
 import { TradeResolvable } from "../types/trade.types";
 
 /**
@@ -132,16 +135,19 @@ export class ActivityLogService {
 	 * Logs a mystery box purchase activity.
 	 * @param parameters - The parameters which include:
 	 * @param parameters.playerBuyingBox - The player who is buying the mystery box.
+	 * @param parameters.mysteryBox - The mystery box being bought.
 	 * @param parameters.tokensSpent - The number of tokens spent on the mystery box.
 	 * @returns The created activity log object.
 	 */
-	logBuyMysteryBox({ playerBuyingBox, tokensSpent }: {
+	logBuyMysteryBox({ playerBuyingBox, tokensSpent, mysteryBox }: {
 		playerBuyingBox: PlayerResolvable;
+		mysteryBox: MysteryBoxResolvable;
 		tokensSpent: number;
 	}): ActivityLog {
 		return this.activityLogRepository.addActivityLog({
 			type: ActivityTypes.BUY_MYSTERY_BOX,
 			player: playerBuyingBox,
+			involvedMysteryBox: mysteryBox,
 			tokensDifference: -tokensSpent,
 		});
 	}
@@ -203,17 +209,33 @@ export class ActivityLogService {
 	/**
 	 * Logs a perk picking activity.
 	 * @param parameters - An object containing the parameters.
-	 * @param parameters.playerPickingPerk - The player who is picking the perk.
+	 * @param parameters.player - The player who is picking the perk.
 	 * @param parameters.tokensEarned - The number of tokens earned by picking the perk.
+	 * @param parameters.perk - The perk being picked.
 	 * @returns The created activity log object.
 	 */
-	logPickPerk({ playerPickingPerk, tokensEarned }: {
-		playerPickingPerk: PlayerResolvable;
+	logPickPerk({ player, perk, tokensEarned, }: {
+		player: PlayerResolvable;
+		perk: PerkResolvable;
 		tokensEarned?: number;
 	}): ActivityLog {
 		return this.activityLogRepository.addActivityLog({
 			type: ActivityTypes.PICK_PERK,
-			player: playerPickingPerk,
+			player: player,
+			involvedPerk: perk,
+			tokensDifference: tokensEarned ?? 0,
+		});
+	}
+
+	logChooseRole({ player, role, tokensEarned, }: {
+		player: PlayerResolvable;
+		role: RoleResolvable;
+		tokensEarned?: number;
+	}): ActivityLog {
+		return this.activityLogRepository.addActivityLog({
+			type: ActivityTypes.CHOOSE_ROLE,
+			player: player,
+			involvedRole: role,
 			tokensDifference: tokensEarned ?? 0,
 		});
 	}

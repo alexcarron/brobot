@@ -3,14 +3,20 @@ import { makeSure } from "../../../utilities/jest/jest-utils";
 import { INVALID_PLAYER_ID, INVALID_QUEST_ID, INVALID_RECIPE_ID, INVALID_TRADE_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockActivityLog } from "../mocks/mock-data/mock-activity-logs";
+import { addMockMysteryBox } from "../mocks/mock-data/mock-mystery-boxes";
+import { addMockPerk } from "../mocks/mock-data/mock-perks";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { addMockQuest } from "../mocks/mock-data/mock-quests";
 import { addMockRecipe } from "../mocks/mock-data/mock-recipes";
+import { addMockRole } from "../mocks/mock-data/mock-roles";
 import { addMockTrade } from "../mocks/mock-data/mock-trades";
 import { ActivityTypes } from "../types/activity-log.types";
+import { MysteryBox } from "../types/mystery-box.types";
+import { Perk } from "../types/perk.types";
 import { Player } from "../types/player.types";
 import { Quest } from "../types/quest.types";
 import { Recipe } from "../types/recipe.types";
+import { Role } from "../types/role.types";
 import { Trade } from "../types/trade.types";
 import { PlayerNotFoundError, QuestNotFoundError, RecipeNotFoundError, TradeNotFoundError } from "../utilities/error.utility";
 import { ActivityLogService } from "./activity-log.service";
@@ -24,6 +30,9 @@ describe('ActivityLogService', () => {
 	let SOME_RECIPE: Recipe;
 	let SOME_QUEST: Quest;
 	let SOME_TRADE: Trade;
+	let SOME_PERK: Perk;
+	let SOME_ROLE: Role;
+	let SOME_MYSTERY_BOX: MysteryBox;
 
 	let YESTERDAY: Date;
 	let TODAY: Date;
@@ -38,6 +47,9 @@ describe('ActivityLogService', () => {
 		SOME_RECIPE = addMockRecipe(db);
 		SOME_QUEST = addMockQuest(db);
 		SOME_TRADE = addMockTrade(db);
+		SOME_PERK = addMockPerk(db);
+		SOME_ROLE = addMockRole(db);
+		SOME_MYSTERY_BOX = addMockMysteryBox(db);
 
 		YESTERDAY = getYesterday();
 		TODAY = getToday();
@@ -210,6 +222,7 @@ describe('ActivityLogService', () => {
 		it('creates a new activity log for buying a mystery box with negative tokensDifference', () => {
 			const activityLog = activityLogService.logBuyMysteryBox({
 				playerBuyingBox: SOME_PLAYER.id,
+				mysteryBox: SOME_MYSTERY_BOX.id,
 				tokensSpent: 150
 			});
 
@@ -220,6 +233,7 @@ describe('ActivityLogService', () => {
 				involvedPlayer: null,
 				involvedRecipe: null,
 				involvedQuest: null,
+				involvedMysteryBox: SOME_MYSTERY_BOX,
 			});
 
 			const resolved = activityLogService.activityLogRepository.getActivityLogOrThrow(activityLog.id);
@@ -230,6 +244,7 @@ describe('ActivityLogService', () => {
 			makeSure(() =>
 				activityLogService.logBuyMysteryBox({
 					playerBuyingBox: INVALID_PLAYER_ID,
+					mysteryBox: SOME_MYSTERY_BOX.id,
 					tokensSpent: 50
 				})
 			).throws(PlayerNotFoundError);
@@ -338,8 +353,9 @@ describe('ActivityLogService', () => {
 	describe('logPickPerk()', () => {
 		it('creates a new activity log for picking a perk with tokensEarned provided', () => {
 			const activityLog = activityLogService.logPickPerk({
-				playerPickingPerk: SOME_PLAYER.id,
-				tokensEarned: 12
+				player: SOME_PLAYER.id,
+				perk: SOME_PERK,
+				tokensEarned: 12,
 			});
 
 			makeSure(activityLog).hasProperties({
@@ -349,6 +365,7 @@ describe('ActivityLogService', () => {
 				involvedPlayer: null,
 				involvedRecipe: null,
 				involvedQuest: null,
+				involvedPerk: SOME_PERK,
 			});
 
 			const resolved = activityLogService.activityLogRepository.getActivityLogOrThrow(activityLog.id);
@@ -357,7 +374,8 @@ describe('ActivityLogService', () => {
 
 		it('creates a new activity log for picking a perk without tokensEarned (defaults to 0)', () => {
 			const activityLog = activityLogService.logPickPerk({
-				playerPickingPerk: SOME_PLAYER.id
+				player: SOME_PLAYER.id,
+				perk: SOME_PERK,
 				// tokensEarned omitted
 			});
 
@@ -368,6 +386,7 @@ describe('ActivityLogService', () => {
 				involvedPlayer: null,
 				involvedRecipe: null,
 				involvedQuest: null,
+				involvedPerk: SOME_PERK,
 			});
 
 			const resolved = activityLogService.activityLogRepository.getActivityLogOrThrow(activityLog.id);
@@ -377,10 +396,51 @@ describe('ActivityLogService', () => {
 		it('throws PlayerNotFoundError if picking player is invalid', () => {
 			makeSure(() =>
 				activityLogService.logPickPerk({
-					playerPickingPerk: INVALID_PLAYER_ID,
+					player: INVALID_PLAYER_ID,
+					perk: SOME_PERK,
 					tokensEarned: 1
 				})
 			).throws(PlayerNotFoundError);
+		});
+	});
+
+	describe('logChooseRole()', () => {
+		it('creates a new activity log for choosing a role', () => {
+			const activityLog = activityLogService.logChooseRole({
+				player: SOME_PLAYER.id,
+				role: SOME_ROLE,
+				tokensEarned: 12,
+			});
+
+			makeSure(activityLog).hasProperties({
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHOOSE_ROLE,
+				tokensDifference: 12,
+				involvedPlayer: null,
+				involvedRecipe: null,
+				involvedQuest: null,
+				involvedRole: SOME_ROLE,
+			});
+
+			const resolved = activityLogService.activityLogRepository.getActivityLogOrThrow(activityLog.id);
+			makeSure(resolved).is(activityLog);
+		});
+
+		it('sets tokensDifference to 0 if tokensEarned is omitted', () => {
+			const activityLog = activityLogService.logChooseRole({
+				player: SOME_PLAYER.id,
+				role: SOME_ROLE,
+			});
+
+			makeSure(activityLog).hasProperties({
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHOOSE_ROLE,
+				tokensDifference: 0,
+				involvedPlayer: null,
+				involvedRecipe: null,
+				involvedQuest: null,
+				involvedRole: SOME_ROLE,
+			});
 		});
 	});
 
@@ -477,6 +537,7 @@ describe('ActivityLogService', () => {
 		it('returns the tokens a player spent on a mystery box', () => {
 			activityLogService.logBuyMysteryBox({
 				playerBuyingBox: SOME_PLAYER.id,
+				mysteryBox: SOME_MYSTERY_BOX.id,
 				tokensSpent: 10
 			});
 
@@ -488,6 +549,7 @@ describe('ActivityLogService', () => {
 		it('returns the sum of only tokens spent but not earned by a player', () => {
 			activityLogService.logBuyMysteryBox({
 				playerBuyingBox: SOME_PLAYER.id,
+				mysteryBox: SOME_MYSTERY_BOX.id,
 				tokensSpent: 10
 			});
 
@@ -498,6 +560,7 @@ describe('ActivityLogService', () => {
 
 			activityLogService.logBuyMysteryBox({
 				playerBuyingBox: SOME_PLAYER.id,
+				mysteryBox: SOME_MYSTERY_BOX.id,
 				tokensSpent: 15
 			});
 

@@ -1,10 +1,13 @@
 import { toEnumFromStrings, ValuesOf } from "../../../utilities/enum-utilts";
 import { ExtractDomainType, ExtractType, number, object, string, strings } from "../../../utilities/runtime-types-utils";
 import { DBDate } from "../utilities/db.utility";
+import { Perk, PerkResolvable } from "./perk.types";
 import { Player, PlayerResolvable } from "./player.types";
 import { Quest, QuestResolvable } from "./quest.types";
 import { Recipe, RecipeResolvable } from "./recipe.types";
 import { Trade, TradeResolvable } from "./trade.types";
+import { MysteryBox, MysteryBoxResolvable } from "./mystery-box.types";
+import { Role, RoleResolvable } from "./role.types";
 
 export const ActivityTypes = toEnumFromStrings(
 	'craftCharacters',
@@ -17,6 +20,7 @@ export const ActivityTypes = toEnumFromStrings(
 	'claimRefill',
 	'completeQuest',
 	'pickPerk',
+	'chooseRole',
 );
 
 export type ActivityType = ValuesOf<typeof ActivityTypes>;
@@ -32,6 +36,9 @@ export const DBActivityLogType = object.asTransformableType('MinimalActivityLog'
 	involvedRecipeID: number.orNull,
 	involvedQuestID: number.orNull,
 	involvedTradeID: number.orNull,
+	involvedPerkID: number.orNull,
+	involvedRoleID: number.orNull,
+	involvedMysteryBoxID: number.orNull,
 });
 export const asMinimalActivityLog = DBActivityLogType.toMinimalActivityLog;
 export const asMinimalActivityLogs = DBActivityLogType.toMinimalActivityLogs;
@@ -48,6 +55,9 @@ export type ActivityLog = {
 	involvedRecipe: Recipe | null;
 	involvedQuest: Quest | null;
 	involvedTrade: Trade | null;
+	involvedPerk: Perk | null;
+	involvedRole: Role | null;
+	involvedMysteryBox: MysteryBox | null;
 }
 
 export type ActivityLogDefinition = {
@@ -60,6 +70,9 @@ export type ActivityLogDefinition = {
 	involvedRecipe?: RecipeResolvable | null;
 	involvedQuest?: QuestResolvable | null;
 	involvedTrade?: TradeResolvable | null;
+	involvedPerk?: PerkResolvable | null;
+	involvedRole?: RoleResolvable | null;
+	involvedMysteryBox?: MysteryBoxResolvable | null;
 }
 
 export type ActivityLogID = ActivityLog['id'];

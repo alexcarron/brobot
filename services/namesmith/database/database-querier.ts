@@ -340,16 +340,16 @@ export class DatabaseQuerier {
 			return queryStatement.run(params);
 		}
 		catch (error) {
-			if (!(error instanceof MultiStatementQueryError))
+			if (error instanceof MultiStatementQueryError === false)
 				throw error;
 
 			if (params !== undefined)
 				throw error;
 
-			this.db.exec(sqlQuery);
+			this.exec(sqlQuery);
 			return {
-				changes: -1,
-				lastInsertRowid: -1
+				changes: 0,
+				lastInsertRowid: 0,
 			}
 		}
   }
@@ -476,7 +476,9 @@ export class DatabaseQuerier {
 	 * @returns e result of the query
 	 */
 	exec(source: string): Database {
-		return this.db.exec(source);
+		return attempt(() => this.db.exec(source))
+			.onError((error) => this.handleError(error, source))
+			.getReturnValue();
 	}
 
 	/**
@@ -496,7 +498,9 @@ export class DatabaseQuerier {
 	 * @returns The prepared statement
 	 */
 	prepare(source: string): Statement {
-		return this.db.prepare(source);
+		return attempt(() => this.db.prepare(source))
+			.onError((error) => this.handleError(error, source))
+			.getReturnValue();
 	}
 
 	/**

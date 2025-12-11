@@ -25,7 +25,10 @@ export function addMockActivityLog(
 		involvedPlayer = null,
 		involvedRecipe = null,
 		involvedQuest = null,
-		involvedTrade = null
+		involvedTrade = null,
+		involvedPerk = null,
+		involvedRole = null,
+		involvedMysteryBox = null,
 	} = activityLogDefinition;
 
 	if (player === undefined)
@@ -40,7 +43,10 @@ export function addMockActivityLog(
 		involvedPlayer,
 		involvedRecipe,
 		involvedQuest,
-		involvedTrade
+		involvedTrade,
+		involvedPerk,
+		involvedRole,
+		involvedMysteryBox,
 	});
 }
 

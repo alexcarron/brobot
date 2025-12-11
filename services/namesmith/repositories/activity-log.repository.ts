@@ -15,25 +15,26 @@ import { PlayerRepository } from "./player.repository";
 import { QuestRepository } from "./quest.repository";
 import { RecipeRepository } from "./recipe.repository";
 import { TradeRepository } from './trade.repository';
+import { PerkRepository } from './perk.repository';
+import { MysteryBoxRepository } from "./mystery-box.repository";
+import { RoleRepository } from "./role.repository";
+import { MysteryBox } from "../types/mystery-box.types";
+import { Perk } from "../types/perk.types";
+import { Role } from "../types/role.types";
 
 /**
  * Provides access to the activity log data.
  */
 export class ActivityLogRepository {
-
-	/**
-	 * @param db - The database querier instance used for executing SQL statements.
-	 * @param playerRepository - The player repository instance used for retrieving player data.
-	 * @param recipeRepository - The recipe repository instance used for retrieving recipe data.
-	 * @param questRepository - The quest repository instance used for retrieving quest data.
-	 * @param tradeRepository - The trade repository instance used for retrieving trade data.
-	 */
 	constructor(
 		public db: DatabaseQuerier,
 		public playerRepository: PlayerRepository,
 		public recipeRepository: RecipeRepository,
 		public questRepository: QuestRepository,
-		public tradeRepository: TradeRepository
+		public tradeRepository: TradeRepository,
+		public perkRepository: PerkRepository,
+		public roleRepository: RoleRepository,
+		public mysteryBoxRepository: MysteryBoxRepository,
 	) {}
 
 	static fromDB(db: DatabaseQuerier) {
@@ -43,6 +44,9 @@ export class ActivityLogRepository {
 			RecipeRepository.fromDB(db),
 			QuestRepository.fromDB(db),
 			TradeRepository.fromDB(db),
+			PerkRepository.fromDB(db),
+			RoleRepository.fromDB(db),
+			MysteryBoxRepository.fromDB(db),
 		);
 	}
 
@@ -88,6 +92,24 @@ export class ActivityLogRepository {
 			involvedTrade = this.tradeRepository.getTradeOrThrow(involvedTradeID);
 		}
 
+		const involvedPerkID = minimalActivityLog.involvedPerkID;
+		let involvedPerk: Perk | null = null;
+		if (involvedPerkID !== null) {
+			involvedPerk = this.perkRepository.getPerkOrThrow(involvedPerkID);
+		}
+
+		const involvedRoleID = minimalActivityLog.involvedRoleID;
+		let involvedRole: Role | null = null;
+		if (involvedRoleID !== null) {
+			involvedRole = this.roleRepository.getRoleOrThrow(involvedRoleID);
+		}
+
+		const involvedMysteryBoxID = minimalActivityLog.involvedMysteryBoxID;
+		let involvedMysteryBox: MysteryBox | null = null;
+		if (involvedMysteryBoxID !== null) {
+			involvedMysteryBox = this.mysteryBoxRepository.getMysteryBoxOrThrow(involvedMysteryBoxID);
+		}
+
 		return {
 			...minimalActivityLog,
 			player,
@@ -95,6 +117,9 @@ export class ActivityLogRepository {
 			involvedRecipe,
 			involvedQuest,
 			involvedTrade,
+			involvedPerk,
+			involvedRole,
+			involvedMysteryBox,
 		};
 	}
 
@@ -146,8 +171,10 @@ export class ActivityLogRepository {
 	}
 
 	toPartialDBActivityLog(
-		{ id, timeOccured, player, type, tokensDifference, involvedPlayer, involvedRecipe, involvedQuest, involvedTrade }: Partial<ActivityLogDefinition>
+		activityLogDefinition: Partial<ActivityLogDefinition>
 	): Partial<DBActivityLog> {
+		const { id, timeOccured, player, type, tokensDifference, involvedPlayer, involvedRecipe, involvedQuest, involvedTrade, involvedPerk, involvedRole, involvedMysteryBox } = activityLogDefinition;
+
 		const playerID = resolveOptional(player,
 			this.playerRepository.resolveID.bind(this.playerRepository)
 		);
@@ -163,6 +190,15 @@ export class ActivityLogRepository {
 		const involvedTradeID = resolveOptional(involvedTrade,
 			this.tradeRepository.resolveID.bind(this.tradeRepository)
 		);
+		const involvedPerkID = resolveOptional(involvedPerk,
+			this.perkRepository.resolveID.bind(this.perkRepository)
+		);
+		const involvedRoleID = resolveOptional(involvedRole,
+			this.roleRepository.resolveID.bind(this.roleRepository)
+		);
+		const involvedMysteryBoxID = resolveOptional(involvedMysteryBox,
+			this.mysteryBoxRepository.resolveID.bind(this.mysteryBoxRepository)
+		);
 
 		return {
 			id,
@@ -174,25 +210,29 @@ export class ActivityLogRepository {
 			involvedRecipeID,
 			involvedQuestID,
 			involvedTradeID,
+			involvedPerkID,
+			involvedRoleID,
+			involvedMysteryBoxID,
 		};
 	}
 
 	/**
-	 * Adds an activity log to the database.
-	 * @param {ActivityLogDefinition} activityLogDefinition - The activity log definition to add.
-	 * @returns The added activity log object.
-	 * @throws {ActivityLogAlreadyExistsError} If an activity log with the given ID already exists.
+	 * Throws an error if any of the given entities do not exist.
+	 * @param activityLogDefinition - The activity log definition to check.
+	 * @throws {PlayerNotFoundError} if the player does not exist.
+	 * @throws {RecipeNotFoundError} if the recipe does not exist.
+	 * @throws {QuestNotFoundError} if the quest does not exist.
+	 * @throws {TradeNotFoundError} if the trade does not exist.
+	 * @throws {PerkNotFoundError} if the perk does not exist.
+	 * @throws {RoleNotFoundError} if the role does not exist.
+	 * @throws {MysteryBoxNotFoundError} if the mystery box does not exist.
 	 */
-	addActivityLog(
-		activityLogDefinition: ActivityLogDefinition
-	) {
-		let {id, timeOccured} = activityLogDefinition;
-		const {player, tokensDifference, involvedPlayer, involvedRecipe, involvedQuest, involvedTrade} = activityLogDefinition;
+	throwIfAnEntityDoesNotExist(activityLogDefinition: Partial<ActivityLogDefinition>) {
+		const { player, involvedPlayer, involvedRecipe, involvedQuest, involvedTrade, involvedPerk, involvedRole, involvedMysteryBox } = activityLogDefinition;
 
-		if (timeOccured === undefined)
-			timeOccured = new Date();
-
-		this.playerRepository.resolvePlayer(player);
+		if (isNotNullable(player)) {
+			this.playerRepository.resolvePlayer(player);
+		}
 		if (isNotNullable(involvedPlayer)) {
 			this.playerRepository.resolvePlayer(involvedPlayer);
 		}
@@ -205,6 +245,35 @@ export class ActivityLogRepository {
 		if (isNotNullable(involvedTrade)) {
 			this.tradeRepository.resolveTrade(involvedTrade);
 		}
+		if (isNotNullable(involvedPerk)) {
+			this.perkRepository.resolvePerk(involvedPerk);
+		}
+		if (isNotNullable(involvedRole)) {
+			this.roleRepository.resolveRole(involvedRole);
+		}
+		if (isNotNullable(involvedMysteryBox)) {
+			this.mysteryBoxRepository.resolveMysteryBox(involvedMysteryBox);
+		}
+	}
+
+	/**
+	 * Adds an activity log to the database.
+	 * @param {ActivityLogDefinition} activityLogDefinition - The activity log definition to add.
+	 * @returns The added activity log object.
+	 * @throws {ActivityLogAlreadyExistsError} If an activity log with the given ID already exists.
+	 */
+	addActivityLog(
+		activityLogDefinition: ActivityLogDefinition
+	) {
+		this.throwIfAnEntityDoesNotExist(activityLogDefinition);
+
+		let {id, timeOccured} = activityLogDefinition;
+		const {tokensDifference} = activityLogDefinition;
+
+		if (timeOccured === undefined)
+			timeOccured = new Date();
+
+
 		if (id !== undefined) {
 			if (this.doesActivityLogExist(id))
 				throw new ActivityLogAlreadyExistsError(id);
@@ -229,23 +298,7 @@ export class ActivityLogRepository {
 		activityLogDefinition:
 			WithAtLeastOneProperty<ActivityLogDefinition>
 	): ActivityLog[] {
-		const { player, involvedPlayer, involvedRecipe, involvedQuest, involvedTrade } = activityLogDefinition;
-
-		if (isNotNullable(player)) {
-			this.playerRepository.resolvePlayer(player);
-		}
-		if (isNotNullable(involvedPlayer)) {
-			this.playerRepository.resolvePlayer(involvedPlayer);
-		}
-		if (isNotNullable(involvedRecipe)) {
-			this.recipeRepository.resolveRecipe(involvedRecipe);
-		}
-		if (isNotNullable(involvedQuest)) {
-			this.questRepository.resolveQuest(involvedQuest);
-		}
-		if (isNotNullable(involvedTrade)) {
-			this.tradeRepository.resolveTrade(involvedTrade);
-		}
+		this.throwIfAnEntityDoesNotExist(activityLogDefinition);
 
 		const queryParameters = this.toPartialDBActivityLog(activityLogDefinition);
 
@@ -265,23 +318,7 @@ export class ActivityLogRepository {
 	findActivityLogsAfterTimeWhere(minimumTimeOccured: Date,
 		activityLogDefinition: WithAtLeastOneProperty<ActivityLogDefinition>): ActivityLog[]
 	{
-		const { player, involvedPlayer, involvedRecipe, involvedQuest, involvedTrade } = activityLogDefinition;
-
-		if (isNotNullable(player)) {
-			this.playerRepository.resolvePlayer(player);
-		}
-		if (isNotNullable(involvedPlayer)) {
-			this.playerRepository.resolvePlayer(involvedPlayer);
-		}
-		if (isNotNullable(involvedRecipe)) {
-			this.recipeRepository.resolveRecipe(involvedRecipe);
-		}
-		if (isNotNullable(involvedQuest)) {
-			this.questRepository.resolveQuest(involvedQuest);
-		}
-		if (isNotNullable(involvedTrade)) {
-			this.tradeRepository.resolveTrade(involvedTrade);
-		}
+		this.throwIfAnEntityDoesNotExist(activityLogDefinition);
 
 		const queryParameters = this.toPartialDBActivityLog(activityLogDefinition);
 
