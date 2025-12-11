@@ -4,7 +4,7 @@ import { createMockDB } from "../mocks/mock-database";
 import { CharacterRepository } from "../repositories/character.repository";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
 import { Character } from "../types/character.types";
-import { MysteryBoxID, MysteryBoxResolveable, MysteryBox } from "../types/mystery-box.types";
+import { MysteryBoxResolvable, MysteryBox } from "../types/mystery-box.types";
 
 /**
  * Provides methods for interacting with mystery boxes.
@@ -40,14 +40,9 @@ export class MysteryBoxService {
 	 * @throws {Error} If the mystery box resolvable is invalid.
 	 */
 	resolveMysteryBox(
-		mysteryBoxResolvable: MysteryBoxResolveable
+		mysteryBoxResolvable: MysteryBoxResolvable
 	): MysteryBox {
-		const mysteryBoxID: MysteryBoxID =
-			typeof mysteryBoxResolvable === 'object'
-				? mysteryBoxResolvable.id
-				: mysteryBoxResolvable;
-
-		return this.mysteryBoxRepository.getMysteryBoxOrThrow(mysteryBoxID);
+		return this.mysteryBoxRepository.resolveMysteryBox(mysteryBoxResolvable);
 	}
 
 	/**
@@ -55,12 +50,11 @@ export class MysteryBoxService {
 	 * @param mysteryBoxResolvable - The mystery box resolvable to resolve.
 	 * @returns The ID of the resolved mystery box.
 	 */
-	resolveMysteryBoxID(mysteryBoxResolvable: MysteryBoxResolveable) {
-		const mysteryBox = this.resolveMysteryBox(mysteryBoxResolvable);
-		return mysteryBox.id;
+	resolveID(mysteryBoxResolvable: MysteryBoxResolvable) {
+		return this.mysteryBoxRepository.resolveID(mysteryBoxResolvable);
 	}
 
-	isMysteryBox(mysteryBoxResolvable: MysteryBoxResolveable): boolean {
+	isMysteryBox(mysteryBoxResolvable: MysteryBoxResolvable): boolean {
 		try {
 			this.resolveMysteryBox(mysteryBoxResolvable);
 			return true;
@@ -83,8 +77,8 @@ export class MysteryBoxService {
 	 * @param mysteryBoxResolvable - The mystery box to get the cost of.
 	 * @returns The cost of the mystery box in tokens.
 	 */
-	getCost(mysteryBoxResolvable: MysteryBoxResolveable): number {
-		const mysteryBoxID = this.resolveMysteryBoxID(mysteryBoxResolvable);
+	getCost(mysteryBoxResolvable: MysteryBoxResolvable): number {
+		const mysteryBoxID = this.resolveID(mysteryBoxResolvable);
 		return this.mysteryBoxRepository.getTokenCost(mysteryBoxID);
 	}
 
@@ -93,7 +87,7 @@ export class MysteryBoxService {
 	 * @param mysteryBoxResolvable - The mystery box from which to retrieve a character.
 	 * @returns The character retrieved from the mystery box.
 	 */
-	openBox(mysteryBoxResolvable: MysteryBoxResolveable): Character {
+	openBox(mysteryBoxResolvable: MysteryBoxResolvable): Character {
 		const mysteryBox = this.resolveMysteryBox(mysteryBoxResolvable);
 		const characterOdds = mysteryBox.characterOdds;
 

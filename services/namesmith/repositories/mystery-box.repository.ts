@@ -2,7 +2,7 @@ import { returnNonNullOrThrow } from "../../../utilities/error-utils";
 import { WithRequiredAndOneOther } from "../../../utilities/types/generic-types";
 import { DatabaseQuerier, } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
-import { CharacterOdds, MinimalMysteryBox, MysteryBoxID, MysteryBox, MysteryBoxDefinition, MinimalMysteryBoxDefinition, asMinimalMysteryBoxes, asDBCharacterOdds, asMinimalMysteryBox } from "../types/mystery-box.types";
+import { CharacterOdds, MinimalMysteryBox, MysteryBoxID, MysteryBox, MysteryBoxDefinition, MinimalMysteryBoxDefinition, asMinimalMysteryBoxes, asDBCharacterOdds, asMinimalMysteryBox, MysteryBoxResolvable } from "../types/mystery-box.types";
 import { getCharacterValueFromID } from "../utilities/character.utility";
 import { MysteryBoxAlreadyExistsError, MysteryBoxNotFoundError } from "../utilities/error.utility";
 import { CharacterRepository } from "./character.repository";
@@ -128,6 +128,34 @@ export class MysteryBoxRepository {
 			this.getMysteryBox(id),
 			new MysteryBoxNotFoundError(id)
 		);
+	}
+
+	/**
+	 * Resolves a mystery box resolvable to a mystery box object.
+	 * A mystery box resolvable is either a mystery box object or a number representing the ID of the mystery box.
+	 * @param mysteryBoxResolvable - The mystery box resolvable to resolve.
+	 * @returns A promise that resolves with the resolved mystery box object.
+	 * @throws {Error} If the mystery box resolvable is invalid.
+	 */
+	resolveMysteryBox(
+		mysteryBoxResolvable: MysteryBoxResolvable
+	): MysteryBox {
+		const mysteryBoxID: MysteryBoxID =
+			typeof mysteryBoxResolvable === 'object'
+				? mysteryBoxResolvable.id
+				: mysteryBoxResolvable;
+
+		return this.getMysteryBoxOrThrow(mysteryBoxID);
+	}
+
+	/**
+	 * Resolves a mystery box resolvable to its ID.
+	 * @param mysteryBoxResolvable - The mystery box resolvable to resolve.
+	 * @returns The ID of the resolved mystery box.
+	 */
+	resolveID(mysteryBoxResolvable: MysteryBoxResolvable) {
+		const mysteryBox = this.resolveMysteryBox(mysteryBoxResolvable);
+		return mysteryBox.id;
 	}
 
 	/**

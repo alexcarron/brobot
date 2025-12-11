@@ -1,15 +1,18 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { DatabaseQuerier } from "../database/database-querier";
 import { ActivityTypes, DBActivityLog } from "../types/activity-log.types";
+import { MysteryBox } from "../types/mystery-box.types";
+import { Perk } from "../types/perk.types";
 import { asMinimalPlayer, asMinimalPlayers, Player } from "../types/player.types";
 import { Quest } from "../types/quest.types";
 import { Recipe } from "../types/recipe.types";
+import { Role } from "../types/role.types";
 import { MinimalTrade, Trade, TradeStatuses } from "../types/trade.types";
 import { asDBVotes, asMinimalVotes } from "../types/vote.types";
 import { ActivityLogAlreadyExistsError, TradeAlreadyExistsError } from "../utilities/error.utility";
 import { createAllMocks } from "./all-mocks";
 import { addMockActivityLog } from "./mock-data/mock-activity-logs";
-import { forcePlayerToBuyNewMysteryBox } from "./mock-data/mock-mystery-boxes";
+import { addMockMysteryBox, forcePlayerToBuyNewMysteryBox } from "./mock-data/mock-mystery-boxes";
 import { addMockPerk } from "./mock-data/mock-perks";
 import { addMockPlayer, editMockPlayer, forcePlayerToClaimRefill, forcePlayerToMineTokens, forcePlayerToPublishName } from "./mock-data/mock-players";
 import { addMockQuest } from "./mock-data/mock-quests";
@@ -502,11 +505,17 @@ describe("Mock Utilities", () => {
 		let SOME_RECIPE: Recipe;
 		let SOME_QUEST: Quest;
 		let SOME_TRADE: Trade;
+		let SOME_PERK: Perk;
+		let SOME_ROLE: Role;
+		let SOME_MYSTERY_BOX: MysteryBox;
 
 		beforeEach(() => {
 			SOME_RECIPE = addMockRecipe(db);
 			SOME_QUEST = addMockQuest(db);
 			SOME_TRADE = addMockTrade(db);
+			SOME_PERK = addMockPerk(db);
+			SOME_ROLE = addMockRole(db);
+			SOME_MYSTERY_BOX = addMockMysteryBox(db);
 		})
 
 		it('returns the added activity log', () => {
@@ -518,6 +527,10 @@ describe("Mock Utilities", () => {
 				involvedPlayer: SOME_OTHER_PLAYER.id,
 				involvedRecipe: SOME_RECIPE.id,
 				involvedQuest: SOME_QUEST.id,
+				involvedTrade: SOME_TRADE.id,
+				involvedPerk: SOME_PERK.id,
+				involvedRole: SOME_ROLE.id,
+				involvedMysteryBox: SOME_MYSTERY_BOX.id,
 			});
 
 			makeSure(activityLog).hasProperties({
@@ -528,6 +541,9 @@ describe("Mock Utilities", () => {
 				involvedPlayer: SOME_OTHER_PLAYER,
 				involvedRecipe: SOME_RECIPE,
 				involvedQuest: SOME_QUEST,
+				involvedTrade: SOME_TRADE,
+				involvedPerk: SOME_PERK,
+				involvedRole: SOME_ROLE,
 			});
 		});
 
@@ -543,6 +559,9 @@ describe("Mock Utilities", () => {
 				involvedRecipe: SOME_RECIPE.id,
 				involvedQuest: SOME_QUEST.id,
 				involvedTrade: SOME_TRADE.id,
+				involvedPerk: SOME_PERK.id,
+				involvedRole: SOME_ROLE.id,
+				involvedMysteryBox: SOME_MYSTERY_BOX.id,
 			});
 
 			const activityLogs = db.getRows("SELECT * FROM activityLog");
@@ -556,6 +575,9 @@ describe("Mock Utilities", () => {
 				involvedRecipeID: SOME_RECIPE.id,
 				involvedQuestID: SOME_QUEST.id,
 				involvedTradeID: SOME_TRADE.id,
+				involvedPerkID: SOME_PERK.id,
+				involvedRoleID: SOME_ROLE.id,
+				involvedMysteryBoxID: SOME_MYSTERY_BOX.id,
 			});
 		});
 

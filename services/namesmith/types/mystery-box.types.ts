@@ -24,7 +24,7 @@ export type MysteryBoxDefinition =
 
 export type MysteryBoxID = MinimalMysteryBox["id"];
 export type MysteryBoxName = MinimalMysteryBox["name"];
-export type MysteryBoxResolveable =
+export type MysteryBoxResolvable =
 	| {id: MysteryBoxID}
 	| MysteryBoxID;
 

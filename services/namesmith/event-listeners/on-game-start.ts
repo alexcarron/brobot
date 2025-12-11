@@ -2,7 +2,6 @@ import { sendChooseARoleMessage } from '../interfaces/choose-a-role-message';
 import { sendDailyQuestsMessage } from '../interfaces/quests/daily-quests-message';
 import { getNamesmithServices } from '../services/get-namesmith-services';
 import { clearNamesToVoteOnChannel, clearPublishedNamesChannel, clearTheWinnerChannel, closeNamesToVoteOnChannel, closeTheWinnerChannel, openPublishedNamesChannel } from '../utilities/discord-action.utility';
-import { NamesmithEvents } from './namesmith-events';
 
 /**
  * Starts a new game by doing the following
@@ -40,6 +39,4 @@ export async function startGame(): Promise<void> {
 	const now = new Date();
 	gameStateService.setupTimings(now);
 	gameStateService.scheduleGameEvents();
-
-	NamesmithEvents.PickAPerk.triggerEvent({});
 }

@@ -1,10 +1,12 @@
 import { failTest, makeSure } from "../../../utilities/jest/jest-utils";
 import { INVALID_PLAYER_ID, INVALID_ROLE_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
+import { getLatestActivityLog } from "../mocks/mock-data/mock-activity-logs";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { setupMockNamesmith } from "../mocks/mock-setup";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { RoleService } from "../services/role.service";
+import { ActivityTypes } from "../types/activity-log.types";
 import { Player } from "../types/player.types";
 import { RoleID } from "../types/role.types";
 import { returnIfNotFailure } from "../utilities/workflow.utility";
@@ -29,9 +31,20 @@ describe('choose-role.workflow', () => {
 	});
 
 	describe('chooseRole()', () => {
+		it('creates an activity log with accurate metadata', () => {
+			chooseRole({
+				player: NO_ROLE_PLAYER,
+				role: SOME_ROLE_ID
+			});
+
+			const activityLog = getLatestActivityLog(db);
+
+			makeSure(activityLog.player.id).is(NO_ROLE_PLAYER.id);
+			makeSure(activityLog.type).is(ActivityTypes.CHOOSE_ROLE);
+			makeSure(activityLog.involvedRole!.id).is(SOME_ROLE_ID);
+		});
 		it('should set the role of the given player to the given role', () => {
 			chooseRole({
-				...getNamesmithServices(),
 				player: NO_ROLE_PLAYER,
 				role: SOME_ROLE_ID
 			});

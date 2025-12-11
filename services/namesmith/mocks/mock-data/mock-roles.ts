@@ -1,4 +1,3 @@
-import { WithAtLeastOneProperty } from "../../../../utilities/types/generic-types";
 import { Role, RoleDefinition } from "../../types/role.types";
 import { RoleRepository } from '../../repositories/role.repository';
 import { DatabaseQuerier } from "../../database/database-querier";
@@ -14,7 +13,7 @@ import { getRandomNameUUID } from "../../../../utilities/random-utils";
  */
 export function addMockRole(
 	db: DatabaseQuerier,
-	roleDefinition: WithAtLeastOneProperty<RoleDefinition>
+	roleDefinition: Partial<RoleDefinition> = {}
 ): Role {
 	const roleRepository = RoleRepository.fromDB(db);
 	const {

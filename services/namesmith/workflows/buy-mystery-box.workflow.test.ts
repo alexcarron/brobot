@@ -26,6 +26,8 @@ import { NamesmithEvents } from "../event-listeners/namesmith-events";
 import { Perks } from "../constants/perks.constants";
 import { returnIfNotFailure } from "../utilities/workflow.utility";
 import { isOneSymbol } from "../../../utilities/string-checks-utils";
+import { getLatestActivityLog } from "../mocks/mock-data/mock-activity-logs";
+import { ActivityTypes } from "../types/activity-log.types";
 
 describe('buy-mystery-box.workflow', () => {
 	/**
@@ -64,6 +66,19 @@ describe('buy-mystery-box.workflow', () => {
 	});
 
 	describe('buyMysteryBox()', () => {
+		it('creates an activity log with accurate metadata', () => {
+			buyMysteryBox({
+				player: richPlayer.id,
+				mysteryBox: defaultMysteryBox.id
+			});
+
+			const activityLog = getLatestActivityLog(db);
+
+			makeSure(activityLog.player.id).is(richPlayer.id);
+			makeSure(activityLog.type).is(ActivityTypes.BUY_MYSTERY_BOX);
+			makeSure(activityLog.involvedMysteryBox!.id).is(defaultMysteryBox.id);
+		});
+		
 		it('should return the recieved character, token cost, player and mystery box', () => {
 			const result = returnIfNotFailure(
 				buyMysteryBox({

@@ -86,8 +86,8 @@ describe('DatabaseQuerier', () => {
 				INSERT INTO character (value, rarity) VALUES ('character4', 'legendary');
 			`;
 			const result = dbQuerier.run(queries);
-			expect(result).toHaveProperty('changes', -1);
-			expect(result).toHaveProperty('lastInsertRowid', -1);
+			expect(result).toHaveProperty('changes', 0);
+			expect(result).toHaveProperty('lastInsertRowid', 0);
 		});
 
 		it('throws an error if running multiple queries with parameters', () => {

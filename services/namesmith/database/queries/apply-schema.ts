@@ -8,5 +8,5 @@ const schemaPath = path.join(currDir, 'schema.sql');
 const schema = fs.readFileSync(schemaPath, 'utf8');
 
 export const applySchemaToDB = (db: DatabaseQuerier) => {
-	db.exec(schema);
+	db.run(schema);
 }

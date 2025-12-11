@@ -31,7 +31,7 @@ export function chooseRole(
 		role: RoleResolvable
 	}
 ) {
-	const {playerService, roleService} = getNamesmithServices();
+	const {playerService, roleService, activityLogService} = getNamesmithServices();
 
 	if (!playerService.isPlayer(player)) {
 		return result.failure.notAPlayer();
@@ -49,6 +49,9 @@ export function chooseRole(
 	}
 
 	roleService.setPlayerRole(role, player);
+
+	activityLogService.logChooseRole({player, role})
+
 	return result.success({
 		player: playerService.resolvePlayer(player),
 	});

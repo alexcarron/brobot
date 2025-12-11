@@ -1,6 +1,6 @@
 import { addDays } from "../../../utilities/date-time-utils";
 import { makeSure } from "../../../utilities/jest/jest-utils";
-import { INVALID_ACTIVITY_LOG_ID, INVALID_PLAYER_ID, INVALID_QUEST_ID, INVALID_RECIPE_ID } from "../constants/test.constants";
+import { INVALID_ACTIVITY_LOG_ID, INVALID_PERK_ID, INVALID_PLAYER_ID, INVALID_QUEST_ID, INVALID_RECIPE_ID, INVALID_ROLE_ID, INVALID_TRADE_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockActivityLog } from "../mocks/mock-data/mock-activity-logs";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
@@ -10,7 +10,7 @@ import { ActivityLog, ActivityTypes } from "../types/activity-log.types";
 import { Player } from "../types/player.types";
 import { Quest } from "../types/quest.types";
 import { Recipe } from "../types/recipe.types";
-import { ActivityLogAlreadyExistsError, ActivityLogNotFoundError, PlayerNotFoundError, QuestNotFoundError, RecipeNotFoundError } from "../utilities/error.utility";
+import { ActivityLogAlreadyExistsError, ActivityLogNotFoundError, PerkNotFoundError, PlayerNotFoundError, QuestNotFoundError, RecipeNotFoundError, RoleNotFoundError, TradeNotFoundError } from "../utilities/error.utility";
 import { ActivityLogRepository } from "./activity-log.repository";
 
 describe('ActivityLogRepository', () => {
@@ -177,6 +177,36 @@ describe('ActivityLogRepository', () => {
 					involvedQuest: INVALID_QUEST_ID,
 				})
 			).throws(QuestNotFoundError);
+		});
+
+		it('throws a TradeNotFoundError if the involved trade does not exist', () => {
+			makeSure(() =>
+				activityLogRepository.addActivityLog({
+					player: SOME_PLAYER.id,
+					type: ActivityTypes.BUY_MYSTERY_BOX,
+					involvedTrade: INVALID_TRADE_ID,
+				})
+			).throws(TradeNotFoundError);
+		});
+
+		it('throws a PerkNotFoundError if the involved perk does not exist', () => {
+			makeSure(() =>
+				activityLogRepository.addActivityLog({
+					player: SOME_PLAYER.id,
+					type: ActivityTypes.BUY_MYSTERY_BOX,
+					involvedPerk: INVALID_PERK_ID,
+				})
+			).throws(PerkNotFoundError);
+		});
+
+		it('throws a RoleNotFoundError if the involved role does not exist', () => {
+			makeSure(() =>
+				activityLogRepository.addActivityLog({
+					player: SOME_PLAYER.id,
+					type: ActivityTypes.BUY_MYSTERY_BOX,
+					involvedRole: INVALID_ROLE_ID,
+				})
+			).throws(RoleNotFoundError);
 		});
 	});
 

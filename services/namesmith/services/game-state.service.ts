@@ -222,7 +222,8 @@ export class GameStateService {
 				},
 			);
 
-			if (!this.dayStartCronJobs.includes(dayStartCronJob)) {
+			const now = new Date();
+			if (now < dayStartTime) {
 				dayStartCronJob.start();
 				this.dayStartCronJobs.push(dayStartCronJob);
 			}
