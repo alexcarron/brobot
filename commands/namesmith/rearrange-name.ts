@@ -16,7 +16,7 @@ export const command = new SlashCommand({
 	execute: async function execute(interaction) {
 		const playerID = interaction.user.id;
 
-		const { playerService } = getNamesmithServices();
+		const { playerService, activityLogService } = getNamesmithServices();
 		const currentName = playerService.getCurrentName(playerID);
 		const inventory = playerService.getInventory(playerID);
 
@@ -68,6 +68,11 @@ export const command = new SlashCommand({
 			});
 		}
 
+		const nameBefore = playerService.getCurrentName(playerID);
 		playerService.changeCurrentName(playerID, newName);
+		activityLogService.logChangeName({
+			playerChangingName: playerID,
+			nameBefore,
+		});
 	}
 });

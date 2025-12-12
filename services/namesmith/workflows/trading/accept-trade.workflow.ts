@@ -36,7 +36,7 @@ const result = getWorkflowResultCreator({
  * @returns An object containing the trade that was accepted, the initiating player, and the recipient player.
  */
 export const acceptTrade = (
-	{playerAccepting, trade: tradeResolvable}: {
+	{playerAccepting: playerAcceptingResolvable, trade: tradeResolvable}: {
 		playerAccepting: PlayerResolvable,
 		trade: TradeResolvable,
 	}
@@ -44,7 +44,7 @@ export const acceptTrade = (
 	const {tradeService, playerService, activityLogService} = getNamesmithServices();
 
 	// Is the user who accepting the trade a player?
-	if (!playerService.isPlayer(playerAccepting)) {
+	if (!playerService.isPlayer(playerAcceptingResolvable)) {
 		return result.failure.notAPlayer();
 	}
 
@@ -61,7 +61,7 @@ export const acceptTrade = (
 	}
 
 	// Is this trade awaiting this player?
-	if (!tradeService.canPlayerRespond(tradeResolvable, playerAccepting)) {
+	if (!tradeService.canPlayerRespond(tradeResolvable, playerAcceptingResolvable)) {
 		const playerAwaitingTrade = tradeService.getPlayerAwaitingResponseFrom(tradeResolvable);
 
 		if (playerAwaitingTrade === null) {
@@ -96,6 +96,8 @@ export const acceptTrade = (
 		throw new NamesmithError('Trade is not awaiting a response from any player, but it is also responded to. This should never happen.');
 	}
 
+	const playerAccepting = playerService.resolvePlayer(playerAcceptingResolvable);
+	const acceptingPlayerNameBefore = playerAccepting.currentName;
 	playerService.transferCharacters(
 		trade.initiatingPlayer,
 		trade.recipientPlayer,
@@ -108,12 +110,13 @@ export const acceptTrade = (
 		trade.requestedCharacters
 	);
 
-	tradeService.accept(trade);
+	tradeService.updateStatusToAccepted(trade);
 
 	activityLogService.logAcceptTrade({
-		playerAcceptingTrade: playerAccepting,
+		playerAcceptingID: playerAccepting.id,
 		playerAwaitingResponse: playerAwaitingAcceptance,
 		trade,
+		nameBefore: acceptingPlayerNameBefore,
 	});
 
 	return result.success({

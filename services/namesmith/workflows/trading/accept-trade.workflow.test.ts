@@ -78,6 +78,10 @@ describe('accept-trade.workflow.ts', () => {
 		makeSure(activityLog.type).is(ActivityTypes.ACCEPT_TRADE);
 		makeSure(activityLog.involvedPlayer!.id).is(MOCK_INITIATING_PLAYER.id);
 		makeSure(activityLog.involvedTrade!.id).is(MOCK_TRADE.id);
+		makeSure(activityLog.nameChangedFrom).is('Xander');
+		makeSure(activityLog.currentName).is('anderberv');
+		makeSure(activityLog.charactersGained).is('berv');
+		makeSure(activityLog.charactersLost).is('Xx');
 	});
 
 	describe('acceptTrade()', () => {
@@ -158,7 +162,7 @@ describe('accept-trade.workflow.ts', () => {
 		});
 
 		it('returns a TradeAlreadyRespondedToError if the trade has already been declined', async () => {
-			tradeService.decline(MOCK_TRADE);
+			tradeService.updateStatusToDeclined(MOCK_TRADE);
 
 			const result = await acceptTrade({
 				...getNamesmithServices(),

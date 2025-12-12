@@ -74,7 +74,7 @@ describe('TradeService', () => {
 			const trade = addMockTrade(db, {
 				status: TradeStatuses.AWAITING_RECIPIENT,
 			});
-			tradeService.accept(trade);
+			tradeService.updateStatusToAccepted(trade);
 			const updatedTrade = tradeService.resolveTrade(trade.id);
 			expect(updatedTrade.status).toEqual(TradeStatuses.ACCEPTED);
 			expect(tradeService.isAccepted(updatedTrade)).toBe(true);
@@ -87,7 +87,7 @@ describe('TradeService', () => {
 			const trade = addMockTrade(db, {
 				status: TradeStatuses.AWAITING_RECIPIENT,
 			});
-			tradeService.decline(trade);
+			tradeService.updateStatusToDeclined(trade);
 			const updatedTrade = tradeService.resolveTrade(trade.id);
 			expect(updatedTrade.status).toEqual(TradeStatuses.DECLINED);
 			expect(tradeService.isDeclined(updatedTrade)).toBe(true);

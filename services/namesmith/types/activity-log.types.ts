@@ -10,6 +10,8 @@ import { MysteryBox, MysteryBoxResolvable } from "./mystery-box.types";
 import { Role, RoleResolvable } from "./role.types";
 
 export const ActivityTypes = toEnumFromStrings(
+	'changeName',
+	'publishName',
 	'craftCharacters',
 	'initiateTrade',
 	'acceptTrade',
@@ -31,6 +33,10 @@ export const DBActivityLogType = object.asTransformableType('MinimalActivityLog'
 	timeOccured: DBDate,
 	playerID: string,
 	type: strings(...activityTypes),
+	nameChangedFrom: string.orNull,
+	currentName: string,
+	charactersGained: string.orNull,
+	charactersLost: string.orNull,
 	tokensDifference: number,
 	involvedPlayerID: string.orNull,
 	involvedRecipeID: number.orNull,
@@ -50,6 +56,10 @@ export type ActivityLog = {
 	timeOccured: Date;
 	player: Player;
 	type: ActivityType;
+	nameChangedFrom: string | null;
+	currentName: string;
+	charactersGained: string | null;
+	charactersLost: string | null;
 	tokensDifference: number;
 	involvedPlayer: Player | null;
 	involvedRecipe: Recipe | null;
@@ -65,6 +75,10 @@ export type ActivityLogDefinition = {
 	timeOccured?: Date;
 	player: PlayerResolvable;
 	type: ActivityType;
+	nameChangedFrom?: string | null;
+	currentName?: string;
+	charactersGained?: string | null;
+	charactersLost?: string | null;
 	tokensDifference?: number;
 	involvedPlayer?: PlayerResolvable | null;
 	involvedRecipe?: RecipeResolvable | null;

@@ -5,7 +5,7 @@ import { IsFailureAssertion, SuccessOf } from "../workflows/workflow-result-crea
  * Throws an error if the given result is a failure result.
  * @param result - The workflow result to check.
  */
-export function assertNotFailure<
+export function throwIfNotFailure<
   Result extends IsFailureAssertion
 >(result: Result): asserts result is SuccessOf<Result> {
   if (result.isFailure()) {
@@ -24,6 +24,6 @@ export function assertNotFailure<
 export function returnIfNotFailure<
   Result extends IsFailureAssertion
 >(result: Result): SuccessOf<Result> {
-  assertNotFailure(result);
+  throwIfNotFailure(result);
   return result;
 }

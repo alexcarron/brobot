@@ -39,8 +39,8 @@ describe('buy-mystery-box.workflow', () => {
 	};
 
 	let db: DatabaseQuerier;
-	let richPlayer: Player;
-	let defaultMysteryBox: MinimalMysteryBox;
+	let RICH_PLAYER: Player;
+	let FIRST_MYSTERY_BOX: MinimalMysteryBox;
 
 	beforeEach(() => {
 		setupMockNamesmith();
@@ -51,10 +51,10 @@ describe('buy-mystery-box.workflow', () => {
 		};
 
 		db = playerService.playerRepository.db;
-		richPlayer = addMockPlayer(db, {
+		RICH_PLAYER = addMockPlayer(db, {
 			tokens: 9999
 		});
-		defaultMysteryBox = mysteryBoxService.resolveMysteryBox(1);
+		FIRST_MYSTERY_BOX = mysteryBoxService.resolveMysteryBox(1);
 	});
 
 	afterEach(() => {
@@ -67,38 +67,46 @@ describe('buy-mystery-box.workflow', () => {
 
 	describe('buyMysteryBox()', () => {
 		it('creates an activity log with accurate metadata', () => {
-			buyMysteryBox({
-				player: richPlayer.id,
-				mysteryBox: defaultMysteryBox.id
+			const player = addMockPlayer(db, {
+				currentName: 'SOME_NAME',
+				tokens: 9999,
 			});
+			const result = returnIfNotFailure( buyMysteryBox({
+				player: player.id,
+				mysteryBox: FIRST_MYSTERY_BOX.id
+			}) );
 
 			const activityLog = getLatestActivityLog(db);
 
-			makeSure(activityLog.player.id).is(richPlayer.id);
+			makeSure(activityLog.player.id).is(player.id);
 			makeSure(activityLog.type).is(ActivityTypes.BUY_MYSTERY_BOX);
-			makeSure(activityLog.involvedMysteryBox!.id).is(defaultMysteryBox.id);
+			makeSure(activityLog.involvedMysteryBox!.id).is(FIRST_MYSTERY_BOX.id);
+			makeSure(activityLog.nameChangedFrom).is('SOME_NAME');
+			makeSure(activityLog.currentName).is('SOME_NAME' + result.receivedCharacterValues);
+			makeSure(activityLog.charactersGained).is(result.receivedCharacterValues);
+			makeSure(activityLog.charactersLost).isNull();
 		});
-		
+
 		it('should return the recieved character, token cost, player and mystery box', () => {
 			const result = returnIfNotFailure(
 				buyMysteryBox({
 					...getNamesmithServices(),
-					player: richPlayer.id,
-					mysteryBox: defaultMysteryBox.id
+					player: RICH_PLAYER.id,
+					mysteryBox: FIRST_MYSTERY_BOX.id
 				})
 			);
 
 			makeSure(
-				isOneSymbol(result.recievedCharacterValues)
+				isOneSymbol(result.receivedCharacterValues)
 			).isTrue();
 			makeSure(result.tokenCost).is(25);
 			makeSure(result.player).is({
-				...richPlayer,
-				tokens: richPlayer.tokens - result.tokenCost,
-				currentName: richPlayer.currentName + result.recievedCharacterValues,
-				inventory: richPlayer.inventory + result.recievedCharacterValues
+				...RICH_PLAYER,
+				tokens: RICH_PLAYER.tokens - result.tokenCost,
+				currentName: RICH_PLAYER.currentName + result.receivedCharacterValues,
+				inventory: RICH_PLAYER.inventory + result.receivedCharacterValues
 			});
-			makeSure(result.mysteryBox).is(defaultMysteryBox);
+			makeSure(result.mysteryBox).is(FIRST_MYSTERY_BOX);
 			makeSure(result.wasRefunded).isFalse();
 			makeSure(result.gotDuplicate).isFalse();
 			makeSure(result.gotAnotherCharacter).isFalse();
@@ -107,34 +115,34 @@ describe('buy-mystery-box.workflow', () => {
 		it('should change the player\'s Discord name to their current name plus that recieved character', () => {
 			const announceNameChangeEvent = jest.spyOn(NamesmithEvents.ChangeName, "triggerEvent");
 
-			const { recievedCharacterValues } = returnIfNotFailure(
+			const { receivedCharacterValues: recievedCharacterValues } = returnIfNotFailure(
 				buyMysteryBox({
 				...getNamesmithServices(),
-					player: richPlayer.id,
-					mysteryBox: defaultMysteryBox.id
+					player: RICH_PLAYER.id,
+					mysteryBox: FIRST_MYSTERY_BOX.id
 				})
 			);
 
 			expect(announceNameChangeEvent).toHaveBeenCalledTimes(1);
 			expect(announceNameChangeEvent).toHaveBeenCalledWith({
-				playerID: richPlayer.id,
-				oldName: richPlayer.currentName,
-				newName: richPlayer.currentName + recievedCharacterValues
+				playerID: RICH_PLAYER.id,
+				oldName: RICH_PLAYER.currentName,
+				newName: RICH_PLAYER.currentName + recievedCharacterValues
 			})
 		});
 
 		it('should change the player\'s name to their current name plus that recieved character', () => {
-			const { recievedCharacterValues } =
+			const { receivedCharacterValues: recievedCharacterValues } =
 				returnIfNotFailure(
 					buyMysteryBox({
 						...getNamesmithServices(),
-						player: richPlayer.id,
-						mysteryBox: defaultMysteryBox.id
+						player: RICH_PLAYER.id,
+						mysteryBox: FIRST_MYSTERY_BOX.id
 					})
 				);
 
-			const newCurrentName = services.playerService.getCurrentName(richPlayer.id);
-			expect(newCurrentName).toEqual(richPlayer.currentName + recievedCharacterValues);
+			const newCurrentName = services.playerService.getCurrentName(RICH_PLAYER.id);
+			expect(newCurrentName).toEqual(RICH_PLAYER.currentName + recievedCharacterValues);
 		});
 
 		it('should cost 10% less if the player has the discount perk', () => {
@@ -169,7 +177,7 @@ describe('buy-mystery-box.workflow', () => {
 				buyMysteryBox({
 					...getNamesmithServices(),
 					player: playerWithPerk,
-					mysteryBox: defaultMysteryBox.id
+					mysteryBox: FIRST_MYSTERY_BOX.id
 				})
 			);
 
@@ -187,14 +195,14 @@ describe('buy-mystery-box.workflow', () => {
 				buyMysteryBox({
 					...getNamesmithServices(),
 					player: playerWithPerk,
-					mysteryBox: defaultMysteryBox.id
+					mysteryBox: FIRST_MYSTERY_BOX.id
 				})
 			);
 
-			makeSure(result.recievedCharacterValues).hasLengthOf(2);
-			makeSure(result.recievedCharacterValues[0]).is(result.recievedCharacterValues[1]);
+			makeSure(result.receivedCharacterValues).hasLengthOf(2);
+			makeSure(result.receivedCharacterValues[0]).is(result.receivedCharacterValues[1]);
 			makeSure(result.player.inventory).is(
-				playerWithPerk.inventory + result.recievedCharacterValues
+				playerWithPerk.inventory + result.receivedCharacterValues
 			);
 		})
 
@@ -220,7 +228,7 @@ describe('buy-mystery-box.workflow', () => {
 			const result = buyMysteryBox({
 				...getNamesmithServices(),
 				player: INVALID_PLAYER_ID,
-				mysteryBox: defaultMysteryBox.id
+				mysteryBox: FIRST_MYSTERY_BOX.id
 			})
 
 			makeSure(result.isNotAPlayer()).isTrue();
@@ -229,7 +237,7 @@ describe('buy-mystery-box.workflow', () => {
 		it('should throw an error if no mystery box is found', () => {
 			const result = buyMysteryBox({
 				...getNamesmithServices(),
-				player: richPlayer.id,
+				player: RICH_PLAYER.id,
 				mysteryBox: INVALID_MYSTERY_BOX_ID
 			});
 

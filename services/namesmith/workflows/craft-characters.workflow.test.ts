@@ -8,10 +8,12 @@ import { setupMockNamesmith } from "../mocks/mock-setup";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PlayerService } from "../services/player.service";
 import { RecipeService } from "../services/recipe.service";
-import { craftCharacters } from "./craft-characters.workflow";
+import { craftCharacters } from './craft-characters.workflow';
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { addMockRecipe } from "../mocks/mock-data/mock-recipes";
 import { returnIfNotFailure } from "../utilities/workflow.utility";
+import { getLatestActivityLog } from "../mocks/mock-data/mock-activity-logs";
+import { ActivityTypes } from "../types/activity-log.types";
 
 describe('craft-character.workflow', () => {
 	let recipeService: RecipeService;
@@ -35,6 +37,28 @@ describe('craft-character.workflow', () => {
 	});
 
 	describe('craftCharacter()', () => {
+		it('creates an activity log with accurate metadata.', () => {
+			const player = addMockPlayer(db, {
+				inventory: 'aabbccdd',
+				currentName: 'abcd'
+			});
+			const recipe = addMockRecipe(db, {
+				inputCharacters: 'abb',
+				outputCharacters: 'c'
+			});
+
+			craftCharacters({player, recipe});
+
+			const activityLog = getLatestActivityLog(db);
+			makeSure(activityLog.player.id).is(player.id);
+			makeSure(activityLog.type).is(ActivityTypes.CRAFT_CHARACTERS);
+			makeSure(activityLog.nameChangedFrom).is('abcd');
+			makeSure(activityLog.currentName).is('acdc');
+			makeSure(activityLog.charactersGained).is('c');
+			makeSure(activityLog.charactersLost).is('abb');
+			makeSure(activityLog.involvedRecipe!.id).is(recipe.id);
+		});
+
 		it('should return the player and recipe in the correct state.', () => {
 			const player = addMockPlayer(db, {
 				inventory: 'aabbccdd'

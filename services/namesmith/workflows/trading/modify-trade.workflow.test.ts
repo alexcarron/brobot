@@ -126,7 +126,7 @@ describe('modifyTrade()', () => {
   });
 
   it('returns a TradeAlreadyRespondedToError if the trade has already been accepted', () => {
-		tradeService.accept(MOCK_TRADE);
+		tradeService.updateStatusToAccepted(MOCK_TRADE);
 
 		const result = modifyTrade({
 			...getNamesmithServices(),

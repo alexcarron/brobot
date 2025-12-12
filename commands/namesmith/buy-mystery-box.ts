@@ -69,7 +69,7 @@ export const command = new SlashCommand({
 			);
 		}
 
-		const { recievedCharacterValues, mysteryBox, tokenCost, player, wasRefunded, gotDuplicate, gotAnotherCharacter } = result;
+		const { receivedCharacterValues: recievedCharacterValues, mysteryBox, tokenCost, player, wasRefunded, gotDuplicate, gotAnotherCharacter } = result;
 		const newTokenCount = player.tokens;
 		const newInventory = player.inventory;
 

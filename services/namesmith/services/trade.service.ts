@@ -80,10 +80,10 @@ export class TradeService {
 	}
 
 	/**
-	 * Accepts a trade request, transferring characters between the two players.
+	 * Sets the status of the given trade to accepted.
 	 * @param trade - The trade request to accept.
 	 */
-	accept(trade: TradeResolvable): void {
+	updateStatusToAccepted(trade: TradeResolvable): void {
 		const tradeID = this.resolveID(trade);
 		this.tradeRepository.setStatus(
 			tradeID, TradeStatuses.ACCEPTED
@@ -91,10 +91,10 @@ export class TradeService {
 	}
 
 	/**
-	 * Declines a trade request.
+	 * Declines a trade request, setting its status to declined.
 	 * @param trade - The trade request to decline.
 	 */
-	decline(trade: TradeResolvable): void {
+	updateStatusToDeclined(trade: TradeResolvable): void {
 		const tradeID = this.resolveID(trade);
 		this.tradeRepository.setStatus(
 			tradeID, TradeStatuses.DECLINED

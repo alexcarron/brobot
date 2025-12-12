@@ -173,7 +173,7 @@ export class ActivityLogRepository {
 	toPartialDBActivityLog(
 		activityLogDefinition: Partial<ActivityLogDefinition>
 	): Partial<DBActivityLog> {
-		const { id, timeOccured, player, type, tokensDifference, involvedPlayer, involvedRecipe, involvedQuest, involvedTrade, involvedPerk, involvedRole, involvedMysteryBox } = activityLogDefinition;
+		const { id, timeOccured, player, type, nameChangedFrom, currentName, charactersGained, charactersLost, tokensDifference, involvedPlayer, involvedRecipe, involvedQuest, involvedTrade, involvedPerk, involvedRole, involvedMysteryBox } = activityLogDefinition;
 
 		const playerID = resolveOptional(player,
 			this.playerRepository.resolveID.bind(this.playerRepository)
@@ -205,6 +205,10 @@ export class ActivityLogRepository {
 			timeOccured: DBDate.orUndefined.fromDomain(timeOccured),
 			playerID,
 			type,
+			nameChangedFrom,
+			currentName,
+			charactersGained,
+			charactersLost,
 			tokensDifference,
 			involvedPlayerID,
 			involvedRecipeID,
@@ -267,12 +271,14 @@ export class ActivityLogRepository {
 	) {
 		this.throwIfAnEntityDoesNotExist(activityLogDefinition);
 
-		let {id, timeOccured} = activityLogDefinition;
-		const {tokensDifference} = activityLogDefinition;
+		let {id, timeOccured, currentName} = activityLogDefinition;
+		const {tokensDifference, nameChangedFrom, player, charactersGained, charactersLost} = activityLogDefinition;
 
 		if (timeOccured === undefined)
 			timeOccured = new Date();
 
+		if (currentName === undefined)
+			currentName = this.playerRepository.resolvePlayer(player).currentName;
 
 		if (id !== undefined) {
 			if (this.doesActivityLogExist(id))
@@ -281,8 +287,18 @@ export class ActivityLogRepository {
 
 		const insertedFields = this.toPartialDBActivityLog({
 			...activityLogDefinition,
-			tokensDifference: tokensDifference ?? 0,
 			timeOccured: timeOccured,
+			nameChangedFrom: nameChangedFrom !== undefined
+				? nameChangedFrom
+				: null,
+			currentName: currentName,
+			charactersGained: charactersGained !== undefined
+				? charactersGained
+				: null,
+			charactersLost: charactersLost !== undefined
+				? charactersLost
+				: null,
+			tokensDifference: tokensDifference ?? 0,
 		});
 
 		id = this.db.insertIntoTable('activityLog', insertedFields);
