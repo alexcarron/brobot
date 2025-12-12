@@ -4,11 +4,11 @@ import { ActivityLogRepository } from "../repositories/activity-log.repository";
 import { ActivityLog, ActivityTypes } from "../types/activity-log.types";
 import { MysteryBoxResolvable } from "../types/mystery-box.types";
 import { PerkResolvable } from "../types/perk.types";
-import { PlayerResolvable } from "../types/player.types";
+import { PlayerID, PlayerResolvable } from "../types/player.types";
 import { QuestResolvable } from "../types/quest.types";
-import { RecipeResolvable } from "../types/recipe.types";
+import { Recipe } from "../types/recipe.types";
 import { RoleResolvable } from "../types/role.types";
-import { TradeResolvable } from "../types/trade.types";
+import { Trade, TradeResolvable } from "../types/trade.types";
 
 /**
  * Provides methods for interacting with activity logs.
@@ -29,20 +29,45 @@ export class ActivityLogService {
 		return ActivityLogService.fromDB(db);
 	}
 
+	logChangeName({ playerChangingName, nameBefore }: {
+		playerChangingName: PlayerResolvable;
+		nameBefore: string;
+	}): ActivityLog {
+		return this.activityLogRepository.addActivityLog({
+			type: ActivityTypes.CHANGE_NAME,
+			player: playerChangingName,
+			nameChangedFrom: nameBefore,
+		});
+	}
+
+	logPublishName({ playerPublishingName }: {
+		playerPublishingName: PlayerResolvable;
+	}): ActivityLog {
+		return this.activityLogRepository.addActivityLog({
+			type: ActivityTypes.PUBLISH_NAME,
+			player: playerPublishingName,
+		});
+	}
+
 	/**
 	 * Logs a character crafting activity.
 	 * @param parameters - The parameters which include:
 	 * @param parameters.playerCrafting - The player who is crafting.
 	 * @param parameters.recipeUsed - The recipe being used for crafting.
+	 * @param parameters.nameBefore - The name of the character before crafting.
 	 * @returns The created activity log object.
 	 */
-	logCraftCharacters({ playerCrafting, recipeUsed }: {
+	logCraftCharacters({ playerCrafting, recipeUsed, nameBefore }: {
 		playerCrafting: PlayerResolvable;
-		recipeUsed: RecipeResolvable;
+		recipeUsed: Recipe;
+		nameBefore: string;
 	}): ActivityLog {
 		return this.activityLogRepository.addActivityLog({
 			type: ActivityTypes.CRAFT_CHARACTERS,
 			player: playerCrafting,
+			nameChangedFrom: nameBefore,
+			charactersGained: recipeUsed.outputCharacters,
+			charactersLost: recipeUsed.inputCharacters,
 			involvedRecipe: recipeUsed,
 		});
 	}
@@ -71,21 +96,38 @@ export class ActivityLogService {
 	/**
 	 * Logs an activity log when a player accepts a trade.
 	 * @param parameters - The parameters which include:
-	 * @param parameters.playerAcceptingTrade - The player who is accepting the trade.
+	 * @param parameters.playerAcceptingID - The id of the player who is accepting the trade.
 	 * @param parameters.playerAwaitingResponse - The player who was awaiting a response for the trade.
 	 * @param parameters.trade - The trade being accepted.
+	 * @param parameters.nameBefore - The name of the player before the trade was accepted.
+	 * @param parameters.charactersGained - The characters gained from the trade.
+	 * @param parameters.charactersLost - The characters lost in the trade.
 	 * @returns The created activity log object.
 	 */
-	logAcceptTrade({ playerAcceptingTrade, playerAwaitingResponse, trade }: {
-		playerAcceptingTrade: PlayerResolvable;
+	logAcceptTrade({ playerAcceptingID, playerAwaitingResponse, trade, nameBefore }: {
+		playerAcceptingID: PlayerID;
 		playerAwaitingResponse: PlayerResolvable;
-		trade: TradeResolvable;
+		trade: Trade;
+		nameBefore: string;
 	}): ActivityLog {
+	const charactersAcceptorGained =
+		playerAcceptingID === trade.initiatingPlayer.id
+			? trade.requestedCharacters
+			: trade.offeredCharacters;
+
+	const charactersAcceptorLost =
+		playerAcceptingID === trade.initiatingPlayer.id
+			? trade.offeredCharacters
+			: trade.requestedCharacters;
+
 		return this.activityLogRepository.addActivityLog({
 			type: ActivityTypes.ACCEPT_TRADE,
-			player: playerAcceptingTrade,
+			player: playerAcceptingID,
 			involvedPlayer: playerAwaitingResponse,
 			involvedTrade: trade,
+			nameChangedFrom: nameBefore,
+			charactersGained: charactersAcceptorGained,
+			charactersLost: charactersAcceptorLost,
 		});
 	}
 
@@ -137,18 +179,24 @@ export class ActivityLogService {
 	 * @param parameters.playerBuyingBox - The player who is buying the mystery box.
 	 * @param parameters.mysteryBox - The mystery box being bought.
 	 * @param parameters.tokensSpent - The number of tokens spent on the mystery box.
+	 * @param parameters.nameBefore - The name of the player before the mystery box was bought.
+	 * @param parameters.receivedCharacters - The characters received from the mystery box.
 	 * @returns The created activity log object.
 	 */
-	logBuyMysteryBox({ playerBuyingBox, tokensSpent, mysteryBox }: {
+	logBuyMysteryBox({ playerBuyingBox, tokensSpent, mysteryBox, nameBefore, receivedCharacters }: {
 		playerBuyingBox: PlayerResolvable;
 		mysteryBox: MysteryBoxResolvable;
 		tokensSpent: number;
+		nameBefore: string;
+		receivedCharacters: string;
 	}): ActivityLog {
 		return this.activityLogRepository.addActivityLog({
 			type: ActivityTypes.BUY_MYSTERY_BOX,
 			player: playerBuyingBox,
 			involvedMysteryBox: mysteryBox,
 			tokensDifference: -tokensSpent,
+			nameChangedFrom: nameBefore,
+			charactersGained: receivedCharacters,
 		});
 	}
 
@@ -193,16 +241,25 @@ export class ActivityLogService {
 	 * @param parameters - The parameters which include:
 	 * @param parameters.playerCompletingQuest - The player who is completing the quest.
 	 * @param parameters.questCompleted - The quest being completed.
+	 * @param parameters.tokensRewarded - The number of tokens rewarded for completing the quest.
+	 * @param parameters.charactersRewarded - The characters rewarded for completing the quest.
+	 * @param parameters.nameBefore - The name of the player before the quest was completed.
 	 * @returns The created activity log object.
 	 */
-	logCompleteQuest({ playerCompletingQuest, questCompleted }: {
+	logCompleteQuest({ playerCompletingQuest, questCompleted, tokensRewarded, charactersRewarded, nameBefore }: {
 		playerCompletingQuest: PlayerResolvable;
 		questCompleted: QuestResolvable;
+		tokensRewarded?: number;
+		charactersRewarded?: string;
+		nameBefore: string;
 	}): ActivityLog {
 		return this.activityLogRepository.addActivityLog({
 			type: ActivityTypes.COMPLETE_QUEST,
 			player: playerCompletingQuest,
 			involvedQuest: questCompleted,
+			tokensDifference: tokensRewarded ?? 0,
+			nameChangedFrom: nameBefore,
+			charactersGained: charactersRewarded ?? null,
 		});
 	}
 

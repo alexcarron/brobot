@@ -11,7 +11,7 @@ export const command = new SlashCommand({
 		[ids.namesmith.roles.namesmither, ids.namesmith.roles.noName, ids.namesmith.roles.smithedName],
 	],
 	execute: async function execute(interaction) {
-		const { playerService } = getNamesmithServices();
+		const { playerService, activityLogService } = getNamesmithServices();
 
 		const playerID = interaction.user.id;
 
@@ -36,5 +36,8 @@ export const command = new SlashCommand({
 			return;
 
 		playerService.publishName(playerID);
-	}
+		activityLogService.logPublishName({
+			playerPublishingName: playerID,
+		});
+	},
 });

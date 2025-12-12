@@ -1,6 +1,6 @@
 import { getToday, getTomorrow, getYesterday } from "../../../utilities/date-time-utils";
 import { makeSure } from "../../../utilities/jest/jest-utils";
-import { INVALID_PLAYER_ID, INVALID_QUEST_ID, INVALID_RECIPE_ID, INVALID_TRADE_ID } from "../constants/test.constants";
+import { INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockActivityLog } from "../mocks/mock-data/mock-activity-logs";
 import { addMockMysteryBox } from "../mocks/mock-data/mock-mystery-boxes";
@@ -18,7 +18,7 @@ import { Quest } from "../types/quest.types";
 import { Recipe } from "../types/recipe.types";
 import { Role } from "../types/role.types";
 import { Trade } from "../types/trade.types";
-import { PlayerNotFoundError, QuestNotFoundError, RecipeNotFoundError, TradeNotFoundError } from "../utilities/error.utility";
+import { PlayerNotFoundError } from "../utilities/error.utility";
 import { ActivityLogService } from "./activity-log.service";
 
 describe('ActivityLogService', () => {
@@ -56,16 +56,52 @@ describe('ActivityLogService', () => {
 		TOMORROW = getTomorrow();
 	});
 
+	describe('logChangeName()', () => {
+		it('creates a new activity log for changing names', () => {
+			const activityLog = activityLogService.logChangeName({ playerChangingName: SOME_PLAYER.id, nameBefore: 'SOME_NAME' });
+
+			makeSure(activityLog).hasProperties({
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				nameChangedFrom: 'SOME_NAME',
+				currentName: SOME_PLAYER.currentName,
+			});
+
+			const resolvedActivityLog = activityLogService.activityLogRepository.getActivityLogOrThrow(activityLog.id);
+			makeSure(resolvedActivityLog).is(activityLog);
+		});
+	});
+
+	describe('logPublishName()', () => {
+		it('creates a new activity log for publishing names', () => {
+			const activityLog = activityLogService.logPublishName({ playerPublishingName: SOME_PLAYER.id });
+
+			makeSure(activityLog).hasProperties({
+				player: SOME_PLAYER,
+				type: ActivityTypes.PUBLISH_NAME,
+				currentName: SOME_PLAYER.currentName,
+			});
+
+			const resolvedActivityLog = activityLogService.activityLogRepository.getActivityLogOrThrow(activityLog.id);
+			makeSure(resolvedActivityLog).is(activityLog);
+		});
+	});
+
 	describe('logCraftCharacter()', () => {
 		it('creates a new activity log for crafting characters', () => {
 			const activityLog = activityLogService.logCraftCharacters({
 				playerCrafting: SOME_PLAYER.id,
-				recipeUsed: SOME_RECIPE.id
+				recipeUsed: SOME_RECIPE,
+				nameBefore: 'SOME_NAME',
 			});
 
 			makeSure(activityLog).hasProperties({
 				player: SOME_PLAYER,
 				type: ActivityTypes.CRAFT_CHARACTERS,
+				nameChangedFrom: 'SOME_NAME',
+				currentName: SOME_PLAYER.currentName,
+				charactersGained: SOME_RECIPE.outputCharacters,
+				charactersLost: SOME_RECIPE.inputCharacters,
 				tokensDifference: 0,
 				involvedRecipe: SOME_RECIPE,
 				involvedPlayer: null,
@@ -73,24 +109,6 @@ describe('ActivityLogService', () => {
 
 			const resolvedActivityLog = activityLogService.activityLogRepository.getActivityLogOrThrow(activityLog.id);
 			makeSure(resolvedActivityLog).is(activityLog);
-		});
-
-		it('throws a PlayerNotFoundError if the given player resolvable is invalid', () => {
-			makeSure(() =>
-				activityLogService.logCraftCharacters({
-					playerCrafting: INVALID_PLAYER_ID,
-					recipeUsed: SOME_RECIPE.id
-				})
-			).throws(PlayerNotFoundError);
-		});
-
-		it('throws a RecipeNotFoundError if the given recipe resolvable is invalid', () => {
-			makeSure(() =>
-				activityLogService.logCraftCharacters({
-					playerCrafting: SOME_PLAYER.id,
-					recipeUsed: INVALID_RECIPE_ID
-				})
-			).throws(RecipeNotFoundError);
 		});
 	});
 
@@ -119,56 +137,35 @@ describe('ActivityLogService', () => {
 
 	describe('logAcceptTrade()', () => {
 		it('creates a new activity log for accepting a trade', () => {
+			const trade = addMockTrade(db, {
+				initiatingPlayer: OTHER_PLAYER.id,
+				recipientPlayer: SOME_PLAYER.id,
+				offeredCharacters: 'abc',
+				requestedCharacters: 'xyz',
+			})
 			const activityLog = activityLogService.logAcceptTrade({
-				playerAcceptingTrade: SOME_PLAYER.id,
+				playerAcceptingID: SOME_PLAYER.id,
 				playerAwaitingResponse: OTHER_PLAYER.id,
-				trade: SOME_TRADE,
+				trade: trade,
+				nameBefore: 'SOME_NAME',
 			});
 
 			makeSure(activityLog).hasProperties({
 				player: SOME_PLAYER,
 				type: ActivityTypes.ACCEPT_TRADE,
+				nameChangedFrom: 'SOME_NAME',
+				currentName: SOME_PLAYER.currentName,
+				charactersGained: 'abc',
+				charactersLost: 'xyz',
 				tokensDifference: 0,
 				involvedPlayer: OTHER_PLAYER,
 				involvedRecipe: null,
 				involvedQuest: null,
-				involvedTrade: SOME_TRADE,
+				involvedTrade: trade,
 			});
 
 			const resolved = activityLogService.activityLogRepository.getActivityLogOrThrow(activityLog.id);
 			makeSure(resolved).is(activityLog);
-		});
-
-		it('throws PlayerNotFoundError if accepting player is invalid', () => {
-			const OTHER_PLAYER = addMockPlayer(db);
-
-			makeSure(() =>
-				activityLogService.logAcceptTrade({
-					playerAcceptingTrade: INVALID_PLAYER_ID,
-					playerAwaitingResponse: OTHER_PLAYER.id,
-				trade: SOME_TRADE,
-				})
-			).throws(PlayerNotFoundError);
-		});
-
-		it('throws PlayerNotFoundError if awaiting-acceptance player is invalid', () => {
-			makeSure(() =>
-				activityLogService.logAcceptTrade({
-					playerAcceptingTrade: SOME_PLAYER.id,
-					playerAwaitingResponse: INVALID_PLAYER_ID,
-					trade: SOME_TRADE,
-				})
-			).throws(PlayerNotFoundError);
-		});
-
-		it('throws TradeNotFoundError if trade is invalid', () => {
-			makeSure(() =>
-				activityLogService.logAcceptTrade({
-					playerAcceptingTrade: SOME_PLAYER.id,
-					playerAwaitingResponse: OTHER_PLAYER.id,
-					trade: INVALID_TRADE_ID,
-				})
-			).throws(TradeNotFoundError);
 		});
 	});
 
@@ -223,12 +220,18 @@ describe('ActivityLogService', () => {
 			const activityLog = activityLogService.logBuyMysteryBox({
 				playerBuyingBox: SOME_PLAYER.id,
 				mysteryBox: SOME_MYSTERY_BOX.id,
-				tokensSpent: 150
+				tokensSpent: 150,
+				nameBefore: 'SOME_NAME',
+				receivedCharacters: 'SOME_CHARACTERS',
 			});
 
 			makeSure(activityLog).hasProperties({
 				player: SOME_PLAYER,
 				type: ActivityTypes.BUY_MYSTERY_BOX,
+				nameChangedFrom: 'SOME_NAME',
+				currentName: SOME_PLAYER.currentName,
+				charactersGained: 'SOME_CHARACTERS',
+				charactersLost: null,
 				tokensDifference: -150,
 				involvedPlayer: null,
 				involvedRecipe: null,
@@ -238,16 +241,6 @@ describe('ActivityLogService', () => {
 
 			const resolved = activityLogService.activityLogRepository.getActivityLogOrThrow(activityLog.id);
 			makeSure(resolved).is(activityLog);
-		});
-
-		it('throws PlayerNotFoundError if the buying player is invalid', () => {
-			makeSure(() =>
-				activityLogService.logBuyMysteryBox({
-					playerBuyingBox: INVALID_PLAYER_ID,
-					mysteryBox: SOME_MYSTERY_BOX.id,
-					tokensSpent: 50
-				})
-			).throws(PlayerNotFoundError);
 		});
 	});
 
@@ -315,13 +308,20 @@ describe('ActivityLogService', () => {
 		it('creates a new activity log for completing a quest', () => {
 			const activityLog = activityLogService.logCompleteQuest({
 				playerCompletingQuest: SOME_PLAYER.id,
-				questCompleted: SOME_QUEST.id
+				questCompleted: SOME_QUEST.id,
+				tokensRewarded: 100,
+				nameBefore: 'SOME_NAME',
+				charactersRewarded: 'SOME_CHARACTERS',
 			});
 
 			makeSure(activityLog).hasProperties({
 				player: SOME_PLAYER,
 				type: ActivityTypes.COMPLETE_QUEST,
-				tokensDifference: 0,
+				nameChangedFrom: 'SOME_NAME',
+				currentName: SOME_PLAYER.currentName,
+				charactersGained: 'SOME_CHARACTERS',
+				charactersLost: null,
+				tokensDifference: 100,
 				involvedQuest: SOME_QUEST,
 				involvedPlayer: null,
 				involvedRecipe: null,
@@ -329,24 +329,6 @@ describe('ActivityLogService', () => {
 
 			const resolved = activityLogService.activityLogRepository.getActivityLogOrThrow(activityLog.id);
 			makeSure(resolved).is(activityLog);
-		});
-
-		it('throws PlayerNotFoundError if completing player is invalid', () => {
-			makeSure(() =>
-				activityLogService.logCompleteQuest({
-					playerCompletingQuest: INVALID_PLAYER_ID,
-					questCompleted: SOME_QUEST.id
-				})
-			).throws(PlayerNotFoundError);
-		});
-
-		it('throws QuestNotFoundError if the quest is invalid', () => {
-			makeSure(() =>
-				activityLogService.logCompleteQuest({
-					playerCompletingQuest: SOME_PLAYER.id,
-					questCompleted: INVALID_QUEST_ID
-				})
-			).throws(QuestNotFoundError);
 		});
 	});
 
@@ -448,7 +430,8 @@ describe('ActivityLogService', () => {
 		it('returns true if the player has completed the quest', () => {
 			activityLogService.logCompleteQuest({
 				playerCompletingQuest: SOME_PLAYER.id,
-				questCompleted: SOME_QUEST.id
+				questCompleted: SOME_QUEST.id,
+				nameBefore: 'SOME_NAME',
 			});
 
 			makeSure(
@@ -461,7 +444,8 @@ describe('ActivityLogService', () => {
 
 			activityLogService.logCompleteQuest({
 				playerCompletingQuest: SOME_PLAYER.id,
-				questCompleted: OTHER_QUEST.id
+				questCompleted: OTHER_QUEST.id,
+				nameBefore: 'SOME_NAME',
 			});
 		});
 
@@ -470,7 +454,8 @@ describe('ActivityLogService', () => {
 
 			activityLogService.logCompleteQuest({
 				playerCompletingQuest: OTHER_PLAYER.id,
-				questCompleted: SOME_QUEST.id
+				questCompleted: SOME_QUEST.id,
+				nameBefore: 'SOME_NAME',
 			});
 		});
 
@@ -538,7 +523,9 @@ describe('ActivityLogService', () => {
 			activityLogService.logBuyMysteryBox({
 				playerBuyingBox: SOME_PLAYER.id,
 				mysteryBox: SOME_MYSTERY_BOX.id,
-				tokensSpent: 10
+				tokensSpent: 10,
+				nameBefore: 'SOME_NAME',
+				receivedCharacters: 'SOME_CHARACTERS',
 			});
 
 			makeSure(activityLogService.getTokensPlayerSpentSince(
@@ -550,7 +537,9 @@ describe('ActivityLogService', () => {
 			activityLogService.logBuyMysteryBox({
 				playerBuyingBox: SOME_PLAYER.id,
 				mysteryBox: SOME_MYSTERY_BOX.id,
-				tokensSpent: 10
+				tokensSpent: 10,
+				nameBefore: 'SOME_NAME',
+				receivedCharacters: 'SOME_CHARACTERS',
 			});
 
 			activityLogService.logMineTokens({
@@ -561,7 +550,9 @@ describe('ActivityLogService', () => {
 			activityLogService.logBuyMysteryBox({
 				playerBuyingBox: SOME_PLAYER.id,
 				mysteryBox: SOME_MYSTERY_BOX.id,
-				tokensSpent: 15
+				tokensSpent: 15,
+				nameBefore: 'SOME_NAME',
+				receivedCharacters: 'SOME_CHARACTERS',
 			});
 
 			makeSure(activityLogService.getTokensPlayerSpentSince(

@@ -65,7 +65,7 @@ export const declineTrade = (
 		return result.failure.tradeAwaitingDifferentPlayer({playerAwaitingTrade});
 	}
 
-	tradeService.decline(tradeResolvable);
+	tradeService.updateStatusToDeclined(tradeResolvable);
 
 	const playerDeclinedID =
 		trade.status === TradeStatuses.AWAITING_INITIATOR

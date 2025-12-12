@@ -3,23 +3,23 @@ import { getBetween, getRandomUUID } from "../../../../utilities/random-utils";
 import { Quests } from "../../constants/quests.constants";
 import { FREEBIE_QUEST_NAME, INVALID_PLAYER_ID, INVALID_QUEST_ID } from "../../constants/test.constants";
 import { DatabaseQuerier } from "../../database/database-querier";
+import { getLatestActivityLog } from "../../mocks/mock-data/mock-activity-logs";
 import { forcePlayerToBuyNewMysteryBox } from "../../mocks/mock-data/mock-mystery-boxes";
 import { addMockPlayer, forcePlayerToClaimRefill, forcePlayerToMineTokens, forcePlayerToPublishName } from '../../mocks/mock-data/mock-players';
 import { addMockQuest } from "../../mocks/mock-data/mock-quests";
 import { addMockRecipe, forcePlayerToCraft } from '../../mocks/mock-data/mock-recipes';
 import { forcePlayerToAcceptNewTrade, forcePlayerToInitiateTrade } from '../../mocks/mock-data/mock-trades';
 import { setupMockNamesmith } from "../../mocks/mock-setup";
-import { ActivityLogService } from "../../services/activity-log.service";
 import { PlayerService } from "../../services/player.service";
+import { ActivityTypes } from "../../types/activity-log.types";
 import { Player } from "../../types/player.types";
 import { Quest } from "../../types/quest.types";
 import { Recipe } from '../../types/recipe.types';
-import { assertNotFailure, returnIfNotFailure } from "../../utilities/workflow.utility";
+import { throwIfNotFailure, returnIfNotFailure } from "../../utilities/workflow.utility";
 import { completeQuest } from "./complete-quest.workflow";
 
 describe('complete-quest.workflow.ts', () => {
   let db: DatabaseQuerier;
-	let activityLogService: ActivityLogService;
 	let playerService: PlayerService;
 
   let SOME_QUEST: Quest;
@@ -29,7 +29,7 @@ describe('complete-quest.workflow.ts', () => {
 	let THREE_DIFFERENT_PLAYERS: Player[];
 
   beforeEach(() => {
-    ({ db, activityLogService, playerService } = setupMockNamesmith());
+    ({ db, playerService } = setupMockNamesmith());
     SOME_PLAYER = addMockPlayer(db, {});
     SOME_QUEST = addMockQuest(db, {
 			name: FREEBIE_QUEST_NAME + getRandomUUID()
@@ -49,6 +49,33 @@ describe('complete-quest.workflow.ts', () => {
   });
 
   describe('completeQuest()', () => {
+		it('creates an activity log with accurate metadata', () => {
+			const namedPlayer = addMockPlayer(db, { currentName: 'SOME_NAME' });
+
+			const questWithRewards = addMockQuest(db, {
+				name: FREEBIE_QUEST_NAME + getRandomUUID(),
+				tokensReward: 28,
+				charactersReward: 'Abc34#🔥',
+			});
+
+			throwIfNotFailure(
+				completeQuest({
+					playerResolvable: namedPlayer,
+					questResolvable: questWithRewards
+				})
+			);
+
+			const activityLog = getLatestActivityLog(db);
+			makeSure(activityLog.player.id).is(namedPlayer.id);
+			makeSure(activityLog.type).is(ActivityTypes.COMPLETE_QUEST);
+			makeSure(activityLog.nameChangedFrom).is('SOME_NAME');
+			makeSure(activityLog.currentName).is('SOME_NAME' + 'Abc34#🔥');
+			makeSure(activityLog.tokensDifference).is(28);
+			makeSure(activityLog.charactersGained).is('Abc34#🔥');
+			makeSure(activityLog.charactersLost).isNull();
+			makeSure(activityLog.involvedQuest!.id).is(questWithRewards.id);
+		});
+
 		it('should give the rewards of the quest to the player', () => {
 			const questWithRewards = addMockQuest(db, {
 				name: FREEBIE_QUEST_NAME + getRandomUUID(),
@@ -56,7 +83,7 @@ describe('complete-quest.workflow.ts', () => {
 				charactersReward: 'Abc34#🔥',
 			});
 
-			assertNotFailure(
+			throwIfNotFailure(
 				completeQuest({
 					playerResolvable: SOME_PLAYER,
 					questResolvable: questWithRewards
@@ -68,17 +95,6 @@ describe('complete-quest.workflow.ts', () => {
 			makeSure(resolvedPlayer.tokens).is(SOME_PLAYER.tokens + 28);
 			makeSure(resolvedPlayer.inventory).is(SOME_PLAYER.inventory + 'Abc34#🔥');
 		});
-
-    it('should log the quest as completed in the activity log', () => {
-      const activityLogSpy = jest.spyOn(activityLogService, 'logCompleteQuest');
-
-      completeQuest({ playerResolvable: SOME_PLAYER, questResolvable: SOME_QUEST });
-
-      makeSure(activityLogSpy).toHaveBeenCalledWith({
-        playerCompletingQuest: SOME_PLAYER,
-        questCompleted: SOME_QUEST,
-      });
-    });
 
     it('should return a success result if the player successfully completes the quest', () => {
       const result = returnIfNotFailure(

@@ -59,6 +59,7 @@ export const craftCharacters = (
 		return result.failure.recipeNotUnlocked({});
 	}
 
+	const nameBefore = playerService.getCurrentName(playerResolvable);
 	recipeService.giveOutputAndTakeInputCharactersFromPlayer(recipeResolvable, playerResolvable);
 
 	const newInventory = playerService.getInventory(playerResolvable);
@@ -67,7 +68,8 @@ export const craftCharacters = (
 
 	activityLogService.logCraftCharacters({
 		playerCrafting: playerResolvable,
-		recipeUsed: recipeResolvable,
+		recipeUsed,
+		nameBefore,
 	});
 
 	return result.success({

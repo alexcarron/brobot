@@ -3,13 +3,21 @@ import { makeSure } from "../../../utilities/jest/jest-utils";
 import { INVALID_ACTIVITY_LOG_ID, INVALID_PERK_ID, INVALID_PLAYER_ID, INVALID_QUEST_ID, INVALID_RECIPE_ID, INVALID_ROLE_ID, INVALID_TRADE_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockActivityLog } from "../mocks/mock-data/mock-activity-logs";
+import { addMockMysteryBox } from "../mocks/mock-data/mock-mystery-boxes";
+import { addMockPerk } from "../mocks/mock-data/mock-perks";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { addMockQuest } from "../mocks/mock-data/mock-quests";
 import { addMockRecipe } from "../mocks/mock-data/mock-recipes";
+import { addMockRole } from "../mocks/mock-data/mock-roles";
+import { addMockTrade } from "../mocks/mock-data/mock-trades";
 import { ActivityLog, ActivityTypes } from "../types/activity-log.types";
+import { MysteryBox } from "../types/mystery-box.types";
+import { Perk } from "../types/perk.types";
 import { Player } from "../types/player.types";
 import { Quest } from "../types/quest.types";
 import { Recipe } from "../types/recipe.types";
+import { Role } from "../types/role.types";
+import { Trade } from "../types/trade.types";
 import { ActivityLogAlreadyExistsError, ActivityLogNotFoundError, PerkNotFoundError, PlayerNotFoundError, QuestNotFoundError, RecipeNotFoundError, RoleNotFoundError, TradeNotFoundError } from "../utilities/error.utility";
 import { ActivityLogRepository } from "./activity-log.repository";
 
@@ -22,6 +30,10 @@ describe('ActivityLogRepository', () => {
 	let INVOLVED_PLAYER: Player;
 	let SOME_RECIPE: Recipe;
 	let SOME_QUEST: Quest;
+	let SOME_TRADE: Trade;
+	let SOME_PERK: Perk;
+	let SOME_ROLE: Role;
+	let SOME_MYSTERY_BOX: MysteryBox;
 
 	beforeEach(() => {
 		activityLogRepository = ActivityLogRepository.asMock();
@@ -31,6 +43,10 @@ describe('ActivityLogRepository', () => {
 		INVOLVED_PLAYER = addMockPlayer(db);
 		SOME_RECIPE = addMockRecipe(db);
 		SOME_QUEST = addMockQuest(db);
+		SOME_TRADE = addMockTrade(db);
+		SOME_PERK = addMockPerk(db);
+		SOME_ROLE = addMockRole(db);
+		SOME_MYSTERY_BOX = addMockMysteryBox(db);
 
 		SOME_ACTIVITY_LOG = addMockActivityLog(db, {
 			player: SOME_PLAYER.id,
@@ -67,30 +83,57 @@ describe('ActivityLogRepository', () => {
 	});
 
 	describe('addActivityLog()', () => {
-		it('adds an activity log to the database', () => {
+		it('adds an activity log to the database with every field', () => {
 			const activityLog = activityLogRepository.addActivityLog({
 				id: 10000001,
 				player: SOME_PLAYER.id,
 				type: ActivityTypes.BUY_MYSTERY_BOX,
+				nameChangedFrom: 'SOME_OLD_NAME',
+				currentName: 'SOME_CURRENT_NAME',
+				charactersGained: 'abc',
+				charactersLost: 'xyz',
 				tokensDifference: -50,
 				involvedPlayer: INVOLVED_PLAYER.id,
 				involvedRecipe: SOME_RECIPE.id,
 				involvedQuest: SOME_QUEST.id,
+				involvedTrade: SOME_TRADE.id,
+				involvedPerk: SOME_PERK.id,
+				involvedRole: SOME_ROLE.id,
+				involvedMysteryBox: SOME_MYSTERY_BOX.id,
 			});
 
 			makeSure(activityLog).hasProperties({
 				id: 10000001,
 				player: SOME_PLAYER,
 				type: ActivityTypes.BUY_MYSTERY_BOX,
+				nameChangedFrom: 'SOME_OLD_NAME',
+				currentName: 'SOME_CURRENT_NAME',
+				charactersGained: 'abc',
+				charactersLost: 'xyz',
 				tokensDifference: -50,
 				involvedPlayer: INVOLVED_PLAYER,
 				involvedRecipe: SOME_RECIPE,
 				involvedQuest: SOME_QUEST,
+				involvedTrade: SOME_TRADE,
+				involvedPerk: SOME_PERK,
+				involvedRole: SOME_ROLE,
+				involvedMysteryBox: SOME_MYSTERY_BOX,
 			});
 
 			const retrievedActivityLog = activityLogRepository.getActivityLogOrThrow(10000001);
 
 			makeSure(retrievedActivityLog).is(activityLog);
+		});
+
+		it('retrieves the player\'s current name if one is not provided', () => {
+			const activityLog = activityLogRepository.addActivityLog({
+				player: SOME_PLAYER.id,
+				type: ActivityTypes.BUY_MYSTERY_BOX,
+			});
+
+			makeSure(activityLog).hasProperties({
+				currentName: SOME_PLAYER.currentName,
+			});
 		});
 
 		it('generates an id if one is not provided', () => {
@@ -106,7 +149,7 @@ describe('ActivityLogRepository', () => {
 			makeSure(retrievedActivityLog).is(activityLog);
 		});
 
-		it('handles optional fields', () => {
+		it('handles optional fields that must resolve to a value', () => {
 			const activityLog = activityLogRepository.addActivityLog({
 				player: SOME_PLAYER.id,
 				type: ActivityTypes.BUY_MYSTERY_BOX,
@@ -115,6 +158,10 @@ describe('ActivityLogRepository', () => {
 			makeSure(activityLog).hasProperties({
 				player: SOME_PLAYER,
 				type: ActivityTypes.BUY_MYSTERY_BOX,
+				nameChangedFrom: null,
+				currentName: SOME_PLAYER.currentName,
+				charactersGained: null,
+				charactersLost: null,
 				tokensDifference: 0,
 			});
 			makeSure(activityLog.involvedPlayer).isNull();

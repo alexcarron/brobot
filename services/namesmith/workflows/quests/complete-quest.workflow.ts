@@ -204,12 +204,15 @@ export function completeQuest(
 			return result.failure.questCriteriaNotDefined({questName: quest.name});
 	}
 
-	// Give the player the rewards for the request
+	const nameBefore = player.currentName;
 	questService.givePlayerRewards(playerResolvable, questResolvable);
 
 	activityLogService.logCompleteQuest({
 		playerCompletingQuest: playerResolvable,
 		questCompleted: questResolvable,
+		tokensRewarded: quest.tokensReward,
+		charactersRewarded: quest.charactersReward,
+		nameBefore,
 	});
 
 	return result.success({
