@@ -67,7 +67,7 @@ export const perks = [
 	{
 		id: 14,
 		name: "Idle Interest",
-		description: "Earn 150 tokens at the start of evert day if you did not spend any tokens yesterday."
+		description: "Earn 150 tokens at the start of every day if you did not spend any tokens yesterday."
 	},
 	{
 		id: 15,

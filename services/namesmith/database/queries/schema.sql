@@ -109,7 +109,7 @@ CREATE TABLE IF NOT EXISTS activityLog (
 	playerID TEXT NOT NULL REFERENCES player(id)
 		ON DELETE CASCADE ON UPDATE CASCADE,
 	type TEXT NOT NULL CHECK(type IN
-		('changeName', 'publishName', 'craftCharacters', 'initiateTrade', 'acceptTrade', 'declineTrade', 'modifyTrade', 'buyMysteryBox', 'mineTokens', 'claimRefill', 'completeQuest', 'pickPerk', 'chooseRole')
+		('changeName', 'publishName', 'mineTokens', 'claimRefill', 'buyMysteryBox', 'craftCharacters', 'initiateTrade', 'acceptTrade', 'declineTrade', 'modifyTrade', 'completeQuest', 'chooseRole', 'pickPerk')
 	),
 	tokensDifference INTEGER NOT NULL DEFAULT 0,
 	nameChangedFrom TEXT DEFAULT NULL,

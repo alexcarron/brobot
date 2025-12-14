@@ -251,7 +251,9 @@ export class GameStateService {
 			startTime, endTime, BIWEEKLY_PERK_DAYS_FROM_WEEK_START,
 		);
 		this.startPickAPerkCronJobs(pickAPerkTimes);
-		this.startDayStartCronJobs(pickAPerkTimes);
+
+		const dayStartTimes = this.getTimesDayStarts(startTime, endTime);
+		this.startDayStartCronJobs(dayStartTimes);
 	}
 
 	/**
