@@ -12,17 +12,17 @@ import { Role, RoleResolvable } from "./role.types";
 export const ActivityTypes = toEnumFromStrings(
 	'changeName',
 	'publishName',
+	'mineTokens',
+	'claimRefill',
+	'buyMysteryBox',
 	'craftCharacters',
 	'initiateTrade',
 	'acceptTrade',
 	'declineTrade',
 	'modifyTrade',
-	'buyMysteryBox',
-	'mineTokens',
-	'claimRefill',
 	'completeQuest',
-	'pickPerk',
 	'chooseRole',
+	'pickPerk',
 );
 
 export type ActivityType = ValuesOf<typeof ActivityTypes>;
