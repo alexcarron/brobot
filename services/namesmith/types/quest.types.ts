@@ -1,7 +1,7 @@
 import { toEnumFromStrings, ValuesOf } from "../../../utilities/enum-utilts";
-import { object, number, string, ExtractDomainType } from "../../../utilities/runtime-types-utils";
-import { WithOptional } from "../../../utilities/types/generic-types"
-import { DBBoolean } from "../utilities/db.utility";
+import { object, number, string, ExtractDomainType } from '../../../utilities/runtime-types-utils';
+import { WithOptional } from "../../../utilities/types/generic-types";
+import { DBBoolean, DBDate } from "../utilities/db.utility";
 
 export const DBQuestType = object.asTransformableType('Quest', {
 	id: number,
@@ -60,3 +60,22 @@ export type CharacterReward = {
 export type Reward =
 	| TokenReward
 	| CharacterReward
+
+
+export const DBShownDailyQuest = object.asTransformableType('MinimalShownDailyQuest', {
+	timeShown: DBDate,
+	questID: number,
+});
+export const toDBShownDailyQuest = DBShownDailyQuest.fromMinimalShownDailyQuest;
+export const asMinimalShownDailyQuest = DBShownDailyQuest.toMinimalShownDailyQuest;
+export type MinimalShownDailyQuest = ExtractDomainType<typeof DBShownDailyQuest>;
+
+export type ShownDailyQuest = {
+	timeShown: Date,
+	quest: Quest,
+};
+
+export type ShownDailyQuestDefinition = {
+	timeShown: Date;
+	quest: QuestResolvable;
+}

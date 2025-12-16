@@ -2,8 +2,8 @@ import { returnNonNullOrThrow } from "../../../utilities/error-utils";
 import { WithRequiredAndOneOther } from "../../../utilities/types/generic-types";
 import { isNumber, isString } from "../../../utilities/types/type-guards";
 import { DatabaseQuerier } from "../database/database-querier";
-import { asQuest, asQuests, Quest, QuestDefinition, QuestID, QuestName, QuestResolvable } from "../types/quest.types";
-import { QuestAlreadyExistsError, QuestNotFoundError } from "../utilities/error.utility";
+import { asMinimalShownDailyQuest, asQuest, asQuests, Quest, QuestDefinition, QuestID, QuestName, QuestResolvable, ShownDailyQuestDefinition, ShownDailyQuest, toDBShownDailyQuest } from "../types/quest.types";
+import { QuestAlreadyExistsError, QuestNotFoundError, ShownDailyQuestNotFoundError } from "../utilities/error.utility";
 import { toDBBool } from "../utilities/db.utility";
 import { createMockDB } from "../mocks/mock-database";
 
@@ -234,5 +234,50 @@ export class QuestRepository {
 			return this.getQuestOrThrow(id);
 		else
 			return this.getQuestByNameOrThrow(name!);
+	}
+
+	getShownDailyQuestOrThrow(
+		{timeShown, questID}: {
+			timeShown: Date,
+			questID: QuestID,
+		}
+	): ShownDailyQuest {
+		const row = this.db.getRow(
+			"SELECT * FROM shownDailyQuest WHERE timeShown = @timeShown AND questID = @questID",
+			toDBShownDailyQuest({timeShown, questID})
+		);
+
+		if (row === undefined)
+			throw new ShownDailyQuestNotFoundError({timeShown, questID});
+
+		const minimalShownDailyQuest = asMinimalShownDailyQuest(row);
+		const quest = this.getQuestOrThrow(minimalShownDailyQuest.questID);
+
+		return {
+			timeShown: minimalShownDailyQuest.timeShown,
+			quest,
+		};
+	}
+
+	addShownDailyQuest(
+		shownDailyQuestDefinition: ShownDailyQuestDefinition
+	): ShownDailyQuest {
+		const { timeShown, quest } = shownDailyQuestDefinition;
+		const questID = this.resolveID(quest);
+
+		this.db.insertIntoTable('shownDailyQuest',
+			toDBShownDailyQuest({timeShown, questID})
+		);
+
+		return this.getShownDailyQuestOrThrow({ timeShown, questID });
+	}
+
+	/**
+	 * Returns an array of all the quest IDs of the shown daily quests.
+	 * @returns An array of the quest IDs of the shown daily quests.
+	 */
+	getShownDailyQuestIDs(): QuestID[] {
+		const rows = this.db.getRows("SELECT questID FROM shownDailyQuest") as { questID: QuestID }[];
+		return rows.map(row => row.questID);
 	}
 }
