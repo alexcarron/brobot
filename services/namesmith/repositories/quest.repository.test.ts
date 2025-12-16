@@ -3,7 +3,7 @@ import { INVALID_QUEST_ID, INVALID_QUEST_NAME } from "../constants/test.constant
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockQuest } from "../mocks/mock-data/mock-quests";
 import { Quest } from "../types/quest.types";
-import { QuestNotFoundError } from "../utilities/error.utility";
+import { QuestNotFoundError, ShownDailyQuestNotFoundError } from "../utilities/error.utility";
 import { QuestRepository } from "./quest.repository";
 
 describe('QuestRepository', () => {
@@ -267,6 +267,67 @@ describe('QuestRepository', () => {
 
 			const resolvedQuest = questRepository.resolveQuest(quest.id);
 			makeSure(resolvedQuest).is(quest);
+		});
+	});
+
+	describe('addShownDailyQuest()', () => {
+		const TIME_SHOWN = new Date('2023-01-01');
+
+		it('adds a new shown daily quest to the database.', () => {
+			const quest = questRepository.addShownDailyQuest({
+				timeShown: TIME_SHOWN,
+				quest: SOME_QUEST.id,
+			});
+
+			makeSure(quest).is({
+				timeShown: TIME_SHOWN,
+				quest: SOME_QUEST,
+			});
+
+			const resolvedQuest = questRepository.getShownDailyQuestOrThrow({timeShown: TIME_SHOWN, questID: SOME_QUEST.id});
+			makeSure(resolvedQuest).is(quest);
+		});
+
+		it('throws a QuestNotFoundError if no quest with the given ID exists.', () => {
+			makeSure(() =>
+				questRepository.addShownDailyQuest({
+					timeShown: TIME_SHOWN,
+					quest: INVALID_QUEST_ID,
+				})
+			).throws(QuestNotFoundError);
+		});
+	});
+
+	describe('getShownDailyQuestOrThrow()', () => {
+		it('returns the shown daily quest with the given date and quest id', () => {
+			const newShownDailyQuest = questRepository.addShownDailyQuest({
+				timeShown: new Date('2023-01-01'),
+				quest: SOME_QUEST.id,
+			});
+
+			const shownDailyQuest = questRepository.getShownDailyQuestOrThrow({timeShown: new Date('2023-01-01'), questID: SOME_QUEST.id});
+			makeSure(shownDailyQuest).is(newShownDailyQuest);
+		});
+
+		it('throws a ShownDailyQuestNotFoundError if no shown daily quest with the given date and quest id exists', () => {
+			makeSure(() =>
+				questRepository.getShownDailyQuestOrThrow({timeShown: new Date('2023-01-01'), questID: INVALID_QUEST_ID})
+			).throws(ShownDailyQuestNotFoundError);
+		});
+	});
+
+	describe('getShownDailyQuests()', () => {
+		it('returns all shown daily quests', () => {
+			let shownDailyQuestIDs = questRepository.getShownDailyQuestIDs();
+			makeSure(shownDailyQuestIDs).isEmpty();
+			
+			questRepository.addShownDailyQuest({
+				timeShown: new Date('2023-01-01'),
+				quest: SOME_QUEST.id,
+			});
+
+			shownDailyQuestIDs = questRepository.getShownDailyQuestIDs();
+			makeSure(shownDailyQuestIDs).is([SOME_QUEST.id]);
 		});
 	});
 });
