@@ -102,4 +102,54 @@ export class QuestService {
 		this.playerService.giveTokens(player, quest.tokensReward);
 		this.playerService.giveCharacters(player, quest.charactersReward);
 	}
+
+	assignNewDailyQuests(timeShown: Date): Quest[] {
+		const newDailyQuestIDs = [];
+		const questIDsNotShown = this.questRepository.getNotShownQuestIDs();
+		let availableQuestIDs = [...questIDsNotShown];
+
+		const currentDailyQuestIDs = this.questRepository.getCurrentlyShownQuestIDs();
+		for (const questID of currentDailyQuestIDs) {
+			this.questRepository.setIsShown(questID, false);
+		}
+
+		for (let numQuest = 1; numQuest <= 3; numQuest++) {
+			if (availableQuestIDs.length === 0) {
+				this.questRepository.resetWasShownForUnshownQuests();
+				const questIDsNotShown = this.questRepository.getNotShownQuestIDs();
+				availableQuestIDs = [...questIDsNotShown];
+			}
+
+			const randomIndex = Math.floor(Math.random() * availableQuestIDs.length);
+			const questID = availableQuestIDs[randomIndex];
+
+			newDailyQuestIDs.push(questID);
+			this.questRepository.setWasShown(questID, true);
+			this.questRepository.setIsShown(questID, true);
+			this.questRepository.addShownDailyQuest({
+				timeShown: timeShown,
+				quest: questID,
+			});
+
+			availableQuestIDs = availableQuestIDs.filter(id =>
+				id !== questID
+			);
+		}
+
+		return newDailyQuestIDs.map(questID => this.resolveQuest(questID));
+	}
+
+	/**
+	 * Returns an array of all the quests that are currently being shown to the players.
+	 * @returns An array of all the quests that are currently being shown to the players.
+	 */
+	getCurrentDailyQuests(): Quest[] {
+		return this.questRepository.getCurrentlyShownQuestIDs()
+			.map(questID => this.resolveQuest(questID));
+	}
+
+	reset(): void {
+		this.questRepository.resetQuestShownFields();
+		this.questRepository.resetShownDailyQuests();
+	}
 }

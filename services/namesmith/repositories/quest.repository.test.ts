@@ -1,4 +1,7 @@
+import { toPropertyValues } from "../../../utilities/data-structure-utils";
+import { addDays, addHours } from "../../../utilities/date-time-utils";
 import { makeSure } from "../../../utilities/jest/jest-utils";
+import { Quests } from "../constants/quests.constants";
 import { INVALID_QUEST_ID, INVALID_QUEST_NAME } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockQuest } from "../mocks/mock-data/mock-quests";
@@ -316,18 +319,172 @@ describe('QuestRepository', () => {
 		});
 	});
 
-	describe('getShownDailyQuests()', () => {
+	describe('getShownDailyQuestDuring()', () => {
+		const SOME_DATE = new Date('2023-01-01');
 		it('returns all shown daily quests', () => {
-			let shownDailyQuestIDs = questRepository.getShownDailyQuestIDs();
-			makeSure(shownDailyQuestIDs).isEmpty();
-			
+			let shownDailyQuests = questRepository.getShownDailyQuestDuring(SOME_DATE);
+			makeSure(shownDailyQuests).isEmpty();
+
+			questRepository.addShownDailyQuest({
+				timeShown: SOME_DATE,
+				quest: SOME_QUEST.id,
+			});
+
+			shownDailyQuests = questRepository.getShownDailyQuestDuring(SOME_DATE);
+			makeSure(shownDailyQuests).is([{
+				timeShown: SOME_DATE,
+				quest: SOME_QUEST,
+			}]);
+		});
+
+		it('returns only shown daily quests within given time frame', () => {
+			const SOME_YESTERDAY = addDays(SOME_DATE, -1);
+			const SOME_QUESTS = [
+				SOME_QUEST,
+				addMockQuest(db),
+				addMockQuest(db),
+				addMockQuest(db),
+			];
+
+			questRepository.addShownDailyQuest({
+				timeShown: SOME_YESTERDAY,
+				quest: SOME_QUESTS[0].id,
+			});
+
+			questRepository.addShownDailyQuest({
+				timeShown: SOME_YESTERDAY,
+				quest: SOME_QUESTS[1].id,
+			});
+
+			questRepository.addShownDailyQuest({
+				timeShown: SOME_DATE,
+				quest: SOME_QUESTS[2].id,
+			});
+
+			questRepository.addShownDailyQuest({
+				timeShown: SOME_DATE,
+				quest: SOME_QUESTS[3].id,
+			});
+
+			let shownDailyQuests = questRepository.getShownDailyQuestDuring(addHours(SOME_DATE, -1));
+			makeSure(shownDailyQuests).containsOnly(
+				{
+					timeShown: SOME_YESTERDAY,
+					quest: SOME_QUESTS[0],
+				},
+				{
+					timeShown: SOME_YESTERDAY,
+					quest: SOME_QUESTS[1],
+				},
+			);
+
+			shownDailyQuests = questRepository.getShownDailyQuestDuring(addHours(SOME_DATE, 1));
+			makeSure(shownDailyQuests).containsOnly(
+				{
+					timeShown: SOME_DATE,
+					quest: SOME_QUESTS[2],
+				},
+				{
+					timeShown: SOME_DATE,
+					quest: SOME_QUESTS[3],
+				},
+			);
+		});
+	});
+
+	describe('getDailyQuestIDsNotShown()', () => {
+		it('returns all quest IDs that have not been shown daily', () => {
+			let dailyQuestIDsNotShown = questRepository.getNotShownQuestIDs();
+			makeSure(dailyQuestIDsNotShown).containsOnly(
+				...toPropertyValues(Object.values(Quests), 'id'),
+				SOME_QUEST.id,
+			);
+
+			questRepository.setWasShown(SOME_QUEST.id, true);
+
+			dailyQuestIDsNotShown = questRepository.getNotShownQuestIDs();
+			makeSure(dailyQuestIDsNotShown).containsOnly(
+				...toPropertyValues(Object.values(Quests), 'id'),
+			);
+		});
+	});
+
+	describe('getQuestIDsBeingShown()', () => {
+		it('returns all quest IDs thare have isShown set to true', () => {
+			questRepository.updateQuest({id: SOME_QUEST.id, isShown: true});
+			const questIDsBeingShown = questRepository.getCurrentlyShownQuestIDs();
+			makeSure(questIDsBeingShown).containsOnly(SOME_QUEST.id);
+		});
+
+		it('returns quests with isShown set to true but NOT quests being currently shown daily', () => {
+			const anotherQuest = addMockQuest(db, {name: 'Another Quest'});
 			questRepository.addShownDailyQuest({
 				timeShown: new Date('2023-01-01'),
 				quest: SOME_QUEST.id,
 			});
 
-			shownDailyQuestIDs = questRepository.getShownDailyQuestIDs();
-			makeSure(shownDailyQuestIDs).is([SOME_QUEST.id]);
+			questRepository.updateQuest({id: anotherQuest.id, isShown: true});
+			const questIDsBeingShown = questRepository.getCurrentlyShownQuestIDs();
+			makeSure(questIDsBeingShown).containsOnly(anotherQuest.id);
+		})
+	});
+
+	describe('setWasShown()', () => {
+		it('sets the wasShown field of a quest to true', () => {
+			questRepository.setWasShown(SOME_QUEST.id, true);
+			const quest = questRepository.resolveQuest(SOME_QUEST.id);
+			makeSure(quest).hasProperty('wasShown', true);
+		});
+
+		it('sets the wasShown field of a quest to false', () => {
+			questRepository.setWasShown(SOME_QUEST.id, false);
+			const quest = questRepository.resolveQuest(SOME_QUEST.id);
+			makeSure(quest).hasProperty('wasShown', false);
+		});
+
+		it('throws a QuestNotFoundError if no quest with the given ID exists', () => {
+			makeSure(() => questRepository.setWasShown(INVALID_QUEST_ID, true)).throws(QuestNotFoundError);
 		});
 	});
+
+	describe('setIsShown()', () => {
+		it('sets the isShown field of a quest to true', () => {
+			questRepository.setIsShown(SOME_QUEST.id, true);
+			const quest = questRepository.resolveQuest(SOME_QUEST.id);
+			makeSure(quest).hasProperty('isShown', true);
+		});
+
+		it('sets the isShown field of a quest to false', () => {
+			questRepository.setIsShown(SOME_QUEST.id, false);
+			const quest = questRepository.resolveQuest(SOME_QUEST.id);
+			makeSure(quest).hasProperty('isShown', false);
+		});
+
+		it('throws a QuestNotFoundError if no quest with the given ID exists', () => {
+			makeSure(() => questRepository.setIsShown(INVALID_QUEST_ID, true)).throws(QuestNotFoundError);
+		});
+	});
+
+	describe('resetDailyQuests()', () => {
+		it('sets wasShown for all not currently shown quests to false', () => {
+			questRepository.setWasShown(SOME_QUEST.id, true);
+			questRepository.setIsShown(SOME_QUEST.id, false);
+
+			const anotherQuest = addMockQuest(db, {name: 'Another Quest'});
+			questRepository.setWasShown(anotherQuest.id, true);
+			questRepository.setIsShown(anotherQuest.id, true);
+
+			questRepository.resetWasShownForUnshownQuests();
+			const quest1 = questRepository.resolveQuest(SOME_QUEST.id);
+			const quest2 = questRepository.resolveQuest(anotherQuest.id);
+			makeSure(quest1).hasProperties({
+				wasShown: false,
+				isShown: false,
+			});
+			makeSure(quest2).hasProperties({
+				wasShown: true,
+				isShown: true,
+			});
+		})
+	})
 });

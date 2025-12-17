@@ -1,18 +1,20 @@
 import { ids } from "../../../../bot-config/discord-ids";
 import { deleteAllMessagesInChannel } from "../../../../utilities/discord-action-utils";
-import { joinLines } from "../../../../utilities/string-manipulation-utils"
+import { joinLines } from "../../../../utilities/string-manipulation-utils";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
+import { Quest } from "../../types/quest.types";
 import { fetchNamesmithChannel } from "../../utilities/discord-fetch.utility";
 import { regenerateQuestMessage, sendQuestMessage } from "./quest-message";
 
 /**
  * Sends a message to the quests channel containing the daily quests.
+ * @param parameters - The parameters for sending the daily quests message.
+ * @param parameters.dailyQuests - The daily quests to be sent in the message.
  * @returns A promise that resolves when the message has been sent.
  */
-export async function sendDailyQuestsMessage() {
-	const { questService } = getNamesmithServices();
-	const dailyQuests = questService.questRepository.getQuests();
-
+export async function sendDailyQuestsMessage(
+	{dailyQuests}: { dailyQuests: Quest[] }
+) {
 	const questChannel = await fetchNamesmithChannel(ids.namesmith.channels.QUESTS);
 
 	await deleteAllMessagesInChannel(questChannel);
