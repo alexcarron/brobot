@@ -1,5 +1,4 @@
 import { sendChooseARoleMessage } from '../interfaces/choose-a-role-message';
-import { sendDailyQuestsMessage } from '../interfaces/quests/daily-quests-message';
 import { getNamesmithServices } from '../services/get-namesmith-services';
 import { clearNamesToVoteOnChannel, clearPublishedNamesChannel, clearTheWinnerChannel, closeNamesToVoteOnChannel, closeTheWinnerChannel, openPublishedNamesChannel } from '../utilities/discord-action.utility';
 
@@ -12,7 +11,7 @@ import { clearNamesToVoteOnChannel, clearPublishedNamesChannel, clearTheWinnerCh
  * - Starting the cron jobs to end the game and end voting at the times stored in the game state
  */
 export async function startGame(): Promise<void> {
-	const { gameStateService, playerService, perkService } = getNamesmithServices();
+	const { gameStateService, playerService, perkService, questService } = getNamesmithServices();
 
 	// Reset the channel permissions
 	await closeNamesToVoteOnChannel();
@@ -31,9 +30,11 @@ export async function startGame(): Promise<void> {
 	// Set up the perks
 	perkService.reset();
 
+	// Set up the quests
+	questService.reset();
+
 	// Send the recipe select menu in the recipes channel
 	await sendChooseARoleMessage();
-	await sendDailyQuestsMessage();
 
 	// Set the game start and end times
 	const now = new Date();

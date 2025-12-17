@@ -11,6 +11,8 @@ import { setupMockNamesmith } from "../mocks/mock-setup";
 import { addMockRecipe } from "../mocks/mock-data/mock-recipes";
 import { Recipe } from "../types/recipe.types";
 import { PlayerService } from "./player.service";
+import { toPropertyValues } from "../../../utilities/data-structure-utils";
+import { addDays } from "../../../utilities/date-time-utils";
 
 describe('QuestService', () => {
 	let db: DatabaseQuerier;
@@ -173,5 +175,120 @@ describe('QuestService', () => {
 				questService.getRewards(INVALID_QUEST_ID);
 			}).throws(QuestNotFoundError);
 		});
-	})
+	});
+
+	describe('assignNewDailyQuests()', () => {
+		const SOME_DATE = new Date();
+
+		it('Marks three random quests as shown and adds them to shown daily quests', () => {
+			questService.assignNewDailyQuests(SOME_DATE);
+
+			const shownDailyQuests = questService.getCurrentDailyQuests();
+			makeSure(shownDailyQuests.length).is(3);
+			makeSure(shownDailyQuests).haveProperties({
+				isShown: true,
+				wasShown: true,
+			});
+			makeSure(toPropertyValues(shownDailyQuests, 'id')).areAllDifferent();
+		});
+
+		it('Marks three new random quests as shown and adds them to shown daily quests if the current date is different', () => {
+			questService.assignNewDailyQuests(addDays(SOME_DATE, -1));
+			const oldDailyQuests = questService.getCurrentDailyQuests();
+
+			questService.assignNewDailyQuests(SOME_DATE);
+
+			const shownDailyQuests = questService.getCurrentDailyQuests();
+			makeSure(shownDailyQuests.length).is(3);
+			makeSure(shownDailyQuests).haveProperties({
+				isShown: true,
+				wasShown: true,
+			});
+			makeSure(toPropertyValues(shownDailyQuests, 'id')).areAllDifferent();
+			makeSure(toPropertyValues(shownDailyQuests, 'id')).doesNotContain(toPropertyValues(oldDailyQuests, 'id'));
+		});
+
+		it('Assigns already chosen quests when we run out', () => {
+			db.run('DELETE FROM quest');
+
+			const quests = [];
+			for (let index = 0; index < 4; index++) {
+				quests[index] = addMockQuest(db);
+			}
+
+			questService.assignNewDailyQuests(addDays(SOME_DATE, -1));
+			const oldDailyQuests = questService.getCurrentDailyQuests();
+
+			questService.assignNewDailyQuests(SOME_DATE);
+			const newDailyQuests = 	questService.getCurrentDailyQuests();
+
+			makeSure(newDailyQuests.length).is(3);
+			makeSure(toPropertyValues(newDailyQuests, 'id')).hasAnItemWhere(questID =>
+				!toPropertyValues(oldDailyQuests, 'id').includes(questID)
+			)
+			makeSure(toPropertyValues(newDailyQuests, 'id')).hasAnItemWhere(questID =>
+				toPropertyValues(oldDailyQuests, 'id').includes(questID)
+			)
+		});
+
+		it('Adds quests correctly to shownDailyQuest table', () => {
+			questService.assignNewDailyQuests(SOME_DATE);
+
+			const dailyQuests = questService.getCurrentDailyQuests();
+			makeSure(dailyQuests.length).is(3);
+
+			const shownDailyQuests = questService.questRepository.getShownDailyQuestDuring(SOME_DATE);
+
+			const quests = toPropertyValues(shownDailyQuests, 'quest')
+			makeSure(shownDailyQuests).haveProperties({
+				timeShown: SOME_DATE,
+			});
+			makeSure(quests).haveProperties({
+				isShown: true,
+				wasShown: true,
+			});
+			makeSure(toPropertyValues(quests, 'id')).areAllDifferent();
+
+
+			const SOME_TOMORROW = addDays(SOME_DATE, 1);
+			questService.assignNewDailyQuests(SOME_TOMORROW);
+
+			const shownDailyQuestsTomorrow = questService.questRepository.getShownDailyQuestDuring(SOME_TOMORROW);
+			const questsTomorrow = toPropertyValues(shownDailyQuestsTomorrow, 'quest')
+			makeSure(shownDailyQuestsTomorrow).haveProperties({
+				timeShown: SOME_TOMORROW,
+			});
+			makeSure(questsTomorrow).haveProperties({
+				isShown: true,
+				wasShown: true,
+			});
+			makeSure(toPropertyValues(questsTomorrow, 'id')).areAllDifferent();
+
+			console.log(questService.questRepository.db.getRows(
+				`SELECT * FROM shownDailyQuest`
+			));
+		});
+	});
+
+	describe('reset()', () => {
+		it('should reset the quest repository', () => {
+			const SOME_DATE = new Date();
+			questService.assignNewDailyQuests(SOME_DATE);
+			questService.assignNewDailyQuests(SOME_DATE);
+			questService.assignNewDailyQuests(SOME_DATE);
+
+			questService.reset();
+			const dailyQuests = questService.getCurrentDailyQuests();
+			makeSure(dailyQuests).hasLengthOf(0);
+
+			const currentlyShownQuestIDs = questService.questRepository.getCurrentlyShownQuestIDs();
+			makeSure(currentlyShownQuestIDs).hasLengthOf(0);
+
+			const quests = questService.questRepository.getQuests();
+			for (const quest of quests) {
+				makeSure(quest.isShown).is(false);
+				makeSure(quest.wasShown).is(false);
+			}
+		});
+	});
 });

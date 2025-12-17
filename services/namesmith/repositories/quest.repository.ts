@@ -4,7 +4,7 @@ import { isNumber, isString } from "../../../utilities/types/type-guards";
 import { DatabaseQuerier } from "../database/database-querier";
 import { asMinimalShownDailyQuest, asQuest, asQuests, Quest, QuestDefinition, QuestID, QuestName, QuestResolvable, ShownDailyQuestDefinition, ShownDailyQuest, toDBShownDailyQuest } from "../types/quest.types";
 import { QuestAlreadyExistsError, QuestNotFoundError, ShownDailyQuestNotFoundError } from "../utilities/error.utility";
-import { toDBBool } from "../utilities/db.utility";
+import { DBDate, toDBBool } from "../utilities/db.utility";
 import { createMockDB } from "../mocks/mock-database";
 
 /**
@@ -243,7 +243,10 @@ export class QuestRepository {
 		}
 	): ShownDailyQuest {
 		const row = this.db.getRow(
-			"SELECT * FROM shownDailyQuest WHERE timeShown = @timeShown AND questID = @questID",
+			`SELECT * FROM shownDailyQuest
+			WHERE
+				timeShown = @timeShown AND
+				questID = @questID`,
 			toDBShownDailyQuest({timeShown, questID})
 		);
 
@@ -272,12 +275,105 @@ export class QuestRepository {
 		return this.getShownDailyQuestOrThrow({ timeShown, questID });
 	}
 
+/**
+ * Returns all shown daily quests that are currently being shown to the players
+ * on the given date.
+ * @param time - The date to check for shown daily quests.
+ * @returns An array of all shown daily quests that are currently being shown to the players.
+ */
+	getShownDailyQuestDuring(time: Date): ShownDailyQuest[] {
+		const rows = this.db.getRows(
+			`SELECT * FROM shownDailyQuest
+			WHERE
+				timeShown <= @timeShown AND
+				timeShown + 86400000 > @timeShown`,
+			{ timeShown: DBDate.fromDomain(time) }
+		);
+
+		return rows
+			.map(row => asMinimalShownDailyQuest(row))
+			.map(minimalShownDailyQuest => ({
+				timeShown: minimalShownDailyQuest.timeShown,
+				quest: this.getQuestOrThrow(minimalShownDailyQuest.questID),
+			}));
+	}
+
 	/**
-	 * Returns an array of all the quest IDs of the shown daily quests.
-	 * @returns An array of the quest IDs of the shown daily quests.
+	 * Returns an array of all the quest IDs of the daily quests that have not been shown.
+	 * @returns An array of the quest IDs of the daily quests that have not been shown.
 	 */
-	getShownDailyQuestIDs(): QuestID[] {
-		const rows = this.db.getRows("SELECT questID FROM shownDailyQuest") as { questID: QuestID }[];
-		return rows.map(row => row.questID);
+	getNotShownQuestIDs(): QuestID[] {
+		const rows = this.db.getRows(
+			`SELECT id FROM quest
+			WHERE
+				wasShown = 0 AND
+				isShown = 0`
+		) as { id: QuestID }[];
+
+		return rows
+			.map(row => row.id);
+	}
+
+	/**
+	 * Returns an array of all the quest IDs of the quests that are currently being shown to the players.
+	 * @returns An array of the quest IDs of the quests that are currently being shown to the players.
+	 */
+	getCurrentlyShownQuestIDs(): QuestID[] {
+		const isShownRows = this.db.getRows(
+			`SELECT id FROM quest
+			WHERE isShown = 1`
+		) as { id: QuestID }[];
+		const shownQuestIDs = isShownRows.map(row => row.id);
+		return shownQuestIDs;
+	}
+
+	setWasShown(questID: QuestID, wasShown: boolean) {
+		if (!this.doesQuestExist(questID))
+			throw new QuestNotFoundError(questID);
+
+		this.db.updateInTable('quest', {
+			fieldsUpdating: { wasShown: toDBBool(wasShown) },
+			identifiers: { id: questID },
+		});
+	}
+
+	setIsShown(questID: QuestID, isShown: boolean) {
+		if (!this.doesQuestExist(questID))
+			throw new QuestNotFoundError(questID);
+
+		this.db.updateInTable('quest', {
+			fieldsUpdating: { isShown: toDBBool(isShown) },
+			identifiers: { id: questID },
+		});
+	}
+
+	/**
+	 * Resets all daily quests by setting wasShown to 0 for all quests with isShown equal to 0.
+	 */
+	resetWasShownForUnshownQuests(): void {
+		this.db.run(
+			`UPDATE quest
+				SET wasShown = 0
+			WHERE isShown = 0`
+		);
+	}
+
+	/**
+	 * Resets all quests to never have been shown and not current shown
+	 */
+	resetQuestShownFields(): void {
+		this.db.run(
+			`UPDATE quest
+				SET wasShown = 0, isShown = 0`
+		);
+	}
+
+	/**
+	 * Resets all shown daily quests by deleting all rows from the shownDailyQuest table.
+	 */
+	resetShownDailyQuests(): void {
+		this.db.run(
+			`DELETE FROM shownDailyQuest`
+		);
 	}
 }

@@ -281,6 +281,18 @@ export function makeSure<
 			}
 		},
 
+		containsOnly(...expectedValues: unknown[]): void {
+			for (const expectedValue of expectedValues) {
+				baseExpect.toContainEqual(expectedValue);
+			}
+
+			expect(
+				[...new Set(actualValue as unknown[])].sort()
+			).toEqual(
+				[...new Set(expectedValues)].sort()
+			);
+		},
+
 		/**
 		 * Asserts that the actual array does not contain any of the given values.
 		 * @param unexpectedValues - The values that the actual array should not contain.
@@ -415,11 +427,18 @@ export function makeSure<
 
 		/**
 		 * Asserts that the actual array contains objects that have the given properties.
-		 * @param propertyNames - The names of the properties that each object should have.
+		 * @param properties - The names of the properties that each object should have or the expected properties and values that each object should contain.
 		 * @example
 		 * makeSure([{ id: 1 }, { id: 2 }]).haveProperties('id');
 		 */
-		haveProperties(...propertyNames: string[]): void {
+		haveProperties(...properties:
+			| string[]
+			| [Partial<
+					(ActualType extends object[]
+						? ActualType[number]
+						: never)
+				>]
+		): void {
 			if (!isArray(actualValue))
 				throw new Error(`Expected actual value to be an array, but got: ${actualValue}`);
 
@@ -427,9 +446,18 @@ export function makeSure<
 				if (!isObject(object))
 					throw new Error(`Expected each item in the array to be an object, but got: ${object}`);
 
-				propertyNames.forEach(propertyName => {
-					expect(object).toHaveProperty(propertyName);
-				});
+				if (isStrings(properties)) {
+					const propertyNames = properties;
+					propertyNames.forEach(propertyName => {
+						expect(object).toHaveProperty(propertyName);
+					});
+				}
+				else {
+					const expectedObjectSubset = properties[0];
+					expect(object).toEqual(
+						expect.objectContaining(expectedObjectSubset)
+					);
+				}
 			});
 		},
 

@@ -2,13 +2,20 @@ import { getYesterday } from "../../../utilities/date-time-utils";
 import { fetchUser } from "../../../utilities/discord-fetch-utils";
 import { joinLines, toAmountOfNoun } from "../../../utilities/string-manipulation-utils";
 import { Perks } from "../constants/perks.constants";
+import { sendDailyQuestsMessage } from "../interfaces/quests/daily-quests-message";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 
 /**
  * Triggers any game events that must occur at the start of each day
  */
 export async function onDayStart() {
-	const { perkService, playerService, activityLogService } = getNamesmithServices();
+	const { perkService, playerService, activityLogService, questService } = getNamesmithServices();
+	const now = new Date();
+
+	questService.assignNewDailyQuests(now);
+	const dailyQuests = questService.getCurrentDailyQuests();
+	await sendDailyQuestsMessage({dailyQuests});
+
 	await perkService.doForAllPlayersWithPerk(Perks.INVESTMENT,
 		async (player) => {
 			const tokensInterest = Math.floor(player.tokens / 100) * 2;
