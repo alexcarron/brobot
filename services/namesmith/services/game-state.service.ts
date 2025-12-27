@@ -1,5 +1,5 @@
 import { CronJob } from "cron";
-import { logWarning } from "../../../utilities/logging-utils";
+import { logInfo, logWarning } from "../../../utilities/logging-utils";
 import { GameStateRepository } from "../repositories/game-state.repository";
 import { VoteService } from "./vote.service";
 import { PlayerService } from "./player.service";
@@ -10,6 +10,8 @@ import { addDays } from "../../../utilities/date-time-utils";
 import { DatabaseQuerier } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
 import { NamesmithEvents } from "../event-listeners/namesmith-events";
+import { GameIsNotActiveError, GameStateInitializationError } from "../utilities/error.utility";
+import { joinLines, toConciseReadableDate, toConciseReadableDates } from "../../../utilities/string-manipulation-utils";
 
 /**
  * Provides methods for interacting with the game state.
@@ -19,7 +21,6 @@ export class GameStateService {
 	private voteIsEndingCronJob?: CronJob;
 	private pickAPerkCronJobs: CronJob[] = [];
 	private dayStartCronJobs: CronJob[] = [];
-
 	/**
 	 * Constructs a new GameStateService instance.
 	 * @param gameStateRepository - The repository used for accessing the game state.
@@ -48,18 +49,74 @@ export class GameStateService {
 		return GameStateService.fromDB(db);
 	}
 
+	get timeGameStarts(): Date {
+		return this.gameStateRepository.getTimeStarted();
+	}
+
+	get timeVotingStarts(): Date {
+		return addDays(this.timeGameStarts, DAYS_TO_BUILD_NAME);
+	}
+
+	get timeVotingEnds(): Date {
+		return addDays(this.timeGameStarts, DAYS_TO_BUILD_NAME + DAYS_TO_VOTE);
+	}
+
+	get timesPickAPerkStarts(): Date[] {
+		return this.computeTimesPickAPerkStarts(
+			this.timeGameStarts,
+			this.timeVotingStarts,
+			BIWEEKLY_PERK_DAYS_FROM_WEEK_START
+		);
+	}
+
+	get timesDayStarts(): Date[] {
+		return this.computeTimesDayStarts(
+			this.timeGameStarts,
+			this.timeVotingStarts
+		);
+	}
+
 	/**
 	 * Sets the game's start time to the given date, and its vote start and end times according to the configured constants.
 	 * @param startDate - The date to set as the start of the game.
 	 */
 	setupTimings(startDate: Date) {
 		this.gameStateRepository.setTimeStarted(startDate);
+		this.gameStateRepository.setTimeVoting(this.timeVotingStarts);
+		this.gameStateRepository.setTimeVotingEnds(this.timeVotingEnds);
 
-		const votingDate = addDays(startDate, DAYS_TO_BUILD_NAME);
-		this.gameStateRepository.setTimeVoting(votingDate);
+		logInfo(joinLines(
+			`Game timings have been set to:`,
+			`Game Start Time: ${toConciseReadableDate(this.timeGameStarts)}`,
+			`Voting Start Time: ${toConciseReadableDate(this.timeVotingStarts)}`,
+			`Voting End Time: ${toConciseReadableDate(this.timeVotingEnds)}`,
+			``,
+			`Pick a Perk Start Times: ${toConciseReadableDates(this.timesPickAPerkStarts)}`,
+			``,
+			`Day Start Times: ${toConciseReadableDates(this.timesDayStarts)}`,
+		));
+	}
 
-		const votingEndDate = addDays(votingDate, DAYS_TO_VOTE);
-		this.gameStateRepository.setTimeVotingEnds(votingEndDate);
+	/**
+	 * Throws a GameStateInitializationError if the game state is not defined.
+	 * @throws {GameStateInitializationError} - If the game state is not defined.
+	 */
+	throwIfNotDefined() {
+		const startTime = this.timeGameStarts;
+		const votingStartTime = this.timeVotingStarts;
+		const votingEndTime = this.timeVotingEnds;
+		const pickAPerkTime = this.timesPickAPerkStarts;
+		const dayStartTimes = this.timesDayStarts;
+
+		if (
+			!startTime ||
+			!votingStartTime ||
+			!votingEndTime ||
+			pickAPerkTime.length === 0 ||
+			dayStartTimes.length === 0
+		) {
+			throw new GameStateInitializationError();
+		}
 	}
 
 	/**
@@ -70,7 +127,7 @@ export class GameStateService {
 	 * @param pickAPerkDaysFromWeekStart - The days offset from the week start for each "pick a perk" phase.
 	 * @returns An array of dates representing the start of each week's "pick a perk" phase.
 	 */
-	getTimesPickAPerkStarts(
+	computeTimesPickAPerkStarts(
 		startDate: Date,
 		endDate: Date,
 		pickAPerkDaysFromWeekStart: number[]
@@ -95,13 +152,14 @@ export class GameStateService {
 		return pickAPerkTimes;
 	}
 
+
 	/**
 	 * Returns an array of dates representing the start of each day from the given start date to the given end date.
 	 * @param startDate - The start date of the game.
 	 * @param endDate - The end date of the game.
 	 * @returns An array of dates representing the start of each day from the given start date to the given end date.
 	 */
-	getTimesDayStarts(
+	computeTimesDayStarts(
 		startDate: Date,
 		endDate: Date,
 	): Date[] {
@@ -111,7 +169,48 @@ export class GameStateService {
 			times.push(currentDayStart);
 			currentDayStart = addDays(currentDayStart, 1);
 		}
+
 		return times;
+	}
+
+	/**
+	 * Returns the start of the day that the given date falls in.
+	 * @param now - The date to check.
+	 * @returns The start of the day that the given date falls in, or null if the given date is before the start of the game.
+	 */
+	getStartOfToday(now: Date): Date | null {
+		this.throwIfNotDefined();
+
+		const dayStarts = this.timesDayStarts;
+		if (dayStarts.length === 0)
+			throw new GameStateInitializationError();
+
+		for (const dayStart of dayStarts) {
+			const dayEnd = addDays(dayStart, 1);
+
+			if (now >= dayStart && now < dayEnd) {
+				return dayStart;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns the start of the day that the given date falls in, or throws a GameIsNotActiveError if the given date is before the start of the game.
+	 * @param now - The date to check.
+	 * @throws {GameStateInitializationError} - If the game state is not defined.
+	 * @throws {GameIsNotActiveError} - If the given date is before the start of the game.
+	 * @returns The start of the day that the given date falls in.
+	 */
+	getStartOfTodayOrThrow(now: Date) {
+		const dayStart = this.getStartOfToday(now);
+
+		if (dayStart === null) {
+			throw new GameIsNotActiveError(now, this.timeGameStarts!, this.timeVotingStarts!);
+		}
+
+		return dayStart;
 	}
 
 	/**
@@ -240,19 +339,17 @@ export class GameStateService {
 		for (const pickAPerkCronJob of this.pickAPerkCronJobs) {
 			pickAPerkCronJob.stop();
 		}
-
-		const startTime = this.gameStateRepository.getTimeStarted();
-		const endTime = this.gameStateRepository.getTimeEnding();
+		for (const dayStartCronJob of this.dayStartCronJobs) {
+			dayStartCronJob.stop();
+		}
 
 		this.startEndGameCronJob(this.gameStateRepository.getTimeEnding());
 		this.startVoteIsEndingCronJob(this.gameStateRepository.getTimeVoteIsEnding());
 
-		const pickAPerkTimes = this.getTimesPickAPerkStarts(
-			startTime, endTime, BIWEEKLY_PERK_DAYS_FROM_WEEK_START,
-		);
+		const pickAPerkTimes = this.timesPickAPerkStarts;
 		this.startPickAPerkCronJobs(pickAPerkTimes);
 
-		const dayStartTimes = this.getTimesDayStarts(startTime, endTime);
+		const dayStartTimes = this.timesDayStarts;
 		this.startDayStartCronJobs(dayStartTimes);
 	}
 

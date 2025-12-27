@@ -57,6 +57,14 @@ export class PlayerService {
 	}
 
 	/**
+	 * Returns a list of all player in the game.
+	 * @returns An array every player.
+	 */
+	getPlayers(): Player[] {
+		return this.playerRepository.getPlayers();
+	}
+
+	/**
 	 * Retrieves all players with the given name.
 	 * @param name - The name to search for.
 	 * @returns An array of players with the given name.
@@ -643,7 +651,7 @@ export class PlayerService {
 	}
 
 	/**
-	 * Resets the player repository, clearing all stored players.
+	 * Removes all the players from the game, leaving none left
 	 */
 	reset() {
 		this.playerRepository.removePlayers();

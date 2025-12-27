@@ -1,6 +1,6 @@
 const { SlashCommand } = require('../../services/command-creation/slash-command');
 const { Parameter } = require('../../services/command-creation/parameter');
-const { createNowUnixTimestamp } = require('../../utilities/date-time-utils.js');
+const { createNowUnixTimestamp } = require('../../utilities/date-time-utils');
 const Timer = require('../../services/timers/timer.js');
 const { getRequiredStringParam, getIntegerParamValue, getTextChannelOfInteraction } = require('../../utilities/discord-fetch-utils');
 const { deferInteraction } = require('../../utilities/discord-action-utils');

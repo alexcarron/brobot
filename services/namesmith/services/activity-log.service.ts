@@ -1,7 +1,9 @@
+import { addToArrayMap } from "../../../utilities/data-structure-utils";
+import { addDays } from "../../../utilities/date-time-utils";
 import { DatabaseQuerier } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
 import { ActivityLogRepository } from "../repositories/activity-log.repository";
-import { ActivityLog, ActivityTypes } from "../types/activity-log.types";
+import { ActivityLog, ActivityTypes, NameInterval } from "../types/activity-log.types";
 import { MysteryBoxResolvable } from "../types/mystery-box.types";
 import { PerkResolvable } from "../types/perk.types";
 import { PlayerID, PlayerResolvable } from "../types/player.types";
@@ -9,6 +11,8 @@ import { QuestResolvable } from "../types/quest.types";
 import { Recipe } from "../types/recipe.types";
 import { RoleResolvable } from "../types/role.types";
 import { Trade, TradeResolvable } from "../types/trade.types";
+import { GameStateService } from "./game-state.service";
+import { PlayerService } from "./player.service";
 
 /**
  * Provides methods for interacting with activity logs.
@@ -16,11 +20,15 @@ import { Trade, TradeResolvable } from "../types/trade.types";
 export class ActivityLogService {
 	constructor(
 		public activityLogRepository: ActivityLogRepository,
+		public gameStateService: GameStateService,
+		public playerService: PlayerService,
 	) {}
 
 	static fromDB(db: DatabaseQuerier) {
 		return new ActivityLogService(
 			ActivityLogRepository.fromDB(db),
+			GameStateService.fromDB(db),
+			PlayerService.fromDB(db),
 		);
 	}
 
@@ -309,6 +317,118 @@ export class ActivityLogService {
 	}
 
 	/**
+	 * Retrieves all activity logs for a given player for the current day.
+	 * @param player - The player to retrieve the activity logs for.
+	 * @returns An array of activity logs for the given player.
+	 */
+	getLogsForPlayerToday(player: PlayerResolvable): ActivityLog[] {
+		const now = new Date();
+		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
+		return this.activityLogRepository.findActivityLogsAfterTimeWhere(startOfToday, {
+			player: player,
+		});
+	}
+
+	/**
+	 * Retrieves all activity logs for other players than the given player for the current day.
+	 * @param player - The player to exclude from the results.
+	 * @returns An array of activity logs for other players than the given player.
+	 */
+	getLogsForOtherPlayersToday(player: PlayerResolvable): ActivityLog[] {
+		const now = new Date();
+		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
+		return this.activityLogRepository.findActivityLogsAfterTimeWhereNot(startOfToday, {
+			player: player,
+		});
+	}
+
+	getNameIntervalsOfPlayerToday(player: PlayerResolvable): NameInterval[] {
+		const playerID = this.playerService.resolveID(player);
+		const nameIntervals: NameInterval[] = [];
+		const now = new Date();
+		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
+		const activityLogs = this.activityLogRepository.findActivityLogsAfterTimeWhere(startOfToday, {player});
+
+		let previousTime = startOfToday;
+		let previousName = null;
+		let lastLog;
+		for (const log of activityLogs) {
+			if (log.nameChangedFrom === null)
+				continue;
+
+			if (log.currentName === previousName)
+				continue;
+
+			nameIntervals.push({
+				startTime: previousTime,
+				endTime: log.timeOccured,
+				name: log.nameChangedFrom,
+				playerID: playerID,
+			});
+			previousTime = log.timeOccured;
+			previousName = log.currentName;
+			lastLog = log;
+		}
+
+		if (lastLog !== undefined) {
+			nameIntervals.push({
+				startTime: lastLog.timeOccured,
+				endTime: addDays(startOfToday, 1),
+				name: lastLog.currentName,
+				playerID: playerID,
+			});
+		}
+		else {
+			const resolvedPlayer = this.playerService.resolvePlayer(player);
+			nameIntervals.push({
+				startTime: startOfToday,
+				endTime: addDays(startOfToday, 1),
+				name: resolvedPlayer.currentName,
+				playerID: playerID,
+			});
+		}
+
+		return nameIntervals;
+	}
+
+	/**
+	 * Retrieves all name intervals for all players for the current day.
+	 * The returned array is sorted by the start time of the name intervals.
+	 * @returns An array of name intervals for all players for the current day.
+	 */
+	getNameIntervalsToday(): NameInterval[] {
+		const players = this.playerService.getPlayers();
+		const nameIntervals: NameInterval[] = [];
+		for (const player of players) {
+			const nameIntervalsOfPlayer = this.getNameIntervalsOfPlayerToday(player);
+			nameIntervals.push(...nameIntervalsOfPlayer);
+		}
+		return nameIntervals
+			.sort((interval1, interval2) =>
+				interval1.startTime.getTime() - interval2.startTime.getTime()
+			);
+	}
+
+	/**
+	 * Returns a map where the keys are player names and the values are arrays of name intervals for the current day.
+	 * This is useful for quickly looking up the name intervals for all players for a given day.
+	 * @returns A map from player names to arrays of name intervals for the current day.
+	 */
+	getNameToNameIntervalsToday(): Map<string, NameInterval[]> {
+		const players = this.playerService.getPlayers();
+		const nameToNameIntervals: Map<string, NameInterval[]> = new Map<string, NameInterval[]>();
+
+		for (const player of players) {
+			const nameIntervals = this.getNameIntervalsOfPlayerToday(player);
+			for (const nameInterval of nameIntervals) {
+				addToArrayMap(nameToNameIntervals, nameInterval.name, nameInterval);
+			}
+		}
+
+		return nameToNameIntervals;
+	}
+
+	/**
 	 * Checks if a player has completed a quest.
 	 * @param player - The player to check.
 	 * @param quest - The quest to check.
@@ -327,12 +447,42 @@ export class ActivityLogService {
 	}
 
 	/**
+	 * Returns an array of names that the given player had today.
+	 * The returned array will contain the names of the player from the start of the day until the current time.
+	 * This is useful for quickly looking up the names that a player had for a given day.
+	 * @param player - The player to get the names for.
+	 * @returns An array of names that the given player had today.
+	 */
+	getNamesOfPlayerToday(player: PlayerResolvable): string[] {
+		const now = new Date();
+		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
+		const activityLogs = this.activityLogRepository.findActivityLogsAfterTimeWhere(startOfToday, {player});
+
+		const namesSet: Set<string> = new Set<string>();
+		for (const log of activityLogs) {
+			if (log.nameChangedFrom !== null)
+				namesSet.add(log.nameChangedFrom);
+
+			namesSet.add(log.currentName);
+		}
+
+		if (namesSet.size === 0) {
+			const resolvedPlayer = this.playerService.resolvePlayer(player);
+			namesSet.add(resolvedPlayer.currentName);
+		}
+
+		return Array.from(namesSet);
+	}
+
+	/**
 	 * Retrieves all activity logs for a given player where the type is crafting characters.
 	 * @param player - The player to retrieve the activity logs for.
 	 * @returns An array of activity logs for the given player.
 	 */
-	getCraftLogsForPlayer(player: PlayerResolvable): ActivityLog[] {
-		return this.activityLogRepository.findActivityLogsWhere({
+	getCraftLogsForPlayerToday(player: PlayerResolvable): ActivityLog[] {
+		const now = new Date();
+		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
+		return this.activityLogRepository.findActivityLogsAfterTimeWhere(startOfToday, {
 			player: player,
 			type: ActivityTypes.CRAFT_CHARACTERS,
 		});
@@ -355,10 +505,42 @@ export class ActivityLogService {
 	 * @param player - The player to retrieve the activity logs for.
 	 * @returns An array of activity logs for the given player.
 	 */
-	getAcceptTradeLogsInvolvingPlayer(player: PlayerResolvable): ActivityLog[] {
-		return this.activityLogRepository.findActivityLogsWhere({
+	getAcceptTradeLogsInvolvingPlayerToday(player: PlayerResolvable): ActivityLog[] {
+		const now = new Date();
+		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
+		return this.activityLogRepository.findActivityLogsAfterTimeWhere(startOfToday, {
 			involvedPlayer: player,
 			type: ActivityTypes.ACCEPT_TRADE,
+		});
+	}
+
+	/**
+	 * Retrieves all activity logs for a given player where the type is changing name.
+	 * Only retrieves activity logs that occurred today or later.
+	 * @param player - The player to retrieve the activity logs for.
+	 * @returns An array of activity logs for the given player.
+	 */
+	getChangeNameLogsForPlayerToday(player: PlayerResolvable): ActivityLog[] {
+		const now = new Date();
+		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
+		return this.activityLogRepository.findActivityLogsAfterTimeWhere(startOfToday, {
+			player: player,
+			type: ActivityTypes.CHANGE_NAME,
+		});
+	}
+
+	/**
+	 * Retrieves all activity logs for a given player where the type is publishing a name.
+	 * Only retrieves activity logs that occurred today or later.
+	 * @param player - The player to retrieve the activity logs for.
+	 * @returns An array of activity logs for the given player.
+	 */
+	getPublishNameLogsForPlayerToday(player: PlayerResolvable): ActivityLog[] {
+		const now = new Date();
+		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
+		return this.activityLogRepository.findActivityLogsAfterTimeWhere(startOfToday, {
+			player: player,
+			type: ActivityTypes.PUBLISH_NAME,
 		});
 	}
 

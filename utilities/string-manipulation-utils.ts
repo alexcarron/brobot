@@ -1,4 +1,5 @@
 import { getCharacterDifferences } from "./data-structure-utils";
+import { getMondayOfThisWeek, getSundayOfThisWeek } from "./date-time-utils";
 import { InvalidArgumentError } from "./error-utils";
 import { getCharacterCounts } from "./string-checks-utils";
 import { ToCamelCase } from './types/casing-types';
@@ -674,4 +675,217 @@ export function truncateText(
 
 export function sortCharacters(string: string): string {
 	return [...string].sort().join('');
+}
+
+/**
+ * Converts a given date object to a human-readable concise date string in the format: "Mon, May 12 2022 at 4:30 PM".
+ * @param date - The date object to convert.
+ * @returns A human-readable concise date string in the format: "May 12 2022 at 4:30 PM".
+ */
+export function toConciseReadableDate(date: Date): string {
+	if (!date)
+		throw new Error('Expected passed date to be defined for toConciseReadableDate function, but was undefined.');
+
+	if (date instanceof Date === false || isNaN(date.getTime()))
+		throw new Error(`Expected passed date to be a valid Date object for toConciseReadableDate function, but was ${date}.`);
+
+	const conciseWeekdayName = date.toLocaleString('default', { weekday: 'short' });
+	const monthName = date.toLocaleString('default', { month: 'short' });
+	const dateNum = date.getDate();
+	const fullYear = date.getFullYear();
+	const displayTime = date.toLocaleString('default', { hour: 'numeric', minute: 'numeric', hour12: true });
+
+	return `${conciseWeekdayName}, ${monthName} ${dateNum} ${fullYear} at ${displayTime}`;
+}
+
+/**
+ * Converts a given date object to a human-readable concise time string in the format: "12:30 AM" or "12AM".
+ * @param date - The date object to convert.
+ * @returns A human-readable concise time string in the format: "12:30 AM" or "12AM".
+ */
+export function toConciseReadableTime(date: Date): string {
+	if (!date)
+		throw new Error('Expected passed date to be defined for toConciseReadableTime function, but was undefined.');
+
+	if (date instanceof Date === false || isNaN(date.getTime()))
+		throw new Error(`Expected passed date to be a valid Date object for toConciseReadableTime function, but was ${date}.`);
+
+	const hourNum24 = date.getHours();
+	const minuteNum = date.getMinutes();
+	const meridiem = hourNum24 < 12 ? 'AM' : 'PM';
+	let hourNum = hourNum24 % 12;
+	if (hourNum === 0)
+		hourNum = 12;
+
+	if (minuteNum === 0) {
+		// Example: 12AM
+		return `${hourNum}${meridiem}`;
+	}
+	else {
+		// Example: 12:30 AM
+		return `${hourNum}:${String(minuteNum).padStart(2, '0')} ${meridiem}`;
+	}
+}
+
+/**
+ * Converts a given date object to a human-readable concise time string in the format: "12PM" or "12:30PM".
+ * @param date - The date object to convert.
+ * @returns A human-readable concise time string in the format: "12PM" or "12:30PM".
+ */
+export function toCompactReadableTime(date: Date): string {
+	if (!date)
+		throw new Error('Expected passed date to be defined for toConciseReadableTime function, but was undefined.');
+
+	if (date instanceof Date === false || isNaN(date.getTime()))
+		throw new Error(`Expected passed date to be a valid Date object for toConciseReadableTime function, but was ${date}.`);
+
+	const hourNum24 = date.getHours();
+	const minuteNum = date.getMinutes();
+	const meridiem = hourNum24 < 12 ? 'AM' : 'PM';
+
+	if (meridiem === 'AM')
+		return `${hourNum24}:${String(minuteNum).padStart(2, '0')}`;
+	else {
+		let hourNum = hourNum24 % 12;
+		if (hourNum === 0)
+			hourNum = 12;
+
+		if (minuteNum === 0)
+			return `${hourNum}PM`;
+		else
+			return `${hourNum}:${String(minuteNum).padStart(2, '0')}PM`;
+	}
+}
+
+/**
+ * Converts a given date objects to a human-readable concise string displaying many dates in the format:
+ *
+ * When all dates are on a single day:
+ *   Mon, May 12 2022 at 4:30 PM, 6:30 PM, 7:30 PM
+ *
+ * When dates are spread across multiple days:
+ *   Mon, May 12 2022 at 4:30 PM, 6:30 PM, 7:30 PM
+ *   Tue, May 13 2022 at 4:30 PM
+ *   Wed, May 14 2022 at 8AM, 9:30 AM, 11AM, 1:32 PM, 2:30 PM, 4:25 PM, 5:30 PM
+ *
+ * When dates are spread across so many days there are too many lines:
+ * 	May 12-18 2022 — Mon 12 (4:30, 6:30, 7:30) • Tue 13 (4:30) • Wed 14 (8:00, 9:30, 11:00, 1:32PM, 2:30PM, 4:25PM, 5:30PM) • Thu 15 (4:30) • Fri 16 (4:30, 6:30, 7:30) • Sat 17 (4:30) • Sun 18 (4:30)
+ *  May 19-25 2022 — Mon 19 (4:30) • Tue 20 (4:30) • Wed 21 (8:00, 9:30, 11:00, 1:32PM, 2:30PM, 4:25PM, 5:30PM) • Thu 22 (4:30) • Fri 23 (4:30, 6:30, 7:30) • Sat 24 (4:30) • Sun 25 (4:30)
+ *	May 26-Jun 1 2023 — Mon 26 (4:30) • Tue 27 (4:30) • Wed 28 (8:00, 9:30, 11:00, 1:32PM, 2:30PM, 4:25PM, 5:30PM) • Thu 29 (4:30) • Fri 30 (4:30, 6:30, 7:30)
+ *
+ * When dates are spread across so many weeks there are too many lines:
+ *   May 2022 — Mon 1 (4:30) • Tue 2 (4:30) • Wed 3 (8:00, 9:30, 11:00, 1:32PM, 2:30PM, 4:25PM, 5:30PM) • Thu 4 (4:30) • Fri 5 (4:30, 6:30, 7:30) • Sat 6 (4:30) • Sun 7 (4:30) • Mon 8 (4:30) • Tue 9 (4:30) • Wed 10 (8:00, 9:30, 11:00, 1:32PM, 2:30PM, 4:25PM, 5:30PM) • Thu 11 (4:30) • Fri 12 (4:30, 6:30, 7:30) • Sat 13 (4:30) • Sun 14 (4:30)
+ * @param dates - The date objects to convert.
+ * @returns A human-readable concise string displaying many dates.
+ */
+export function toConciseReadableDates(dates: Date[]): string {
+	if (dates.length === 0)
+		throw new Error(`Expected at least one Date object for toConciseReadableDates function, but was ${dates}.`);
+
+	const ascendingDates = dates
+		.filter(date =>
+			date instanceof Date &&
+			!isNaN(date.getTime())
+		)
+		.slice()
+		.sort((date1, date2) => date1.getTime() - date2.getTime());
+
+	if (ascendingDates.length === 0)
+		throw new Error(`Expected at least one valid Date object for toConciseReadableDates function, but was ${dates}.`);
+
+	// Groups by local calendar date (YYYY-MM-DD)
+	const dayStringToTimes = new Map<string, Date[]>();
+	const getDayStringOf = (date: Date) => {
+		const yearNum = date.getFullYear();
+		// month and day padded to keep stable keys
+		const monthNum = String(date.getMonth() + 1).padStart(2, '0');
+		const dayNum = String(date.getDate()).padStart(2, '0');
+		return `${yearNum}-${monthNum}-${dayNum}`;
+	};
+
+	for (const date of ascendingDates) {
+		const dayStringKey = getDayStringOf(date);
+		const datesForTheDay = dayStringToTimes.get(dayStringKey) ?? [];
+		datesForTheDay.push(date);
+		dayStringToTimes.set(dayStringKey, datesForTheDay);
+	}
+
+	const distinctDays = Array.from(dayStringToTimes.entries());
+
+	if (distinctDays.length <= 8) {
+		const lines: string[] = [];
+
+		for (const [, datesForTheDay] of dayStringToTimes) {
+			// all dates in group are on same calendar day; use the first to render the header
+			const firstDate = datesForTheDay[0];
+
+			const conciseWeekdayName = firstDate.toLocaleString('default', { weekday: 'short' });
+			const monthName = firstDate.toLocaleString('default', { month: 'long' });
+			const dateNum = firstDate.getDate();
+			const fullYear = firstDate.getFullYear();
+
+			const ascendingTimes = datesForTheDay.sort((date1, date2) =>
+				date1.getTime() - date2.getTime()
+			);
+
+			const timeStrings: string[] = [];
+			let previousTime = '';
+			for (const time of ascendingTimes) {
+				const timeString = toConciseReadableTime(time);
+
+				if (timeString !== previousTime) {
+					timeStrings.push(timeString);
+					previousTime = timeString;
+				}
+			}
+
+			const timesPart = timeStrings.join(', ');
+			lines.push(`${conciseWeekdayName}, ${monthName} ${dateNum} ${fullYear} at ${timesPart}`);
+		}
+
+		return lines.join('\n');
+	}
+
+	const lines: string[] = [];
+	const earliestDate = ascendingDates[0];
+	let currentMonday = getMondayOfThisWeek(earliestDate);
+
+	const initialMonthName = currentMonday.toLocaleString('default', { month: 'long' });
+	const initialMondayDateNum = currentMonday.getDate();
+	const initialSundayDateNum = getSundayOfThisWeek(currentMonday).getDate();
+	const initialFullYear = currentMonday.getFullYear();
+
+	let linePrefix = `${initialMonthName} ${initialMondayDateNum}-${initialSundayDateNum} ${initialFullYear} — `;
+	let compactDayStrings: string[] = [];
+
+	for (const [, datesForTheDay] of distinctDays) {
+		const baseDate = datesForTheDay[0];
+		const mondayOfDay = getMondayOfThisWeek(baseDate);
+
+		// If new week
+		if (mondayOfDay.getTime() !== currentMonday.getTime()) {
+			lines.push(`${linePrefix}${compactDayStrings.join(' • ')}`);
+
+			compactDayStrings = [];
+			currentMonday = mondayOfDay;
+			const monthName = currentMonday.toLocaleString('default', { month: 'long' });
+			const mondayDateNum = currentMonday.getDate();
+			const sundayDateNum = getSundayOfThisWeek(currentMonday).getDate();
+			const fullYear = currentMonday.getFullYear();
+
+			linePrefix = `${monthName} ${mondayDateNum}-${sundayDateNum} ${fullYear} — `;
+		}
+
+		const weekdayName = baseDate.toLocaleString('default', { weekday: 'short' });
+		const dateNum = baseDate.getDate();
+		const timeString = datesForTheDay
+			.map(toCompactReadableTime)
+			.join(', ');
+
+		const compactDayString = `${weekdayName} ${dateNum} (${timeString})`;
+		compactDayStrings.push(compactDayString);
+	}
+
+	lines.push(`${linePrefix}${compactDayStrings.join(' • ')}`);
+	return lines.join('\n');
 }

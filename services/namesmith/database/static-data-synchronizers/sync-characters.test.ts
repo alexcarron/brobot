@@ -141,7 +141,7 @@ describe('sync-characters.ts', () => {
 
 		const characters = characterRepository.getCharacters();
 		makeSure(characters).hasLengthOf(3);
-		makeSure(characters).hasNoItemsWhere(character =>
+		makeSure(characters).hasNoItemWhere(character =>
 			character.value === '❌'
 		);
 		makeSure(characters).hasAnItemWhere(character =>

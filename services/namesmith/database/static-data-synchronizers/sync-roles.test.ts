@@ -174,7 +174,7 @@ describe('sync-roles.ts', () => {
 
 		const roles = roleRepository.getRoles();
 		makeSure(roles).hasLengthOf(3);
-		makeSure(roles).hasNoItemsWhere(role =>
+		makeSure(roles).hasNoItemWhere(role =>
 			role.id === 1 ||
 			role.name === 'Role Name'
 		);

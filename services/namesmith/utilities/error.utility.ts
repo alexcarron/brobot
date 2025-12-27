@@ -1,7 +1,7 @@
 import { inspect } from 'util';
 import { getCharacterDifferences } from '../../../utilities/data-structure-utils';
 import { CustomError } from '../../../utilities/error-utils';
-import { escapeDiscordMarkdown } from '../../../utilities/string-manipulation-utils';
+import { escapeDiscordMarkdown, joinLines } from '../../../utilities/string-manipulation-utils';
 import { isNumber } from '../../../utilities/types/type-guards';
 import { ActivityLogID } from '../types/activity-log.types';
 import { CharacterID } from '../types/character.types';
@@ -824,6 +824,25 @@ export class NameTooLongError extends InvalidNameError {
 			relevantData: {
 				name,
 				maxLength,
+			}
+		})
+	}
+}
+
+export class GameIsNotActiveError extends NamesmithError {
+	declare relevantData: { currentTime: Date, timeGameStarts: Date, timeGameEnds: Date };
+	constructor(currentTime: Date, timeGameStarts: Date, timeGameEnds: Date) {
+		super({
+			message: joinLines(
+				`Game is not active at the given time.`,
+				`	Current Time:      ${currentTime.toISOString()}`,
+				`	Game Start Time:   ${timeGameStarts.toISOString()}`,
+				`	Game End Time:     ${timeGameEnds.toISOString()}`,
+				``,
+				`The current time must be between the game start and end times.`
+			),
+			relevantData: {
+				currentTime,
 			}
 		})
 	}

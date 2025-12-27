@@ -4,7 +4,7 @@
  */
 
 import { Class, ElementOfArray, ErrorClass } from "../types/generic-types";
-import { isArray, isObject, isStrings } from "../types/type-guards";
+import { isArray, isNumberOrBigInt, isObject, isStrings } from "../types/type-guards";
 
 
 /**
@@ -63,6 +63,67 @@ export function makeSure<
 		 */
 		isEqualTo(expectedValue: unknown): void {
 			baseExpect.toEqual(expectedValue);
+		},
+
+
+		/**
+		 * Asserts that the actual value is greater than the expected value.
+		 * @param expectedValue - The expected value to check against. Must be a number or bigint.
+		 * @throws {Error} - Throws if the expected value is not a number or bigint.
+		 * @example
+		 * makeSure(actualResultValue).isGreaterThan(expectedValue);
+		 */
+		isGreaterThan(expectedValue: unknown): void {
+			if (!isNumberOrBigInt(expectedValue)) {
+				throw new Error(`Expected value must be a number or bigint, but got: ${expectedValue}`);
+			}
+
+			baseExpect.toBeGreaterThan(expectedValue);
+		},
+
+		/**
+		 * Asserts that the actual value is greater than or equal to the expected value.
+		 * @param expectedValue - The expected value to check against. Must be a number or bigint.
+		 * @throws {Error} - Throws if the expected value is not a number or bigint.
+		 * @example
+		 * makeSure(actualResultValue).isGreaterThanOrEqualTo(expectedValue);
+		 */
+		isGreaterThanOrEqualTo(expectedValue: unknown): void {
+			if (!isNumberOrBigInt(expectedValue)) {
+				throw new Error(`Expected value must be a number or bigint, but got: ${expectedValue}`);
+			}
+
+			baseExpect.toBeGreaterThanOrEqual(expectedValue);
+		},
+
+		/**
+		 * Asserts that the actual value is less than the expected value.
+		 * @param expectedValue - The expected value to check against. Must be a number or bigint.
+		 * @throws {Error} - Throws if the expected value is not a number or bigint.
+		 * @example
+		 * makeSure(actualResultValue).isLessThan(expectedValue);
+		 */
+		isLessThan(expectedValue: unknown): void {
+			if (!isNumberOrBigInt(expectedValue)) {
+				throw new Error(`Expected value must be a number or bigint, but got: ${expectedValue}`);
+			}
+
+			baseExpect.toBeLessThan(expectedValue);
+		},
+
+		/**
+		 * Asserts that the actual value is less than or equal to the expected value.
+		 * @param expectedValue - The expected value to check against. Must be a number or bigint.
+		 * @throws {Error} - Throws if the expected value is not a number or bigint.
+		 * @example
+		 * makeSure(actualResultValue).isLessThanOrEqualTo(expectedValue);
+		 */
+		isLessThanOrEqualTo(expectedValue: unknown): void {
+			if (!isNumberOrBigInt(expectedValue)) {
+				throw new Error(`Expected value must be a number or bigint, but got: ${expectedValue}`);
+			}
+
+			baseExpect.toBeLessThanOrEqual(expectedValue);
 		},
 
 		/**
@@ -235,7 +296,20 @@ export function makeSure<
 		 * makeSure([1, 2, 3]).hasLengthOf(3);
 		 */
 		hasLengthOf(expectedLength: number): void {
-			baseExpect.toHaveLength(expectedLength);
+			if (actualValue instanceof Map)
+				expect(actualValue.size).toBe(expectedLength);
+			else
+				baseExpect.toHaveLength(expectedLength);
+		},
+
+		hasSizeof(expectedLength: number): void {
+			if (!isObject(actualValue))
+				throw new Error(`Expected actual value to be an object, but got: ${actualValue}`);
+
+			if ('size' in actualValue === false)
+				throw new Error(`Expected actual value to have a size property, but got: ${actualValue}`);
+
+			expect(actualValue.size).toBe(expectedLength);
 		},
 
 		/**
@@ -370,7 +444,7 @@ export function makeSure<
 		 * @example
 		 * makeSure([1, 2, 3]).hasNoItemsWhere(item => item % 2 === 0);
 		 */
-		hasNoItemsWhere(predicate: (item: ElementOfArray<ActualType>) => boolean): void {
+		hasNoItemWhere(predicate: (item: ElementOfArray<ActualType>) => boolean): void {
 			if (!isArray(actualValue))
 				throw new Error(`Expected actual value to be an array, but got: ${actualValue}`);
 

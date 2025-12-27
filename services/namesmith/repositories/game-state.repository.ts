@@ -4,6 +4,7 @@ import { asGameState, DefinedGameState, GameState, isGameStateDefined } from "..
 import { WithAtLeastOneProperty } from '../../../utilities/types/generic-types';
 import { GameStateInitializationError } from "../utilities/error.utility";
 import { createMockDB } from "../mocks/mock-database";
+import { DBDate } from "../utilities/db.utility";
 
 /**
  * Provides access to the game state data.
@@ -94,8 +95,10 @@ export class GameStateRepository {
 	 * @returns The time when the game started.
 	 */
 	getTimeStarted(): Date {
-		const gameState = this.getDefinedGameState();
-		return gameState.timeStarted;
+		const dbTimeStarted = this.db.getValue(
+			'SELECT timeStarted FROM gameState WHERE id = 1'
+		);
+		return DBDate.toDomain(dbTimeStarted);
 	}
 
 	/**
@@ -103,7 +106,10 @@ export class GameStateRepository {
 	 * @param timeStarted The time when the game started.
 	 */
 	setTimeStarted(timeStarted: Date) {
-		this.setGameState({ timeStarted });
+		this.db.run(
+			'UPDATE gameState SET timeStarted = ? WHERE id = 1',
+			DBDate.fromDomain(timeStarted)
+		)
 	}
 
 	/**
@@ -111,8 +117,10 @@ export class GameStateRepository {
 	 * @returns The time when the game is expected to end.
 	 */
 	getTimeEnding(): Date {
-		const gameState = this.getDefinedGameState();
-		return gameState.timeEnding;
+		const dbTimeEnding = this.db.getValue(
+			'SELECT timeEnding FROM gameState WHERE id = 1'
+		);
+		return DBDate.toDomain(dbTimeEnding);
 	}
 
 	/**
@@ -120,7 +128,10 @@ export class GameStateRepository {
 	 * @param timeEnding - The time when the game is expected to end.
 	 */
 	setTimeVoting(timeEnding: Date) {
-		this.setGameState({ timeEnding });
+		this.db.run(
+			'UPDATE gameState SET timeEnding = ? WHERE id = 1',
+			DBDate.fromDomain(timeEnding)
+		)
 	}
 
 	/**
@@ -128,8 +139,10 @@ export class GameStateRepository {
 	 * @returns The time when the voting phase is expected to end.
 	 */
 	getTimeVoteIsEnding(): Date {
-		const gameState = this.getDefinedGameState();
-		return gameState.timeVoteIsEnding;
+		const dbTimeVoteIsEnding = this.db.getValue(
+			'SELECT timeVoteIsEnding FROM gameState WHERE id = 1'
+		);
+		return DBDate.toDomain(dbTimeVoteIsEnding);
 	}
 
 	/**
@@ -137,6 +150,9 @@ export class GameStateRepository {
 	 * @param timeVoteIsEnding - The time when the voting phase is expected to end.
 	 */
 	setTimeVotingEnds(timeVoteIsEnding: Date) {
-		this.setGameState({ timeVoteIsEnding });
+		this.db.run(
+			'UPDATE gameState SET timeVoteIsEnding = ? WHERE id = 1',
+			DBDate.fromDomain(timeVoteIsEnding)
+		)
 	}
 }

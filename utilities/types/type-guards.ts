@@ -29,6 +29,31 @@ export function isNumber(
 }
 
 /**
+ * Checks if a given value is a bigint.
+ * @param value - The value to check.
+ * @returns If the value is a bigint.
+ * @example
+ * const bigNumber: bigint = 123n;
+ * expect(isBigInt(bigNumber)).toBe(true);
+ */
+export function isBigInt(
+	value: unknown
+): value is bigint {
+	return typeof value === "bigint";
+}
+
+/**
+ * Checks if a given value is a number or a bigint.
+ * @param value - The value to check.
+ * @returns If the value is a number or a bigint.
+ */
+export function isNumberOrBigInt(
+	value: unknown
+): value is number | bigint {
+	return isNumber(value) || isBigInt(value);
+}
+
+/**
  * Checks if a given value is a boolean.
  * @param value - The value to check.
  * @returns If the value is a boolean.

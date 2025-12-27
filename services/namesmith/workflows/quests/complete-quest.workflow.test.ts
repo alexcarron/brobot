@@ -1,15 +1,17 @@
-import { makeSure } from "../../../../utilities/jest/jest-utils";
+import { addHours, addMinutes } from "../../../../utilities/date-time-utils";
+import { failTest, makeSure } from "../../../../utilities/jest/jest-utils";
 import { getBetween, getRandomUUID } from "../../../../utilities/random-utils";
 import { Quests } from "../../constants/quests.constants";
 import { FREEBIE_QUEST_NAME, INVALID_PLAYER_ID, INVALID_QUEST_ID } from "../../constants/test.constants";
 import { DatabaseQuerier } from "../../database/database-querier";
 import { getLatestActivityLog } from "../../mocks/mock-data/mock-activity-logs";
 import { forcePlayerToBuyNewMysteryBox } from "../../mocks/mock-data/mock-mystery-boxes";
-import { addMockPlayer, forcePlayerToClaimRefill, forcePlayerToMineTokens, forcePlayerToPublishName } from '../../mocks/mock-data/mock-players';
+import { addMockPlayer, forcePlayerToChangeName, forcePlayerToClaimRefill, forcePlayerToMineTokens, forcePlayerToPublishName } from '../../mocks/mock-data/mock-players';
 import { addMockQuest } from "../../mocks/mock-data/mock-quests";
 import { addMockRecipe, forcePlayerToCraft } from '../../mocks/mock-data/mock-recipes';
 import { forcePlayerToAcceptNewTrade, forcePlayerToInitiateTrade } from '../../mocks/mock-data/mock-trades';
 import { setupMockNamesmith } from "../../mocks/mock-setup";
+import { GameStateService } from "../../services/game-state.service";
 import { PlayerService } from "../../services/player.service";
 import { ActivityTypes } from "../../types/activity-log.types";
 import { Player } from "../../types/player.types";
@@ -21,6 +23,7 @@ import { completeQuest } from "./complete-quest.workflow";
 describe('complete-quest.workflow.ts', () => {
   let db: DatabaseQuerier;
 	let playerService: PlayerService;
+	let gameStateService: GameStateService;
 
   let SOME_QUEST: Quest;
   let SOME_PLAYER: Player;
@@ -29,7 +32,7 @@ describe('complete-quest.workflow.ts', () => {
 	let THREE_DIFFERENT_PLAYERS: Player[];
 
   beforeEach(() => {
-    ({ db, playerService } = setupMockNamesmith());
+    ({ db, playerService, gameStateService } = setupMockNamesmith(addMinutes(new Date(), -1)));
     SOME_PLAYER = addMockPlayer(db, {});
     SOME_QUEST = addMockQuest(db, {
 			name: FREEBIE_QUEST_NAME + getRandomUUID()
@@ -189,7 +192,7 @@ describe('complete-quest.workflow.ts', () => {
 						completeQuest({
 							playerResolvable: SOME_PLAYER.id,
 							questResolvable: Quests.EXPERIENCED_CRAFTSMAN.id
-						}).isNotEnoughUniqueRecipes()
+						}).isQuestCriteriaNotMet()
 					).isTrue();
 				});
 
@@ -206,14 +209,14 @@ describe('complete-quest.workflow.ts', () => {
 						completeQuest({
 							playerResolvable: SOME_PLAYER.id,
 							questResolvable: Quests.EXPERIENCED_CRAFTSMAN.id
-						}).isNotEnoughCrafts()
+						}).isQuestCriteriaNotMet()
 					).isTrue();
 				});
 			});
 
 			describe('Diverse Name', () => {
-				it('returns success for Diverse Name quest if player has published a name with at 3 emojis, 3 letters, and 3 symbols', () => {
-					forcePlayerToPublishName(SOME_PLAYER, 'abc!#%🔥🎉😨');
+				it('returns success for Diverse Name quest if player has published a name with at 3 numbers, 3 letters, and 3 symbols', () => {
+					forcePlayerToPublishName(SOME_PLAYER, 'abc!#%123');
 
 					makeSure(
 						completeQuest({
@@ -223,8 +226,8 @@ describe('complete-quest.workflow.ts', () => {
 					).isFalse();
 				});
 
-				it('returns success for Diverse Name quest if player has published a name with 1 emoji, 1 letter, and 1 symbol', () => {
-					forcePlayerToPublishName(SOME_PLAYER, '😅x=');
+				it('returns success for Diverse Name quest if player has published a name with 1 number, 1 letter, and 1 symbol', () => {
+					forcePlayerToPublishName(SOME_PLAYER, '0x=');
 
 					makeSure(
 						completeQuest({
@@ -234,37 +237,40 @@ describe('complete-quest.workflow.ts', () => {
 					).isFalse();
 				});
 
-				it('returns NameHasNoEmojis failure for Diverse Name quest if player has published a name with a letter and symbol but no emojis', () => {
-					forcePlayerToPublishName(SOME_PLAYER, 'I l0ve emojis! :D');
+				it('returns NameNeedsMoreCharactersOfType failure for Diverse Name quest if player has published a name with a letter and symbol but no numbers', () => {
+					forcePlayerToPublishName(SOME_PLAYER, 'I l⭕ve numbers! :D');
 
-					makeSure(
-						completeQuest({
-							playerResolvable: SOME_PLAYER.id,
-							questResolvable: Quests.DIVERSE_NAME.id
-						}).isNameHasNoEmojis()
-					).isTrue();
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.DIVERSE_NAME.id
+					});
+
+					if (result.isQuestCriteriaNotMet() === false)
+						failTest('Expected result to be NameNeedsMoreCharactersOfType failure, but was not');
 				});
 
-				it('returns NameHasNoSymbols failure for Diverse Name quest if player has published a name with an emoji and letter but no symbols', () => {
-					forcePlayerToPublishName(SOME_PLAYER, 'I ❤️ Symbols');
+				it('returns NameHasNoSymbols failure for Diverse Name quest if player has published a name with a number and letter but no symbols', () => {
+					forcePlayerToPublishName(SOME_PLAYER, 'I 3 Symbols');
 
-					makeSure(
-						completeQuest({
-							playerResolvable: SOME_PLAYER.id,
-							questResolvable: Quests.DIVERSE_NAME.id
-						}).isNameHasNoSymbols()
-					).isTrue();
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.DIVERSE_NAME.id
+					});
+
+					if (result.isQuestCriteriaNotMet() === false)
+						failTest('Expected result to be NameNeedsMoreCharactersOfType failure, but was not');
 				});
 
-				it('returns NameHasNoLetters failure for Diverse Name quest if player has published a name with an emoji and symbol but no letters', () => {
-					forcePlayerToPublishName(SOME_PLAYER, '| ❤️ |𝑒ττ𝑒ℛ∫');
+				it('returns NameHasNoLetters failure for Diverse Name quest if player has published a name with a number and symbol but no letters', () => {
+					forcePlayerToPublishName(SOME_PLAYER, '| 3 |𝑒ττ𝑒ℛ∫');
 
-					makeSure(
-						completeQuest({
-							playerResolvable: SOME_PLAYER.id,
-							questResolvable: Quests.DIVERSE_NAME.id
-						}).isNameHasNoLetters()
-					).isTrue();
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.DIVERSE_NAME.id
+					});
+
+					if (result.isQuestCriteriaNotMet() === false)
+						failTest('Expected result to be NameNeedsMoreCharactersOfType failure, but was not');
 				});
 			})
 
@@ -285,39 +291,20 @@ describe('complete-quest.workflow.ts', () => {
 					).isFalse();
 				});
 
-				it('returns NotEnoughUniquePlayersAccepted failure for Trade Diplomat quest if player\'s three accepted trades were accepted by only 2 different players', () => {
+				it('returns NotEnoughTradesMade failure for Trade Diplomat quest if player\'s trades were not yet accepted', () => {
 					for (let numLoop = 0; numLoop < 3; numLoop++) {
-						const otherPlayer = THREE_DIFFERENT_PLAYERS[numLoop % 2];
-						forcePlayerToAcceptNewTrade(otherPlayer, {
-							initiatingPlayer: SOME_PLAYER,
-						});
-					}
-
-					makeSure(
-						completeQuest({
-							playerResolvable: SOME_PLAYER.id,
-							questResolvable: Quests.TRADE_DIPLOMAT.id
-						}).isNotEnoughUniquePlayersAccepted()
-					).isTrue();
-				});
-
-				it('returns NotEnoughTradesMade failure for Trade Diplomat quest if player\'s trades were accepted by only 2 different players and another one was not yet accepted', () => {
-					for (let numLoop = 0; numLoop < 2; numLoop++) {
 						const otherPlayer = THREE_DIFFERENT_PLAYERS[numLoop];
-						forcePlayerToAcceptNewTrade(otherPlayer, {
-							initiatingPlayer: SOME_PLAYER,
+						forcePlayerToInitiateTrade(SOME_PLAYER, {
+							recipientPlayer: otherPlayer,
 						});
 					}
 
-					forcePlayerToInitiateTrade(SOME_PLAYER, {
-						recipientPlayer: THREE_DIFFERENT_PLAYERS[2],
-					});
 
 					makeSure(
 						completeQuest({
 							playerResolvable: SOME_PLAYER.id,
 							questResolvable: Quests.TRADE_DIPLOMAT.id
-						}).isNotEnoughTradesMade()
+						}).isQuestCriteriaNotMet()
 					).isTrue();
 				});
 
@@ -333,13 +320,13 @@ describe('complete-quest.workflow.ts', () => {
 						completeQuest({
 							playerResolvable: SOME_PLAYER.id,
 							questResolvable: Quests.TRADE_DIPLOMAT.id
-						}).isNotEnoughTradesMade()
+						}).isQuestCriteriaNotMet()
 					).isTrue();
 				});
 			})
 
 			describe('Twinsies Quest', () => {
-				it('returns true for Twinsies quest if player has same published name as someone else and it\'s over 6 characters', () => {
+				it('returns success for Twinsies quest if player has same published name as someone else and it\'s over 6 characters', () => {
 					forcePlayerToPublishName(SOME_PLAYER, 'Twinsies');
 					forcePlayerToPublishName(SOME_OTHER_PLAYER, 'Twinsies');
 
@@ -351,18 +338,6 @@ describe('complete-quest.workflow.ts', () => {
 					).isFalse();
 				});
 
-				it('returns NameTooShort failure for Twinsies quest if player has same published name as someone else but it\'s only 6 characters', () => {
-					forcePlayerToPublishName(SOME_PLAYER, 'SixsiX');
-					forcePlayerToPublishName(SOME_OTHER_PLAYER, 'SixsiX');
-
-					makeSure(
-						completeQuest({
-							playerResolvable: SOME_PLAYER.id,
-							questResolvable: Quests.TWINSIES.id
-						}).isNameTooShort()
-					).isTrue();
-				});
-
 				it('returns NameNotSharedByAnyone failure for Twinsies quest if player does not have the same published name as someone else even though its over 6 characters', () => {
 					forcePlayerToPublishName(SOME_PLAYER, 'Twinsies');
 					forcePlayerToPublishName(SOME_OTHER_PLAYER, 'Twinsies but different');
@@ -371,14 +346,14 @@ describe('complete-quest.workflow.ts', () => {
 						completeQuest({
 							playerResolvable: SOME_PLAYER.id,
 							questResolvable: Quests.TWINSIES.id
-						}).isNameNotSharedByAnyone()
+						}).isQuestCriteriaNotMet()
 					).isTrue();
 				});
 			});
 
 			describe('Get Rich Quickly Quest', () => {
-				it('returns true for Get Rich Quickly quest if player has mined 1000 tokens', () => {
-					forcePlayerToMineTokens(SOME_PLAYER, 1000);
+				it('returns success for Get Rich Quickly quest if player has mined 200 tokens', () => {
+					forcePlayerToMineTokens(SOME_PLAYER, 200);
 					makeSure(
 						completeQuest({
 							playerResolvable: SOME_PLAYER.id,
@@ -441,17 +416,276 @@ describe('complete-quest.workflow.ts', () => {
 					).isFalse();
 				});
 
-				it('returns failure for Get Rich Quickly quest if player has only earned 999 tokens', () => {
-					forcePlayerToMineTokens(SOME_PLAYER, 499);
-					forcePlayerToClaimRefill(SOME_PLAYER, 500);
+				it('returns failure for Get Rich Quickly quest if player has only earned 199 tokens', () => {
+					forcePlayerToMineTokens(SOME_PLAYER, 99);
+					forcePlayerToClaimRefill(SOME_PLAYER, 100);
 					makeSure(
 						completeQuest({
 							playerResolvable: SOME_PLAYER.id,
 							questResolvable: Quests.GET_RICH_QUICK.id
-						}).isNotEnoughTokensEarned()
+						}).isQuestCriteriaNotMet()
 					).isTrue();
 				})
 			});
+
+			describe('Echoed Name Quest', () => {
+				it('returns success for Echoed Name quest if player has changed their name to a repeated version of itself', () => {
+					forcePlayerToChangeName(SOME_PLAYER, 'Echo');
+					forcePlayerToChangeName(SOME_PLAYER, 'EchoEcho');
+
+					makeSure(
+						completeQuest({
+							playerResolvable: SOME_PLAYER.id,
+							questResolvable: Quests.ECHOED_NAME.id
+						}).isFailure()
+					).isFalse();
+				});
+
+				it('returns failure for Echoed Name quest if player has not changed their name to a repeated version of itself', () => {
+					forcePlayerToChangeName(SOME_PLAYER, 'Echo');
+					forcePlayerToChangeName(SOME_PLAYER, 'Echo Echo');
+
+					makeSure(
+						completeQuest({
+							playerResolvable: SOME_PLAYER.id,
+							questResolvable: Quests.ECHOED_NAME.id
+						}).isQuestCriteriaNotMet()
+					).isTrue();
+				});
+
+				it('returns failure for Echoed Name quest if player has not changed their name at all', () => {
+					makeSure(
+						completeQuest({
+							playerResolvable: SOME_PLAYER.id,
+							questResolvable: Quests.ECHOED_NAME.id
+						}).isQuestCriteriaNotMet()
+					).isTrue();
+				});
+			});
+
+			describe('Identity Theft Quest', () => {
+				let START_OF_TODAY: Date;
+				let BEFORE_TWO_HOUR_INTERVAL: Date;
+				let AFTER_TWO_HOUR_INTERVAL: Date;
+				let NOW: Date;
+
+				let NAMED_PLAYER: Player;
+				let OTHER_NAMED_PLAYER: Player;
+
+				beforeEach(() => {
+					NOW = new Date();
+					START_OF_TODAY = gameStateService.getStartOfTodayOrThrow(NOW);
+
+					BEFORE_TWO_HOUR_INTERVAL = addHours(START_OF_TODAY, 5);
+					AFTER_TWO_HOUR_INTERVAL = addHours(START_OF_TODAY, 7);
+
+					NAMED_PLAYER = addMockPlayer(db, {
+						currentName: 'Player Name'
+					});
+
+					OTHER_NAMED_PLAYER = addMockPlayer(db, {
+						currentName: 'Other Player Name'
+					});
+
+					jest.useFakeTimers({ now: NOW });
+				});
+
+				afterEach(() => {
+					jest.useRealTimers();
+				});
+
+				it('returns a success when the player has shared the same name as another player the entire day', () => {
+					addMockPlayer(db, {
+						currentName: NAMED_PLAYER.currentName
+					});
+
+					makeSure(
+						completeQuest({
+							playerResolvable: NAMED_PLAYER.id,
+							questResolvable: Quests.IDENTITY_THEFT.id
+						}).isFailure()
+					).isFalse();
+				});
+
+				it('returns a success when the player and other player has changed their name to the same name without changing it again for exactly 2 hours', () => {
+					jest.setSystemTime(BEFORE_TWO_HOUR_INTERVAL);
+					forcePlayerToChangeName(NAMED_PLAYER, "Shared Name");
+					forcePlayerToChangeName(OTHER_NAMED_PLAYER, "Shared Name");
+
+					jest.setSystemTime(AFTER_TWO_HOUR_INTERVAL);
+					forcePlayerToChangeName(NAMED_PLAYER, "Player Name");
+					forcePlayerToChangeName(OTHER_NAMED_PLAYER, "Other Player Name");
+
+					makeSure(
+						completeQuest({
+							playerResolvable: NAMED_PLAYER.id,
+							questResolvable: Quests.IDENTITY_THEFT.id
+						}).isFailure()
+					).isFalse();
+				});
+
+				it('returns a failure when the player and other player has changed their name to the same name without changing it again for 1 hour and 59 minutes hours', () => {
+					jest.setSystemTime(BEFORE_TWO_HOUR_INTERVAL);
+					forcePlayerToChangeName(NAMED_PLAYER, "Shared Name");
+					forcePlayerToChangeName(OTHER_NAMED_PLAYER, "Shared Name");
+
+					jest.setSystemTime(
+						addMinutes(AFTER_TWO_HOUR_INTERVAL, -1)
+					);
+					forcePlayerToChangeName(NAMED_PLAYER, "Player Name");
+					forcePlayerToChangeName(OTHER_NAMED_PLAYER, "Other Player Name");
+
+					makeSure(
+						completeQuest({
+							playerResolvable: NAMED_PLAYER.id,
+							questResolvable: Quests.IDENTITY_THEFT.id
+						}).isFailure()
+					).isTrue();
+				});
+			});
+
+			describe('Fragile Name Quest', () => {
+				let NOW: Date;
+
+				beforeEach(() => {
+					NOW = new Date();
+					jest.useFakeTimers({ now: NOW });
+				});
+
+				afterEach(() => {
+					jest.useRealTimers();
+				});
+
+				it('return success if player does absolutely nothing', () => {
+					makeSure(
+						completeQuest({
+							playerResolvable: SOME_PLAYER.id,
+							questResolvable: Quests.FRAGILE_NAME.id
+						}).isFailure()
+					).isFalse();
+				});
+
+				it('return success if player changes their name every hour except for an exact 8 hour gap', () => {
+					for (let numLoop = 0; numLoop < 24; numLoop++) {
+						// Skip the exact 8 hour gap
+						if (numLoop > 8 && numLoop < 16)
+							continue;
+
+						jest.setSystemTime(addHours(NOW, numLoop));
+						forcePlayerToChangeName(SOME_PLAYER, `Name ${numLoop}`);
+					}
+
+					makeSure(
+						completeQuest({
+							playerResolvable: SOME_PLAYER.id,
+							questResolvable: Quests.FRAGILE_NAME.id
+						}).isFailure()
+					).isFalse();
+				});
+
+				it('return failure if player changes their name every hour except for a 7 hour and 59 minute gap', () => {
+					for (let numLoop = 0; numLoop < 24; numLoop++) {
+						if (numLoop > 8 && numLoop < 15)
+							continue;
+
+						let timeToChange = addHours(NOW, numLoop);
+						if (numLoop === 15)
+							timeToChange = addMinutes(timeToChange, -1);
+
+						jest.setSystemTime(timeToChange);
+						forcePlayerToChangeName(SOME_PLAYER, `Name ${numLoop}`);
+					}
+
+					makeSure(
+						completeQuest({
+							playerResolvable: SOME_PLAYER.id,
+							questResolvable: Quests.FRAGILE_NAME.id
+						}).isFailure()
+					).isTrue();
+				})
+			});
+
+			describe('Hour of Silence Quest', () => {
+				it('return success if everyone does absolutely nothing', () => {
+					makeSure(
+						completeQuest({
+							playerResolvable: SOME_PLAYER.id,
+							questResolvable: Quests.HOUR_OF_SILENCE.id
+						}).isFailure()
+					).isFalse();
+				});
+
+				it('return success if everyone changes their name every hour', () => {
+					jest.useFakeTimers({ now: new Date() });
+
+					const ANOTHER_PLAYER = addMockPlayer(db);
+					for (let numLoop = 0; numLoop < 24; numLoop++) {
+						jest.setSystemTime(addHours(new Date(), 1));
+						forcePlayerToChangeName(SOME_PLAYER, `Name ${numLoop}`);
+						forcePlayerToChangeName(ANOTHER_PLAYER, `Name ${numLoop}`);
+					}
+
+					makeSure(
+						completeQuest({
+							playerResolvable: SOME_PLAYER.id,
+							questResolvable: Quests.HOUR_OF_SILENCE.id
+						}).isFailure()
+					).isFalse();
+
+					jest.useRealTimers();
+				});
+
+				it('return failure if a single person changes their name every 59 minutes', () => {
+					jest.useFakeTimers({ now: new Date() });
+					forcePlayerToChangeName(SOME_PLAYER, `Name 0`);
+					for (let numLoop = 1; numLoop <= 24; numLoop++) {
+						jest.setSystemTime(addMinutes(new Date(), 59));
+						forcePlayerToChangeName(SOME_PLAYER, `Name ${numLoop}`);
+					}
+
+					makeSure(
+						completeQuest({
+							playerResolvable: SOME_PLAYER.id,
+							questResolvable: Quests.HOUR_OF_SILENCE.id
+						}).isFailure()
+					).isTrue();
+
+					jest.useRealTimers();
+				});
+			});
+
+			describe('Even Number Name Quest', () => {
+				it('returns a success if the player has published a name with a 2 in it', () => {
+					forcePlayerToPublishName(SOME_PLAYER, "abcdefhj2iojfklsf");
+
+					makeSure(
+						completeQuest({
+							playerResolvable: SOME_PLAYER.id,
+							questResolvable: Quests.EVEN_NUMBER_NAME.id
+						}).isFailure()
+					).isFalse();
+				});
+
+				it('returns a failure if the player has published name with only odd numbers', () => {
+					forcePlayerToPublishName(SOME_PLAYER, "13579951");
+
+					makeSure(
+						completeQuest({
+							playerResolvable: SOME_PLAYER.id,
+							questResolvable: Quests.EVEN_NUMBER_NAME.id
+						}).isFailure()
+					).isTrue();
+				});
+
+				it('returns a failure if the player has never published a name', () => {
+					makeSure(
+						completeQuest({
+							playerResolvable: SOME_PLAYER.id,
+							questResolvable: Quests.EVEN_NUMBER_NAME.id
+						}).isFailure()
+					).isTrue();
+				});
+			})
 		});
   });
 });

@@ -79,12 +79,32 @@ export function toParameterSetClause(
  *   playerConditions
  * );
  */
-export function toParameterANDWhereClause(
+export function toParameterAndWhereClause(
 	fieldToValue: Record<string, unknown>
 ): string {
 	return Object.entries(fieldToValue)
 		.filter(([, value]) => value !== undefined)
 		.map(([key]) => `${key} = @${key}`)
+		.join(" AND ");
+}
+
+/**
+ * Converts an object of column/field names of a database entity to their expected values into a string of inequality conditions suitable for use in a parameterized WHERE clause.
+ * @param fieldToValue - An object of column/field names of a database entity to their expected values.
+ * @returns A string like "age != @age AND tokens != @tokens" suitable for use in a parameterized WHERE clause.
+ * @example
+ * const playerConditions = { name: "John Doe", age: 21 };
+ * const players = db.all(
+ *   `SELECT * FROM players WHERE ${toParameterNotAndWhereClause(playerConditions)}`,
+ *   playerConditions
+ * );
+ */
+export function toParameterNotAndWhereClause(
+	fieldToValue: Record<string, unknown>
+): string {
+	return Object.entries(fieldToValue)
+		.filter(([, value]) => value !== undefined)
+		.map(([key]) => `${key} != @${key}`)
 		.join(" AND ");
 }
 

@@ -2,7 +2,7 @@ export const quests = [
 	{
 		id: 1,
 		name: "Experienced Craftsman",
-		description: "Craft 5 new characters using at least 3 different recipes",
+		description: "Craft characters at least five times using at least three different recipes",
 		tokensReward: 75,
 	},
 	{

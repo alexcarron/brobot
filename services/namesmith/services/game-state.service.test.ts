@@ -45,6 +45,7 @@ import { PlayerService } from "./player.service";
 import { VoteService } from "./vote.service";
 import { DAYS_TO_BUILD_NAME, DAYS_TO_VOTE } from "../constants/namesmith.constants";
 import { addDays } from "../../../utilities/date-time-utils";
+import { GameIsNotActiveError } from "../utilities/error.utility";
 
 
 describe('GameStateService', () => {
@@ -121,7 +122,7 @@ describe('GameStateService', () => {
 				new Date('2025-08-05T12:00:00.000Z'),
 				new Date('2025-08-08T12:00:00.000Z'),
 			];
-			expect(gameStateService.getTimesPickAPerkStarts(
+			expect(gameStateService.computeTimesPickAPerkStarts(
 				startDate,
 				addDays(startDate, 7*4),
 				[3, 6]
@@ -129,7 +130,7 @@ describe('GameStateService', () => {
 		});
 	});
 
-	describe('getTimesDayStarts()', () => {
+	describe('setTimesDayStarts()', () => {
 		it('should return an array of dates representing the start of each day', () => {
 			const startDate = new Date('2025-07-12T12:00:00.000Z');
 			const expectedDates = [
@@ -141,7 +142,64 @@ describe('GameStateService', () => {
 				new Date('2025-07-17T12:00:00.000Z'),
 				new Date('2025-07-18T12:00:00.000Z'),
 			];
-			expect(gameStateService.getTimesDayStarts(startDate, addDays(startDate, 7))).toEqual(expectedDates);
+			expect(gameStateService.computeTimesDayStarts(startDate, addDays(startDate, 7))).toEqual(expectedDates);
+		});
+	});
+
+	describe('getTodaysDayStart()', () => {
+		const TIME_GAME_STARTS = new Date('2025-07-12T12:00:00.000Z');
+
+		beforeEach(() => {
+			// Setup the game state
+			console.log('TIME_GAME_STARTS', TIME_GAME_STARTS);
+			gameStateService.setupTimings(TIME_GAME_STARTS);
+		})
+
+		it('should return the start of the day if the given date is exactly that date', () => {
+			const now = new Date('2025-07-14T12:00:00.000Z');
+			const expectedDayStart = new Date('2025-07-14T12:00:00.000Z');
+			expect(gameStateService.getStartOfToday(now)).toEqual(expectedDayStart);
+		});
+
+		it('should return the start of the day if given the middle of the day', () => {
+			const now = new Date('2025-07-14T22:00:00.000Z');
+			const expectedDayStart = new Date('2025-07-14T12:00:00.000Z');
+			expect(gameStateService.getStartOfToday(now)).toEqual(expectedDayStart);
+		});
+
+		it('should return the start of day even if we are right near the end of the day', () => {
+			const now = new Date('2025-07-14T11:59:59.999Z');
+			const expectedDayStart = new Date('2025-07-13T12:00:00.000Z');
+			expect(gameStateService.getStartOfToday(now)).toEqual(expectedDayStart);
+		});
+
+		it('should return null if the given date is before the start of the game', () => {
+			const now = new Date('2025-07-11T12:00:00.000Z');
+			expect(gameStateService.getStartOfToday(now)).toBeNull();
+		});
+
+		it('should return null if the given date is after the game is over', () => {
+			const now = new Date('2027-07-19T12:00:00.000Z');
+			expect(gameStateService.getStartOfToday(now)).toBeNull();
+		});
+	});
+
+	describe('getDayStartOfTodayOrThrow()', () => {
+		const TIME_GAME_STARTS = new Date('2025-07-12T12:00:00.000Z');
+
+		beforeEach(() => {
+			// Setup the game state
+			gameStateService.setupTimings(TIME_GAME_STARTS);
+		})
+
+		it('should throw a GameIsNotActiveError if the given date is before the start of the game', () => {
+			const now = new Date('2025-07-11T12:00:00.000Z');
+			expect(() => gameStateService.getStartOfTodayOrThrow(now)).toThrow(GameIsNotActiveError);
+		});
+
+		it('should throw a GameIsNotActiveError if the given date is after the game is over', () => {
+			const now = new Date('2027-07-19T12:00:00.000Z');
+			expect(() => gameStateService.getStartOfTodayOrThrow(now)).toThrow(GameIsNotActiveError);
 		});
 	});
 });

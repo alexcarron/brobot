@@ -1,15 +1,17 @@
-import { getToday, getTomorrow, getYesterday } from "../../../utilities/date-time-utils";
+import { addDays, addHours, addMinutes, getToday, getTomorrow, getYesterday } from "../../../utilities/date-time-utils";
 import { makeSure } from "../../../utilities/jest/jest-utils";
+import { getBetween } from "../../../utilities/random-utils";
 import { INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockActivityLog } from "../mocks/mock-data/mock-activity-logs";
-import { addMockMysteryBox } from "../mocks/mock-data/mock-mystery-boxes";
+import { addMockMysteryBox, forcePlayerToBuyNewMysteryBox } from "../mocks/mock-data/mock-mystery-boxes";
 import { addMockPerk } from "../mocks/mock-data/mock-perks";
-import { addMockPlayer } from "../mocks/mock-data/mock-players";
+import { addMockPlayer, forcePlayerToChangeName, forcePlayerToMineTokens } from '../mocks/mock-data/mock-players';
 import { addMockQuest } from "../mocks/mock-data/mock-quests";
-import { addMockRecipe } from "../mocks/mock-data/mock-recipes";
+import { addMockRecipe, forcePlayerToCraft } from "../mocks/mock-data/mock-recipes";
 import { addMockRole } from "../mocks/mock-data/mock-roles";
-import { addMockTrade } from "../mocks/mock-data/mock-trades";
+import { addMockTrade, forcePlayerToAcceptNewTrade } from "../mocks/mock-data/mock-trades";
+import { setupMockNamesmith } from "../mocks/mock-setup";
 import { ActivityTypes } from "../types/activity-log.types";
 import { MysteryBox } from "../types/mystery-box.types";
 import { Perk } from "../types/perk.types";
@@ -20,9 +22,13 @@ import { Role } from "../types/role.types";
 import { Trade } from "../types/trade.types";
 import { PlayerNotFoundError } from "../utilities/error.utility";
 import { ActivityLogService } from "./activity-log.service";
+import { GameStateService } from "./game-state.service";
+import { PlayerService } from "./player.service";
 
 describe('ActivityLogService', () => {
 	let activityLogService: ActivityLogService;
+	let gameStateService: GameStateService;
+	let playerService: PlayerService;
 	let db: DatabaseQuerier;
 
 	let SOME_PLAYER: Player;
@@ -39,8 +45,7 @@ describe('ActivityLogService', () => {
 	let TOMORROW: Date;
 
 	beforeEach(() => {
-		activityLogService = ActivityLogService.asMock();
-		db = activityLogService.activityLogRepository.db;
+		({ db, activityLogService, gameStateService, playerService } = setupMockNamesmith());
 
 		SOME_PLAYER = addMockPlayer(db);
 		OTHER_PLAYER = addMockPlayer(db);
@@ -584,5 +589,492 @@ describe('ActivityLogService', () => {
 				SOME_PLAYER.id, YESTERDAY
 			)).is(25);
 		});
+	});
+
+	describe('getChangeNameLogsForPlayerToday()', () => {
+		it('returns an empty array when the player has not changed names', () => {
+			makeSure(activityLogService.getChangeNameLogsForPlayerToday(SOME_PLAYER.id)).isEmpty();
+		});
+
+		it('returns the change name logs for a player', () => {
+			addMockActivityLog(db, {
+				timeOccured: YESTERDAY,
+				player: SOME_PLAYER.id,
+				type: ActivityTypes.CHANGE_NAME,
+			});
+			addMockActivityLog(db, {
+				timeOccured: TOMORROW,
+				player: SOME_PLAYER.id,
+				type: ActivityTypes.CHANGE_NAME,
+			});
+			addMockActivityLog(db, {
+				timeOccured: TOMORROW,
+				player: SOME_PLAYER.id,
+				type: ActivityTypes.CHANGE_NAME,
+			});
+
+			makeSure(activityLogService.getChangeNameLogsForPlayerToday(SOME_PLAYER.id)).hasLengthOf(2);
+		});
+	});
+
+	describe('getLogsForOtherPlayersToday()', () => {
+		it('returns an empty array when there are no logs for other players', () => {
+			makeSure(activityLogService.getLogsForOtherPlayersToday(SOME_PLAYER.id)).isEmpty();
+		});
+
+		it('returns the logs for other players', () => {
+			const IGNORED_LOG = addMockActivityLog(db, {
+				timeOccured: TOMORROW,
+				player: SOME_PLAYER.id,
+				type: ActivityTypes.CHANGE_NAME,
+			});
+			addMockActivityLog(db, {
+				timeOccured: TOMORROW,
+				player: OTHER_PLAYER.id,
+				type: ActivityTypes.CHANGE_NAME,
+			});
+			addMockActivityLog(db, {
+				timeOccured: TOMORROW,
+				player: OTHER_PLAYER.id,
+				type: ActivityTypes.CHANGE_NAME,
+			});
+
+			const returnedLogs = activityLogService.getLogsForOtherPlayersToday(SOME_PLAYER.id);
+			makeSure(returnedLogs).hasLengthOf(2);
+			makeSure(returnedLogs).hasNoItemWhere(log => log.id === IGNORED_LOG.id);
+		});
+
+		it('ignores logs done before the given time and done by the given player', () => {
+			addMockActivityLog(db, {
+				timeOccured: YESTERDAY,
+				player: SOME_PLAYER.id,
+				type: ActivityTypes.CHANGE_NAME,
+			});
+			addMockActivityLog(db, {
+				timeOccured: YESTERDAY,
+				player: OTHER_PLAYER.id,
+				type: ActivityTypes.CHANGE_NAME,
+			});
+			addMockActivityLog(db, {
+				timeOccured: TOMORROW,
+				player: SOME_PLAYER.id,
+				type: ActivityTypes.CHANGE_NAME,
+			});
+			const EXPECTED_ACTIVITY_LOG = addMockActivityLog(db, {
+				timeOccured: TOMORROW,
+				player: OTHER_PLAYER.id,
+				type: ActivityTypes.CHANGE_NAME,
+			});
+
+			const returnedLogs = activityLogService.getLogsForOtherPlayersToday(SOME_PLAYER.id);
+			makeSure(returnedLogs).hasLengthOf(1);
+			makeSure(returnedLogs[0].id).is(EXPECTED_ACTIVITY_LOG.id);
+		});
+	});
+
+	describe('getNameIntervalsOfPlayerToday()', () => {
+		let START_OF_TODAY: Date;
+		let END_OF_TODAY: Date;
+		let NOW: Date;
+		let IN_BETWEEN_TIMES: [Date, Date, Date, Date, Date] ;
+
+		beforeEach(() => {
+			NOW = new Date();
+			START_OF_TODAY = gameStateService.getStartOfTodayOrThrow(NOW);
+			END_OF_TODAY = addDays(START_OF_TODAY, 1);
+
+			IN_BETWEEN_TIMES = [NOW, NOW, NOW, NOW, NOW];
+			for (let index = 0; index < 5; index++) {
+				const time = addHours(START_OF_TODAY, 2);
+				IN_BETWEEN_TIMES[index] = time;
+			}
+
+			jest.useFakeTimers({ now: NOW });
+		});
+
+		afterEach(() => {
+			jest.useRealTimers();
+		});
+
+		it('returns an single interval of the entire day when the player has not changed names', () => {
+			const nameIntervals = activityLogService.getNameIntervalsOfPlayerToday(SOME_PLAYER.id);
+			makeSure(nameIntervals).hasLengthOf(1);
+			makeSure(nameIntervals[0]).is({
+				startTime: START_OF_TODAY,
+				endTime: END_OF_TODAY,
+				name: SOME_PLAYER.currentName,
+				playerID: SOME_PLAYER.id,
+			});
+		});
+
+		it('returns two intervals when the player changed their name once explcitly', () => {
+			jest.setSystemTime(IN_BETWEEN_TIMES[0]);
+			forcePlayerToChangeName(SOME_PLAYER.id, 'new name');
+
+			const nameIntervals = activityLogService.getNameIntervalsOfPlayerToday(SOME_PLAYER.id);
+			makeSure(nameIntervals).hasLengthOf(2);
+			makeSure(nameIntervals[0]).is({
+				startTime: START_OF_TODAY,
+				endTime: IN_BETWEEN_TIMES[0],
+				name: SOME_PLAYER.currentName,
+				playerID: SOME_PLAYER.id,
+			});
+			makeSure(nameIntervals[1]).is({
+				startTime: IN_BETWEEN_TIMES[0],
+				endTime: END_OF_TODAY,
+				name: 'new name',
+				playerID: SOME_PLAYER.id,
+			});
+		});
+
+		it('returns three intervals when the player changed their name twice explcitly', () => {
+			jest.setSystemTime(IN_BETWEEN_TIMES[0]);
+			forcePlayerToChangeName(SOME_PLAYER.id, 'new name');
+
+			jest.setSystemTime(IN_BETWEEN_TIMES[1]);
+			forcePlayerToChangeName(SOME_PLAYER.id, 'new name 2');
+
+			const nameIntervals = activityLogService.getNameIntervalsOfPlayerToday(SOME_PLAYER.id);
+			makeSure(nameIntervals).hasLengthOf(3);
+			makeSure(nameIntervals[0]).is({
+				startTime: START_OF_TODAY,
+				endTime: IN_BETWEEN_TIMES[0],
+				name: SOME_PLAYER.currentName,
+				playerID: SOME_PLAYER.id,
+			});
+			makeSure(nameIntervals[1]).is({
+				startTime: IN_BETWEEN_TIMES[0],
+				endTime: IN_BETWEEN_TIMES[1],
+				name: 'new name',
+				playerID: SOME_PLAYER.id,
+			});
+			makeSure(nameIntervals[2]).is({
+				startTime: IN_BETWEEN_TIMES[1],
+				endTime: END_OF_TODAY,
+				name: 'new name 2',
+				playerID: SOME_PLAYER.id,
+			});
+		});
+
+		it('returns four intervals when the player changes their name through implicit means', () => {
+			jest.setSystemTime(IN_BETWEEN_TIMES[0]);
+			forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+				characterOdds: {'a': 1}
+			});
+
+			jest.setSystemTime(IN_BETWEEN_TIMES[1]);
+			const recipe = addMockRecipe(db, {
+				inputCharacters: 'a',
+				outputCharacters: 'b',
+			})
+			forcePlayerToCraft(SOME_PLAYER, recipe)
+
+			jest.setSystemTime(IN_BETWEEN_TIMES[2]);
+			forcePlayerToAcceptNewTrade(SOME_PLAYER, {
+				recipientPlayer: SOME_PLAYER,
+				offeredCharacters: 'a',
+				requestedCharacters: 'b',
+			})
+
+			jest.setSystemTime(IN_BETWEEN_TIMES[3]);
+			forcePlayerToMineTokens(SOME_PLAYER, 100);
+
+			const nameIntervals = activityLogService.getNameIntervalsOfPlayerToday(SOME_PLAYER.id);
+			makeSure(nameIntervals).hasLengthOf(4);
+			makeSure(nameIntervals[0]).is({
+				startTime: START_OF_TODAY,
+				endTime: IN_BETWEEN_TIMES[0],
+				name: SOME_PLAYER.currentName,
+				playerID: SOME_PLAYER.id,
+			});
+			makeSure(nameIntervals[1]).is({
+				startTime: IN_BETWEEN_TIMES[0],
+				endTime: IN_BETWEEN_TIMES[1],
+				name: SOME_PLAYER.currentName + "a",
+				playerID: SOME_PLAYER.id,
+			});
+			makeSure(nameIntervals[2]).is({
+				startTime: IN_BETWEEN_TIMES[1],
+				endTime: IN_BETWEEN_TIMES[2],
+				name: SOME_PLAYER.currentName + "b",
+				playerID: SOME_PLAYER.id,
+			});
+			makeSure(nameIntervals[3]).is({
+				startTime: IN_BETWEEN_TIMES[2],
+				endTime: END_OF_TODAY,
+				name: SOME_PLAYER.currentName + "a",
+				playerID: SOME_PLAYER.id,
+			});
+		});
+
+		it('combined intervals where the player changed their name to the same name', () => {
+			jest.setSystemTime(IN_BETWEEN_TIMES[0]);
+			forcePlayerToChangeName(SOME_PLAYER.id, 'new name');
+
+			jest.setSystemTime(IN_BETWEEN_TIMES[1]);
+			forcePlayerToChangeName(SOME_PLAYER.id, 'new name');
+
+			const nameIntervals = activityLogService.getNameIntervalsOfPlayerToday(SOME_PLAYER.id);
+			makeSure(nameIntervals).hasLengthOf(2);
+			makeSure(nameIntervals[0]).is({
+				startTime: START_OF_TODAY,
+				endTime: IN_BETWEEN_TIMES[0],
+				name: SOME_PLAYER.currentName,
+				playerID: SOME_PLAYER.id,
+			});
+			makeSure(nameIntervals[1]).is({
+				startTime: IN_BETWEEN_TIMES[0],
+				endTime: END_OF_TODAY,
+				name: 'new name',
+				playerID: SOME_PLAYER.id,
+			});
+		});
+	});
+
+	describe('getNameToNameIntervalsToday()', () => {
+		let START_OF_TODAY: Date;
+		let END_OF_TODAY: Date;
+		let NOW: Date;
+		let IN_BETWEEN_TIMES: [Date, Date, Date, Date, Date];
+
+		beforeEach(() => {
+			NOW = new Date();
+			START_OF_TODAY = gameStateService.getStartOfTodayOrThrow(NOW);
+			END_OF_TODAY = addDays(START_OF_TODAY, 1);
+
+			IN_BETWEEN_TIMES = [NOW, NOW, NOW, NOW, NOW];
+			for (let index = 0; index < 5; index++) {
+				const time = addHours(START_OF_TODAY, 2);
+				IN_BETWEEN_TIMES[index] = time;
+			}
+
+			jest.useFakeTimers({ now: NOW });
+
+			playerService.reset();
+			SOME_PLAYER = addMockPlayer(db);
+		});
+
+		afterEach(() => {
+			jest.useRealTimers();
+		});
+
+		it('returns a single key-value pair when there is only one player', () => {
+			const nameToNameIntervals = activityLogService.getNameToNameIntervalsToday();
+			makeSure(nameToNameIntervals).hasLengthOf(1);
+			const nameIntervals = nameToNameIntervals.get(SOME_PLAYER.currentName);
+			makeSure(nameIntervals).hasLengthOf(1);
+			makeSure(nameIntervals![0]).is({
+				startTime: START_OF_TODAY,
+				endTime: END_OF_TODAY,
+				name: SOME_PLAYER.currentName,
+				playerID: SOME_PLAYER.id,
+			});
+		});
+
+		it('returns three key-value pairs when there are three players with different names', () => {
+			const player2 = addMockPlayer(db, {currentName: 'player2'});
+			const player3 = addMockPlayer(db, {currentName: 'player3'});
+
+			const nameToNameIntervals = activityLogService.getNameToNameIntervalsToday();
+			makeSure(nameToNameIntervals).hasLengthOf(3);
+			makeSure(Array.from(nameToNameIntervals.keys())).containsOnly(
+				SOME_PLAYER.currentName,
+				player2.currentName,
+				player3.currentName
+			);
+
+
+			for (const player of [SOME_PLAYER, player2, player3]) {
+				const nameIntervals = nameToNameIntervals.get(player.currentName);
+				makeSure(nameIntervals).hasLengthOf(1);
+				makeSure(nameIntervals![0]).is({
+					startTime: START_OF_TODAY,
+					endTime: END_OF_TODAY,
+					name: player.currentName,
+					playerID: player.id,
+				});
+			}
+		});
+
+		it('returns three key-value pairs with one name interval when the player changes their name twice', () => {
+			jest.setSystemTime(IN_BETWEEN_TIMES[0]);
+			forcePlayerToChangeName(SOME_PLAYER.id, 'new name');
+
+			jest.setSystemTime(IN_BETWEEN_TIMES[1]);
+			forcePlayerToBuyNewMysteryBox(SOME_PLAYER.id, {
+				characterOdds: { a: 1 },
+			});
+
+			jest.setSystemTime(IN_BETWEEN_TIMES[2]);
+			forcePlayerToMineTokens(SOME_PLAYER, 100);
+
+			const nameToNameIntervals = activityLogService.getNameToNameIntervalsToday();
+			makeSure(nameToNameIntervals).hasLengthOf(3);
+
+			let nameIntervals = nameToNameIntervals.get(SOME_PLAYER.currentName);
+			makeSure(nameIntervals).hasLengthOf(1);
+			makeSure(nameIntervals![0]).is({
+				startTime: START_OF_TODAY,
+				endTime: IN_BETWEEN_TIMES[0],
+				name: SOME_PLAYER.currentName,
+				playerID: SOME_PLAYER.id,
+			});
+
+			nameIntervals = nameToNameIntervals.get('new name');
+			makeSure(nameIntervals).hasLengthOf(1);
+			makeSure(nameIntervals![0]).is({
+				startTime: IN_BETWEEN_TIMES[0],
+				endTime: IN_BETWEEN_TIMES[1],
+				name: 'new name',
+				playerID: SOME_PLAYER.id,
+			});
+
+			nameIntervals = nameToNameIntervals.get('new namea');
+			makeSure(nameIntervals).hasLengthOf(1);
+			makeSure(nameIntervals![0]).is({
+				startTime: IN_BETWEEN_TIMES[1],
+				endTime: END_OF_TODAY,
+				name: 'new namea',
+				playerID: SOME_PLAYER.id,
+			});
+		});
+
+		it('return one key-value pair with three name intervals when there are three players with the same name', () => {
+			const player2 = addMockPlayer(db, {currentName: SOME_PLAYER.currentName});
+			const player3 = addMockPlayer(db, {currentName: SOME_PLAYER.currentName});
+
+			const nameToNameIntervals = activityLogService.getNameToNameIntervalsToday();
+			makeSure(nameToNameIntervals).hasLengthOf(1);
+			const nameIntervals = nameToNameIntervals.get(SOME_PLAYER.currentName);
+			makeSure(nameIntervals).hasLengthOf(3);
+			makeSure(nameIntervals).haveProperties({
+				startTime: START_OF_TODAY,
+				endTime: END_OF_TODAY,
+				name: SOME_PLAYER.currentName,
+			});
+
+			makeSure(nameIntervals).hasAnItemWhere(interval =>
+				interval.playerID === SOME_PLAYER.id
+			);
+			makeSure(nameIntervals).hasAnItemWhere(interval =>
+				interval.playerID === player2.id
+			);
+			makeSure(nameIntervals).hasAnItemWhere(interval =>
+				interval.playerID === player3.id
+			);
+		});
+	});
+
+	describe('getNamesOfPlayerToday()', () => {
+		it('returns the player\'s current name is they never changed it', () => {
+			const names = activityLogService.getNamesOfPlayerToday(SOME_PLAYER);
+
+			makeSure(names).hasLengthOf(1);
+			makeSure(names[0]).is(SOME_PLAYER.currentName);
+		});
+
+		it('returns all the player\'s pervious names and current name if they changed it twice explicitly', () => {
+			const NAMED_PLAYER = addMockPlayer(db, {currentName: 'Name'});
+			forcePlayerToChangeName(NAMED_PLAYER.id, 'Name2');
+			forcePlayerToChangeName(NAMED_PLAYER.id, 'Name3');
+
+			const names = activityLogService.getNamesOfPlayerToday(NAMED_PLAYER);
+
+			makeSure(names).hasLengthOf(3);
+			makeSure(names).containsOnly('Name', 'Name2', 'Name3');
+		});
+
+		it('ignores logs where the player doesnt change name and includes names the player got from implicit name changes', () => {
+			const NAMED_PLAYER = addMockPlayer(db, {currentName: 'Name'});
+			forcePlayerToBuyNewMysteryBox(NAMED_PLAYER.id,
+				{ characterOdds: { "2": 1 } }
+			);
+			forcePlayerToChangeName(NAMED_PLAYER.id, 'Name3');
+			forcePlayerToMineTokens(NAMED_PLAYER, 100);
+
+			const names = activityLogService.getNamesOfPlayerToday(NAMED_PLAYER);
+
+			makeSure(names).hasLengthOf(3);
+			makeSure(names).containsOnly('Name', 'Name2', 'Name3');
+		})
+
+		it('does not return duplicates if the player changed their name back and forth to the same one', () => {
+			const NAMED_PLAYER = addMockPlayer(db, {currentName: 'Name'});
+			forcePlayerToChangeName(NAMED_PLAYER.id, 'Name');
+			forcePlayerToChangeName(NAMED_PLAYER.id, 'Name2');
+			forcePlayerToChangeName(NAMED_PLAYER.id, 'Name');
+			forcePlayerToChangeName(NAMED_PLAYER.id, 'Name');
+			forcePlayerToChangeName(NAMED_PLAYER.id, 'Name3');
+			forcePlayerToChangeName(NAMED_PLAYER.id, 'Name');
+			forcePlayerToChangeName(NAMED_PLAYER.id, 'Name3');
+			forcePlayerToChangeName(NAMED_PLAYER.id, 'Name3');
+			forcePlayerToChangeName(NAMED_PLAYER.id, 'Name2');
+			forcePlayerToChangeName(NAMED_PLAYER.id, 'Name');
+
+			const names = activityLogService.getNamesOfPlayerToday(NAMED_PLAYER);
+
+			makeSure(names).hasLengthOf(3);
+			makeSure(names).containsOnly('Name', 'Name2', 'Name3');
+		});
+
+		it('ignores name changes from yesterday', () => {
+			jest.useFakeTimers({ now: new Date() });
+			jest.setSystemTime(addDays(new Date(), -2));
+
+			const NAMED_PLAYER = addMockPlayer(db, {currentName: 'Name'});
+			forcePlayerToChangeName(NAMED_PLAYER.id, 'Name2');
+			forcePlayerToChangeName(NAMED_PLAYER.id, 'Name3');
+
+			jest.setSystemTime(addDays(new Date(), 2));
+			const names = activityLogService.getNamesOfPlayerToday(NAMED_PLAYER);
+
+			makeSure(names).hasLengthOf(1);
+			makeSure(names).containsOnly('Name3');
+		});
+	});
+
+	describe('getNameIntervalsToday()', () => {
+		it('returns two name intervals by two different players if two exist', () => {
+			playerService.reset();
+			const player1 = addMockPlayer(db, {currentName: 'player1'});
+			const player2 = addMockPlayer(db, {currentName: 'player2'});
+			const nameIntervals = activityLogService.getNameIntervalsToday();
+
+			makeSure(nameIntervals).hasLengthOf(2);
+			makeSure(nameIntervals).hasAnItemWhere(interval =>
+				interval.playerID === player1.id
+			);
+			makeSure(nameIntervals).hasAnItemWhere(interval =>
+				interval.playerID === player2.id
+			);
+		});
+
+		it('returns name intervals by different players in order', () => {
+			const START_TIME = new Date();
+			jest.useFakeTimers({ now: START_TIME });
+			playerService.reset();
+			const player1 = addMockPlayer(db, {currentName: 'player1'});
+			const player2 = addMockPlayer(db, {currentName: 'player2'});
+
+			for (let numHours = 10; numHours >= 1; numHours--) {
+				jest.setSystemTime(addHours(START_TIME, numHours));
+				forcePlayerToChangeName(player1.id, `player1${numHours}`);
+				jest.setSystemTime(
+					addMinutes(START_TIME, getBetween(1, 59))
+				);
+				forcePlayerToChangeName(player2.id, `player2${numHours}`);
+			}
+
+			const nameIntervals = activityLogService.getNameIntervalsToday();
+
+			let previousStartTime = null;
+			for (const nameInterval of nameIntervals) {
+				const startTime = nameInterval.startTime;
+				if (previousStartTime !== null) {
+					makeSure(startTime.getTime()).isGreaterThanOrEqualTo(previousStartTime.getTime());
+				}
+				previousStartTime = startTime;
+			}
+		})
 	});
 });

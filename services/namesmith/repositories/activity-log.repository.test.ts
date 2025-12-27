@@ -1,4 +1,4 @@
-import { addDays } from "../../../utilities/date-time-utils";
+import { addDays, addHours } from "../../../utilities/date-time-utils";
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { INVALID_ACTIVITY_LOG_ID, INVALID_PERK_ID, INVALID_PLAYER_ID, INVALID_QUEST_ID, INVALID_RECIPE_ID, INVALID_ROLE_ID, INVALID_TRADE_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
@@ -66,6 +66,21 @@ describe('ActivityLogRepository', () => {
 				'id', 'player', 'type', 'tokensDifference', 'involvedPlayer', 'involvedRecipe'
 			)
 			makeSure(activityLogs).contains(SOME_ACTIVITY_LOG);
+		});
+
+		it('returns activity logs in order of time', () => {
+			for (let numHours = 10; numHours >= 1; numHours--) {
+				addMockActivityLog(db, {
+					player: SOME_PLAYER,
+					timeOccured: addHours(SOME_ACTIVITY_LOG.timeOccured, numHours),
+				});
+			}
+
+			const foundActivityLogs = activityLogRepository.getActivityLogs();
+
+			for (let i = 0; i < foundActivityLogs.length - 1; i++) {
+				makeSure(foundActivityLogs[i].timeOccured.getTime()).isLessThan(foundActivityLogs[i + 1].timeOccured.getTime());
+			}
 		});
 	});
 
@@ -423,6 +438,23 @@ describe('ActivityLogRepository', () => {
 				})
 			).throws(QuestNotFoundError);
 		});
+
+		it('returns activity logs in order of time', () => {
+			for (let numHours = 10; numHours >= 1; numHours--) {
+				addMockActivityLog(db, {
+					player: SOME_PLAYER,
+					timeOccured: addHours(SOME_ACTIVITY_LOG.timeOccured, numHours),
+				});
+			}
+
+			const foundActivityLogs = activityLogRepository.findActivityLogsWhere({
+				player: SOME_PLAYER,
+			});
+
+			for (let i = 0; i < foundActivityLogs.length - 1; i++) {
+				makeSure(foundActivityLogs[i].timeOccured.getTime()).isLessThan(foundActivityLogs[i + 1].timeOccured.getTime());
+			}
+		});
 	});
 
 	describe('toPartialDBActivityLog()', () => {
@@ -530,6 +562,23 @@ describe('ActivityLogRepository', () => {
 
 			makeSure(foundActivityLogs).hasLengthOf(0);
 		});
+
+		it('returns activity logs in order of time', () => {
+			for (let numHours = 10; numHours >= 1; numHours--) {
+				addMockActivityLog(db, {
+					player: SOME_PLAYER,
+					timeOccured: addHours(SOME_ACTIVITY_LOG.timeOccured, numHours),
+				});
+			}
+
+			const foundActivityLogs = activityLogRepository.findActivityLogsAfterTimeWhere(SOME_ACTIVITY_LOG.timeOccured, {
+				player: SOME_PLAYER,
+			});
+
+			for (let i = 0; i < foundActivityLogs.length - 1; i++) {
+				makeSure(foundActivityLogs[i].timeOccured.getTime()).isLessThan(foundActivityLogs[i + 1].timeOccured.getTime());
+			}
+		});
 	});
 
 	describe('getLatestActivityLog()', () => {
@@ -541,6 +590,95 @@ describe('ActivityLogRepository', () => {
 			const NEW_ACTIVITY_LOG = addMockActivityLog(db);
 
 			makeSure(activityLogRepository.getLatestActivityLog()).is(NEW_ACTIVITY_LOG);
+		});
+	});
+
+	describe('findActivityLogsAfterTime()', () => {
+		it('finds activity logs after a given time', () => {
+			const SOME_TIME = addDays(SOME_ACTIVITY_LOG.timeOccured, -1);
+			const foundActivityLogs = activityLogRepository.findActivityLogsAfterTime(SOME_TIME);
+
+			makeSure(foundActivityLogs).hasLengthOf(1);
+			makeSure(foundActivityLogs[0]).hasProperties({
+				id: SOME_ACTIVITY_LOG.id,
+			});
+		});
+
+		it('returns no activity logs if there are none after the given time', () => {
+			const SOME_TIME = addDays(SOME_ACTIVITY_LOG.timeOccured, 1);
+			const foundActivityLogs = activityLogRepository.findActivityLogsAfterTime(SOME_TIME);
+
+			makeSure(foundActivityLogs).hasLengthOf(0);
+		});
+
+		it('returns activity logs in order of time', () => {
+			for (let numHours = 10; numHours >= 1; numHours--) {
+				addMockActivityLog(db, {
+					timeOccured: addHours(SOME_ACTIVITY_LOG.timeOccured, numHours),
+				});
+			}
+
+			const foundActivityLogs = activityLogRepository.findActivityLogsAfterTime(SOME_ACTIVITY_LOG.timeOccured);
+
+			for (let i = 0; i < foundActivityLogs.length - 1; i++) {
+				makeSure(foundActivityLogs[i].timeOccured.getTime()).isLessThan(foundActivityLogs[i + 1].timeOccured.getTime());
+			}
+		});
+	});
+
+	describe('findActivityLogsAfterTimeWhereNot()', () => {
+		it('finds activity logs after a given time', () => {
+			const SOME_TIME = addDays(SOME_ACTIVITY_LOG.timeOccured, -1);
+			const foundActivityLogs = activityLogRepository.findActivityLogsAfterTimeWhereNot(SOME_TIME, {
+				player: INVOLVED_PLAYER,
+			});
+
+			makeSure(foundActivityLogs).hasLengthOf(1);
+			makeSure(foundActivityLogs[0]).hasProperties({
+				id: SOME_ACTIVITY_LOG.id,
+			});
+
+			for (const activityLog of foundActivityLogs) {
+				makeSure(activityLog.player.id).isNot(INVOLVED_PLAYER.id);
+				makeSure(activityLog.timeOccured.getTime()).isGreaterThan(SOME_TIME.getTime());
+			}
+		});
+
+		it('finds activity logs not done by the given player', () => {
+			const foundActivityLogs = activityLogRepository.findActivityLogsAfterTimeWhereNot(SOME_ACTIVITY_LOG.timeOccured, {
+				player: SOME_PLAYER
+			});
+
+			makeSure(foundActivityLogs).hasLengthOf(0);
+		});
+
+		it('finds activity logs not done by the given player or of a certain type', () => {
+			const EXPECTED_ACTIVITY_LOG = addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.MINE_TOKENS,
+			})
+			addMockActivityLog(db, {
+				player: INVOLVED_PLAYER,
+				type: ActivityTypes.BUY_MYSTERY_BOX,
+			});
+			addMockActivityLog(db, {
+				player: INVOLVED_PLAYER,
+				type: ActivityTypes.MINE_TOKENS,
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.BUY_MYSTERY_BOX,
+			});
+
+			const foundActivityLogs = activityLogRepository.findActivityLogsAfterTimeWhereNot(SOME_ACTIVITY_LOG.timeOccured, {
+				player: INVOLVED_PLAYER,
+				type: ActivityTypes.BUY_MYSTERY_BOX,
+			});
+
+			makeSure(foundActivityLogs).hasLengthOf(1);
+			makeSure(foundActivityLogs[0]).hasProperties({
+				id: EXPECTED_ACTIVITY_LOG.id,
+			});
 		});
 	});
 });

@@ -128,6 +128,27 @@ export const editMockPlayer = (
 }
 
 /**
+ * Forces a player to change their name by giving them the characters in the new name, changing their current name to the new name, and logging the change in the activity log.
+ * @param playerResolvable - The player resolvable to force to change their name.
+ * @param newName - The new name to force the player to change to.
+ * @returns The resolved player after the name has been changed.
+ */
+export function forcePlayerToChangeName(
+	playerResolvable: PlayerResolvable,
+	newName: string
+): Player {
+	const { playerService, activityLogService } = getNamesmithServices();
+	const nameBefore = playerService.getCurrentName(playerResolvable);
+	playerService.giveCharacters(playerResolvable, newName);
+	playerService.changeCurrentName(playerResolvable, newName);
+	activityLogService.logChangeName({
+		playerChangingName: playerResolvable,
+		nameBefore,
+	});
+	return playerService.resolvePlayer(playerResolvable);
+}
+
+/**
  * Forces a player to publish a name by giving them the input characters, changing their current name to the published name, and publishing the name.
  * @param playerResolvable - The player resolvable to force to publish the name.
  * @param publishedName - The name to force the player to publish.
@@ -136,11 +157,14 @@ export const editMockPlayer = (
 export function forcePlayerToPublishName(
 	playerResolvable: PlayerResolvable,
 	publishedName: string
-) {
-	const { playerService } = getNamesmithServices();
+): Player {
+	const { playerService, activityLogService } = getNamesmithServices();
 	playerService.giveCharacters(playerResolvable, publishedName);
 	playerService.changeCurrentName(playerResolvable, publishedName);
 	playerService.publishName(playerResolvable);
+	activityLogService.logPublishName({
+		playerPublishingName: playerResolvable,
+	});
 	return playerService.resolvePlayer(playerResolvable);
 }
 
