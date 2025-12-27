@@ -160,7 +160,7 @@ describe('sync-mystery-boxes.ts', () => {
 
 		const mysteryBoxes = mysteryBoxRepository.getMysteryBoxes();
 		makeSure(mysteryBoxes).hasLengthOf(3);
-		makeSure(mysteryBoxes).hasNoItemsWhere(mysteryBox =>
+		makeSure(mysteryBoxes).hasNoItemWhere(mysteryBox =>
 			mysteryBox.id === 1 ||
 			mysteryBox.name === 'MysteryBox Name'
 		);

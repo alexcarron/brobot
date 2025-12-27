@@ -23,6 +23,10 @@ import {
 	toPascalCase,
 	truncateText,
 	sortCharacters,
+	toConciseReadableDate,
+	toConciseReadableDates,
+	toConciseReadableTime,
+	toCompactReadableTime,
 } from "./string-manipulation-utils";
 import { createNowUnixTimestamp } from "./date-time-utils";
 import { makeSure } from "./jest/jest-utils";
@@ -858,6 +862,208 @@ describe('string-manipulation-utils', () => {
 
 		it('sorts a string with special characters', () => {
 			makeSure(sortCharacters('!@#')).is('!#@');
+		});
+	});
+
+	describe('toConciseReadableDate()', () => {
+		it('formats a full date with weekday, month, day, year, and time', () => {
+			const date = new Date(2022, 4, 12, 16, 30); // May 12 2022 4:30 PM
+			makeSure(toConciseReadableDate(date))
+				.is('Thu, May 12 2022 at 4:30 PM');
+		});
+
+		it('formats a morning time correctly', () => {
+			const date = new Date(2022, 4, 12, 8, 0); // 8:00 AM
+			makeSure(toConciseReadableDate(date))
+				.is('Thu, May 12 2022 at 8:00 AM');
+		});
+
+		it('formats midnight correctly', () => {
+			const date = new Date(2022, 4, 12, 0, 0); // 12:00 AM
+			makeSure(toConciseReadableDate(date))
+				.is('Thu, May 12 2022 at 12:00 AM');
+		});
+
+		it('formats noon correctly', () => {
+			const date = new Date(2022, 4, 12, 12, 0); // 12:00 PM
+			makeSure(toConciseReadableDate(date))
+				.is('Thu, May 12 2022 at 12:00 PM');
+		});
+
+		it('does not include seconds', () => {
+			const date = new Date(2022, 4, 12, 16, 30, 45);
+			makeSure(toConciseReadableDate(date))
+				.is('Thu, May 12 2022 at 4:30 PM');
+		});
+	});
+
+	describe('toConciseReadableDates()', () => {
+		it('returns an empty string for an empty array', () => {
+			makeSure(() => toConciseReadableDates([])).throwsAnError();
+		});
+
+		it('formats a single date correctly', () => {
+			const dates = [new Date(2022, 4, 12, 16, 30)];
+			makeSure(toConciseReadableDates(dates))
+				.is('Thu, May 12 2022 at 4:30 PM');
+		});
+
+		it('groups multiple times on the same day', () => {
+			const dates = [
+				new Date(2022, 4, 12, 16, 30),
+				new Date(2022, 4, 12, 18, 30),
+				new Date(2022, 4, 12, 19, 30),
+			];
+
+			makeSure(toConciseReadableDates(dates))
+				.is('Thu, May 12 2022 at 4:30 PM, 6:30 PM, 7:30 PM');
+		});
+
+		it('groups dates across multiple days on separate lines', () => {
+			const dates = [
+				new Date(2022, 4, 12, 16, 30),
+				new Date(2022, 4, 13, 16, 30),
+			];
+
+			makeSure(toConciseReadableDates(dates)).is(
+				'Thu, May 12 2022 at 4:30 PM\nFri, May 13 2022 at 4:30 PM'
+			);
+		});
+
+		it('sorts dates chronologically before formatting', () => {
+			const dates = [
+				new Date(2022, 4, 12, 18, 30),
+				new Date(2022, 4, 12, 16, 30),
+				new Date(2022, 4, 12, 19, 30),
+			];
+
+			makeSure(toConciseReadableDates(dates))
+				.is('Thu, May 12 2022 at 4:30 PM, 6:30 PM, 7:30 PM');
+		});
+
+		it('deduplicates identical times on the same day', () => {
+			const dates = [
+				new Date(2022, 4, 12, 16, 30),
+				new Date(2022, 4, 12, 16, 30),
+				new Date(2022, 4, 12, 18, 30),
+			];
+
+			makeSure(toConciseReadableDates(dates))
+				.is('Thu, May 12 2022 at 4:30 PM, 6:30 PM');
+		});
+
+		it('ignores invalid Date objects', () => {
+			const dates = [
+				new Date('invalid'),
+				new Date(2022, 4, 12, 16, 30),
+			];
+
+			makeSure(toConciseReadableDates(dates))
+				.is('Thu, May 12 2022 at 4:30 PM');
+		});
+
+		it('handles many times across many days', () => {
+			const dates = [
+				new Date(2022, 4, 12, 8, 0),
+				new Date(2022, 4, 12, 9, 30),
+				new Date(2022, 4, 12, 11, 0),
+				new Date(2022, 4, 13, 13, 0),
+				new Date(2022, 4, 13, 15, 15),
+			];
+
+			makeSure(toConciseReadableDates(dates)).is(
+				'Thu, May 12 2022 at 8AM, 9:30 AM, 11AM\nFri, May 13 2022 at 1PM, 3:15 PM'
+			);
+		});
+
+		it('handles many dates across 8+ days by displaying them in week groupings', () => {
+			const dates = [
+				new Date(2022, 4, 12, 8, 0),
+				new Date(2022, 4, 12, 9, 12),
+				new Date(2022, 4, 12, 11, 0),
+				new Date(2022, 4, 13, 13, 0),
+				new Date(2022, 4, 13, 9, 30),
+				new Date(2022, 4, 14, 11, 0),
+				new Date(2022, 4, 15, 13, 0),
+				new Date(2022, 4, 16, 15, 15),
+				new Date(2022, 4, 17, 16, 0),
+				new Date(2022, 4, 18, 17, 30),
+				new Date(2022, 4, 19, 19, 0),
+				new Date(2022, 4, 20, 20, 30),
+				new Date(2022, 4, 21, 22, 0),
+				new Date(2022, 4, 22, 23, 30),
+				new Date(2022, 4, 23, 1, 0),
+				new Date(2022, 4, 24, 2, 30),
+				new Date(2022, 4, 25, 4, 0),
+			];
+
+			console.log(toConciseReadableDates(dates));
+
+			makeSure(toConciseReadableDates(dates)).is(joinLines(
+				'May 9-15 2022 — Thu 12 (8:00, 9:12, 11:00) • Fri 13 (9:30, 1PM) • Sat 14 (11:00) • Sun 15 (1PM)',
+				'May 16-22 2022 — Mon 16 (3:15PM) • Tue 17 (4PM) • Wed 18 (5:30PM) • Thu 19 (7PM) • Fri 20 (8:30PM) • Sat 21 (10PM) • Sun 22 (11:30PM)',
+				'May 23-29 2022 — Mon 23 (1:00) • Tue 24 (2:30) • Wed 25 (4:00)',
+			));
+		});
+	});
+
+	describe('toConciseReadableTime()', () => {
+		it('converts a date with PM time into a readable time string', () => {
+
+			const date = new Date(2022, 4, 12, 16, 30, 0, 0);
+			makeSure(toConciseReadableTime(date)).is('4:30 PM');
+		});
+
+		it('converts a date with AM time into a readable time string', () => {
+			const date = new Date(2022, 4, 12, 8, 30, 0, 0);
+			makeSure(toConciseReadableTime(date)).is('8:30 AM');
+		});
+
+		it('converts date with 0 minutes into smaller readable time string', () => {
+			const date = new Date(2022, 4, 12, 8, 0, 0, 0);
+			makeSure(toConciseReadableTime(date)).is('8AM');
+		});
+
+		it('handles invalid Date objects', () => {
+			const date = new Date('invalid');
+			makeSure(() => toConciseReadableTime(date)).throwsAnError();
+		});
+
+		it('ignores seconds and milliseconds', () => {
+			const date = new Date(2022, 4, 12, 8, 32, 55, 123);
+			makeSure(toConciseReadableTime(date)).is('8:32 AM');
+		});
+	});
+
+	describe('toCompactReadableTime()', () => {
+		it('converts a date with PM time into a readable time string', () => {
+			const date = new Date(2022, 4, 12, 16, 30, 0, 0);
+			makeSure(toCompactReadableTime(date)).is('4:30PM');
+		});
+
+		it('converts a date with AM time into a readable time string', () => {
+			const date = new Date(2022, 4, 12, 8, 30, 0, 0);
+			makeSure(toCompactReadableTime(date)).is('8:30');
+		});
+
+		it('converts AM date with 0 minutes into smaller readable time string', () => {
+			const date = new Date(2022, 4, 12, 8, 0, 0, 0);
+			makeSure(toCompactReadableTime(date)).is('8:00');
+		});
+
+		it('converts PM date with 0 minutes into smaller readable time string', () => {
+			const date = new Date(2022, 4, 12, 14, 0, 0, 0);
+			makeSure(toCompactReadableTime(date)).is('2PM');
+		});
+
+		it('handles invalid Date objects', () => {
+			const date = new Date('invalid');
+			makeSure(() => toCompactReadableTime(date)).throwsAnError();
+		});
+
+		it('ignores seconds and milliseconds', () => {
+			const date = new Date(2022, 4, 12, 8, 32, 55, 123);
+			makeSure(toCompactReadableTime(date)).is('8:32');
 		});
 	});
 });

@@ -44,7 +44,10 @@ export function forcePlayerToCraft(
 ) {
 	const { playerService, recipeService } = getNamesmithServices();
 	const recipe = recipeService.resolveRecipe(recipeResolvable);
-	playerService.giveCharacters(playerResolvable, recipe.inputCharacters);
+
+	if (!playerService.hasCharacters(playerResolvable, recipe.inputCharacters)) {
+		playerService.giveCharacters(playerResolvable, recipe.inputCharacters);
+	}
 
 	return returnIfNotFailure(
 		craftCharacters({

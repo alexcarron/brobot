@@ -140,7 +140,7 @@ describe('sync-perks.ts', () => {
 
 		const perks = perkRepository.getPerks();
 		makeSure(perks).hasLengthOf(3);
-		makeSure(perks).hasNoItemsWhere(perk =>
+		makeSure(perks).hasNoItemWhere(perk =>
 			perk.id === 1 ||
 			perk.name === 'Perk Name'
 		);

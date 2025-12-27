@@ -287,7 +287,7 @@ Contains helper functions and reusable utilities for general functionality acros
   * **`generic-types.js`** Types that could be used in any situation ever
 * **`constants/`** Contains file to store useful static values referenced throughout the entire codebase
 * **`data-structure-utils`** Functions for working with JavaScript objects and arrays
-* **`date-time-utils.js`** Functions for time and date formatting, parsing, and calculations
+* **`date-time-utils`** Functions for time and date formatting, parsing, and calculations
 * **`discord-action-utils.js`** Functions for performing actions in Discord
 * **`discord-fetch-utils.js`** Functions for fetching Discord.js objects
 * **`discord-interface-utils.js`** Functions for creating and sending Discord components and interfaces users interact with

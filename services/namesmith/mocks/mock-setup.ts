@@ -1,3 +1,4 @@
+import { addDays } from "../../../utilities/date-time-utils";
 import { NamesmithDependencies } from "../types/namesmith.types";
 import { createAllMocks } from "./all-mocks";
 
@@ -7,10 +8,15 @@ import { createAllMocks } from "./all-mocks";
  * during testing.
  * This function should be called before any of the event listeners are set up
  * and before any tests are run.
+ * @param customGameStart - Optionally specify a custom game start date.
  * @returns An object containing all the mock services and repositories.
  */
-export const setupMockNamesmith = (): NamesmithDependencies => {
+export const setupMockNamesmith = (customGameStart?: Date): NamesmithDependencies => {
 	const allMocks = createAllMocks();
 	global.namesmith = allMocks;
+
+	const gameStart = customGameStart ?? addDays(new Date(), -3);
+	global.namesmith.gameStateService!.setupTimings(gameStart);
+
 	return allMocks;
 }

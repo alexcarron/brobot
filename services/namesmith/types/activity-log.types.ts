@@ -2,7 +2,7 @@ import { toEnumFromStrings, ValuesOf } from "../../../utilities/enum-utilts";
 import { ExtractDomainType, ExtractType, number, object, string, strings } from "../../../utilities/runtime-types-utils";
 import { DBDate } from "../utilities/db.utility";
 import { Perk, PerkResolvable } from "./perk.types";
-import { Player, PlayerResolvable } from "./player.types";
+import { Player, PlayerID, PlayerResolvable } from "./player.types";
 import { Quest, QuestResolvable } from "./quest.types";
 import { Recipe, RecipeResolvable } from "./recipe.types";
 import { Trade, TradeResolvable } from "./trade.types";
@@ -93,3 +93,10 @@ export type ActivityLogID = ActivityLog['id'];
 export type ActivityLogResolvable =
 	| { id: ActivityLogID }
 	| ActivityLogID
+
+export type NameInterval = {
+	startTime: Date,
+	endTime: Date,
+	playerID: PlayerID,
+	name: string
+}

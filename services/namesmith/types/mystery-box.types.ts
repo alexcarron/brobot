@@ -1,5 +1,5 @@
 import { ExtractType, number, object, string } from "../../../utilities/runtime-types-utils";
-import { WithOptional } from "../../../utilities/types/generic-types";
+import { Expand, WithOptional } from "../../../utilities/types/generic-types";
 export type MysteryBox = {
 	id: number;
 	name: string;
@@ -41,4 +41,4 @@ export type DBCharacterOddsRow = ExtractType<typeof DBCharacterOddType>;
  * @example
  * { "A": 1, "B": 2, "C": 3 }
  */
-export type CharacterOdds = Record<string, number>;
+export type CharacterOdds = Expand<Record<string, number>>;

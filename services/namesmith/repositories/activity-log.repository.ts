@@ -2,7 +2,7 @@ import { returnNonNullOrThrow } from "../../../utilities/error-utils";
 import { resolveOptional } from "../../../utilities/optional-utils";
 import { WithAtLeastOneProperty } from '../../../utilities/types/generic-types';
 import { isNotNullable } from "../../../utilities/types/type-guards";
-import { DatabaseQuerier, toParameterANDWhereClause } from "../database/database-querier";
+import { DatabaseQuerier, toParameterAndWhereClause, toParameterNotAndWhereClause } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
 import { ActivityLogID as ActivityLogID, ActivityLog, ActivityLogDefinition, MinimalActivityLog, asMinimalActivityLog, asMinimalActivityLogs, DBActivityLog } from "../types/activity-log.types";
 import { Player } from "../types/player.types";
@@ -125,7 +125,10 @@ export class ActivityLogRepository {
 
 	getActivityLogs(): ActivityLog[] {
 		const minimalActivityLogs = asMinimalActivityLogs(
-			this.db.getRows("SELECT * FROM activityLog")
+			this.db.getRows(
+				`SELECT * FROM activityLog
+				ORDER BY timeOccured ASC`
+			)
 		)
 
 		return minimalActivityLogs.map(log =>
@@ -322,9 +325,28 @@ export class ActivityLogRepository {
 			this.db.getRows(
 				`SELECT * FROM activityLog
 				WHERE
-					${toParameterANDWhereClause(queryParameters)}
+					${toParameterAndWhereClause(queryParameters)}
+				ORDER BY timeOccured ASC
 				`,
 				queryParameters
+			)
+		);
+
+		return minimalActivityLogs.map(dbActivityLog => this.toActivityLogFromMinimal(dbActivityLog));
+	}
+
+	/**
+	 * Finds all activity logs after a given time.
+	 * @param minimumTimeOccured - The time after which the activity logs should be found.
+	 * @returns An array of activity log objects.
+	 */
+	findActivityLogsAfterTime(minimumTimeOccured: Date): ActivityLog[] {
+		const minimalActivityLogs = asMinimalActivityLogs(
+			this.db.getRows(
+				`SELECT * FROM activityLog
+				WHERE timeOccured > @minimumTimeOccured
+				ORDER BY timeOccured ASC`,
+				{ minimumTimeOccured: DBDate.fromDomain(minimumTimeOccured) }
 			)
 		);
 
@@ -343,7 +365,33 @@ export class ActivityLogRepository {
 				`SELECT * FROM activityLog
 				WHERE
 					timeOccured > @minimumTimeOccured AND
-					${toParameterANDWhereClause(queryParameters)}
+					${toParameterAndWhereClause(queryParameters)}
+				ORDER BY timeOccured ASC
+				`,
+				{
+					...queryParameters,
+					minimumTimeOccured: DBDate.fromDomain(minimumTimeOccured),
+				}
+			)
+		);
+
+		return minimalActivityLogs.map(dbActivityLog => this.toActivityLogFromMinimal(dbActivityLog));
+	}
+
+	findActivityLogsAfterTimeWhereNot(
+		minimumTimeOccured: Date,
+		activityLogDefinition: WithAtLeastOneProperty<ActivityLogDefinition>
+	): ActivityLog[] {
+		this.throwIfAnEntityDoesNotExist(activityLogDefinition);
+
+		const queryParameters = this.toPartialDBActivityLog(activityLogDefinition);
+
+		const minimalActivityLogs = asMinimalActivityLogs(
+			this.db.getRows(
+				`SELECT * FROM activityLog
+				WHERE
+					timeOccured > @minimumTimeOccured AND
+					${toParameterNotAndWhereClause(queryParameters)}
 				`,
 				{
 					...queryParameters,

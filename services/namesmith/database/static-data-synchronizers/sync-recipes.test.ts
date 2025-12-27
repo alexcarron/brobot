@@ -111,15 +111,15 @@ describe('sync-recipes.ts', () => {
 
 		const recipes = recipeRepository.getRecipes();
 		makeSure(recipes).hasLengthOf(2);
-		makeSure(recipes).hasNoItemsWhere(recipe =>
+		makeSure(recipes).hasNoItemWhere(recipe =>
 			recipe.inputCharacters === 'A' &&
 			recipe.outputCharacters === 'B'
 		);
-		makeSure(recipes).hasNoItemsWhere(recipe =>
+		makeSure(recipes).hasNoItemWhere(recipe =>
 			recipe.inputCharacters === 'C' &&
 			recipe.outputCharacters === 'D'
 		);
-		makeSure(recipes).hasNoItemsWhere(recipe =>
+		makeSure(recipes).hasNoItemWhere(recipe =>
 			recipe.inputCharacters === 'E' &&
 			recipe.outputCharacters === 'F'
 		);

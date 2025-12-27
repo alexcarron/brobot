@@ -137,14 +137,20 @@ export function forcePlayerToAcceptNewTrade(
 
 	switch (trade.status) {
 		case TradeStatuses.AWAITING_INITIATOR: {
-			playerService.giveCharacters(player, trade.offeredCharacters);
-			playerService.giveCharacters(trade.recipientPlayer, trade.requestedCharacters);
+			if (!playerService.hasCharacters(player, trade.offeredCharacters))
+				playerService.giveCharacters(player, trade.offeredCharacters);
+
+			if (!playerService.hasCharacters(trade.recipientPlayer, trade.requestedCharacters))
+				playerService.giveCharacters(trade.recipientPlayer, trade.requestedCharacters);
 			break;
 		}
 
 		case TradeStatuses.AWAITING_RECIPIENT: {
-			playerService.giveCharacters(player, trade.requestedCharacters);
-			playerService.giveCharacters(trade.initiatingPlayer, trade.offeredCharacters);
+			if (!playerService.hasCharacters(player, trade.requestedCharacters))
+				playerService.giveCharacters(player, trade.requestedCharacters);
+
+			if (!playerService.hasCharacters(trade.initiatingPlayer, trade.offeredCharacters))
+				playerService.giveCharacters(trade.initiatingPlayer, trade.offeredCharacters);
 			break;
 		}
 

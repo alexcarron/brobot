@@ -22,7 +22,7 @@ const { Phase } = require("./game-state-manager.js");
 const { Announcement, Feedback } = require("./constants/possible-messages.js");
 const { RoleIdentifierType } = require("./role-identifier.js");
 const Logger = require("./logger.js");
-const { createNowUnixTimestamp } = require("../../utilities/date-time-utils.js");
+const { createNowUnixTimestamp } = require("../../utilities/date-time-utils");
 
 /**
  * Enum of possible amount of seconds to wait to allow a message to be read

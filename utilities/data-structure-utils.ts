@@ -427,3 +427,24 @@ export function sortByAscendingProperty<
     return (value1 as any) > (value2 as any) ? 1 : -1;
   });
 }
+
+/**
+ * Adds an item to an array associated with a key in a Map.
+ * If the key does not exist in the Map, a new array is created and associated with the key.
+ * @param map The Map to add the item to.
+ * @param key The key to associate the item with.
+ * @param item The item to add to the array associated with the key.
+ */
+export function addToArrayMap<KeyType, ItemType>(
+	map: Map<KeyType, ItemType[]>,
+	key: KeyType,
+	item: ItemType
+) {
+	let arrayValue = map.get(key);
+
+	if (arrayValue === undefined) {
+		arrayValue = [];
+		map.set(key, arrayValue);
+	}
+	arrayValue.push(item);
+}
