@@ -545,6 +545,48 @@ export class ActivityLogService {
 	}
 
 	/**
+	 * Retrieves all activity logs for all players where they mine tokens.
+	 * Only retrieves activity logs that occurred today or later.
+	 * @returns An array of activity logs for all players where they mine tokens.
+	 */
+	getMineTokensLogsToday(): ActivityLog[] {
+		const now = new Date();
+		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
+		return this.activityLogRepository.findActivityLogsAfterTimeWhere(startOfToday, {
+			type: ActivityTypes.MINE_TOKENS,
+		});
+	}
+
+	/**
+	 * Retrieves all activity logs for a given player where they mine tokens.
+	 * Only retrieves activity logs that occurred today or later.
+	 * @param player - The player to retrieve the activity logs for.
+	 * @returns An array of activity logs for the given player where they mine tokens.
+	 */
+	getMineTokensLogsForPlayerToday(player: PlayerResolvable): ActivityLog[] {
+		const now = new Date();
+		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
+		return this.activityLogRepository.findActivityLogsAfterTimeWhere(startOfToday, {
+			player: player,
+			type: ActivityTypes.MINE_TOKENS,
+		});
+	}
+	/**
+	 * Retrieves all activity logs for a given player where they claim a refill.
+	 * Only retrieves activity logs that occurred today or later.
+	 * @param player - The player to retrieve the activity logs for.
+	 * @returns An array of activity logs for the given player where they claim a refill.
+	 */
+	getClaimRefillLogsForPlayerToday(player: PlayerResolvable): ActivityLog[] {
+		const now = new Date();
+		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
+		return this.activityLogRepository.findActivityLogsAfterTimeWhere(startOfToday, {
+			player: player,
+			type: ActivityTypes.CLAIM_REFILL,
+		});
+	}
+
+	/**
 	 * Retrieves the number of mines a player has made since a given time.
 	 * @param player - The player to retrieve the number of mines for.
 	 * @param minimumTime - The time to retrieve the number of mines since.

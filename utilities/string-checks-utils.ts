@@ -1,4 +1,5 @@
 import { InvalidArgumentError } from "./error-utils";
+import GraphemeSplitter from "grapheme-splitter";
 
 /**
  * Creates a Map where each key is a character from the given string and each value is the number of times that character appears in the string.
@@ -105,33 +106,13 @@ export function isOneSymbol(string: string): boolean {
     }
   }
 
-  try {
-    const req =
-			(globalThis as any).require
-			?? (typeof require === 'function'
-				? require
-				: undefined
-			);
-
-    if (typeof req === 'function') {
-      // Note: many installs export default; handle both
-      const graphemeSplitter = req('grapheme-splitter')?.default ?? req('grapheme-splitter');
-      if (graphemeSplitter) {
-        const splitter = new graphemeSplitter();
-        if (typeof splitter.countGraphemes === 'function') {
-          return splitter.countGraphemes(string) === 1;
-        }
-				else {
-          return splitter.splitGraphemes(string).length === 1;
-        }
-      }
-    }
-  }
-	catch {
-    // Fall through to next strategy
-  }
-
-  return Array.from(string).length === 1;
+	const splitter = new GraphemeSplitter();
+	if (typeof splitter.countGraphemes === 'function') {
+		return splitter.countGraphemes(string) === 1;
+	}
+	else {
+		return splitter.splitGraphemes(string).length === 1;
+	}
 }
 
 /**
@@ -252,4 +233,25 @@ export function isReasonableCodePoint(codePoint: number): boolean {
  */
 export function isMultiLine(string: string): boolean {
 	return string.includes('\n');
+}
+
+/**
+ * Splits a given string into an array of individual characters,
+ * taking into account Unicode graphemes.
+ * @param string - The string to split.
+ * @returns An array of individual characters.
+ */
+export function getCharacters(string: string): string[] {
+	const splitter = new GraphemeSplitter();
+	return splitter.splitGraphemes(string);
+}
+
+/**
+ * Determines the number of distinct characters in a given string.
+ * @param string - The string to check.
+ * @returns The number of distinct characters in the string.
+ */
+export function getNumDistinctCharacters(string: string): number {
+	const characters = getCharacters(string);
+	return new Set(characters).size;
 }

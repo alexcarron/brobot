@@ -161,6 +161,19 @@ function getHoursInTime(milliseconds: number): number {
 }
 
 /**
+ * Returns the seconds from the given milliseconds since 1970-01-01T00:00:00Z.
+ * @param milliseconds - The milliseconds since 1970-01-01T00:00:00Z.
+ * @returns The seconds from the given milliseconds since 1970-01-01T00:00:00Z.
+ * @example
+ * const seconds = getSecondsInTime(1640995200000);
+ */
+function getSecondsInTime(milliseconds: number): number {
+	if (milliseconds < 0) throw new Error(`Expected given milliseconds in getSecondsInTime function to be 0 or greater, but was ${milliseconds}`);
+
+	return Math.floor(milliseconds / 1000);
+}
+
+/**
  * Returns the minutes from the given milliseconds since 1970-01-01T00:00:00Z.
  * @param milliseconds - The milliseconds since 1970-01-01T00:00:00Z.
  * @returns The minutes from the given milliseconds since 1970-01-01T00:00:00Z.
@@ -173,4 +186,4 @@ function getMinutesInTime(milliseconds: number): number {
 	return Math.floor(milliseconds / 1000 / 60);
 }
 
-export { toUnixTimestamp, createNowUnixTimestamp, toCronExpression, addDays, addHours, addMinutes, addSeconds, toDateFromTimeString, getYesterday, getToday, getTomorrow, getMondayOfThisWeek, getSundayOfThisWeek, toNormalizedDate, getHoursInTime, getMinutesInTime };
+export { toUnixTimestamp, createNowUnixTimestamp, toCronExpression, addDays, addHours, addMinutes, addSeconds, toDateFromTimeString, getYesterday, getToday, getTomorrow, getMondayOfThisWeek, getSundayOfThisWeek, toNormalizedDate, getHoursInTime, getMinutesInTime, getSecondsInTime };

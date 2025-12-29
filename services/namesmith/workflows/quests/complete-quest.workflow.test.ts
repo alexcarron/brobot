@@ -1,4 +1,4 @@
-import { addHours, addMinutes } from "../../../../utilities/date-time-utils";
+import { addHours, addMinutes, addSeconds } from "../../../../utilities/date-time-utils";
 import { failTest, makeSure } from "../../../../utilities/jest/jest-utils";
 import { getBetween, getRandomUUID } from "../../../../utilities/random-utils";
 import { Quests } from "../../constants/quests.constants";
@@ -685,7 +685,513 @@ describe('complete-quest.workflow.ts', () => {
 						}).isFailure()
 					).isTrue();
 				});
-			})
+			});
+
+			describe('Distinct Dozen Quest', () => {
+				it('returns a success if the player publishes a name with 16 distinct characters that each repeat twice', () => {
+					forcePlayerToPublishName(SOME_PLAYER, "aabbccddeeffgghhiijjkkllmmnnoopp");
+
+					makeSure(
+						completeQuest({
+							playerResolvable: SOME_PLAYER.id,
+							questResolvable: Quests.DISTINCT_DOZEN.id
+						}).isFailure()
+					).isFalse();
+				});
+
+				it('returns a success if the player publishes a name with exactly 12 distinct characters without repeats', () => {
+					forcePlayerToPublishName(SOME_PLAYER, "abcdefghijkl");
+
+					makeSure(
+						completeQuest({
+							playerResolvable: SOME_PLAYER.id,
+							questResolvable: Quests.DISTINCT_DOZEN.id
+						}).isFailure()
+					).isFalse();
+				});
+
+				it('returns a failure if the player publishes a name with exactly 11 distinct characters with repeats', () => {
+					forcePlayerToPublishName(SOME_PLAYER, "aabbccddeeffgghhiijjkk");
+
+					makeSure(
+						completeQuest({
+							playerResolvable: SOME_PLAYER.id,
+							questResolvable: Quests.DISTINCT_DOZEN.id
+						}).isFailure()
+					).isTrue();
+				});
+
+				it('returns a failure if the player publishes a name with exactly 11 distinct characters without repeats', () => {
+					forcePlayerToPublishName(SOME_PLAYER, "abcdefghijk");
+
+					makeSure(
+						completeQuest({
+							playerResolvable: SOME_PLAYER.id,
+							questResolvable: Quests.DISTINCT_DOZEN.id
+						}).isFailure()
+					).isTrue();
+				});
+
+				it('returns a failure if the player never publishes a name', () => {
+					makeSure(
+						completeQuest({
+							playerResolvable: SOME_PLAYER.id,
+							questResolvable: Quests.DISTINCT_DOZEN.id
+						}).isFailure()
+					).isTrue();
+				});
+			});
+
+			describe('High Yield Quest', () => {
+				it('returns a success if the player got 10 tokens from a mine', () => {
+					forcePlayerToMineTokens(SOME_PLAYER, 10);
+
+					makeSure(
+						completeQuest({
+							playerResolvable: SOME_PLAYER.id,
+							questResolvable: Quests.HIGH_YIELD.id
+						}).isFailure()
+					).isFalse();
+				});
+
+				it('returns a success if the player got 5 tokens from a mine at least once', () => {
+					forcePlayerToMineTokens(SOME_PLAYER, 1);
+					forcePlayerToMineTokens(SOME_PLAYER, 3);
+					forcePlayerToMineTokens(SOME_PLAYER, 5);
+					forcePlayerToMineTokens(SOME_PLAYER, 2);
+					forcePlayerToMineTokens(SOME_PLAYER, 1);
+					forcePlayerToMineTokens(SOME_PLAYER, 2);
+
+					makeSure(
+						completeQuest({
+							playerResolvable: SOME_PLAYER.id,
+							questResolvable: Quests.HIGH_YIELD.id
+						}).isFailure()
+					).isFalse();
+				});
+
+				it('returns a failure if the player got 4 tokens from a mine at the most', () => {
+					forcePlayerToMineTokens(SOME_PLAYER, 1);
+					forcePlayerToMineTokens(SOME_PLAYER, 3);
+					forcePlayerToMineTokens(SOME_PLAYER, 4);
+					forcePlayerToMineTokens(SOME_PLAYER, 2);
+					forcePlayerToMineTokens(SOME_PLAYER, 1);
+					forcePlayerToMineTokens(SOME_PLAYER, 4);
+					forcePlayerToMineTokens(SOME_PLAYER, 4);
+					forcePlayerToMineTokens(SOME_PLAYER, 2);
+					forcePlayerToMineTokens(SOME_PLAYER, 4);
+					forcePlayerToMineTokens(SOME_PLAYER, 4);
+					forcePlayerToMineTokens(SOME_PLAYER, 4);
+
+					makeSure(
+						completeQuest({
+							playerResolvable: SOME_PLAYER.id,
+							questResolvable: Quests.HIGH_YIELD.id
+						}).isFailure()
+					).isTrue();
+				});
+
+				it('returns a failure if the player did nothing', () => {
+					makeSure(
+						completeQuest({
+							playerResolvable: SOME_PLAYER.id,
+							questResolvable: Quests.HIGH_YIELD.id
+						}).isFailure()
+					).isTrue();
+				});
+			});
+
+			describe('One Hundred Swings Quest', () => {
+				it('returns a success if the player mined 100 times', () => {
+					for (let numLoop = 0; numLoop < 100; numLoop++) {
+						forcePlayerToMineTokens(SOME_PLAYER, 1);
+					}
+
+					makeSure(
+						completeQuest({
+							playerResolvable: SOME_PLAYER.id,
+							questResolvable: Quests.ONE_HUNDRED_SWINGS.id
+						}).isFailure()
+					).isFalse();
+				});
+
+				it('returns a success if the player mined 99 times', () => {
+					for (let numLoop = 0; numLoop < 99; numLoop++) {
+						forcePlayerToMineTokens(SOME_PLAYER, 1);
+					}
+
+					makeSure(
+						completeQuest({
+							playerResolvable: SOME_PLAYER.id,
+							questResolvable: Quests.ONE_HUNDRED_SWINGS.id
+						}).isFailure()
+					).isTrue();
+				});
+
+				it('returns a success if the player mined 0 times', () => {
+					makeSure(
+						completeQuest({
+							playerResolvable: SOME_PLAYER.id,
+							questResolvable: Quests.ONE_HUNDRED_SWINGS.id
+						}).isFailure()
+					).isTrue();
+				});
+			});
+
+			describe('Rapid Extraction Quest', () => {
+				let NOW: Date;
+
+				beforeEach(() => {
+					NOW = new Date();
+					jest.useFakeTimers({ now: addHours(NOW, 1) });
+				});
+
+				afterAll(() => {
+					jest.useRealTimers();
+				})
+
+				it('returns a success if the player mined 20 times in a single moment', () => {
+					for (let numLoop = 0; numLoop < 20; numLoop++) {
+						console.log(numLoop);
+						forcePlayerToMineTokens(SOME_PLAYER, 1);
+					}
+
+					makeSure(
+						completeQuest({
+							playerResolvable: SOME_PLAYER.id,
+							questResolvable: Quests.RAPID_EXTRACTION.id
+						}).isFailure()
+					).isFalse();
+				});
+
+				it('returns a success if the player mined 20 times in exactly 1 minute', () => {
+					for (let numLoop = 0; numLoop < 20; numLoop++) {
+						jest.setSystemTime(addSeconds(new Date(), 60/19));
+						forcePlayerToMineTokens(SOME_PLAYER, 1);
+					}
+
+					makeSure(
+						completeQuest({
+							playerResolvable: SOME_PLAYER.id,
+							questResolvable: Quests.RAPID_EXTRACTION.id
+						}).isFailure()
+					).isFalse();
+				});
+
+				it('returns a failure if the player mined 20 times in exactly 1 minute and 2 seconds', () => {
+					for (let numLoop = 0; numLoop < 20; numLoop++) {
+						jest.setSystemTime(addSeconds(NOW, 61 * (numLoop/19)));
+						forcePlayerToMineTokens(SOME_PLAYER, 1);
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.RAPID_EXTRACTION.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns a failure if the player mined 19 times in exactly 1 minute', () => {
+					for (let numLoop = 0; numLoop < 19; numLoop++) {
+						jest.setSystemTime(addSeconds(NOW, 60 * (numLoop/19)));
+						forcePlayerToMineTokens(SOME_PLAYER, 1);
+					}
+
+					jest.setSystemTime(addSeconds(new Date(), 60));
+					forcePlayerToMineTokens(SOME_PLAYER, 1);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.RAPID_EXTRACTION.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Lucky Mining Streak Quest', () => {
+				it('returns a success if the player mined 100 tokens 10 times', () => {
+					for (let numLoop = 0; numLoop < 10; numLoop++) {
+						forcePlayerToMineTokens(SOME_PLAYER, 100);
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.LUCKY_MINING_STREAK.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a success if the player mined 3 tokens 5 times', () => {
+					for (let numLoop = 0; numLoop < 5; numLoop++) {
+						forcePlayerToMineTokens(SOME_PLAYER, 3);
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.LUCKY_MINING_STREAK.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a failure if the player mined 3 tokens 4 times', () => {
+					for (let numLoop = 0; numLoop < 4; numLoop++) {
+						forcePlayerToMineTokens(SOME_PLAYER, 3);
+					}
+					forcePlayerToMineTokens(SOME_PLAYER, 2);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.LUCKY_MINING_STREAK.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns a failure if the player mined 2 tokens 5 times', () => {
+					for (let numLoop = 0; numLoop < 5; numLoop++) {
+						forcePlayerToMineTokens(SOME_PLAYER, 2);
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.LUCKY_MINING_STREAK.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Refill Jackpot Quest', () => {
+				it('returns a success if the player claimed a refill that gave them 999 tokens', () => {
+					forcePlayerToClaimRefill(SOME_PLAYER, 999);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.REFILL_JACKPOT.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a success if the player claimed a refill that gave them 100 tokens at least once', () => {
+					forcePlayerToClaimRefill(SOME_PLAYER, 20);
+					forcePlayerToClaimRefill(SOME_PLAYER, 35);
+					forcePlayerToClaimRefill(SOME_PLAYER, 12);
+					forcePlayerToClaimRefill(SOME_PLAYER, 100);
+					forcePlayerToClaimRefill(SOME_PLAYER, 99);
+					forcePlayerToClaimRefill(SOME_PLAYER, 35);
+					forcePlayerToClaimRefill(SOME_PLAYER, 50);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.REFILL_JACKPOT.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a dailure if the player claimed a refill that gave them 99 tokens', () => {
+					forcePlayerToClaimRefill(SOME_PLAYER, 20);
+					forcePlayerToClaimRefill(SOME_PLAYER, 35);
+					forcePlayerToClaimRefill(SOME_PLAYER, 12);
+					forcePlayerToClaimRefill(SOME_PLAYER, 99);
+					forcePlayerToClaimRefill(SOME_PLAYER, 99);
+					forcePlayerToClaimRefill(SOME_PLAYER, 35);
+					forcePlayerToClaimRefill(SOME_PLAYER, 50);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.REFILL_JACKPOT.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Mine Together Quest', () => {
+				let NOW: Date;
+
+				beforeEach(() => {
+					NOW = new Date();
+					jest.useFakeTimers({ now: addHours(NOW, 1) });
+				});
+
+				afterAll(() => {
+					jest.useRealTimers();
+				})
+
+				it('returns a success if the player mined at the same moment as another player', () => {
+					forcePlayerToMineTokens(SOME_PLAYER, 1);
+					forcePlayerToMineTokens(SOME_OTHER_PLAYER, 1);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.MINE_TOGETHER.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a success if the player mined exactly 60 seconds before another player', () => {
+					forcePlayerToMineTokens(SOME_PLAYER, 1);
+
+					jest.setSystemTime(addSeconds(new Date(), 60));
+					forcePlayerToMineTokens(SOME_OTHER_PLAYER, 1);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.MINE_TOGETHER.id
+					});
+					console.log(result);
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a failure if the player mined exactly 61 seconds before another player', () => {
+					forcePlayerToMineTokens(SOME_PLAYER, 1);
+
+					jest.setSystemTime(addSeconds(new Date(), 61));
+					forcePlayerToMineTokens(SOME_OTHER_PLAYER, 1);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.MINE_TOGETHER.id
+					});
+					console.log(result);
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns a failure if the player mined exactly 60 seconds before themself', () => {
+					forcePlayerToMineTokens(SOME_PLAYER, 1);
+
+					jest.setSystemTime(addSeconds(new Date(), 60));
+					forcePlayerToMineTokens(SOME_PLAYER, 1);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.MINE_TOGETHER.id
+					});
+					console.log(result);
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns a failure if some other player mined exactly 60 seconds before another different player', () => {
+					forcePlayerToMineTokens(SOME_OTHER_PLAYER, 1);
+
+					jest.setSystemTime(addSeconds(new Date(), 60));
+					forcePlayerToMineTokens(THREE_DIFFERENT_PLAYERS[2], 1);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.MINE_TOGETHER.id
+					});
+					console.log(result);
+				makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Mining Speedrun Quest', () => {
+				let NOW: Date;
+
+				beforeEach(() => {
+					NOW = new Date();
+					jest.useFakeTimers({ now: addHours(NOW, 1) });
+				});
+
+				afterAll(() => {
+					jest.useRealTimers();
+				});
+
+				it('returns a success if the player earned 35 tokens in a single mine', () => {
+					forcePlayerToMineTokens(SOME_PLAYER, 35);
+
+					makeSure(
+						completeQuest({
+							playerResolvable: SOME_PLAYER.id,
+							questResolvable: Quests.MINING_SPEEDRUN.id
+						}).isFailure()
+					).isFalse();
+				});
+
+				it('returns a success if the player earned 35 tokens across multiple mines within 60 seconds', () => {
+					// 10 + 10 + 10 + 5 within 30 seconds
+					forcePlayerToMineTokens(SOME_PLAYER, 10);
+					jest.setSystemTime(addSeconds(new Date(), 10));
+					forcePlayerToMineTokens(SOME_PLAYER, 10);
+					jest.setSystemTime(addSeconds(new Date(), 20));
+					forcePlayerToMineTokens(SOME_PLAYER, 10);
+					jest.setSystemTime(addSeconds(new Date(), 30));
+					forcePlayerToMineTokens(SOME_PLAYER, 5);
+
+					makeSure(
+						completeQuest({
+							playerResolvable: SOME_PLAYER.id,
+							questResolvable: Quests.MINING_SPEEDRUN.id
+						}).isFailure()
+					).isFalse();
+				});
+
+				it('returns a failure if the player only earned 35 tokens but spread across more than 60 seconds', () => {
+					// 20 tokens now, 15 tokens after 61 seconds -> no 60s window with 35+
+					forcePlayerToMineTokens(SOME_PLAYER, 20);
+					jest.setSystemTime(addSeconds(NOW, 61));
+					forcePlayerToMineTokens(SOME_PLAYER, 15);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.MINING_SPEEDRUN.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns a failure if the player did nothing', () => {
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.MINING_SPEEDRUN.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Collective Mining Quest', () => {
+				it('returns a success if a single player mined 1000 tokens', () => {
+					forcePlayerToMineTokens(SOME_PLAYER, 1000);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.MINING_SPEEDRUN.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a success if multiple players collectively mined 1000 tokens', () => {
+					forcePlayerToMineTokens(SOME_PLAYER, 250);
+
+					// Use a few different players to sum to 1000
+					for (let i = 0; i < 3; i++) {
+						forcePlayerToMineTokens(THREE_DIFFERENT_PLAYERS[i], 1000 / 4 );
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.MINING_SPEEDRUN.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a failure if players only mined 999 tokens collectively', () => {
+					forcePlayerToMineTokens(SOME_PLAYER, 500);
+					forcePlayerToMineTokens(SOME_OTHER_PLAYER, 499);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.COLLECTIVE_MINING.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns a failure if nobody mined at all', () => {
+					makeSure(
+						completeQuest({
+							playerResolvable: SOME_PLAYER.id,
+							questResolvable: Quests.COLLECTIVE_MINING.id
+						}).isFailure()
+					).isTrue();
+				});
+			});
 		});
   });
 });

@@ -4,9 +4,10 @@ import { Quest, QuestResolvable } from "../../types/quest.types";
 import { getWorkflowResultCreator, provides } from "../workflow-result-creator";
 import { Quests } from '../../constants/quests.constants';
 import { FREEBIE_QUEST_NAME } from '../../constants/test.constants';
-import { hasSymbol, hasLetter, hasNumber } from '../../../../utilities/string-checks-utils';
+import { hasSymbol, hasLetter, hasNumber, getNumDistinctCharacters } from '../../../../utilities/string-checks-utils';
 import { NamesmithServices } from "../../types/namesmith.types";
-import { addDays, getHoursInTime, getMinutesInTime } from "../../../../utilities/date-time-utils";
+import { addDays, getHoursInTime, getMinutesInTime, getSecondsInTime } from "../../../../utilities/date-time-utils";
+import { ActivityLog } from "../../types/activity-log.types";
 
 const PLAYER_MET_CRITERIA = 'questSuccess' as const;
 const result = getWorkflowResultCreator({
@@ -359,6 +360,298 @@ const questIDToMeetsCriteriaCheck = {
 		}
 
 		return toFailure(`You need to publish a name with an even number to complete the "${quest.name}" quest.`);
+	},
+
+	// Distinct Dozen
+	[Quests.DISTINCT_DOZEN.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_REQUIRED_UNQIUE_CHARACTERS = 12;
+		const publishNameLogs = activityLogService.getPublishNameLogsForPlayerToday(player);
+
+		if (publishNameLogs.length <= 0)
+			return toFailure(`You have not published a name yet today. You must publish a name before you can complete the "${quest.name}" quest.`);
+
+		let maxCharacters = 0;
+		for (const publishNameLog of publishNameLogs) {
+			const numCharacters = getNumDistinctCharacters(publishNameLog.currentName);
+
+			if (numCharacters >= NUM_REQUIRED_UNQIUE_CHARACTERS)
+				return PLAYER_MET_CRITERIA;
+
+			if (numCharacters > maxCharacters)
+				maxCharacters = numCharacters;
+		}
+
+		return toFailure(`You've only published a name with ${maxCharacters} unique characters at the most. You need to publish a name with at least ${NUM_REQUIRED_UNQIUE_CHARACTERS} unique characters to complete the "${quest.name}" quest.`);
+	},
+
+	// High Yield
+	[Quests.HIGH_YIELD.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const MIN_NUM_TOKENS_NEEDED = 5;
+		const mineLogs = activityLogService.getMineTokensLogsForPlayerToday(player);
+
+		if (mineLogs.length <= 0)
+			return toFailure(`You have not mined any tokens yet today. You must mine tokens before you can complete the "${quest.name}" quest.`);
+
+		let maxMineYield = 0;
+		for (const mineLog of mineLogs) {
+			const numTokens = mineLog.tokensDifference;
+			if (numTokens >= MIN_NUM_TOKENS_NEEDED)
+				return PLAYER_MET_CRITERIA;
+
+			if (numTokens > maxMineYield)
+				maxMineYield = numTokens;
+		}
+
+		return toFailure(`You've only gotten ${maxMineYield} tokens from a single mine at the most. You need to mine at least ${MIN_NUM_TOKENS_NEEDED} tokens at once to complete the "${quest.name}" quest.`);
+	},
+
+	// One Hundred Swings
+	[Quests.ONE_HUNDRED_SWINGS.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_MINES_NEEDED = 100;
+		const mineLogs = activityLogService.getMineTokensLogsForPlayerToday(player);
+
+		if (mineLogs.length <= 0)
+			return toFailure(`You have not mined tokens yet today. You must mine tokens before you can complete the "${quest.name}" quest.`);
+
+		const numTimesMined = mineLogs.length;
+		if (numTimesMined >= NUM_MINES_NEEDED)
+			return PLAYER_MET_CRITERIA;
+
+		return toFailure(`You've only mined ${numTimesMined} times today. You need to mine at least ${NUM_MINES_NEEDED} times to complete the "${quest.name}" quest.`);
+	},
+
+	// Rapid Extraction
+	[Quests.RAPID_EXTRACTION.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_MINES_NEEDED = 20;
+		const SECONDS_TIME_RANGE_NEEDED = 60;
+		const mineLogs = activityLogService.getMineTokensLogsForPlayerToday(player);
+
+		if (mineLogs.length <= 0)
+			return toFailure(`You have not mined tokens yet today. You must mine tokens before you can complete the "${quest.name}" quest.`);
+
+		if (mineLogs.length < NUM_MINES_NEEDED)
+			return toFailure(`You have not mined ${NUM_MINES_NEEDED} times yet today. You must mine at least ${NUM_MINES_NEEDED} times before you can complete the "${quest.name}" quest.`);
+
+		let minTimeRangeSeconds = Infinity;
+		let firstMineTime = null;
+		let numMines = 1;
+		for (const mineLog of mineLogs) {
+			if (firstMineTime === null)
+				firstMineTime = mineLog.timeOccured;
+
+			if (numMines >= 20) {
+				const timeRangeSeconds = mineLog.timeOccured.getTime() - firstMineTime.getTime();
+
+				if (getSecondsInTime(timeRangeSeconds) <= SECONDS_TIME_RANGE_NEEDED)
+					return PLAYER_MET_CRITERIA;
+
+				if (timeRangeSeconds < minTimeRangeSeconds)
+					minTimeRangeSeconds = timeRangeSeconds;
+
+				firstMineTime = mineLogs[numMines - 19].timeOccured;
+			}
+
+			numMines++;
+		}
+
+		return toFailure(`You've only mined 20 times in ${getSecondsInTime(minTimeRangeSeconds)} seconds at most. You need to mine at least 20 times in ${SECONDS_TIME_RANGE_NEEDED} seconds to complete the "${quest.name}" quest.`);
+	},
+
+	// Lucky Mining Streak
+	[Quests.LUCKY_MINING_STREAK.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_MINES_NEEDED = 5;
+		const NUM_TOKEN_YIELD_NEEDED = 3;
+		const mineLogs = activityLogService.getMineTokensLogsForPlayerToday(player);
+
+		if (mineLogs.length <= 0)
+			return toFailure(`You have not mined tokens yet today. You must mine tokens before you can complete the "${quest.name}" quest.`);
+
+		if (mineLogs.length < NUM_MINES_NEEDED)
+			return toFailure(`You have not mined ${NUM_MINES_NEEDED} times yet today. You must mine at least ${NUM_MINES_NEEDED} times before you can complete the "${quest.name}" quest.`);
+
+		let numGoodEnoughMines = 0;
+		for (const mineLog of mineLogs) {
+			if (mineLog.tokensDifference >= NUM_TOKEN_YIELD_NEEDED)
+				numGoodEnoughMines++;
+		}
+
+		if (numGoodEnoughMines >= NUM_MINES_NEEDED)
+			return PLAYER_MET_CRITERIA;
+		else if (numGoodEnoughMines > 0)
+			return toFailure(`You've mined ${NUM_TOKEN_YIELD_NEEDED}+ tokens at once only ${numGoodEnoughMines} times today. You need to do that at least ${NUM_MINES_NEEDED} times to complete the "${quest.name}" quest.`);
+		else
+			return toFailure(`You never mined ${NUM_TOKEN_YIELD_NEEDED}+ tokens at once today. You need to do that at least once before you can complete the "${quest.name}" quest.`);
+	},
+
+	// Refill Jackpot
+	[Quests.REFILL_JACKPOT.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const MIN_NUM_TOKENS_NEEDED = 100;
+		const claimRefillLogs = activityLogService.getClaimRefillLogsForPlayerToday(player);
+
+		if (claimRefillLogs.length <= 0)
+			return toFailure(`You have not claimed a refill yet today. You must do so before you can complete the "${quest.name}" quest.`);
+
+		let maxRefillYield = 0;
+		for (const claimRefillLog of claimRefillLogs) {
+			const numTokens = claimRefillLog.tokensDifference;
+			if (numTokens >= MIN_NUM_TOKENS_NEEDED)
+				return PLAYER_MET_CRITERIA;
+
+			if (numTokens > maxRefillYield)
+				maxRefillYield = numTokens;
+		}
+
+		return toFailure(`You've only gotten ${maxRefillYield} tokens from a single refill at the most. You need to claim a refill that rewards you at least ${MIN_NUM_TOKENS_NEEDED} tokens to complete the "${quest.name}" quest.`);
+	},
+
+	// Mine Together
+	[Quests.MINE_TOGETHER.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService, playerService}: NamesmithServices
+	) => {
+		const NUM_OTHER_PLAYERS_NEEDED = 1;
+		const SECONDS_TIME_RANGE_NEEDED = 60;
+		const mineLogs = activityLogService.getMineTokensLogsToday();
+
+		let minTimeRangeSeconds = Infinity;
+		let maxDifferentPlayers = 0;
+		let didPlayerMine = false;
+		const playerID = playerService.resolveID(player);
+		const consideredLogs: ActivityLog[] = [];
+		for (const mineLog of mineLogs) {
+			const doneByConsideredPlayer = consideredLogs.some(log => log.player.id === mineLog.player.id);
+			if (doneByConsideredPlayer) continue;
+
+			const playerInConsideredLogs = consideredLogs.some(log =>
+				log.player.id === playerID
+			);
+			const playerDidCurrentLog = mineLog.player.id === playerID;
+			const isPlayerIncluded = playerInConsideredLogs || playerDidCurrentLog;
+			if (isPlayerIncluded) didPlayerMine = true;
+
+			if (isPlayerIncluded) {
+				if (consideredLogs.length >= NUM_OTHER_PLAYERS_NEEDED + 1)
+					consideredLogs.shift();
+			}
+			else {
+				// Leave space for player
+				if (consideredLogs.length >= NUM_OTHER_PLAYERS_NEEDED)
+					consideredLogs.shift();
+			}
+			consideredLogs.push(mineLog);
+
+			if (consideredLogs.length >= NUM_OTHER_PLAYERS_NEEDED + 1) {
+				const lastLog = consideredLogs[consideredLogs.length - 1]!;
+				const firstLog = consideredLogs[0]!;
+				const timeRange = lastLog.timeOccured.getTime() - firstLog.timeOccured.getTime();
+
+				const secondsAchieved = getSecondsInTime(timeRange);
+				if (secondsAchieved <= SECONDS_TIME_RANGE_NEEDED) {
+					return PLAYER_MET_CRITERIA;
+				}
+				else if (secondsAchieved < minTimeRangeSeconds) {
+					minTimeRangeSeconds = secondsAchieved;
+				}
+			}
+			else if (consideredLogs.length > maxDifferentPlayers) {
+				maxDifferentPlayers = consideredLogs.length;
+			}
+		}
+
+		if (didPlayerMine === false)
+			return toFailure(`You have not mined today. You must do so before you can complete the "${quest.name}" quest.`);
+		else if (maxDifferentPlayers < NUM_OTHER_PLAYERS_NEEDED + 1)
+			return toFailure(`You've only mined with ${maxDifferentPlayers - 1} other players. You need to mine with at least ${NUM_OTHER_PLAYERS_NEEDED} others to complete the "${quest.name}" quest.`);
+		else
+			return toFailure(`You've mined with ${NUM_OTHER_PLAYERS_NEEDED} other player(s) in the span of ${minTimeRangeSeconds} seconds. You need to mine with them in the span of ${SECONDS_TIME_RANGE_NEEDED} seconds at most to complete the "${quest.name}" quest.`);
+	},
+
+	// Mining Speedrun
+	[Quests.MINING_SPEEDRUN.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const TOKENS_NEEDED = 35;
+		const SECONDS_TIME_RANGE = 60;
+		const mineLogs = activityLogService.getMineTokensLogsForPlayerToday(player);
+
+		if (mineLogs.length === 0) {
+			return toFailure(`You have not mined any tokens today. You must mine tokens to complete the "${quest.name}" quest.`);
+		}
+
+		let maxTokensEarned = 0;
+		for (let numFirstMine = 0; numFirstMine < mineLogs.length; numFirstMine++) {
+			let totalEarnedTokens = 0;
+			const firstMineLog = mineLogs[numFirstMine];
+			const startTime = firstMineLog.timeOccured;
+
+			for (let numMine = numFirstMine; numMine < mineLogs.length; numMine++) {
+				const mineLog = mineLogs[numMine];
+				const elapsedSeconds = getSecondsInTime(
+					mineLog.timeOccured.getTime() - startTime.getTime()
+				);
+
+				if (elapsedSeconds > SECONDS_TIME_RANGE) break;
+
+				totalEarnedTokens += mineLog.tokensDifference;
+				if (totalEarnedTokens >= TOKENS_NEEDED) {
+					return PLAYER_MET_CRITERIA;
+				}
+				else if (totalEarnedTokens > maxTokensEarned) {
+					maxTokensEarned = totalEarnedTokens;
+				}
+			}
+		}
+
+		return toFailure(`You have only been mined ${maxTokensEarned} tokens at most in the span of ${SECONDS_TIME_RANGE} seconds. You need to mine ${TOKENS_NEEDED} tokens in that time to complete the "${quest.name}" quest.`);
+	},
+
+	// Collective Mining
+	[Quests.COLLECTIVE_MINING.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService, playerService}: NamesmithServices
+	) => {
+		const TOTAL_TOKENS_NEEDED = 1000;
+		const mineLogs = activityLogService.getMineTokensLogsToday();
+		const playerID = playerService.resolveID(player);
+
+		let totalTokensEarned = 0;
+		let didPlayerMine = false;
+		for (const log of mineLogs) {
+			if (log.player.id === playerID) {
+				didPlayerMine = true;
+			}
+
+			totalTokensEarned += log.tokensDifference;
+		}
+
+		if (!didPlayerMine) {
+			return toFailure(`You have not mined any tokens today. You must contribute to the collective mining to complete the "${quest.name}" quest.`);
+		}
+
+		if (totalTokensEarned < TOTAL_TOKENS_NEEDED) {
+			return toFailure(`You and other players have collectively mined ${totalTokensEarned} tokens today. You need a total of ${TOTAL_TOKENS_NEEDED} tokens to complete the "${quest.name}" quest.`);
+		}
+
+		return PLAYER_MET_CRITERIA;
 	},
 } as const;
 

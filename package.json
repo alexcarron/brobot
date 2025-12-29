@@ -6,21 +6,16 @@
 	"type": "commonjs",
 	"scripts": {
 		"prepare": "husky",
-
 		"lint:fast": "eslint \"**/*.{ts,tsx,js,jsx}\" --ignore-path .gitignore --cache --cache-location .eslintcache --max-warnings=0",
 		"lint:full": "eslint . --ignore-path .gitignore --cache --cache-location .eslintcache --config .eslintrc.full.cjs",
 		"lint": "npm run lint:fast",
-
 		"typecheck:fast": "tsc --noEmit --incremental",
 		"typecheck:ci": "tsc --noEmit -b",
 		"typecheck": "npm run typecheck:fast",
-
 		"test:dev": "jest --maxWorkers=50% --silent",
 		"test:ci": "jest --runInBand --silent",
 		"test": "npm run test:dev",
-
 		"validate": "npm run lint:fast && npm run typecheck:fast && npm run test:dev",
-
 		"build": "node -r ts-node/register build.ts",
 		"build:guild": "npm run build -- --guild-commands-only",
 		"build:dev": "npm run build -- --development",
@@ -58,6 +53,7 @@
 		"fluent-ffmpeg": "^2.1.3",
 		"fs-extra": "^11.3.0",
 		"google-tts-api": "^2.0.2",
+		"grapheme-splitter": "^1.0.4",
 		"jshint": "^2.13.1",
 		"node-cron": "^4.2.1",
 		"path": "^0.12.7",
