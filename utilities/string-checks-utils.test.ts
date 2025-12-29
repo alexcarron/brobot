@@ -1,6 +1,6 @@
 import { inspect } from "util";
 import { makeSure } from "./jest/jest-utils";
-import { areCharactersInString, getCharacterCounts, hasEmoji, hasLetter, hasNumber, hasSpace, hasSymbol, isIntegerString, isMultiLine, isOneSymbol, isUnicodeCodePoint } from "./string-checks-utils";
+import { areCharactersInString, getCharacterCounts, getNumDistinctCharacters, hasEmoji, hasLetter, hasNumber, hasSpace, hasSymbol, isIntegerString, isMultiLine, isOneSymbol, isUnicodeCodePoint } from "./string-checks-utils";
 
 describe('string-checks-utils', () => {
 	describe('areCharactersInString()', () => {
@@ -671,6 +671,24 @@ describe('string-checks-utils', () => {
 				nameOfThisPerson: 'Johnathon Jeffery',
 				longEmail: 'anEmailWithManyCharactersOwJ3T@example.com',
 			}))).is(true);
+		});
+	});
+
+	describe('getNumDistinctCharacters()', () => {
+		it('returns the number of distinct characters in a string', () => {
+			makeSure(getNumDistinctCharacters('Hello, world!')).is(10);
+		});
+
+		it('returns the amount of non-repeating emojis', () => {
+			makeSure(getNumDistinctCharacters('🔥🔥👨👩‍👩‍👧‍👦👩‍👩‍👧‍👦🔥😀👍🏻👩🏽‍👩🏾‍👦🏿‍👦🏻😀😀👍🏻')).is(6);
+		});
+
+		it('returns 0 for an empty string', () => {
+			makeSure(getNumDistinctCharacters('')).is(0);
+		});
+
+		it('works for special unicode characters', () => {
+			makeSure(getNumDistinctCharacters('©©øøéééααααββββγγγγ||||𝑒𝑒𝑒τττττℛℛℛℛ∫∫∫∫🇺🇸🇺🇸🇺🇸🇺🇸🇺🇸🇺🇸🇺🇸🇺🇸')).is(12);
 		});
 	});
 });
