@@ -3,12 +3,13 @@ jest.mock("../../../utilities/random-utils", () => ({
   getAnticipatedRandomNum: jest.fn(({expectedValue}) => expectedValue),
 }));
 
-import { addHours } from "../../../utilities/date-time-utils";
+import { addDays, addHours } from "../../../utilities/date-time-utils";
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { AVERAGE_TOKENS_FROM_REFILLING, REFILL_COOLDOWN_HOURS } from "../constants/namesmith.constants";
 import { Perks } from "../constants/perks.constants";
 import { INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
+import { getLatestActivityLog } from "../mocks/mock-data/mock-activity-logs";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { setupMockNamesmith } from "../mocks/mock-setup";
 import { getNamesmithServices } from "../services/get-namesmith-services";
@@ -95,16 +96,14 @@ describe('claim-tokens.workflow', () => {
 		});
 
 		it('should reduce refill cooldown by 1 hour if the player has the faster refill perk', () => {
+			jest.useFakeTimers({ now: new Date() });
 			const mockPlayer = addMockPlayer(db, {
 				tokens: 10,
 				perks: [Perks.FASTER_REFILL.name]
 			});
 
 			const result = returnIfNotFailure(
-				claimRefill({
-					...getNamesmithServices(),
-					playerRefilling: mockPlayer.id
-				})
+				claimRefill({playerRefilling: mockPlayer.id})
 			);
 
 			const { playerService } = services;
@@ -115,6 +114,13 @@ describe('claim-tokens.workflow', () => {
 
 			const oneHourAfterNow = addHours(new Date(), 1);
 			makeSure(result.nextRefillTime).isCloseToDate(oneHourAfterNow);
+
+			jest.setSystemTime(addDays(new Date(), 1));
+			claimRefill({playerRefilling: mockPlayer.id});
+			const latestLog = getLatestActivityLog(db);
+			makeSure(latestLog.timeCooldownExpired).isCloseToDate(oneHourAfterNow);
+
+			jest.useRealTimers();
 		});
 
 		it('should give player around 10% of their current token count if the player has the refill interest perk', () => {

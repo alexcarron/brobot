@@ -246,6 +246,10 @@ export function getCharacters(string: string): string[] {
 	return splitter.splitGraphemes(string);
 }
 
+export function getNumCharacters(string: string): number {
+	return getCharacters(string).length;
+}
+
 /**
  * Determines the number of distinct characters in a given string.
  * @param string - The string to check.

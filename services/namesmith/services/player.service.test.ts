@@ -23,7 +23,7 @@ jest.mock("../../../utilities/discord-action-utils", () => ({
   addButtonToMessageContents: jest.fn(),
 }));
 
-import { addDays, addHours, addSeconds } from "../../../utilities/date-time-utils";
+import { addDays, addHours, addSeconds, OLDEST_DATE } from "../../../utilities/date-time-utils";
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { REFILL_COOLDOWN_HOURS } from "../constants/namesmith.constants";
 import { INVALID_PLAYER_ID } from "../constants/test.constants";
@@ -667,14 +667,12 @@ describe('PlayerService', () => {
   });
 
   describe('getNextAvailableRefillTime()', () => {
-
     it('should return now if the player has never been refilled', () => {
-      const NOW = new Date();
       const mockPlayer = addMockPlayer(db, {
         lastClaimedRefillTime : null
       });
       const result = playerService.getNextAvailableRefillTime(mockPlayer.id);
-      makeSure(result).isCloseToDate(NOW);
+      makeSure(result).isCloseToDate(OLDEST_DATE);
     });
 
     it('should return the next available refill time if the player has been refilled', () => {

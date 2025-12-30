@@ -46,9 +46,11 @@ export const claimRefill = (
 	}
 
 	let newLastRefillTime = new Date();
+	const cooldownExpirationTime = playerService.getNextAvailableRefillTime(playerRefilling);
 	if (!playerService.canRefill(playerRefilling)) {
-		const nextRefillTime = playerService.getNextAvailableRefillTime(playerRefilling);
-		return result.failure.refillAlreadyClaimed({ nextRefillTime });
+		return result.failure.refillAlreadyClaimed({
+			nextRefillTime: cooldownExpirationTime
+		});
 	}
 
 	// Calculate tokens earned from refill
@@ -109,6 +111,7 @@ export const claimRefill = (
 	activityLogService.logClaimRefill({
 		playerRefilling,
 		tokensEarned: totalTokensEarned,
+		timeCooldownExpired: cooldownExpirationTime
 	});
 
 	const newTokenCount = playerService.getTokens(playerRefilling);
@@ -116,7 +119,7 @@ export const claimRefill = (
 	return result.success({
 		baseTokensEarned,
 		newTokenCount,
-		nextRefillTime,
+		nextRefillTime: nextRefillTime,
 		tokensFromRefillBonus,
 		tokensFromLuckyDoubleTokens,
 	});

@@ -33,6 +33,7 @@ const result = getWorkflowResultCreator({
  * @param options.playerService - The service for adding a character to the player's name.
  * @param options.player - The player who is opening the mystery box.
  * @param options.mysteryBox - The mystery box to open.
+ * @param options.recievedCharactersOverride - The characters received from the mystery box.
  * @returns A promise that resolves with the character object received from the mystery box.
  * - NonPlayerBoughtMysteryBoxError if the player is not a player.
  * - PlayerCantAffordMysteryBoxError if the player does not have enough tokens to buy the mystery box.
@@ -40,10 +41,12 @@ const result = getWorkflowResultCreator({
 export const buyMysteryBox = (
 	{
 		player: playerResolvable,
-		mysteryBox: mysteryBoxResolvable = 1
+		mysteryBox: mysteryBoxResolvable = 1,
+		recievedCharactersOverride = undefined
 	}: {
 		player: PlayerResolvable,
-		mysteryBox?: MysteryBoxResolvable
+		mysteryBox?: MysteryBoxResolvable,
+		recievedCharactersOverride?: string
 	}
 ) => {
 	const {mysteryBoxService, playerService, perkService, activityLogService} = getNamesmithServices();
@@ -78,12 +81,14 @@ export const buyMysteryBox = (
 	const characterValue = recievedCharacter.value;
 	let receivedCharacterValues = characterValue;
 
+	if (recievedCharactersOverride !== undefined) {
+		receivedCharacterValues = recievedCharactersOverride;
+	}
+
 	// Handle Lucky Duplicate Characters perk
 	let gotDuplicate = false;
 	perkService.doIfPlayerHas(Perks.LUCKY_DUPLICATE_CHARACTERS, playerResolvable, () => {
-		console.log('Lucky Duplicate Characters');
 		if (getRandomBoolean(0.10)) {
-			console.log('Lucky Duplicate Characters');
 			gotDuplicate = true;
 			receivedCharacterValues += characterValue;
 		}
@@ -91,9 +96,7 @@ export const buyMysteryBox = (
 
 	let gotAnotherCharacter = false;
 	perkService.doIfPlayerHas(Perks.LUCKY_DOUBLE_BOX, playerResolvable, () => {
-		console.log('Lucky Double Box');
 		if (getRandomBoolean(0.05)) {
-			console.log('Lucky Double Box');
 			gotAnotherCharacter = true;
 			const secondCharacterValue = mysteryBoxService.openBox(mysteryBoxResolvable).value;
 			receivedCharacterValues += secondCharacterValue;
@@ -106,9 +109,7 @@ export const buyMysteryBox = (
 	// Handle Lucky Refund perk
 	let wasRefunded = false;
 	perkService.doIfPlayerHas(Perks.LUCKY_REFUND, playerResolvable, () => {
-		console.log('Lucky Refund');
 		if (getRandomBoolean(0.10)) {
-			console.log('Lucky Refund');
 			wasRefunded = true;
 			playerService.giveTokens(playerResolvable, tokenCost);
 		}

@@ -194,11 +194,16 @@ export function forcePlayerToMineTokens(
  */
 export function forcePlayerToClaimRefill(
 	playerResolvable: PlayerResolvable,
-	tokens: number
+	tokens?: number
 ) {
 	const { playerService } = getNamesmithServices();
 	const manyDaysAgo = addDays(new Date(), -1000);
-	playerService.setLastRefillTime(playerResolvable, manyDaysAgo);
+	const cooldownExpiresAt = playerService.getNextAvailableRefillTime(playerResolvable);
+	const now = new Date();
+
+	if (now.getTime() < cooldownExpiresAt.getTime()) {
+		playerService.setLastRefillTime(playerResolvable, manyDaysAgo);
+	}
 
 	const result = returnIfNotFailure(
 		claimRefill({
@@ -206,8 +211,6 @@ export function forcePlayerToClaimRefill(
 			tokenOverride: tokens
 		})
 	);
-
-	playerService.setLastRefillTime(playerResolvable, manyDaysAgo);
 
 	return result;
 }

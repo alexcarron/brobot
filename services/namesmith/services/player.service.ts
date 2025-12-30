@@ -8,7 +8,7 @@ import { Inventory, Player, PlayerID, PlayerResolvable } from '../types/player.t
 import { removeCharactersAsGivenFromEnd, removeMissingCharacters } from "../../../utilities/string-manipulation-utils";
 import { areCharactersInString, hasLetter, hasNumber, hasSpace } from "../../../utilities/string-checks-utils";
 import { MAX_NAME_LENGTH, REFILL_COOLDOWN_HOURS } from "../constants/namesmith.constants";
-import { addHours } from "../../../utilities/date-time-utils";
+import { addHours, OLDEST_DATE } from "../../../utilities/date-time-utils";
 import { NamesmithEvents } from "../event-listeners/namesmith-events";
 import { DatabaseQuerier } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
@@ -579,7 +579,7 @@ export class PlayerService {
 		const lastRefillTime = this.playerRepository.getLastClaimedRefillTime(playerID);
 
 		if (lastRefillTime === null)
-			return new Date(Date.now());
+			return OLDEST_DATE;
 
 		return addHours(lastRefillTime, REFILL_COOLDOWN_HOURS);
 	}
