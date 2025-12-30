@@ -1,5 +1,6 @@
 export const mysteryBoxes = [
 	{
+		"id": 1,
 		"name": "All Characters",
 		"tokenCost": 25,
 		"characterOdds": {
@@ -540,6 +541,7 @@ export const mysteryBoxes = [
 		}
 	},
 	{
+		"id": 2,
 		"name": "Letters",
 		"tokenCost": 30,
 		"characterOdds": {
@@ -572,6 +574,7 @@ export const mysteryBoxes = [
 		}
 	},
 	{
+		"id": 3,
 		"name": "Consonants",
 		"tokenCost": 40,
 		"characterOdds": {
@@ -599,6 +602,7 @@ export const mysteryBoxes = [
 		}
 	},
 	{
+		"id": 4,
 		"name": "Vowels",
 		"tokenCost": 50,
 		"characterOdds": {
@@ -611,6 +615,7 @@ export const mysteryBoxes = [
 		}
 	},
 	{
+		"id": 5,
 		"name": "Numbers",
 		"tokenCost": 150,
 		"characterOdds": {
@@ -627,6 +632,7 @@ export const mysteryBoxes = [
 		}
 	},
 	{
+		"id": 6,
 		"name": "Symbols",
 		"tokenCost": 250,
 		"characterOdds": {
@@ -685,6 +691,7 @@ export const mysteryBoxes = [
 		}
 	},
 	{
+		"id": 7,
 		"name": "Emojis",
 		"tokenCost": 350,
 		"characterOdds": {
@@ -739,6 +746,7 @@ export const mysteryBoxes = [
 		}
 	},
 	{
+		"id": 8,
 		"name": "Recipe Utilities",
 		"tokenCost": 50,
 		"characterOdds": {
@@ -753,6 +761,7 @@ export const mysteryBoxes = [
 		}
 	},
 	{
+		"id": 9,
 		"name": "Greek Letters",
 		"tokenCost": 300,
 		"characterOdds": {
@@ -803,6 +812,7 @@ export const mysteryBoxes = [
 		}
 	},
 	{
+		"id": 10,
 		"name": "Mathematic Symbols",
 		"tokenCost": 300,
 		"characterOdds": {
@@ -964,6 +974,7 @@ export const mysteryBoxes = [
 		}
 	},
 	{
+		"id": 11,
 		"name": "International Phonetic Alphabet",
 		"tokenCost": 350,
 		"characterOdds": {
@@ -1092,6 +1103,7 @@ export const mysteryBoxes = [
 		}
 	},
 	{
+		"id": 12,
 		"name": "Flipped Letters",
 		"tokenCost": 250,
 		"characterOdds": {
@@ -1131,6 +1143,7 @@ export const mysteryBoxes = [
 		}
 	},
 	{
+		"id": 13,
 		"name": "Shapes",
 		"tokenCost": 500,
 		"characterOdds": {
@@ -1174,6 +1187,7 @@ export const mysteryBoxes = [
 		}
 	},
 	{
+		"id": 14,
 		"name": "Optical Characters",
 		"tokenCost": 1000,
 		"characterOdds": {
@@ -1191,6 +1205,7 @@ export const mysteryBoxes = [
 		}
 	},
 	{
+		"id": 15,
 		"name": "Fractions",
 		"tokenCost": 200,
 		"characterOdds": {

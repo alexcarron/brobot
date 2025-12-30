@@ -1,17 +1,19 @@
 import { addHours, addMinutes, addSeconds } from "../../../../utilities/date-time-utils";
 import { failTest, makeSure } from "../../../../utilities/jest/jest-utils";
 import { getBetween, getRandomUUID } from "../../../../utilities/random-utils";
+import { REFILL_COOLDOWN_HOURS } from "../../constants/namesmith.constants";
 import { Quests } from "../../constants/quests.constants";
 import { FREEBIE_QUEST_NAME, INVALID_PLAYER_ID, INVALID_QUEST_ID } from "../../constants/test.constants";
 import { DatabaseQuerier } from "../../database/database-querier";
 import { getLatestActivityLog } from "../../mocks/mock-data/mock-activity-logs";
-import { forcePlayerToBuyNewMysteryBox } from "../../mocks/mock-data/mock-mystery-boxes";
+import { forcePlayerToBuyMysteryBox, forcePlayerToBuyNewMysteryBox } from "../../mocks/mock-data/mock-mystery-boxes";
 import { addMockPlayer, forcePlayerToChangeName, forcePlayerToClaimRefill, forcePlayerToMineTokens, forcePlayerToPublishName } from '../../mocks/mock-data/mock-players';
 import { addMockQuest } from "../../mocks/mock-data/mock-quests";
 import { addMockRecipe, forcePlayerToCraft } from '../../mocks/mock-data/mock-recipes';
 import { forcePlayerToAcceptNewTrade, forcePlayerToInitiateTrade } from '../../mocks/mock-data/mock-trades';
 import { setupMockNamesmith } from "../../mocks/mock-setup";
 import { GameStateService } from "../../services/game-state.service";
+import { MysteryBoxService } from "../../services/mystery-box.service";
 import { PlayerService } from "../../services/player.service";
 import { ActivityTypes } from "../../types/activity-log.types";
 import { Player } from "../../types/player.types";
@@ -23,6 +25,7 @@ import { completeQuest } from "./complete-quest.workflow";
 describe('complete-quest.workflow.ts', () => {
   let db: DatabaseQuerier;
 	let playerService: PlayerService;
+	let mysteryBoxService: MysteryBoxService;
 	let gameStateService: GameStateService;
 
   let SOME_QUEST: Quest;
@@ -32,7 +35,7 @@ describe('complete-quest.workflow.ts', () => {
 	let THREE_DIFFERENT_PLAYERS: Player[];
 
   beforeEach(() => {
-    ({ db, playerService, gameStateService } = setupMockNamesmith(addMinutes(new Date(), -1)));
+    ({ db, playerService, gameStateService, mysteryBoxService } = setupMockNamesmith(addMinutes(new Date(), -1)));
     SOME_PLAYER = addMockPlayer(db, {});
     SOME_QUEST = addMockQuest(db, {
 			name: FREEBIE_QUEST_NAME + getRandomUUID()
@@ -852,7 +855,6 @@ describe('complete-quest.workflow.ts', () => {
 
 				it('returns a success if the player mined 20 times in a single moment', () => {
 					for (let numLoop = 0; numLoop < 20; numLoop++) {
-						console.log(numLoop);
 						forcePlayerToMineTokens(SOME_PLAYER, 1);
 					}
 
@@ -1190,6 +1192,502 @@ describe('complete-quest.workflow.ts', () => {
 							questResolvable: Quests.COLLECTIVE_MINING.id
 						}).isFailure()
 					).isTrue();
+				});
+			});
+
+			describe('Refill Frenzy Quest', () => {
+				it('returns a success if the player claimed a refill 100 times', () => {
+					for (let numLoop = 0; numLoop < 100; numLoop++) {
+						forcePlayerToClaimRefill(SOME_PLAYER, 1);
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.REFILL_FRENZY.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a success if the player claimed a refill 5 times', () => {
+					for (let numLoop = 0; numLoop < 5; numLoop++) {
+						forcePlayerToClaimRefill(SOME_PLAYER, 1);
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.REFILL_FRENZY.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a success if the player claimed a refill 4 times', () => {
+					for (let numLoop = 0; numLoop < 4; numLoop++) {
+						forcePlayerToClaimRefill(SOME_PLAYER, 1);
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.REFILL_FRENZY.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Instant Refill Quest', () => {
+				let NOW: Date;
+
+				beforeEach(() => {
+					NOW = new Date();
+					jest.useFakeTimers({ now: addHours(NOW, 1) });
+				});
+
+				afterAll(() => {
+					jest.useRealTimers();
+				});
+
+				it('returns a success if the player claimed a refill the moment the cooldown expired', () => {
+					forcePlayerToClaimRefill(SOME_PLAYER);
+
+					jest.setSystemTime(addHours(new Date(), REFILL_COOLDOWN_HOURS));
+					forcePlayerToClaimRefill(SOME_PLAYER);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.INSTANT_REFILL.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a success if the player claimed a refill 60 seconds after the cooldown expired', () => {
+					forcePlayerToClaimRefill(SOME_PLAYER);
+
+					jest.setSystemTime(addHours(new Date(), REFILL_COOLDOWN_HOURS));
+					jest.setSystemTime(addSeconds(new Date(), 60));
+					forcePlayerToClaimRefill(SOME_PLAYER);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.INSTANT_REFILL.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a failure if the player claimed a refill 61 seconds after the cooldown expired', () => {
+					forcePlayerToClaimRefill(SOME_PLAYER);
+
+					jest.setSystemTime(addHours(new Date(), REFILL_COOLDOWN_HOURS));
+					jest.setSystemTime(addSeconds(new Date(), 61));
+					forcePlayerToClaimRefill(SOME_PLAYER);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.INSTANT_REFILL.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns a failure if the player only claimed one refill', () => {
+					forcePlayerToClaimRefill(SOME_PLAYER);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.INSTANT_REFILL.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Refill Together Quest', () => {
+				let NOW: Date;
+
+				beforeEach(() => {
+					NOW = new Date();
+					jest.useFakeTimers({ now: addHours(NOW, 1) });
+				});
+
+				afterAll(() => {
+					jest.useRealTimers();
+				})
+
+				it('returns a success if the player claimed a refill at the same moment as two other players', () => {
+					forcePlayerToClaimRefill(SOME_PLAYER);
+					forcePlayerToClaimRefill(THREE_DIFFERENT_PLAYERS[1]);
+					forcePlayerToClaimRefill(THREE_DIFFERENT_PLAYERS[2]);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.REFILL_TOGETHER.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a success if the player claimed a refill 60 seconds before two other players', () => {
+					forcePlayerToClaimRefill(SOME_PLAYER);
+
+					jest.setSystemTime(addSeconds(new Date(), 60));
+					forcePlayerToClaimRefill(THREE_DIFFERENT_PLAYERS[1]);
+					forcePlayerToClaimRefill(THREE_DIFFERENT_PLAYERS[2]);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.REFILL_TOGETHER.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a failure if the player claimed a refill 61 seconds before two other players', () => {
+					forcePlayerToClaimRefill(SOME_PLAYER);
+
+					jest.setSystemTime(addSeconds(new Date(), 61));
+					forcePlayerToClaimRefill(THREE_DIFFERENT_PLAYERS[1]);
+					forcePlayerToClaimRefill(THREE_DIFFERENT_PLAYERS[2]);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.REFILL_TOGETHER.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns a failure if the player claimed a refill 60 seconds before one other player', () => {
+					forcePlayerToClaimRefill(SOME_PLAYER);
+
+					jest.setSystemTime(addSeconds(new Date(), 60));
+					forcePlayerToClaimRefill(THREE_DIFFERENT_PLAYERS[1]);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.REFILL_TOGETHER.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns a failure if the player never refilled but three other players did', () => {
+					forcePlayerToClaimRefill(THREE_DIFFERENT_PLAYERS[0]);
+					forcePlayerToClaimRefill(THREE_DIFFERENT_PLAYERS[1]);
+					forcePlayerToClaimRefill(THREE_DIFFERENT_PLAYERS[2]);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.REFILL_TOGETHER.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Treasure Hunter Quest', () => {
+				it('returns a success if the player bought a mystery box 100 times', () => {
+					for (let numLoop = 0; numLoop < 100; numLoop++) {
+						forcePlayerToBuyMysteryBox(SOME_PLAYER);
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.TREASURE_HUNTER.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a success if the player bought a mystery box 5 times', () => {
+					for (let numLoop = 0; numLoop < 5; numLoop++) {
+						forcePlayerToBuyMysteryBox(SOME_PLAYER);
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.TREASURE_HUNTER.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a failure if the player bought a mystery box 4 times', () => {
+					for (let numLoop = 0; numLoop < 4; numLoop++) {
+						forcePlayerToBuyMysteryBox(SOME_PLAYER);
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.TREASURE_HUNTER.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Rapid Boxes Quest', () => {
+				let NOW: Date;
+
+				beforeEach(() => {
+					NOW = new Date();
+					jest.useFakeTimers({ now: addHours(NOW, 1) });
+				});
+
+				afterAll(() => {
+					jest.useRealTimers();
+				})
+
+				it('returns a success if the player bought three mystery boxes in a single moment', () => {
+					for (let numLoop = 0; numLoop < 3; numLoop++) {
+						forcePlayerToBuyMysteryBox(SOME_PLAYER);
+					}
+
+					makeSure(
+						completeQuest({
+							playerResolvable: SOME_PLAYER.id,
+							questResolvable: Quests.RAPID_BOXES.id
+						}).isFailure()
+					).isFalse();
+				});
+
+				it('returns a success if the player bought 3 mystery boxes in exactly 1 minute', () => {
+					for (let numLoop = 0; numLoop < 3; numLoop++) {
+						jest.setSystemTime(addSeconds(new Date(), 60/2));
+						forcePlayerToBuyMysteryBox(SOME_PLAYER);
+					}
+
+					makeSure(
+						completeQuest({
+							playerResolvable: SOME_PLAYER.id,
+							questResolvable: Quests.RAPID_BOXES.id
+						}).isFailure()
+					).isFalse();
+				});
+
+				it('returns a failure if the player bought 3 mystery boxes in exactly 1 minute and 1 second', () => {
+					for (let numLoop = 0; numLoop < 3; numLoop++) {
+						jest.setSystemTime(addSeconds(NOW, 61 * (numLoop/2)));
+						forcePlayerToBuyMysteryBox(SOME_PLAYER);
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.RAPID_BOXES.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns a failure if the player bought 2 mystery boxes in exactly 1 minute', () => {
+					for (let numLoop = 0; numLoop < 2; numLoop++) {
+						jest.setSystemTime(addSeconds(NOW, 60 * (numLoop/1)));
+						forcePlayerToBuyMysteryBox(SOME_PLAYER);
+					}
+
+					jest.setSystemTime(addSeconds(new Date(), 60));
+					forcePlayerToBuyMysteryBox(SOME_PLAYER);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.RAPID_BOXES.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Familiar Face Quest', () => {
+				it('returns a success if the player got a character from a mystery box already in their name', () => {
+					forcePlayerToChangeName(SOME_PLAYER, 'abcdefghijklmnopqrstuvwxyz');
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						characterOdds: {'a': 1}
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.FAMILIAR_FACE.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a failure if the player got a character from a mystery box not already in their name', () => {
+					forcePlayerToChangeName(SOME_PLAYER, 'bcdefghijklmnopqrstuvwxyz');
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						characterOdds: {'a': 1}
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.FAMILIAR_FACE.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns a failure if the player did not get a character from a mystery box', () => {
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.FAMILIAR_FACE.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Mystery Box Splurge Quest', () => {
+				it('returns a success if the player spends 10,000 tokens on mystery boxes', () => {
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						tokenCost: 10000
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.MYSTERY_BOX_SPLURGE.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a success if the player spends 750 tokens across three mystery boxes', () => {
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						tokenCost: 500
+					});
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						tokenCost: 200
+					});
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						tokenCost: 50
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.MYSTERY_BOX_SPLURGE.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a success if the player spends 749 tokens across three mystery boxes', () => {
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						tokenCost: 500
+					});
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						tokenCost: 200
+					});
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						tokenCost: 49
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.MYSTERY_BOX_SPLURGE.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns a success if the player spends 749 tokens on one mystery box', () => {
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						tokenCost: 749
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.MYSTERY_BOX_SPLURGE.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Mystery Box Collector Quest', () => {
+				it('returns a success if the player buys three different mystery boxes', () => {
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER);
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER);
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.MYSTERY_BOX_COLLECTOR.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a success if the player buys two different mystery boxes across many', () => {
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER);
+					forcePlayerToBuyMysteryBox(SOME_PLAYER);
+					forcePlayerToBuyMysteryBox(SOME_PLAYER);
+					forcePlayerToBuyMysteryBox(SOME_PLAYER);
+					forcePlayerToBuyMysteryBox(SOME_PLAYER);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.MYSTERY_BOX_COLLECTOR.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Big Spender Quest', () => {
+				it('returns a success if the player buys every mystery box', () => {
+					const mysteryBoxes = mysteryBoxService.getMysteryBoxes();
+					for (const mysteryBox of mysteryBoxes) {
+						forcePlayerToBuyMysteryBox(SOME_PLAYER, mysteryBox);
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.BIG_SPENDER.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a success if the player buys only the most expensive mystery box', () => {
+					const mysteryBoxes = mysteryBoxService.getMysteryBoxes();
+
+					let mostExpensiveBox = mysteryBoxes[0];
+					for (const mysteryBox of mysteryBoxes) {
+						if (mysteryBox.tokenCost > mostExpensiveBox.tokenCost) {
+							mostExpensiveBox = mysteryBox;
+						}
+					}
+
+					forcePlayerToBuyMysteryBox(SOME_PLAYER, mostExpensiveBox);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.BIG_SPENDER.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a failure if the player buys everything but the most expensive mystery box', () => {
+					const mysteryBoxes = mysteryBoxService.getMysteryBoxes();
+
+					let mostExpensiveBox = mysteryBoxes[0];
+					for (const mysteryBox of mysteryBoxes) {
+						if (mysteryBox.tokenCost > mostExpensiveBox.tokenCost) {
+							mostExpensiveBox = mysteryBox;
+						}
+					}
+
+					for (const mysteryBox of mysteryBoxes) {
+						if (mysteryBox.id !== mostExpensiveBox.id) {
+							forcePlayerToBuyMysteryBox(SOME_PLAYER, mysteryBox);
+						}
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.BIG_SPENDER.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Bonus Loot Quest', () => {
+				it('returns a success if you get two characteres from a mystery Box', () => {
+					forcePlayerToBuyMysteryBox(SOME_PLAYER, 'aa');
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.BONUS_LOOT.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a failure if you get only one character from mystery boxes', () => {
+					forcePlayerToBuyMysteryBox(SOME_PLAYER);
+					forcePlayerToBuyMysteryBox(SOME_PLAYER);
+					forcePlayerToBuyMysteryBox(SOME_PLAYER);
+					forcePlayerToBuyMysteryBox(SOME_PLAYER);
+					forcePlayerToBuyMysteryBox(SOME_PLAYER);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.BONUS_LOOT.id
+					});
+					makeSure(result.isFailure()).isTrue();
 				});
 			});
 		});

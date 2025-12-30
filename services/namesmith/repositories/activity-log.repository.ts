@@ -176,7 +176,7 @@ export class ActivityLogRepository {
 	toPartialDBActivityLog(
 		activityLogDefinition: Partial<ActivityLogDefinition>
 	): Partial<DBActivityLog> {
-		const { id, timeOccured, player, type, nameChangedFrom, currentName, charactersGained, charactersLost, tokensDifference, involvedPlayer, involvedRecipe, involvedQuest, involvedTrade, involvedPerk, involvedRole, involvedMysteryBox } = activityLogDefinition;
+		const { id, timeOccured, player, type, nameChangedFrom, currentName, charactersGained, charactersLost, tokensDifference, timeCooldownExpired, involvedPlayer, involvedRecipe, involvedQuest, involvedTrade, involvedPerk, involvedRole, involvedMysteryBox } = activityLogDefinition;
 
 		const playerID = resolveOptional(player,
 			this.playerRepository.resolveID.bind(this.playerRepository)
@@ -213,6 +213,7 @@ export class ActivityLogRepository {
 			charactersGained,
 			charactersLost,
 			tokensDifference,
+			timeCooldownExpired: DBDate.orNull.orUndefined.fromDomain(timeCooldownExpired),
 			involvedPlayerID,
 			involvedRecipeID,
 			involvedQuestID,
@@ -275,7 +276,7 @@ export class ActivityLogRepository {
 		this.throwIfAnEntityDoesNotExist(activityLogDefinition);
 
 		let {id, timeOccured, currentName} = activityLogDefinition;
-		const {tokensDifference, nameChangedFrom, player, charactersGained, charactersLost} = activityLogDefinition;
+		const {tokensDifference, nameChangedFrom, player, charactersGained, charactersLost, timeCooldownExpired} = activityLogDefinition;
 
 		if (timeOccured === undefined)
 			timeOccured = new Date();
@@ -302,6 +303,9 @@ export class ActivityLogRepository {
 				? charactersLost
 				: null,
 			tokensDifference: tokensDifference ?? 0,
+			timeCooldownExpired: timeCooldownExpired !== undefined
+				? timeCooldownExpired
+				: null
 		});
 
 		id = this.db.insertIntoTable('activityLog', insertedFields);

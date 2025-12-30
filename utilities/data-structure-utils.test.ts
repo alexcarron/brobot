@@ -8,6 +8,7 @@ import {
 	getRandomWeightedElement,
 	mapToObject,
 	sortByAscendingProperty,
+	addToArrayMap,
 } from "./data-structure-utils";
 import { InvalidArgumentError } from "./error-utils";
 import { makeSure } from "./jest/jest-utils";
@@ -466,5 +467,19 @@ describe('sortAscendingByProperty()', () => {
 			{ id: 2, date: new Date('2022-02-01') },
 			{ id: 3, date: new Date('2022-03-01') },
 		]);
+	});
+});
+
+describe('addToArrayMap()', () => {
+	it('should create a new array and add an item to it if the key does not exist in the Map', () => {
+		const map = new Map<string, string[]>();
+		addToArrayMap(map, 'key', 'item');
+		expect(map.get('key')).toEqual(['item']);
+	});
+
+	it('should add an item to an array associated with a key in a Map', () => {
+		const map = new Map<string, string[]>([['key', ['item1']]]);
+		addToArrayMap(map, 'key', 'item2');
+		expect(map.get('key')).toEqual(['item1', 'item2']);
 	});
 });

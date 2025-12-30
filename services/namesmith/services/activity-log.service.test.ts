@@ -283,13 +283,15 @@ describe('ActivityLogService', () => {
 		it('creates a new activity log for claiming a refill', () => {
 			const activityLog = activityLogService.logClaimRefill({
 				playerRefilling: SOME_PLAYER.id,
-				tokensEarned: 20
+				tokensEarned: 20,
+				timeCooldownExpired: TODAY,
 			});
 
 			makeSure(activityLog).hasProperties({
 				player: SOME_PLAYER,
 				type: ActivityTypes.CLAIM_REFILL,
 				tokensDifference: 20,
+				timeCooldownExpired: TODAY,
 				involvedPlayer: null,
 				involvedRecipe: null,
 				involvedQuest: null,
@@ -303,7 +305,8 @@ describe('ActivityLogService', () => {
 			makeSure(() =>
 				activityLogService.logClaimRefill({
 					playerRefilling: INVALID_PLAYER_ID,
-					tokensEarned: 5
+					tokensEarned: 5,
+					timeCooldownExpired: TODAY,
 				})
 			).throws(PlayerNotFoundError);
 		});

@@ -150,7 +150,7 @@ export const quests = [
 	{
 		id: 23,
 		name: "Refill Together",
-		description: "Claim a refil at the same time as two other players in the span of one minute",
+		description: "Claim a refill at the same time as two other players in the span of one minute",
 		tokensReward: 200,
 		charactersReward: "trio",
 	},

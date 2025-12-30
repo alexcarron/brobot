@@ -548,10 +548,10 @@ describe("Mock Utilities", () => {
 		});
 
 		it('adds the activity log to the database', () => {
-			const TIME = new Date();
+			const SOME_TIME = new Date();
 			addMockActivityLog(db, {
 				id: 1000000001,
-				timeOccured: TIME,
+				timeOccured: SOME_TIME,
 				player: SOME_PLAYER.id,
 				nameChangedFrom: 'NAME_CHANGED_FROM',
 				currentName: 'CURRENT_NAME',
@@ -559,6 +559,7 @@ describe("Mock Utilities", () => {
 				charactersLost: 'CHARACTERS_LOST',
 				type: ActivityTypes.COMPLETE_QUEST,
 				tokensDifference: 10,
+				timeCooldownExpired: SOME_TIME,
 				involvedPlayer: SOME_OTHER_PLAYER.id,
 				involvedRecipe: SOME_RECIPE.id,
 				involvedQuest: SOME_QUEST.id,
@@ -571,7 +572,7 @@ describe("Mock Utilities", () => {
 			const activityLogs = db.getRows("SELECT * FROM activityLog");
 			makeSure(activityLogs).contains({
 				id: 1000000001,
-				timeOccured: TIME.getTime(),
+				timeOccured: SOME_TIME.getTime(),
 				playerID: SOME_PLAYER.id,
 				type: ActivityTypes.COMPLETE_QUEST,
 				nameChangedFrom: 'NAME_CHANGED_FROM',
@@ -579,6 +580,7 @@ describe("Mock Utilities", () => {
 				charactersGained: 'CHARACTERS_GAINED',
 				charactersLost: 'CHARACTERS_LOST',
 				tokensDifference: 10,
+				timeCooldownExpired: SOME_TIME.getTime(),
 				involvedPlayerID: SOME_OTHER_PLAYER.id,
 				involvedRecipeID: SOME_RECIPE.id,
 				involvedQuestID: SOME_QUEST.id,

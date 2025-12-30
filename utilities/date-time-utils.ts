@@ -1,18 +1,24 @@
 import { attempt } from "./error-utils";
+import { createListFromWords } from "./string-manipulation-utils";
+
+/**
+ * The oldest possible Date object.
+ */
+export const OLDEST_DATE = new Date(0);
 
 /**
  * Converts a given Date object to its corresponding Unix timestamp.
  * @param date - The Date object to convert.
  * @returns The Unix timestamp corresponding to the given date.
  */
-const toUnixTimestamp = (date: Date): number =>
+export const toUnixTimestamp = (date: Date): number =>
 	Math.floor(date.getTime() / 1000);
 
 /**
  * Creates a Unix timestamp for the current time.
  * @returns A Unix timestamp for the current time.
  */
-const createNowUnixTimestamp = (): number =>
+export const createNowUnixTimestamp = (): number =>
 	toUnixTimestamp(new Date());
 
 /**
@@ -20,7 +26,7 @@ const createNowUnixTimestamp = (): number =>
  * @param date - The Date object to convert.
  * @returns The CRON expression corresponding to the given date.
  */
-const toCronExpression = (date: Date): string => {
+export const toCronExpression = (date: Date): string => {
 	const seconds = date.getSeconds();
 	const minutes = date.getMinutes();
 	const hours = date.getHours();
@@ -40,7 +46,7 @@ const toCronExpression = (date: Date): string => {
  * @example
  * const fiveDaysLater = addDays(new Date(), 5);
  */
-const addDays = (date: Date, days: number): Date => {
+export const addDays = (date: Date, days: number): Date => {
 	const newDate = new Date(date.getTime());
 	newDate.setDate(newDate.getDate() + days);
 	return newDate;
@@ -54,7 +60,7 @@ const addDays = (date: Date, days: number): Date => {
  * @example
  * const fiveHoursLater = addHours(new Date(), 5);
  */
-const addHours = (date: Date, hours: number): Date => {
+export const addHours = (date: Date, hours: number): Date => {
 	const newDate = new Date(date.getTime());
 	newDate.setHours(newDate.getHours() + hours);
 	return newDate;
@@ -68,7 +74,7 @@ const addHours = (date: Date, hours: number): Date => {
  * @example
  * const fiveMinutesLater = addMinutes(new Date(), 5);
  */
-const addMinutes = (date: Date, minutes: number): Date => {
+export const addMinutes = (date: Date, minutes: number): Date => {
 	const newDate = new Date(date.getTime());
 	newDate.setMinutes(newDate.getMinutes() + minutes);
 	return newDate;
@@ -82,7 +88,7 @@ const addMinutes = (date: Date, minutes: number): Date => {
  * @example
  * const fiveSecondsLater = addSeconds(new Date(), 5);
  */
-const addSeconds = (date: Date, seconds: number): Date => {
+export const addSeconds = (date: Date, seconds: number): Date => {
 	const newDate = new Date(date.getTime());
 	newDate.setSeconds(newDate.getSeconds() + seconds);
 	return newDate;
@@ -96,7 +102,7 @@ const addSeconds = (date: Date, seconds: number): Date => {
  * @example
  * const date = toDateFromTimeString('1640995200000');
  */
-const toDateFromTimeString = (timeString: string): Date => {
+export const toDateFromTimeString = (timeString: string): Date => {
 	const time = attempt(() => parseInt(timeString))
 		.onError(() => {
 			throw new Error(`Time string should be the number of milliseconds since 1970-01-01T00:00:00Z, but was ${timeString}`)
@@ -110,16 +116,16 @@ const toDateFromTimeString = (timeString: string): Date => {
 	return date;
 }
 
-const getYesterday = (): Date => addDays(new Date(), -1);
-const getToday = (): Date => new Date();
-const getTomorrow = (): Date => addDays(new Date(), 1);
+export const getYesterday = (): Date => addDays(new Date(), -1);
+export const getToday = (): Date => new Date();
+export const getTomorrow = (): Date => addDays(new Date(), 1);
 
 /**
  * Converts the date into the same date but with a normalized time of 0:00
  * @param date - The date to normalize
  * @returns The normalized date
  */
-function toNormalizedDate(date: Date): Date {
+export function toNormalizedDate(date: Date): Date {
 	return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
@@ -130,7 +136,7 @@ function toNormalizedDate(date: Date): Date {
  * @example
  * const monday = getMondayOfThisWeek(new Date());
  */
-function getMondayOfThisWeek(date: Date): Date {
+export function getMondayOfThisWeek(date: Date): Date {
 	const weekdayNum = date.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
 	const daysToMonday = (weekdayNum + 6) % 7; // Sunday -> 6, Monday -> 0, Tuesday -> 1, etc.
 	return toNormalizedDate(addDays(date, -daysToMonday));
@@ -143,7 +149,7 @@ function getMondayOfThisWeek(date: Date): Date {
  * @example
  * const sunday = getSundayOfThisWeek(new Date());
  */
-function getSundayOfThisWeek(date: Date): Date {
+export function getSundayOfThisWeek(date: Date): Date {
 	return addDays(getMondayOfThisWeek(date), 6);
 }
 
@@ -154,7 +160,7 @@ function getSundayOfThisWeek(date: Date): Date {
  * @example
  * const hours = getHoursInTime(1640995200000);
  */
-function getHoursInTime(milliseconds: number): number {
+export function getHoursInTime(milliseconds: number): number {
 	if (milliseconds < 0) throw new Error(`Expected given milliseconds in getHoursInTime function to be 0 or greater, but was ${milliseconds}`);
 
 	return Math.floor(milliseconds / 1000 / 60 / 60);
@@ -167,7 +173,7 @@ function getHoursInTime(milliseconds: number): number {
  * @example
  * const seconds = getSecondsInTime(1640995200000);
  */
-function getSecondsInTime(milliseconds: number): number {
+export function getSecondsInTime(milliseconds: number): number {
 	if (milliseconds < 0) throw new Error(`Expected given milliseconds in getSecondsInTime function to be 0 or greater, but was ${milliseconds}`);
 
 	return Math.floor(milliseconds / 1000);
@@ -180,10 +186,56 @@ function getSecondsInTime(milliseconds: number): number {
  * @example
  * const minutes = getMinutesInTime(1640995200000);
  */
-function getMinutesInTime(milliseconds: number): number {
+export function getMinutesInTime(milliseconds: number): number {
 	if (milliseconds < 0) throw new Error(`Expected given milliseconds in getMinutesInTime function to be 0 or greater, but was ${milliseconds}`);
 
 	return Math.floor(milliseconds / 1000 / 60);
 }
 
-export { toUnixTimestamp, createNowUnixTimestamp, toCronExpression, addDays, addHours, addMinutes, addSeconds, toDateFromTimeString, getYesterday, getToday, getTomorrow, getMondayOfThisWeek, getSundayOfThisWeek, toNormalizedDate, getHoursInTime, getMinutesInTime, getSecondsInTime };
+export function getReadableDuration(totalSeconds: number): string {
+	const days = Math.floor(totalSeconds / 60 / 60 / 24);
+	const hours = Math.floor((totalSeconds / 60 / 60) % 24);
+	const minutes = Math.floor((totalSeconds / 60) % 60);
+	const seconds = totalSeconds % 60;
+
+	const toReadableNumber = (number: number): string => {
+		if (number >= 0 && number <= 9) {
+			switch (number) {
+				case 0: return "zero";
+				case 1: return "one";
+				case 2: return "two";
+				case 3: return "three";
+				case 4: return "four";
+				case 5: return "five";
+				case 6: return "six";
+				case 7: return "seven";
+				case 8: return "eight";
+				case 9: return "nine";
+			}
+		}
+
+		// Add comma separator every three digits
+		if (number >= 1000)
+			return number.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
+
+		return number.toString();
+	}
+
+	const segments: string[] = [];
+	if (days > 0)
+		segments.push(`${toReadableNumber(days)} day${days > 1 ? "s" : ""}`);
+
+	if (hours > 0)
+		segments.push(`${toReadableNumber(hours)} hour${hours > 1 ? "s" : ""}`);
+
+	if (minutes > 0)
+		segments.push(`${toReadableNumber(minutes)} minute${minutes > 1 ? "s" : ""}`);
+
+	if (seconds > 0)
+		segments.push(`${toReadableNumber(seconds)} second${seconds > 1 ? "s" : ""}`);
+
+	if (segments.length === 0)
+		return "zero seconds";
+
+	return createListFromWords(segments);
+}

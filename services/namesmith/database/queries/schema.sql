@@ -123,6 +123,7 @@ CREATE TABLE IF NOT EXISTS activityLog (
 	currentName TEXT NOT NULL,
 	charactersGained TEXT DEFAULT NULL,
 	charactersLost TEXT DEFAULT NULL,
+	timeCooldownExpired NUMBER DEFAULT NULL,
 	involvedPlayerID TEXT DEFAULT NULL REFERENCES player(id)
 		ON DELETE SET NULL ON UPDATE CASCADE,
 	involvedRecipeID INTEGER DEFAULT NULL REFERENCES recipe(id)

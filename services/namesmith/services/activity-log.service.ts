@@ -231,16 +231,19 @@ export class ActivityLogService {
 	 * @param parameters - The parameters which include:
 	 * @param parameters.playerRefilling - The player who is claiming the refill.
 	 * @param parameters.tokensEarned - The number of tokens earned by claiming the refill.
+	 * @param parameters.timeCooldownExpired - The time the refill cooldown expired.
 	 * @returns The created activity log object.
 	 */
-	logClaimRefill({ playerRefilling, tokensEarned }: {
+	logClaimRefill({ playerRefilling, tokensEarned, timeCooldownExpired }: {
 		playerRefilling: PlayerResolvable;
 		tokensEarned: number;
+		timeCooldownExpired: Date;
 	}): ActivityLog {
 		return this.activityLogRepository.addActivityLog({
 			type: ActivityTypes.CLAIM_REFILL,
 			player: playerRefilling,
 			tokensDifference: tokensEarned,
+			timeCooldownExpired: timeCooldownExpired,
 		});
 	}
 
@@ -571,6 +574,20 @@ export class ActivityLogService {
 			type: ActivityTypes.MINE_TOKENS,
 		});
 	}
+
+	/**
+	 * Retrieves all activity logs for all players where they claim a refill.
+	 * Only retrieves activity logs that occurred today or later.
+	 * @returns An array of activity logs for all players where they claim a refill.
+	 */
+	getClaimRefillLogsToday(): ActivityLog[] {
+		const now = new Date();
+		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
+		return this.activityLogRepository.findActivityLogsAfterTimeWhere(startOfToday, {
+			type: ActivityTypes.CLAIM_REFILL,
+		});
+	}
+
 	/**
 	 * Retrieves all activity logs for a given player where they claim a refill.
 	 * Only retrieves activity logs that occurred today or later.
@@ -583,6 +600,21 @@ export class ActivityLogService {
 		return this.activityLogRepository.findActivityLogsAfterTimeWhere(startOfToday, {
 			player: player,
 			type: ActivityTypes.CLAIM_REFILL,
+		});
+	}
+
+	/**
+	 * Retrieves all activity logs for a given player where they buy a mystery box.
+	 * Only retrieves activity logs that occurred today or later.
+	 * @param player - The player to retrieve the activity logs for.
+	 * @returns An array of activity logs for the given player where they buy a mystery box.
+	 */
+	getBuyMysteryBoxLogsForPlayerToday(player: PlayerResolvable): ActivityLog[] {
+		const now = new Date();
+		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
+		return this.activityLogRepository.findActivityLogsAfterTimeWhere(startOfToday, {
+			player: player,
+			type: ActivityTypes.BUY_MYSTERY_BOX,
 		});
 	}
 
