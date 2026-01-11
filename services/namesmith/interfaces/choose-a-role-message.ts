@@ -61,7 +61,7 @@ export function toRoleButton(
 	return {
 		id: `choose-a-role-button-${role.id}`,
 		label: `Become ${role.name}`,
-		style: ButtonStyle.Primary,
+		style: ButtonStyle.Secondary,
 		onButtonPressed: async (buttonInteraction) => {
 			await confirmInteraction({
 				interactionToConfirm: buttonInteraction,

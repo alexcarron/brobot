@@ -3,10 +3,10 @@
 In Namesmith, your goal is to create the most liked, clever, or creative name possible using the limited set of characters you receive from mystery boxes, crafting, trades, roles, perks, and quests. Your name will be judged by all other players at the end of the month, and the player whose name receives the most votes wins 100 LL Points!
 ## Things Player's Have
 1. **Inventory**: All of the different characters (letters, numbers, symbols, etc.) that you currently own. This can hold an infinite number of characters. Use `/see-inventory` to see your own or a given player's current inventory
-2. **Name**: Your currently displayed name that can published to be "locked in". It must be 32 characters or less. You can pick and choose which characters from your inventory you want in your name using`/rearrange-name`
+2. **Name**: Your currently displayed name that can published to be "locked in". It must be 32 characters or less. You can pick and choose which characters from your inventory you want in your name using `/rearrange-name`. Use `/see-current-name` to see your own or a given player's current name
 3. **Published Name** Your currently locked in name that will be displayed when it's time to vote for the best name. Use `/publish-name` to make your current name your published name
 4. **Tokens**: The currency you can use to buy mystery boxes to earn characters from
-5. **Perks**: Permanent effects that stay with you for the entire game to give you strategic benefits. . Twice a week, you can pick a perk out of three shown to keep
+5. **Perks**: Permanent effects that stay with you for the entire game to give you strategic benefits. . Twice a week, you can pick a perk out of three shown to keep. Use `/see-perks` to see your own or a given player's perks
 6. **A Role**: A permanent label and set of perks you choose at the start of the game and keep for the entire game
 ## Earning Tokens
 1. **Mining Tokens**: You can run `/mine-tokens` in \#mine-tokens to earn a small amount of tokens. You can spam this as many times as you want since there's no cooldown or limit. It typically awards 1-2 tokens.

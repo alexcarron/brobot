@@ -44,6 +44,19 @@ describe('pick-perk.workflow', () => {
 			makeSure(hasPerk).is(true);
 		});
 
+		it('should return playerAlreadyHasPerk failure if the player already has the perk', () => {
+			perkService.giveToPlayer(Perks.MINE_BONUS, NO_PERKS_PLAYER);
+
+			const result = pickPerk({
+				player: NO_PERKS_PLAYER,
+				pickedPerk: Perks.MINE_BONUS,
+			});
+
+			makeSure(result.isFailure()).isTrue();
+			if (!result.isPlayerAlreadyHasPerk())
+				failTest('Returned result is not a playerAlreadyHasPerk failure');
+		});
+
 		it('should return perkAlreadyChosen failure if the player already has one of the perks', () => {
 			pickPerk({
 				player: NO_PERKS_PLAYER,

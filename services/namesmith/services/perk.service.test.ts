@@ -7,7 +7,7 @@ import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { addMockRole } from "../mocks/mock-data/mock-roles";
 import { Perk } from "../types/perk.types";
 import { Role } from "../types/role.types";
-import { PerkNotFoundError } from "../utilities/error.utility";
+import { PerkNotFoundError, PlayerAlreadyHasPerkError } from "../utilities/error.utility";
 import { PerkService } from "./perk.service";
 
 describe('PerkService', () => {
@@ -198,6 +198,16 @@ describe('PerkService', () => {
 			const hasPerk = perkService.doesPlayerHave(Perks.MINE_BONUS, player);
 			makeSure(hasPerk).is(true);
 		});
+
+		it('should throw a PlayerAlreadyHasPerkError if the player already has the perk', () => {
+			const player = addMockPlayer(db, {
+				perks: [Perks.MINE_BONUS.name]
+			});
+
+			makeSure(() => {
+				perkService.giveToPlayer(Perks.MINE_BONUS.id, player.id);
+			}).throws(PlayerAlreadyHasPerkError);
+		});
 	});
 
 	describe('removeIfPlayerHas()', () => {
@@ -332,5 +342,28 @@ describe('PerkService', () => {
 
 			makeSure(perksNotOfferedYet).hasLengthOf(5);
 		})
-	})
+	});
+
+	describe('getPerksOfPlayer()', () => {
+		it('should return an empty array when the player has no perks', () => {
+			const player = addMockPlayer(db, {
+				perks: []
+			});
+
+			const perks = perkService.getPerksOfPlayer(player);
+			makeSure(perks).isEmpty();
+		});
+
+		it('should return an array of all the perks the player has', () => {
+			const perk1 = addMockPerk(db, {name: "Perk 1"});
+			const perk2 = addMockPerk(db, {name: "Perk 2"});
+			const player = addMockPlayer(db, {
+				perks: [perk1.name, perk2.name]
+			});
+
+			const perks = perkService.getPerksOfPlayer(player);
+			makeSure(perks).hasLengthOf(2);
+			makeSure(perks).containsOnly(perk1, perk2);
+		});
+	});
 });

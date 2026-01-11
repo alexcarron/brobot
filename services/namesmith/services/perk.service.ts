@@ -4,7 +4,7 @@ import { PerkRepository } from "../repositories/perk.repository";
 import { RoleRepository } from "../repositories/role.repository";
 import { Perk, PerkResolvable } from "../types/perk.types";
 import { Player, PlayerResolvable } from "../types/player.types";
-import { NotEnoughPerksError } from "../utilities/error.utility";
+import { NotEnoughPerksError, PlayerAlreadyHasPerkError } from "../utilities/error.utility";
 import { PlayerService } from "./player.service";
 
 /**
@@ -129,15 +129,23 @@ export class PerkService {
 
 	/**
 	 * Adds a perk to a player in the database.
-	 * @param perk - The perk to be added to the player.
-	 * @param player - The player to have the perk added.
+	 * @param perkResolvable - The perk to be added to the player.
+	 * @param playerResolvable - The player to have the perk added.
 	 */
 	giveToPlayer(
-		perk: PerkResolvable,
-		player: PlayerResolvable,
+		perkResolvable: PerkResolvable,
+		playerResolvable: PlayerResolvable,
 	): void {
-		const perkID = this.resolveID(perk);
-		const playerID = this.playerService.resolveID(player);
+		const perkID = this.resolveID(perkResolvable);
+		const playerID = this.playerService.resolveID(playerResolvable);
+
+		const doesPlayerAlreadyHavePerk = this.doesPlayerHave(perkResolvable, playerResolvable);
+		if (doesPlayerAlreadyHavePerk) {
+			const player = this.playerService.resolvePlayer(playerID);
+			const perk = this.resolvePerk(perkID);
+			throw new PlayerAlreadyHasPerkError(player, perk);
+		}
+
 		this.perkRepository.addPerkIDToPlayer(perkID, playerID);
 	}
 
@@ -201,6 +209,16 @@ export class PerkService {
 	 */
 	getCurrentlyOfferedPerks(): Perk[] {
 		return this.perkRepository.getCurrentlyOfferedPerks();
+	}
+
+	/**
+	 * Retrieves all of the perk objects of the perks the given player has.
+	 * @param playerResolvable - The player to get perks for.
+	 * @returns An array of perk objects that the given player has.
+	 */
+	getPerksOfPlayer(playerResolvable: PlayerResolvable): Perk[] {
+		const playerID = this.playerService.resolveID(playerResolvable);
+		return this.perkRepository.getPerksOfPlayerID(playerID);
 	}
 
 	/**
