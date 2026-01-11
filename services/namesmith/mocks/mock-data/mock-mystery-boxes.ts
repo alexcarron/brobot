@@ -1,3 +1,4 @@
+import { InvalidArgumentError } from "../../../../utilities/error-utils";
 import { getRandomNameUUID } from "../../../../utilities/random-utils";
 import { WithAllOptional } from "../../../../utilities/types/generic-types";
 import { isString } from "../../../../utilities/types/type-guards";
@@ -73,13 +74,17 @@ export function forcePlayerToBuyMysteryBox(
 ) {
 	const { playerService, mysteryBoxService } = getNamesmithServices();
 
-	if (isString(mysteryBoxResolvable)) {
+	if (isString(mysteryBoxResolvable) && recievedCharactersOverride === undefined) {
 		recievedCharactersOverride = mysteryBoxResolvable;
 		mysteryBoxResolvable = undefined;
 	}
 
 	if (mysteryBoxResolvable === undefined) {
 		mysteryBoxResolvable = MysteryBoxes.ALL_CHARACTERS.id;
+	}
+
+	if (isString(mysteryBoxResolvable)) {
+		throw new InvalidArgumentError(`forcePlayerToBuyMysteryBox: mysteryBoxResolvable must be a MysteryBoxResolvable, but got ${mysteryBoxResolvable}`);
 	}
 
 	const mysteryBox = mysteryBoxService.resolveMysteryBox(mysteryBoxResolvable);

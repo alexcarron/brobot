@@ -11,15 +11,15 @@ const Parameters = Object.freeze({
 	PLAYER: new Parameter({
 		type: ParameterTypes.STRING,
 		name: "player",
-		description: "The player to see the inventory of",
+		description: "The player to see the current name of",
 		isRequired: false,
 		autocomplete: fetchPlayerAutocompleteChoices,
 	}),
 });
 
 export const command = new SlashCommand({
-	name: "see-inventory",
-	description: "Shows you the inventory of yourself or another player",
+	name: "see-current-name",
+	description: "Shows you the current name of yourself or another player",
 	parameters: [
 		Parameters.PLAYER,
 	],
@@ -35,24 +35,24 @@ export const command = new SlashCommand({
 
 		if (maybePlayer === null) {
 			if (interaction.user.id === playerID || playerID === null) {
-				return `You are not a player, so you do not have an inventory.`;
+				return `You are not a player, so you do not have a current name.`;
 			}
 			else {
-				return `The given user is not a player, so they do not have an inventory.`;
+				return `The given user is not a player, so they do not have a current name.`;
 			}
 		}
 
 		const player = maybePlayer;
 		const user = await fetchUser(player.id);
-		const inventory = playerService.getDisplayedInventory(player.id);
+		const currentName = playerService.getCurrentName(player.id);
 
-		let firstLine = `${user}'s inventory contains the following characters:`;
+		let firstLine = `${user}'s current name contains the following characters:`;
 		if (interaction.user.id === player.id)
-			firstLine = `Your inventory contains the following characters:`;
+			firstLine = `Your current name contains the following characters:`;
 
 		return joinLines(
 			firstLine,
-			`> ${escapeDiscordMarkdown(inventory)}_ _`,
+			`> ${escapeDiscordMarkdown(currentName)}_ _`,
 		);
 	}
 })
