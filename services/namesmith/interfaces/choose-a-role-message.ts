@@ -4,7 +4,7 @@ import { EMPTY } from "../../../utilities/constants/discord-interface.constants"
 import { joinLines } from "../../../utilities/string-manipulation-utils";
 import { Role } from "../types/role.types";
 import { chooseRole } from "../workflows/choose-role.workflow";
-import { deleteAllMessagesInChannel, editReplyToInteraction } from "../../../utilities/discord-action-utils";
+import { editReplyToInteraction } from "../../../utilities/discord-action-utils";
 import { fetchNamesmithChannel } from "../utilities/discord-fetch.utility";
 import { toPerkBulletPoint } from "./pick-a-perk-message";
 import { ignoreError } from "../../../utilities/error-utils";
@@ -25,6 +25,7 @@ export function getChooseARoleMessage(): DiscordButtons {
 
 	const message = joinLines(
 		'# Choose Your Role!',
+		`<@&${ids.namesmith.roles.smithedName}> <@&${ids.namesmith.roles.noName}>`,
 		'Choose one of the three roles below to define your Namesmith journey. Each role gives you unique, permanent perks that enhance different parts of the game. Pick the one that best matches your playstyle!',
 		...roles.map(toRoleMessage),
 		'',
@@ -110,8 +111,7 @@ export function toRoleButton(
 export async function sendChooseARoleMessage(): Promise<void> {
 	const chooseARoleMessage = getChooseARoleMessage();
 	const channel = await fetchNamesmithChannel(ids.namesmith.channels.CHOOSE_A_ROLE);
-	await deleteAllMessagesInChannel(channel);
-	await chooseARoleMessage.sendIn(channel);
+	await chooseARoleMessage.setNewMessageIn(channel);
 }
 
 /**

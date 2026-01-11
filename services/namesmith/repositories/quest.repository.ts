@@ -4,7 +4,7 @@ import { isNumber, isString } from "../../../utilities/types/type-guards";
 import { DatabaseQuerier } from "../database/database-querier";
 import { asMinimalShownDailyQuest, asQuest, asQuests, Quest, QuestDefinition, QuestID, QuestName, QuestResolvable, ShownDailyQuestDefinition, ShownDailyQuest, toDBShownDailyQuest } from "../types/quest.types";
 import { QuestAlreadyExistsError, QuestNotFoundError, ShownDailyQuestNotFoundError } from "../utilities/error.utility";
-import { DBDate, toDBBool } from "../utilities/db.utility";
+import { DBDate, toDBBool, toOptionalDBBool } from "../utilities/db.utility";
 import { createMockDB } from "../mocks/mock-database";
 
 /**
@@ -224,8 +224,8 @@ export class QuestRepository {
 		this.db.updateInTable('quest', {
 			fieldsUpdating: {
 				name, description, tokensReward, charactersReward,
-				wasShown: toDBBool(wasShown),
-				isShown: toDBBool(isShown),
+				wasShown: toOptionalDBBool(wasShown),
+				isShown: toOptionalDBBool(isShown),
 			},
 			identifiers: { id, name },
 		});

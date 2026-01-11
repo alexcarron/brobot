@@ -1,3 +1,5 @@
+import { ids } from "../../../bot-config/discord-ids";
+import { joinLines } from "../../../utilities/string-manipulation-utils";
 import { Player } from "../types/player.types";
 import { sendToTheWinnerChannel } from "../utilities/discord-action.utility";
 
@@ -13,6 +15,9 @@ export async function sendWinnerMessages({winningPlayer}: {
 		await sendToTheWinnerChannel(`The voting phase has ended and there was a tie!`);
 	}
 	else {
-		await sendToTheWinnerChannel(`<@${winningPlayer.id}>!\nThe voting phase has ended and the winner is **${winningPlayer.publishedName}**!`);
+		await sendToTheWinnerChannel(joinLines(
+			`<@&${ids.namesmith.roles.smithedName}> <@&${ids.namesmith.roles.noName}>`,
+			`The voting phase has ended and the winner is ${winningPlayer.publishedName} by <@${winningPlayer.id}>!`,
+		));
 	}
 }

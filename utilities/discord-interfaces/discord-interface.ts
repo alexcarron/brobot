@@ -1,5 +1,5 @@
 import { ComponentBuilder, Message, MessageCreateOptions, TextBasedChannel, TextChannel, ButtonInteraction, ButtonStyle, CommandInteraction, MessageComponentInteraction, ModalSubmitInteraction } from 'discord.js';
-import { editReplyToInteraction, replyToInteraction, setChannelMessage, toMessageEditFromCreateOptions } from "../discord-action-utils";
+import { deleteAllMessagesInChannel, editReplyToInteraction, replyToInteraction, setChannelMessage, toMessageEditFromCreateOptions } from "../discord-action-utils";
 import { fetchMessageWithComponent } from "../discord-fetch-utils";
 import { InvalidArgumentError } from "../error-utils";
 import { DiscordButtons } from './discord-buttons';
@@ -110,6 +110,11 @@ export abstract class DiscordInterface {
 		this.channel = channel;
 		this.message = await setChannelMessage(channel, messageContents);
 		return this.message;
+	}
+
+	async setNewMessageIn(channel: TextChannel): Promise<Message> {
+		await deleteAllMessagesInChannel(channel);
+		return await this.sendIn(channel);
 	}
 
 	/**

@@ -1,13 +1,13 @@
 CREATE TABLE IF NOT EXISTS gameState (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	timeStarted NUMBER,
-	timeEnding NUMBER,
-	timeVoteIsEnding NUMBER
+	timeStarted NUMBER, -- Unix timestamp in milliseconds
+	timeEnding NUMBER, -- Unix timestamp in milliseconds
+	timeVoteIsEnding NUMBER -- Unix timestamp in milliseconds
 );
 
 CREATE TABLE IF NOT EXISTS character (
-	id INTEGER PRIMARY KEY,
-	value TEXT NOT NULL,
+	id INTEGER PRIMARY KEY, -- The unicode code point of the character
+	value TEXT NOT NULL, -- The literal text character value
 	rarity INTEGER NOT NULL
 );
 
@@ -49,14 +49,14 @@ CREATE TABLE IF NOT EXISTS rolePerk (
 );
 
 CREATE TABLE IF NOT EXISTS player (
-	id TEXT PRIMARY KEY,
-	currentName TEXT NOT NULL,
+	id TEXT PRIMARY KEY, -- The Discord ID of the user
+	currentName TEXT NOT NULL CHECK (LENGTH(currentName) <= 32),
 	publishedName TEXT,
 	tokens INTEGER NOT NULL,
 	role INTEGER REFERENCES role(id)
 		ON DELETE SET NULL ON UPDATE CASCADE,
 	inventory TEXT NOT NULL DEFAULT '',
-	lastClaimedRefillTime NUMBER,
+	lastClaimedRefillTime NUMBER, -- Unix timestamp in milliseconds
 	hasPickedPerk BOOLEAN NOT NULL DEFAULT 0
 );
 
@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS playerPerk (
 );
 
 CREATE TABLE IF NOT EXISTS vote (
-	voterID TEXT PRIMARY KEY,
+	voterID TEXT PRIMARY KEY, -- The Discord ID of the user who voted (Could be a non-player)
 	playerVotedForID TEXT NOT NULL REFERENCES player(id)
 		ON DELETE CASCADE ON UPDATE CASCADE
 );
@@ -97,17 +97,24 @@ CREATE TABLE IF NOT EXISTS quest (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	name TEXT NOT NULL UNIQUE,
 	description TEXT NOT NULL,
+	-- recurrence TEXT NOT NULL CHECK(status IN
+	-- 	('daily', 'weekly')
+	-- ) DEFAULT 'daily',
 	tokensReward INTEGER NOT NULL DEFAULT 0,
 	charactersReward TEXT NOT NULL DEFAULT '',
+	-- mysteryBoxRewardID INTEGER NOT NULL REFERENCES mysteryBox(id),
+	-- perkRewardID INTEGER NOT NULL REFERENCES perk(id),
 	wasShown BOOLEAN NOT NULL DEFAULT 0,
 	isShown BOOLEAN NOT NULL DEFAULT 0
 );
 
+-- For keeping track of previously shown daily quest for history
 CREATE TABLE IF NOT EXISTS shownDailyQuest (
 	timeShown NUMBER NOT NULL,
 	questID INTEGER NOT NULL REFERENCES quest(id)
 		ON DELETE CASCADE ON UPDATE CASCADE,
 	PRIMARY KEY (timeShown, questID)
+	-- isHidden BOOLEAN NOT NULL DEFAULT 0 -- Whether or not the quest is a hidden one revealed when all daily quests are complete
 );
 
 CREATE TABLE IF NOT EXISTS activityLog (

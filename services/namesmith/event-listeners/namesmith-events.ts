@@ -68,7 +68,7 @@ function createEventHandler<
 		doWhenItOccurs: addHandler,
 
 		addOneTimeHandler: addOneTimeHandler,
-		doOnceWhenItOccurs: addOneTimeHandler,
+		doOneTimeWhenItOccurs: addOneTimeHandler,
 
 		runHandlers: runHandlers,
 		triggerEvent: runHandlers,
