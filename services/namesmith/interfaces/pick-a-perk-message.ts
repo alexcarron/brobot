@@ -92,6 +92,12 @@ export function toPerkButton(
 						);
 					}
 
+					if (result.isPlayerAlreadyHasPerk()) {
+						return await editReplyToInteraction(buttonInteraction,
+							`You already have the "${perk.name}" perk. You cannot have two of the same perk.`
+						);
+					}
+
 					const {freeTokensEarned} = result;
 
 					const lostTokensLine = (freeTokensEarned < 0)
@@ -100,6 +106,7 @@ export function toPerkButton(
 
 					if (freeTokensEarned > 0)
 						return await editReplyToInteraction(buttonInteraction,
+							`You now have the "${perk.name}" perk!`,
 							`**+${toAmountOfNoun(freeTokensEarned, 'Token')}**`, '🪙'.repeat(freeTokensEarned)
 						);
 					else

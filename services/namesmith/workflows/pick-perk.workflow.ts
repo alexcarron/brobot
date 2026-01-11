@@ -13,6 +13,7 @@ const result = getWorkflowResultCreator({
 	notAPlayer: null,
 	perkDoesNotExist: null,
 	perkAlreadyChosen: null,
+	playerAlreadyHasPerk: null,
 })
 
 /**
@@ -45,15 +46,20 @@ export function pickPerk(
 		return result.failure.perkAlreadyChosen();
 	}
 
+	if (perkService.doesPlayerHave(pickedPerk, player)) {
+		return result.failure.playerAlreadyHasPerk();
+	}
+
 	perkService.giveToPlayer(pickedPerk, player);
 	playerService.setHasPickedPerk(player, true);
 
 	// Handle Free Tokens perk
 	let freeTokensEarned = 0;
-	perkService.doIfPlayerHas(Perks.FREE_TOKENS, player, () => {
+	const pickedPerkID = perkService.resolveID(pickedPerk);
+	if (pickedPerkID === Perks.FREE_TOKENS.id) {
 		freeTokensEarned = 500;
 		playerService.giveTokens(player, freeTokensEarned);
-	});
+	}
 
 	activityLogService.logPickPerk({
 		player,

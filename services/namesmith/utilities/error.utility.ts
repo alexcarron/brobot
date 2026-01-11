@@ -1,12 +1,12 @@
 import { inspect } from 'util';
 import { getCharacterDifferences } from '../../../utilities/data-structure-utils';
 import { CustomError } from '../../../utilities/error-utils';
-import { escapeDiscordMarkdown, joinLines } from '../../../utilities/string-manipulation-utils';
+import { escapeDiscordMarkdown, joinLines, toListSentenceFromWords } from '../../../utilities/string-manipulation-utils';
 import { isNumber } from '../../../utilities/types/type-guards';
 import { ActivityLogID } from '../types/activity-log.types';
 import { CharacterID } from '../types/character.types';
 import { MinimalMysteryBox, MysteryBoxID } from '../types/mystery-box.types';
-import { PerkID, PerkName } from '../types/perk.types';
+import { Perk, PerkID, PerkName } from '../types/perk.types';
 import { Player } from '../types/player.types';
 import { QuestID, QuestName } from '../types/quest.types';
 import { Recipe, RecipeID } from '../types/recipe.types';
@@ -886,6 +886,22 @@ export class PlayerNotInvolvedInTradeError extends NamesmithError {
 			relevantData: {
 				player,
 				trade,
+			}
+		})
+	}
+}
+
+export class PlayerAlreadyHasPerkError extends NamesmithError {
+	declare relevantData: { player: Player, perk: Perk };
+	constructor(player: Player, perk: Perk) {
+		super({
+			message: joinLines(
+				`Cannot add perk. The player "${player.currentName}" with the player ID ${player.id} already has the perk "${perk.name}" with the ID ${perk.id}.`,
+				`The player current has the perks ${toListSentenceFromWords(player.perks.map((p) => p.name))}.`,
+			),
+			relevantData: {
+				player,
+				perk,
 			}
 		})
 	}

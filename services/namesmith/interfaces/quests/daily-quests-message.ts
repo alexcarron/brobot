@@ -37,7 +37,6 @@ export async function sendDailyQuestsMessage(
 export async function regenerateDailyQuestsMessage() {
 	const {questService} = getNamesmithServices();
 	const dailyQuests = questService.getCurrentDailyQuests();
-	console.log(dailyQuests);
 	for (const quest of dailyQuests) {
 		await regenerateQuestMessage(quest);
 	}
