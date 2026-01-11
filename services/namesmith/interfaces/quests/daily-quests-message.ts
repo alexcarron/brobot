@@ -21,6 +21,7 @@ export async function sendDailyQuestsMessage(
 
 	await questChannel.send(joinLines(
 		'# Daily Quests',
+		`<@&${ids.namesmith.roles.smithedName}> <@&${ids.namesmith.roles.noName}>`,
 		'The following are short, fun challenges you can complete for quick rewards! Do what the quest asks, and click the "Complete Quest" button to claim your reward!',
 	));
 
@@ -34,9 +35,9 @@ export async function sendDailyQuestsMessage(
  * @returns A promise that resolves when the message has been regenerated.
  */
 export async function regenerateDailyQuestsMessage() {
-	const { questService } = getNamesmithServices();
-	const dailyQuests = questService.questRepository.getQuests();
-
+	const {questService} = getNamesmithServices();
+	const dailyQuests = questService.getCurrentDailyQuests();
+	console.log(dailyQuests);
 	for (const quest of dailyQuests) {
 		await regenerateQuestMessage(quest);
 	}

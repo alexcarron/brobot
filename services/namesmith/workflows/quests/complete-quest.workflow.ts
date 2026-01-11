@@ -706,6 +706,9 @@ const questIDToMeetsCriteriaCheck = {
 			}
 		}
 
+		if (minSecondsAfterReady === Infinity)
+			return toFailure(`You have have not claimed a refill after a cooldown yet. You must claim a refill instantly after another refill you claimed expired to complete the "${quest.name}" quest.`);
+
 		return toFailure(`You claimed a refill ${getReadableDuration(minSecondsAfterReady)} after the cooldown expired. You need to claim one ${MAX_SECONDS_AFTER_READY} seconds after the cooldown expired to complete the "${quest.name}" quest.`);
 	},
 

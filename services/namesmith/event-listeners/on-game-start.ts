@@ -1,6 +1,9 @@
+import { ids } from '../../../bot-config/discord-ids';
+import { joinLines } from '../../../utilities/string-manipulation-utils';
 import { sendChooseARoleMessage } from '../interfaces/choose-a-role-message';
 import { getNamesmithServices } from '../services/get-namesmith-services';
-import { clearNamesToVoteOnChannel, clearPublishedNamesChannel, clearTheWinnerChannel, closeNamesToVoteOnChannel, closeTheWinnerChannel, openPublishedNamesChannel } from '../utilities/discord-action.utility';
+import { clearChooseARoleChannel, clearNamesToVoteOnChannel, clearPickAPerkChannel, clearPublishedNamesChannel, clearQuestsChannel, clearTheWinnerChannel, closeNamesToVoteOnChannel, closeTheWinnerChannel, openPublishedNamesChannel, sendToChannel } from '../utilities/discord-action.utility';
+import { NamesmithEvents } from './namesmith-events';
 
 /**
  * Starts a new game by doing the following
@@ -9,8 +12,9 @@ import { clearNamesToVoteOnChannel, clearPublishedNamesChannel, clearTheWinnerCh
  * - Sending the recipe select menu
  * - Setting the game start and end times
  * - Starting the cron jobs to end the game and end voting at the times stored in the game state
+ * @param theme - The theme to use for this game
  */
-export async function startGame(): Promise<void> {
+export async function startGame(theme: string): Promise<void> {
 	const { gameStateService, playerService, perkService, questService } = getNamesmithServices();
 
 	// Reset the channel permissions
@@ -22,6 +26,10 @@ export async function startGame(): Promise<void> {
 
 	await clearPublishedNamesChannel();
 	await openPublishedNamesChannel();
+
+	await clearChooseARoleChannel();
+	await clearPickAPerkChannel();
+	await clearQuestsChannel();
 
 	// Set up the players
 	playerService.reset();
@@ -40,4 +48,12 @@ export async function startGame(): Promise<void> {
 	const now = new Date();
 	gameStateService.setupTimings(now);
 	gameStateService.scheduleGameEvents();
+
+	await sendToChannel(ids.namesmith.channels.DEVELOPMENT_NEWS, joinLines(
+		`<@&${ids.namesmith.roles.smithedName}> <@&${ids.namesmith.roles.noName}>`,
+		`A new Namesmith game has started!`,
+		`The theme is: **${theme}**`,
+	));
+
+	NamesmithEvents.DayStart.triggerEvent({});
 }

@@ -170,6 +170,21 @@ export const clearTheWinnerChannel = async () => {
 	await deleteAllMessagesInChannel(theWinnerChannel);
 }
 
+export async function clearChooseARoleChannel() {
+	const chooseARoleChannel = await fetchNamesmithChannel(ids.namesmith.channels.CHOOSE_A_ROLE);
+	await deleteAllMessagesInChannel(chooseARoleChannel);
+}
+
+export async function clearPickAPerkChannel() {
+	const pickAPerkChannel = await fetchNamesmithChannel(ids.namesmith.channels.PICK_A_PERK);
+	await deleteAllMessagesInChannel(pickAPerkChannel);
+}
+
+export async function clearQuestsChannel() {
+	const questsChannel = await fetchNamesmithChannel(ids.namesmith.channels.QUESTS);
+	await deleteAllMessagesInChannel(questsChannel);
+}
+
 /**
  * Checks if a guild member is not a player (i.e. has the Spectator or Staff role).
  * @param guildMember The guild member to check.

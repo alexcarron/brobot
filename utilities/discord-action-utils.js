@@ -1,4 +1,4 @@
-const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionFlagsBits, CategoryChannel, ChatInputCommandInteraction, Message, GuildChannel, ButtonInteraction, InteractionResponse, CommandInteraction, MessageComponentInteraction, ModalSubmitInteraction, Attachment, MessageFlags, BitField } = require('discord.js');
+const { ButtonBuilder, ButtonStyle, ActionRowBuilder, Guild, GuildMember, ModalBuilder, TextInputBuilder, TextInputStyle, TextChannel, ChannelType, PermissionFlagsBits, CategoryChannel, ChatInputCommandInteraction, Message, GuildChannel, ButtonInteraction, InteractionResponse, CommandInteraction, MessageComponentInteraction, ModalSubmitInteraction, Attachment, MessageFlags, BitField, MessagePayload } = require('discord.js');
 const { Role } = require('../services/rapid-discord-mafia/role');
 const { fetchChannel, fetchChannelsInCategory, getEveryoneRole, fetchAllMessagesInChannel, fetchCategory } = require('./discord-fetch-utils');
 const { incrementEndNumber, joinLines } = require('./string-manipulation-utils');
@@ -994,6 +994,17 @@ async function deleteAllMessagesInChannel(channel) {
 }
 
 /**
+ * Deletes all messages in a channel and sends a new message.
+ * @param {import('discord.js').TextChannel} channel - The channel to delete all messages from and send the new message in.
+ * @param {string | MessagePayload | import('discord.js').MessageCreateOptions} message - The message to send after deleting all messages.
+ * @returns {Promise<Message>} A promise that resolves with the message that was sent.
+ */
+async function setNewMessageInChannel(channel, message) {
+	await deleteAllMessagesInChannel(channel);
+	return await channel.send(message);
+}
+
+/**
  * Sets the exclusive message in the given channel to the given message.
  * - Clears all other messages in the channel.
  * - Sends the given message.
@@ -1084,4 +1095,5 @@ module.exports = {
 	toInteractionReplyFromMessageCreateOptions,
 	deleteAllMessagesInChannel,
 	moveChannelToCategory,
+	deleteAllFromChannelAndSend: setNewMessageInChannel,
 };

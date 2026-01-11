@@ -4,7 +4,7 @@ import { joinLines, toAmountOfNoun } from "../../../utilities/string-manipulatio
 import { Perk } from "../types/perk.types";
 import { fetchNamesmithChannel } from "../utilities/discord-fetch.utility";
 import { pickPerk } from "../workflows/pick-perk.workflow";
-import { deleteAllMessagesInChannel, editReplyToInteraction } from "../../../utilities/discord-action-utils";
+import { editReplyToInteraction } from "../../../utilities/discord-action-utils";
 import { DiscordButtons } from "../../../utilities/discord-interfaces/discord-buttons";
 import { DiscordButtonDefinition } from '../../../utilities/discord-interfaces/discord-button';
 import { ignoreError } from "../../../utilities/error-utils";
@@ -27,6 +27,7 @@ export function createPickAPerkMessage(
 
 	const message = joinLines(
 		'# Pick a Perk',
+		`<@&${ids.namesmith.roles.smithedName}> <@&${ids.namesmith.roles.noName}>`,
 		'Choose one of the three perks below to gain a unique, permanent enhancement to your Namesmith gameplay.',
 		threePerks.map(toPerkBulletPoint),
 		'',
@@ -123,8 +124,7 @@ export async function sendPickAPerkMessage(
 ): Promise<void> {
 	const pickAPerkMessage = createPickAPerkMessage({threePerks});
 	const channel = await fetchNamesmithChannel(ids.namesmith.channels.PICK_A_PERK);
-	await deleteAllMessagesInChannel(channel);
-	await pickAPerkMessage.sendIn(channel);
+	await pickAPerkMessage.setNewMessageIn(channel);
 }
 
 /**
