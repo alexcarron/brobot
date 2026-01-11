@@ -309,7 +309,7 @@ export const toWordOrdinal = (number: number): string => {
 
   throw new Error('Number too large');
 }
-export const createListFromWords = (words: string[]): string => {
+export const toListSentenceFromWords = (words: string[]): string => {
 	if (!words || words.length <= 0) {
 		return "";
 	}
@@ -556,21 +556,18 @@ export const escapeDiscordMarkdown = (text: string): string => {
 
 /**
  * Returns either the singular or plural form of a word based on a given number.
- * @param options - An object containing the value to check, the singular form of the word, and the plural form of the word.
- * @param options.value - The value to check.
- * @param options.singular - The singular form of the word.
- * @param options.plural - The plural form of the word.
+ * @param value - The value to check.
+ * @param singular - The singular form of the word.
+ * @param plural - The plural form of the word.
  * @returns The singular or plural form of the word, depending on the value.
  * @example
  * chooseByPlurality({value: 1, singular: 'cat', plural: 'cats'}); // 'cat'
  * chooseByPlurality({value: 2, singular: 'cat', plural: 'cats'}); // 'cats'
  */
-function chooseByPlurality<ReturnType>(
-	{value, singular, plural}:  {
-		value: number,
-		singular: ReturnType,
-		plural: ReturnType
-	}
+export function chooseByPlurality<ReturnType>(
+	value: number,
+	singular: ReturnType,
+	plural: ReturnType
 ): ReturnType {
 	return value === 1 ? singular : plural;
 }
@@ -585,11 +582,11 @@ function chooseByPlurality<ReturnType>(
  * addSIfPlural('cat', 2); // 'cats'
  */
 export function addSIfPlural(text: string, amount: number) {
-	return chooseByPlurality({
-		value: amount,
-		singular: `${text}`,
-		plural: `${text}s`
-	});
+	return chooseByPlurality(
+		amount,
+		`${text}`,
+		`${text}s`
+	);
 }
 
 /**

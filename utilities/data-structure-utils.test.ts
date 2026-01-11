@@ -9,6 +9,7 @@ import {
 	mapToObject,
 	sortByAscendingProperty,
 	addToArrayMap,
+	sortByDescendingProperty,
 } from "./data-structure-utils";
 import { InvalidArgumentError } from "./error-utils";
 import { makeSure } from "./jest/jest-utils";
@@ -453,6 +454,50 @@ describe('sortAscendingByProperty()', () => {
 			{ id: 1, age: 30 },
 			{ id: 3, age: 35 },
 		]);
+	});
+
+	describe('sortByDescendingProperty()', () => {
+		it('should sort an array of objects by a given string property in descending order', () => {
+			const objects = [
+				{ id: 1, name: 'John Doe' },
+				{ id: 2, name: 'Jane Doe' },
+				{ id: 3, name: 'Bob Smith' },
+			];
+			const sortedObjects = sortByDescendingProperty(objects, 'name');
+			makeSure(sortedObjects).is([
+				{ id: 1, name: 'John Doe' },
+				{ id: 2, name: 'Jane Doe' },
+				{ id: 3, name: 'Bob Smith' },
+			]);
+		});
+
+		it('should sort an array of objects by a given number property in descending order', () => {
+			const objects = [
+				{ id: 1, age: 30 },
+				{ id: 2, age: 25 },
+				{ id: 3, age: 35 },
+			];
+			const sortedObjects = sortByDescendingProperty(objects, 'age');
+			makeSure(sortedObjects).is([
+				{ id: 3, age: 35 },
+				{ id: 1, age: 30 },
+				{ id: 2, age: 25 },
+			]);
+		});
+
+		it('should preserve the order of objects with equal values for the given property', () => {
+			const objects = [
+				{ id: 1, name: 'John Doe' },
+				{ id: 2, name: 'Jane Doe' },
+				{ id: 3, name: 'John Doe' },
+			];
+			const sortedObjects = sortByDescendingProperty(objects, 'name');
+			makeSure(sortedObjects).is([
+				{ id: 1, name: 'John Doe' },
+				{ id: 3, name: 'John Doe' },
+				{ id: 2, name: 'Jane Doe' },
+			]);
+		});
 	});
 
 	it('should sort an array of objects by a given date property in ascending order', () => {

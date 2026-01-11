@@ -4,13 +4,17 @@ import { Quest, QuestResolvable } from "../../types/quest.types";
 import { getWorkflowResultCreator, provides } from "../workflow-result-creator";
 import { Quests } from '../../constants/quests.constants';
 import { FREEBIE_QUEST_NAME } from '../../constants/test.constants';
-import { hasSymbol, hasLetter, hasNumber, getNumDistinctCharacters, getCharacters, getNumCharacters } from '../../../../utilities/string-checks-utils';
+import { hasSymbol, hasLetter, hasNumber, getNumDistinctCharacters, getCharacters, getNumCharacters, hasEmoji } from '../../../../utilities/string-checks-utils';
 import { NamesmithServices } from "../../types/namesmith.types";
-import { addDays, getHoursInTime, getMinutesInTime, getReadableDuration, getSecondsInTime } from "../../../../utilities/date-time-utils";
-import { ActivityLog } from "../../types/activity-log.types";
+import { addDays, getHoursInTime, getMinutesDurationFromTime, getMinutesInTime, getReadableDuration, getSecondsInTime } from "../../../../utilities/date-time-utils";
+import { ActivityLog, ActivityTypes } from "../../types/activity-log.types";
 import { MysteryBoxID } from "../../types/mystery-box.types";
+import { hasUtilityCharacter } from "../../utilities/character.utility";
+import { RecipeID } from "../../types/recipe.types";
+import { sortByDescendingProperty } from "../../../../utilities/data-structure-utils";
+import { toListSentenceFromWords } from "../../../../utilities/string-manipulation-utils";
 
-const PLAYER_MET_CRITERIA = 'questSuccess' as const;
+const PLAYER_MET_CRITERIA_RESULT = 'questSuccess' as const;
 const result = getWorkflowResultCreator({
 	success: provides<{
 		player: Player,
@@ -41,11 +45,11 @@ const questIDToMeetsCriteriaCheck = {
 		const NUM_CRAFTS_NEEDED = 5;
 		const NUM_UNIQUE_RECIPES_NEEDED = 3;
 
-		const craftLogs = activityLogService.getCraftLogsForPlayerToday(player);
+		const craftLogs = activityLogService.getCraftLogsTodayByPlayer(player);
 		const uniqueRecipesCrafted = new Set<number>();
 
 		for (const log of craftLogs) {
-			if (!log.involvedRecipe) continue;
+			if (log.involvedRecipe === null) continue;
 			uniqueRecipesCrafted.add(log.involvedRecipe.id);
 		}
 
@@ -63,7 +67,7 @@ const questIDToMeetsCriteriaCheck = {
 			)
 		}
 
-		return PLAYER_MET_CRITERIA;
+		return PLAYER_MET_CRITERIA_RESULT;
 	},
 
 	// Diverse Name
@@ -81,7 +85,7 @@ const questIDToMeetsCriteriaCheck = {
 		else if (!hasNumber(publishedName))
 			type = 'number';
 		else
-			return PLAYER_MET_CRITERIA;
+			return PLAYER_MET_CRITERIA_RESULT;
 
 		return toFailure(`Your name must have at least one ${type} before you can complete the ${quest.name} quest.`)
 	},
@@ -92,7 +96,7 @@ const questIDToMeetsCriteriaCheck = {
 		{ activityLogService }: NamesmithServices
 	) => {
 		const NUM_ACCEPTED_TRADES_NEEDED = 1;
-		const tradeAcceptedLogs = activityLogService.getAcceptTradeLogsInvolvingPlayerToday(player);
+		const tradeAcceptedLogs = activityLogService.getAcceptTradeLogsTodayWithRecpient(player);
 
 		const uniqueInvolvedPlayers = new Set<string>();
 		for (const log of tradeAcceptedLogs) {
@@ -116,7 +120,7 @@ const questIDToMeetsCriteriaCheck = {
 			);
 		}
 
-		return PLAYER_MET_CRITERIA;
+		return PLAYER_MET_CRITERIA_RESULT;
 	},
 
 	// Twinsies
@@ -138,7 +142,7 @@ const questIDToMeetsCriteriaCheck = {
 		if (numSamePublishedNames < 2)
 			return toFailure(`Nobody has the same name as you. You must have at least one player that shares the same published name as you to complete the ${quest.name} quest.`);
 
-		return PLAYER_MET_CRITERIA;
+		return PLAYER_MET_CRITERIA_RESULT;
 	},
 
 	// Get Rich Quick
@@ -147,7 +151,7 @@ const questIDToMeetsCriteriaCheck = {
 		{ activityLogService }: NamesmithServices
 	) => {
 		const NUM_TOKENS_NEEDED = 200;
-		const logs = activityLogService.getLogsForPlayerToday(player);
+		const logs = activityLogService.getLogsTodayByPlayer(player);
 
 		let totalTokenGain = 0;
 		for (const log of logs) {
@@ -161,7 +165,7 @@ const questIDToMeetsCriteriaCheck = {
 			);
 		}
 
-		return PLAYER_MET_CRITERIA;
+		return PLAYER_MET_CRITERIA_RESULT;
 	},
 
 	// Echoed Name
@@ -169,7 +173,7 @@ const questIDToMeetsCriteriaCheck = {
 		{quest, player}: MeetsCriteriaParameters,
 		{ activityLogService }: NamesmithServices
 	) => {
-		const changeNameLogs = activityLogService.getChangeNameLogsForPlayerToday(player);
+		const changeNameLogs = activityLogService.getChangeNameLogsTodayByPlayer(player);
 
 		if (changeNameLogs.length <= 0)
 			return toFailure(`You have not changed your name yet. Your name must be changed before you can complete the ${quest.name} quest.`);
@@ -182,7 +186,7 @@ const questIDToMeetsCriteriaCheck = {
 				continue;
 
 			if (previousName.repeat(2) === newName)
-				return PLAYER_MET_CRITERIA;
+				return PLAYER_MET_CRITERIA_RESULT;
 		}
 
 		return toFailure(`You have not changed your name into a repeated version of itself. You must do that before you can complete the ${quest.name} quest.`);
@@ -241,7 +245,7 @@ const questIDToMeetsCriteriaCheck = {
 
 					if (getHoursInTime(overlapDuration) >= NUM_HOURS_NEEDED) {
 						overlapedLongEnough = true;
-						return PLAYER_MET_CRITERIA;
+						return PLAYER_MET_CRITERIA_RESULT;
 					}
 				}
 			}
@@ -282,7 +286,7 @@ const questIDToMeetsCriteriaCheck = {
 			const durationTime = nameInterval.endTime.getTime() - nameInterval.startTime.getTime();
 
 			if (getHoursInTime(durationTime) >= NUM_HOURS_NEEDED) {
-				return PLAYER_MET_CRITERIA;
+				return PLAYER_MET_CRITERIA_RESULT;
 			}
 		}
 
@@ -303,7 +307,7 @@ const questIDToMeetsCriteriaCheck = {
 		console.log(nameIntervals);
 
 		if (nameIntervals.length <= 1) {
-			return PLAYER_MET_CRITERIA;
+			return PLAYER_MET_CRITERIA_RESULT;
 		}
 
 		let previousTime: Date | null = null;
@@ -317,7 +321,7 @@ const questIDToMeetsCriteriaCheck = {
 
 			const durationTime = nameInterval.startTime.getTime() - previousTime.getTime();
 			if (getHoursInTime(durationTime) >= NUM_HOURS_OF_SILENCE_NEEDED) {
-				return PLAYER_MET_CRITERIA;
+				return PLAYER_MET_CRITERIA_RESULT;
 			}
 
 			if (durationTime > maxDuration) {
@@ -332,7 +336,7 @@ const questIDToMeetsCriteriaCheck = {
 		const endOfToday = addDays(startOfToday, 1);
 		const durationTime = endOfToday.getTime() - previousTime!.getTime();
 		if (getHoursInTime(durationTime) >= NUM_HOURS_OF_SILENCE_NEEDED) {
-			return PLAYER_MET_CRITERIA;
+			return PLAYER_MET_CRITERIA_RESULT;
 		}
 
 		const maxDurationMinutes = getMinutesInTime(maxDuration);
@@ -350,14 +354,14 @@ const questIDToMeetsCriteriaCheck = {
 		{quest, player}: MeetsCriteriaParameters,
 		{ activityLogService }: NamesmithServices
 	) => {
-		const publishNameLogs = activityLogService.getPublishNameLogsForPlayerToday(player);
+		const publishNameLogs = activityLogService.getPublishNameLogsTodayByPlayer(player);
 
 		if (publishNameLogs.length <= 0)
 			return toFailure(`You have not published a name yet today. You must publish a name before you can complete the "${quest.name}" quest.`);
 
 		for (const publishNameLog of publishNameLogs) {
 			if (/[02468]/.test(publishNameLog.currentName))
-				return PLAYER_MET_CRITERIA;
+				return PLAYER_MET_CRITERIA_RESULT;
 		}
 
 		return toFailure(`You need to publish a name with an even number to complete the "${quest.name}" quest.`);
@@ -369,7 +373,7 @@ const questIDToMeetsCriteriaCheck = {
 		{activityLogService}: NamesmithServices
 	) => {
 		const NUM_REQUIRED_UNQIUE_CHARACTERS = 12;
-		const publishNameLogs = activityLogService.getPublishNameLogsForPlayerToday(player);
+		const publishNameLogs = activityLogService.getPublishNameLogsTodayByPlayer(player);
 
 		if (publishNameLogs.length <= 0)
 			return toFailure(`You have not published a name yet today. You must publish a name before you can complete the "${quest.name}" quest.`);
@@ -379,7 +383,7 @@ const questIDToMeetsCriteriaCheck = {
 			const numCharacters = getNumDistinctCharacters(publishNameLog.currentName);
 
 			if (numCharacters >= NUM_REQUIRED_UNQIUE_CHARACTERS)
-				return PLAYER_MET_CRITERIA;
+				return PLAYER_MET_CRITERIA_RESULT;
 
 			if (numCharacters > maxCharacters)
 				maxCharacters = numCharacters;
@@ -394,7 +398,7 @@ const questIDToMeetsCriteriaCheck = {
 		{activityLogService}: NamesmithServices
 	) => {
 		const MIN_NUM_TOKENS_NEEDED = 5;
-		const mineLogs = activityLogService.getMineTokensLogsForPlayerToday(player);
+		const mineLogs = activityLogService.getMineTokensLogsTodayByPlayer(player);
 
 		if (mineLogs.length <= 0)
 			return toFailure(`You have not mined any tokens yet today. You must mine tokens before you can complete the "${quest.name}" quest.`);
@@ -403,7 +407,7 @@ const questIDToMeetsCriteriaCheck = {
 		for (const mineLog of mineLogs) {
 			const numTokens = mineLog.tokensDifference;
 			if (numTokens >= MIN_NUM_TOKENS_NEEDED)
-				return PLAYER_MET_CRITERIA;
+				return PLAYER_MET_CRITERIA_RESULT;
 
 			if (numTokens > maxMineYield)
 				maxMineYield = numTokens;
@@ -418,14 +422,14 @@ const questIDToMeetsCriteriaCheck = {
 		{activityLogService}: NamesmithServices
 	) => {
 		const NUM_MINES_NEEDED = 100;
-		const mineLogs = activityLogService.getMineTokensLogsForPlayerToday(player);
+		const mineLogs = activityLogService.getMineTokensLogsTodayByPlayer(player);
 
 		if (mineLogs.length <= 0)
 			return toFailure(`You have not mined tokens yet today. You must mine tokens before you can complete the "${quest.name}" quest.`);
 
 		const numTimesMined = mineLogs.length;
 		if (numTimesMined >= NUM_MINES_NEEDED)
-			return PLAYER_MET_CRITERIA;
+			return PLAYER_MET_CRITERIA_RESULT;
 
 		return toFailure(`You've only mined ${numTimesMined} times today. You need to mine at least ${NUM_MINES_NEEDED} times to complete the "${quest.name}" quest.`);
 	},
@@ -437,7 +441,7 @@ const questIDToMeetsCriteriaCheck = {
 	) => {
 		const NUM_MINES_NEEDED = 20;
 		const SECONDS_TIME_RANGE_NEEDED = 60;
-		const mineLogs = activityLogService.getMineTokensLogsForPlayerToday(player);
+		const mineLogs = activityLogService.getMineTokensLogsTodayByPlayer(player);
 
 		if (mineLogs.length <= 0)
 			return toFailure(`You have not mined tokens yet today. You must mine tokens before you can complete the "${quest.name}" quest.`);
@@ -450,20 +454,20 @@ const questIDToMeetsCriteriaCheck = {
 		let numMines = 1;
 		for (const mineLog of mineLogs) {
 			if (firstMineTime === null)
-				firstMineTime = mineLog.timeOccured;
+				firstMineTime = mineLog.timeOccurred;
 
 			if (numMines >= 20) {
 				const timeRangeSeconds = getSecondsInTime(
-					mineLog.timeOccured.getTime() - firstMineTime.getTime()
+					mineLog.timeOccurred.getTime() - firstMineTime.getTime()
 				);
 
 				if (timeRangeSeconds <= SECONDS_TIME_RANGE_NEEDED)
-					return PLAYER_MET_CRITERIA;
+					return PLAYER_MET_CRITERIA_RESULT;
 
 				if (timeRangeSeconds < minTimeRangeSeconds)
 					minTimeRangeSeconds = timeRangeSeconds;
 
-				firstMineTime = mineLogs[numMines - 19].timeOccured;
+				firstMineTime = mineLogs[numMines - 19].timeOccurred;
 			}
 
 			numMines++;
@@ -479,7 +483,7 @@ const questIDToMeetsCriteriaCheck = {
 	) => {
 		const NUM_MINES_NEEDED = 5;
 		const NUM_TOKEN_YIELD_NEEDED = 3;
-		const mineLogs = activityLogService.getMineTokensLogsForPlayerToday(player);
+		const mineLogs = activityLogService.getMineTokensLogsTodayByPlayer(player);
 
 		if (mineLogs.length <= 0)
 			return toFailure(`You have not mined tokens yet today. You must mine tokens before you can complete the "${quest.name}" quest.`);
@@ -494,7 +498,7 @@ const questIDToMeetsCriteriaCheck = {
 		}
 
 		if (numGoodEnoughMines >= NUM_MINES_NEEDED)
-			return PLAYER_MET_CRITERIA;
+			return PLAYER_MET_CRITERIA_RESULT;
 		else if (numGoodEnoughMines > 0)
 			return toFailure(`You've mined ${NUM_TOKEN_YIELD_NEEDED}+ tokens at once only ${numGoodEnoughMines} times today. You need to do that at least ${NUM_MINES_NEEDED} times to complete the "${quest.name}" quest.`);
 		else
@@ -507,7 +511,7 @@ const questIDToMeetsCriteriaCheck = {
 		{activityLogService}: NamesmithServices
 	) => {
 		const MIN_NUM_TOKENS_NEEDED = 100;
-		const claimRefillLogs = activityLogService.getClaimRefillLogsForPlayerToday(player);
+		const claimRefillLogs = activityLogService.getClaimRefillLogsTodayByPlayer(player);
 
 		if (claimRefillLogs.length <= 0)
 			return toFailure(`You have not claimed a refill yet today. You must do so before you can complete the "${quest.name}" quest.`);
@@ -516,7 +520,7 @@ const questIDToMeetsCriteriaCheck = {
 		for (const claimRefillLog of claimRefillLogs) {
 			const numTokens = claimRefillLog.tokensDifference;
 			if (numTokens >= MIN_NUM_TOKENS_NEEDED)
-				return PLAYER_MET_CRITERIA;
+				return PLAYER_MET_CRITERIA_RESULT;
 
 			if (numTokens > maxRefillYield)
 				maxRefillYield = numTokens;
@@ -564,11 +568,11 @@ const questIDToMeetsCriteriaCheck = {
 			if (consideredLogs.length >= NUM_OTHER_PLAYERS_NEEDED + 1) {
 				const lastLog = consideredLogs[consideredLogs.length - 1]!;
 				const firstLog = consideredLogs[0]!;
-				const timeRange = lastLog.timeOccured.getTime() - firstLog.timeOccured.getTime();
+				const timeRange = lastLog.timeOccurred.getTime() - firstLog.timeOccurred.getTime();
 
 				const secondsAchieved = getSecondsInTime(timeRange);
 				if (secondsAchieved <= SECONDS_TIME_RANGE_NEEDED) {
-					return PLAYER_MET_CRITERIA;
+					return PLAYER_MET_CRITERIA_RESULT;
 				}
 				else if (secondsAchieved < minTimeRangeSeconds) {
 					minTimeRangeSeconds = secondsAchieved;
@@ -594,7 +598,7 @@ const questIDToMeetsCriteriaCheck = {
 	) => {
 		const TOKENS_NEEDED = 35;
 		const SECONDS_TIME_RANGE = 60;
-		const mineLogs = activityLogService.getMineTokensLogsForPlayerToday(player);
+		const mineLogs = activityLogService.getMineTokensLogsTodayByPlayer(player);
 
 		if (mineLogs.length === 0) {
 			return toFailure(`You have not mined any tokens today. You must mine tokens to complete the "${quest.name}" quest.`);
@@ -604,19 +608,19 @@ const questIDToMeetsCriteriaCheck = {
 		for (let numFirstMine = 0; numFirstMine < mineLogs.length; numFirstMine++) {
 			let totalEarnedTokens = 0;
 			const firstMineLog = mineLogs[numFirstMine];
-			const startTime = firstMineLog.timeOccured;
+			const startTime = firstMineLog.timeOccurred;
 
 			for (let numMine = numFirstMine; numMine < mineLogs.length; numMine++) {
 				const mineLog = mineLogs[numMine];
 				const elapsedSeconds = getSecondsInTime(
-					mineLog.timeOccured.getTime() - startTime.getTime()
+					mineLog.timeOccurred.getTime() - startTime.getTime()
 				);
 
 				if (elapsedSeconds > SECONDS_TIME_RANGE) break;
 
 				totalEarnedTokens += mineLog.tokensDifference;
 				if (totalEarnedTokens >= TOKENS_NEEDED) {
-					return PLAYER_MET_CRITERIA;
+					return PLAYER_MET_CRITERIA_RESULT;
 				}
 				else if (totalEarnedTokens > maxTokensEarned) {
 					maxTokensEarned = totalEarnedTokens;
@@ -654,7 +658,7 @@ const questIDToMeetsCriteriaCheck = {
 			return toFailure(`You and other players have collectively mined ${totalTokensEarned} tokens today. You need a total of ${TOTAL_TOKENS_NEEDED} tokens to complete the "${quest.name}" quest.`);
 		}
 
-		return PLAYER_MET_CRITERIA;
+		return PLAYER_MET_CRITERIA_RESULT;
 	},
 
 	// Refill Frenzy
@@ -663,14 +667,14 @@ const questIDToMeetsCriteriaCheck = {
 		{activityLogService}: NamesmithServices
 	) => {
 		const NUM_REFILLS_NEEDED = 5;
-		const claimRefillLogs = activityLogService.getClaimRefillLogsForPlayerToday(player);
+		const claimRefillLogs = activityLogService.getClaimRefillLogsTodayByPlayer(player);
 
 		if (claimRefillLogs.length <= 0)
 			return toFailure(`You have not claimed a refill yet today. You must claim one before you can complete the "${quest.name}" quest.`);
 
 		const numTimesMined = claimRefillLogs.length;
 		if (numTimesMined >= NUM_REFILLS_NEEDED)
-			return PLAYER_MET_CRITERIA;
+			return PLAYER_MET_CRITERIA_RESULT;
 
 		return toFailure(`You've only claimed ${numTimesMined} refills today. You need to claim at least ${NUM_REFILLS_NEEDED} to complete the "${quest.name}" quest.`);
 	},
@@ -681,7 +685,7 @@ const questIDToMeetsCriteriaCheck = {
 		{activityLogService}: NamesmithServices
 	) => {
 		const MAX_SECONDS_AFTER_READY = 60;
-		const claimRefillLogs = activityLogService.getClaimRefillLogsForPlayerToday(player);
+		const claimRefillLogs = activityLogService.getClaimRefillLogsTodayByPlayer(player);
 
 		if (claimRefillLogs.length <= 0)
 			return toFailure(`You have not claimed a refill yet today. You must claim one before you can complete the "${quest.name}" quest.`);
@@ -691,10 +695,10 @@ const questIDToMeetsCriteriaCheck = {
 			if (log.timeCooldownExpired === null)
 				continue;
 
-			const timeAfterReady = log.timeOccured.getTime() - log.timeCooldownExpired.getTime();
+			const timeAfterReady = log.timeOccurred.getTime() - log.timeCooldownExpired.getTime();
 			const secondsAfterReady = getSecondsInTime(timeAfterReady);
 			if (secondsAfterReady <= MAX_SECONDS_AFTER_READY) {
-				return PLAYER_MET_CRITERIA;
+				return PLAYER_MET_CRITERIA_RESULT;
 			}
 
 			if (secondsAfterReady < minSecondsAfterReady) {
@@ -746,11 +750,11 @@ const questIDToMeetsCriteriaCheck = {
 			if (consideredLogs.length >= NUM_OTHER_PLAYERS_NEEDED + 1) {
 				const lastLog = consideredLogs[consideredLogs.length - 1]!;
 				const firstLog = consideredLogs[0]!;
-				const timeRange = lastLog.timeOccured.getTime() - firstLog.timeOccured.getTime();
+				const timeRange = lastLog.timeOccurred.getTime() - firstLog.timeOccurred.getTime();
 
 				const secondsAchieved = getSecondsInTime(timeRange);
 				if (secondsAchieved <= SECONDS_TIME_RANGE_NEEDED) {
-					return PLAYER_MET_CRITERIA;
+					return PLAYER_MET_CRITERIA_RESULT;
 				}
 				else if (secondsAchieved < minTimeRangeSeconds) {
 					minTimeRangeSeconds = secondsAchieved;
@@ -775,14 +779,14 @@ const questIDToMeetsCriteriaCheck = {
 		{activityLogService}: NamesmithServices
 	) => {
 		const NUM_MYSTERY_BOXES_NEEDED = 5;
-		const mysteryBoxLogs = activityLogService.getBuyMysteryBoxLogsForPlayerToday(player);
+		const mysteryBoxLogs = activityLogService.getBuyMysteryBoxLogsTodayByPlayer(player);
 
 		if (mysteryBoxLogs.length <= 0)
 			return toFailure(`You have not bought any mystery boxes today. You must buy one before you can complete the "${quest.name}" quest.`);
 
 		const numBought = mysteryBoxLogs.length;
 		if (numBought >= NUM_MYSTERY_BOXES_NEEDED)
-			return PLAYER_MET_CRITERIA;
+			return PLAYER_MET_CRITERIA_RESULT;
 
 		return toFailure(`You've only bought ${numBought} mystery boxes today. You need to buy at least ${NUM_MYSTERY_BOXES_NEEDED} to complete the "${quest.name}" quest.`);
 	},
@@ -794,7 +798,7 @@ const questIDToMeetsCriteriaCheck = {
 	) => {
 		const NUM_BOXES_NEEDED = 3;
 		const SECONDS_TIME_RANGE_NEEDED = 60;
-		const mysteryBoxLogs = activityLogService.getBuyMysteryBoxLogsForPlayerToday(player);
+		const mysteryBoxLogs = activityLogService.getBuyMysteryBoxLogsTodayByPlayer(player);
 
 		if (mysteryBoxLogs.length <= 0)
 			return toFailure(`You have not bought any mystery boxes today. You must buy a mystery box before you can complete the "${quest.name}" quest.`);
@@ -807,20 +811,20 @@ const questIDToMeetsCriteriaCheck = {
 		let numBoxes = 1;
 		for (const mysteryBoxLog of mysteryBoxLogs) {
 			if (firstBoughtBoxTime === null)
-				firstBoughtBoxTime = mysteryBoxLog.timeOccured;
+				firstBoughtBoxTime = mysteryBoxLog.timeOccurred;
 
 			if (numBoxes >= NUM_BOXES_NEEDED) {
 				const timeRangeSeconds = getSecondsInTime(
-					mysteryBoxLog.timeOccured.getTime() - firstBoughtBoxTime.getTime()
+					mysteryBoxLog.timeOccurred.getTime() - firstBoughtBoxTime.getTime()
 				);
 
 				if (timeRangeSeconds <= SECONDS_TIME_RANGE_NEEDED)
-					return PLAYER_MET_CRITERIA;
+					return PLAYER_MET_CRITERIA_RESULT;
 
 				if (timeRangeSeconds < minTimeRangeSeconds)
 					minTimeRangeSeconds = timeRangeSeconds;
 
-				firstBoughtBoxTime = mysteryBoxLogs[numBoxes - NUM_BOXES_NEEDED + 1].timeOccured;
+				firstBoughtBoxTime = mysteryBoxLogs[numBoxes - NUM_BOXES_NEEDED + 1].timeOccurred;
 			}
 
 			numBoxes++;
@@ -834,7 +838,7 @@ const questIDToMeetsCriteriaCheck = {
 		{quest, player}: MeetsCriteriaParameters,
 		{activityLogService}: NamesmithServices
 	) => {
-		const mysteryBoxLogs = activityLogService.getBuyMysteryBoxLogsForPlayerToday(player);
+		const mysteryBoxLogs = activityLogService.getBuyMysteryBoxLogsTodayByPlayer(player);
 
 		if (mysteryBoxLogs.length <= 0)
 			return toFailure(`You have not bought any mystery boxes today. You must buy a mystery box before you can complete the "${quest.name}" quest.`);
@@ -851,7 +855,7 @@ const questIDToMeetsCriteriaCheck = {
 			if (recievedCharacters.some(char =>
 				mysteryBoxLog.nameChangedFrom!.includes(char)
 			))
-				return PLAYER_MET_CRITERIA;
+				return PLAYER_MET_CRITERIA_RESULT;
 		}
 
 		return toFailure(`You have not received any characters from a mystery box that were already in your name. You must do that to complete the "${quest.name}" quest.`);
@@ -863,7 +867,7 @@ const questIDToMeetsCriteriaCheck = {
 		{activityLogService}: NamesmithServices
 	) => {
 		const NUM_TOKENS_SPENT_NEEDED = 750;
-		const mysteryBoxLogs = activityLogService.getBuyMysteryBoxLogsForPlayerToday(player);
+		const mysteryBoxLogs = activityLogService.getBuyMysteryBoxLogsTodayByPlayer(player);
 
 		if (mysteryBoxLogs.length <= 0)
 			return toFailure(`You have not bought any mystery boxes today. You must buy a mystery box before you can complete the "${quest.name}" quest.`);
@@ -874,7 +878,7 @@ const questIDToMeetsCriteriaCheck = {
 		}
 
 		if (totalTokensSpent >= NUM_TOKENS_SPENT_NEEDED)
-			return PLAYER_MET_CRITERIA;
+			return PLAYER_MET_CRITERIA_RESULT;
 
 		return toFailure(`You have only spent ${totalTokensSpent} tokens on mystery boxes today. You need to spend at least ${NUM_TOKENS_SPENT_NEEDED} tokens to complete the "${quest.name}" quest.`);
 	},
@@ -885,7 +889,7 @@ const questIDToMeetsCriteriaCheck = {
 		{activityLogService}: NamesmithServices
 	) => {
 		const NUM_UNIQUE_MYSTERY_BOXES_NEEDED = 3;
-		const mysteryBoxLogs = activityLogService.getBuyMysteryBoxLogsForPlayerToday(player);
+		const mysteryBoxLogs = activityLogService.getBuyMysteryBoxLogsTodayByPlayer(player);
 
 		if (mysteryBoxLogs.length <= 0)
 			return toFailure(`You have not bought any mystery boxes today. You must buy a mystery box before you can complete the "${quest.name}" quest.`);
@@ -899,7 +903,7 @@ const questIDToMeetsCriteriaCheck = {
 		}
 
 		if (mysteryBoxIDs.size >= NUM_UNIQUE_MYSTERY_BOXES_NEEDED)
-			return PLAYER_MET_CRITERIA;
+			return PLAYER_MET_CRITERIA_RESULT;
 
 		return toFailure(`You have only bought ${mysteryBoxIDs.size} unique mystery boxes today. You need to buy at least ${NUM_UNIQUE_MYSTERY_BOXES_NEEDED} unique ones to complete the "${quest.name}" quest.`);
 	},
@@ -920,7 +924,7 @@ const questIDToMeetsCriteriaCheck = {
 				mostExpensiveBox = mysteryBox;
 		}
 
-		const mysteryBoxLogs = activityLogService.getBuyMysteryBoxLogsForPlayerToday(player);
+		const mysteryBoxLogs = activityLogService.getBuyMysteryBoxLogsTodayByPlayer(player);
 
 		if (mysteryBoxLogs.length <= 0)
 			return toFailure(`You have not bought any mystery boxes today. You must buy a mystery box before you can complete the "${quest.name}" quest.`);
@@ -930,7 +934,7 @@ const questIDToMeetsCriteriaCheck = {
 				continue;
 
 			if (mysteryBoxLog.involvedMysteryBox.id === mostExpensiveBox!.id)
-				return PLAYER_MET_CRITERIA;
+				return PLAYER_MET_CRITERIA_RESULT;
 		}
 
 		return toFailure(`You have not bought the most expensive mystery box, "${mostExpensiveBox!.name}". You must buy it to complete the "${quest.name}" quest.`);
@@ -942,7 +946,7 @@ const questIDToMeetsCriteriaCheck = {
 		{activityLogService}: NamesmithServices
 	) => {
 		const NUM_RECIEVED_CHARACTERS_NEEDED = 2;
-		const mysteryBoxLogs = activityLogService.getBuyMysteryBoxLogsForPlayerToday(player);
+		const mysteryBoxLogs = activityLogService.getBuyMysteryBoxLogsTodayByPlayer(player);
 
 		if (mysteryBoxLogs.length <= 0)
 			return toFailure(`You have not bought any mystery boxes today. You must buy a mystery box before you can complete the "${quest.name}" quest.`);
@@ -955,7 +959,7 @@ const questIDToMeetsCriteriaCheck = {
 			const numCharactersRecieved = getNumCharacters(mysteryBoxLog.charactersGained);
 
 			if (numCharactersRecieved >= NUM_RECIEVED_CHARACTERS_NEEDED)
-				return PLAYER_MET_CRITERIA;
+				return PLAYER_MET_CRITERIA_RESULT;
 
 			if (numCharactersRecieved > maxNumCharactersRecieved)
 				maxNumCharactersRecieved = numCharactersRecieved;
@@ -963,6 +967,590 @@ const questIDToMeetsCriteriaCheck = {
 
 
 		return toFailure(`You have only recieved ${maxNumCharactersRecieved} character(s) today at most. You need to recieve at least ${NUM_RECIEVED_CHARACTERS_NEEDED} characters from a single mystery box to complete the "${quest.name}" quest.`);
+	},
+
+	// Expected Reward
+	[Quests.EXPECTED_REWARD.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const CHARACTER_NEEDED = 'e';
+		const mysteryBoxLogs = activityLogService.getBuyMysteryBoxLogsTodayByPlayer(player);
+
+		if (mysteryBoxLogs.length <= 0)
+			return toFailure(`You have not bought any mystery boxes today. You must buy a mystery box before you can complete the "${quest.name}" quest.`);
+
+		for (const mysteryBoxLog of mysteryBoxLogs) {
+			if (mysteryBoxLog.charactersGained === null)
+				continue;
+
+			const recievedCharacters = getCharacters(mysteryBoxLog.charactersGained);
+
+			if (recievedCharacters.includes(CHARACTER_NEEDED))
+				return PLAYER_MET_CRITERIA_RESULT;
+		}
+
+
+		return toFailure(`You have not recieved the character "${CHARACTER_NEEDED}" from a mystery box today. You need to recieve one to complete the "${quest.name}" quest.`);
+	},
+
+	// Three of a Kind
+	[Quests.THREE_OF_A_KIND.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_SAME_RECIEVED_CHARACTERS_NEEDED = 3;
+		const mysteryBoxLogs = activityLogService.getBuyMysteryBoxLogsTodayByPlayer(player);
+
+		if (mysteryBoxLogs.length <= 0)
+			return toFailure(`You have not bought any mystery boxes today. You must buy a mystery box before you can complete the "${quest.name}" quest.`);
+
+		const charactersCount: Record<string, number> = {};
+		for (const mysteryBoxLog of mysteryBoxLogs) {
+			if (mysteryBoxLog.charactersGained === null)
+				continue;
+
+			const recievedCharacters = getCharacters(mysteryBoxLog.charactersGained);
+
+			for (const character of recievedCharacters) {
+				if (charactersCount[character] === undefined)
+					charactersCount[character] = 0;
+
+				charactersCount[character]++;
+			}
+		}
+
+		let maxCharacterCount = 0;
+		let maxCharacter = null;
+		for (const characterCount of Object.entries(charactersCount)) {
+			const [character, count] = characterCount;
+			if (count >= NUM_SAME_RECIEVED_CHARACTERS_NEEDED)
+				return PLAYER_MET_CRITERIA_RESULT;
+
+			if (count > maxCharacterCount) {
+				maxCharacterCount = count;
+				maxCharacter = character;
+			}
+		}
+
+		if (maxCharacter !== null)
+			return toFailure(`You have recieved the character "${maxCharacter}" ${maxCharacterCount} times today from mystery boxes, but you need to recieve the same character at least ${NUM_SAME_RECIEVED_CHARACTERS_NEEDED} times to complete the "${quest.name}" quest.`);
+		else
+			return toFailure(`You have not recieved the same character ${NUM_SAME_RECIEVED_CHARACTERS_NEEDED} times today from mystery boxes. You need to do that to complete the "${quest.name}" quest.`);
+	},
+
+	// ALL IN
+	[Quests.ALL_IN.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const currentTokens = player.tokens;
+		const logs = activityLogService.getLogsTodayByPlayer(player);
+
+		let hasBoughtMysteryBox = false;
+		let minTokensAfterLog = Infinity;
+		let tokensAfterLog = currentTokens
+		// Loop through logs in reverse order
+		for (let index = logs.length - 1; index >= 0; index--) {
+			const log = logs[index];
+
+			if (log.type === ActivityTypes.BUY_MYSTERY_BOX) {
+				hasBoughtMysteryBox = true;
+
+				if (tokensAfterLog === 0)
+					return PLAYER_MET_CRITERIA_RESULT;
+
+				if (tokensAfterLog < minTokensAfterLog)
+					minTokensAfterLog = tokensAfterLog;
+			}
+
+			tokensAfterLog -= log.tokensDifference;
+		}
+
+		if (!hasBoughtMysteryBox)
+			return toFailure(`You have not bought any mystery boxes today. You must buy a mystery box before you can complete the "${quest.name}" quest.`);
+
+		return toFailure(`Buying a mystery box has only brought you down to ${minTokensAfterLog} tokens. You need to spend EVERY token you have on a mystery box to complete the "${quest.name}" quest.`);
+	},
+
+	// Emoji Alchemist
+	[Quests.EMOJI_ALCHEMIST.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const recipeLogs = activityLogService.getCraftLogsTodayByPlayer(player);
+
+		if (recipeLogs.length <= 0)
+			return toFailure(`You have not crafted any characters today. You must use a recipe before you can complete the "${quest.name}" quest.`);
+
+		for (const recipeLog of recipeLogs) {
+			if (recipeLog.involvedRecipe === null)
+				continue;
+
+			if (hasEmoji(recipeLog.involvedRecipe.outputCharacters))
+				return PLAYER_MET_CRITERIA_RESULT;
+		}
+
+		return toFailure(`You have not crafted any emojis today. You must use a recipe that crafts an emoji to complete the "${quest.name}" quest.`);
+	},
+
+	// Many for One
+	[Quests.MANY_FOR_ONE.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const MIN_INPUT_CHARACTERS_NEEDED = 3;
+		const MAX_OUTPUT_CHARACTERS_NEEDED = 1;
+		const recipeLogs = activityLogService.getCraftLogsTodayByPlayer(player);
+
+		if (recipeLogs.length <= 0)
+			return toFailure(`You have not crafted any characters today. You must use a recipe before you can complete the "${quest.name}" quest.`);
+
+		for (const recipeLog of recipeLogs) {
+			if (recipeLog.involvedRecipe === null)
+				continue;
+
+			const inputCharacters = getCharacters(recipeLog.involvedRecipe.inputCharacters);
+			const outputCharacters = getCharacters(recipeLog.involvedRecipe.outputCharacters);
+
+			if (inputCharacters.length >= MIN_INPUT_CHARACTERS_NEEDED && outputCharacters.length <= MAX_OUTPUT_CHARACTERS_NEEDED)
+				return PLAYER_MET_CRITERIA_RESULT;
+		}
+
+		return toFailure(`You have not crafted a recipe with at least ${MIN_INPUT_CHARACTERS_NEEDED} input characters and at most ${MAX_OUTPUT_CHARACTERS_NEEDED} output character(s) today. You must use a recipe with these requirements to complete the "${quest.name}" quest.`);
+	},
+
+	// Great Deal
+	[Quests.GREAT_DEAL.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService, tradeService}: NamesmithServices
+	) => {
+		const MAX_CHARACTERS_GIVING = 1;
+		const MIN_CHARACTERS_GETTING = 3;
+		const acceptTradeLogs = activityLogService.getAcceptTradeLogsTodayWithRecpient(player);
+
+		if (acceptTradeLogs.length <= 0) {
+			const createTradeLogs = activityLogService.getInitiateTradeLogsTodayByPlayer(player);
+
+			if (createTradeLogs.length <= 0)
+				return toFailure(`You have not created any trades today. You must initiate one before you can complete the "${quest.name}" quest.`);
+
+			return toFailure(`You have not had a one of your trades accepted today. You must have one accepted before you can complete the "${quest.name}" quest.`);
+		}
+
+		for (const acceptTradeLog of acceptTradeLogs) {
+			if (acceptTradeLog.involvedTrade === null)
+				continue;
+
+			const trade = acceptTradeLog.involvedTrade;
+
+			const charactersGiving = tradeService.getCharactersPlayerIsGiving(trade, player);
+			const charactersGetting = tradeService.getCharactersPlayerIsGetting(trade, player);
+
+			if (
+				charactersGiving.length <= MAX_CHARACTERS_GIVING &&
+				charactersGetting.length >= MIN_CHARACTERS_GETTING
+			)
+				return PLAYER_MET_CRITERIA_RESULT;
+		}
+
+		return toFailure(`You have not successfully traded only one character for three or more in return today. You must do that to complete the "${quest.name}" quest.`);
+	},
+
+	// Crafty Crafter
+	[Quests.CRAFTY_CRAFTER.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const MIN_RECIPES_NEEDED = 3;
+		const recipeLogs = activityLogService.getCraftLogsTodayByPlayer(player);
+
+		let numRecipesWithUtilities = 0;
+		if (recipeLogs.length <= 0)
+			return toFailure(`You have not crafted any characters today. You must use a recipe before you can complete the "${quest.name}" quest.`);
+
+		for (const recipeLog of recipeLogs) {
+			if (recipeLog.involvedRecipe === null)
+				continue;
+
+			const inputCharacters = recipeLog.involvedRecipe.inputCharacters;
+
+			if (hasUtilityCharacter(inputCharacters))
+				numRecipesWithUtilities++;
+		}
+
+		if (numRecipesWithUtilities >= MIN_RECIPES_NEEDED)
+			return PLAYER_MET_CRITERIA_RESULT;
+
+		return toFailure(`You crafted only ${numRecipesWithUtilities} recipes with utility characters today. You must craft at least ${MIN_RECIPES_NEEDED} to complete the "${quest.name}" quest.`);
+	},
+
+	// Large Output
+	[Quests.LARGE_OUTPUT.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const MIN_NUM_OUTPUT_CHARACTERS_NEEDED = 2;
+		const recipeLogs = activityLogService.getCraftLogsTodayByPlayer(player);
+
+		if (recipeLogs.length <= 0)
+			return toFailure(`You have not crafted any characters today. You must use a recipe before you can complete the "${quest.name}" quest.`);
+
+		for (const recipeLog of recipeLogs) {
+			if (recipeLog.involvedRecipe === null)
+				continue;
+
+			const outputCharacters = getCharacters(recipeLog.involvedRecipe.outputCharacters);
+
+			if (outputCharacters.length >= MIN_NUM_OUTPUT_CHARACTERS_NEEDED)
+				return PLAYER_MET_CRITERIA_RESULT;
+		}
+
+		return toFailure(`You did not craft a recipe that gave you at least ${MIN_NUM_OUTPUT_CHARACTERS_NEEDED} characters today. You must do that to complete the "${quest.name}" quest.`);
+	},
+
+	// Dual Artisan
+	[Quests.DUAL_ARTISAN.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const MIN_RECIPES_NEEDED = 2;
+		const recipeLogs = activityLogService.getCraftLogsTodayByPlayer(player);
+
+		if (recipeLogs.length <= 0)
+			return toFailure(`You have not crafted any characters today. You must use a recipe before you can complete the "${quest.name}" quest.`);
+
+		const outputCharacterToRecipes = new Map<string, Set<RecipeID>>();
+		for (const recipeLog of recipeLogs) {
+			if (recipeLog.involvedRecipe === null)
+			continue;
+
+			const outputCharacters = recipeLog.involvedRecipe.outputCharacters;
+
+			if (!outputCharacterToRecipes.has(outputCharacters))
+				outputCharacterToRecipes.set(outputCharacters, new Set());
+
+			const recipesSet = outputCharacterToRecipes.get(outputCharacters)!;
+			recipesSet.add(recipeLog.involvedRecipe.id);
+
+			if (recipesSet.size >= MIN_RECIPES_NEEDED)
+				return PLAYER_MET_CRITERIA_RESULT;
+		}
+
+		return toFailure(`You did not craft the exact same character(s) using at least ${MIN_RECIPES_NEEDED} different recipes today. You must do that to complete the "${quest.name}" quest.`);
+	},
+
+	// Recipe Remix
+	[Quests.RECIPE_REMIX.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const MIN_RECIPES_NEEDED = 2;
+		const recipeLogs = activityLogService.getCraftLogsTodayByPlayer(player);
+
+		if (recipeLogs.length <= 0)
+			return toFailure(`You have not crafted any characters today. You must use a recipe before you can complete the "${quest.name}" quest.`);
+
+		const inputCharacterToRecipes = new Map<string, Set<RecipeID>>();
+		for (const recipeLog of recipeLogs) {
+			if (recipeLog.involvedRecipe === null)
+				continue;
+
+			const inputCharacters = recipeLog.involvedRecipe.inputCharacters;
+
+			if (!inputCharacterToRecipes.has(inputCharacters))
+				inputCharacterToRecipes.set(inputCharacters, new Set());
+
+			const recipesSet = inputCharacterToRecipes.get(inputCharacters)!;
+			recipesSet.add(recipeLog.involvedRecipe.id);
+
+			if (recipesSet.size >= MIN_RECIPES_NEEDED)
+				return PLAYER_MET_CRITERIA_RESULT;
+		}
+
+		return toFailure(`You did not use the same character(s) in at least ${MIN_RECIPES_NEEDED} different recipes today. You must do that to complete the "${quest.name}" quest.`);
+	},
+
+	// Scam
+	[Quests.SCAM.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService, tradeService}: NamesmithServices
+	) => {
+		const MAX_CHARACTERS_GIVEN = 1;
+		const MIN_CHARACTERS_RECEIVED = 5;
+		const acceptTradeLogs = activityLogService.getAcceptTradeLogsTodayInvolvingPlayer(player);
+
+		if (acceptTradeLogs.length <= 0)
+			return toFailure(`You have not been involved in any accepted trades today. You must accept a trade or have a trade of yours accepted before you can complete the "${quest.name}" quest.`);
+
+		let minCharactersGiven = Infinity;
+		let maxCharactersReceived = 0;
+		for (const acceptTradeLog of acceptTradeLogs) {
+			if (acceptTradeLog.involvedTrade === null)
+				continue;
+
+			const givenCharacters = tradeService.getCharactersPlayerIsGiving(acceptTradeLog.involvedTrade, player);
+			const receivedCharacters = tradeService.getCharactersPlayerIsGetting(acceptTradeLog.involvedTrade, player);
+
+			const numGivenCharacters = getNumCharacters(givenCharacters);
+			const numReceivedCharacters = getNumCharacters(receivedCharacters);
+
+			if (
+				numGivenCharacters <= MAX_CHARACTERS_GIVEN && numReceivedCharacters >= MIN_CHARACTERS_RECEIVED
+			) {
+				return PLAYER_MET_CRITERIA_RESULT;
+			}
+
+			if (numGivenCharacters < minCharactersGiven)
+				minCharactersGiven = givenCharacters.length;
+
+			if (numReceivedCharacters > maxCharactersReceived)
+				maxCharactersReceived = receivedCharacters.length;
+		}
+
+		if (minCharactersGiven > MAX_CHARACTERS_GIVEN)
+			return toFailure(`You've only had trades accepted where you gave away ${minCharactersGiven} characters at the minimum. You must give away only ${MAX_CHARACTERS_GIVEN} character(s) in a trade to complete the "${quest.name}" quest.`);
+
+		return toFailure(`You've only had trades accepted where you received ${maxCharactersReceived} characters at most. You must receive at least ${MIN_CHARACTERS_RECEIVED} character(s) in a trade to complete the "${quest.name}" quest.`);
+	},
+
+	// Seal the Deal
+	[Quests.SEAL_THE_DEAL.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_TRADES_ACCEPTED_NEEDED = 1
+		const acceptTradeLogs = activityLogService.getAcceptTradeLogsByPlayer(player)
+
+		if (acceptTradeLogs.length <= 0)
+			return toFailure(`You have not accepted any trades today. You must accept a trade before you can complete the "${quest.name}" quest.`);
+
+		if (acceptTradeLogs.length >= NUM_TRADES_ACCEPTED_NEEDED)
+			return PLAYER_MET_CRITERIA_RESULT;
+
+		return toFailure(`You've have not accepted any trades today. You must accept a trade(s) to complete the "${quest.name}" quest.`);
+	},
+
+	// Rejecting Profit
+	[Quests.REJECTING_PROFIT.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService, tradeService}: NamesmithServices
+	) => {
+		const NUM_MORE_CHARACTERS_THAN_GIVING = 5
+		const declineTradeLogs = activityLogService.getDeclineTradeLogsTodayByPlayer(player);
+
+		if (declineTradeLogs.length <= 0)
+			return toFailure(`You have not declined any trades today. You must decline a trade before you can complete the "${quest.name}" quest.`);
+
+		let maxNumMoreCharactersThanGiving = Number.NEGATIVE_INFINITY;
+
+		for (const declineTradeLog of declineTradeLogs) {
+			if (declineTradeLog.involvedTrade === null)
+				continue;
+
+			const charactersGiven = tradeService.getCharactersPlayerIsGiving(declineTradeLog.involvedTrade, player);
+			const charactersReceived = tradeService.getCharactersPlayerIsGetting(declineTradeLog.involvedTrade, player);
+
+			const numCharactersGiven = getNumCharacters(charactersGiven);
+			const numCharactersReceived = getNumCharacters(charactersReceived);
+
+			const numMoreCharactersThanGiving = numCharactersReceived - numCharactersGiven;
+
+			if (numMoreCharactersThanGiving >= NUM_MORE_CHARACTERS_THAN_GIVING)
+				return PLAYER_MET_CRITERIA_RESULT;
+
+			if (numMoreCharactersThanGiving > maxNumMoreCharactersThanGiving)
+				maxNumMoreCharactersThanGiving = numMoreCharactersThanGiving;
+		}
+
+		if (maxNumMoreCharactersThanGiving > 0) {
+			return toFailure(`You have only declined a trade where you received ${maxNumMoreCharactersThanGiving} more characters than you gave. You must receive ${NUM_MORE_CHARACTERS_THAN_GIVING} more characters than you give to complete the "${quest.name}" quest.`);
+		}
+		else if (maxNumMoreCharactersThanGiving === 0) {
+			return toFailure(`You have only declined a trade where you received the same number of characters as you gave. You must receive ${NUM_MORE_CHARACTERS_THAN_GIVING} more characters than you give to complete the "${quest.name}" quest.`);
+		}
+		else {
+			const minNumLessCharactersThanGiving = maxNumMoreCharactersThanGiving * -1;
+			return toFailure(`You have only declined a trade where you received ${minNumLessCharactersThanGiving} less characters than you gave. You must receive ${NUM_MORE_CHARACTERS_THAN_GIVING} more characters than you give to complete the "${quest.name}" quest.`);
+		}
+	},
+
+	// Final Offer
+	[Quests.FINAL_OFFER.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const modifyTradeLogs = activityLogService.getModifyTradeLogsTodayByPlayer(player);
+
+		if (modifyTradeLogs.length <= 0) {
+			return toFailure(`You have not modified any trade requests today. You must modify a trade request before you can complete the "${quest.name}" quest.`);
+		}
+
+		// Get all trades that the player modified today
+		const modifiedTradeIDs = new Set<number>();
+		for (const modifyLog of modifyTradeLogs) {
+			if (modifyLog.involvedTrade !== null) {
+				modifiedTradeIDs.add(modifyLog.involvedTrade.id);
+			}
+		}
+
+		// Check if any of the modified trades were accepted today
+		const acceptTradeLogs = activityLogService.getAcceptTradeLogsTodayWithRecpient(player);
+		for (const acceptLog of acceptTradeLogs) {
+			if (acceptLog.involvedTrade !== null && modifiedTradeIDs.has(acceptLog.involvedTrade.id)) {
+				return PLAYER_MET_CRITERIA_RESULT;
+			}
+		}
+
+		return toFailure(`You have modified ${modifyTradeLogs.length} trade request(s) today, but none of them have been accepted yet. To complete the "${quest.name}" quest, you need to have another player accept a trade request that you modified.`);
+	},
+
+	// Quest Combo
+	[Quests.QUEST_COMBO.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const MIN_QUESTS_COMPLETED = 2;
+		const MAX_MINUTES_BETWEEN_COMPLETES = 10;
+		const questLogs = activityLogService.getCompleteQuestLogsTodayByPlayer(player);
+
+		if (questLogs.length < MIN_QUESTS_COMPLETED)
+			return toFailure(`You have completed ${questLogs.length} quest(s) today, but you need to complete at least ${MIN_QUESTS_COMPLETED} to complete the "${quest.name}" quest.`);
+
+		let minIntervalTime = Number.POSITIVE_INFINITY;
+		let previousCompletionDate: Date | null = null;
+		for (const questLog of questLogs) {
+			if (previousCompletionDate !== null) {
+				const completeQuestInterval = questLog.timeOccurred.getTime() - previousCompletionDate.getTime();
+
+				const intervalDuration = getMinutesDurationFromTime(completeQuestInterval);
+				if (intervalDuration.minutes < MAX_MINUTES_BETWEEN_COMPLETES)
+						return PLAYER_MET_CRITERIA_RESULT;
+
+				if (
+					intervalDuration.minutes === MAX_MINUTES_BETWEEN_COMPLETES &&
+					intervalDuration.seconds === 0
+				)
+					return PLAYER_MET_CRITERIA_RESULT;
+
+				if (completeQuestInterval < minIntervalTime)
+					minIntervalTime = completeQuestInterval;
+			}
+
+			previousCompletionDate = questLog.timeOccurred;
+		}
+
+		return toFailure(`You have completed two quests within ${getReadableDuration(minIntervalTime / 1000)} of each other. You must complete two within only ${MAX_MINUTES_BETWEEN_COMPLETES} minutes to complete the "${quest.name}" quest.`);
+	},
+
+	// Hoard Tokens
+	[Quests.HOARD_TOKENS.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const TOKENS_NEEDED_TO_EARN = 200;
+		const tokenDifferenceLogs = activityLogService.getLogsWithTokenDifferenceTodayByPlayer(player);
+
+		let tokensEarnedWithoutSpending = 0;
+		let maxTokensEarned = 0;
+		for (const tokenDifferenceLog of tokenDifferenceLogs) {
+			if (tokenDifferenceLog.tokensDifference > 0) {
+				tokensEarnedWithoutSpending += tokenDifferenceLog.tokensDifference;
+			}
+
+			if (tokenDifferenceLog.tokensDifference < 0)
+				tokensEarnedWithoutSpending = 0;
+
+			if (tokensEarnedWithoutSpending >= TOKENS_NEEDED_TO_EARN)
+				return PLAYER_MET_CRITERIA_RESULT;
+
+			if (tokensEarnedWithoutSpending > maxTokensEarned)
+				maxTokensEarned = tokensEarnedWithoutSpending;
+		}
+
+		return toFailure(`You have earned ${maxTokensEarned} tokens at most without spending any tokens today. You need to earn ${TOKENS_NEEDED_TO_EARN} to complete the "${quest.name}" quest.`);
+	},
+
+	// The Richest
+	[Quests.THE_RICHEST.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{playerService}: NamesmithServices
+	) => {
+		const players = playerService.getPlayers();
+		const playersSortedByTokens = sortByDescendingProperty(players, 'tokens');
+
+		if (playersSortedByTokens[0].id === player.id)
+			return PLAYER_MET_CRITERIA_RESULT;
+
+		const richestPlayerID = playersSortedByTokens[0].id;
+		const numTokensOfRichest = playersSortedByTokens[0].tokens;
+		return toFailure(`The richest player right now is <@${richestPlayerID}> with ${numTokensOfRichest} tokens. You must be the richest to complete the "${quest.name}" quest.`);
+	},
+
+	// Character Collector
+	[Quests.CHARACTER_COLLECTOR.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+	) => {
+		const NUM_DISTINCT_CHARACTERS_NEEDED = 35;
+		const numDistinctCharacters = getNumDistinctCharacters(player.inventory);
+
+		if (numDistinctCharacters >= NUM_DISTINCT_CHARACTERS_NEEDED)
+			return PLAYER_MET_CRITERIA_RESULT;
+
+		return toFailure(`You only have ${numDistinctCharacters} distinct characters in your inventory. You need ${NUM_DISTINCT_CHARACTERS_NEEDED} distinct characters to complete the "${quest.name}" quest.`);
+	},
+
+	// You Snooze You Lose
+	[Quests.YOU_SNOOZE_YOU_LOSE.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const completeThisQuestLogs = activityLogService.getCompleteQuestLogsTodayForQuest(quest);
+
+		if (completeThisQuestLogs.length <= 0)
+			return PLAYER_MET_CRITERIA_RESULT;
+
+		const playerIDs = completeThisQuestLogs.map(log => log.player.id);
+		const playerMentions = playerIDs.map(id => `<@${id}>`);
+		const listOfPlayerMentions = toListSentenceFromWords(playerMentions);
+
+		activityLogService.logCompleteQuest({
+			playerCompletingQuest: player.id,
+			questCompleted: quest.id,
+			nameBefore: player.currentName,
+		});
+		return toFailure(`${listOfPlayerMentions} completed the "${quest.name}" quest before you. You had to be the first to complete it to get the rewards.`);
+	},
+
+	// You Snooze You Win
+	[Quests.YOU_SNOOZE_YOU_WIN.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const logQuestCompletion = () => activityLogService.logCompleteQuest({
+			playerCompletingQuest: player.id,
+			questCompleted: quest.id,
+			nameBefore: player.currentName,
+		});
+
+		const completeThisQuestLogs = activityLogService.getCompleteQuestLogsTodayForQuest(quest);
+
+		if (completeThisQuestLogs.length <= 0) {
+			logQuestCompletion();
+			return toFailure(`You were the first player to complete the "${quest.name}" quest. You must be the second player to ever complete this quest to get the rewards.`);
+		}
+
+		if (completeThisQuestLogs.some(log => log.player.id === player.id)) {
+			return toFailure(`You already tried to complete the "${quest.name}" quest.`);
+		}
+
+		if (completeThisQuestLogs.length === 1)
+			return PLAYER_MET_CRITERIA_RESULT;
+
+
+		const secondPlayerID = completeThisQuestLogs[1].player.id
+
+		return toFailure(`<@${secondPlayerID}> completed the "${quest.name}" quest second already. You had to have been the second player to complete this quest to get the rewards.`);
 	},
 } as const;
 
@@ -972,14 +1560,18 @@ const questIDToMeetsCriteriaCheck = {
  * @param parameters - An object containing the following parameters:
  * @param parameters.playerResolvable - The player completing the quest.
  * @param parameters.questResolvable - The quest being completed.
+ * @param parameters.checkIfMetCriteria - An optional boolean indicating whether to check if the player has met the criteria for the quest. Defaults to true.
  * @returns A result indicating if the quest was successfully completed or not.
  */
 export function completeQuest(
-	{playerResolvable, questResolvable}: {
+	{playerResolvable, questResolvable, checkIfMetCriteria}: {
 		playerResolvable: PlayerResolvable,
 		questResolvable: QuestResolvable,
+		checkIfMetCriteria?: boolean
 	}
 ) {
+	if (checkIfMetCriteria === undefined) checkIfMetCriteria = true;
+
 	const services = getNamesmithServices();
 	const {playerService, questService, activityLogService} = services;
 
@@ -997,18 +1589,22 @@ export function completeQuest(
 
 	const quest = questService.resolveQuest(questResolvable);
 	const player = playerService.resolvePlayer(playerResolvable);
-	if (quest.id in questIDToMeetsCriteriaCheck) {
-		const questID = quest.id as keyof typeof questIDToMeetsCriteriaCheck;
-		const getMeetsCriteriaResult = questIDToMeetsCriteriaCheck[questID];
-		const meetsCriteriaResult = getMeetsCriteriaResult(
-			{quest, player}, services
-		);
-		if (meetsCriteriaResult !== PLAYER_MET_CRITERIA)
-			return meetsCriteriaResult;
-	}
-	else {
-		if (!quest.name.includes(FREEBIE_QUEST_NAME))
-			return result.failure.questCriteriaNotDefined({questName: quest.name});
+
+	if (checkIfMetCriteria) {
+		if (quest.id in questIDToMeetsCriteriaCheck === false) {
+			if (!quest.name.includes(FREEBIE_QUEST_NAME))
+				return result.failure.questCriteriaNotDefined({questName: quest.name});
+		}
+		else {
+			const questID = quest.id as keyof typeof questIDToMeetsCriteriaCheck;
+			const getMeetsCriteriaResult = questIDToMeetsCriteriaCheck[questID];
+			const meetsCriteriaResult = getMeetsCriteriaResult(
+				{quest, player}, services
+			);
+
+			if (meetsCriteriaResult !== PLAYER_MET_CRITERIA_RESULT)
+				return meetsCriteriaResult;
+		}
 	}
 
 	const nameBefore = player.currentName;

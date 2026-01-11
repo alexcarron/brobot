@@ -1,4 +1,4 @@
-import { addHours, addMinutes, addSeconds } from "../../../../utilities/date-time-utils";
+import { addDuration, addHours, addMinutes, addSeconds } from "../../../../utilities/date-time-utils";
 import { failTest, makeSure } from "../../../../utilities/jest/jest-utils";
 import { getBetween, getRandomUUID } from "../../../../utilities/random-utils";
 import { REFILL_COOLDOWN_HOURS } from "../../constants/namesmith.constants";
@@ -8,9 +8,9 @@ import { DatabaseQuerier } from "../../database/database-querier";
 import { getLatestActivityLog } from "../../mocks/mock-data/mock-activity-logs";
 import { forcePlayerToBuyMysteryBox, forcePlayerToBuyNewMysteryBox } from "../../mocks/mock-data/mock-mystery-boxes";
 import { addMockPlayer, forcePlayerToChangeName, forcePlayerToClaimRefill, forcePlayerToMineTokens, forcePlayerToPublishName } from '../../mocks/mock-data/mock-players';
-import { addMockQuest } from "../../mocks/mock-data/mock-quests";
-import { addMockRecipe, forcePlayerToCraft } from '../../mocks/mock-data/mock-recipes';
-import { forcePlayerToAcceptNewTrade, forcePlayerToInitiateTrade } from '../../mocks/mock-data/mock-trades';
+import { addMockQuest, forcePlayerToCompleteNewQuest } from "../../mocks/mock-data/mock-quests";
+import { addMockRecipe, forcePlayerToCraftRecipe, forcePlayerToCraftNewRecipe } from '../../mocks/mock-data/mock-recipes';
+import { forcePlayerToAcceptNewTrade, forcePlayerToAcceptTrade, forcePlayerToDeclineNewTrade, forcePlayerToDeclineTrade, forcePlayerToInitiateTrade, forcePlayerToModifyNewTrade } from '../../mocks/mock-data/mock-trades';
 import { setupMockNamesmith } from "../../mocks/mock-setup";
 import { GameStateService } from "../../services/game-state.service";
 import { MysteryBoxService } from "../../services/mystery-box.service";
@@ -33,6 +33,7 @@ describe('complete-quest.workflow.ts', () => {
 	let SOME_OTHER_PLAYER: Player;
 	let FIVE_DIFFERENT_RECIPES: Recipe[];
 	let THREE_DIFFERENT_PLAYERS: Player[];
+	let FIVE_DIFFERENT_PLAYERS: Player[];
 
   beforeEach(() => {
     ({ db, playerService, gameStateService, mysteryBoxService } = setupMockNamesmith(addMinutes(new Date(), -1)));
@@ -47,8 +48,13 @@ describe('complete-quest.workflow.ts', () => {
 		}
 
 		THREE_DIFFERENT_PLAYERS = [];
-		for (let i = 0; i < 3; i++) {
-			THREE_DIFFERENT_PLAYERS[i] = addMockPlayer(db);
+		FIVE_DIFFERENT_PLAYERS = [];
+		for (let i = 0; i < 5; i++) {
+			if (i < 3) {
+				THREE_DIFFERENT_PLAYERS[i] = addMockPlayer(db);
+			}
+
+			FIVE_DIFFERENT_PLAYERS[i] = addMockPlayer(db);
 		}
 
 		SOME_OTHER_PLAYER = THREE_DIFFERENT_PLAYERS[0];
@@ -168,7 +174,7 @@ describe('complete-quest.workflow.ts', () => {
 				it('returns success for Experienced Craftsman quest if player has crafted characters five times with three unique recipes', () => {
 					for (let numLoop = 0; numLoop < 5; numLoop++) {
 						const recipeNum = numLoop % 3; // Only 3 unique recipes
-						forcePlayerToCraft(
+						forcePlayerToCraftRecipe(
 							SOME_PLAYER,
 							FIVE_DIFFERENT_RECIPES[recipeNum]
 						)
@@ -185,7 +191,7 @@ describe('complete-quest.workflow.ts', () => {
 				it('returns NotEnoughUniqueRecipes failure for Experienced Craftsman quest if player has crafted characters five times with only two unique recipes', () => {
 					for (let numLoop = 0; numLoop < 5; numLoop++) {
 						const recipeNum = numLoop % 2; // Only 2 unique recipes
-						forcePlayerToCraft(
+						forcePlayerToCraftRecipe(
 							SOME_PLAYER,
 							FIVE_DIFFERENT_RECIPES[recipeNum]
 						)
@@ -202,7 +208,7 @@ describe('complete-quest.workflow.ts', () => {
 				it('returns NotEnoughCrafts failure for Experienced Craftsman quest if player has crafted characters only four times with three unique recipes', () => {
 					for (let numLoop = 0; numLoop < 4; numLoop++) {
 						const recipeNum = numLoop % 3; // Only 3 unique recipes
-						forcePlayerToCraft(
+						forcePlayerToCraftRecipe(
 							SOME_PLAYER,
 							FIVE_DIFFERENT_RECIPES[recipeNum]
 						)
@@ -1690,6 +1696,979 @@ describe('complete-quest.workflow.ts', () => {
 					makeSure(result.isFailure()).isTrue();
 				});
 			});
+
+			describe('Expected Reward Quest', () => {
+				it('returns a success if you get an "e" from a mystery box', () => {
+					forcePlayerToBuyMysteryBox(SOME_PLAYER, 'e');
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.EXPECTED_REWARD.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a failure if you get every letter but an "e" from a mystery box', () => {
+					for (const letter of ['a', 'b', 'c', 'd', 'E', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']) {
+						forcePlayerToBuyMysteryBox(SOME_PLAYER, letter);
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.EXPECTED_REWARD.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Three of a Kind Quest', () => {
+				it('returns a success if you receive the same character from a mystery box three times', () => {
+					forcePlayerToBuyMysteryBox(SOME_PLAYER, 'a');
+					forcePlayerToBuyMysteryBox(SOME_PLAYER, 'a');
+					forcePlayerToBuyMysteryBox(SOME_PLAYER, 'a');
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.THREE_OF_A_KIND.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a failure if you receive two different characters from a mystery box three times', () => {
+					forcePlayerToBuyMysteryBox(SOME_PLAYER, 'a');
+					forcePlayerToBuyMysteryBox(SOME_PLAYER, 'a');
+					forcePlayerToBuyMysteryBox(SOME_PLAYER, 'b');
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.THREE_OF_A_KIND.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns a failure if you receive three different characters from a mystery box three times', () => {
+					forcePlayerToBuyMysteryBox(SOME_PLAYER, 'a');
+					forcePlayerToBuyMysteryBox(SOME_PLAYER, 'b');
+					forcePlayerToBuyMysteryBox(SOME_PLAYER, 'c');
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.THREE_OF_A_KIND.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('All In Quest', () => {
+				it('returns a success if the player buys a mystery box with all their tokens and is left with 0 tokens', () => {
+					playerService.giveTokens(SOME_PLAYER, 100);
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						tokenCost: 100
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.ALL_IN.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a success if the player buys a mystery box with all their tokens in between mining and buying other boxes', () => {
+					forcePlayerToMineTokens(SOME_PLAYER, 20);
+					forcePlayerToClaimRefill(SOME_PLAYER, 60);
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						tokenCost: 30
+					});
+					forcePlayerToMineTokens(SOME_PLAYER, 20);
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						tokenCost: playerService.getTokens(SOME_PLAYER)
+					});
+					forcePlayerToMineTokens(SOME_PLAYER, 65);
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						tokenCost: 30
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.ALL_IN.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a failure if the player buys a mystery box with all their tokens but is left with some tokens', () => {
+					forcePlayerToMineTokens(SOME_PLAYER, 20);
+					forcePlayerToClaimRefill(SOME_PLAYER, 60);
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						tokenCost: 30
+					});
+					forcePlayerToMineTokens(SOME_PLAYER, 20);
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						tokenCost: playerService.getTokens(SOME_PLAYER) - 1
+					});
+					forcePlayerToMineTokens(SOME_PLAYER, 65);
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						tokenCost: 30
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.ALL_IN.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Emoji Alchemist Quest', () => {
+				it('returns a success if the player uses a recipe that creates an emoji', () => {
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						outputCharacters: '👾'
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.EMOJI_ALCHEMIST.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a success if the player uses a recipe the outputs at least one emoji', () => {
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						outputCharacters: 'h'
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						outputCharacters: '👾abc3478'
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						outputCharacters: '$#@$%abc3478:D'
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.EMOJI_ALCHEMIST.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a failure if the player uses a recipe the outputs no emojis', () => {
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						outputCharacters: '$#@$%abc3478:D'
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.EMOJI_ALCHEMIST.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Many For One Quest', () => {
+				it('returns a success if the player uses a recipe with 10 input characters and one output character', () => {
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: '0123456789',
+						outputCharacters: 'a',
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.MANY_FOR_ONE.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a success if the player uses a recipe with 3 input characters and one output character at least once', () => {
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: 'bv',
+						outputCharacters: 'os',
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: '012',
+						outputCharacters: 'a',
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: 'a',
+						outputCharacters: 'b',
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.MANY_FOR_ONE.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a success if the player uses a recipe with 3 input characters and more than one output character', () => {
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: '012',
+						outputCharacters: 'ab',
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.MANY_FOR_ONE.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns a success if the player uses a recipe with 2 input characters and one output character', () => {
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: '12',
+						outputCharacters: '1',
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.MANY_FOR_ONE.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Great Deal Quest', () => {
+				it('returns a success if the player traded one character for ten in return', () => {
+					forcePlayerToAcceptNewTrade(SOME_OTHER_PLAYER, {
+						initiatingPlayer: SOME_PLAYER,
+						offeredCharacters: 'a',
+						requestedCharacters: '0123456789'
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.GREAT_DEAL.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a success if the player traded one character for 3 in return at least once', () => {
+					forcePlayerToAcceptNewTrade(SOME_OTHER_PLAYER, {
+						initiatingPlayer: SOME_PLAYER,
+						offeredCharacters: 'a',
+						requestedCharacters: 'b'
+					});
+					forcePlayerToAcceptNewTrade(SOME_OTHER_PLAYER, {
+						initiatingPlayer: SOME_PLAYER,
+						offeredCharacters: 'a',
+						requestedCharacters: '123'
+					});
+					forcePlayerToAcceptNewTrade(SOME_OTHER_PLAYER, {
+						initiatingPlayer: SOME_PLAYER,
+						offeredCharacters: 'abc',
+						requestedCharacters: 'def'
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.GREAT_DEAL.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a failure if the player traded one character for only 2 in return', () => {
+					forcePlayerToAcceptNewTrade(SOME_OTHER_PLAYER, {
+						initiatingPlayer: SOME_PLAYER,
+						offeredCharacters: 'a',
+						requestedCharacters: 'b'
+					});
+					forcePlayerToAcceptNewTrade(SOME_OTHER_PLAYER, {
+						initiatingPlayer: SOME_PLAYER,
+						offeredCharacters: 'a',
+						requestedCharacters: '12'
+					});
+					forcePlayerToAcceptNewTrade(SOME_OTHER_PLAYER, {
+						initiatingPlayer: SOME_PLAYER,
+						offeredCharacters: 'abc',
+						requestedCharacters: 'def'
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.GREAT_DEAL.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Crafty Crafter Quest', () => {
+				it('returns a success if the player used three recipes that require utility characters', () => {
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "a↻",
+						outputCharacters: "e"
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "b⇋",
+						outputCharacters: "d"
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "ab⤻cd",
+						outputCharacters: "jkl"
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.CRAFTY_CRAFTER.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a failure if the player used two recipes that require utility characters and one that does not', () => {
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "a↻",
+						outputCharacters: "e"
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "b⇋",
+						outputCharacters: "d"
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "abcd",
+						outputCharacters: "jkl"
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.CRAFTY_CRAFTER.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Large Output Quest', () => {
+				it('returns a success if the player uses a recipe that produces 2+ characters at least once', () => {
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "a",
+						outputCharacters: "b"
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "c",
+						outputCharacters: "d"
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "e",
+						outputCharacters: "fg"
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "h",
+						outputCharacters: "i"
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.LARGE_OUTPUT.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a failure if the player never uses a recipe that produces 2+ characters', () => {
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "a",
+						outputCharacters: "b"
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "cd",
+						outputCharacters: "e"
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "efg",
+						outputCharacters: "h"
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "h",
+						outputCharacters: "i"
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.LARGE_OUTPUT.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Dual Artisan Quest', () => {
+				it('returns a success if the player uses two different recipes that craft the same characters', () => {
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "a",
+						outputCharacters: "bb"
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "c",
+						outputCharacters: "bb"
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "c",
+						outputCharacters: "a"
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "bb",
+						outputCharacters: "c"
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "def",
+						outputCharacters: "jkl"
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.DUAL_ARTISAN.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a failure if the player crafts the same characters with the same recipe twice', () => {
+					const craftResult = forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "a",
+						outputCharacters: "bb"
+					});
+					forcePlayerToCraftRecipe(SOME_PLAYER, craftResult.recipeUsed);
+					forcePlayerToCraftRecipe(SOME_PLAYER, craftResult.recipeUsed);
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "c",
+						outputCharacters: "a"
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "bb",
+						outputCharacters: "c"
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "def",
+						outputCharacters: "jkl"
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.DUAL_ARTISAN.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Recipe Remix Quest', () => {
+				it('returns a success if the player uses two different recipes that use the same input characters', () => {
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "bb",
+						outputCharacters: "a"
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "bb",
+						outputCharacters: "c"
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "a",
+						outputCharacters: "c"
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "c",
+						outputCharacters: "bb"
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "def",
+						outputCharacters: "jkl"
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.DUAL_ARTISAN.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a failure if the player crafts the same characters with the same recipe twice', () => {
+					const craftResult = forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "bb",
+						outputCharacters: "a"
+					});
+					forcePlayerToCraftRecipe(SOME_PLAYER, craftResult.recipeUsed);
+					forcePlayerToCraftRecipe(SOME_PLAYER, craftResult.recipeUsed);
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "a",
+						outputCharacters: "c"
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "c",
+						outputCharacters: "bb"
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: "def",
+						outputCharacters: "jkl"
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.DUAL_ARTISAN.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Scam Quest', () => {
+				it('returns a success if the player accepted a trade where they give away one character and recieve five', () => {
+					forcePlayerToAcceptNewTrade(SOME_PLAYER, {
+						initiatingPlayer: SOME_OTHER_PLAYER,
+						recipientPlayer: SOME_PLAYER,
+						offeredCharacters: "12345",
+						requestedCharacters: "1"
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.SCAM.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a success if the player has their trade accepted where they give away one character and recieve five', () => {
+					forcePlayerToAcceptNewTrade(SOME_OTHER_PLAYER, {
+						initiatingPlayer: SOME_PLAYER,
+						recipientPlayer: SOME_OTHER_PLAYER,
+						offeredCharacters: "1",
+						requestedCharacters: "12345"
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.SCAM.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a failure if the player accepted a trade where they give away one character and recieve four', () => {
+					forcePlayerToAcceptNewTrade(SOME_PLAYER, {
+						initiatingPlayer: SOME_OTHER_PLAYER,
+						recipientPlayer: SOME_PLAYER,
+						offeredCharacters: "1234",
+						requestedCharacters: "1"
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.SCAM.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns a failure if the player accepted a trade where they give away two characters and recieve five', () => {
+					forcePlayerToAcceptNewTrade(SOME_PLAYER, {
+						initiatingPlayer: SOME_OTHER_PLAYER,
+						recipientPlayer: SOME_PLAYER,
+						offeredCharacters: "12345",
+						requestedCharacters: "12"
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.SCAM.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Seal The Deal', () => {
+				it('returns a success if the player accepted a trade before', () => {
+					forcePlayerToAcceptNewTrade(SOME_PLAYER, {
+						initiatingPlayer: SOME_OTHER_PLAYER,
+						recipientPlayer: SOME_PLAYER,
+						offeredCharacters: "12345",
+						requestedCharacters: "1"
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.SEAL_THE_DEAL.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a failure if the player did not accept a trade before', () => {
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.SEAL_THE_DEAL.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Rejecting Profit', () => {
+				it('returns a success if the player declined a trade where they would\'ve recieved six characters for one', () => {
+					forcePlayerToDeclineNewTrade(SOME_PLAYER, {
+						initiatingPlayer: SOME_OTHER_PLAYER,
+						recipientPlayer: SOME_PLAYER,
+						offeredCharacters: "123456",
+						requestedCharacters: "1"
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.REJECTING_PROFIT.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns a failure if the player declined a trade where they would\'ve recieved five characters for one', () => {
+					forcePlayerToDeclineNewTrade(SOME_PLAYER, {
+						initiatingPlayer: SOME_OTHER_PLAYER,
+						recipientPlayer: SOME_PLAYER,
+						offeredCharacters: "12345",
+						requestedCharacters: "1"
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.REJECTING_PROFIT.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns a failure if the player declined a trade where they would\'ve recieved one character for one', () => {
+					forcePlayerToDeclineNewTrade(SOME_PLAYER, {
+						initiatingPlayer: SOME_OTHER_PLAYER,
+						recipientPlayer: SOME_PLAYER,
+						offeredCharacters: "1",
+						requestedCharacters: "12345"
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.REJECTING_PROFIT.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Final Offer Quest', () => {
+				it('returns success when player has modified a trade today that was accepted by another player', () => {
+					const modifyResult = forcePlayerToModifyNewTrade(SOME_PLAYER, {
+						charactersGiving: "abc",
+						charactersReceiving: "def"
+					});
+
+					forcePlayerToAcceptTrade(modifyResult.trade.initiatingPlayer, modifyResult.trade);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.FINAL_OFFER.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns failure when player has modified a trade today that was declined by another player', () => {
+					const modifyResult = forcePlayerToModifyNewTrade(SOME_PLAYER, {
+						charactersGiving: "abc",
+						charactersReceiving: "def"
+					});
+
+					forcePlayerToDeclineTrade(modifyResult.trade.initiatingPlayer, modifyResult.trade);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.FINAL_OFFER.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when player has not modified a trade today that was accepted by another player', () => {
+					forcePlayerToAcceptNewTrade(SOME_OTHER_PLAYER, {
+						initiatingPlayer: SOME_PLAYER,
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.FINAL_OFFER.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Quest Combo Quest', () => {
+				let NOW: Date;
+
+				beforeEach(() => {
+					NOW = new Date();
+					jest.useFakeTimers({ now: addHours(NOW, 1) });
+				});
+
+				afterAll(() => {
+					jest.useRealTimers();
+				});
+
+				it('returns success when player has completed two quests exactly 10 minutes apart', () => {
+					forcePlayerToCompleteNewQuest(SOME_PLAYER);
+
+					jest.setSystemTime(addMinutes(new Date(), 10));
+					forcePlayerToCompleteNewQuest(SOME_PLAYER);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.QUEST_COMBO.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns failure when player has completed two quest exactly 10 minutes and 1 second apart', () => {
+					forcePlayerToCompleteNewQuest(SOME_PLAYER);
+
+					jest.setSystemTime(addDuration(new Date(), { minutes: 10, seconds: 1 }));
+					forcePlayerToCompleteNewQuest(SOME_PLAYER);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.QUEST_COMBO.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when the player has completed only one quest', () => {
+					forcePlayerToCompleteNewQuest(SOME_PLAYER);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.QUEST_COMBO.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Hoard Tokens Quest', () => {
+				it('returns success when player earns 200 tokens at once from claiming a refill', () => {
+					forcePlayerToMineTokens(SOME_PLAYER, 200);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.HOARD_TOKENS.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns success when players earn 200 tokens total over many mines', () => {
+					for (let numLoop = 0; numLoop < 10; numLoop++) {
+						forcePlayerToMineTokens(SOME_PLAYER, 20);
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.HOARD_TOKENS.id
+					})
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns success when players eanrs 1000 tokens total over many mines but spends between earning 200 tokens', () => {
+					for (let numLoop = 0; numLoop < 10; numLoop++) {
+						forcePlayerToMineTokens(SOME_PLAYER, 200);
+						forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {tokenCost: 100});
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.HOARD_TOKENS.id
+					})
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns failure if player only earned 199 tokens total', () => {
+					forcePlayerToClaimRefill(SOME_PLAYER, 199);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.HOARD_TOKENS.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure if player only earned 199 tokens over many mines', () => {
+					for (let numLoop = 0; numLoop < 10; numLoop++) {
+						let numTokens = 20;
+						if (numLoop === 9)
+							numTokens = 19;
+
+						forcePlayerToMineTokens(SOME_PLAYER, numTokens);
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.HOARD_TOKENS.id
+					});
+					console.log(result);
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure if player earned 200 tokens but spend tokens in between', () => {
+					forcePlayerToMineTokens(SOME_PLAYER, 100);
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {tokenCost: 10});
+					forcePlayerToMineTokens(SOME_PLAYER, 100);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.HOARD_TOKENS.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('The Richest Quest', () => {
+				it('returns success when player has the most tokens out of everyone else', () => {
+					const RICHEST_PLAYER = addMockPlayer(db, {tokens: 9999});
+					addMockPlayer(db, {tokens: 1000});
+					addMockPlayer(db, {tokens: 9000});
+
+					const result = completeQuest({
+						playerResolvable: RICHEST_PLAYER.id,
+						questResolvable: Quests.THE_RICHEST.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns failure if one player has more tokens than another', () => {
+					const RICHEST_PLAYER = addMockPlayer(db, {tokens: 9000});
+					addMockPlayer(db, {tokens: 9999});
+					addMockPlayer(db, {tokens: 1000});
+					addMockPlayer(db, {tokens: 0});
+
+					const result = completeQuest({
+						playerResolvable: RICHEST_PLAYER.id,
+						questResolvable: Quests.THE_RICHEST.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Character Collector Quest', () => {
+				it('returns success when player has an inventory of 35 unique characters', () => {
+					const player = addMockPlayer(db, {inventory: 'abcdefghijklmnopqrstuvwxyz01234567890'});
+
+					const result = completeQuest({
+						playerResolvable: player.id,
+						questResolvable: Quests.CHARACTER_COLLECTOR.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns failure when player has an inventory of only 34 unique characters', () => {
+					const player = addMockPlayer(db, {inventory: 'abcdefghijklmnopqrstuvwxyz01234567'});
+
+					const result = completeQuest({
+						playerResolvable: player.id,
+						questResolvable: Quests.CHARACTER_COLLECTOR.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when player has an inventory of only 34 unique characters but 100s of total characters', () => {
+					const player = addMockPlayer(db, {inventory: 'abcdefghijklmnopqrstuvwxyz01234567aaabbc23332hhhasdhjhhcxzhghjasd07234762ghjgdakjhdsadhas7qwopepoijoi434237daskjhkj322hjcs'});
+
+					const result = completeQuest({
+						playerResolvable: player.id,
+						questResolvable: Quests.CHARACTER_COLLECTOR.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('You Snooze You Lose Quest', () => {
+				it('returns success when the player is the first one to complete it', () => {
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.YOU_SNOOZE_YOU_LOSE.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns failure when the player is the last one to complete it', () => {
+					completeQuest({
+						playerResolvable: SOME_OTHER_PLAYER.id,
+						questResolvable: Quests.YOU_SNOOZE_YOU_LOSE.id
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.YOU_SNOOZE_YOU_LOSE.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when the player is the second one to complete it', () => {
+					completeQuest({
+						playerResolvable: SOME_OTHER_PLAYER.id,
+						questResolvable: Quests.YOU_SNOOZE_YOU_LOSE.id
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.YOU_SNOOZE_YOU_LOSE.id
+					});
+
+					completeQuest({
+						playerResolvable: THREE_DIFFERENT_PLAYERS[0].id,
+						questResolvable: Quests.YOU_SNOOZE_YOU_LOSE.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when the player is the last of five to complete it', () => {
+					for (let i = 0; i < 5; i++) {
+						completeQuest({
+							playerResolvable: FIVE_DIFFERENT_PLAYERS[i].id,
+							questResolvable: Quests.YOU_SNOOZE_YOU_LOSE.id
+						});
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.YOU_SNOOZE_YOU_LOSE.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('You Snooze You Win Quest', () => {
+				it('returns success when the player is the second one to complete it', () => {
+					completeQuest({
+						playerResolvable: SOME_OTHER_PLAYER.id,
+						questResolvable: Quests.YOU_SNOOZE_YOU_WIN.id
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.YOU_SNOOZE_YOU_WIN.id
+					});
+
+					completeQuest({
+						playerResolvable: THREE_DIFFERENT_PLAYERS[0].id,
+						questResolvable: Quests.YOU_SNOOZE_YOU_WIN.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns failure when the player is the first and second one to complete it', () => {
+					const result1 = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.YOU_SNOOZE_YOU_WIN.id
+					});
+					makeSure(result1.isFailure()).isTrue();
+
+					const result2 = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.YOU_SNOOZE_YOU_WIN.id
+					});
+					makeSure(result2.isFailure()).isTrue();
+				});
+
+				it('returns failure when the player is the third one to complete it', () => {
+					completeQuest({
+						playerResolvable: THREE_DIFFERENT_PLAYERS[0].id,
+						questResolvable: Quests.YOU_SNOOZE_YOU_WIN.id
+					});
+
+					completeQuest({
+						playerResolvable: THREE_DIFFERENT_PLAYERS[1].id,
+						questResolvable: Quests.YOU_SNOOZE_YOU_WIN.id
+					});
+
+					const result = completeQuest({
+						playerResolvable: THREE_DIFFERENT_PLAYERS[2].id,
+						questResolvable: Quests.YOU_SNOOZE_YOU_WIN.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
 		});
-  });
+	});
 });

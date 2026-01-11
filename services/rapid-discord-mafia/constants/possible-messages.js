@@ -1,10 +1,10 @@
 /* eslint-disable jsdoc/require-param-description */
 /* eslint-disable jsdoc/require-returns */
 const { ids } = require("../../../bot-config/discord-ids");
-const { createListFromWords } = require("../../../utilities/string-manipulation-utils");
 const { createNowUnixTimestamp } = require("../../../utilities/date-time-utils");
 const { RoleName } = require("../role.js");
 const { PhaseLength } = require("../game-state-manager.js");
+const { toListSentenceFromWords } = require("../../../utilities/string-manipulation-utils");
 
 const COMMAND_EXPLANATIONS = [
 	`\`/commands\` See a list of all commands and what they do`,
@@ -282,11 +282,11 @@ const Announcement = Object.freeze({
 		const bolded_winning_player_names = winning_player_names.map(
 			name => `**${name}**`
 		);
-		const winning_players_sentence = createListFromWords(bolded_winning_player_names);
+		const winning_players_sentence = toListSentenceFromWords(bolded_winning_player_names);
 		const bolded_winning_factions = winning_factions.map(
 			name => `**${name}**`
 		);
-		const winning_factions_sentence = createListFromWords(bolded_winning_factions);
+		const winning_factions_sentence = toListSentenceFromWords(bolded_winning_factions);
 
 		return [
 			`_ _\n${winning_factions_sentence} won!`,
@@ -454,7 +454,7 @@ const Feedback = Object.freeze({
 	LOOKOUT_SEES_VISITS: (target_player, player_seen_visiting) => {
 		const player_names_visiting =
 		player_seen_visiting.map(player => `**${player.name}**`);
-		return `It seems like **${target_player.name}** was visited by ${createListFromWords(player_names_visiting)} last night.`;
+		return `It seems like **${target_player.name}** was visited by ${toListSentenceFromWords(player_names_visiting)} last night.`;
 	},
 
 	/**

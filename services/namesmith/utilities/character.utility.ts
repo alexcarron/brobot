@@ -1,5 +1,6 @@
 import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { isOneSymbol } from "../../../utilities/string-checks-utils";
+import { MysteryBoxes } from "../constants/mystery-boxes.constants";
 
 /**
  * Retrieves the Unicode code point value of a given character.
@@ -36,4 +37,17 @@ export const getCharacterValueFromID = (id: number): string => {
 	}
 
 	return String.fromCodePoint(id);
+}
+
+/**
+ * Determines whether or not a string includes a recipe utility character in it
+ * @param string - The string to check
+ * @returns Whether or not the given string includes a recipe utility character in it
+ */
+export function hasUtilityCharacter(string: string): boolean {
+	const recipeUtilityCharacters = Object.keys(MysteryBoxes.RECIPE_UTILITIES.characterOdds);
+
+	return recipeUtilityCharacters.some(character =>
+		string.includes(character)
+	);
 }

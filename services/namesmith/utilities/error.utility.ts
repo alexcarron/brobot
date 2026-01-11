@@ -874,3 +874,19 @@ export class QuestEligbilityNotImplementedError extends NamesmithError {
 		})
 	}
 }
+
+/**
+ * Error thrown when a method expects the given player to be involved in the given trade but they are not
+ */
+export class PlayerNotInvolvedInTradeError extends NamesmithError {
+	declare relevantData: { player: Player, trade: Trade };
+	constructor(player: Player, trade: Trade) {
+		super({
+			message: `Expected the player with the player ID ${player.id} to be involved in the trade with the trade ID ${trade.id}, but they were not.`,
+			relevantData: {
+				player,
+				trade,
+			}
+		})
+	}
+}

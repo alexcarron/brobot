@@ -1,5 +1,5 @@
 import { attempt } from "./error-utils";
-import { createListFromWords } from "./string-manipulation-utils";
+import { toListSentenceFromWords } from "./string-manipulation-utils";
 
 /**
  * The oldest possible Date object.
@@ -91,6 +91,38 @@ export const addMinutes = (date: Date, minutes: number): Date => {
 export const addSeconds = (date: Date, seconds: number): Date => {
 	const newDate = new Date(date.getTime());
 	newDate.setSeconds(newDate.getSeconds() + seconds);
+	return newDate;
+}
+
+/**
+ * Adds a specified duration to a given Date object.
+ * @param date - The Date object to modify.
+ * @param duration - The duration to add to the given Date object.
+ * @param duration.days - The number of days to add to the given Date object.
+ * @param duration.hours - The number of hours to add to the given Date object.
+ * @param duration.minutes - The number of minutes to add to the given Date object.
+ * @param duration.seconds - The number of seconds to add to the given Date object.
+ * @param duration.milliseconds - The number of milliseconds to add to the given Date object.
+ * @returns A new Date object with the specified duration added to the original date.
+ * @example
+ * const fiveMinutesLater = addDuration(new Date(), { minutes: 5 });
+ */
+export function addDuration(
+	date: Date,
+	duration: {
+		days?: number;
+		hours?: number;
+		minutes?: number;
+		seconds?: number;
+		milliseconds?: number;
+	}
+): Date {
+	const newDate = new Date(date.getTime());
+	newDate.setDate((newDate.getDate() + (duration?.days ?? 0)));
+	newDate.setHours((newDate.getHours() + (duration?.hours ?? 0)));
+	newDate.setMinutes((newDate.getMinutes() + (duration?.minutes ?? 0)));
+	newDate.setSeconds((newDate.getSeconds() + (duration?.seconds ?? 0)));
+	newDate.setMilliseconds((newDate.getMilliseconds() + (duration?.milliseconds ?? 0)));
 	return newDate;
 }
 
@@ -192,6 +224,19 @@ export function getMinutesInTime(milliseconds: number): number {
 	return Math.floor(milliseconds / 1000 / 60);
 }
 
+export function getMinutesDurationFromTime(milliseconds: number): {
+	minutes: number;
+	seconds: number;
+	milliseconds: number;
+} {
+	if (milliseconds < 0) throw new Error(`Expected given milliseconds in getMinutesDurationFromTime function to be 0 or greater, but was ${milliseconds}`)
+
+	const totalMinutes = Math.floor(milliseconds / 1000 / 60);
+	const remainingSeconds = Math.floor((milliseconds / 1000) % 60);
+	const remainingMilliseconds = milliseconds % 1000;
+	return { minutes: totalMinutes, seconds: remainingSeconds, milliseconds: remainingMilliseconds };
+}
+
 export function getReadableDuration(totalSeconds: number): string {
 	const days = Math.floor(totalSeconds / 60 / 60 / 24);
 	const hours = Math.floor((totalSeconds / 60 / 60) % 24);
@@ -237,5 +282,5 @@ export function getReadableDuration(totalSeconds: number): string {
 	if (segments.length === 0)
 		return "zero seconds";
 
-	return createListFromWords(segments);
+	return toListSentenceFromWords(segments);
 }

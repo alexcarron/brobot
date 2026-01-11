@@ -4,7 +4,7 @@ import { joinLines, toAmountOfNoun } from "../../../utilities/string-manipulatio
 import { Perk } from "../types/perk.types";
 import { fetchNamesmithChannel } from "../utilities/discord-fetch.utility";
 import { pickPerk } from "../workflows/pick-perk.workflow";
-import { editReplyToInteraction } from "../../../utilities/discord-action-utils";
+import { deleteAllMessagesInChannel, editReplyToInteraction } from "../../../utilities/discord-action-utils";
 import { DiscordButtons } from "../../../utilities/discord-interfaces/discord-buttons";
 import { DiscordButtonDefinition } from '../../../utilities/discord-interfaces/discord-button';
 import { ignoreError } from "../../../utilities/error-utils";
@@ -123,7 +123,8 @@ export async function sendPickAPerkMessage(
 ): Promise<void> {
 	const pickAPerkMessage = createPickAPerkMessage({threePerks});
 	const channel = await fetchNamesmithChannel(ids.namesmith.channels.PICK_A_PERK);
-	await pickAPerkMessage.setIn(channel);
+	await deleteAllMessagesInChannel(channel);
+	await pickAPerkMessage.sendIn(channel);
 }
 
 /**

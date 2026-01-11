@@ -240,14 +240,14 @@ export const quests = [
 	{
 		id: 36,
 		name: "Great Deal",
-		description: "Trade a single character you own for at least three in return",
-		tokensReward: 200,
+		description: "Successfully trade a single character you own for at least three in return",
+		tokensReward: 300,
 		charactersReward: "deal",
 	},
 	{
 		id: 37,
 		name: "Crafty Crafter",
-		description: "Craft characters three times using recipes that require a utility character",
+		description: "Craft three recipes that require a utility character",
 		tokensReward: 200,
 		charactersReward: "⇋Flip",
 	},
@@ -276,7 +276,7 @@ export const quests = [
 		id: 41,
 		name: "Scam",
 		description: "Successfully trade only one of your characters to receive at least five characters in return",
-		tokensReward: 200,
+		tokensReward: 300,
 		charactersReward: "!@#$",
 	},
 	{

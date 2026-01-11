@@ -3,7 +3,7 @@ import { DatabaseQuerier } from "../../database/database-querier";
 import { RecipeRepository } from "../../repositories/recipe.repository";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { PlayerResolvable } from "../../types/player.types";
-import { Recipe, RecipeResolvable } from "../../types/recipe.types";
+import { Recipe, RecipeDefinition, RecipeResolvable } from "../../types/recipe.types";
 import { returnIfNotFailure } from "../../utilities/workflow.utility";
 import { craftCharacters } from "../../workflows/craft-characters.workflow";
 
@@ -38,7 +38,7 @@ export const addMockRecipe = (
  * @param recipeResolvable - The recipe resolvable to force the player to craft.
  * @returns The result of the craftCharacters workflow.
  */
-export function forcePlayerToCraft(
+export function forcePlayerToCraftRecipe(
 	playerResolvable: PlayerResolvable,
 	recipeResolvable: RecipeResolvable
 ) {
@@ -53,6 +53,26 @@ export function forcePlayerToCraft(
 		craftCharacters({
 			player: playerResolvable,
 			recipe: recipeResolvable
+		})
+	)
+}
+
+export function forcePlayerToCraftNewRecipe(
+	playerResolvable: PlayerResolvable,
+	recipeDefinition: Partial<RecipeDefinition> = {}
+) {
+	const { playerService } = getNamesmithServices();
+	const db = playerService.playerRepository.db;
+	const recipe = addMockRecipe(db, recipeDefinition);
+
+	if (!playerService.hasCharacters(playerResolvable, recipe.inputCharacters)) {
+		playerService.giveCharacters(playerResolvable, recipe.inputCharacters);
+	}
+
+	return returnIfNotFailure(
+		craftCharacters({
+			player: playerResolvable,
+			recipe,
 		})
 	)
 }

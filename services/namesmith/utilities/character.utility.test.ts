@@ -1,4 +1,5 @@
-import { getIDfromCharacterValue, getCharacterValueFromID } from "./character.utility";
+import { makeSure } from "../../../utilities/jest/jest-utils";
+import { getIDfromCharacterValue, getCharacterValueFromID, hasUtilityCharacter } from "./character.utility";
 
 describe('character.utility', () => {
 	it('should export the expected functions', () => {
@@ -30,7 +31,7 @@ describe('character.utility', () => {
 			const result = getCharacterValueFromID(codePointValue);
 			expect(result).toBe('a');
 		});
-		
+
 		it('should throw an error if the input is a negative number', () => {
 			const codePointValue = -1;
 			expect(() => getCharacterValueFromID(codePointValue)).toThrow();
@@ -41,4 +42,18 @@ describe('character.utility', () => {
 			expect(() => getCharacterValueFromID(codePointValue)).toThrow();
 		});
 	});
+
+	describe('hasUtilityCharacter()', () => {
+		it('returns true if the string has the rotate character in it', () => {
+			makeSure(hasUtilityCharacter('abc↻def')).isTrue();
+		});
+
+		it('returns true if the string has the rotate and scissors character in it', () => {
+			makeSure(hasUtilityCharacter('abc↻def✂ghi')).isTrue();
+		});
+
+		it('returns false if the string has the square character in it', () => {
+			makeSure(hasUtilityCharacter('abc⬜def')).isFalse();
+		});
+	})
 })

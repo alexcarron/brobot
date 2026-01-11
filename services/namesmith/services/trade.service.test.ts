@@ -1,6 +1,6 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { INVALID_TRADE_ID } from "../constants/test.constants";
-import { InvalidStateError, TradeNotFoundError } from "../utilities/error.utility";
+import { InvalidStateError, PlayerNotInvolvedInTradeError, TradeNotFoundError } from "../utilities/error.utility";
 import { TradeService } from "./trade.service";
 import { DatabaseQuerier } from "../database/database-querier";
 import { Trade, TradeStatuses } from "../types/trade.types";
@@ -358,6 +358,94 @@ describe('TradeService', () => {
 				status: TradeStatuses.AWAITING_RECIPIENT,
 			});
 			expect(tradeService.isAccepted(trade)).toBe(false);
+		});
+	});
+
+	describe('getCharactersPlayerIsGiving()', () => {
+		it('return the offered characters if the given player initiated the trade', () => {
+			const trade = addMockTrade(db, {
+				initiatingPlayer: SOME_INITIATING_PLAYER.id,
+				recipientPlayer: SOME_RECIPIENT_PLAYER.id,
+				offeredCharacters: "abc",
+				requestedCharacters: "def",
+				status: TradeStatuses.AWAITING_RECIPIENT,
+			});
+
+			const result = tradeService.getCharactersPlayerIsGiving(trade, SOME_INITIATING_PLAYER);
+
+			makeSure(result).is("abc");
+		});
+
+
+		it('return the requested characters if the given player recieved the trade', () => {
+			const trade = addMockTrade(db, {
+				initiatingPlayer: SOME_INITIATING_PLAYER.id,
+				recipientPlayer: SOME_RECIPIENT_PLAYER.id,
+				offeredCharacters: "abc",
+				requestedCharacters: "def",
+				status: TradeStatuses.AWAITING_RECIPIENT,
+			});
+
+			const result = tradeService.getCharactersPlayerIsGiving(trade, SOME_RECIPIENT_PLAYER);
+
+			makeSure(result).is("def");
+		});
+
+		it('throws a PlayerNotInvolvedInTrade error if the player is not involved in the trade', () => {
+			const SOME_OTHER_PLAYER = addMockPlayer(db);
+			const trade = addMockTrade(db, {
+				initiatingPlayer: SOME_INITIATING_PLAYER.id,
+				recipientPlayer: SOME_RECIPIENT_PLAYER.id,
+				offeredCharacters: "abc",
+				requestedCharacters: "def",
+				status: TradeStatuses.AWAITING_RECIPIENT,
+			});
+
+			makeSure(() => tradeService.getCharactersPlayerIsGiving(trade, SOME_OTHER_PLAYER)).throws(PlayerNotInvolvedInTradeError);
+		});
+	});
+
+	describe('getCharactersPlayerIsGetting()', () => {
+		it('return the requested characters if the given player initiated the trade', () => {
+			const trade = addMockTrade(db, {
+				initiatingPlayer: SOME_INITIATING_PLAYER.id,
+				recipientPlayer: SOME_RECIPIENT_PLAYER.id,
+				offeredCharacters: "abc",
+				requestedCharacters: "def",
+				status: TradeStatuses.AWAITING_RECIPIENT,
+			});
+
+			const result = tradeService.getCharactersPlayerIsGetting(trade, SOME_INITIATING_PLAYER);
+
+			makeSure(result).is("def");
+		});
+
+
+		it('return the offered characters if the given player recieved the trade', () => {
+			const trade = addMockTrade(db, {
+				initiatingPlayer: SOME_INITIATING_PLAYER.id,
+				recipientPlayer: SOME_RECIPIENT_PLAYER.id,
+				offeredCharacters: "abc",
+				requestedCharacters: "def",
+				status: TradeStatuses.AWAITING_RECIPIENT,
+			});
+
+			const result = tradeService.getCharactersPlayerIsGetting(trade, SOME_RECIPIENT_PLAYER);
+
+			makeSure(result).is("abc");
+		});
+
+		it('throws a PlayerNotInvolvedInTrade error if the player is not involved in the trade', () => {
+			const SOME_OTHER_PLAYER = addMockPlayer(db);
+			const trade = addMockTrade(db, {
+				initiatingPlayer: SOME_INITIATING_PLAYER.id,
+				recipientPlayer: SOME_RECIPIENT_PLAYER.id,
+				offeredCharacters: "abc",
+				requestedCharacters: "def",
+				status: TradeStatuses.AWAITING_RECIPIENT,
+			});
+
+			makeSure(() => tradeService.getCharactersPlayerIsGetting(trade, SOME_OTHER_PLAYER)).throws(PlayerNotInvolvedInTradeError);
 		});
 	});
 });
