@@ -104,7 +104,16 @@ export function toParameterNotAndWhereClause(
 ): string {
 	return Object.entries(fieldToValue)
 		.filter(([, value]) => value !== undefined)
-		.map(([key]) => `${key} != @${key}`)
+		.map(([key, value]) => {
+			if (value === null) {
+				// Means "this column must not be null"
+				return `${key} IS NOT NULL`;
+			}
+			else {
+				// Normal value: "column != value OR column IS NULL"
+				return `(${key} != @${key} OR ${key} IS NULL)`;
+			}
+		})
 		.join(" AND ");
 }
 
@@ -119,7 +128,7 @@ export function toParameterNotAndWhereClause(
  *   playerConditions
  * );
  */
-export function toParameterORWhereClause(fieldToValue: Record<string, unknown>): string {
+export function toParameterOrWhereClause(fieldToValue: Record<string, unknown>): string {
 	return Object.entries(fieldToValue)
 		.filter(([, value]) => value !== undefined)
 		.map(([key]) => `${key} = @${key}`)
@@ -151,7 +160,7 @@ export function toParameterUpdateClause(
 		identifiers: Record<string, unknown>;
 	}
 ): string {
-	return `SET ${toParameterSetClause(updatingFields)} WHERE ${toParameterORWhereClause(identifiers)}`
+	return `SET ${toParameterSetClause(updatingFields)} WHERE ${toParameterOrWhereClause(identifiers)}`
 }
 
 /**
@@ -613,9 +622,18 @@ export class DatabaseQuerier {
 	): RunResult {
 		return this.run(
 			`DELETE FROM ${tableName}
-			WHERE ${toParameterORWhereClause(identifiers)}`,
+			WHERE ${toParameterOrWhereClause(identifiers)}`,
 			identifiers
 		);
+	}
+
+	/**
+	 * Deletes all rows from a table
+	 * @param tableName - The name of the table to delete from
+	 * @returns The result of the delete query
+	 */
+	deleteAllFromTable(tableName: string): RunResult {
+		return this.run(`DELETE FROM ${tableName}`);
 	}
 
 	/**
@@ -631,7 +649,7 @@ export class DatabaseQuerier {
 		return this.getValue(
 			`SELECT 1
 			FROM ${tableName}
-			WHERE ${toParameterORWhereClause(identifiers)}
+			WHERE ${toParameterOrWhereClause(identifiers)}
 			LIMIT 1`,
 			identifiers
 		) === 1;

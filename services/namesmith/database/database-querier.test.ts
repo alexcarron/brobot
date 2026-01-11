@@ -286,4 +286,13 @@ describe('DatabaseQuerier', () => {
 			]);
 		})
 	});
+
+	describe('deleteAllFromTable()', () => {
+		it('deletes all rows from a table', () => {
+			const result = dbQuerier.deleteAllFromTable('character');
+			expect(result.changes).toBe(2);
+
+			expect(dbQuerier.getRows('SELECT * FROM character')).toEqual([]);
+		});
+	});
 });

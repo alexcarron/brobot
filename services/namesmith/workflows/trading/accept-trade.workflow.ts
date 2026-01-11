@@ -113,7 +113,7 @@ export const acceptTrade = (
 	tradeService.updateStatusToAccepted(trade);
 
 	activityLogService.logAcceptTrade({
-		playerAcceptingID: playerAccepting.id,
+		playerAccepting: playerAccepting.id,
 		playerAwaitingResponse: playerAwaitingAcceptance,
 		trade,
 		nameBefore: acceptingPlayerNameBefore,

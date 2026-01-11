@@ -4,7 +4,7 @@ import { EMPTY } from "../../../utilities/constants/discord-interface.constants"
 import { joinLines } from "../../../utilities/string-manipulation-utils";
 import { Role } from "../types/role.types";
 import { chooseRole } from "../workflows/choose-role.workflow";
-import { editReplyToInteraction } from "../../../utilities/discord-action-utils";
+import { deleteAllMessagesInChannel, editReplyToInteraction } from "../../../utilities/discord-action-utils";
 import { fetchNamesmithChannel } from "../utilities/discord-fetch.utility";
 import { toPerkBulletPoint } from "./pick-a-perk-message";
 import { ignoreError } from "../../../utilities/error-utils";
@@ -110,7 +110,8 @@ export function toRoleButton(
 export async function sendChooseARoleMessage(): Promise<void> {
 	const chooseARoleMessage = getChooseARoleMessage();
 	const channel = await fetchNamesmithChannel(ids.namesmith.channels.CHOOSE_A_ROLE);
-	await chooseARoleMessage.setIn(channel);
+	await deleteAllMessagesInChannel(channel);
+	await chooseARoleMessage.sendIn(channel);
 }
 
 /**

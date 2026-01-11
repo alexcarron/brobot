@@ -6,7 +6,7 @@ import { ActivityLogRepository } from "../repositories/activity-log.repository";
 import { ActivityLog, ActivityTypes, NameInterval } from "../types/activity-log.types";
 import { MysteryBoxResolvable } from "../types/mystery-box.types";
 import { PerkResolvable } from "../types/perk.types";
-import { PlayerID, PlayerResolvable } from "../types/player.types";
+import { PlayerResolvable } from "../types/player.types";
 import { QuestResolvable } from "../types/quest.types";
 import { Recipe } from "../types/recipe.types";
 import { RoleResolvable } from "../types/role.types";
@@ -104,7 +104,7 @@ export class ActivityLogService {
 	/**
 	 * Logs an activity log when a player accepts a trade.
 	 * @param parameters - The parameters which include:
-	 * @param parameters.playerAcceptingID - The id of the player who is accepting the trade.
+	 * @param parameters.playerAccepting - The player who is accepting the trade.
 	 * @param parameters.playerAwaitingResponse - The player who was awaiting a response for the trade.
 	 * @param parameters.trade - The trade being accepted.
 	 * @param parameters.nameBefore - The name of the player before the trade was accepted.
@@ -112,25 +112,26 @@ export class ActivityLogService {
 	 * @param parameters.charactersLost - The characters lost in the trade.
 	 * @returns The created activity log object.
 	 */
-	logAcceptTrade({ playerAcceptingID, playerAwaitingResponse, trade, nameBefore }: {
-		playerAcceptingID: PlayerID;
+	logAcceptTrade({ playerAccepting, playerAwaitingResponse, trade, nameBefore }: {
+		playerAccepting: PlayerResolvable;
 		playerAwaitingResponse: PlayerResolvable;
 		trade: Trade;
 		nameBefore: string;
 	}): ActivityLog {
-	const charactersAcceptorGained =
-		playerAcceptingID === trade.initiatingPlayer.id
-			? trade.requestedCharacters
-			: trade.offeredCharacters;
+		const playerAcceptingID = this.playerService.resolveID(playerAccepting);
+		const charactersAcceptorGained =
+			playerAcceptingID === trade.initiatingPlayer.id
+				? trade.requestedCharacters
+				: trade.offeredCharacters;
 
-	const charactersAcceptorLost =
-		playerAcceptingID === trade.initiatingPlayer.id
-			? trade.offeredCharacters
-			: trade.requestedCharacters;
+		const charactersAcceptorLost =
+			playerAcceptingID === trade.initiatingPlayer.id
+				? trade.offeredCharacters
+				: trade.requestedCharacters;
 
 		return this.activityLogRepository.addActivityLog({
 			type: ActivityTypes.ACCEPT_TRADE,
-			player: playerAcceptingID,
+			player: playerAccepting,
 			involvedPlayer: playerAwaitingResponse,
 			involvedTrade: trade,
 			nameChangedFrom: nameBefore,
@@ -313,7 +314,7 @@ export class ActivityLogService {
 	 * @param player - The player to retrieve the activity logs for.
 	 * @returns An array of activity logs for the given player.
 	 */
-	getLogsForPlayer(player: PlayerResolvable): ActivityLog[] {
+	getLogsByPlayer(player: PlayerResolvable): ActivityLog[] {
 		return this.activityLogRepository.findActivityLogsWhere({
 			player: player,
 		});
@@ -324,7 +325,7 @@ export class ActivityLogService {
 	 * @param player - The player to retrieve the activity logs for.
 	 * @returns An array of activity logs for the given player.
 	 */
-	getLogsForPlayerToday(player: PlayerResolvable): ActivityLog[] {
+	getLogsTodayByPlayer(player: PlayerResolvable): ActivityLog[] {
 		const now = new Date();
 		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
 		return this.activityLogRepository.findActivityLogsAfterTimeWhere(startOfToday, {
@@ -337,7 +338,7 @@ export class ActivityLogService {
 	 * @param player - The player to exclude from the results.
 	 * @returns An array of activity logs for other players than the given player.
 	 */
-	getLogsForOtherPlayersToday(player: PlayerResolvable): ActivityLog[] {
+	getLogsTodayByPlayersOtherThan(player: PlayerResolvable): ActivityLog[] {
 		const now = new Date();
 		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
 		return this.activityLogRepository.findActivityLogsAfterTimeWhereNot(startOfToday, {
@@ -364,18 +365,18 @@ export class ActivityLogService {
 
 			nameIntervals.push({
 				startTime: previousTime,
-				endTime: log.timeOccured,
+				endTime: log.timeOccurred,
 				name: log.nameChangedFrom,
 				playerID: playerID,
 			});
-			previousTime = log.timeOccured;
+			previousTime = log.timeOccurred;
 			previousName = log.currentName;
 			lastLog = log;
 		}
 
 		if (lastLog !== undefined) {
 			nameIntervals.push({
-				startTime: lastLog.timeOccured,
+				startTime: lastLog.timeOccurred,
 				endTime: addDays(startOfToday, 1),
 				name: lastLog.currentName,
 				playerID: playerID,
@@ -482,7 +483,7 @@ export class ActivityLogService {
 	 * @param player - The player to retrieve the activity logs for.
 	 * @returns An array of activity logs for the given player.
 	 */
-	getCraftLogsForPlayerToday(player: PlayerResolvable): ActivityLog[] {
+	getCraftLogsTodayByPlayer(player: PlayerResolvable): ActivityLog[] {
 		const now = new Date();
 		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
 		return this.activityLogRepository.findActivityLogsAfterTimeWhere(startOfToday, {
@@ -496,8 +497,17 @@ export class ActivityLogService {
 	 * @param player - The player to retrieve the activity logs for.
 	 * @returns An array of activity logs for the given player.
 	 */
-	getAcceptTradeLogsForPlayer(player: PlayerResolvable): ActivityLog[] {
+	getAcceptTradeLogsByPlayer(player: PlayerResolvable): ActivityLog[] {
 		return this.activityLogRepository.findActivityLogsWhere({
+			player: player,
+			type: ActivityTypes.ACCEPT_TRADE,
+		});
+	}
+
+	getAcceptTradeLogsTodayByPlayer(player: PlayerResolvable): ActivityLog[] {
+		const now = new Date();
+		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
+		return this.activityLogRepository.findActivityLogsAfterTimeWhere(startOfToday, {
 			player: player,
 			type: ActivityTypes.ACCEPT_TRADE,
 		});
@@ -508,7 +518,7 @@ export class ActivityLogService {
 	 * @param player - The player to retrieve the activity logs for.
 	 * @returns An array of activity logs for the given player.
 	 */
-	getAcceptTradeLogsInvolvingPlayerToday(player: PlayerResolvable): ActivityLog[] {
+	getAcceptTradeLogsTodayWithRecpient(player: PlayerResolvable): ActivityLog[] {
 		const now = new Date();
 		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
 		return this.activityLogRepository.findActivityLogsAfterTimeWhere(startOfToday, {
@@ -518,12 +528,73 @@ export class ActivityLogService {
 	}
 
 	/**
+	 * Retrieves activity logs where the given player either accepts a trade or has their trade accepted
+	 * @param player - The player involved in the trades
+	 * @returns The activity logs
+	 */
+	getAcceptTradeLogsTodayInvolvingPlayer(player: PlayerResolvable): ActivityLog[] {
+		const now = new Date();
+		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
+		return this.activityLogRepository.findActivityLogsOfTypeAfterTimeWhereOr(
+			ActivityTypes.ACCEPT_TRADE,
+			startOfToday, {
+				player: player,
+				involvedPlayer: player
+			}
+		)
+	}
+
+	/**
+	 * Retrieves all activity logs for a given player where the type is initiating a trade.
+	 * @param player - The player to retrieve the activity logs for.
+	 * @returns An array of activity logs for the given player.
+	 */
+	getInitiateTradeLogsTodayByPlayer(player: PlayerResolvable): ActivityLog[] {
+		const now = new Date();
+		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
+		return this.activityLogRepository.findActivityLogsAfterTimeWhere(startOfToday, {
+			player: player,
+			type: ActivityTypes.INITIATE_TRADE,
+		});
+	}
+
+	/**
+	 * Retrieves all activity logs for a given player where they decline a trade.
+	 * Only retrieves activity logs that occurred today or later.
+	 * @param player - The player to retrieve the activity logs for.
+	 * @returns An array of activity logs for the given player.
+	 */
+	getDeclineTradeLogsTodayByPlayer(player: PlayerResolvable): ActivityLog[] {
+		const now = new Date();
+		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
+		return this.activityLogRepository.findActivityLogsAfterTimeWhere(startOfToday, {
+			player: player,
+			type: ActivityTypes.DECLINE_TRADE,
+		});
+	}
+
+	/**
+	 * Retrieves all activity logs for a given player where they modify a trade.
+	 * Only retrieves activity logs that occurred today or later.
+	 * @param player - The player to retrieve the activity logs for.
+	 * @returns An array of activity logs for the given player.
+	 */
+	getModifyTradeLogsTodayByPlayer(player: PlayerResolvable): ActivityLog[] {
+		const now = new Date();
+		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
+		return this.activityLogRepository.findActivityLogsAfterTimeWhere(startOfToday, {
+			player: player,
+			type: ActivityTypes.MODIFY_TRADE,
+		});
+	}
+
+	/**
 	 * Retrieves all activity logs for a given player where the type is changing name.
 	 * Only retrieves activity logs that occurred today or later.
 	 * @param player - The player to retrieve the activity logs for.
 	 * @returns An array of activity logs for the given player.
 	 */
-	getChangeNameLogsForPlayerToday(player: PlayerResolvable): ActivityLog[] {
+	getChangeNameLogsTodayByPlayer(player: PlayerResolvable): ActivityLog[] {
 		const now = new Date();
 		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
 		return this.activityLogRepository.findActivityLogsAfterTimeWhere(startOfToday, {
@@ -538,7 +609,7 @@ export class ActivityLogService {
 	 * @param player - The player to retrieve the activity logs for.
 	 * @returns An array of activity logs for the given player.
 	 */
-	getPublishNameLogsForPlayerToday(player: PlayerResolvable): ActivityLog[] {
+	getPublishNameLogsTodayByPlayer(player: PlayerResolvable): ActivityLog[] {
 		const now = new Date();
 		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
 		return this.activityLogRepository.findActivityLogsAfterTimeWhere(startOfToday, {
@@ -566,7 +637,7 @@ export class ActivityLogService {
 	 * @param player - The player to retrieve the activity logs for.
 	 * @returns An array of activity logs for the given player where they mine tokens.
 	 */
-	getMineTokensLogsForPlayerToday(player: PlayerResolvable): ActivityLog[] {
+	getMineTokensLogsTodayByPlayer(player: PlayerResolvable): ActivityLog[] {
 		const now = new Date();
 		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
 		return this.activityLogRepository.findActivityLogsAfterTimeWhere(startOfToday, {
@@ -594,7 +665,7 @@ export class ActivityLogService {
 	 * @param player - The player to retrieve the activity logs for.
 	 * @returns An array of activity logs for the given player where they claim a refill.
 	 */
-	getClaimRefillLogsForPlayerToday(player: PlayerResolvable): ActivityLog[] {
+	getClaimRefillLogsTodayByPlayer(player: PlayerResolvable): ActivityLog[] {
 		const now = new Date();
 		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
 		return this.activityLogRepository.findActivityLogsAfterTimeWhere(startOfToday, {
@@ -609,13 +680,61 @@ export class ActivityLogService {
 	 * @param player - The player to retrieve the activity logs for.
 	 * @returns An array of activity logs for the given player where they buy a mystery box.
 	 */
-	getBuyMysteryBoxLogsForPlayerToday(player: PlayerResolvable): ActivityLog[] {
+	getBuyMysteryBoxLogsTodayByPlayer(player: PlayerResolvable): ActivityLog[] {
 		const now = new Date();
 		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
 		return this.activityLogRepository.findActivityLogsAfterTimeWhere(startOfToday, {
 			player: player,
 			type: ActivityTypes.BUY_MYSTERY_BOX,
 		});
+	}
+
+	/**
+	 * Retrieves all activity logs for a given player where they complete a quest.
+	 * Only retrieves activity logs that occurred today or later.
+	 * @param player - The player to retrieve the activity logs for.
+	 * @returns An array of activity logs for the given player where they complete a quest.
+	 */
+	getCompleteQuestLogsTodayByPlayer(player: PlayerResolvable): ActivityLog[] {
+		const now = new Date();
+		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
+		return this.activityLogRepository.findActivityLogsAfterTimeWhere(startOfToday, {
+			player: player,
+			type: ActivityTypes.COMPLETE_QUEST,
+		});
+	}
+
+	/**
+	 * Retrieves all activity logs for completing the given quest.
+	 * Only retrieves activity logs that occurred today or later.
+	 * @param quest - The quest to retrieve the activity logs for.
+	 * @returns An array of activity logs for completing the given quest.
+	 */
+	getCompleteQuestLogsTodayForQuest(
+		quest: QuestResolvable
+	): ActivityLog[] {
+		const now = new Date();
+		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
+		return this.activityLogRepository.findActivityLogsAfterTimeWhere(startOfToday, {
+			type: ActivityTypes.COMPLETE_QUEST,
+			involvedQuest: quest,
+		});
+	}
+
+	/**
+	 * Retrieves all activity logs for a given player where they have a token difference.
+	 * Only retrieves activity logs that occurred today or later.
+	 * @param player - The player to retrieve the activity logs for.
+	 * @returns An array of activity logs for the given player where they have a token difference.
+	 */
+	getLogsWithTokenDifferenceTodayByPlayer(player: PlayerResolvable): ActivityLog[] {
+		const now = new Date();
+		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
+		return this.activityLogRepository.findActivityLogsAfterTimeByPlayerWhereNot(
+			startOfToday,
+			player,
+			{tokensDifference: 0},
+		)
 	}
 
 	/**

@@ -36,6 +36,7 @@ describe('ActivityLogRepository', () => {
 	let SOME_MYSTERY_BOX: MysteryBox;
 
 	beforeEach(() => {
+		jest.useRealTimers();
 		activityLogRepository = ActivityLogRepository.asMock();
 		db = activityLogRepository.db;
 
@@ -72,14 +73,14 @@ describe('ActivityLogRepository', () => {
 			for (let numHours = 10; numHours >= 1; numHours--) {
 				addMockActivityLog(db, {
 					player: SOME_PLAYER,
-					timeOccured: addHours(SOME_ACTIVITY_LOG.timeOccured, numHours),
+					timeOccurred: addHours(SOME_ACTIVITY_LOG.timeOccurred, numHours),
 				});
 			}
 
 			const foundActivityLogs = activityLogRepository.getActivityLogs();
 
 			for (let i = 0; i < foundActivityLogs.length - 1; i++) {
-				makeSure(foundActivityLogs[i].timeOccured.getTime()).isLessThan(foundActivityLogs[i + 1].timeOccured.getTime());
+				makeSure(foundActivityLogs[i].timeOccurred.getTime()).isLessThan(foundActivityLogs[i + 1].timeOccurred.getTime());
 			}
 		});
 	});
@@ -443,7 +444,7 @@ describe('ActivityLogRepository', () => {
 			for (let numHours = 10; numHours >= 1; numHours--) {
 				addMockActivityLog(db, {
 					player: SOME_PLAYER,
-					timeOccured: addHours(SOME_ACTIVITY_LOG.timeOccured, numHours),
+					timeOccurred: addHours(SOME_ACTIVITY_LOG.timeOccurred, numHours),
 				});
 			}
 
@@ -452,7 +453,7 @@ describe('ActivityLogRepository', () => {
 			});
 
 			for (let i = 0; i < foundActivityLogs.length - 1; i++) {
-				makeSure(foundActivityLogs[i].timeOccured.getTime()).isLessThan(foundActivityLogs[i + 1].timeOccured.getTime());
+				makeSure(foundActivityLogs[i].timeOccurred.getTime()).isLessThan(foundActivityLogs[i + 1].timeOccurred.getTime());
 			}
 		});
 	});
@@ -537,7 +538,7 @@ describe('ActivityLogRepository', () => {
 
 	describe('findActivityLogsAfterTimeWhere()', () => {
 		it('finds activity logs after a given time', () => {
-			const SOME_TIME = addDays(SOME_ACTIVITY_LOG.timeOccured, -1);
+			const SOME_TIME = addDays(SOME_ACTIVITY_LOG.timeOccurred, -1);
 			const foundActivityLogs = activityLogRepository.findActivityLogsAfterTimeWhere(SOME_TIME, {
 				player: SOME_PLAYER,
 				involvedPlayer: INVOLVED_PLAYER,
@@ -552,7 +553,7 @@ describe('ActivityLogRepository', () => {
 		});
 
 		it('returns no activity logs if there are none after the given time', () => {
-			const SOME_TIME = addDays(SOME_ACTIVITY_LOG.timeOccured, 1);
+			const SOME_TIME = addDays(SOME_ACTIVITY_LOG.timeOccurred, 1);
 			const foundActivityLogs = activityLogRepository.findActivityLogsAfterTimeWhere(SOME_TIME, {
 				player: SOME_PLAYER,
 				involvedPlayer: INVOLVED_PLAYER,
@@ -567,16 +568,16 @@ describe('ActivityLogRepository', () => {
 			for (let numHours = 10; numHours >= 1; numHours--) {
 				addMockActivityLog(db, {
 					player: SOME_PLAYER,
-					timeOccured: addHours(SOME_ACTIVITY_LOG.timeOccured, numHours),
+					timeOccurred: addHours(SOME_ACTIVITY_LOG.timeOccurred, numHours),
 				});
 			}
 
-			const foundActivityLogs = activityLogRepository.findActivityLogsAfterTimeWhere(SOME_ACTIVITY_LOG.timeOccured, {
+			const foundActivityLogs = activityLogRepository.findActivityLogsAfterTimeWhere(SOME_ACTIVITY_LOG.timeOccurred, {
 				player: SOME_PLAYER,
 			});
 
 			for (let i = 0; i < foundActivityLogs.length - 1; i++) {
-				makeSure(foundActivityLogs[i].timeOccured.getTime()).isLessThan(foundActivityLogs[i + 1].timeOccured.getTime());
+				makeSure(foundActivityLogs[i].timeOccurred.getTime()).isLessThan(foundActivityLogs[i + 1].timeOccurred.getTime());
 			}
 		});
 	});
@@ -587,6 +588,12 @@ describe('ActivityLogRepository', () => {
 		});
 
 		it('returns any new latest activity log', () => {
+			db.run('DELETE FROM activityLog');
+			addMockActivityLog(db);
+			addMockActivityLog(db);
+			addMockActivityLog(db);
+			addMockActivityLog(db);
+			addMockActivityLog(db);
 			const NEW_ACTIVITY_LOG = addMockActivityLog(db);
 
 			makeSure(activityLogRepository.getLatestActivityLog()).is(NEW_ACTIVITY_LOG);
@@ -595,7 +602,7 @@ describe('ActivityLogRepository', () => {
 
 	describe('findActivityLogsAfterTime()', () => {
 		it('finds activity logs after a given time', () => {
-			const SOME_TIME = addDays(SOME_ACTIVITY_LOG.timeOccured, -1);
+			const SOME_TIME = addDays(SOME_ACTIVITY_LOG.timeOccurred, -1);
 			const foundActivityLogs = activityLogRepository.findActivityLogsAfterTime(SOME_TIME);
 
 			makeSure(foundActivityLogs).hasLengthOf(1);
@@ -605,7 +612,7 @@ describe('ActivityLogRepository', () => {
 		});
 
 		it('returns no activity logs if there are none after the given time', () => {
-			const SOME_TIME = addDays(SOME_ACTIVITY_LOG.timeOccured, 1);
+			const SOME_TIME = addDays(SOME_ACTIVITY_LOG.timeOccurred, 1);
 			const foundActivityLogs = activityLogRepository.findActivityLogsAfterTime(SOME_TIME);
 
 			makeSure(foundActivityLogs).hasLengthOf(0);
@@ -614,21 +621,21 @@ describe('ActivityLogRepository', () => {
 		it('returns activity logs in order of time', () => {
 			for (let numHours = 10; numHours >= 1; numHours--) {
 				addMockActivityLog(db, {
-					timeOccured: addHours(SOME_ACTIVITY_LOG.timeOccured, numHours),
+					timeOccurred: addHours(SOME_ACTIVITY_LOG.timeOccurred, numHours),
 				});
 			}
 
-			const foundActivityLogs = activityLogRepository.findActivityLogsAfterTime(SOME_ACTIVITY_LOG.timeOccured);
+			const foundActivityLogs = activityLogRepository.findActivityLogsAfterTime(SOME_ACTIVITY_LOG.timeOccurred);
 
 			for (let i = 0; i < foundActivityLogs.length - 1; i++) {
-				makeSure(foundActivityLogs[i].timeOccured.getTime()).isLessThan(foundActivityLogs[i + 1].timeOccured.getTime());
+				makeSure(foundActivityLogs[i].timeOccurred.getTime()).isLessThan(foundActivityLogs[i + 1].timeOccurred.getTime());
 			}
 		});
 	});
 
 	describe('findActivityLogsAfterTimeWhereNot()', () => {
 		it('finds activity logs after a given time', () => {
-			const SOME_TIME = addDays(SOME_ACTIVITY_LOG.timeOccured, -1);
+			const SOME_TIME = addDays(SOME_ACTIVITY_LOG.timeOccurred, -1);
 			const foundActivityLogs = activityLogRepository.findActivityLogsAfterTimeWhereNot(SOME_TIME, {
 				player: INVOLVED_PLAYER,
 			});
@@ -640,12 +647,12 @@ describe('ActivityLogRepository', () => {
 
 			for (const activityLog of foundActivityLogs) {
 				makeSure(activityLog.player.id).isNot(INVOLVED_PLAYER.id);
-				makeSure(activityLog.timeOccured.getTime()).isGreaterThan(SOME_TIME.getTime());
+				makeSure(activityLog.timeOccurred.getTime()).isGreaterThan(SOME_TIME.getTime());
 			}
 		});
 
 		it('finds activity logs not done by the given player', () => {
-			const foundActivityLogs = activityLogRepository.findActivityLogsAfterTimeWhereNot(SOME_ACTIVITY_LOG.timeOccured, {
+			const foundActivityLogs = activityLogRepository.findActivityLogsAfterTimeWhereNot(SOME_ACTIVITY_LOG.timeOccurred, {
 				player: SOME_PLAYER
 			});
 
@@ -653,6 +660,7 @@ describe('ActivityLogRepository', () => {
 		});
 
 		it('finds activity logs not done by the given player or of a certain type', () => {
+			const SOME_TIME = addDays(SOME_ACTIVITY_LOG.timeOccurred, -1);
 			const EXPECTED_ACTIVITY_LOG = addMockActivityLog(db, {
 				player: SOME_PLAYER,
 				type: ActivityTypes.MINE_TOKENS,
@@ -670,7 +678,7 @@ describe('ActivityLogRepository', () => {
 				type: ActivityTypes.BUY_MYSTERY_BOX,
 			});
 
-			const foundActivityLogs = activityLogRepository.findActivityLogsAfterTimeWhereNot(SOME_ACTIVITY_LOG.timeOccured, {
+			const foundActivityLogs = activityLogRepository.findActivityLogsAfterTimeWhereNot(SOME_TIME, {
 				player: INVOLVED_PLAYER,
 				type: ActivityTypes.BUY_MYSTERY_BOX,
 			});
@@ -679,6 +687,137 @@ describe('ActivityLogRepository', () => {
 			makeSure(foundActivityLogs[0]).hasProperties({
 				id: EXPECTED_ACTIVITY_LOG.id,
 			});
+		});
+	});
+
+	describe('findActivityLogsOfTypeAfterTimeWhereOr()', () => {
+		it('finds activity logs of a certain type after a given time', () => {
+			const SOME_TIME = addDays(SOME_ACTIVITY_LOG.timeOccurred, -1);
+			const EXPECTED_ACTIVITY_LOG1 = addMockActivityLog(db, {
+				type: ActivityTypes.CLAIM_REFILL,
+				player: SOME_PLAYER,
+			});
+			addMockActivityLog(db, {
+				type: ActivityTypes.BUY_MYSTERY_BOX,
+				player: SOME_PLAYER,
+			});
+			const EXPECTED_ACTIVITY_LOG2 = addMockActivityLog(db, {
+				type: ActivityTypes.CLAIM_REFILL,
+				involvedPlayer: INVOLVED_PLAYER,
+			});
+			addMockActivityLog(db, {
+				type: ActivityTypes.BUY_MYSTERY_BOX,
+				involvedPlayer: INVOLVED_PLAYER,
+			});
+			addMockActivityLog(db, {
+				type: ActivityTypes.CLAIM_REFILL,
+				involvedPlayer: SOME_PLAYER,
+			});
+
+			const foundActivityLogs = activityLogRepository.findActivityLogsOfTypeAfterTimeWhereOr(
+				ActivityTypes.CLAIM_REFILL,
+				SOME_TIME,
+				{
+					player: SOME_PLAYER,
+					involvedPlayer: INVOLVED_PLAYER,
+				}
+			);
+
+			makeSure(foundActivityLogs).containsOnly(EXPECTED_ACTIVITY_LOG1, EXPECTED_ACTIVITY_LOG2);
+		});
+	});
+
+	describe('findActivityLogsAfterTimeByPlayerWhereNot()', () => {
+		it('finds activity logs after a given time by a player where not', () => {
+			const EXPECTED_ACTIVITY_LOG = addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.MINE_TOKENS,
+				timeOccurred: addDays(SOME_ACTIVITY_LOG.timeOccurred, 1),
+			});
+
+			const foundActivityLogs = activityLogRepository.findActivityLogsAfterTimeByPlayerWhereNot(
+				SOME_ACTIVITY_LOG.timeOccurred,
+				SOME_PLAYER,
+				{
+					type: ActivityTypes.BUY_MYSTERY_BOX,
+				}
+			);
+
+			makeSure(foundActivityLogs).hasLengthOf(1);
+			makeSure(foundActivityLogs[0].id).is(EXPECTED_ACTIVITY_LOG.id);
+		});
+
+		it('returns no activity logs if there are none after the given time by the given player', () => {
+			const SOME_TIME = addDays(SOME_ACTIVITY_LOG.timeOccurred, 1);
+			const foundActivityLogs = activityLogRepository.findActivityLogsAfterTimeByPlayerWhereNot(
+				SOME_TIME,
+				SOME_PLAYER,
+				{
+					type: ActivityTypes.BUY_MYSTERY_BOX,
+				}
+			);
+
+			makeSure(foundActivityLogs).hasLengthOf(0);
+		});
+
+		it('does not include activity logs that have the specified properties', () => {
+			const EXPECTED_ACTIVITY_LOG = addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.MINE_TOKENS,
+				timeOccurred: addDays(SOME_ACTIVITY_LOG.timeOccurred, 1),
+			});
+
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.BUY_MYSTERY_BOX,
+				timeOccurred: addDays(SOME_ACTIVITY_LOG.timeOccurred, 1),
+			});
+
+			addMockActivityLog(db, {
+				player: INVOLVED_PLAYER,
+				type: ActivityTypes.MINE_TOKENS,
+				timeOccurred: addDays(SOME_ACTIVITY_LOG.timeOccurred, 1),
+			});
+
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.MINE_TOKENS,
+				timeOccurred: addDays(SOME_ACTIVITY_LOG.timeOccurred, 1),
+				involvedPlayer: INVOLVED_PLAYER,
+			});
+
+			const foundActivityLogs = activityLogRepository.findActivityLogsAfterTimeByPlayerWhereNot(
+				SOME_ACTIVITY_LOG.timeOccurred,
+				SOME_PLAYER,
+				{
+					type: ActivityTypes.BUY_MYSTERY_BOX,
+					involvedPlayer: INVOLVED_PLAYER,
+				}
+			);
+
+			makeSure(foundActivityLogs).hasLengthOf(1);
+			makeSure(foundActivityLogs[0].id).is(EXPECTED_ACTIVITY_LOG.id);
+		});
+
+		it('returns activity logs in order of time', () => {
+			for (let numHours = 10; numHours >= 1; numHours--) {
+				addMockActivityLog(db, {
+					player: SOME_PLAYER,
+					timeOccurred: addHours(SOME_ACTIVITY_LOG.timeOccurred, numHours),
+				});
+			}
+
+			const foundActivityLogs = activityLogRepository.findActivityLogsAfterTimeByPlayerWhereNot(
+				SOME_ACTIVITY_LOG.timeOccurred,
+				SOME_PLAYER,
+				{
+					type: ActivityTypes.BUY_MYSTERY_BOX,
+				}
+			);
+
+			for (let i = 0; i < foundActivityLogs.length - 1; i++) {
+				makeSure(foundActivityLogs[i].timeOccurred.getTime()).isLessThan(foundActivityLogs[i + 1].timeOccurred.getTime());
+			}
 		});
 	});
 });

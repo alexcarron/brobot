@@ -11,7 +11,7 @@ export const DISCORD_NICKNAME_FOR_NO_NAME = "˙";
 /**
  * The number of days players will have to create and publish their names before voting begins.
  */
-export const DAYS_TO_BUILD_NAME = 7 * 4; // 4 Weeks
+export const DAYS_TO_BUILD_NAME = 7 * 2; // 2 Weeks
 
 /**
  * The day offsets from the start of the week when perk events occur.

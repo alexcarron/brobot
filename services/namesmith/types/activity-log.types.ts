@@ -30,7 +30,7 @@ export const activityTypes: ActivityType[] = Object.values(ActivityTypes);
 
 export const DBActivityLogType = object.asTransformableType('MinimalActivityLog', {
 	id: number,
-	timeOccured: DBDate,
+	timeOccurred: DBDate,
 	playerID: string,
 	type: strings(...activityTypes),
 	nameChangedFrom: string.orNull,
@@ -54,7 +54,7 @@ export type MinimalActivityLog = ExtractDomainType<typeof DBActivityLogType>;
 
 export type ActivityLog = {
 	id: number;
-	timeOccured: Date;
+	timeOccurred: Date;
 	player: Player;
 	type: ActivityType;
 	nameChangedFrom: string | null;
@@ -74,7 +74,7 @@ export type ActivityLog = {
 
 export type ActivityLogDefinition = {
 	id?: number;
-	timeOccured?: Date;
+	timeOccurred?: Date;
 	player: PlayerResolvable;
 	type: ActivityType;
 	nameChangedFrom?: string | null;

@@ -1,11 +1,11 @@
 import { returnNonNullOrThrow } from "../../../utilities/error-utils";
 import { resolveOptional } from "../../../utilities/optional-utils";
-import { WithAtLeastOneProperty } from '../../../utilities/types/generic-types';
+import { WithAtLeastOneProperty, Without } from '../../../utilities/types/generic-types';
 import { isNotNullable } from "../../../utilities/types/type-guards";
-import { DatabaseQuerier, toParameterAndWhereClause, toParameterNotAndWhereClause } from "../database/database-querier";
+import { DatabaseQuerier, toParameterAndWhereClause, toParameterNotAndWhereClause, toParameterOrWhereClause } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
-import { ActivityLogID as ActivityLogID, ActivityLog, ActivityLogDefinition, MinimalActivityLog, asMinimalActivityLog, asMinimalActivityLogs, DBActivityLog } from "../types/activity-log.types";
-import { Player } from "../types/player.types";
+import { ActivityLogID as ActivityLogID, ActivityLog, ActivityLogDefinition, MinimalActivityLog, asMinimalActivityLog, asMinimalActivityLogs, DBActivityLog, ActivityType } from "../types/activity-log.types";
+import { Player, PlayerResolvable } from "../types/player.types";
 import { Quest } from "../types/quest.types";
 import { Recipe } from "../types/recipe.types";
 import { Trade } from "../types/trade.types";
@@ -127,7 +127,7 @@ export class ActivityLogRepository {
 		const minimalActivityLogs = asMinimalActivityLogs(
 			this.db.getRows(
 				`SELECT * FROM activityLog
-				ORDER BY timeOccured ASC`
+				ORDER BY timeOccurred ASC`
 			)
 		)
 
@@ -176,7 +176,7 @@ export class ActivityLogRepository {
 	toPartialDBActivityLog(
 		activityLogDefinition: Partial<ActivityLogDefinition>
 	): Partial<DBActivityLog> {
-		const { id, timeOccured, player, type, nameChangedFrom, currentName, charactersGained, charactersLost, tokensDifference, timeCooldownExpired, involvedPlayer, involvedRecipe, involvedQuest, involvedTrade, involvedPerk, involvedRole, involvedMysteryBox } = activityLogDefinition;
+		const { id, timeOccurred, player, type, nameChangedFrom, currentName, charactersGained, charactersLost, tokensDifference, timeCooldownExpired, involvedPlayer, involvedRecipe, involvedQuest, involvedTrade, involvedPerk, involvedRole, involvedMysteryBox } = activityLogDefinition;
 
 		const playerID = resolveOptional(player,
 			this.playerRepository.resolveID.bind(this.playerRepository)
@@ -205,7 +205,7 @@ export class ActivityLogRepository {
 
 		return {
 			id,
-			timeOccured: DBDate.orUndefined.fromDomain(timeOccured),
+			timeOccurred: DBDate.orUndefined.fromDomain(timeOccurred),
 			playerID,
 			type,
 			nameChangedFrom,
@@ -275,11 +275,11 @@ export class ActivityLogRepository {
 	) {
 		this.throwIfAnEntityDoesNotExist(activityLogDefinition);
 
-		let {id, timeOccured, currentName} = activityLogDefinition;
+		let {id, timeOccurred, currentName} = activityLogDefinition;
 		const {tokensDifference, nameChangedFrom, player, charactersGained, charactersLost, timeCooldownExpired} = activityLogDefinition;
 
-		if (timeOccured === undefined)
-			timeOccured = new Date();
+		if (timeOccurred === undefined)
+			timeOccurred = new Date();
 
 		if (currentName === undefined)
 			currentName = this.playerRepository.resolvePlayer(player).currentName;
@@ -291,7 +291,7 @@ export class ActivityLogRepository {
 
 		const insertedFields = this.toPartialDBActivityLog({
 			...activityLogDefinition,
-			timeOccured: timeOccured,
+			timeOccurred: timeOccurred,
 			nameChangedFrom: nameChangedFrom !== undefined
 				? nameChangedFrom
 				: null,
@@ -330,7 +330,7 @@ export class ActivityLogRepository {
 				`SELECT * FROM activityLog
 				WHERE
 					${toParameterAndWhereClause(queryParameters)}
-				ORDER BY timeOccured ASC
+				ORDER BY timeOccurred ASC
 				`,
 				queryParameters
 			)
@@ -341,23 +341,23 @@ export class ActivityLogRepository {
 
 	/**
 	 * Finds all activity logs after a given time.
-	 * @param minimumTimeOccured - The time after which the activity logs should be found.
+	 * @param minimumTimeOccurred - The time after which the activity logs should be found.
 	 * @returns An array of activity log objects.
 	 */
-	findActivityLogsAfterTime(minimumTimeOccured: Date): ActivityLog[] {
+	findActivityLogsAfterTime(minimumTimeOccurred: Date): ActivityLog[] {
 		const minimalActivityLogs = asMinimalActivityLogs(
 			this.db.getRows(
 				`SELECT * FROM activityLog
-				WHERE timeOccured > @minimumTimeOccured
-				ORDER BY timeOccured ASC`,
-				{ minimumTimeOccured: DBDate.fromDomain(minimumTimeOccured) }
+				WHERE timeOccurred > @minimumTimeOccurred
+				ORDER BY timeOccurred ASC`,
+				{ minimumTimeOccurred: DBDate.fromDomain(minimumTimeOccurred) }
 			)
 		);
 
 		return minimalActivityLogs.map(dbActivityLog => this.toActivityLogFromMinimal(dbActivityLog));
 	}
 
-	findActivityLogsAfterTimeWhere(minimumTimeOccured: Date,
+	findActivityLogsAfterTimeWhere(minimumTimeOccurred: Date,
 		activityLogDefinition: WithAtLeastOneProperty<ActivityLogDefinition>): ActivityLog[]
 	{
 		this.throwIfAnEntityDoesNotExist(activityLogDefinition);
@@ -368,13 +368,13 @@ export class ActivityLogRepository {
 			this.db.getRows(
 				`SELECT * FROM activityLog
 				WHERE
-					timeOccured > @minimumTimeOccured AND
+					timeOccurred > @minimumTimeOccurred AND
 					${toParameterAndWhereClause(queryParameters)}
-				ORDER BY timeOccured ASC
+				ORDER BY timeOccurred ASC
 				`,
 				{
 					...queryParameters,
-					minimumTimeOccured: DBDate.fromDomain(minimumTimeOccured),
+					minimumTimeOccurred: DBDate.fromDomain(minimumTimeOccurred),
 				}
 			)
 		);
@@ -383,7 +383,7 @@ export class ActivityLogRepository {
 	}
 
 	findActivityLogsAfterTimeWhereNot(
-		minimumTimeOccured: Date,
+		minimumTimeOccurred: Date,
 		activityLogDefinition: WithAtLeastOneProperty<ActivityLogDefinition>
 	): ActivityLog[] {
 		this.throwIfAnEntityDoesNotExist(activityLogDefinition);
@@ -394,12 +394,72 @@ export class ActivityLogRepository {
 			this.db.getRows(
 				`SELECT * FROM activityLog
 				WHERE
-					timeOccured > @minimumTimeOccured AND
+					timeOccurred > @minimumTimeOccurred AND
 					${toParameterNotAndWhereClause(queryParameters)}
+				ORDER BY timeOccurred ASC
 				`,
 				{
 					...queryParameters,
-					minimumTimeOccured: DBDate.fromDomain(minimumTimeOccured),
+					minimumTimeOccurred: DBDate.fromDomain(minimumTimeOccurred),
+				}
+			)
+		);
+
+		return minimalActivityLogs.map(dbActivityLog => this.toActivityLogFromMinimal(dbActivityLog));
+	}
+
+	findActivityLogsAfterTimeByPlayerWhereNot(
+		minimumTimeOccurred: Date,
+		playerResolvable: PlayerResolvable,
+		activityLogDefinition: WithAtLeastOneProperty<Without<ActivityLogDefinition, 'player'>>
+	): ActivityLog[] {
+		const player = this.playerRepository.resolvePlayer(playerResolvable);
+		this.throwIfAnEntityDoesNotExist(activityLogDefinition);
+
+		const queryParameters = this.toPartialDBActivityLog(activityLogDefinition);
+
+		const minimalActivityLogs = asMinimalActivityLogs(
+			this.db.getRows(
+				`SELECT * FROM activityLog
+				WHERE
+					timeOccurred > @minimumTimeOccurred AND
+					playerID = @playerID AND
+					(${toParameterNotAndWhereClause(queryParameters)})
+				ORDER BY timeOccurred ASC
+				`,
+				{
+					...queryParameters,
+					minimumTimeOccurred: DBDate.fromDomain(minimumTimeOccurred),
+					playerID: player.id,
+				}
+			)
+		);
+
+		return minimalActivityLogs.map(dbActivityLog => this.toActivityLogFromMinimal(dbActivityLog));
+	}
+
+	findActivityLogsOfTypeAfterTimeWhereOr(
+		activityType: ActivityType,
+		minimumTimeOccurred: Date,
+		activityLogDefinition: WithAtLeastOneProperty<ActivityLogDefinition>
+	): ActivityLog[] {
+		this.throwIfAnEntityDoesNotExist(activityLogDefinition);
+
+		const queryParameters = this.toPartialDBActivityLog(activityLogDefinition);
+
+		const minimalActivityLogs = asMinimalActivityLogs(
+			this.db.getRows(
+				`SELECT * FROM activityLog
+				WHERE
+					timeOccurred > @minimumTimeOccurred AND
+					type = @activityType AND
+					(${toParameterOrWhereClause(queryParameters)})
+				ORDER BY timeOccurred ASC
+				`,
+				{
+					...queryParameters,
+					minimumTimeOccurred: DBDate.fromDomain(minimumTimeOccurred),
+					activityType,
 				}
 			)
 		);
@@ -415,7 +475,7 @@ export class ActivityLogRepository {
 		const minimalActivityLogs = asMinimalActivityLog(
 			this.db.getRow(`
 				SELECT * FROM activityLog
-				ORDER BY timeOccured DESC
+				ORDER BY timeOccurred DESC, id DESC
 				LIMIT 1
 			`)
 		);

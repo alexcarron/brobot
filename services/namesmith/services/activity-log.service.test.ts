@@ -8,7 +8,7 @@ import { addMockMysteryBox, forcePlayerToBuyNewMysteryBox } from "../mocks/mock-
 import { addMockPerk } from "../mocks/mock-data/mock-perks";
 import { addMockPlayer, forcePlayerToChangeName, forcePlayerToMineTokens } from '../mocks/mock-data/mock-players';
 import { addMockQuest } from "../mocks/mock-data/mock-quests";
-import { addMockRecipe, forcePlayerToCraft } from "../mocks/mock-data/mock-recipes";
+import { addMockRecipe, forcePlayerToCraftRecipe } from "../mocks/mock-data/mock-recipes";
 import { addMockRole } from "../mocks/mock-data/mock-roles";
 import { addMockTrade, forcePlayerToAcceptNewTrade } from "../mocks/mock-data/mock-trades";
 import { setupMockNamesmith } from "../mocks/mock-setup";
@@ -19,7 +19,7 @@ import { Player } from "../types/player.types";
 import { Quest } from "../types/quest.types";
 import { Recipe } from "../types/recipe.types";
 import { Role } from "../types/role.types";
-import { Trade } from "../types/trade.types";
+import { Trade, TradeStatuses } from "../types/trade.types";
 import { PlayerNotFoundError } from "../utilities/error.utility";
 import { ActivityLogService } from "./activity-log.service";
 import { GameStateService } from "./game-state.service";
@@ -149,7 +149,7 @@ describe('ActivityLogService', () => {
 				requestedCharacters: 'xyz',
 			})
 			const activityLog = activityLogService.logAcceptTrade({
-				playerAcceptingID: SOME_PLAYER.id,
+				playerAccepting: SOME_PLAYER.id,
 				playerAwaitingResponse: OTHER_PLAYER.id,
 				trade: trade,
 				nameBefore: 'SOME_NAME',
@@ -505,12 +505,12 @@ describe('ActivityLogService', () => {
 
 		it('returns one when player mined once after time and once before time', () => {
 			addMockActivityLog(db, {
-				timeOccured: YESTERDAY,
+				timeOccurred: YESTERDAY,
 				player: SOME_PLAYER.id,
 				type: ActivityTypes.MINE_TOKENS,
 			});
 			addMockActivityLog(db, {
-				timeOccured: TOMORROW,
+				timeOccurred: TOMORROW,
 				player: SOME_PLAYER.id,
 				type: ActivityTypes.MINE_TOKENS,
 			});
@@ -570,19 +570,19 @@ describe('ActivityLogService', () => {
 
 		it('returns the sum of spent tokens only after the given date', () => {
 			addMockActivityLog(db, {
-				timeOccured: YESTERDAY,
+				timeOccurred: YESTERDAY,
 				player: SOME_PLAYER.id,
 				type: ActivityTypes.BUY_MYSTERY_BOX,
 				tokensDifference: -10
 			});
 			addMockActivityLog(db, {
-				timeOccured: YESTERDAY,
+				timeOccurred: YESTERDAY,
 				player: SOME_PLAYER.id,
 				type: ActivityTypes.BUY_MYSTERY_BOX,
 				tokensDifference: -15
 			});
 			addMockActivityLog(db, {
-				timeOccured: TOMORROW,
+				timeOccurred: TOMORROW,
 				player: SOME_PLAYER.id,
 				type: ActivityTypes.BUY_MYSTERY_BOX,
 				tokensDifference: -25
@@ -596,80 +596,80 @@ describe('ActivityLogService', () => {
 
 	describe('getChangeNameLogsForPlayerToday()', () => {
 		it('returns an empty array when the player has not changed names', () => {
-			makeSure(activityLogService.getChangeNameLogsForPlayerToday(SOME_PLAYER.id)).isEmpty();
+			makeSure(activityLogService.getChangeNameLogsTodayByPlayer(SOME_PLAYER.id)).isEmpty();
 		});
 
 		it('returns the change name logs for a player', () => {
 			addMockActivityLog(db, {
-				timeOccured: YESTERDAY,
+				timeOccurred: YESTERDAY,
 				player: SOME_PLAYER.id,
 				type: ActivityTypes.CHANGE_NAME,
 			});
 			addMockActivityLog(db, {
-				timeOccured: TOMORROW,
+				timeOccurred: TOMORROW,
 				player: SOME_PLAYER.id,
 				type: ActivityTypes.CHANGE_NAME,
 			});
 			addMockActivityLog(db, {
-				timeOccured: TOMORROW,
+				timeOccurred: TOMORROW,
 				player: SOME_PLAYER.id,
 				type: ActivityTypes.CHANGE_NAME,
 			});
 
-			makeSure(activityLogService.getChangeNameLogsForPlayerToday(SOME_PLAYER.id)).hasLengthOf(2);
+			makeSure(activityLogService.getChangeNameLogsTodayByPlayer(SOME_PLAYER.id)).hasLengthOf(2);
 		});
 	});
 
 	describe('getLogsForOtherPlayersToday()', () => {
 		it('returns an empty array when there are no logs for other players', () => {
-			makeSure(activityLogService.getLogsForOtherPlayersToday(SOME_PLAYER.id)).isEmpty();
+			makeSure(activityLogService.getLogsTodayByPlayersOtherThan(SOME_PLAYER.id)).isEmpty();
 		});
 
 		it('returns the logs for other players', () => {
 			const IGNORED_LOG = addMockActivityLog(db, {
-				timeOccured: TOMORROW,
+				timeOccurred: TOMORROW,
 				player: SOME_PLAYER.id,
 				type: ActivityTypes.CHANGE_NAME,
 			});
 			addMockActivityLog(db, {
-				timeOccured: TOMORROW,
+				timeOccurred: TOMORROW,
 				player: OTHER_PLAYER.id,
 				type: ActivityTypes.CHANGE_NAME,
 			});
 			addMockActivityLog(db, {
-				timeOccured: TOMORROW,
+				timeOccurred: TOMORROW,
 				player: OTHER_PLAYER.id,
 				type: ActivityTypes.CHANGE_NAME,
 			});
 
-			const returnedLogs = activityLogService.getLogsForOtherPlayersToday(SOME_PLAYER.id);
+			const returnedLogs = activityLogService.getLogsTodayByPlayersOtherThan(SOME_PLAYER.id);
 			makeSure(returnedLogs).hasLengthOf(2);
 			makeSure(returnedLogs).hasNoItemWhere(log => log.id === IGNORED_LOG.id);
 		});
 
 		it('ignores logs done before the given time and done by the given player', () => {
 			addMockActivityLog(db, {
-				timeOccured: YESTERDAY,
+				timeOccurred: YESTERDAY,
 				player: SOME_PLAYER.id,
 				type: ActivityTypes.CHANGE_NAME,
 			});
 			addMockActivityLog(db, {
-				timeOccured: YESTERDAY,
+				timeOccurred: YESTERDAY,
 				player: OTHER_PLAYER.id,
 				type: ActivityTypes.CHANGE_NAME,
 			});
 			addMockActivityLog(db, {
-				timeOccured: TOMORROW,
+				timeOccurred: TOMORROW,
 				player: SOME_PLAYER.id,
 				type: ActivityTypes.CHANGE_NAME,
 			});
 			const EXPECTED_ACTIVITY_LOG = addMockActivityLog(db, {
-				timeOccured: TOMORROW,
+				timeOccurred: TOMORROW,
 				player: OTHER_PLAYER.id,
 				type: ActivityTypes.CHANGE_NAME,
 			});
 
-			const returnedLogs = activityLogService.getLogsForOtherPlayersToday(SOME_PLAYER.id);
+			const returnedLogs = activityLogService.getLogsTodayByPlayersOtherThan(SOME_PLAYER.id);
 			makeSure(returnedLogs).hasLengthOf(1);
 			makeSure(returnedLogs[0].id).is(EXPECTED_ACTIVITY_LOG.id);
 		});
@@ -770,7 +770,7 @@ describe('ActivityLogService', () => {
 				inputCharacters: 'a',
 				outputCharacters: 'b',
 			})
-			forcePlayerToCraft(SOME_PLAYER, recipe)
+			forcePlayerToCraftRecipe(SOME_PLAYER, recipe)
 
 			jest.setSystemTime(IN_BETWEEN_TIMES[2]);
 			forcePlayerToAcceptNewTrade(SOME_PLAYER, {
@@ -1033,6 +1033,7 @@ describe('ActivityLogService', () => {
 
 			makeSure(names).hasLengthOf(1);
 			makeSure(names).containsOnly('Name3');
+			jest.useRealTimers();
 		});
 	});
 
@@ -1078,6 +1079,206 @@ describe('ActivityLogService', () => {
 				}
 				previousStartTime = startTime;
 			}
+
+			jest.useRealTimers();
 		})
+	});
+
+	describe('getAcceptTradeLogsInvolvingPlayer()', () => {
+		it('returns only logs that involve the player', () => {
+			const player1 = addMockPlayer(db, {currentName: 'player1'});
+			const player2 = addMockPlayer(db, {currentName: 'player2'});
+			const trade1 = addMockTrade(db, {
+				initiatingPlayer: player1.id,
+				recipientPlayer: player2.id,
+				status: TradeStatuses.ACCEPTED,
+			});
+			const trade2 = addMockTrade(db, {
+				initiatingPlayer: player2.id,
+				recipientPlayer: player1.id,
+				status: TradeStatuses.ACCEPTED,
+			});
+			const trade3 = addMockTrade(db, {
+				initiatingPlayer: player2.id,
+				recipientPlayer: player2.id,
+				status: TradeStatuses.ACCEPTED,
+			});
+
+			const expectedLog1 = activityLogService.logAcceptTrade({
+				playerAccepting: player2,
+				playerAwaitingResponse: player1,
+				trade: trade1,
+				nameBefore: 'SOME_NAME',
+			});
+
+			const expectedLog2 = activityLogService.logAcceptTrade({
+				playerAccepting: player1,
+				playerAwaitingResponse: player2,
+				trade: trade2,
+				nameBefore: 'SOME_NAME',
+			});
+
+			activityLogService.logAcceptTrade({
+				playerAccepting: player2,
+				playerAwaitingResponse: player2,
+				trade: trade3,
+				nameBefore: 'SOME_NAME',
+			});
+
+			const logs = activityLogService.getAcceptTradeLogsTodayInvolvingPlayer(player1);
+
+			makeSure(logs).containsOnly(expectedLog1, expectedLog2);
+		});
+	});
+
+	describe('getModifyTradeLogsTodayByPlayer()', () => {
+		it('returns an empty array when the player has not modified any trades today', () => {
+			makeSure(activityLogService.getModifyTradeLogsTodayByPlayer(SOME_PLAYER.id)).isEmpty();
+		});
+
+		it('returns modify trade logs for the player when they have modified trades today', () => {
+			const otherPlayer = addMockPlayer(db, {currentName: 'otherPlayer'});
+			const trade = addMockTrade(db, {
+				initiatingPlayer: SOME_PLAYER.id,
+				recipientPlayer: otherPlayer.id,
+				status: TradeStatuses.AWAITING_RECIPIENT,
+			});
+
+			const expectedLog = activityLogService.logModifyTrade({
+				playerModifyingTrade: SOME_PLAYER.id,
+				playerAwaitingResponse: otherPlayer.id,
+				trade: trade,
+			});
+
+			const logs = activityLogService.getModifyTradeLogsTodayByPlayer(SOME_PLAYER.id);
+
+			makeSure(logs).containsOnly(expectedLog);
+		});
+
+		it('returns only modify trade logs for the specific player', () => {
+			const otherPlayer = addMockPlayer(db, {currentName: 'otherPlayer'});
+			const thirdPlayer = addMockPlayer(db, {currentName: 'thirdPlayer'});
+			const trade1 = addMockTrade(db, {
+				initiatingPlayer: SOME_PLAYER.id,
+				recipientPlayer: otherPlayer.id,
+				status: TradeStatuses.AWAITING_RECIPIENT,
+			});
+			const trade2 = addMockTrade(db, {
+				initiatingPlayer: thirdPlayer.id,
+				recipientPlayer: otherPlayer.id,
+				status: TradeStatuses.AWAITING_RECIPIENT,
+			});
+
+			const expectedLog = activityLogService.logModifyTrade({
+				playerModifyingTrade: SOME_PLAYER.id,
+				playerAwaitingResponse: otherPlayer.id,
+				trade: trade1,
+			});
+
+			activityLogService.logModifyTrade({
+				playerModifyingTrade: thirdPlayer.id,
+				playerAwaitingResponse: otherPlayer.id,
+				trade: trade2,
+			});
+
+			const logs = activityLogService.getModifyTradeLogsTodayByPlayer(SOME_PLAYER.id);
+
+			makeSure(logs).containsOnly(expectedLog);
+		});
+
+		it('returns modify trade logs only from today', () => {
+			const NOW = new Date();
+			jest.useFakeTimers({ now: NOW });
+
+			const otherPlayer = addMockPlayer(db, {currentName: 'otherPlayer'});
+			const trade = addMockTrade(db, {
+				initiatingPlayer: SOME_PLAYER.id,
+				recipientPlayer: otherPlayer.id,
+				status: TradeStatuses.AWAITING_RECIPIENT,
+			});
+
+			// Create a modify trade log from yesterday
+			const YESTERDAY = addDays(NOW, -1);
+			jest.setSystemTime(YESTERDAY);
+
+			const yesterdayLog = activityLogService.logModifyTrade({
+				playerModifyingTrade: SOME_PLAYER.id,
+				playerAwaitingResponse: otherPlayer.id,
+				trade: trade,
+			});
+
+			// Create a modify trade log from today
+			jest.setSystemTime(NOW);
+			const expectedLog = activityLogService.logModifyTrade({
+				playerModifyingTrade: SOME_PLAYER.id,
+				playerAwaitingResponse: otherPlayer.id,
+				trade: addMockTrade(db, {
+					initiatingPlayer: SOME_PLAYER.id,
+					recipientPlayer: otherPlayer.id,
+					status: TradeStatuses.AWAITING_RECIPIENT,
+				}),
+			});
+
+			const logs = activityLogService.getModifyTradeLogsTodayByPlayer(SOME_PLAYER.id);
+
+			makeSure(logs).containsOnly(expectedLog);
+			makeSure(logs).doesNotContain(yesterdayLog);
+
+			jest.useRealTimers();
+		});
+
+		it('returns multiple modify trade logs when player has modified multiple trades today', () => {
+			const otherPlayer = addMockPlayer(db, {currentName: 'otherPlayer'});
+			const trade1 = addMockTrade(db, {
+				initiatingPlayer: SOME_PLAYER.id,
+				recipientPlayer: otherPlayer.id,
+				status: TradeStatuses.AWAITING_RECIPIENT,
+			});
+			const trade2 = addMockTrade(db, {
+				initiatingPlayer: otherPlayer.id,
+				recipientPlayer: SOME_PLAYER.id,
+				status: TradeStatuses.AWAITING_INITIATOR,
+			});
+
+			const expectedLog1 = activityLogService.logModifyTrade({
+				playerModifyingTrade: SOME_PLAYER.id,
+				playerAwaitingResponse: otherPlayer.id,
+				trade: trade1,
+			});
+
+			const expectedLog2 = activityLogService.logModifyTrade({
+				playerModifyingTrade: SOME_PLAYER.id,
+				playerAwaitingResponse: otherPlayer.id,
+				trade: trade2,
+			});
+
+			const logs = activityLogService.getModifyTradeLogsTodayByPlayer(SOME_PLAYER.id);
+
+			makeSure(logs).containsOnly(expectedLog1, expectedLog2);
+		});
+	});
+
+	describe('getLogsWithTokenDifferenceTodayByPlayer()', () => {
+		it('returns only activity logs where the token difference is non-zero', () => {
+			const EXPECTED_ACTVITY_LOG1 = addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				tokensDifference: 1
+			});
+
+			const EXPECTED_ACTVITY_LOG2 = addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				tokensDifference: -1
+			});
+
+			const UNEXPECTED_ACTVITY_LOG = addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				tokensDifference: 0
+			});
+
+
+			const activityLogs = activityLogService.getLogsWithTokenDifferenceTodayByPlayer(SOME_PLAYER.id);
+			makeSure(activityLogs).containsOnly(EXPECTED_ACTVITY_LOG1, EXPECTED_ACTVITY_LOG2);
+			makeSure(activityLogs).doesNotContain(UNEXPECTED_ACTVITY_LOG);
+		});
 	});
 });

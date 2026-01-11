@@ -1,4 +1,4 @@
-import { toUnixTimestamp, toCronExpression, addDays, addSeconds, addHours, toDateFromTimeString, toNormalizedDate, getMondayOfThisWeek, getSundayOfThisWeek, getHoursInTime, getReadableDuration } from "./date-time-utils";
+import { toUnixTimestamp, toCronExpression, addDays, addSeconds, addHours, toDateFromTimeString, toNormalizedDate, getMondayOfThisWeek, getSundayOfThisWeek, getHoursInTime, getReadableDuration, getMinutesInTime, getSecondsInTime, getMinutesDurationFromTime, addMinutes, addDuration } from "./date-time-utils";
 import { makeSure } from "./jest/jest-utils";
 
 describe('date-time-utils', () => {
@@ -104,6 +104,82 @@ describe('date-time-utils', () => {
 		});
 	});
 
+	describe('addMinutes()', () => {
+		it('adds positive number of minutes to a valid Date object', () => {
+			const date = new Date('2022-01-01T00:00:00.000Z');
+			const expected = new Date('2022-01-01T00:10:00.000Z');
+			makeSure(addMinutes(date, 10)).is(expected);
+		});
+
+		it('adds negative number of minutes to a valid Date object', () => {
+			const date = new Date('2022-01-01T00:10:00.000Z');
+			const expected = new Date('2022-01-01T00:00:00.000Z');
+			makeSure(addMinutes(date, -10)).is(expected);
+		});
+
+		it('adds zero minutes to a valid Date object', () => {
+			const date = new Date('2022-01-01T00:00:00.000Z');
+			makeSure(addMinutes(date, 0)).is(date);
+		});
+	});
+
+	describe('addDuration()', () => {
+		it('should return the original date if the duration is empty', () => {
+			const date = new Date('2022-01-01T00:00:00.000Z');
+			const duration = {};
+			makeSure(addDuration(date, duration)).is(date);
+		});
+
+		it('should return the original date if the duration is zero', () => {
+			const date = new Date('2022-01-01T00:00:00.000Z');
+			const duration = { days: 0, hours: 0, minutes: 0, seconds: 0, milliseconds: 0 };
+			makeSure(addDuration(date, duration)).is(date);
+		});
+
+		it('should return the date plus one day if the duration is one day', () => {
+			const date = new Date('2022-01-01T00:00:00.000Z');
+			const duration = { days: 1, hours: 0, minutes: 0, seconds: 0, milliseconds: 0 };
+			const expected = new Date('2022-01-02T00:00:00.000Z');
+			makeSure(addDuration(date, duration)).is(expected);
+		});
+
+		it('should return the date plus one hour if the duration is one hour', () => {
+			const date = new Date('2022-01-01T00:00:00.000Z');
+			const duration = { days: 0, hours: 1, minutes: 0, seconds: 0, milliseconds: 0 };
+			const expected = new Date('2022-01-01T01:00:00.000Z');
+			makeSure(addDuration(date, duration)).is(expected);
+		});
+
+		it('should return the date plus one minute if the duration is one minute', () => {
+			const date = new Date('2022-01-01T00:00:00.000Z');
+			const duration = { days: 0, hours: 0, minutes: 1, seconds: 0, milliseconds: 0 };
+			const expected = new Date('2022-01-01T00:01:00.000Z');
+			makeSure(addDuration(date, duration)).is(expected);
+		});
+
+		it('should return the date plus one second if the duration is one second', () => {
+			const date = new Date('2022-01-01T00:00:00.000Z');
+			const duration = { days: 0, hours: 0, minutes: 0, seconds: 1, milliseconds: 0 };
+			const expected = new Date('2022-01-01T00:00:01.000Z');
+			makeSure(addDuration(date, duration)).is(expected);
+		});
+
+		it('should return the date plus one millisecond if the duration is one millisecond', () => {
+			const date = new Date('2022-01-01T00:00:00.000Z');
+			const duration = { days: 0, hours: 0, minutes: 0, seconds: 0, milliseconds: 1 };
+			const expected = new Date('2022-01-01T00:00:00.001Z');
+			makeSure(addDuration(date, duration)).is(expected);
+		});
+
+		it('should return the date plus the duration if the duration is a combination of days, hours, minutes, seconds, and milliseconds', () => {
+			const date = new Date('2022-01-01T00:00:00.000Z');
+			const duration = { days: 1, hours: 2, minutes: 3, seconds: 4, milliseconds: 5 };
+			const expected = new Date('2022-01-02T02:03:04.005Z');
+			makeSure(addDuration(date, duration)).is(expected);
+		});
+
+	});
+
 	describe('toDateFromTimeString()', () => {
 		it('should convert a string of a Date\'s time to a Date object', () => {
 			const expected = new Date('2022-01-01T00:00:00.000Z');
@@ -204,5 +280,63 @@ describe('date-time-utils', () => {
 			makeSure(getReadableDuration(60 * 60 * 24 * 100000)).is('100,000 days');
 			makeSure(getReadableDuration(60 * 60 * 24 * 1000000)).is('1,000,000 days');
 		})
+	});
+
+	describe('getMinutesInTime()', () => {
+		it('should return the minutes from the given milliseconds since 1970-01-01T00:00:00Z', () => {
+			makeSure(getMinutesInTime(18 * 60 * 1000 + 21.234 * 1000)).is(18);
+		});
+
+		it('should return 0 minutes for 30 seconds', () => {
+			makeSure(getMinutesInTime(30 * 1000)).is(0);
+		});
+
+		it('should return 0 minutes for 0 milliseconds', () => {
+			makeSure(getMinutesInTime(0)).is(0);
+		});
+
+		it('should throw an error for an invalid number of milliseconds', () => {
+			makeSure(() => getMinutesInTime(-1)).toThrow();
+		});
+	});
+
+	describe('getSecondsInTime()', () => {
+		it('should return the seconds from the given milliseconds since 1970-01-01T00:00:00Z', () => {
+			makeSure(getSecondsInTime(1000 * 18.234)).is(18);
+		});
+
+		it('should return 0 seconds for 30 milliseconds', () => {
+			makeSure(getSecondsInTime(30)).is(0);
+		});
+
+		it('should return 0 seconds for 0 milliseconds', () => {
+			makeSure(getSecondsInTime(0)).is(0);
+		});
+
+		it('should throw an error for an invalid number of milliseconds', () => {
+			makeSure(() => getSecondsInTime(-1)).toThrow();
+		});
+	});
+
+	describe('getMinutesDurationFromTime()', () => {
+		it('should return the minutes and seconds from the given milliseconds since 1970-01-01T00:00:00Z', () => {
+			makeSure(getMinutesDurationFromTime(
+				1000 * 60 * 10 +
+				1000 * 30 +
+				234.5
+			)).toEqual({ minutes: 10, seconds: 30, milliseconds: 234.5 });
+		});
+
+		it('should return 0 minutes but 30 seconds for 30 seconds', () => {
+			makeSure(getMinutesDurationFromTime(30 * 1000)).toEqual({ minutes: 0, seconds: 30, milliseconds: 0 });
+		});
+
+		it('should return 0 minutes and 0 seconds for 0 milliseconds', () => {
+			makeSure(getMinutesDurationFromTime(0)).toEqual({ minutes: 0, seconds: 0, milliseconds: 0 });
+		});
+
+		it('should throw an error for an invalid number of milliseconds', () => {
+			makeSure(() => getMinutesDurationFromTime(-1)).toThrow();
+		});
 	});
 });

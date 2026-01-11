@@ -1,9 +1,9 @@
 import { DatabaseQuerier } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
 import { TradeRepository } from "../repositories/trade.repository";
-import { Player, PlayerResolvable } from "../types/player.types";
+import { Player, PlayerResolvable } from '../types/player.types';
 import { Trade, TradeID, TradeResolvable, TradeStatuses } from "../types/trade.types";
-import { InvalidStateError } from "../utilities/error.utility";
+import { InvalidStateError, PlayerNotInvolvedInTradeError } from "../utilities/error.utility";
 import { PlayerService } from "./player.service";
 
 /**
@@ -269,5 +269,47 @@ export class TradeService {
 	isDeclined(tradeResolvable: TradeResolvable): boolean {
 		const trade = this.resolveTrade(tradeResolvable);
 		return trade.status === TradeStatuses.DECLINED;
+	}
+
+	/**
+	 * Returns the characters that the given player is offering to give up in the given trade. Throws if the player is not involved in the trade.
+	 * @param tradeResolvable - The trade to check.
+	 * @param playerResolvable - The player to check.
+	 * @returns The characters that the given player is offering to give up in the given trade.
+	 */
+	getCharactersPlayerIsGiving(
+		tradeResolvable: TradeResolvable,
+		playerResolvable: PlayerResolvable
+	): string {
+		const trade = this.resolveTrade(tradeResolvable);
+		const player = this.playerService.resolvePlayer(playerResolvable);
+
+		if (trade.initiatingPlayer.id === player.id)
+			return trade.offeredCharacters;
+		else if (trade.recipientPlayer.id === player.id)
+			return trade.requestedCharacters;
+		else
+			throw new PlayerNotInvolvedInTradeError(player, trade);
+	}
+
+	/**
+	 * Returns the characters that the given player is getting from the given trade. Throws if the player is not involved in the trade.
+	 * @param tradeResolvable - The trade to check.
+	 * @param playerResolvable - The player to check.
+	 * @returns The characters that the given player is getting from the given trade.
+	 */
+	getCharactersPlayerIsGetting(
+		tradeResolvable: TradeResolvable,
+		playerResolvable: PlayerResolvable
+	): string {
+		const trade = this.resolveTrade(tradeResolvable);
+		const player = this.playerService.resolvePlayer(playerResolvable);
+
+		if (trade.initiatingPlayer.id === player.id)
+			return trade.requestedCharacters;
+		else if (trade.recipientPlayer.id === player.id)
+			return trade.offeredCharacters;
+		else
+			throw new PlayerNotInvolvedInTradeError(player, trade);
 	}
 }

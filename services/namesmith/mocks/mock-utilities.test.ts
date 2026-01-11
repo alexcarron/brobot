@@ -16,7 +16,7 @@ import { addMockMysteryBox, forcePlayerToBuyNewMysteryBox } from "./mock-data/mo
 import { addMockPerk } from "./mock-data/mock-perks";
 import { addMockPlayer, editMockPlayer, forcePlayerToClaimRefill, forcePlayerToMineTokens, forcePlayerToPublishName } from "./mock-data/mock-players";
 import { addMockQuest } from "./mock-data/mock-quests";
-import { addMockRecipe, forcePlayerToCraft } from "./mock-data/mock-recipes";
+import { addMockRecipe, forcePlayerToCraftRecipe } from "./mock-data/mock-recipes";
 import { addMockRole } from "./mock-data/mock-roles";
 import { addMockTrade, forcePlayerToAcceptNewTrade, forcePlayerToInitiateTrade } from "./mock-data/mock-trades";
 import { addMockVote } from "./mock-data/mock-votes";
@@ -551,7 +551,7 @@ describe("Mock Utilities", () => {
 			const SOME_TIME = new Date();
 			addMockActivityLog(db, {
 				id: 1000000001,
-				timeOccured: SOME_TIME,
+				timeOccurred: SOME_TIME,
 				player: SOME_PLAYER.id,
 				nameChangedFrom: 'NAME_CHANGED_FROM',
 				currentName: 'CURRENT_NAME',
@@ -572,7 +572,7 @@ describe("Mock Utilities", () => {
 			const activityLogs = db.getRows("SELECT * FROM activityLog");
 			makeSure(activityLogs).contains({
 				id: 1000000001,
-				timeOccured: SOME_TIME.getTime(),
+				timeOccurred: SOME_TIME.getTime(),
 				playerID: SOME_PLAYER.id,
 				type: ActivityTypes.COMPLETE_QUEST,
 				nameChangedFrom: 'NAME_CHANGED_FROM',
@@ -635,7 +635,7 @@ describe("Mock Utilities", () => {
 		})
 
 		it('returns a success result with the correct values', () => {
-			const result = forcePlayerToCraft(SOME_PLAYER, SOME_RECIPE);
+			const result = forcePlayerToCraftRecipe(SOME_PLAYER, SOME_RECIPE);
 			makeSure(result.isFailure()).isFalse();
 			makeSure(result.craftedCharacters).is("def");
 			makeSure(result.newInventory).is("def");
@@ -644,14 +644,14 @@ describe("Mock Utilities", () => {
 
 		it('works with randomly generated recipes', () => {
 			SOME_RECIPE = addMockRecipe(db);
-			const result = forcePlayerToCraft(SOME_PLAYER, SOME_RECIPE);
+			const result = forcePlayerToCraftRecipe(SOME_PLAYER, SOME_RECIPE);
 			makeSure(result.isFailure()).isFalse();
 		});
 
 		it('works when repeated many times', () => {
 			for (let i = 0; i < 25; i++) {
 				SOME_RECIPE = addMockRecipe(db);
-				const result = forcePlayerToCraft(SOME_PLAYER, SOME_RECIPE);
+				const result = forcePlayerToCraftRecipe(SOME_PLAYER, SOME_RECIPE);
 				makeSure(result.isFailure()).isFalse();
 			}
 		});
