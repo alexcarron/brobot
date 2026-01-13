@@ -7,7 +7,7 @@ const { RoleIdentifier } = require("../../services/rapid-discord-mafia/role-iden
 const
 	{ PermissionFlagsBits } = require("discord.js"),
 	{ ids } = require("../../bot-config/discord-ids");
-const { deferInteraction } = require("../../utilities/discord-action-utils.js");
+const { deferInteraction } = require("../../utilities/discord-action-utils");
 const { getRequiredStringParam } = require("../../utilities/discord-fetch-utils");
 
 module.exports = new SlashCommand({

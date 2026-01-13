@@ -4,6 +4,9 @@ import { PlayerResolvable } from "../types/player.types";
 import { PlayerService } from "./player.service";
 import { DatabaseQuerier } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
+import { PerkService } from "./perk.service";
+import { attempt } from "../../../utilities/error-utils";
+import { PlayerAlreadyHasPerkError } from "../utilities/error.utility";
 
 
 /**
@@ -13,12 +16,14 @@ export class RoleService {
 	constructor (
 		public roleRepository: RoleRepository,
 		public playerService: PlayerService,
+		public perkService: PerkService
 	) {}
 
 	static fromDB(db: DatabaseQuerier) {
 		return new RoleService(
 			RoleRepository.fromDB(db),
 			PlayerService.fromDB(db),
+			PerkService.fromDB(db),
 		);
 	}
 
@@ -87,16 +92,24 @@ export class RoleService {
 
 	/**
 	 * Assigns a role to a player.
-	 * @param role - The role to assign. Can be a number (the role's ID), a string (the role's name), or a role object.
-	 * @param player - The player to assign the role to. Can be a number (the player's ID), a string (the player's name), or a player object.
+	 * @param roleResolvable - The role to assign. Can be a number (the role's ID), a string (the role's name), or a role object.
+	 * @param playerResolvable - The player to assign the role to. Can be a number (the player's ID), a string (the player's name), or a player object.
 	 */
 	setPlayerRole(
-		role: RoleResolvable,
-		player: PlayerResolvable,
+		roleResolvable: RoleResolvable,
+		playerResolvable: PlayerResolvable,
 	): void {
-		const roleID = this.resolveID(role);
-		const playerID = this.playerService.resolveID(player);
-		this.roleRepository.addRoleIDToPlayer(roleID, playerID);
+		const role = this.resolveRole(roleResolvable);
+		const playerID = this.playerService.resolveID(playerResolvable);
+		this.roleRepository.addRoleIDToPlayer(role.id, playerID);
+
+		attempt(() =>
+			role.perks.forEach((perk) =>
+				this.perkService.giveToPlayer(perk, playerResolvable)
+			)
+		)
+		.ignoreError(PlayerAlreadyHasPerkError)
+		.execute();
 	}
 
 	/**

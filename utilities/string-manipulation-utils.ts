@@ -328,6 +328,23 @@ export const toListSentenceFromWords = (words: string[]): string => {
 	return `${nonLastWords.join(", ")}, and ${lastWord}`;
 }
 
+/**
+ * Wrap given text by a given line width.
+ * @param text - The text to be wrapped.
+ * @param lineWidth - The maximum width of a line.
+ * @returns An array of strings, each representing a line of the wrapped text.
+ * @throws {Error} If text is not a string or lineWidth is not a positive number.
+ * @example
+ * const text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.";
+ * const lineWidth = 20;
+ * const wrappedText = wrapTextByLineWidth(text, lineWidth);
+ * console.log(wrappedText);
+ * // Output:
+ * // [
+ * //   "Lorem ipsum dolor sit amet,",
+ * //   "consectetur adipiscing elit"
+ * // ]
+ */
 export const wrapTextByLineWidth = (text: string, lineWidth: number): string[] => {
 	if (typeof text !== 'string')
 		throw new Error('text must be a string.');
@@ -336,18 +353,20 @@ export const wrapTextByLineWidth = (text: string, lineWidth: number): string[] =
 		throw new Error('lineWidth must be a positive number.');
 
 	const lines: string[] = [];
-	let currentText = text.replace(/\s+/g, ' ');
+	let currentText = text.replace(/[^\S\r\n]+/g, ' ');
 	currentText = currentText.trim();
 	if (currentText.length === 0) return [];
 
 	// While there is more text to wrap
 	while (currentText.length > lineWidth) {
 		let newLine = currentText.substring(0, lineWidth);
+		console.log({currentText, newLine});
+
 		let lineEndIndex = newLine.length;
 		let lineEndCharacter = currentText.charAt(lineEndIndex);
 
 		// If there is no space at the end of the line, go back until we find one
-		while (lineEndIndex >= 0 && lineEndCharacter !== ' ') {
+		while (lineEndIndex >= 0 && /\s/.test(lineEndCharacter) === false) {
 			lineEndIndex -= 1;
 			lineEndCharacter = currentText.charAt(lineEndIndex);
 		}
@@ -359,9 +378,15 @@ export const wrapTextByLineWidth = (text: string, lineWidth: number): string[] =
 			lineEndIndex = newLine.length;
 			nextLineStartIndex = lineEndIndex;
 		}
+		console.log({ lineEndIndex, nextLineStartIndex });
 
 		// Trim the line to the last space
 		newLine = newLine.substring(0, lineEndIndex);
+		console.log({ newLine });
+
+		// Trim any accidental surrounding whitespace (optional, keeps lines clean)
+		newLine = newLine.trim();
+		console.log({ newLine });
 
 		// Trim the current text to remove the line we just processed
 		currentText = currentText.substring(nextLineStartIndex);

@@ -2,7 +2,7 @@ const { PermissionFlagsBits } = require('discord.js');
 const { Parameter } = require('../../services/command-creation/parameter');
 const { SlashCommand } = require('../../services/command-creation/slash-command');
 const { LLPointAccomplishment, LLPointReward } = require('../../services/ll-points/ll-point-enums.js');
-const { deferInteraction } = require('../../utilities/discord-action-utils.js');
+const { deferInteraction } = require('../../utilities/discord-action-utils');
 const { LLPointManager } = require('../../services/ll-points/ll-point-manager.js');
 const { getRequiredStringParam, getStringParamValue } = require('../../utilities/discord-fetch-utils');
 

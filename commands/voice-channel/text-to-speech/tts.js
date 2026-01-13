@@ -2,7 +2,7 @@ const { SlashCommand } = require('../../../services/command-creation/slash-comma
 const { Parameter } = require('../../../services/command-creation/parameter');
 const { joinVoiceChannel } = require('@discordjs/voice');
 const { PermissionsBitField } = require('discord.js');
-const { deferInteraction } = require('../../../utilities/discord-action-utils.js');
+const { deferInteraction } = require('../../../utilities/discord-action-utils');
 const { getVoiceChannelOfInteraction, getStringParamValue, getMemberOfInteraction } = require('../../../utilities/discord-fetch-utils');
 
 const Subparameters = {

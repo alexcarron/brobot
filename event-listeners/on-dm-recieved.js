@@ -2,6 +2,7 @@ const { Message, ChannelType } = require("discord.js");
 const { ids } = require("../bot-config/discord-ids");
 const { fetchGuild, fetchTextChannel } = require("../utilities/discord-fetch-utils");
 const { InvalidArgumentError } = require("../utilities/error-utils");
+const { sendMessageInChannel } = require("../utilities/discord-action-utils");
 
 /**
  * Logs a direct message in the DM log channel on the Brobot testing server
@@ -31,7 +32,8 @@ const onDmRecieved = async (message) => {
 		recipient_message = `<@${recipient.id}> ➜ <@${ids.users.BROBOT}>\n\`${recipient.username} ➜ Brobot\``;
 	}
 
-	await dmChannel.send(
+	await sendMessageInChannel(
+		dmChannel,
 		`${recipient_message}\n` +
 		`DM Channel ID: \`${message.channel.id}\`\n` +
 		`Message ID: \`${message.id}\`\n` +

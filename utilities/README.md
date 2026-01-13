@@ -7,7 +7,7 @@ Contains helper functions and reusable utilities for general functionality acros
 * **`constants/`** Contains file to store useful static values referenced throughout the entire codebase
 * **`data-structure-utils`** Functions for working with JavaScript objects and arrays
 * **`date-time-utils`** Functions for time and date formatting, parsing, and calculations
-* **`discord-action-utils.js`** Functions for performing actions in Discord
+* **`discord-action-utils.ts`** Functions for performing actions in Discord
 * **`discord-fetch-utils.js`** Functions for fetching Discord.js objects
 * **`discord-interface-utils.js`** Functions for creating and sending Discord components and interfaces users interact with
 * **`error-utils.ts`** Error classes and functions for better managing and handling errors

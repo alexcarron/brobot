@@ -468,6 +468,18 @@ describe('string-manipulation-utils', () => {
 			expect(() => wrapTextByLineWidth(text, -10)).toThrow('lineWidth must be a positive number.');
 			expect(() => wrapTextByLineWidth(text, 0)).toThrow('lineWidth must be a positive number.');
 		});
+
+		it('conserves newlines in the input text', () => {
+			const text = 'hello\nworld\nthis\nis\na\ntest\nwith\nnewlines\nand\nsomeverylongwordsthatexceedlinewidth';
+			const lineWidth = 20;
+			expect(wrapTextByLineWidth(text, lineWidth)).toEqual([
+				'hello\nworld\nthis\nis',
+				'a\ntest\nwith\nnewlines',
+				'and',
+				'someverylongwordstha',
+				'texceedlinewidth',
+			]);
+		});
 	});
 
 	describe('removeLinks()', () => {
