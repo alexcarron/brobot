@@ -6,7 +6,7 @@ const { GameManager } = require("../../services/rapid-discord-mafia/game-manager
 const { ids } = require(`../../bot-config/discord-ids`);
 const { TrialVote } = require("../../services/rapid-discord-mafia/vote-manager.js");
 const { GameState } = require("../../services/rapid-discord-mafia/game-state-manager.js");
-const { deferInteraction } = require("../../utilities/discord-action-utils.js");
+const { deferInteraction } = require("../../utilities/discord-action-utils");
 const { getRequiredStringParam, getSubcommandUsed } = require("../../utilities/discord-fetch-utils");
 
 const Subparameters = {

@@ -2,6 +2,7 @@ import { makeSure } from "../../../utilities/jest/jest-utils";
 import { Perks } from "../constants/perks.constants";
 import { INVALID_ROLE_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
+import { addMockPerk } from "../mocks/mock-data/mock-perks";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { addMockRole } from "../mocks/mock-data/mock-roles";
 import { Player } from "../types/player.types";
@@ -175,6 +176,21 @@ describe('RoleService', () => {
 			);
 
 			makeSure(hasRole).isTrue();
+		});
+
+		it('should give player the related perks', () => {
+			const player = addMockPlayer(db, {role: null});
+			const perk1 = addMockPerk(db, {name: "Perk 1"});
+			const perk2 = addMockPerk(db, {name: "Perk 2"});
+			const role = addMockRole(db, {
+				name: "Test Role",
+				perks: [perk1, perk2],
+			});
+
+			roleService.setPlayerRole(role, player);
+			const perks = roleService.perkService.getPerksOfPlayer(player);
+			makeSure(perks).hasAnItemWhere(perk => perk.id === perk1.id);
+			makeSure(perks).hasAnItemWhere(perk => perk.id === perk2.id);
 		});
 	});
 

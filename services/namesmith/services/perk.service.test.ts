@@ -135,13 +135,13 @@ describe('PerkService', () => {
 			makeSure(doesNotHavePerk).is(false);
 		});
 
-		it('should return true if perk is in role', () => {
+		it('should return false if perk is in role but player doesnt have perk in perks field', () => {
 			const player = addMockPlayer(db, {
 				role: MINE_BONUS_ROLE
 			});
 
 			const hasPerk = perkService.doesPlayerHave(Perks.MINE_BONUS, player);
-			makeSure(hasPerk).is(true);
+			makeSure(hasPerk).is(false);
 		});
 	});
 

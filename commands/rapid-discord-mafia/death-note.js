@@ -1,7 +1,7 @@
 const { Parameter } = require("../../services/command-creation/parameter");
 const { ids } = require("../../bot-config/discord-ids");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
-const { deferInteraction, getInputFromCreatedTextModal } = require("../../utilities/discord-action-utils.js");
+const { deferInteraction, getInputFromCreatedTextModal } = require("../../utilities/discord-action-utils");
 
 const Parameters = {
 	Edit: new Parameter({
@@ -42,7 +42,6 @@ module.exports = new SlashCommand({
 			const contents = await getInputFromCreatedTextModal({
 				interaction,
 				modalTitle: "Death Note",
-				showModalButtonText: "Edit Death Note",
 				placeholder: player.death_note,
 			});
 

@@ -1,6 +1,6 @@
 import { getYesterday } from "../../../utilities/date-time-utils";
-import { fetchUser } from "../../../utilities/discord-fetch-utils";
-import { joinLines, toAmountOfNoun } from "../../../utilities/string-manipulation-utils";
+import { dmUser } from "../../../utilities/discord-action-utils";
+import { toAmountOfNoun } from "../../../utilities/string-manipulation-utils";
 import { Perks } from "../constants/perks.constants";
 import { sendDailyQuestsMessage } from "../interfaces/quests/daily-quests-message";
 import { getNamesmithServices } from "../services/get-namesmith-services";
@@ -20,11 +20,13 @@ export async function onDayStart() {
 		async (player) => {
 			const tokensInterest = Math.floor(player.tokens / 100) * 2;
 			playerService.giveTokens(player, tokensInterest);
-			const user = await fetchUser(player.id);
-			await user.send(joinLines(
+			const tokensAfter = playerService.getTokens(player) + tokensInterest;
+
+			await dmUser(player.id,
 				`Here's your daily interest from the Investment perk!`,
-				`+${toAmountOfNoun(tokensInterest, 'token')} ` + '🪙'.repeat(tokensInterest)
-			))
+				`+${toAmountOfNoun(tokensInterest, 'token')} ` + '🪙'.repeat(tokensInterest),
+				`-# You now have ${toAmountOfNoun(tokensAfter, 'token')}.`
+			);
 		}
 	);
 
@@ -32,11 +34,13 @@ export async function onDayStart() {
 		async (player) => {
 			const tokensBonus = player.inventory.length;
 			playerService.giveTokens(player, tokensBonus);
-			const user = await fetchUser(player.id);
-			await user.send(joinLines(
+			const tokensAfter = playerService.getTokens(player) + tokensBonus;
+
+			await dmUser(player.id,
 				`Here's your daily tokens from the Hoarding Bonus perk! You earn a token for each character in your inventory.`,
-				`+${toAmountOfNoun(tokensBonus, 'token')} ` + '🪙'.repeat(tokensBonus)
-			))
+				`+${toAmountOfNoun(tokensBonus, 'token')} ` + '🪙'.repeat(tokensBonus),
+				`-# You now have ${toAmountOfNoun(tokensAfter, 'token')}.`
+			);
 		}
 	);
 
@@ -48,11 +52,14 @@ export async function onDayStart() {
 
 			if (tokensSpent <= 0) {
 				const tokens = 150;
-				const user = await fetchUser(player.id);
-				await user.send(joinLines(
+				playerService.giveTokens(player, tokens);
+				const tokensAfter = playerService.getTokens(player) + tokens;
+
+				await dmUser(player.id,
 					`Here's your daily tokens from the Idle Interest perk for not spending any tokens yesterday!`,
-					`+${toAmountOfNoun(tokens, 'token')} ` + '🪙'.repeat(tokens)
-				))
+					`+${toAmountOfNoun(tokens, 'token')} ` + '🪙'.repeat(tokens),
+					`-# You now have ${toAmountOfNoun(tokensAfter, 'token')}.`
+				);
 			}
 		}
 	)

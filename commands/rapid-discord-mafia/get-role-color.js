@@ -3,7 +3,7 @@ const { SlashCommand } = require("../../services/command-creation/slash-command"
 const { ids } = require("../../bot-config/discord-ids");
 const { deferInteraction } = require("../../utilities/discord-action-utils");
 const { fetchGuildMember, fetchRoleByName, getRequiredStringParam, getGuildOfInteraction } = require("../../utilities/discord-fetch-utils.js");
-const { addRoleToMember } = require("../../utilities/discord-action-utils.js");
+const { addRoleToMember } = require("../../utilities/discord-action-utils");
 
 const Parameters = {
 	Color: new Parameter({

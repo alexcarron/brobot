@@ -79,14 +79,6 @@ export class PerkService {
 
 		const playerPerkIDs = this.perkRepository.getPerkIDsOfPlayerID(playerID);
 
-		const roleID = this.roleRepoistory.getRoleIDOfPlayerID(playerID);
-
-		if (roleID !== null) {
-			const rolePerkIDs = this.perkRepository.getPerkIDsOfRoleID(roleID);
-
-			playerPerkIDs.push(...rolePerkIDs);
-		}
-
 		return playerPerkIDs.includes(perkID);
 	}
 
