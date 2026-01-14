@@ -5,6 +5,7 @@ import { fetchNamesmithChannel } from "../../utilities/discord-fetch.utility";
 import { ids } from "../../../../bot-config/discord-ids";
 import { ignoreError } from "../../../../utilities/error-utils";
 import { toQuestButton } from "./complete-quest-button";
+import { getCharacters } from "../../../../utilities/string-checks-utils";
 
 /**
  * Creates a bullet point string for the given reward.
@@ -17,8 +18,7 @@ export function toRewardBulletPoint(reward: Reward): string {
 	}
 	else if (isReward.characters(reward)) {
 		// Should form a string like: `a` `b` `c` `d` `\``
-		const charactersString = reward.characters
-			.split('')
+		const charactersString = getCharacters(reward.characters)
 			.map(character => character.replace('`', '\\`'))
 			.map(character => `\`${character}\``)
 			.join(' ');

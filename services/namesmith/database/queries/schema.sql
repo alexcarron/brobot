@@ -113,8 +113,8 @@ CREATE TABLE IF NOT EXISTS shownDailyQuest (
 	timeShown NUMBER NOT NULL,
 	questID INTEGER NOT NULL REFERENCES quest(id)
 		ON DELETE CASCADE ON UPDATE CASCADE,
+	isHidden BOOLEAN NOT NULL DEFAULT 0, -- Whether or not the quest is a hidden one revealed when all daily quests are complete
 	PRIMARY KEY (timeShown, questID)
-	-- isHidden BOOLEAN NOT NULL DEFAULT 0 -- Whether or not the quest is a hidden one revealed when all daily quests are complete
 );
 
 CREATE TABLE IF NOT EXISTS activityLog (

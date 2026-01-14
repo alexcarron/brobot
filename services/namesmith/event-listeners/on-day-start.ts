@@ -2,7 +2,8 @@ import { getYesterday } from "../../../utilities/date-time-utils";
 import { dmUser } from "../../../utilities/discord-action-utils";
 import { toAmountOfNoun } from "../../../utilities/string-manipulation-utils";
 import { Perks } from "../constants/perks.constants";
-import { sendDailyQuestsMessage } from "../interfaces/quests/daily-quests-message";
+import { sendDailyQuestsMessages } from "../interfaces/quests/daily-quests-message";
+import { sendHiddenQuestsMessages } from "../interfaces/quests/hidden-quests-message";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 
 /**
@@ -13,8 +14,8 @@ export async function onDayStart() {
 	const now = new Date();
 
 	questService.assignNewDailyQuests(now);
-	const dailyQuests = questService.getCurrentDailyQuests();
-	await sendDailyQuestsMessage({dailyQuests});
+	await sendDailyQuestsMessages();
+	await sendHiddenQuestsMessages();
 
 	await perkService.doForAllPlayersWithPerk(Perks.INVESTMENT,
 		async (player) => {

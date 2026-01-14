@@ -49,3 +49,5 @@ export const AVERAGE_TOKENS_FROM_REFILLING = 75;
  * The number of hours players must wait between refills.
  */
 export const REFILL_COOLDOWN_HOURS = 2;
+
+export const HIDDEN_QUEST_TOKEN_MULTIPLIER = 1.5;

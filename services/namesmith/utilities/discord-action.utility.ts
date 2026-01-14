@@ -53,7 +53,7 @@ export const changeDiscordNameOfPlayer = async (playerID: string, newName: strin
 	await setNicknameOfMember(guildMember, newName);
 }
 
-export const sendToChannel = async (
+export const sendToNamesmithChannel = async (
 	channelId: string,
 	message: Parameters<TextChannel["send"]>[0]
 ): Promise<void> => {

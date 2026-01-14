@@ -6,6 +6,7 @@ import { forcePlayerToBuyMysteryBox } from "../../services/namesmith/mocks/mock-
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { sortByAscendingProperty } from "../../utilities/data-structure-utils";
 import { joinLines, toAmountOfNoun } from "../../utilities/string-manipulation-utils";
+import { isNotNullable } from "../../utilities/types/type-guards";
 
 const Parameters = Object.freeze({
 	MYSTERY_BOX: new Parameter({
@@ -52,10 +53,11 @@ export const command = new SlashCommand({
 		Parameters.RECIEVED_CHARACTERS,
 	],
 	required_servers: [ids.servers.NAMESMITH],
-	required_channels: [ids.namesmith.channels.OPEN_MYSTERY_BOXES],
 	isInDevelopment: true,
 	execute: function execute(interaction, {mysteryBox: mysteryBoxID, recievedCharacters}) {
-		recievedCharacters = recievedCharacters.replace(/\[SPACE\]/g, ' ');
+		if (isNotNullable(recievedCharacters))
+			recievedCharacters = recievedCharacters.replace(/\[SPACE\]/g, ' ');
+		
 		const result = forcePlayerToBuyMysteryBox(
 			interaction.user.id,
 			parseInt(mysteryBoxID),

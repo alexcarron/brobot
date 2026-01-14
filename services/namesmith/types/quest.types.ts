@@ -65,6 +65,7 @@ export type Reward =
 export const DBShownDailyQuest = object.asTransformableType('MinimalShownDailyQuest', {
 	timeShown: DBDate,
 	questID: number,
+	isHidden: DBBoolean,
 });
 export const toDBShownDailyQuest = DBShownDailyQuest.fromMinimalShownDailyQuest;
 export const asMinimalShownDailyQuest = DBShownDailyQuest.toMinimalShownDailyQuest;
@@ -73,9 +74,11 @@ export type MinimalShownDailyQuest = ExtractDomainType<typeof DBShownDailyQuest>
 export type ShownDailyQuest = {
 	timeShown: Date,
 	quest: Quest,
+	isHidden: boolean,
 };
 
 export type ShownDailyQuestDefinition = {
 	timeShown: Date;
 	quest: QuestResolvable;
+	isHidden?: boolean;
 }

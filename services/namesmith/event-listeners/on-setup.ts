@@ -2,7 +2,8 @@ import { logInfo, logSuccess } from "../../../utilities/logging-utils";
 import { setupDatabase } from "../database/setup-database";
 import { regenerateChooseARoleMessage } from "../interfaces/choose-a-role-message";
 import { regeneratePickAPerkMessage } from "../interfaces/pick-a-perk-message";
-import { regenerateDailyQuestsMessage } from "../interfaces/quests/daily-quests-message";
+import { regenerateDailyQuestsMessages } from "../interfaces/quests/daily-quests-message";
+import { regenerateHiddenQuestsMessages } from "../interfaces/quests/hidden-quests-message";
 import { regenerateAllTradeMessages } from "../interfaces/trading/trade-message";
 import { regenerateVoteDisplay } from "../interfaces/voting/voting-messages";
 import { getNamesmithServices } from "../services/get-namesmith-services";
@@ -50,7 +51,8 @@ export const setupNamesmith = async () => {
 		await regenerateAllTradeMessages();
 		await regenerateChooseARoleMessage();
 		await regeneratePickAPerkMessage();
-		await regenerateDailyQuestsMessage();
+		await regenerateDailyQuestsMessages();
+		await regenerateHiddenQuestsMessages();
 	}
 
 	logSuccess("Namesmith set up");
