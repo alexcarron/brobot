@@ -5,8 +5,9 @@ import { getNamesmithServices } from "../../services/namesmith/services/get-name
 import { fetchPlayerAutocompleteChoices } from "../../services/namesmith/utilities/player.utility";
 import { fetchUser } from "../../utilities/discord-fetch-utils";
 import { joinLines } from "../../utilities/string-manipulation-utils";
-import { resolveTargetPlayer } from "../../services/namesmith/utilities/interface.utility";
+import { getInvalidPlayerMessageOrPlayer } from "../../services/namesmith/utilities/interface.utility";
 import { toPerkBulletPoint } from "../../services/namesmith/interfaces/pick-a-perk-message";
+import { isString } from "../../utilities/types/type-guards";
 
 const Parameters = Object.freeze({
 	PLAYER: new Parameter({
@@ -26,24 +27,11 @@ export const command = new SlashCommand({
 	],
 	required_servers: [ids.servers.NAMESMITH],
 	execute: async (interaction, {player: playerID}) => {
-		const { playerService, perkService } = getNamesmithServices();
+		const { perkService } = getNamesmithServices();
+		const messageOrPlayer = await getInvalidPlayerMessageOrPlayer(interaction, playerID, 'any perks');
+		if (isString(messageOrPlayer)) return messageOrPlayer;
 
-		const maybePlayer = await resolveTargetPlayer({
-			playerService,
-			interaction,
-			givenPlayerResolvable: playerID,
-		});
-
-		if (maybePlayer === null) {
-			if (interaction.user.id === playerID || playerID === null) {
-				return `You are not a player, so you do not have any perks.`;
-			}
-			else {
-				return `The given user is not a player, so they do not have any perks.`;
-			}
-		}
-
-		const player = maybePlayer;
+		const player = messageOrPlayer;
 		const user = await fetchUser(player.id);
 		const perks = perkService.getPerksOfPlayer(player);
 
