@@ -1,29 +1,27 @@
 import {
-  ButtonBuilder,
-  ButtonStyle,
-  ActionRowBuilder,
-  Guild,
-  GuildMember,
-  ModalBuilder,
-  TextInputBuilder,
-  TextInputStyle,
-  TextChannel,
-  ChannelType,
-  PermissionFlagsBits,
-  CategoryChannel,
-  ChatInputCommandInteraction,
-  Message,
-  GuildChannel,
-  ButtonInteraction,
-  InteractionResponse,
-  CommandInteraction,
-  MessageComponentInteraction,
-  ModalSubmitInteraction,
-  Attachment,
-  MessageFlags,
-  BitField,
-  MessagePayload,
-	OverwriteData,
+	ButtonBuilder,
+	ButtonStyle,
+	ActionRowBuilder,
+	Guild,
+	GuildMember,
+	ModalBuilder,
+	TextInputBuilder,
+	TextInputStyle,
+	TextChannel,
+	ChannelType,
+	PermissionFlagsBits,
+	CategoryChannel,
+	ChatInputCommandInteraction,
+	Message,
+	GuildChannel,
+	ButtonInteraction,
+	InteractionResponse,
+	CommandInteraction,
+	MessageComponentInteraction,
+	ModalSubmitInteraction,
+	Attachment,
+	MessageFlags,
+	BitField, OverwriteData,
 	// explicit types used below
 	MessageCreateOptions,
 	MessageEditOptions,
@@ -33,27 +31,27 @@ import {
 	OverwriteResolvable,
 	GuildChannelCreateOptions,
 	PermissionOverwriteOptions,
-	User,
+	User
 } from 'discord.js';
 
 import { Role } from '../services/rapid-discord-mafia/role';
 import {
-  fetchChannel,
-  fetchChannelsInCategory,
-  getEveryoneRole,
-  fetchAllMessagesInChannel,
-  fetchCategory,
+	fetchChannel,
+	fetchChannelsInCategory,
+	getEveryoneRole,
+	fetchAllMessagesInChannel,
+	fetchCategory,
 	fetchUser
 } from './discord-fetch-utils';
 import {
-  incrementEndNumber,
-  joinLines,
+	incrementEndNumber,
+	joinLines,
 	wrapTextByLineWidth
 } from './string-manipulation-utils';
 import {
-  logInfo,
-  logError,
-  logWarning
+	logInfo,
+	logError,
+	logWarning
 } from './logging-utils';
 import { getShuffledArray } from './data-structure-utils';
 import { InvalidArgumentTypeError } from './error-utils';
@@ -713,12 +711,23 @@ export async function openChannel(channel: TextChannel): Promise<void> {
 }
 
 /**
+ * Removes all permission overwrites from a Discord channel.
+ * @param {TextChannel} channel - The channel from which all permission overwrites are to be removed.
+ * @returns A promise that resolves when all permission overwrites have been removed.
+ */
+export async function removeAllPermissionsFromChannel(channel: TextChannel): Promise<void> {
+	await channel.permissionOverwrites.set([]);
+}
+
+/**
  * Closes a Discord channel to deny everyone the ability to view it.
  * @param channel - The channel to be closed from viewing.
  */
 export async function closeChannel(channel: TextChannel): Promise<void> {
 	const everyoneRole = getEveryoneRole(channel.guild);
 
+	await removeAllPermissionsFromChannel(channel);
+	
 	await changePermissionOnChannel({
 		channel: channel,
 		userOrRoleID: everyoneRole.id,
@@ -1122,12 +1131,19 @@ export async function deleteAllMessagesInChannel(channel: TextBasedChannel): Pro
 /**
  * Deletes all messages in a channel and sends a new message.
  * @param channel - The channel to delete all messages from and send the new message in.
- * @param message - The message to send after deleting all messages.
+ * @param args - The message to send, either as a MessageCreateOptions object or as strings representing the content of the message.
  * @returns A promise that resolves with the message that was sent.
  */
-export async function setNewMessageInChannel(channel: TextChannel, message: string | MessagePayload | MessageCreateOptions): Promise<Message<boolean>> {
+export async function setNewMessageInChannel(
+	channel: TextChannel, 
+	...args:
+		| [MessageCreateOptions]
+		| (string | string[] | null | undefined)[]
+): Promise<Message<boolean>> {
 	await deleteAllMessagesInChannel(channel);
-	return await channel.send(message as any) as Message<boolean>;
+
+	const messageOptions = parseMessageArgs(args);
+	return await channel.send(messageOptions) as Message<boolean>;
 }
 
 /**
@@ -1193,20 +1209,17 @@ export async function moveChannelToCategory(channel: GuildChannel, category: Cat
 }
 
 /**
- * Parses the given arguments into an array of MessageCreateOptions.
+ * Parses the given arguments into a MessageCreateOptions object.
  * If the arguments are an array of one object, it is expected to be a MessageCreateOptions object.
  * If the arguments are an array of strings, null, or undefined, it is interpreted as the content of a message.
- * If the content is longer than the maximum allowed length, it is split into chunks of the maximum length.
- * @param maxMessageLength - The maximum length of a message.
  * @param args - The arguments to parse.
- * @returns An array of MessageCreateOptions.
+ * @returns A MessageCreateOptions object.
  */
 function parseMessageArgs(
-	maxMessageLength: number,
 	args:
 		| [MessageCreateOptions]
 		| (string | string[] | null | undefined)[]
-): MessageCreateOptions[] {
+): MessageCreateOptions {
 	let messageOptions: MessageCreateOptions;
 
 	if (
@@ -1222,6 +1235,19 @@ function parseMessageArgs(
 		messageOptions = { content: joinLines(...textLines) };
 	}
 
+	return messageOptions;
+}
+
+/**
+ * Splits a MessageCreateOptions object into multiple MessageCreateOptions objects if the content exceeds the maximum length.
+ * @param messageOptions - The MessageCreateOptions object to split.
+ * @param maxMessageLength - The maximum length of a message.
+ * @returns An array of MessageCreateOptions objects.
+ */
+function chunkMessageOptions(
+	messageOptions: MessageCreateOptions,
+	maxMessageLength: number = MAX_CHANNEL_MESSAGE_LENGTH,
+): MessageCreateOptions[] {
 	const content = messageOptions.content ?? "";
 	const chunks =
 		typeof content === "string" && content.length > maxMessageLength
@@ -1238,6 +1264,22 @@ function parseMessageArgs(
 	}
 
 	return messageCreateOptions;
+}
+
+/**
+ * Parses the given arguments into one or more MessageCreateOptions objects, splitting them into chunks if they exceed the maximum length.
+ * @param maxMessageLength - The maximum length of a message. 
+ * @param args - The arguments to parse.
+ * @returns An array of MessageCreateOptions objects.
+ */
+function parseMessageArgsIntoChunks(
+	maxMessageLength: number,
+	args:
+		| [MessageCreateOptions]
+		| (string | string[] | null | undefined)[]
+): MessageCreateOptions[] {
+	const messageOptions = parseMessageArgs(args);
+	return chunkMessageOptions(messageOptions, maxMessageLength);
 }
 
 export async function dmUser(
@@ -1263,7 +1305,7 @@ export async function dmUser(
 		| [MessageCreateOptions]
 		| (string | string[] | null | undefined)[]
 ): Promise<Message<boolean>[]> {
-	const messageOptions = parseMessageArgs(MAX_DM_MESSAGE_LENGTH, args);
+	const messageOptions = parseMessageArgsIntoChunks(MAX_DM_MESSAGE_LENGTH, args);
 	const user = await fetchUser(userID);
 	const sentMessages: Message<boolean>[] = [];
 
@@ -1288,7 +1330,7 @@ export async function sendMessageInChannel(
 		| [MessageCreateOptions]
 		| (string | string[] | null | undefined)[]
 ): Promise<Message<boolean>[]> {
-	const messageOptions = parseMessageArgs(MAX_CHANNEL_MESSAGE_LENGTH, args);
+	const messageOptions = parseMessageArgsIntoChunks(MAX_CHANNEL_MESSAGE_LENGTH, args);
 	const sentMessages: Message<boolean>[] = [];
 
 	for (const messageOption of messageOptions) {

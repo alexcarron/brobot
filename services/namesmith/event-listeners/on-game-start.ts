@@ -2,7 +2,7 @@ import { ids } from '../../../bot-config/discord-ids';
 import { joinLines } from '../../../utilities/string-manipulation-utils';
 import { sendChooseARoleMessage } from '../interfaces/choose-a-role-message';
 import { getNamesmithServices } from '../services/get-namesmith-services';
-import { clearChooseARoleChannel, clearNamesToVoteOnChannel, clearPickAPerkChannel, clearPublishedNamesChannel, clearQuestsChannel, clearTheWinnerChannel, closeNamesToVoteOnChannel, closeTheWinnerChannel, openPublishedNamesChannel, sendToChannel } from '../utilities/discord-action.utility';
+import { clearChooseARoleChannel, clearNamesToVoteOnChannel, clearPickAPerkChannel, clearPublishedNamesChannel, clearQuestsChannel, clearTheWinnerChannel, closeNamesToVoteOnChannel, closeTheWinnerChannel, openPublishedNamesChannel, sendToNamesmithChannel } from '../utilities/discord-action.utility';
 import { NamesmithEvents } from './namesmith-events';
 
 /**
@@ -49,7 +49,7 @@ export async function startGame(theme: string): Promise<void> {
 	gameStateService.setupTimings(now);
 	gameStateService.scheduleGameEvents();
 
-	await sendToChannel(ids.namesmith.channels.DEVELOPMENT_NEWS, joinLines(
+	await sendToNamesmithChannel(ids.namesmith.channels.DEVELOPMENT_NEWS, joinLines(
 		`<@&${ids.namesmith.roles.smithedName}> <@&${ids.namesmith.roles.noName}>`,
 		`A new Namesmith game has started!`,
 		`The theme is: **${theme}**`,

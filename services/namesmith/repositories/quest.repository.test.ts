@@ -285,6 +285,7 @@ describe('QuestRepository', () => {
 			makeSure(quest).is({
 				timeShown: TIME_SHOWN,
 				quest: SOME_QUEST,
+				isHidden: false,
 			});
 
 			const resolvedQuest = questRepository.getShownDailyQuestOrThrow({timeShown: TIME_SHOWN, questID: SOME_QUEST.id});
@@ -334,6 +335,7 @@ describe('QuestRepository', () => {
 			makeSure(shownDailyQuests).is([{
 				timeShown: SOME_DATE,
 				quest: SOME_QUEST,
+				isHidden: false,
 			}]);
 		});
 
@@ -371,10 +373,12 @@ describe('QuestRepository', () => {
 				{
 					timeShown: SOME_YESTERDAY,
 					quest: SOME_QUESTS[0],
+					isHidden: false,
 				},
 				{
 					timeShown: SOME_YESTERDAY,
 					quest: SOME_QUESTS[1],
+					isHidden: false,
 				},
 			);
 
@@ -383,10 +387,12 @@ describe('QuestRepository', () => {
 				{
 					timeShown: SOME_DATE,
 					quest: SOME_QUESTS[2],
+					isHidden: false,
 				},
 				{
 					timeShown: SOME_DATE,
 					quest: SOME_QUESTS[3],
+					isHidden: false,
 				},
 			);
 		});

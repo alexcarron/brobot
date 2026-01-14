@@ -331,15 +331,14 @@ export const quests = [
 		id: 49,
 		name: "You Snooze You Lose",
 		description: "Be the first player to complete this quest",
-		tokensReward: 500,
+		tokensReward: 400,
 		charactersReward: "The Fastest",
 	},
 	{
 		id: 50,
 		name: "You Snooze You Win",
 		description: "Be the second player to complete this quest",
-		tokensReward: 350,
+		tokensReward: 300,
 		charactersReward: "2nd Place",
 	},
 ] as const;
-

@@ -1,6 +1,6 @@
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { Player, PlayerResolvable } from "../../types/player.types";
-import { Quest, QuestResolvable } from "../../types/quest.types";
+import { Quest, QuestResolvable, RewardTypes } from "../../types/quest.types";
 import { getWorkflowResultCreator, provides } from "../workflow-result-creator";
 import { Quests } from '../../constants/quests.constants';
 import { FREEBIE_QUEST_NAME } from '../../constants/test.constants';
@@ -22,6 +22,7 @@ const result = getWorkflowResultCreator({
 	}>(),
 	notAPlayer: null,
 	questDoesNotExist: null,
+	hiddenQuestNotUnlocked: null,
 	alreadyCompletedQuest: null,
 	questCriteriaNotDefined: provides<{questName: string}>(),
 	questCriteriaNotMet: provides<{userFeedback: string}>(),
@@ -1590,6 +1591,12 @@ export function completeQuest(
 		return result.failure.alreadyCompletedQuest();
 	}
 
+	if (
+		questService.isHiddenQuest(questResolvable) &&
+		!questService.isHiddenQuestUnlockedForPlayer(playerResolvable)
+	)
+		return result.failure.hiddenQuestNotUnlocked();
+
 	const quest = questService.resolveQuest(questResolvable);
 	const player = playerService.resolvePlayer(playerResolvable);
 
@@ -1611,13 +1618,30 @@ export function completeQuest(
 	}
 
 	const nameBefore = player.currentName;
-	questService.givePlayerRewards(playerResolvable, questResolvable);
+
+	const rewards = questService.givePlayerRewards(playerResolvable, questResolvable);
+
+	let tokensRewarded = 0, charactersRewarded = '';
+	for (const reward of rewards) {
+		switch (reward.type) {
+			case RewardTypes.TOKENS:
+				tokensRewarded = reward.numTokens;
+				break;
+		
+			case RewardTypes.CHARACTERS:
+				charactersRewarded = reward.characters;
+				break;
+		
+			default:
+				break;
+		}
+	}
 
 	activityLogService.logCompleteQuest({
 		playerCompletingQuest: playerResolvable,
 		questCompleted: questResolvable,
-		tokensRewarded: quest.tokensReward,
-		charactersRewarded: quest.charactersReward,
+		tokensRewarded: tokensRewarded,
+		charactersRewarded: charactersRewarded,
 		nameBefore,
 	});
 

@@ -339,6 +339,12 @@ export const ids = {
 					production: "1384678362236059708",
 				});
 			},
+			get HIDDEN_QUEST() {
+				return chooseByEnv({
+					development: "1460462917362122802",
+					production: "1460462986442571828",
+				});
+			},
 			get DEVELOPMENT_NEWS() {
 				return chooseByEnv({
 					development: "1386449685283209280",

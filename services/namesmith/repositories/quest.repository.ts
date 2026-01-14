@@ -247,7 +247,7 @@ export class QuestRepository {
 			WHERE
 				timeShown = @timeShown AND
 				questID = @questID`,
-			toDBShownDailyQuest({timeShown, questID})
+			toDBShownDailyQuest({timeShown, questID, isHidden: false})
 		);
 
 		if (row === undefined)
@@ -259,28 +259,29 @@ export class QuestRepository {
 		return {
 			timeShown: minimalShownDailyQuest.timeShown,
 			quest,
+			isHidden: minimalShownDailyQuest.isHidden ?? false,
 		};
 	}
 
 	addShownDailyQuest(
 		shownDailyQuestDefinition: ShownDailyQuestDefinition
 	): ShownDailyQuest {
-		const { timeShown, quest } = shownDailyQuestDefinition;
+		const { timeShown, quest, isHidden } = shownDailyQuestDefinition;
 		const questID = this.resolveID(quest);
 
 		this.db.insertIntoTable('shownDailyQuest',
-			toDBShownDailyQuest({timeShown, questID})
+			toDBShownDailyQuest({timeShown, questID, isHidden: isHidden ?? false})
 		);
 
 		return this.getShownDailyQuestOrThrow({ timeShown, questID });
 	}
 
-/**
- * Returns all shown daily quests that are currently being shown to the players
- * on the given date.
- * @param time - The date to check for shown daily quests.
- * @returns An array of all shown daily quests that are currently being shown to the players.
- */
+	/**
+	 * Returns all shown daily quests that are currently being shown to the players
+	 * on the given date.
+	 * @param time - The date to check for shown daily quests.
+	 * @returns An array of all shown daily quests that are currently being shown to the players.
+	 */
 	getShownDailyQuestDuring(time: Date): ShownDailyQuest[] {
 		const rows = this.db.getRows(
 			`SELECT * FROM shownDailyQuest
@@ -295,6 +296,7 @@ export class QuestRepository {
 			.map(minimalShownDailyQuest => ({
 				timeShown: minimalShownDailyQuest.timeShown,
 				quest: this.getQuestOrThrow(minimalShownDailyQuest.questID),
+				isHidden: minimalShownDailyQuest.isHidden ?? false,
 			}));
 	}
 
