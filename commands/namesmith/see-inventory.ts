@@ -2,10 +2,11 @@ import { ids } from "../../bot-config/discord-ids";
 import { Parameter, ParameterTypes } from "../../services/command-creation/parameter";
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
-import { resolveTargetPlayer } from "../../services/namesmith/utilities/interface.utility";
+import { getInvalidPlayerMessageOrPlayer } from "../../services/namesmith/utilities/interface.utility";
 import { fetchPlayerAutocompleteChoices } from "../../services/namesmith/utilities/player.utility";
 import { fetchUser } from "../../utilities/discord-fetch-utils";
 import { escapeDiscordMarkdown, joinLines } from "../../utilities/string-manipulation-utils";
+import { isString } from "../../utilities/types/type-guards";
 
 const Parameters = Object.freeze({
 	PLAYER: new Parameter({
@@ -26,23 +27,10 @@ export const command = new SlashCommand({
 	required_servers: [ids.servers.NAMESMITH],
 	execute: async (interaction, {player: playerID}) => {
 		const { playerService } = getNamesmithServices();
+		const messageOrPlayer = await getInvalidPlayerMessageOrPlayer(interaction, playerID, 'an inventory');
+		if (isString(messageOrPlayer)) return messageOrPlayer;
 
-		const maybePlayer = await resolveTargetPlayer({
-			playerService,
-			interaction,
-			givenPlayerResolvable: playerID,
-		});
-
-		if (maybePlayer === null) {
-			if (interaction.user.id === playerID || playerID === null) {
-				return `You are not a player, so you do not have an inventory.`;
-			}
-			else {
-				return `The given user is not a player, so they do not have an inventory.`;
-			}
-		}
-
-		const player = maybePlayer;
+		const player = messageOrPlayer;
 		const user = await fetchUser(player.id);
 		const inventory = playerService.getDisplayedInventory(player.id);
 

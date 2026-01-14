@@ -1,9 +1,10 @@
 import { Interaction } from "discord.js";
-import { Player } from '../types/player.types';
+import { Player, PlayerID } from '../types/player.types';
 import { PlayerService } from "../services/player.service";
 import { toNullOnError } from "../../../utilities/error-utils";
 import { fetchUserByUsername } from "../../../utilities/discord-fetch-utils";
 import { hasProperty } from "../../../utilities/types/type-guards";
+import { getNamesmithServices } from "../services/get-namesmith-services";
 
 /**
  * Retrieves the player object associated with the user who triggered the given interaction.
@@ -79,4 +80,28 @@ export const resolveTargetPlayer = async (
 	else {
 		return getPlayerTriggeringInteraction(playerService, interaction);
 	}
+}
+
+export async function getInvalidPlayerMessageOrPlayer(
+	interaction: Interaction,
+	playerID: PlayerID,
+	entityName: string,
+): Promise<string | Player> {
+		const { playerService } = getNamesmithServices();
+		const maybePlayer = await resolveTargetPlayer({
+			playerService,
+			interaction,
+			givenPlayerResolvable: playerID,
+		});
+
+		if (maybePlayer === null) {
+			if (interaction.user.id === playerID || playerID === null) {
+				return `You are not a player, so you do not have ${entityName}.`;
+			}
+			else {
+				return `The given user is not a player, so they do not have ${entityName}.`;
+			}
+		}
+
+		return maybePlayer;
 }
