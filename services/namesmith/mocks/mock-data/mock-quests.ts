@@ -26,6 +26,7 @@ export function addMockQuest(
 		description = 'This is a mock description',
 		tokensReward = 0,
 		charactersReward = '',
+		recurrence = 'daily',
 		wasShown = false,
 		isShown = false,
 	} = questDefinition;
@@ -36,6 +37,7 @@ export function addMockQuest(
 		description,
 		tokensReward,
 		charactersReward,
+		recurrence,
 		wasShown,
 		isShown,
 	});

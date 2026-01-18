@@ -5,7 +5,7 @@ describe('wait()', () => {
 		const startTime = Date.now();
 		await wait(10);
 		const endTime = Date.now();
-		expect(endTime - startTime).toBeGreaterThan(9); // allow for some margin of error
+		expect(endTime - startTime).toBeGreaterThan(10); // allow for some margin of error
 	});
 
 	it('should resolve after specified object duration', async () => {

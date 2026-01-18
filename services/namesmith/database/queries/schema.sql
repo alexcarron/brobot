@@ -97,9 +97,9 @@ CREATE TABLE IF NOT EXISTS quest (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	name TEXT NOT NULL UNIQUE,
 	description TEXT NOT NULL,
-	-- recurrence TEXT NOT NULL CHECK(status IN
-	-- 	('daily', 'weekly')
-	-- ) DEFAULT 'daily',
+	recurrence TEXT NOT NULL CHECK(recurrence IN
+		('daily', 'weekly')
+	) DEFAULT 'daily',
 	tokensReward INTEGER NOT NULL DEFAULT 0,
 	charactersReward TEXT NOT NULL DEFAULT '',
 	-- mysteryBoxRewardID INTEGER NOT NULL REFERENCES mysteryBox(id),
@@ -114,6 +114,14 @@ CREATE TABLE IF NOT EXISTS shownDailyQuest (
 	questID INTEGER NOT NULL REFERENCES quest(id)
 		ON DELETE CASCADE ON UPDATE CASCADE,
 	isHidden BOOLEAN NOT NULL DEFAULT 0, -- Whether or not the quest is a hidden one revealed when all daily quests are complete
+	PRIMARY KEY (timeShown, questID)
+);
+
+-- For keeping track of previously shown weekly quest for history
+CREATE TABLE IF NOT EXISTS shownWeeklyQuest (
+	timeShown NUMBER NOT NULL,
+	questID INTEGER NOT NULL REFERENCES quest(id)
+		ON DELETE CASCADE ON UPDATE CASCADE,
 	PRIMARY KEY (timeShown, questID)
 );
 

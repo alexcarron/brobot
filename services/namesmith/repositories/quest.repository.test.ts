@@ -5,7 +5,7 @@ import { Quests } from "../constants/quests.constants";
 import { INVALID_QUEST_ID, INVALID_QUEST_NAME } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockQuest } from "../mocks/mock-data/mock-quests";
-import { Quest } from "../types/quest.types";
+import { Quest, QuestRecurrences } from "../types/quest.types";
 import { QuestNotFoundError, ShownDailyQuestNotFoundError } from "../utilities/error.utility";
 import { QuestRepository } from "./quest.repository";
 
@@ -169,6 +169,7 @@ describe('QuestRepository', () => {
 				id: 100001,
 				name: 'New Quest',
 				description: 'New Quest Description',
+				recurrence: QuestRecurrences.DAILY,
 				tokensReward: 100,
 				charactersReward: 'abc',
 				wasShown: true,
@@ -179,6 +180,7 @@ describe('QuestRepository', () => {
 				id: 100001,
 				name: 'New Quest',
 				description: 'New Quest Description',
+				recurrence: QuestRecurrences.DAILY,
 				tokensReward: 100,
 				charactersReward: 'abc',
 				wasShown: true,
@@ -193,6 +195,7 @@ describe('QuestRepository', () => {
 			const quest = questRepository.addQuest({
 				name: 'New Quest',
 				description: 'New Quest Description',
+				recurrence: QuestRecurrences.DAILY,
 				tokensReward: 100,
 				charactersReward: 'abc',
 				wasShown: true,
