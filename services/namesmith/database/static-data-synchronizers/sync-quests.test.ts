@@ -18,11 +18,13 @@ describe('sync-quests.ts', () => {
 				{
 					name: 'Quest 1',
 					description: 'Description 1',
+					recurrence: 'daily',
 					tokensReward: 10,
 				},
 				{
 					name: 'Quest 2',
 					description: 'Description 2',
+					recurrence: 'daily',
 					charactersReward: 'abc',
 				}
 			]);
@@ -46,6 +48,7 @@ describe('sync-quests.ts', () => {
 				{
 					name: 'Quest 2',
 					description: 'Description 2',
+					recurrence: 'daily',
 					tokensReward: 100,
 				},
 			]);
@@ -54,6 +57,7 @@ describe('sync-quests.ts', () => {
 				{
 					name: 'Quest 1',
 					description: 'Description 1',
+					recurrence: 'daily',
 					tokensReward: 10,
 				},
 			]);
@@ -72,6 +76,7 @@ describe('sync-quests.ts', () => {
 				{
 					name: 'Quest 1',
 					description: 'Description 1',
+					recurrence: 'daily',
 					tokensReward: 10,
 				},
 			]);
@@ -80,6 +85,7 @@ describe('sync-quests.ts', () => {
 				{
 					name: 'Quest 1',
 					description: 'Description 2',
+					recurrence: 'daily',
 					tokensReward: 100,
 				},
 			]);
@@ -99,16 +105,19 @@ describe('sync-quests.ts', () => {
 					id: 3,
 					name: 'Quest 1',
 					description: 'Description 1',
+					recurrence: 'daily',
 					tokensReward: 10,
 				},
 				{
 					id: 2,
 					name: 'Quest 2',
 					description: 'Description 2',
+					recurrence: 'daily',
 				},
 				{
 					name: 'Quest 3',
 					description: 'Description 3',
+					recurrence: 'daily',
 					tokensReward: 1000,
 					charactersReward: 'abc',
 				}
@@ -119,17 +128,20 @@ describe('sync-quests.ts', () => {
 					id: 2,
 					name: 'New Quest 2',
 					description: 'New Description 2',
+					recurrence: 'daily',
 					tokensReward: 200,
 				},
 				{
 					name: 'Quest 3',
 					description: 'New Description 3',
+					recurrence: 'daily',
 					tokensReward: 2000,
 					charactersReward: 'edf',
 				},
 				{
 					name: 'Quest 4',
 					description: 'Description 4',
+					recurrence: 'daily',
 				}
 			]);
 

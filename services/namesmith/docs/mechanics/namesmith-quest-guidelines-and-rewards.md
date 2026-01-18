@@ -39,7 +39,7 @@ Two or three small quests that can be completed in a day. Resets every 24 hours
 ### Mystery Quest
 A hidden quest that is revealed when all rotating daily quests are completed. Provides extra rewards. Resets every 24 hours
 ### Weekly Quests
-One or two quests that take longer and more thought to complete. Resets every 7 days
+3-4 quests that take longer and more thought to complete. Resets every 7 days
 ## Presentation
 Every 24 hours, quests are sent in the quests channel with their name, description, and list of rewards. Each one has a button for claiming the quest. When clicked, if it is determined hte player completed the quests, they will receive the rewards and cannot claim the quest again
 ## Quest Rewards

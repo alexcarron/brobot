@@ -87,7 +87,7 @@ export class MysteryBoxRepository {
 		return asMinimalMysteryBox(row);
 	}
 
-	/**
+	/**`
 	 * Given a mystery box id, returns the corresponding mystery box object with its character odds.
 	 * @param id - The id of the mystery box to return.
 	 * @returns The mystery box object with the given id and its character odds or null if no such object exists.

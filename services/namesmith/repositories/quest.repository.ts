@@ -164,6 +164,7 @@ export class QuestRepository {
 	 * @param questDefinition.id - The ID of the quest to add. If not provided, a new ID will be generated.
 	 * @param questDefinition.name - The name of the quest to add.
 	 * @param questDefinition.description - The description of the quest to add.
+	 * @param questDefinition.recurrence - The recurrence of the quest to add.
 	 * @param questDefinition.tokensReward - The tokens reward of the quest to add.
 	 * @param questDefinition.charactersReward - The characters reward of the quest to add.
 	 * @param questDefinition.wasShown - Whether the quest was shown to the players yet.
@@ -171,7 +172,9 @@ export class QuestRepository {
 	 * @returns The added quest object.
 	 * @throws {QuestAlreadyExistsError} If a quest with the given name or ID already exists.
 	 */
-	addQuest({id, name, description, tokensReward, charactersReward, wasShown, isShown}: QuestDefinition): Quest {
+	addQuest(
+		{id, name, description, recurrence, tokensReward, charactersReward, wasShown, isShown}: QuestDefinition
+	): Quest {
 		if (this.doesQuestExist(name))
 			throw new QuestAlreadyExistsError(name);
 
@@ -184,6 +187,7 @@ export class QuestRepository {
 			id,
 			name,
 			description,
+			recurrence,
 			tokensReward: tokensReward ?? 0,
 			charactersReward: charactersReward ?? '',
 			wasShown: toDBBool(wasShown),
@@ -201,6 +205,7 @@ export class QuestRepository {
 	 * @param questDefintion.id - The ID of the quest to update. If not provided, the quest with the given name will be updated.
 	 * @param questDefintion.name - The name of the quest to update. If not provided, the quest with the given ID will be updated.
 	 * @param questDefintion.description - The description of the quest to update.
+	 * @param questDefintion.recurrence - The recurrence of the quest to update.
 	 * @param questDefintion.tokensReward - The tokens reward of the quest to update.
 	 * @param questDefintion.charactersReward - The characters reward of the quest to update.
 	 * @param questDefintion.wasShown - Whether the quest was shown to the players yet.
@@ -208,7 +213,7 @@ export class QuestRepository {
 	 * @returns The updated quest object.
 	 * @throws {QuestNotFoundError} If no quest with the given ID or name exists.
 	 */
-	updateQuest({id, name, description, tokensReward, charactersReward, wasShown, isShown}:
+	updateQuest({id, name, description, recurrence, tokensReward, charactersReward, wasShown, isShown}:
 		| WithRequiredAndOneOther<Quest, 'id'>
 		| WithRequiredAndOneOther<Quest, 'name'>
 	): Quest {
@@ -223,7 +228,7 @@ export class QuestRepository {
 
 		this.db.updateInTable('quest', {
 			fieldsUpdating: {
-				name, description, tokensReward, charactersReward,
+				name, description, tokensReward, charactersReward, recurrence,
 				wasShown: toOptionalDBBool(wasShown),
 				isShown: toOptionalDBBool(isShown),
 			},
