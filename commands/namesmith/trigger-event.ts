@@ -12,6 +12,7 @@ const Parameters = Object.freeze({
 			"Day Start": 'DayStart',
 			"Start Voting": 'StartVoting',
 			"End Voting": 'EndVoting',
+			"Week Start": 'WeekStart',
 		}
 	})
 });
@@ -27,7 +28,7 @@ export const command = new SlashCommand({
 		if (eventKey in NamesmithEvents === false)
 			return `You provided an invalid event key: \`${eventKey}\``;
 
-		const NamesmithEvent = NamesmithEvents[eventKey as 'PickAPerk' | 'DayStart' | 'StartVoting' | 'EndVoting'];
+		const NamesmithEvent = NamesmithEvents[eventKey as 'PickAPerk' | 'DayStart' | 'StartVoting' | 'EndVoting' | 'WeekStart'];
 
 		if (NamesmithEvent === undefined)
 			return `You provided an invalid event key: \`${eventKey}\``;

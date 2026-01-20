@@ -333,16 +333,22 @@ export const ids = {
 					production: "1384676911594344499",
 				});
 			},
-			get QUESTS() {
+			get DAILY_QUESTS() {
 				return chooseByEnv({
 					development: "1386449685283209284",
 					production: "1384678362236059708",
 				});
 			},
-			get HIDDEN_QUEST() {
+			get HIDDEN_QUESTS() {
 				return chooseByEnv({
 					development: "1460462917362122802",
 					production: "1460462986442571828",
+				});
+			},
+			get WEEKLY_QUESTS() {
+				return chooseByEnv({
+					development: "1462966864001896581",
+					production: "1462968094300569715",
 				});
 			},
 			get DEVELOPMENT_NEWS() {

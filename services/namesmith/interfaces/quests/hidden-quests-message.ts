@@ -16,7 +16,7 @@ export async function sendHiddenQuestsMessages(): Promise<void> {
 	const {questService} = getNamesmithServices();
 	const hiddenQuests = questService.getHiddenDailyQuests();
 
-	const hiddenChannel = await fetchNamesmithChannel(ids.namesmith.channels.HIDDEN_QUEST);
+	const hiddenChannel = await fetchNamesmithChannel(ids.namesmith.channels.HIDDEN_QUESTS);
 	await closeChannel(hiddenChannel);
 
 	await setNewMessageInChannel(hiddenChannel,
@@ -44,7 +44,7 @@ export async function regenerateHiddenQuestsMessages() {
  */
 export async function sendHiddenQuestMessage(quest: Quest): Promise<void> {
 	const message = toQuestButton(quest);
-	const hiddenChannel = await fetchNamesmithChannel(ids.namesmith.channels.HIDDEN_QUEST);
+	const hiddenChannel = await fetchNamesmithChannel(ids.namesmith.channels.HIDDEN_QUESTS);
 	await message.sendIn(hiddenChannel);
 }
 
@@ -55,7 +55,7 @@ export async function sendHiddenQuestMessage(quest: Quest): Promise<void> {
  */
 export async function regenerateHiddenQuestMessage(quest: Quest): Promise<void> {
 	const message = toQuestButton(quest);
-	const hiddenChannel = await fetchNamesmithChannel(ids.namesmith.channels.HIDDEN_QUEST);
+	const hiddenChannel = await fetchNamesmithChannel(ids.namesmith.channels.HIDDEN_QUESTS);
 	await ignoreError(
 		message.regenerate({ channel: hiddenChannel })
 	);

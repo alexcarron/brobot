@@ -21,6 +21,8 @@ export class GameStateService {
 	private voteIsEndingCronJob?: CronJob;
 	private pickAPerkCronJobs: CronJob[] = [];
 	private dayStartCronJobs: CronJob[] = [];
+	private weekStartCronJobs: CronJob[] = [];
+	
 	/**
 	 * Constructs a new GameStateService instance.
 	 * @param gameStateRepository - The repository used for accessing the game state.
@@ -71,6 +73,13 @@ export class GameStateService {
 
 	get timesDayStarts(): Date[] {
 		return this.computeTimesDayStarts(
+			this.timeGameStarts,
+			this.timeVotingStarts
+		);
+	}
+
+	get timesWeekStarts(): Date[] {
+		return this.computeTimesWeekStarts(
 			this.timeGameStarts,
 			this.timeVotingStarts
 		);
@@ -174,6 +183,26 @@ export class GameStateService {
 	}
 
 	/**
+	 * Returns an array of dates representing the start of each week from the given start date to the given end date.
+	 * @param startDate - The start date of the game.
+	 * @param endDate - The end date of the game.
+	 * @returns An array of dates representing the start of each week from the given start date to the given end date.
+	 */
+	computeTimesWeekStarts(
+		startDate: Date,
+		endDate: Date
+	): Date[] {
+		const times: Date[] = [];
+		let currentWeekStart = startDate;
+		while (currentWeekStart < endDate) {
+			times.push(currentWeekStart);
+			currentWeekStart = addDays(currentWeekStart, 7);
+		}
+
+		return times;
+	}
+
+	/**
 	 * Returns the start of the day that the given date falls in.
 	 * @param now - The date to check.
 	 * @returns The start of the day that the given date falls in, or null if the given date is before the start of the game.
@@ -197,6 +226,29 @@ export class GameStateService {
 	}
 
 	/**
+	 * Returns the start of the week that the given date falls in.
+	 * @param now - The date to check.
+	 * @returns The start of the week that the given date falls in, or null if the given date is before the start of the game.
+	 */
+	getStartOfWeek(now: Date): Date | null {
+		this.throwIfNotDefined();
+
+		const weekStarts = this.timesWeekStarts;
+		if (weekStarts.length === 0)
+			throw new GameStateInitializationError();
+
+		for (const weekStart of weekStarts) {
+			const weekEnd = addDays(weekStart, 7);
+
+			if (now >= weekStart && now < weekEnd) {
+				return weekStart;
+			}
+		}
+
+		return null;
+	}
+
+	/**
 	 * Returns the start of the day that the given date falls in, or throws a GameIsNotActiveError if the given date is before the start of the game.
 	 * @param now - The date to check.
 	 * @throws {GameStateInitializationError} - If the game state is not defined.
@@ -211,6 +263,23 @@ export class GameStateService {
 		}
 
 		return dayStart;
+	}
+
+	/**
+	 * Returns the start of the week that the given date falls in, or throws a GameIsNotActiveError if the given date is before the start of the game.
+	 * @param now - The date to check.
+	 * @throws {GameStateInitializationError} - If the game state is not defined.
+	 * @throws {GameIsNotActiveError} - If the given date is before the start of the game.
+	 * @returns The start of the week that the given date falls in.
+	 */
+	getStartOfWeekOrThrow(now: Date) {
+		const weekStart = this.getStartOfWeek(now);
+
+		if (weekStart === null) {
+			throw new GameIsNotActiveError(now, this.timeGameStarts!, this.timeVotingStarts!);
+		}
+
+		return weekStart;
 	}
 
 	/**
@@ -329,6 +398,23 @@ export class GameStateService {
 		}
 	}
 
+	startWeekStartCronJobs(weekStartTimes: Date[]) {
+		for (const weekStartTime of weekStartTimes) {
+			const weekStartCronJob = new CronJob(
+				weekStartTime,
+				() => {
+					NamesmithEvents.WeekStart.triggerEvent({});
+				},
+			);
+
+			const now = new Date();
+			if (now < weekStartTime) {
+				weekStartCronJob.start();
+				this.weekStartCronJobs.push(weekStartCronJob);
+			}
+		}
+	}
+
 	/**
 	 * Starts the cron jobs to end the game and end voting at the times stored in the game state.
 	 * If the current time is before the stored times, the jobs will be started.
@@ -342,6 +428,9 @@ export class GameStateService {
 		for (const dayStartCronJob of this.dayStartCronJobs) {
 			dayStartCronJob.stop();
 		}
+		for (const weekStartCronJob of this.weekStartCronJobs) {
+			weekStartCronJob.stop();
+		}
 
 		this.startEndGameCronJob(this.gameStateRepository.getTimeEnding());
 		this.startVoteIsEndingCronJob(this.gameStateRepository.getTimeVoteIsEnding());
@@ -351,6 +440,9 @@ export class GameStateService {
 
 		const dayStartTimes = this.timesDayStarts;
 		this.startDayStartCronJobs(dayStartTimes);
+
+		const weekStartTimes = this.timesWeekStarts;
+		this.startWeekStartCronJobs(weekStartTimes);
 	}
 
 	/**

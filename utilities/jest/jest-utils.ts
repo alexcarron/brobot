@@ -65,6 +65,17 @@ export function makeSure<
 			baseExpect.toEqual(expectedValue);
 		},
 
+		/**
+		 * Asserts that the actual value is in between the given min and max values, inclusive.
+		 * @param minValue - The minimum value of the range.
+		 * @param maxValue - The maximum value of the range.
+		 * @example
+		 * makeSure(actualResultValue).isBetween(1, 10);
+		 */
+		isBetween(minValue: number, maxValue: number): void {
+			baseExpect.toBeGreaterThanOrEqual(minValue);
+			baseExpect.toBeLessThanOrEqual(maxValue);
+		},
 
 		/**
 		 * Asserts that the actual value is greater than the expected value.

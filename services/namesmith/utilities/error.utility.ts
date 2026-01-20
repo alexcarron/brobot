@@ -267,6 +267,16 @@ export class ShownDailyQuestNotFoundError extends ResourceNotFoundError {
 	}
 }
 
+export class ShownWeeklyQuestNotFoundError extends ResourceNotFoundError {
+	declare relevantData: { timeShown: Date, questID: QuestID }
+	constructor({timeShown, questID}: { timeShown: Date, questID: QuestID }) {
+		super({
+			message: `Shown weekly quest with time shown ${timeShown} and quest ID ${questID} not found.`,
+			relevantData: { timeShown, questID }
+		}); 
+	}
+}
+
 /**
  * Error thrown when a requested namesmith activity log is not found.
  */

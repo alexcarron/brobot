@@ -1,5 +1,5 @@
 import { QuestService } from "./quest.service";
-import { Quest, RewardTypes } from '../types/quest.types';
+import { Quest, QuestRecurrences, RewardTypes } from '../types/quest.types';
 import { addMockQuest } from "../mocks/mock-data/mock-quests";
 import { DatabaseQuerier } from "../database/database-querier";
 import { makeSure } from "../../../utilities/jest/jest-utils";
@@ -291,6 +291,73 @@ describe('QuestService', () => {
 				`SELECT * FROM shownDailyQuest`
 			));
 		});
+
+		it('never assigns weekly quests', () => {
+			addMockQuest(db, {
+				recurrence: 'weekly',
+			});
+			
+			let day = SOME_DATE;
+			for (let i = 0; i < 25; i++) {
+				questService.assignNewDailyQuests(day);
+				makeSure(questService.getCurrentDailyQuests()).haveProperty('recurrence', 'daily');
+				day = addDays(day, 1);
+			}
+		});
+	});
+
+	describe('assignNewWeeklyQuests()', () => {
+		const SOME_DATE = new Date();
+
+		it('Marks three random quests as shown and adds them to shown weekly quests', () => {
+			const shownWeeklyQuests = questService.assignNewWeeklyQuests(SOME_DATE);
+			makeSure(shownWeeklyQuests.length).isBetween(3, 4);
+			makeSure(toPropertyValues(shownWeeklyQuests, 'id')).areAllDifferent();
+		});
+
+		it('Marks new random quests as shown and adds them to shown weekly quests if the current week is different', () => {
+			let shownWeeklyQuests = questService.assignNewWeeklyQuests(addDays(SOME_DATE, -7));
+			const oldWeeklyQuestsIDs = toPropertyValues(shownWeeklyQuests, 'id');
+			makeSure(oldWeeklyQuestsIDs).areAllDifferent();
+
+			shownWeeklyQuests = questService.assignNewWeeklyQuests(SOME_DATE);
+			const newWeeklyQuestsIDs = toPropertyValues(shownWeeklyQuests, 'id');
+			makeSure(newWeeklyQuestsIDs).areAllDifferent();
+			makeSure(newWeeklyQuestsIDs).doesNotContain(oldWeeklyQuestsIDs);
+		});
+
+		it('Assigns already chosen quests when we run out', () => {
+			db.run('DELETE FROM quest');
+			
+			const quests = [];
+			for (let index = 0; index < 4; index++) {
+				quests[index] = addMockQuest(db, { recurrence: QuestRecurrences.WEEKLY });
+			}
+
+			const oldWeeklyQuests = questService.assignNewWeeklyQuests(addDays(SOME_DATE, -7));
+			const newWeeklyQuests = questService.assignNewWeeklyQuests(SOME_DATE);
+
+			const oldWeeklyQuestsIDs = toPropertyValues(oldWeeklyQuests, 'id');
+			const newWeeklyQuestsIDs = toPropertyValues(newWeeklyQuests, 'id');
+			
+			makeSure(oldWeeklyQuestsIDs).areAllDifferent();
+			makeSure(newWeeklyQuestsIDs).areAllDifferent();
+			makeSure(toPropertyValues(newWeeklyQuests, 'id')).hasAnItemWhere(questID =>
+				oldWeeklyQuestsIDs.includes(questID)
+			);
+		});
+
+		it('Adds quests correctly to shownWeeklyQuest table', () => {
+			const chosenQuests = questService.assignNewWeeklyQuests(SOME_DATE);
+			const shownWeeklyQuests = questService.questRepository.getShownWeeklyQuestDuring(SOME_DATE);
+			makeSure(shownWeeklyQuests.length).isBetween(3, 4);
+			makeSure(shownWeeklyQuests).haveProperties({
+				timeShown: SOME_DATE,
+			});
+			makeSure(toPropertyValues(shownWeeklyQuests, 'quest').map(q => q.id)).containsOnly(
+				...chosenQuests.map(q => q.id)
+			)
+		});
 	});
 
 	describe('reset()', () => {
@@ -309,7 +376,7 @@ describe('QuestService', () => {
 			const dailyQuests = questService.getCurrentDailyQuests();
 			makeSure(dailyQuests).hasLengthOf(0);
 
-			const currentlyShownQuestIDs = questService.questRepository.getCurrentlyShownQuestIDs();
+			const currentlyShownQuestIDs = questService.questRepository.getCurrentlyShownDailyQuestIDs();
 			makeSure(currentlyShownQuestIDs).hasLengthOf(0);
 
 			const quests = questService.questRepository.getQuests();

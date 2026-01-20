@@ -107,6 +107,20 @@ export function getRandomBoolean(probabilityOfTrue: number = 0.5): boolean {
 }
 
 /**
+ * Returns one of the two given values with a probability of the first value being returned
+ * equal to the given probability.
+ * @param probabilityOfFirst - The probability of the first value being returned.
+ * @param first - The first value to return.
+ * @param second - The second value to return.
+ * @returns The first value with probability `probabilityOfFirst`, or the second value otherwise.
+ */
+export function chooseFirstWithProbability<
+	FirstType, SecondType
+>(probabilityOfFirst: number, first: FirstType, second: SecondType): FirstType | SecondType {
+	return getRandomBoolean(probabilityOfFirst) ? first : second;
+}
+
+/**
  * Gets a random sample from an exponential distribution with the given expected value
  * @param expectedValue - The expected value of the exponential distribution
  * @returns A random sample

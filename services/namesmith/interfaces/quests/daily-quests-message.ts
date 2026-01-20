@@ -12,7 +12,7 @@ export async function sendDailyQuestsMessages(): Promise<void> {
 	const {questService} = getNamesmithServices();
 	const dailyQuests = questService.getCurrentDailyQuests();
 	
-	const questChannel = await fetchNamesmithChannel(ids.namesmith.channels.QUESTS);
+	const questChannel = await fetchNamesmithChannel(ids.namesmith.channels.DAILY_QUESTS);
 
 	await setNewMessageInChannel(questChannel,
 		'# Daily Quests',
