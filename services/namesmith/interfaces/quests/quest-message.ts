@@ -39,7 +39,7 @@ export function toRewardBulletPoint(reward: Reward): string {
  */
 export async function sendQuestMessage(quest: Quest): Promise<void> {
 	const message = toQuestButton(quest);
-	const questChannel = await fetchNamesmithChannel(ids.namesmith.channels.QUESTS)
+	const questChannel = await fetchNamesmithChannel(ids.namesmith.channels.DAILY_QUESTS)
 	await message.sendIn(questChannel);
 }
 
@@ -50,7 +50,7 @@ export async function sendQuestMessage(quest: Quest): Promise<void> {
  */
 export async function regenerateQuestMessage(quest: Quest) {
 	const message = toQuestButton(quest);
-	const questChannel = await fetchNamesmithChannel(ids.namesmith.channels.QUESTS)
+	const questChannel = await fetchNamesmithChannel(ids.namesmith.channels.DAILY_QUESTS)
 	await ignoreError(
 		message.regenerate({channel: questChannel})
 	);

@@ -181,7 +181,7 @@ export async function clearPickAPerkChannel() {
 }
 
 export async function clearQuestsChannel() {
-	const questsChannel = await fetchNamesmithChannel(ids.namesmith.channels.QUESTS);
+	const questsChannel = await fetchNamesmithChannel(ids.namesmith.channels.DAILY_QUESTS);
 	await deleteAllMessagesInChannel(questsChannel);
 }
 

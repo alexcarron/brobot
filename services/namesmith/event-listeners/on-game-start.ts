@@ -56,4 +56,5 @@ export async function startGame(theme: string): Promise<void> {
 	));
 
 	NamesmithEvents.DayStart.triggerEvent({});
+	NamesmithEvents.WeekStart.triggerEvent({});
 }

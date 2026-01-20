@@ -74,7 +74,7 @@ export function toQuestButton(quest: Quest) {
 				!questService.isHiddenQuest(quest.id)
 			) {
 				await revealHiddenQuestToPlayer(buttonInteraction.user.id);
-				const hiddenChannelId = ids.namesmith.channels.HIDDEN_QUEST;
+				const hiddenChannelId = ids.namesmith.channels.HIDDEN_QUESTS;
 				hiddenQuestLines = [
 					`_ _`,
 					`You successfully completed all daily quests and unlocked today's hidden quest! See it in <#${hiddenChannelId}>.`

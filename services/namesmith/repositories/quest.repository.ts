@@ -2,8 +2,8 @@ import { returnNonNullOrThrow } from "../../../utilities/error-utils";
 import { WithRequiredAndOneOther } from "../../../utilities/types/generic-types";
 import { isNumber, isString } from "../../../utilities/types/type-guards";
 import { DatabaseQuerier } from "../database/database-querier";
-import { asMinimalShownDailyQuest, asQuest, asQuests, Quest, QuestDefinition, QuestID, QuestName, QuestResolvable, ShownDailyQuestDefinition, ShownDailyQuest, toDBShownDailyQuest } from "../types/quest.types";
-import { QuestAlreadyExistsError, QuestNotFoundError, ShownDailyQuestNotFoundError } from "../utilities/error.utility";
+import { asMinimalShownDailyQuest, asQuest, asQuests, Quest, QuestDefinition, QuestID, QuestName, QuestResolvable, ShownDailyQuestDefinition, ShownDailyQuest, toDBShownDailyQuest, ShownWeeklyQuestDefinition, ShownWeeklyQuest, toDBShownWeeklyQuest, asMinimalShownWeeklyQuest } from "../types/quest.types";
+import { QuestAlreadyExistsError, QuestNotFoundError, ShownDailyQuestNotFoundError, ShownWeeklyQuestNotFoundError } from "../utilities/error.utility";
 import { DBDate, toDBBool, toOptionalDBBool } from "../utilities/db.utility";
 import { createMockDB } from "../mocks/mock-database";
 
@@ -241,6 +241,15 @@ export class QuestRepository {
 			return this.getQuestByNameOrThrow(name!);
 	}
 
+	/**
+	 * Returns the shown daily quest with the given time shown and quest ID.
+	 * If no shown daily quest with the given time shown and quest ID exists, throws a ShownDailyQuestNotFoundError.
+	 * @param parameters - The time shown and quest ID of the shown daily quest to return.
+	 * @param parameters.timeShown - The time shown of the shown daily quest.
+	 * @param parameters.questID - The quest ID of the shown daily quest.
+	 * @returns  The shown daily quest with the given time shown and quest ID.
+	 * @throws {ShownDailyQuestNotFoundError} - If no shown daily quest with the given time shown and quest ID exists.
+	 */
 	getShownDailyQuestOrThrow(
 		{timeShown, questID}: {
 			timeShown: Date,
@@ -268,6 +277,47 @@ export class QuestRepository {
 		};
 	}
 
+	/**
+	 * Returns the shown weekly quest with the given time shown and quest ID.
+	 * If no shown weekly quest with the given time shown and quest ID exists, throws a ShownWeeklyQuestNotFoundError.
+	 * @param params - The time shown and quest ID of the shown weekly quest to return.
+	 * @param params.timeShown - The time shown of the shown weekly quest.
+	 * @param params.questID - The quest ID of the shown weekly quest.
+	 * @returns The shown weekly quest with the given time shown and quest ID.
+	 * @throws {ShownWeeklyQuestNotFoundError} - If no shown weekly quest with the given time shown and quest ID exists.
+	 */
+	getShownWeeklyQuestOrThrow(
+		{timeShown, questID}: {
+			timeShown: Date,
+			questID: QuestID,
+		}
+	): ShownWeeklyQuest {
+		const row = this.db.getRow(
+			`SELECT * FROM shownWeeklyQuest
+			WHERE
+				timeShown = @timeShown AND
+				questID = @questID`,
+			toDBShownWeeklyQuest({timeShown, questID})
+		);
+
+		if (row === undefined)
+			throw new ShownWeeklyQuestNotFoundError({timeShown, questID});
+
+		return {
+			timeShown: asMinimalShownWeeklyQuest(row).timeShown,
+			quest: this.getQuestOrThrow(asMinimalShownWeeklyQuest(row).questID),
+		};
+	}
+
+	/**
+	 * Adds a new shown daily quest to the database.
+	 * @param shownDailyQuestDefinition - The shown daily quest to add.
+	 * @param shownDailyQuestDefinition.timeShown - The time shown of the shown daily quest.
+	 * @param shownDailyQuestDefinition.quest - The quest of the shown daily quest.
+	 * @param shownDailyQuestDefinition.isHidden - Whether the shown daily quest is hidden.
+	 * @returns The added shown daily quest.
+	 * @throws {ShownDailyQuestNotFoundError} - If no shown daily quest with the given time shown and quest ID exists.
+	 */
 	addShownDailyQuest(
 		shownDailyQuestDefinition: ShownDailyQuestDefinition
 	): ShownDailyQuest {
@@ -279,6 +329,27 @@ export class QuestRepository {
 		);
 
 		return this.getShownDailyQuestOrThrow({ timeShown, questID });
+	}
+
+	/**
+	 * Adds a new shown weekly quest to the database.
+	 * @param shownWeeklyQuestDefinition - The shown weekly quest to add.
+	 * @param shownWeeklyQuestDefinition.timeShown - The time shown of the shown weekly quest.
+	 * @param shownWeeklyQuestDefinition.quest - The quest of the shown weekly quest.
+	 * @returns The added shown weekly quest.
+	 * @throws {ShownWeeklyQuestNotFoundError} - If no shown weekly quest with the given time shown and quest ID exists.
+	 */
+	addShownWeeklyQuest(
+		shownWeeklyQuestDefinition: ShownWeeklyQuestDefinition
+	): ShownWeeklyQuest {
+		const { timeShown, quest } = shownWeeklyQuestDefinition;
+		const questID = this.resolveID(quest);
+
+		this.db.insertIntoTable('shownWeeklyQuest',
+			toDBShownWeeklyQuest({timeShown, questID})
+		);
+
+		return this.getShownWeeklyQuestOrThrow({ timeShown, questID });
 	}
 
 	/**
@@ -306,13 +377,38 @@ export class QuestRepository {
 	}
 
 	/**
+	 * Returns all shown weekly quests that are currently being shown to the players
+	 * on the given date.
+	 * @param time - The date to check for shown weekly quests.
+	 * @returns An array of all shown weekly quests that are currently being shown to the players.
+	 */
+	getShownWeeklyQuestDuring(time: Date): ShownWeeklyQuest[] {
+		const rows = this.db.getRows(
+			`SELECT * FROM shownWeeklyQuest
+			WHERE
+				timeShown <= @timeShown AND
+				timeShown + 604800000 > @timeShown`,
+				
+			{ timeShown: DBDate.fromDomain(time) }
+		);
+
+		return rows
+			.map(row => asMinimalShownWeeklyQuest(row))
+			.map(minimalShownWeeklyQuest => ({
+				timeShown: minimalShownWeeklyQuest.timeShown,
+				quest: this.getQuestOrThrow(minimalShownWeeklyQuest.questID),
+			}));
+	}
+
+	/**
 	 * Returns an array of all the quest IDs of the daily quests that have not been shown.
 	 * @returns An array of the quest IDs of the daily quests that have not been shown.
 	 */
-	getNotShownQuestIDs(): QuestID[] {
+	getNotShownDailyQuestIDs(): QuestID[] {
 		const rows = this.db.getRows(
 			`SELECT id FROM quest
 			WHERE
+				recurrence = 'daily' AND
 				wasShown = 0 AND
 				isShown = 0`
 		) as { id: QuestID }[];
@@ -322,13 +418,47 @@ export class QuestRepository {
 	}
 
 	/**
-	 * Returns an array of all the quest IDs of the quests that are currently being shown to the players.
-	 * @returns An array of the quest IDs of the quests that are currently being shown to the players.
+	 * Returns an array of all the quest IDs of the weekly quests that have not been shown.
+	 * @returns An array of the quest IDs of the weekly quests that have not been shown.
 	 */
-	getCurrentlyShownQuestIDs(): QuestID[] {
+	getNotShownWeeklyQuestIDs(): QuestID[] {
+		const rows = this.db.getRows(
+			`SELECT id FROM quest
+			WHERE
+				recurrence = 'weekly' AND
+				wasShown = 0 AND
+				isShown = 0`
+		) as { id: QuestID }[];
+
+		return rows
+			.map(row => row.id);
+	}
+
+	/**
+	 * Returns an array of all the quest IDs of the daily quests picked for today.
+	 * @returns An array of the quest IDs of the daily quests picked for today.
+	 */
+	getCurrentlyShownDailyQuestIDs(): QuestID[] {
 		const isShownRows = this.db.getRows(
 			`SELECT id FROM quest
-			WHERE isShown = 1`
+			WHERE 
+				recurrence = 'daily' AND
+				isShown = 1`
+		) as { id: QuestID }[];
+		const shownQuestIDs = isShownRows.map(row => row.id);
+		return shownQuestIDs;
+	}
+
+	/**
+	 * Returns the ids of the weekly quests currently being shown to players.
+	 * @returns The ids of the weekly quests currently being shown to players.
+	 */
+	getCurrentlyShownWeeklyQuestIDs(): QuestID[] {
+		const isShownRows = this.db.getRows(
+			`SELECT id FROM quest
+			WHERE 
+				recurrence = 'weekly' AND
+				isShown = 1`
 		) as { id: QuestID }[];
 		const shownQuestIDs = isShownRows.map(row => row.id);
 		return shownQuestIDs;
@@ -357,11 +487,26 @@ export class QuestRepository {
 	/**
 	 * Resets all daily quests by setting wasShown to 0 for all quests with isShown equal to 0.
 	 */
-	resetWasShownForUnshownQuests(): void {
+	resetWasShownForUnshownDailyQuests(): void {
 		this.db.run(
 			`UPDATE quest
 				SET wasShown = 0
-			WHERE isShown = 0`
+			WHERE 
+				recurrence = 'daily' AND
+				isShown = 0`
+		);
+	}
+
+	/**
+	 * Resets all weekly quests by setting wasShown to 0 for all quests with isShown equal to 0.
+	 */
+	resetWasShownForUnshownWeeklyQuests(): void {
+		this.db.run(
+			`UPDATE quest
+				SET wasShown = 0
+			WHERE 
+				recurrence = 'weekly' AND
+				isShown = 0`
 		);
 	}
 
@@ -382,5 +527,17 @@ export class QuestRepository {
 		this.db.run(
 			`DELETE FROM shownDailyQuest`
 		);
+	}
+
+	/**
+	 * Gets all weekly quests from the database.
+	 * @returns  An array of all weekly quests.
+	 */
+	getWeeklyQuests(): Quest[] {
+		const rows = this.db.getRows(`
+			SELECT * FROM quest 
+			WHERE recurrence = 'weekly'
+		`);
+		return rows.map(row => asQuest(row));
 	}
 }

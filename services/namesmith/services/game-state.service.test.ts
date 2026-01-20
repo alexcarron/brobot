@@ -46,6 +46,7 @@ import { VoteService } from "./vote.service";
 import { DAYS_TO_BUILD_NAME, DAYS_TO_VOTE } from "../constants/namesmith.constants";
 import { addDays } from "../../../utilities/date-time-utils";
 import { GameIsNotActiveError } from "../utilities/error.utility";
+import { makeSure } from "../../../utilities/jest/jest-utils";
 
 
 describe('GameStateService', () => {
@@ -122,15 +123,15 @@ describe('GameStateService', () => {
 				new Date('2025-08-05T12:00:00.000Z'),
 				new Date('2025-08-08T12:00:00.000Z'),
 			];
-			expect(gameStateService.computeTimesPickAPerkStarts(
+			makeSure(gameStateService.computeTimesPickAPerkStarts(
 				startDate,
 				addDays(startDate, 7*4),
 				[3, 6]
-			)).toEqual(expectedDates);
+			)).is(expectedDates);
 		});
 	});
 
-	describe('setTimesDayStarts()', () => {
+	describe('computeTimesDayStarts()', () => {
 		it('should return an array of dates representing the start of each day', () => {
 			const startDate = new Date('2025-07-12T12:00:00.000Z');
 			const expectedDates = [
@@ -142,16 +143,31 @@ describe('GameStateService', () => {
 				new Date('2025-07-17T12:00:00.000Z'),
 				new Date('2025-07-18T12:00:00.000Z'),
 			];
-			expect(gameStateService.computeTimesDayStarts(startDate, addDays(startDate, 7))).toEqual(expectedDates);
+			makeSure(gameStateService.computeTimesDayStarts(startDate, addDays(startDate, 7)))
+				.is(expectedDates);
 		});
 	});
 
-	describe('getTodaysDayStart()', () => {
+	describe('computeTimesWeekStarts()', () => {
+		it('should return an array of dates representing the start of each week', () => {
+			const startDate = new Date('2025-07-12T12:00:00.000Z');
+			const expectedDates = [
+				new Date('2025-07-12T12:00:00.000Z'),
+				new Date('2025-07-19T12:00:00.000Z'),
+				new Date('2025-07-26T12:00:00.000Z'),
+				new Date('2025-08-02T12:00:00.000Z'),
+			];
+
+			makeSure(gameStateService.computeTimesWeekStarts(startDate, addDays(startDate, 7*3 + 1)))
+				.is(expectedDates);
+		});
+	});
+
+	describe('getStartOfToday()', () => {
 		const TIME_GAME_STARTS = new Date('2025-07-12T12:00:00.000Z');
 
 		beforeEach(() => {
 			// Setup the game state
-			console.log('TIME_GAME_STARTS', TIME_GAME_STARTS);
 			gameStateService.setupTimings(TIME_GAME_STARTS);
 		})
 
@@ -181,6 +197,43 @@ describe('GameStateService', () => {
 		it('should return null if the given date is after the game is over', () => {
 			const now = new Date('2027-07-19T12:00:00.000Z');
 			expect(gameStateService.getStartOfToday(now)).toBeNull();
+		});
+	});
+
+	describe('getStartOfWeek()', () => {
+		const TIME_GAME_STARTS = new Date('2025-07-12T12:00:00.000Z');
+
+		beforeEach(() => {
+			// Setup the game state
+			gameStateService.setupTimings(TIME_GAME_STARTS);
+		})
+
+		it('should return the start of the week if the given date is exactly that date', () => {
+			const now = new Date('2025-07-14T12:00:00.000Z');
+			const expectedWeekStart = new Date('2025-07-12T12:00:00.000Z');
+			expect(gameStateService.getStartOfWeek(now)).toEqual(expectedWeekStart);
+		});
+
+		it('should return the start of the week if given the middle of the week', () => {
+			const now = new Date('2025-07-14T22:00:00.000Z');
+			const expectedWeekStart = new Date('2025-07-12T12:00:00.000Z');
+			expect(gameStateService.getStartOfWeek(now)).toEqual(expectedWeekStart);
+		});
+
+		it('should return the start of week even if we are right near the end of the week', () => {
+			const now = new Date('2025-07-18T11:59:59.999Z');
+			const expectedWeekStart = new Date('2025-07-12T12:00:00.000Z');
+			expect(gameStateService.getStartOfWeek(now)).toEqual(expectedWeekStart);
+		});
+		
+		it('should return null if the given date is before the start of the game', () => {
+			const now = new Date('2025-07-11T12:00:00.000Z');
+			expect(gameStateService.getStartOfWeek(now)).toBeNull();
+		});
+
+		it('should return null if the given date is after the game is over', () => {
+			const now = new Date('2027-07-19T12:00:00.000Z');
+			expect(gameStateService.getStartOfWeek(now)).toBeNull();
 		});
 	});
 

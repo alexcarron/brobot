@@ -12,6 +12,7 @@ export const NamesmithEvents = {
 	}>(),
 
 	DayStart: createEventHandler<{}>(),
+	WeekStart: createEventHandler<{}>(),
 	StartVoting: createEventHandler<{}>(),
 	EndVoting: createEventHandler<{}>(),
 
