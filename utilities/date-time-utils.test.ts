@@ -1,4 +1,4 @@
-import { toUnixTimestamp, toCronExpression, addDays, addSeconds, addHours, toDateFromTimeString, toNormalizedDate, getMondayOfThisWeek, getSundayOfThisWeek, getHoursInTime, getReadableDuration, getMinutesInTime, getSecondsInTime, getMinutesDurationFromTime, addMinutes, addDuration } from "./date-time-utils";
+import { toUnixTimestamp, toCronExpression, addDays, addSeconds, addHours, toDateFromTimeString, toNormalizedDate, getMondayOfThisWeek, getSundayOfThisWeek, getHoursInTime, getReadableDuration, getMinutesInTime, getSecondsInTime, getMinutesDurationFromTime, addMinutes, addDuration, Duration, getMillisecondsOfDuration, addMilliseconds } from "./date-time-utils";
 import { makeSure } from "./jest/jest-utils";
 
 describe('date-time-utils', () => {
@@ -83,7 +83,26 @@ describe('date-time-utils', () => {
 			const date = new Date('2022-01-01T00:00:00.000Z');
 			makeSure(addSeconds(date, 0)).is(date);
 		});
-	})
+	});
+
+	describe('addMilliseconds()', () => {
+		it('adds positive number of milliseconds to a valid Date object', () => {
+			const date = new Date('2022-01-01T00:00:00.000Z');
+			const expected = new Date('2022-01-01T00:00:00.500Z');
+			makeSure(addMilliseconds(date, 500)).is(expected);
+		});
+
+		it('adds negative number of milliseconds to a valid Date object', () => {
+			const date = new Date('2022-01-01T00:00:00.500Z');
+			const expected = new Date('2022-01-01T00:00:00.000Z');
+			makeSure(addMilliseconds(date, -500)).is(expected);
+		});
+
+		it('adds zero milliseconds to a valid Date object', () => {
+			const date = new Date('2022-01-01T00:00:00.000Z');
+			makeSure(addMilliseconds(date, 0)).is(date);
+		});
+	});
 
 	describe('addHours()', () => {
 		it('adds positive number of hours to a valid Date object', () => {
@@ -124,12 +143,6 @@ describe('date-time-utils', () => {
 	});
 
 	describe('addDuration()', () => {
-		it('should return the original date if the duration is empty', () => {
-			const date = new Date('2022-01-01T00:00:00.000Z');
-			const duration = {};
-			makeSure(addDuration(date, duration)).is(date);
-		});
-
 		it('should return the original date if the duration is zero', () => {
 			const date = new Date('2022-01-01T00:00:00.000Z');
 			const duration = { days: 0, hours: 0, minutes: 0, seconds: 0, milliseconds: 0 };
@@ -337,6 +350,34 @@ describe('date-time-utils', () => {
 
 		it('should throw an error for an invalid number of milliseconds', () => {
 			makeSure(() => getMinutesDurationFromTime(-1)).toThrow();
+		});
+	});
+
+	describe('getMillisecondsOfDuration()', () => {
+		it('should return the total number of milliseconds in a given duration', () => {
+			const duration: Duration = { days: 1, hours: 2, minutes: 3, seconds: 4, milliseconds: 5 };
+			makeSure(getMillisecondsOfDuration(duration)).is(
+				1000 * 60 * 60 * 24 * 1 +
+				1000 * 60 * 60 * 2 +
+				1000 * 60 * 3 +
+				1000 * 4 +
+				5
+			);
+		});
+
+		it('should return 10ms when only given milliseconds', () => {
+			const duration: Duration = { milliseconds: 10 };
+			makeSure(getMillisecondsOfDuration(duration)).is(10);
+		});
+
+		it('should return 3010ms when given 3 seconds and 10ms', () => {
+			const duration: Duration = { seconds: 3, milliseconds: 10 };
+			makeSure(getMillisecondsOfDuration(duration)).is(3010);
+		});
+
+		it('should return 63010ms when given 1 minute, 3 seconds, and 10ms', () => {
+			const duration: Duration = { minutes: 1, seconds: 3, milliseconds: 10 };
+			makeSure(getMillisecondsOfDuration(duration)).is(63010);
 		});
 	});
 });

@@ -1,4 +1,4 @@
-import { addDays, addHours, addMinutes, getToday, getTomorrow, getYesterday } from "../../../utilities/date-time-utils";
+import { addDays, addHours, addMilliseconds, addMinutes, getMillisecondsOfDuration, getToday, getYesterday } from "../../../utilities/date-time-utils";
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { getBetween } from "../../../utilities/random-utils";
 import { INVALID_PLAYER_ID } from "../constants/test.constants";
@@ -33,6 +33,8 @@ describe('ActivityLogService', () => {
 
 	let SOME_PLAYER: Player;
 	let OTHER_PLAYER: Player;
+	let FIVE_DIFFERENT_PLAYERS: Player[];
+	
 	let SOME_RECIPE: Recipe;
 	let SOME_QUEST: Quest;
 	let SOME_TRADE: Trade;
@@ -40,25 +42,35 @@ describe('ActivityLogService', () => {
 	let SOME_ROLE: Role;
 	let SOME_MYSTERY_BOX: MysteryBox;
 
+	let LAST_WEEK: Date;
+	let START_OF_WEEK: Date;
 	let YESTERDAY: Date;
 	let TODAY: Date;
 	let TOMORROW: Date;
 
 	beforeEach(() => {
-		({ db, activityLogService, gameStateService, playerService } = setupMockNamesmith());
+		TODAY = getToday();
+		YESTERDAY = addDays(TODAY, -1);
+		TOMORROW = addDays(TODAY, 1);
+		LAST_WEEK = addDays(TODAY, -7);
+		START_OF_WEEK = addDays(TODAY, -3);
+
+		({ db, activityLogService, gameStateService, playerService } = setupMockNamesmith(START_OF_WEEK));
 
 		SOME_PLAYER = addMockPlayer(db);
 		OTHER_PLAYER = addMockPlayer(db);
+
+		FIVE_DIFFERENT_PLAYERS = [];
+		for (let i = 0; i < 5; i++) {
+			FIVE_DIFFERENT_PLAYERS[i] = addMockPlayer(db);
+		}
+		
 		SOME_RECIPE = addMockRecipe(db);
 		SOME_QUEST = addMockQuest(db);
 		SOME_TRADE = addMockTrade(db);
 		SOME_PERK = addMockPerk(db);
 		SOME_ROLE = addMockRole(db);
 		SOME_MYSTERY_BOX = addMockMysteryBox(db);
-
-		YESTERDAY = getYesterday();
-		TODAY = getToday();
-		TOMORROW = getTomorrow();
 	});
 
 	describe('logChangeName()', () => {
@@ -589,7 +601,7 @@ describe('ActivityLogService', () => {
 			});
 
 			makeSure(activityLogService.getTokensPlayerSpentSince(
-				SOME_PLAYER.id, YESTERDAY
+				SOME_PLAYER.id, TOMORROW
 			)).is(25);
 		});
 	});
@@ -1279,6 +1291,787 @@ describe('ActivityLogService', () => {
 			const activityLogs = activityLogService.getLogsWithTokenDifferenceTodayByPlayer(SOME_PLAYER.id);
 			makeSure(activityLogs).containsOnly(EXPECTED_ACTVITY_LOG1, EXPECTED_ACTVITY_LOG2);
 			makeSure(activityLogs).doesNotContain(UNEXPECTED_ACTVITY_LOG);
+		});
+	});
+
+	describe('getMaxTokensEarnedFromLogThisWeek()', () => {
+		it('returns negative infinity when there are no logs for the player and activity type', () => {
+			makeSure(activityLogService.getMaxTokensEarnedFromLogThisWeek({
+				byPlayer: SOME_PLAYER.id,
+				ofType: ActivityTypes.CHANGE_NAME
+			})).is(null);
+		});
+
+		it('returns the maximum amount of tokens a player has earned from a singular log of a given activity type this week', () => {
+			const EXPECTED_MAX_TOKENS_EARNED = 10;
+			activityLogService.logMineTokens({
+				playerMining: SOME_PLAYER,
+				tokensEarned: EXPECTED_MAX_TOKENS_EARNED - 8
+			});
+
+			activityLogService.logMineTokens({
+				playerMining: SOME_PLAYER,
+				tokensEarned: EXPECTED_MAX_TOKENS_EARNED
+			});
+
+			activityLogService.logMineTokens({
+				playerMining: SOME_PLAYER,
+				tokensEarned: EXPECTED_MAX_TOKENS_EARNED - 5
+			});
+
+			activityLogService.logClaimRefill({
+				playerRefilling: SOME_PLAYER,
+				tokensEarned: EXPECTED_MAX_TOKENS_EARNED + 100,
+				timeCooldownExpired: new Date()
+			});
+
+			makeSure(activityLogService.getMaxTokensEarnedFromLogThisWeek({
+				byPlayer: SOME_PLAYER.id,
+				ofType: ActivityTypes.MINE_TOKENS
+			})).is(EXPECTED_MAX_TOKENS_EARNED);
+		});
+
+		it('ignores any logs from last week', () => {
+			jest.useFakeTimers({ now: LAST_WEEK });
+
+			try {
+				activityLogService.logMineTokens({
+					playerMining: SOME_PLAYER,
+					tokensEarned: 25
+				});
+	
+				jest.useFakeTimers({ now: TODAY });
+	
+				activityLogService.logMineTokens({
+					playerMining: SOME_PLAYER,
+					tokensEarned: 3
+				});
+				activityLogService.logMineTokens({
+					playerMining: SOME_PLAYER,
+					tokensEarned: 8
+				});
+				activityLogService.logMineTokens({
+					playerMining: SOME_PLAYER,
+					tokensEarned: 5
+				});
+	
+				makeSure(activityLogService.getMaxTokensEarnedFromLogThisWeek({
+					byPlayer: SOME_PLAYER.id,
+					ofType: ActivityTypes.MINE_TOKENS
+				})).is(8);
+			}
+			finally {
+				jest.useRealTimers();
+			}
+		});
+	});
+
+	describe('getNumLogsDoneThisWeek()', () => {
+		it('returns zero when there are no logs for the player and activity type', () => {
+			makeSure(activityLogService.getNumLogsDoneThisWeek({
+				byPlayer: SOME_PLAYER.id,
+				ofType: ActivityTypes.CHANGE_NAME
+			})).is(0);
+		});
+
+		it('returns one when there is one log for the player and activity type', () => {
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME
+			});
+
+			makeSure(activityLogService.getNumLogsDoneThisWeek({
+				byPlayer: SOME_PLAYER.id,
+				ofType: ActivityTypes.CHANGE_NAME
+			})).is(1);
+		});
+
+		it('returns five when the player has five logs for the player and activity type and three for a different type, and three for a different player', () => {
+			for (let i = 0; i < 5; i++) {
+				addMockActivityLog(db, {
+					player: SOME_PLAYER,
+					type: ActivityTypes.CHANGE_NAME
+				});
+			}
+
+			for (let i = 0; i < 3; i++) {
+				addMockActivityLog(db, {
+					player: SOME_PLAYER,
+					type: ActivityTypes.MINE_TOKENS
+				});
+			}
+
+			for (let i = 0; i < 3; i++) {
+				addMockActivityLog(db, {
+					player: OTHER_PLAYER,
+					type: ActivityTypes.CHANGE_NAME
+				});
+			}
+
+			makeSure(activityLogService.getNumLogsDoneThisWeek({
+				byPlayer: SOME_PLAYER.id,
+				ofType: ActivityTypes.CHANGE_NAME
+			})).is(5);
+		});
+	});
+
+	describe('didPlayerDoLogOfTypeThisWeek()', () => {
+		it('returns false when the player has not done a log of the given activity type this week', () => {
+			makeSure(activityLogService.didPlayerDoLogOfTypeThisWeek(SOME_PLAYER.id, ActivityTypes.CHANGE_NAME)).is(false);
+		});
+
+		it('returns true when the player has done a log of the given activity type this week', () => {
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME
+			});
+
+			makeSure(activityLogService.didPlayerDoLogOfTypeThisWeek(SOME_PLAYER.id, ActivityTypes.CHANGE_NAME)).is(true);
+		});
+	});
+
+	describe('getMaxLogsDoneThisWeek()', () => {
+		it('returns zero when there are no logs for the player and activity type', () => {
+			makeSure(activityLogService.getMaxLogsDoneThisWeek({
+				byPlayer: SOME_PLAYER.id,
+				ofType: ActivityTypes.CHANGE_NAME,
+				inTimeSpan: {days: 2},
+			})).is(0);
+		});
+
+		it('returns one when there is one log for the player and activity type', () => {
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME
+			});
+
+			makeSure(activityLogService.getMaxLogsDoneThisWeek({
+				byPlayer: SOME_PLAYER.id,
+				ofType: ActivityTypes.CHANGE_NAME,
+				inTimeSpan: {days: 7},
+			})).is(1);
+		});
+
+		it('returns one if logs are always farther apart than time span', () => {			
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addDays(START_OF_WEEK, 1)
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addDays(START_OF_WEEK, 2)
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addDays(START_OF_WEEK, 4)
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addDays(START_OF_WEEK, 5)
+			});
+
+			makeSure(activityLogService.getMaxLogsDoneThisWeek({
+				byPlayer: SOME_PLAYER.id,
+				ofType: ActivityTypes.CHANGE_NAME,
+				inTimeSpan: {hours: 20},
+			})).is(1);
+		});
+
+		it('returns the largest number of activity logs of a given type a player has done in the given time span', () => {
+			const SOME_TIME_SPAN = {days: 2};
+			const SOME_ACTIVITY_TYPE = ActivityTypes.CHANGE_NAME;
+
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: SOME_ACTIVITY_TYPE,
+				timeOccurred: addDays(START_OF_WEEK, 1)
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: SOME_ACTIVITY_TYPE,
+				timeOccurred: addDays(START_OF_WEEK, 2)
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: SOME_ACTIVITY_TYPE,
+				timeOccurred: addDays(START_OF_WEEK, 4)
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: SOME_ACTIVITY_TYPE,
+				timeOccurred: addDays(START_OF_WEEK, 5)
+			});
+
+			makeSure(activityLogService.getMaxLogsDoneThisWeek({
+				byPlayer: SOME_PLAYER.id,
+				ofType: SOME_ACTIVITY_TYPE,
+				inTimeSpan: SOME_TIME_SPAN
+			})).is(2);
+		});
+
+		it('ignores logs not done by player and not of given type', () => {
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addHours(START_OF_WEEK, 1)
+			});
+			addMockActivityLog(db, {
+				player: OTHER_PLAYER, // Different player
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addHours(START_OF_WEEK, 2)
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addHours(START_OF_WEEK, 3)
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addHours(START_OF_WEEK, 12)
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.BUY_MYSTERY_BOX, // Different type
+				timeOccurred: addHours(START_OF_WEEK, 13)
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addHours(START_OF_WEEK, 14)
+			});
+			
+			makeSure(activityLogService.getMaxLogsDoneThisWeek({
+				byPlayer: SOME_PLAYER.id,
+				ofType: ActivityTypes.CHANGE_NAME,
+				inTimeSpan: {hours: 4}
+			})).is(2);
+		});
+	});
+
+	describe('getMinTimeOfNumLogsDoneThisWeek()', () => {
+		it('returns null if player has not any activity logs', () => {
+			makeSure(activityLogService.getMinTimeOfNumLogsDoneThisWeek(2, {
+				byPlayer: SOME_PLAYER.id,
+				ofType: ActivityTypes.CHANGE_NAME
+			})).isNull();
+		});
+
+		it('returns null if player has done one less than given number of activity logs', () => {
+			for (let i = 0; i < 5; i++) {
+				addMockActivityLog(db, {
+					player: SOME_PLAYER,
+					type: ActivityTypes.CHANGE_NAME
+				});
+			}
+
+			makeSure(activityLogService.getMinTimeOfNumLogsDoneThisWeek(6, {
+				byPlayer: SOME_PLAYER.id,
+				ofType: ActivityTypes.CHANGE_NAME
+			})).isNull();
+		});
+
+		it('returns time between first and last log if player has done given number of activity logs', () => {
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: START_OF_WEEK,
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 1),
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 10),
+			});
+
+			makeSure(activityLogService.getMinTimeOfNumLogsDoneThisWeek(3, {
+				byPlayer: SOME_PLAYER.id,
+				ofType: ActivityTypes.CHANGE_NAME
+			})).is(10);
+		});
+
+		it('returns the smallest number of milliseconds between logs if given number is two', () => {
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: START_OF_WEEK,
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 1),
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 10),
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 100),
+			});
+
+			makeSure(activityLogService.getMinTimeOfNumLogsDoneThisWeek(2, {
+				byPlayer: SOME_PLAYER.id,
+				ofType: ActivityTypes.CHANGE_NAME
+			})).is(1);
+		});
+
+		it('returns the smallest number of milliseconds between two logs if given number is three', () => {
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: START_OF_WEEK,
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 10),
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 100),
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 101),
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 1101),
+			});
+
+			makeSure(activityLogService.getMinTimeOfNumLogsDoneThisWeek(3, {
+				byPlayer: SOME_PLAYER.id,
+				ofType: ActivityTypes.CHANGE_NAME
+			})).is(91);
+		});
+	});
+
+	describe('getMaxTokensEarnedFromLogsThisWeek()', () => {
+		it('returns null if player has not any activity logs', () => {
+			makeSure(activityLogService.getMaxTokensEarnedFromLogsThisWeek({
+				byPlayer: SOME_PLAYER.id,
+				ofType: ActivityTypes.MINE_TOKENS,
+				inTimeSpan: {days: 2},
+			})).isNull();
+		});
+
+		it('returns zero if player earned zero tokens from one log', () => {
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.MINE_TOKENS,
+				tokensDifference: 0,
+			});
+
+			makeSure(activityLogService.getMaxTokensEarnedFromLogsThisWeek({
+				byPlayer: SOME_PLAYER.id,
+				ofType: ActivityTypes.MINE_TOKENS,
+				inTimeSpan: {days: 2},
+			})).is(0);
+		});
+
+		it('returns total tokens earned from logs if all logs done in time span', () => {
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.MINE_TOKENS,
+				tokensDifference: 1,
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.MINE_TOKENS,
+				tokensDifference: 2,
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.MINE_TOKENS,
+				tokensDifference: 3,
+			});
+
+			makeSure(activityLogService.getMaxTokensEarnedFromLogsThisWeek({
+				byPlayer: SOME_PLAYER.id,
+				ofType: ActivityTypes.MINE_TOKENS,
+				inTimeSpan: {days: 2},
+			})).is(6);
+		});
+
+		it('returns largest sum of tokens if multiple groups of logs were done in the time span', () => {
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.MINE_TOKENS,
+				tokensDifference: 1,
+				timeOccurred: START_OF_WEEK,
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.MINE_TOKENS,
+				tokensDifference: 2,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 10),
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.MINE_TOKENS,
+				tokensDifference: 3,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 20),
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.MINE_TOKENS,
+				tokensDifference: 5,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 30),
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.MINE_TOKENS,
+				tokensDifference: 1,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 40),
+			});
+
+			makeSure(activityLogService.getMaxTokensEarnedFromLogsThisWeek({
+				byPlayer: SOME_PLAYER.id,
+				ofType: ActivityTypes.MINE_TOKENS,
+				inTimeSpan: {milliseconds: 20},
+			})).is(10);
+		});
+	});
+
+	describe('getMaxPlayersDoingLogsThisWeek()', () => {
+		it('returns null if player has not any activity logs', () => {
+			makeSure(activityLogService.getMaxPlayersDoingLogsThisWeek({
+				ofType: ActivityTypes.CHANGE_NAME,
+				inTimeSpan: {days: 2},
+			})).isNull();
+		});
+
+		it('returns the only players doing logs if they did it in the given time span', () => {
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[0],
+				type: ActivityTypes.CHANGE_NAME,
+			});
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[1],
+				type: ActivityTypes.CHANGE_NAME,
+			});
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[2],
+				type: ActivityTypes.CHANGE_NAME,
+			});
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[3],
+				type: ActivityTypes.CHANGE_NAME,
+			});
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[4],
+				type: ActivityTypes.CHANGE_NAME,
+			});
+
+			makeSure(activityLogService.getMaxPlayersDoingLogsThisWeek({
+				ofType: ActivityTypes.CHANGE_NAME,
+				inTimeSpan: {days: 2},
+			})).containsOnly(
+				FIVE_DIFFERENT_PLAYERS[0],
+				FIVE_DIFFERENT_PLAYERS[1],
+				FIVE_DIFFERENT_PLAYERS[2],
+				FIVE_DIFFERENT_PLAYERS[3],
+				FIVE_DIFFERENT_PLAYERS[4],
+			);
+		});
+
+		it('returns the two different players that have done a given activity type in the given time span', () => {
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[0],
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: START_OF_WEEK,
+			});
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[1],
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 10),
+			});
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[2],
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 20),
+			});
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[3],
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 35),
+			});
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[4],
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 45),
+			});
+
+			makeSure(activityLogService.getMaxPlayersDoingLogsThisWeek({
+				ofType: ActivityTypes.CHANGE_NAME,
+				inTimeSpan: {milliseconds: 20},
+			})).containsOnly(
+				FIVE_DIFFERENT_PLAYERS[0],
+				FIVE_DIFFERENT_PLAYERS[1],
+				FIVE_DIFFERENT_PLAYERS[2],
+			)
+		});
+
+		it('does not include duplicate players if the same player did multiple logs in the time span', () => {
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[0],
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: START_OF_WEEK,
+			});
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[1],
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 10),
+			});
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[0],
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 20),
+			});
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[2],
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 30),
+			});
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[1],
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 30),
+			});
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[3],
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 1000),
+			});
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[4],
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 2000),
+			});
+
+			makeSure(activityLogService.getMaxPlayersDoingLogsThisWeek({
+				ofType: ActivityTypes.CHANGE_NAME,
+				inTimeSpan: {milliseconds: 30},
+			})).containsOnly(
+				FIVE_DIFFERENT_PLAYERS[0],
+				FIVE_DIFFERENT_PLAYERS[1],
+				FIVE_DIFFERENT_PLAYERS[2],
+			);
+		})
+	});
+
+	describe('getTokensEarnedFromLogsThisWeek()', () => {
+		it('returns null if no player did logs', () => {
+			makeSure(activityLogService.getTokensEarnedFromLogsThisWeek({
+				ofType: ActivityTypes.MINE_TOKENS
+			})).isNull();
+		});
+
+		it('returns null if given player did no logs', () => {
+			addMockActivityLog(db, {
+				player: OTHER_PLAYER,
+				type: ActivityTypes.MINE_TOKENS,
+			})
+			
+			makeSure(activityLogService.getTokensEarnedFromLogsThisWeek({
+				byPlayer: SOME_PLAYER.id,
+				ofType: ActivityTypes.MINE_TOKENS
+			})).isNull();
+		});
+
+		it('returns 0 if the given player earned no tokens', () => {
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.MINE_TOKENS,
+			})
+			
+			makeSure(activityLogService.getTokensEarnedFromLogsThisWeek({
+				byPlayer: SOME_PLAYER.id,
+				ofType: ActivityTypes.MINE_TOKENS
+			})).isEqualTo(0);
+		});
+
+		it('returns 100 if the given player got 50 twice and a different player got 50 once', () => {
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.MINE_TOKENS,
+				tokensDifference: 50,
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.MINE_TOKENS,
+				tokensDifference: 50,
+			});
+			addMockActivityLog(db, {
+				player: OTHER_PLAYER,
+				type: ActivityTypes.MINE_TOKENS,
+				tokensDifference: 50,
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CLAIM_REFILL,
+				tokensDifference: 50,
+			});
+
+			makeSure(activityLogService.getTokensEarnedFromLogsThisWeek({
+				byPlayer: SOME_PLAYER.id,
+				ofType: ActivityTypes.MINE_TOKENS
+			})).isEqualTo(100);
+		});
+
+		it('returns 150 if one player got 50 twice and a different player got 50 once', () => {
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.MINE_TOKENS,
+				tokensDifference: 50,
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.MINE_TOKENS,
+				tokensDifference: 50,
+			});
+			addMockActivityLog(db, {
+				player: OTHER_PLAYER,
+				type: ActivityTypes.MINE_TOKENS,
+				tokensDifference: 50,
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CLAIM_REFILL,
+				tokensDifference: 50,
+			});
+
+			makeSure(activityLogService.getTokensEarnedFromLogsThisWeek({
+				ofType: ActivityTypes.MINE_TOKENS
+			})).isEqualTo(150);
+		});
+	});
+
+	describe('getMaxTimeOfNoLogsDoneThisWeek()', () => {
+		it('returns 7 days if player has no activity logs', () => {
+			makeSure(activityLogService.getMaxTimeOfNoLogsDoneThisWeek({
+				byPlayer: SOME_PLAYER.id,
+				ofType: ActivityTypes.CHANGE_NAME
+			})).isEqualTo(getMillisecondsOfDuration({days: 7}));
+		});
+
+		it('returns time from log to start of week if player has one activity log late', () => {
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addDays(START_OF_WEEK, 5),
+			});
+
+			makeSure(activityLogService.getMaxTimeOfNoLogsDoneThisWeek({
+				byPlayer: SOME_PLAYER.id,
+				ofType: ActivityTypes.CHANGE_NAME
+			})).isEqualTo(getMillisecondsOfDuration({days: 5}));
+		});
+
+		it('returns time from log to end of week if player has one activity log early', () => {
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addDays(START_OF_WEEK, 1),
+			});
+
+			makeSure(activityLogService.getMaxTimeOfNoLogsDoneThisWeek({
+				byPlayer: SOME_PLAYER.id,
+				ofType: ActivityTypes.CHANGE_NAME
+			})).isEqualTo(getMillisecondsOfDuration({days: 6}));
+		});
+
+		it('returns time from log to start of week if it ends up being the longest time', () => {
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addDays(START_OF_WEEK, 5),
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addDays(START_OF_WEEK, 6),
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addDays(START_OF_WEEK, 6),
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addDays(START_OF_WEEK, 7),
+			});
+
+			makeSure(activityLogService.getMaxTimeOfNoLogsDoneThisWeek({
+				byPlayer: SOME_PLAYER.id,
+				ofType: ActivityTypes.CHANGE_NAME
+			})).isEqualTo(getMillisecondsOfDuration({days: 5}));
+		});
+
+		it('returns time from log to end of week if it ends up being the longest time', () => {
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addDays(START_OF_WEEK, 1),
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addDays(START_OF_WEEK, 2),
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addDays(START_OF_WEEK, 3),
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addDays(START_OF_WEEK, 4),
+			});
+
+			makeSure(activityLogService.getMaxTimeOfNoLogsDoneThisWeek({
+				byPlayer: SOME_PLAYER.id,
+				ofType: ActivityTypes.CHANGE_NAME
+			})).isEqualTo(getMillisecondsOfDuration({days: 3}));
+		});
+
+		it('returns time between farthest apart logs', () => {
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addDays(START_OF_WEEK, 1),
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addDays(START_OF_WEEK, 2),
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addDays(START_OF_WEEK, 5),
+			});
+
+			makeSure(activityLogService.getMaxTimeOfNoLogsDoneThisWeek({
+				byPlayer: SOME_PLAYER.id,
+				ofType: ActivityTypes.CHANGE_NAME
+			})).isEqualTo(getMillisecondsOfDuration({days: 3}));
 		});
 	});
 });

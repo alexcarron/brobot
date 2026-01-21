@@ -214,6 +214,15 @@ export class PerkService {
 	}
 
 	/**
+	 * Retrieves a list of names of perks that a player has.
+	 * @param playerResolvable - The player to get perk names for.
+	 * @returns An array of perk names that the given player has.
+	 */
+	getPerkNamesOfPlayer(playerResolvable: PlayerResolvable): string[] {
+		return this.getPerksOfPlayer(playerResolvable).map(perk => perk.name);
+	}
+
+	/**
 	 * Resets the wasOffered flag for all perks to false.
 	 * This is useful for when you want to start a new game or session.
 	 */

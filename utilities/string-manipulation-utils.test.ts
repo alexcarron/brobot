@@ -3,7 +3,7 @@ import {
   createTextProgressBar,
   toNumericOrdinal,
   toWordOrdinal,
-  toListSentenceFromWords,
+  toListOfWords,
   wrapTextByLineWidth,
   removeLinks,
   removeEmojis,
@@ -402,21 +402,21 @@ describe('string-manipulation-utils', () => {
 		});
 	});
 
-	describe('toListSentenceFromWords()', () => {
+	describe('toListOfWords()', () => {
 		it('should return empty string for empty array', () => {
-			expect(toListSentenceFromWords([])).toBe('');
+			expect(toListOfWords([])).toBe('');
 		});
 
 		it('should return single word for single word array', () => {
-			expect(toListSentenceFromWords(['hello'])).toBe('hello');
+			expect(toListOfWords(['hello'])).toBe('hello');
 		});
 
 		it('should return two words with "and" for two word array', () => {
-			expect(toListSentenceFromWords(['hello', 'world'])).toBe('hello and world');
+			expect(toListOfWords(['hello', 'world'])).toBe('hello and world');
 		});
 
 		it('should return multiple words with commas and "and" for multiple word array', () => {
-			expect(toListSentenceFromWords(['hello', 'world', 'foo', 'bar'])).toBe('hello, world, foo, and bar');
+			expect(toListOfWords(['hello', 'world', 'foo', 'bar'])).toBe('hello, world, foo, and bar');
 		});
 	});
 

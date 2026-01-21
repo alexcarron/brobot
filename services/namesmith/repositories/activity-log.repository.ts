@@ -348,7 +348,7 @@ export class ActivityLogRepository {
 		const minimalActivityLogs = asMinimalActivityLogs(
 			this.db.getRows(
 				`SELECT * FROM activityLog
-				WHERE timeOccurred > @minimumTimeOccurred
+				WHERE timeOccurred >= @minimumTimeOccurred
 				ORDER BY timeOccurred ASC`,
 				{ minimumTimeOccurred: DBDate.fromDomain(minimumTimeOccurred) }
 			)
@@ -368,7 +368,7 @@ export class ActivityLogRepository {
 			this.db.getRows(
 				`SELECT * FROM activityLog
 				WHERE
-					timeOccurred > @minimumTimeOccurred AND
+					timeOccurred >= @minimumTimeOccurred AND
 					${toParameterAndWhereClause(queryParameters)}
 				ORDER BY timeOccurred ASC
 				`,
@@ -394,7 +394,7 @@ export class ActivityLogRepository {
 			this.db.getRows(
 				`SELECT * FROM activityLog
 				WHERE
-					timeOccurred > @minimumTimeOccurred AND
+					timeOccurred >= @minimumTimeOccurred AND
 					${toParameterNotAndWhereClause(queryParameters)}
 				ORDER BY timeOccurred ASC
 				`,
@@ -422,7 +422,7 @@ export class ActivityLogRepository {
 			this.db.getRows(
 				`SELECT * FROM activityLog
 				WHERE
-					timeOccurred > @minimumTimeOccurred AND
+					timeOccurred >= @minimumTimeOccurred AND
 					playerID = @playerID AND
 					(${toParameterNotAndWhereClause(queryParameters)})
 				ORDER BY timeOccurred ASC
@@ -451,7 +451,7 @@ export class ActivityLogRepository {
 			this.db.getRows(
 				`SELECT * FROM activityLog
 				WHERE
-					timeOccurred > @minimumTimeOccurred AND
+					timeOccurred >= @minimumTimeOccurred AND
 					type = @activityType AND
 					(${toParameterOrWhereClause(queryParameters)})
 				ORDER BY timeOccurred ASC

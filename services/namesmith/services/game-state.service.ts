@@ -103,6 +103,8 @@ export class GameStateService {
 			`Pick a Perk Start Times: ${toConciseReadableDates(this.timesPickAPerkStarts)}`,
 			``,
 			`Day Start Times: ${toConciseReadableDates(this.timesDayStarts)}`,
+			``,
+			`Week Start Times: ${toConciseReadableDates(this.timesWeekStarts)}`,
 		));
 	}
 

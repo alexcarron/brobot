@@ -37,6 +37,7 @@ import { addMockPlayer, createMockPlayerObject } from "../mocks/mock-data/mock-p
 import { NamesmithEvents } from "../event-listeners/namesmith-events";
 import { isNotNullable } from "../../../utilities/types/type-guards";
 import { Player } from "../types/player.types";
+import { InvalidArgumentError } from "../../../utilities/error-utils";
 
 describe('PlayerService', () => {
 	let playerService: PlayerService;
@@ -813,6 +814,106 @@ describe('PlayerService', () => {
 			});
 			const result = playerService.getDisplayedInventory(mockPlayer.id);
 			makeSure(result).is("abc346 !!#");
+		});
+	});
+
+	describe('doesNameContain()', () => {
+		it('returns true if currentName of player is the given substring', () => {
+			const mockPlayer = addMockPlayer(db, { currentName: "abc" });
+			makeSure(playerService.doesNameContain(mockPlayer.id, "abc")).isTrue();
+		});
+
+		it('returns true if the given substring is contains in the middle of the player\'s name', () => {
+			const mockPlayer = addMockPlayer(db, { currentName: "Joseph" });
+			makeSure(playerService.doesNameContain(mockPlayer.id, "sep")).isTrue();
+		});
+
+		it('returns true if the given substring is not in the same case as the player\'s name', () => {
+			const mockPlayer = addMockPlayer(db, { currentName: "abcdefghijkl" });
+			makeSure(playerService.doesNameContain(mockPlayer.id, "DeFgHiJ")).isTrue();
+		})
+
+		it('returns false if given substring is not in currentName of player', () => {
+			const mockPlayer = addMockPlayer(db, { currentName: "abc" });
+			makeSure(playerService.doesNameContain(mockPlayer.id, "def")).isFalse();
+		});
+
+		it('returns false if the given substring is not in the exact same order as the characters in the player\'s name', () => {
+			const mockPlayer = addMockPlayer(db, { currentName: "abcdef" });
+			makeSure(playerService.doesNameContain(mockPlayer.id, "bced")).isFalse();
+		});
+
+		it('shoudl throw InvalidArgumentError if the given substring is empty', () => {
+			const mockPlayer = addMockPlayer(db, { currentName: "abcdef" });
+			makeSure(() => 
+				playerService.doesNameContain(mockPlayer.id, "")
+		).throws(InvalidArgumentError);
+		});
+	});
+
+	describe('doesNameContainAny()', () => {
+		it('should return true if currentName of player contains any of the given substrings', () => {
+			const mockPlayer = addMockPlayer(db, { currentName: "abcdef" });
+			const nameSubstrings = ["bce", "def", "ghi"];
+			makeSure(playerService.doesNameContainAny(mockPlayer.id, nameSubstrings)).isTrue();
+		});
+
+		it('should return false if currentName of player does not contain any of the given substrings', () => {
+			const mockPlayer = addMockPlayer(db, { currentName: "abcdef" });
+			const nameSubstrings = ["xyz", "jkl"];
+			makeSure(playerService.doesNameContainAny(mockPlayer.id, nameSubstrings)).isFalse();
+		});
+	});
+
+	describe('doesPublishedNameContain', () => {
+		it('should return true if the published name of a player is the given substring', () => {
+			const mockPlayer = addMockPlayer(db, { publishedName: "Joseph" });
+			makeSure(playerService.doesPublishedNameContain(mockPlayer.id, "Joseph")).isTrue();
+		});
+
+		it('should return true if the given substring is contains in the middle of the player\'s name', () => {
+			const mockPlayer = addMockPlayer(db, { publishedName: "Joseph" });
+			makeSure(playerService.doesPublishedNameContain(mockPlayer.id, "eph")).isTrue();
+		});
+
+		it('should return true if the given substring is not in the same case as the player\'s name', () => {
+			const mockPlayer = addMockPlayer(db, { publishedName: "joseph" });
+			makeSure(playerService.doesPublishedNameContain(mockPlayer.id, "OsEp")).isTrue();
+		});
+
+		it('should return false if given substring is not in publishedName of player', () => {
+			const mockPlayer = addMockPlayer(db, { publishedName: "abc" });
+			makeSure(playerService.doesPublishedNameContain(mockPlayer.id, "def")).isFalse();
+		});
+
+		it('should return false if the given substring is not in the exact same order as the characters in the player\'s name', () => {
+			const mockPlayer = addMockPlayer(db, { publishedName: "abcdef" });
+			makeSure(playerService.doesPublishedNameContain(mockPlayer.id, "bced")).isFalse();
+		});
+
+		it('should throw InvalidArgumentError if the given substring is empty', () => {
+			const mockPlayer = addMockPlayer(db, { publishedName: "abcdef" });
+			makeSure(() => 
+				playerService.doesPublishedNameContain(mockPlayer.id, "")
+			).throws(InvalidArgumentError);
+		});
+	});
+
+	describe('hasPublishedName()', () => {
+		it('should return true if the player has a published name', () => {
+			const mockPlayer = addMockPlayer(db, { publishedName: "abc" });
+			makeSure(playerService.hasPublishedName(mockPlayer.id)).isTrue();
+		});
+
+		it('should return false if the player does not have a published name', () => {
+			const mockPlayer = addMockPlayer(db, { publishedName: null });
+			makeSure(playerService.hasPublishedName(mockPlayer.id)).isFalse();
+		});
+
+		it('should return true when they publish their name', () => {
+			const mockPlayer = addMockPlayer(db, { currentName: "abc", publishedName: null });
+			playerService.publishName(mockPlayer.id);
+			makeSure(playerService.hasPublishedName(mockPlayer.id)).isTrue();
 		});
 	});
 });

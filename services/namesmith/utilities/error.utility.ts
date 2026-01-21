@@ -1,7 +1,7 @@
 import { inspect } from 'util';
 import { getCharacterDifferences } from '../../../utilities/data-structure-utils';
 import { CustomError } from '../../../utilities/error-utils';
-import { escapeDiscordMarkdown, joinLines, toListSentenceFromWords } from '../../../utilities/string-manipulation-utils';
+import { escapeDiscordMarkdown, joinLines, toListOfWords } from '../../../utilities/string-manipulation-utils';
 import { isNumber } from '../../../utilities/types/type-guards';
 import { ActivityLogID } from '../types/activity-log.types';
 import { CharacterID } from '../types/character.types';
@@ -907,7 +907,7 @@ export class PlayerAlreadyHasPerkError extends NamesmithError {
 		super({
 			message: joinLines(
 				`Cannot add perk. The player "${player.currentName}" with the player ID ${player.id} already has the perk "${perk.name}" with the ID ${perk.id}.`,
-				`The player current has the perks ${toListSentenceFromWords(player.perks.map((p) => p.name))}.`,
+				`The player current has the perks ${toListOfWords(player.perks.map((p) => p.name))}.`,
 			),
 			relevantData: {
 				player,
