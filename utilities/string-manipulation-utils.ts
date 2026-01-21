@@ -309,7 +309,7 @@ export const toWordOrdinal = (number: number): string => {
 
   throw new Error('Number too large');
 }
-export const toListSentenceFromWords = (words: string[]): string => {
+export const toListOfWords = (words: string[], conjunction: string = 'and'): string => {
 	if (!words || words.length <= 0) {
 		return "";
 	}
@@ -319,13 +319,13 @@ export const toListSentenceFromWords = (words: string[]): string => {
 	}
 
 	if (words.length === 2) {
-		return `${words[0]} and ${words[1]}`;
+		return `${words[0]} ${conjunction} ${words[1]}`;
 	}
 
 	const lastWord = words[words.length-1];
 	const nonLastWords = words.slice(0, -1);
 
-	return `${nonLastWords.join(", ")}, and ${lastWord}`;
+	return `${nonLastWords.join(", ")}, ${conjunction} ${lastWord}`;
 }
 
 /**

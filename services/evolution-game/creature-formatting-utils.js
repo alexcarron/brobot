@@ -1,4 +1,4 @@
-const { toListSentenceFromWords } = require("../../utilities/string-manipulation-utils");
+const { toListOfWords } = require("../../utilities/string-manipulation-utils");
 const { getChildCreaturesOf, assertAreCreatures, assertIsCreature } = require("./creature-utils");
 
 /**
@@ -18,7 +18,7 @@ const getCreatureText = creature => {
 const getCreaturesText = creatures => {
 	assertAreCreatures(creatures);
 
-	return toListSentenceFromWords(
+	return toListOfWords(
 		creatures.map(creature => getCreatureText(creature))
 	);
 };

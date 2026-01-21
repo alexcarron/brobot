@@ -12,7 +12,7 @@ import { MysteryBoxID } from "../../types/mystery-box.types";
 import { hasUtilityCharacter } from "../../utilities/character.utility";
 import { RecipeID } from "../../types/recipe.types";
 import { sortByDescendingProperty } from "../../../../utilities/data-structure-utils";
-import { toListSentenceFromWords } from "../../../../utilities/string-manipulation-utils";
+import { toListOfWords } from "../../../../utilities/string-manipulation-utils";
 
 const PLAYER_MET_CRITERIA_RESULT = 'questSuccess' as const;
 const result = getWorkflowResultCreator({
@@ -1516,7 +1516,7 @@ const questIDToMeetsCriteriaCheck = {
 
 		const playerIDs = completeThisQuestLogs.map(log => log.player.id);
 		const playerMentions = playerIDs.map(id => `<@${id}>`);
-		const listOfPlayerMentions = toListSentenceFromWords(playerMentions);
+		const listOfPlayerMentions = toListOfWords(playerMentions);
 
 		activityLogService.logCompleteQuest({
 			playerCompletingQuest: player.id,
@@ -1555,6 +1555,70 @@ const questIDToMeetsCriteriaCheck = {
 		const secondPlayerID = completeThisQuestLogs[1].player.id
 
 		return toFailure(`<@${secondPlayerID}> completed the "${quest.name}" quest second already. You had to have been the second player to complete this quest to get the rewards.`);
+	},
+
+	[Quests.PERK_PRIDE.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{playerService, perkService}: NamesmithServices
+	) => {
+		const perkNames = perkService.getPerkNamesOfPlayer(player);
+		const nameHasPerkName = playerService.doesNameContainAny(player, perkNames);
+
+		if (nameHasPerkName)
+			return PLAYER_MET_CRITERIA_RESULT;
+
+		const listOfPerkNames = toListOfWords(perkNames.map(name => `"${name}"`), 'or');
+		return toFailure(`Your current name does not contain the names of any of your perks. Your name must include ${listOfPerkNames} to complete the "${quest.name}" quest.`);
+	},
+
+	[Quests.ROLE_CALL.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{playerService, roleService}: NamesmithServices
+	) => {
+		const role = roleService.getRoleOfPlayer(player);
+		if (role === null)
+			return toFailure(`You do not have a role. You must have a role to complete the "${quest.name}" quest.`);
+		
+		const nameHasRoleName = playerService.doesNameContain(player, role.name);
+		if (!nameHasRoleName)
+			return toFailure(`Your current name does not contain your role's name. Your name must include "${role.name}" to complete the "${quest.name}" quest.`);
+			
+		return PLAYER_MET_CRITERIA_RESULT;
+	},
+
+	[Quests.SHOW_TOKENS.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{playerService}: NamesmithServices
+	) => {
+		const numTokensHas = playerService.getTokens(player);
+		
+		if (!playerService.hasPublishedName(player))
+			return toFailure(`You do not have a published name. You must have publish a name to complete the "${quest.name}" quest.`);
+
+		const publishedNameHasTokens = playerService.doesPublishedNameContain(player, String(numTokensHas));
+		if (!publishedNameHasTokens)
+			return toFailure(`Your published name does not contain the number of tokens you have. Your published name should have contained "${numTokensHas}" to complete the "${quest.name}" quest.`);
+			
+		return PLAYER_MET_CRITERIA_RESULT;
+	},
+
+	[Quests.GOLD_SPIKE.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_TOKENS_MINED_NEDEED = 10;
+		const maxTokensFromMine = activityLogService.getMaxTokensEarnedFromLogThisWeek({
+			byPlayer: player, 
+			ofType: ActivityTypes.MINE_TOKENS
+		});
+
+		if (maxTokensFromMine === null)
+			return toFailure(`You did not mine any tokens this week. You must mine at least once to complete the "${quest.name}" quest.`);
+
+		if (maxTokensFromMine < NUM_TOKENS_MINED_NEDEED)
+			return toFailure(`You only mined ${maxTokensFromMine} tokens at most from a single mine this week. You must earn at least ${NUM_TOKENS_MINED_NEDEED} from one to complete the "${quest.name}" quest.`);
+
+		return PLAYER_MET_CRITERIA_RESULT;
 	},
 } as const;
 

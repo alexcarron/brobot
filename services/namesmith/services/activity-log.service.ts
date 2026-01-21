@@ -1,12 +1,12 @@
 import { addToArrayMap } from "../../../utilities/data-structure-utils";
-import { addDays } from "../../../utilities/date-time-utils";
+import { addDays, Duration, getMillisecondsOfDuration } from "../../../utilities/date-time-utils";
 import { DatabaseQuerier } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
 import { ActivityLogRepository } from "../repositories/activity-log.repository";
-import { ActivityLog, ActivityTypes, NameInterval } from "../types/activity-log.types";
+import { ActivityLog, ActivityType, ActivityTypes, NameInterval } from "../types/activity-log.types";
 import { MysteryBoxResolvable } from "../types/mystery-box.types";
 import { PerkResolvable } from "../types/perk.types";
-import { PlayerResolvable } from "../types/player.types";
+import { Player, PlayerID, PlayerResolvable } from "../types/player.types";
 import { QuestResolvable } from "../types/quest.types";
 import { Recipe } from "../types/recipe.types";
 import { RoleResolvable } from "../types/role.types";
@@ -774,5 +774,347 @@ export class ActivityLogService {
 		}
 
 		return totalTokensSpent;
+	}
+
+
+	/**
+	 * Retrieves the start of the week that the current date falls in.
+	 * @returns The start of the week that the current date falls in.
+	 * @throws {GameStateInitializationError} - If the game state is not defined.
+	 * @throws {GameIsNotActiveError} - If the current date is before the start of the game.
+	 */
+	private get startOfWeek(): Date {
+		return this.gameStateService.getStartOfWeekOrThrow(new Date());
+	}
+
+	/**
+	 * Retrieves the maximum amount of tokens a player has earned from a singular log of a given activity type this week.
+	 * @param parameters - The parameters which include:
+	 * @param parameters.byPlayer - The player doing the activity.
+	 * @param parameters.ofType - The activity type to retrieve the maximum amount of tokens earned for.
+	 * @returns The maximum amount of tokens the player has earned from the given activity type this week.
+	 */
+	getMaxTokensEarnedFromLogThisWeek(
+		{byPlayer, ofType}: {
+			byPlayer: PlayerResolvable;
+			ofType: ActivityType;
+		}
+	): number | null {
+		const logs = this.activityLogRepository.findActivityLogsAfterTimeWhere(this.startOfWeek, {
+			player: byPlayer, 
+			type: ofType
+		});
+
+		let maxTokensEarned = null;
+		for (const log of logs) {
+			if (maxTokensEarned === null)
+				maxTokensEarned = log.tokensDifference;
+
+			if (log.tokensDifference > maxTokensEarned)
+				maxTokensEarned = log.tokensDifference;
+		}
+
+		return maxTokensEarned;
+	}
+
+	/**
+	 * Retrieves the number of activity logs a player has done of a given activity type this week.
+	 * @param parameters - The parameters which include:
+	 * @param parameters.byPlayer - The player doing the activity.
+	 * @param parameters.ofType - The activity type to retrieve the number of logs for.
+	 * @returns  The number of activity logs the player has done of the given activity type this week.
+	 */
+	getNumLogsDoneThisWeek(
+		{byPlayer, ofType}: {
+			byPlayer: PlayerResolvable;
+			ofType: ActivityType;
+		}
+	): number {
+		return this.activityLogRepository.findActivityLogsAfterTimeWhere(this.startOfWeek, {
+			player: byPlayer, 
+			type: ofType
+		}).length;
+	}
+
+	/**
+	 * Retrieves whether a player has done a log of a given activity type this week.
+	 * @param playerResolvable - The player to retrieve the number of logs for.
+	 * @param activityType - The activity type to retrieve the number of logs for.
+	 * @returns Whether the player has done a log of the given activity type this week.
+	 */
+	didPlayerDoLogOfTypeThisWeek(
+		playerResolvable: PlayerResolvable,
+		activityType: ActivityType,
+	): boolean {
+		return this.getNumLogsDoneThisWeek({byPlayer: playerResolvable, ofType: activityType}) > 0;
+	}
+
+	/**
+	 * Retrieves the largest number of activity logs of a given type a player has done is the given time span.
+	 * @param parameters - The parameters which include:
+	 * @param parameters.byPlayer - The player doing the activity.
+	 * @param parameters.ofType - The activity type to retrieve the number of logs for.
+	 * @param parameters.inTimeSpan - The time span that the activity logs must be in.
+	 * @returns The largest number of activity logs the player has done of the given activity type in the given time span.
+	 */
+	getMaxLogsDoneThisWeek(
+		{byPlayer, ofType, inTimeSpan}: {
+			byPlayer: PlayerResolvable;
+			ofType: ActivityType;
+			inTimeSpan: Duration;
+		}
+	): number {
+		const timeSpanMS = getMillisecondsOfDuration(inTimeSpan);
+		const logs = this.activityLogRepository.findActivityLogsAfterTimeWhere(this.startOfWeek, {
+			player: byPlayer, 
+			type: ofType
+		});
+		
+		let maxNumLogs = 0;
+		let startLogIndex = 0;
+		for (let lastLogIndex = 0; lastLogIndex < logs.length; lastLogIndex++) {
+			const startLogTime = logs[startLogIndex].timeOccurred.getTime();
+			const lastLogTime = logs[lastLogIndex].timeOccurred.getTime();
+			let timeBetween = lastLogTime - startLogTime;
+
+			// Pick a later start log if we're longer than the given timespan
+			while (timeBetween > timeSpanMS) {
+				startLogIndex += 1;
+
+				const startLogTime = logs[startLogIndex].timeOccurred.getTime();
+				const lastLogTime = logs[lastLogIndex].timeOccurred.getTime();
+				timeBetween = lastLogTime - startLogTime;
+			}
+
+			const numLogsInTimeSpan = lastLogIndex - startLogIndex + 1;
+			if (numLogsInTimeSpan > maxNumLogs)
+				maxNumLogs = numLogsInTimeSpan;
+		} 
+
+		return maxNumLogs;
+	}
+
+	/**
+	 * Retrieves the maximum amount of tokens a player has earned from activity logs of a given type in the given time span.
+	 * @param parameters - The parameters which include:
+	 * @param parameters.byPlayer - The player doing the activity.
+	 * @param parameters.ofType - The activity type to retrieve the maximum amount of tokens earned for.
+	 * @param parameters.inTimeSpan - The time span that the activity logs must be in.
+	 * @returns The maximum amount of tokens the player has earned from the given activity type in the given time span.
+	 */
+	getMaxTokensEarnedFromLogsThisWeek(
+		{byPlayer, ofType, inTimeSpan}: {
+			byPlayer: PlayerResolvable;
+			ofType: ActivityType;
+			inTimeSpan: Duration;
+		}
+	): number | null {
+		const logs = this.activityLogRepository.findActivityLogsAfterTimeWhere(this.startOfWeek, {
+			player: byPlayer, 
+			type: ofType
+		});
+		
+		if (logs.length === 0)
+			return null;
+
+		let maxTokensEarned = null;
+		let startLogIndex = 0;
+		let totalTokensEarned = 0;
+		for (let lastLogIndex = 0; lastLogIndex < logs.length; lastLogIndex++) {
+			const lastLog = logs[lastLogIndex];
+			totalTokensEarned += lastLog.tokensDifference;
+			
+			const startLogTime = logs[startLogIndex].timeOccurred.getTime();
+			const lastLogTime = lastLog.timeOccurred.getTime();
+			let timeBetween = lastLogTime - startLogTime;
+
+			// Pick a later start log if we're longer than the given timespan
+			while (timeBetween > getMillisecondsOfDuration(inTimeSpan)) {
+				totalTokensEarned -= logs[startLogIndex].tokensDifference;
+				
+				startLogIndex += 1;
+
+				const startLogTime = logs[startLogIndex].timeOccurred.getTime();
+				const lastLogTime = logs[lastLogIndex].timeOccurred.getTime();
+				timeBetween = lastLogTime - startLogTime;
+			}
+			
+			if (maxTokensEarned === null || totalTokensEarned > maxTokensEarned)
+				maxTokensEarned = totalTokensEarned;
+		} 
+
+		return maxTokensEarned;
+	}
+
+	/**
+	 * Retrieves the maximum number of different players that have done a given activity type in the given time span.
+	 * @param parameters - The parameters which include:
+	 * @param parameters.byPlayer - The player doing the activity.
+	 * @param parameters.ofType - The activity type to retrieve the maximum number of players doing.
+	 * @param parameters.inTimeSpan - The time span that the activity logs must be in.
+	 * @returns The different players that have done the given activity type in the given time span, or null if no players have done the given activity type in the given time span.
+	 */
+	getMaxPlayersDoingLogsThisWeek(
+		{ofType, inTimeSpan}: {
+			ofType: ActivityType;
+			inTimeSpan: Duration;
+		}
+	): Player[] | null {
+		const logs = this.activityLogRepository.findActivityLogsAfterTimeWhere(this.startOfWeek, {
+			type: ofType
+		});
+		
+		if (logs.length === 0)
+			return null;
+
+		let maxPlayerIDs: PlayerID[] | null = null;
+		let startLogIndex = 0;
+		const playerIDs = new Set<PlayerID>();
+		for (let lastLogIndex = 0; lastLogIndex < logs.length; lastLogIndex++) {
+			const lastLog = logs[lastLogIndex];
+			playerIDs.add(lastLog.player.id);
+
+			const startLogTime = logs[startLogIndex].timeOccurred.getTime();
+			const lastLogTime = lastLog.timeOccurred.getTime();
+			let timeBetween = lastLogTime - startLogTime;
+
+			// Pick a later start log if we're longer than the given timespan
+			while (timeBetween > getMillisecondsOfDuration(inTimeSpan)) {
+				playerIDs.delete(logs[startLogIndex].player.id);
+				
+				startLogIndex += 1;
+
+				const startLogTime = logs[startLogIndex].timeOccurred.getTime();
+				const lastLogTime = logs[lastLogIndex].timeOccurred.getTime();
+				timeBetween = lastLogTime - startLogTime;
+			}
+			
+			if (maxPlayerIDs === null || playerIDs.size > maxPlayerIDs.length)
+				maxPlayerIDs = Array.from(playerIDs);
+		} 
+
+		return maxPlayerIDs === null 
+			? null 
+			: maxPlayerIDs.map(id => this.playerService.resolvePlayer(id));
+	}
+
+	/**
+	 * Retrieves the smallest amount a time a given player has done a given number of activity logs of a given type this week.
+	 * @param numLogs - The number of activity logs to retrieve the minimum time span for.
+	 * @param parameters - The parameters which include:
+	 * @param parameters.byPlayer - The player doing the activity.
+	 * @param parameters.ofType - The type of activity being done.
+	 * @returns The smallest amount of time a player has done a given number of activity logs of a given type this week.
+	 */
+	getMinTimeOfNumLogsDoneThisWeek(
+		numLogs: number,
+		{byPlayer, ofType}: {
+			byPlayer: PlayerResolvable;
+			ofType: ActivityType;
+		}
+	): number | null {
+		const logs = this.activityLogRepository.findActivityLogsAfterTimeWhere(this.startOfWeek, {
+			player: byPlayer, 
+			type: ofType
+		});
+
+		if (logs.length < numLogs)
+			return null;
+
+		const LAST_POSSIBLE_START_LOG_INDEX = logs.length - numLogs;
+		let minTimeSpan = null;
+		for (let startLogIndex = 0; startLogIndex <= LAST_POSSIBLE_START_LOG_INDEX; startLogIndex++) {
+			const lastLogIndex = startLogIndex + numLogs - 1;
+			
+			const startLogTime = logs[startLogIndex].timeOccurred.getTime();
+			const lastLogTime = logs[lastLogIndex].timeOccurred.getTime();
+			const timeBetween = lastLogTime - startLogTime;
+
+			if (minTimeSpan === null || timeBetween < minTimeSpan)
+				minTimeSpan = timeBetween;
+		}
+
+		return minTimeSpan;
+	}
+
+	/**
+	 * Retrieves the total amount of tokens a player has earned from activity logs of a given type this week.
+	 * @param parameters - The parameters which include:
+	 * @param parameters.byPlayer - The player doing the activity.
+	 * @param parameters.ofType - The type of activity being done.
+	 * @returns The total amount of tokens a player has earned from activity logs of a given type this week.
+	 */
+	getTokensEarnedFromLogsThisWeek(
+		{byPlayer, ofType}: {
+			byPlayer?: PlayerResolvable;
+			ofType: ActivityType;
+		}
+	): number | null {
+		const logs = this.activityLogRepository.findActivityLogsAfterTimeWhere(this.startOfWeek, {
+			player: byPlayer, 
+			type: ofType
+		});
+
+		if (logs.length === 0)
+			return null;
+
+		let totalTokensEarned = null;
+		for (const log of logs) {
+			if (totalTokensEarned === null) {
+				totalTokensEarned = log.tokensDifference;
+			}
+			else {
+				totalTokensEarned += log.tokensDifference;
+			}
+		}
+
+		return totalTokensEarned;
+	}
+
+	/**
+	 * Retrieves the maximum amount of time between the start of the week and the first log of a given type done by a player this week.
+	 * @param parameters - The parameters which include:
+	 * @param parameters.byPlayer - The player doing the activity.
+	 * @param parameters.ofType - The type of activity being done.
+	 * @returns The maximum amount of time between the start of the week and the first log of a given type done by a player this week.
+	 */
+	getMaxTimeOfNoLogsDoneThisWeek(
+		{byPlayer, ofType}: {
+			byPlayer?: PlayerResolvable;
+			ofType: ActivityType;
+		}
+	): number {
+		const logs = this.activityLogRepository.findActivityLogsAfterTimeWhere(this.startOfWeek, {
+			player: byPlayer, 
+			type: ofType
+		});
+
+		if (logs.length === 0)
+			return getMillisecondsOfDuration({ days: 7 });
+
+		const startOfWeekTime = this.startOfWeek.getTime();
+		const firstLogTime = logs[0].timeOccurred.getTime();
+		let maxTimeSpan = firstLogTime - startOfWeekTime;
+		
+
+		for (let startLogIndex = 0; startLogIndex < logs.length - 1; startLogIndex++) {
+			const lastLogIndex = startLogIndex + 1;
+			
+			const startLogTime = logs[startLogIndex].timeOccurred.getTime();
+			const lastLogTime = logs[lastLogIndex].timeOccurred.getTime();
+			const timeBetween = lastLogTime - startLogTime;
+
+			if (timeBetween > maxTimeSpan)
+				maxTimeSpan = timeBetween;
+		}
+
+		const lastLogTime = logs[logs.length - 1].timeOccurred.getTime();
+		const startOfNextWeekTime = addDays(this.startOfWeek, 7).getTime();
+		const timeBetween = startOfNextWeekTime - lastLogTime;
+
+		if (timeBetween > maxTimeSpan)
+			maxTimeSpan = timeBetween;
+
+		return maxTimeSpan;
 	}
 }

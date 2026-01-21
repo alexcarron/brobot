@@ -3,7 +3,7 @@ const { ParameterTypes, Parameter } = require("../../services/command-creation/p
 const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { deferInteraction, createChannel, editReplyToInteraction, createEveryoneDenyViewPermission, addPermissionToChannel, memberHasRole } = require("../../utilities/discord-action-utils");
 const { fetchGuild, getUserParamValue, fetchGuildMember, fetchTextChannel, getRequiredStringParam } = require("../../utilities/discord-fetch-utils");
-const { toListSentenceFromWords } = require("../../utilities/string-manipulation-utils");
+const { toListOfWords } = require("../../utilities/string-manipulation-utils");
 const { PermissionNames } = require("../../utilities/constants/discord-permission.constants");
 
 const Parameters = {
@@ -112,12 +112,12 @@ module.exports = new SlashCommand({
 
 		const logChannel = await fetchTextChannel(sandSeason3Guild, ids.sandSeason3.channels.log);
 		logChannel.send(`${commandUser} made an alliance ${newChannel} with: ${
-			toListSentenceFromWords(contestantIDs.map(id => `<@${id}>`))
+			toListOfWords(contestantIDs.map(id => `<@${id}>`))
 		}`);
 
 		newChannel.send(
 			`${commandUser} created this alliance with ${
-				toListSentenceFromWords(contestantIDs.map(id => `<@${id}>`))
+				toListOfWords(contestantIDs.map(id => `<@${id}>`))
 			}`
 		);
 

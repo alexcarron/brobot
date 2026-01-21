@@ -7,18 +7,22 @@ import { FREEBIE_QUEST_NAME, INVALID_PLAYER_ID, INVALID_QUEST_ID } from "../../c
 import { DatabaseQuerier } from "../../database/database-querier";
 import { getLatestActivityLog } from "../../mocks/mock-data/mock-activity-logs";
 import { forcePlayerToBuyMysteryBox, forcePlayerToBuyNewMysteryBox } from "../../mocks/mock-data/mock-mystery-boxes";
+import { addMockPerk } from "../../mocks/mock-data/mock-perks";
 import { addMockPlayer, forcePlayerToChangeName, forcePlayerToClaimRefill, forcePlayerToMineTokens, forcePlayerToPublishName } from '../../mocks/mock-data/mock-players';
 import { addMockQuest, forcePlayerToCompleteNewQuest } from "../../mocks/mock-data/mock-quests";
 import { addMockRecipe, forcePlayerToCraftRecipe, forcePlayerToCraftNewRecipe } from '../../mocks/mock-data/mock-recipes';
+import { addMockRole } from "../../mocks/mock-data/mock-roles";
 import { forcePlayerToAcceptNewTrade, forcePlayerToAcceptTrade, forcePlayerToDeclineNewTrade, forcePlayerToDeclineTrade, forcePlayerToInitiateTrade, forcePlayerToModifyNewTrade } from '../../mocks/mock-data/mock-trades';
 import { setupMockNamesmith } from "../../mocks/mock-setup";
 import { GameStateService } from "../../services/game-state.service";
 import { MysteryBoxService } from "../../services/mystery-box.service";
 import { PlayerService } from "../../services/player.service";
 import { ActivityTypes } from "../../types/activity-log.types";
+import { Perk } from "../../types/perk.types";
 import { Player } from "../../types/player.types";
 import { Quest } from "../../types/quest.types";
 import { Recipe } from '../../types/recipe.types';
+import { Role } from "../../types/role.types";
 import { throwIfNotFailure, returnIfNotFailure } from "../../utilities/workflow.utility";
 import { completeQuest } from "./complete-quest.workflow";
 
@@ -2669,6 +2673,170 @@ describe('complete-quest.workflow.ts', () => {
 					makeSure(result.isFailure()).isTrue();
 				});
 			});
+
+			describe('Perk Pride Quest', () => {
+				let PERK1: Perk;
+				let PERK2: Perk;
+				let PLAYER_WITH_PERKS: Player;
+
+				beforeEach(() => {
+					PERK1 = addMockPerk(db, {name: 'perk1'});
+					PERK2 = addMockPerk(db, {name: 'perk2'});
+					PLAYER_WITH_PERKS = addMockPlayer(db, {perks: [PERK1, PERK2]});
+				});
+				
+				it('returns success when the player name is one of their perk names', () => {
+					forcePlayerToChangeName(PLAYER_WITH_PERKS, PERK1.name);
+					const result = completeQuest({
+						playerResolvable: PLAYER_WITH_PERKS,
+						questResolvable: Quests.PERK_PRIDE
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+				
+				it('returns success when the player name contains one of their perk names', () => {
+					forcePlayerToChangeName(PLAYER_WITH_PERKS, `In between ${PERK1.name} characters`);
+					const result = completeQuest({
+						playerResolvable: PLAYER_WITH_PERKS,
+						questResolvable: Quests.PERK_PRIDE
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns failure when the player name does not contain any of their perk names', () => {
+					forcePlayerToChangeName(PLAYER_WITH_PERKS, 'new name');
+					const result = completeQuest({
+						playerResolvable: PLAYER_WITH_PERKS,
+						questResolvable: Quests.PERK_PRIDE
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Role Call Quest', () => {
+				let SOME_ROLE: Role;
+				let SOME_PLAYER: Player;
+
+				beforeEach(() => {
+					SOME_ROLE = addMockRole(db, {name: 'some role'});
+					SOME_PLAYER = addMockPlayer(db, {role: SOME_ROLE});
+				});
+				
+				it('returns success when the player name is their role name', () => {
+					forcePlayerToChangeName(SOME_PLAYER, SOME_ROLE.name);
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER,
+						questResolvable: Quests.ROLE_CALL
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+				
+				it('returns success when the player name contains their role name', () => {
+					forcePlayerToChangeName(SOME_PLAYER, `In between ${SOME_ROLE.name} characters`);
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER,
+						questResolvable: Quests.ROLE_CALL
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns failure when the player name does not contain their role name', () => {
+					forcePlayerToChangeName(SOME_PLAYER, 'new name');
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER,
+						questResolvable: Quests.ROLE_CALL
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Show Tokens Quest', () => {
+				it('returns success when the player has a published name that is exactly the number of tokens they have', () => {
+					forcePlayerToPublishName(SOME_PLAYER, String(SOME_PLAYER.tokens));
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER,
+						questResolvable: Quests.SHOW_TOKENS
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns success when the player has a published name containing the number of tokens they have', () => {
+					const mockPlayer = addMockPlayer(db, {tokens: 20});
+					forcePlayerToPublishName(mockPlayer, `In between ${mockPlayer.tokens} characters`);
+					const result = completeQuest({
+						playerResolvable: mockPlayer,
+						questResolvable: Quests.SHOW_TOKENS
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns failure when the player does not have a published name', () => {
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER,
+						questResolvable: Quests.SHOW_TOKENS
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when the player has a published name that does not contain the number of tokens they have', () => {
+					const mockPlayer = addMockPlayer(db, {tokens: 20});
+					forcePlayerToPublishName(mockPlayer, '12345678902');
+					const result = completeQuest({
+						playerResolvable: mockPlayer,
+						questResolvable: Quests.SHOW_TOKENS
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Gold Spike Quest', () => {
+				it('returns success when the player has mined 10 tokens from a single mine this week', () => {
+					forcePlayerToMineTokens(SOME_PLAYER, 10);
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER,
+						questResolvable: Quests.GOLD_SPIKE
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns success when the player has mined more than 10 tokens from at least one mine', () => {
+					forcePlayerToMineTokens(SOME_PLAYER, 1);
+					forcePlayerToMineTokens(SOME_PLAYER, 3);
+					forcePlayerToMineTokens(SOME_PLAYER, 20);
+					forcePlayerToMineTokens(SOME_PLAYER, 2);
+					forcePlayerToMineTokens(SOME_PLAYER, 5);
+					forcePlayerToMineTokens(SOME_PLAYER, 8);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER,
+						questResolvable: Quests.GOLD_SPIKE
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+				
+				it('returns failure when the player has never mined 10 tokens', () => {
+					forcePlayerToMineTokens(SOME_PLAYER, 5);
+					forcePlayerToMineTokens(SOME_PLAYER, 9);
+					forcePlayerToMineTokens(SOME_PLAYER, 3);
+					forcePlayerToMineTokens(SOME_PLAYER, 1);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER,
+						questResolvable: Quests.GOLD_SPIKE
+					});
+					console.log(result);
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when the player has mined 0 tokens from all mines this week', () => {
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER,
+						questResolvable: Quests.GOLD_SPIKE
+					});
+					console.log(result);
+					makeSure(result.isFailure()).isTrue();
+				});
+			})
 		});
 	});
 });

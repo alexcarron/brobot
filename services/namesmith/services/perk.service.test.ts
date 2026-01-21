@@ -366,4 +366,27 @@ describe('PerkService', () => {
 			makeSure(perks).containsOnly(perk1, perk2);
 		});
 	});
+
+	describe('getPerkNamesOfPlayer()', () => {
+		it('should return an empty array when the player has no perks', () => {
+			const player = addMockPlayer(db, {
+				perks: []
+			});
+
+			const perkNames = perkService.getPerkNamesOfPlayer(player);
+			makeSure(perkNames).isEmpty();
+		});
+
+		it('should return an array of all the perk names the player has', () => {
+			const perk1 = addMockPerk(db, {name: "Perk 1"});
+			const perk2 = addMockPerk(db, {name: "Perk 2"});
+			const player = addMockPlayer(db, {
+				perks: [perk1.name, perk2.name]
+			});
+
+			const perkNames = perkService.getPerkNamesOfPlayer(player);
+			makeSure(perkNames).hasLengthOf(2);
+			makeSure(perkNames).containsOnly(perk1.name, perk2.name);
+		});
+	});
 });

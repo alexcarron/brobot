@@ -651,6 +651,63 @@ export class PlayerService {
 	}
 
 	/**
+	 * Checks if the current name of a player contains a given substring.
+	 * Case is ignored.
+	 * @param playerResolvable - The player resolvable to check the name of.
+	 * @param nameSubstring - The substring to check for in the player's name.
+	 * @returns true if the player's name contains the substring, false otherwise.
+	 */
+	doesNameContain(playerResolvable: PlayerResolvable, nameSubstring: string): boolean {
+		if (nameSubstring === '') 
+			throw new InvalidArgumentError('Expected nameSubstring argument of doesNameContain() method to be a non-empty string, but it was empty.');
+
+		const currentName = this.getCurrentName(playerResolvable);
+		return currentName.toLowerCase().includes(nameSubstring.toLowerCase());
+	}
+
+	/**
+	 * Checks if the current name of a player contains any of the given substrings.
+	 * Case is ignored.
+	 * @param playerResolvable - The player resolvable to check the name of.
+	 * @param nameSubstrings - The substrings to check for in the player's name.
+	 * @returns true if the player's name contains any of the given substrings, false otherwise.
+	 */
+	doesNameContainAny(playerResolvable: PlayerResolvable, nameSubstrings: string[]): boolean {
+		for (const nameSubstring of nameSubstrings)
+			if (this.doesNameContain(playerResolvable, nameSubstring))
+				return true;
+			
+		return false;
+	}
+
+	/**
+	 * Checks if the published name of a player contains a given substring.
+	 * Case is ignored.
+	 * @param playerResolvable - The player resolvable to check the name of.
+	 * @param nameSubstring - The substring to check for in the player's name.
+	 * @returns true if the player's published name contains the substring, false otherwise.
+	 */
+	doesPublishedNameContain(playerResolvable: PlayerResolvable, nameSubstring: string): boolean {
+		if (nameSubstring === '')
+			throw new InvalidArgumentError('Expected nameSubstring argument of doesPublishedNameContain() method to be a non-empty string, but it was empty.');
+		
+		const publishedName = this.getPublishedName(playerResolvable);
+		if (publishedName === null)
+			return false;
+		
+		return publishedName.toLowerCase().includes(nameSubstring.toLowerCase());
+	}
+
+	/**
+	 * Checks if a player has a published name.
+	 * @param playerResolvable - The player resolvable to check for a published name.
+	 * @returns true if the player has a published name, false otherwise.
+	 */
+	hasPublishedName(playerResolvable: PlayerResolvable): boolean {
+		return this.getPublishedName(playerResolvable) !== null;
+	}
+
+	/**
 	 * Removes all the players from the game, leaving none left
 	 */
 	reset() {

@@ -394,7 +394,7 @@ export const quests = [
 	{
 		id: 51,
 		name: "Perk Pride",
-		description: "Include the name of one of your perks in your current name",
+		description: "Include the name of one of your perks in your current name (case insensitive)",
 		recurrence: 'weekly',
 		tokensReward: 800,
 		charactersReward: "🧩PerksRule",
@@ -402,7 +402,7 @@ export const quests = [
 	{
 		id: 52,
 		name: "Role Call",
-		description: "Include your role's name in your current name",
+		description: "Include your role's name in your current name (case insensitive)",
 		recurrence: 'weekly',
 		tokensReward: 800,
 		charactersReward: "👤RolesRule",

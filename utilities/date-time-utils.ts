@@ -1,5 +1,6 @@
 import { attempt } from "./error-utils";
-import { toListSentenceFromWords } from "./string-manipulation-utils";
+import { toListOfWords } from "./string-manipulation-utils";
+import { WithAtLeastOneProperty } from "./types/generic-types";
 
 /**
  * The oldest possible Date object.
@@ -95,6 +96,49 @@ export const addSeconds = (date: Date, seconds: number): Date => {
 }
 
 /**
+ * Adds a specified number of milliseconds to a given Date object.
+ * @param date - The Date object to modify.
+ * @param milliseconds - The number of milliseconds to add to the given Date object.
+ * @returns A new Date object with the specified number of milliseconds added to the original date.
+ */
+export const addMilliseconds = (date: Date, milliseconds: number): Date => {
+	const newDate = new Date(date.getTime());
+	newDate.setMilliseconds(newDate.getMilliseconds() + milliseconds);
+	return newDate;
+}
+
+/**
+ * Represents a duration in days, hours, minutes, seconds, and milliseconds.
+ * @example
+ * const duration = { days: 1, hours: 2, minutes: 3, seconds: 4, milliseconds: 5 };
+ */
+export type Duration = WithAtLeastOneProperty<{
+	days?: number;
+	hours?: number;
+	minutes?: number;
+	seconds?: number;
+	milliseconds?: number;
+}>;
+
+/**
+ * Returns the total number of milliseconds in a given duration.
+ * @param duration - The duration object to convert to milliseconds.
+ * @returns The total number of milliseconds in the given duration.
+ * @example
+ * const duration = { days: 1, hours: 2, minutes: 3, seconds: 4, milliseconds: 5 };
+ * const milliseconds = getMillisecondsOfDuration(duration);
+ */
+export function getMillisecondsOfDuration(duration: Duration): number {
+	return (
+		(duration?.days ?? 0) * 24 * 60 * 60 * 1000 +
+		(duration?.hours ?? 0) * 60 * 60 * 1000 +
+		(duration?.minutes ?? 0) * 60 * 1000 +
+		(duration?.seconds ?? 0) * 1000 +
+		(duration?.milliseconds ?? 0)
+	);
+}
+
+/**
  * Adds a specified duration to a given Date object.
  * @param date - The Date object to modify.
  * @param duration - The duration to add to the given Date object.
@@ -109,13 +153,7 @@ export const addSeconds = (date: Date, seconds: number): Date => {
  */
 export function addDuration(
 	date: Date,
-	duration: {
-		days?: number;
-		hours?: number;
-		minutes?: number;
-		seconds?: number;
-		milliseconds?: number;
-	}
+	duration: Duration,
 ): Date {
 	const newDate = new Date(date.getTime());
 	newDate.setDate((newDate.getDate() + (duration?.days ?? 0)));
@@ -282,5 +320,5 @@ export function getReadableDuration(totalSeconds: number): string {
 	if (segments.length === 0)
 		return "zero seconds";
 
-	return toListSentenceFromWords(segments);
+	return toListOfWords(segments);
 }
