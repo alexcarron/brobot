@@ -275,12 +275,51 @@ export function getMinutesDurationFromTime(milliseconds: number): {
 	return { minutes: totalMinutes, seconds: remainingSeconds, milliseconds: remainingMilliseconds };
 }
 
-export function getReadableDuration(totalSeconds: number): string {
+/**
+ * Converts a given number of total seconds into a human-readable string.
+ * @param totalSeconds - The number of total seconds to convert.
+ * @returns A string representing the given number of total seconds in a human-readable format.
+ * @example
+ * const readableDuration = toReadableDurationFromSeconds(164099520); // "1 day, 9 hours, 11 minutes, and 20 seconds"
+ */
+export function toDurationTextFromSeconds(totalSeconds: number): string {
 	const days = Math.floor(totalSeconds / 60 / 60 / 24);
 	const hours = Math.floor((totalSeconds / 60 / 60) % 24);
 	const minutes = Math.floor((totalSeconds / 60) % 60);
 	const seconds = totalSeconds % 60;
 
+	return toDurationText({ days, hours, minutes, seconds });
+}
+
+/**
+ * Converts a given number of total milliseconds into a human-readable string.
+ * @param totalMilliseconds - The number of total milliseconds to convert.
+ * @returns A string representing the given number of total milliseconds in a human-readable format.
+ * @example
+ * const readableDuration = toDurationTextFromTime(1640995200000); // "1 day, 9 hours, 11 minutes, and 20 seconds"
+ */
+export function toDurationTextFromTime(totalMilliseconds: number): string {
+	const days = Math.floor(totalMilliseconds / 1000 / 60 / 60 / 24);
+	const hours = Math.floor((totalMilliseconds / 1000 / 60 / 60) % 24);
+	const minutes = Math.floor((totalMilliseconds / 1000 / 60) % 60);
+	const seconds = Math.floor((totalMilliseconds / 1000) % 60);
+
+	return toDurationText({ days, hours, minutes, seconds });
+}
+
+/**
+ * Converts a given duration object into a human-readable string.
+ * @param duration - The duration object to convert.
+ * @param duration.days - The number of days in the duration object.
+ * @param duration.hours - The number of hours in the duration object.
+ * @param duration.minutes - The number of minutes in the duration object.
+ * @param duration.seconds - The number of seconds in the duration object.
+ * @returns A string representing the given duration object in a human-readable format.
+ * @example
+ * const readableDuration = toDurationText({ days: 1, hours: 9, minutes: 11, seconds: 20 });
+ * // "1 day, 9 hours, 11 minutes, and 20 seconds"
+ */
+export function toDurationText({ days = 0, hours = 0, minutes = 0, seconds = 0 }: Duration): string {
 	const toReadableNumber = (number: number): string => {
 		if (number >= 0 && number <= 9) {
 			switch (number) {

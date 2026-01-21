@@ -1,5 +1,5 @@
 import { addDuration, addHours, addMinutes, addSeconds } from "../../../../utilities/date-time-utils";
-import { failTest, makeSure } from "../../../../utilities/jest/jest-utils";
+import { failTest, makeSure, repeatOverDuration } from "../../../../utilities/jest/jest-utils";
 import { getBetween, getRandomUUID } from "../../../../utilities/random-utils";
 import { REFILL_COOLDOWN_HOURS } from "../../constants/namesmith.constants";
 import { Quests } from "../../constants/quests.constants";
@@ -2837,6 +2837,75 @@ describe('complete-quest.workflow.ts', () => {
 					makeSure(result.isFailure()).isTrue();
 				});
 			})
+
+			describe('Speed Mine Quest', () => {
+				let NOW: Date;
+	
+				beforeEach(() => {
+					NOW = new Date();
+					jest.useFakeTimers({ now: NOW });
+				});
+	
+				afterEach(() => {
+					jest.useRealTimers();
+				});
+
+				it('returns success when player has mined 250 times in a single moment', () => {
+					for (let numLoop = 0; numLoop < 250; numLoop++) {
+						forcePlayerToMineTokens(SOME_PLAYER, 1);
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER,
+						questResolvable: Quests.SPEED_MINE
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns success when player has mined 250 times in exactly 10 minutes', () => {
+					repeatOverDuration(250, { minutes: 10 }, () => {
+						forcePlayerToMineTokens(SOME_PLAYER, 1);
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER,
+						questResolvable: Quests.SPEED_MINE
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns failure when player has mined 250 times in exactly 10 minutes and 1 second', () => {
+					repeatOverDuration(250, { minutes: 10, seconds: 1 }, () => {
+						forcePlayerToMineTokens(SOME_PLAYER, 1);
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER,
+						questResolvable: Quests.SPEED_MINE
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when player has mined 249 times in exactly 10 minutes', () => {
+					repeatOverDuration(249, { minutes: 10 }, () => {
+						forcePlayerToMineTokens(SOME_PLAYER, 1);
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER,
+						questResolvable: Quests.SPEED_MINE
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when player has never mined', () => {
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER,
+						questResolvable: Quests.SPEED_MINE
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
 		});
 	});
 });

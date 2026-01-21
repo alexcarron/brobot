@@ -1,4 +1,4 @@
-import { toUnixTimestamp, toCronExpression, addDays, addSeconds, addHours, toDateFromTimeString, toNormalizedDate, getMondayOfThisWeek, getSundayOfThisWeek, getHoursInTime, getReadableDuration, getMinutesInTime, getSecondsInTime, getMinutesDurationFromTime, addMinutes, addDuration, Duration, getMillisecondsOfDuration, addMilliseconds } from "./date-time-utils";
+import { toUnixTimestamp, toCronExpression, addDays, addSeconds, addHours, toDateFromTimeString, toNormalizedDate, getMondayOfThisWeek, getSundayOfThisWeek, getHoursInTime, toDurationTextFromSeconds, getMinutesInTime, getSecondsInTime, getMinutesDurationFromTime, addMinutes, addDuration, Duration, getMillisecondsOfDuration, addMilliseconds } from "./date-time-utils";
 import { makeSure } from "./jest/jest-utils";
 
 describe('date-time-utils', () => {
@@ -264,34 +264,34 @@ describe('date-time-utils', () => {
 
 	describe('getReadableDuration()', () => {
 		it('should return a string representing the duration in days, hours, minutes, and seconds', () => {
-			makeSure(getReadableDuration(0)).is('zero seconds');
-			makeSure(getReadableDuration(1)).is('one second');
-			makeSure(getReadableDuration(60)).is('one minute');
-			makeSure(getReadableDuration(23)).is('23 seconds');
-			makeSure(getReadableDuration(60 * 6 + 20)).is('six minutes and 20 seconds');
-			makeSure(getReadableDuration(61)).is('one minute and one second');
-			makeSure(getReadableDuration(60 * 60)).is('one hour');
-			makeSure(getReadableDuration(60 * 60 + 1)).is('one hour and one second');
-			makeSure(getReadableDuration(60 * 60 * 24)).is('one day');
-			makeSure(getReadableDuration(60 * 60 * 24 + 1)).is('one day and one second');
-			makeSure(getReadableDuration(60 * 60 * 24 + 60 * 60)).is('one day and one hour');
-			makeSure(getReadableDuration(60 * 60 * 24 + 60 * 60 + 1)).is('one day, one hour, and one second');
-			makeSure(getReadableDuration(60 * 60 * 24 * 2)).is('two days');
-			makeSure(getReadableDuration(60 * 60 * 24 * 2 + 1)).is('two days and one second');
-			makeSure(getReadableDuration(60 * 60 * 24 * 2 + 60 * 60)).is('two days and one hour');
-			makeSure(getReadableDuration(60 * 60 * 24 * 2 + 60 * 60 + 1)).is('two days, one hour, and one second');
-			makeSure(getReadableDuration(60 * 60 * 24 * 3)).is('three days');
-			makeSure(getReadableDuration(60 * 60 * 24 * 3 + 1)).is('three days and one second');
-			makeSure(getReadableDuration(60 * 60 * 24 * 3 + 60 * 60)).is('three days and one hour');
-			makeSure(getReadableDuration(60 * 60 * 24 * 3 + 60 * 60 + 1)).is('three days, one hour, and one second');
+			makeSure(toDurationTextFromSeconds(0)).is('zero seconds');
+			makeSure(toDurationTextFromSeconds(1)).is('one second');
+			makeSure(toDurationTextFromSeconds(60)).is('one minute');
+			makeSure(toDurationTextFromSeconds(23)).is('23 seconds');
+			makeSure(toDurationTextFromSeconds(60 * 6 + 20)).is('six minutes and 20 seconds');
+			makeSure(toDurationTextFromSeconds(61)).is('one minute and one second');
+			makeSure(toDurationTextFromSeconds(60 * 60)).is('one hour');
+			makeSure(toDurationTextFromSeconds(60 * 60 + 1)).is('one hour and one second');
+			makeSure(toDurationTextFromSeconds(60 * 60 * 24)).is('one day');
+			makeSure(toDurationTextFromSeconds(60 * 60 * 24 + 1)).is('one day and one second');
+			makeSure(toDurationTextFromSeconds(60 * 60 * 24 + 60 * 60)).is('one day and one hour');
+			makeSure(toDurationTextFromSeconds(60 * 60 * 24 + 60 * 60 + 1)).is('one day, one hour, and one second');
+			makeSure(toDurationTextFromSeconds(60 * 60 * 24 * 2)).is('two days');
+			makeSure(toDurationTextFromSeconds(60 * 60 * 24 * 2 + 1)).is('two days and one second');
+			makeSure(toDurationTextFromSeconds(60 * 60 * 24 * 2 + 60 * 60)).is('two days and one hour');
+			makeSure(toDurationTextFromSeconds(60 * 60 * 24 * 2 + 60 * 60 + 1)).is('two days, one hour, and one second');
+			makeSure(toDurationTextFromSeconds(60 * 60 * 24 * 3)).is('three days');
+			makeSure(toDurationTextFromSeconds(60 * 60 * 24 * 3 + 1)).is('three days and one second');
+			makeSure(toDurationTextFromSeconds(60 * 60 * 24 * 3 + 60 * 60)).is('three days and one hour');
+			makeSure(toDurationTextFromSeconds(60 * 60 * 24 * 3 + 60 * 60 + 1)).is('three days, one hour, and one second');
 		});
 
 		it('should handle large numbers of days', () => {
-			makeSure(getReadableDuration(60 * 60 * 24 * 100)).is('100 days');
-			makeSure(getReadableDuration(60 * 60 * 24 * 1000)).is('1,000 days');
-			makeSure(getReadableDuration(60 * 60 * 24 * 10000)).is('10,000 days');
-			makeSure(getReadableDuration(60 * 60 * 24 * 100000)).is('100,000 days');
-			makeSure(getReadableDuration(60 * 60 * 24 * 1000000)).is('1,000,000 days');
+			makeSure(toDurationTextFromSeconds(60 * 60 * 24 * 100)).is('100 days');
+			makeSure(toDurationTextFromSeconds(60 * 60 * 24 * 1000)).is('1,000 days');
+			makeSure(toDurationTextFromSeconds(60 * 60 * 24 * 10000)).is('10,000 days');
+			makeSure(toDurationTextFromSeconds(60 * 60 * 24 * 100000)).is('100,000 days');
+			makeSure(toDurationTextFromSeconds(60 * 60 * 24 * 1000000)).is('1,000,000 days');
 		})
 	});
 
