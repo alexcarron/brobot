@@ -3,6 +3,7 @@
  * @description Centralized test utility functions to make writing Jest unit tests easier, more consistent, and discoverable—especially for new developers.
  */
 
+import { addDuration, Duration } from "../date-time-utils";
 import { Class, ElementOfArray, ErrorClass } from "../types/generic-types";
 import { isArray, isNumberOrBigInt, isObject, isStrings } from "../types/type-guards";
 
@@ -708,4 +709,36 @@ export function makeSure<
  */
 export function failTest(message: string): never {
 	throw new Error(`Jest test explicitly failed: ${message}`);
+}
+
+
+/**
+ * Repeats a given function a specified number of times, spaced out over a given duration.
+ * The function will be called with an incrementing index starting from 0.
+ * Assumes jest fake timers are used to simulate the passage of time.
+ * @param numRepeats - The number of times to repeat the function.
+ * @param duration - The duration object to use for spacing out the function calls.
+ * @param functionToRepeat - The function to repeat.
+ * @example
+ * repeatOverDuration(5, { seconds: 10 }, (index) => console.log(index));
+ * // Calls the function 5 times, spaced out over 10 seconds.
+ */
+export function repeatOverDuration(
+	numRepeats: number,
+	duration: Duration,
+	functionToRepeat: (index: number) => void,
+): void {
+	const startDate = new Date();
+	const endDate = addDuration(startDate, duration);
+
+	for (let index = 0; index < numRepeats; index++) {
+		functionToRepeat(index);
+		
+		if (index < numRepeats - 1) {
+			const millisecondsTillEnd = endDate.getTime() - new Date().getTime();
+			const numRepeatsLeft = numRepeats - index - 1;
+			const millisecondsToAdvance = millisecondsTillEnd / numRepeatsLeft;
+			jest.advanceTimersByTime(millisecondsToAdvance);
+		}
+	}
 }

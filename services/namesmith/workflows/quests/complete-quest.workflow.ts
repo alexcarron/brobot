@@ -6,7 +6,7 @@ import { Quests } from '../../constants/quests.constants';
 import { FREEBIE_QUEST_NAME } from '../../constants/test.constants';
 import { hasSymbol, hasLetter, hasNumber, getNumDistinctCharacters, getCharacters, getNumCharacters, hasEmoji } from '../../../../utilities/string-checks-utils';
 import { NamesmithServices } from "../../types/namesmith.types";
-import { addDays, getHoursInTime, getMinutesDurationFromTime, getMinutesInTime, getReadableDuration, getSecondsInTime } from "../../../../utilities/date-time-utils";
+import { addDays, Duration, getHoursInTime, getMillisecondsOfDuration, getMinutesDurationFromTime, getMinutesInTime, toDurationTextFromSeconds, getSecondsInTime, toDurationText, toDurationTextFromTime } from "../../../../utilities/date-time-utils";
 import { ActivityLog, ActivityTypes } from "../../types/activity-log.types";
 import { MysteryBoxID } from "../../types/mystery-box.types";
 import { hasUtilityCharacter } from "../../utilities/character.utility";
@@ -474,7 +474,7 @@ const questIDToMeetsCriteriaCheck = {
 			numMines++;
 		}
 
-		return toFailure(`You've only mined 20 times in ${getReadableDuration(minTimeRangeSeconds)} at most. You need to mine at least 20 times in ${SECONDS_TIME_RANGE_NEEDED} seconds to complete the "${quest.name}" quest.`);
+		return toFailure(`You've only mined 20 times in ${toDurationTextFromSeconds(minTimeRangeSeconds)} at most. You need to mine at least 20 times in ${SECONDS_TIME_RANGE_NEEDED} seconds to complete the "${quest.name}" quest.`);
 	},
 
 	// Lucky Mining Streak
@@ -589,7 +589,7 @@ const questIDToMeetsCriteriaCheck = {
 		else if (maxDifferentPlayers < NUM_OTHER_PLAYERS_NEEDED + 1)
 			return toFailure(`You've only mined with ${maxDifferentPlayers - 1} other players. You need to mine with at least ${NUM_OTHER_PLAYERS_NEEDED} others to complete the "${quest.name}" quest.`);
 		else
-			return toFailure(`You've mined with ${NUM_OTHER_PLAYERS_NEEDED} other player(s) in the span of ${getReadableDuration(minTimeRangeSeconds)}. You need to mine with them in the span of ${SECONDS_TIME_RANGE_NEEDED} seconds at most to complete the "${quest.name}" quest.`);
+			return toFailure(`You've mined with ${NUM_OTHER_PLAYERS_NEEDED} other player(s) in the span of ${toDurationTextFromSeconds(minTimeRangeSeconds)}. You need to mine with them in the span of ${SECONDS_TIME_RANGE_NEEDED} seconds at most to complete the "${quest.name}" quest.`);
 	},
 
 	// Mining Speedrun
@@ -710,7 +710,7 @@ const questIDToMeetsCriteriaCheck = {
 		if (minSecondsAfterReady === Infinity)
 			return toFailure(`You have have not claimed a refill after a cooldown yet. You must claim a refill instantly after another refill you claimed expired to complete the "${quest.name}" quest.`);
 
-		return toFailure(`You claimed a refill ${getReadableDuration(minSecondsAfterReady)} after the cooldown expired. You need to claim one ${MAX_SECONDS_AFTER_READY} seconds after the cooldown expired to complete the "${quest.name}" quest.`);
+		return toFailure(`You claimed a refill ${toDurationTextFromSeconds(minSecondsAfterReady)} after the cooldown expired. You need to claim one ${MAX_SECONDS_AFTER_READY} seconds after the cooldown expired to complete the "${quest.name}" quest.`);
 	},
 
 	// Refill Together
@@ -774,7 +774,7 @@ const questIDToMeetsCriteriaCheck = {
 		else if (maxDifferentPlayers < NUM_OTHER_PLAYERS_NEEDED + 1)
 			return toFailure(`You've only claimed a refill with ${maxDifferentPlayers - 1} other players. You need to claim one with at least ${NUM_OTHER_PLAYERS_NEEDED} others to complete the "${quest.name}" quest.`);
 		else
-			return toFailure(`You've claimed a refill with ${NUM_OTHER_PLAYERS_NEEDED} other player(s) in the span of ${getReadableDuration(minTimeRangeSeconds)}. You need to mine with them in the span of ${SECONDS_TIME_RANGE_NEEDED} seconds at most to complete the "${quest.name}" quest.`);
+			return toFailure(`You've claimed a refill with ${NUM_OTHER_PLAYERS_NEEDED} other player(s) in the span of ${toDurationTextFromSeconds(minTimeRangeSeconds)}. You need to mine with them in the span of ${SECONDS_TIME_RANGE_NEEDED} seconds at most to complete the "${quest.name}" quest.`);
 	},
 
 	// Treasure Hunter
@@ -834,7 +834,7 @@ const questIDToMeetsCriteriaCheck = {
 			numBoxes++;
 		}
 
-		return toFailure(`You've only bought ${NUM_BOXES_NEEDED} mystery boxes in ${getReadableDuration(minTimeRangeSeconds)} at most. You need to buy at least ${NUM_BOXES_NEEDED} in ${SECONDS_TIME_RANGE_NEEDED} seconds to complete the "${quest.name}" quest.`);
+		return toFailure(`You've only bought ${NUM_BOXES_NEEDED} mystery boxes in ${toDurationTextFromSeconds(minTimeRangeSeconds)} at most. You need to buy at least ${NUM_BOXES_NEEDED} in ${SECONDS_TIME_RANGE_NEEDED} seconds to complete the "${quest.name}" quest.`);
 	},
 
 	// Familiar Face
@@ -1444,7 +1444,7 @@ const questIDToMeetsCriteriaCheck = {
 			previousCompletionDate = questLog.timeOccurred;
 		}
 
-		return toFailure(`You have completed two quests within ${getReadableDuration(minIntervalTime / 1000)} of each other. You must complete two within only ${MAX_MINUTES_BETWEEN_COMPLETES} minutes to complete the "${quest.name}" quest.`);
+		return toFailure(`You have completed two quests within ${toDurationTextFromSeconds(minIntervalTime / 1000)} of each other. You must complete two within only ${MAX_MINUTES_BETWEEN_COMPLETES} minutes to complete the "${quest.name}" quest.`);
 	},
 
 	// Hoard Tokens
@@ -1620,6 +1620,44 @@ const questIDToMeetsCriteriaCheck = {
 
 		return PLAYER_MET_CRITERIA_RESULT;
 	},
+
+	[Quests.SPEED_MINE.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_MINES_NEEDED = 250
+		const TIME_SPAN: Duration = { minutes: 10 };
+
+		const didPlayerMineTokens = activityLogService.didPlayerDoLogOfTypeThisWeek(player, ActivityTypes.MINE_TOKENS);
+		if (!didPlayerMineTokens)
+			return toFailure(`You did not mine any tokens this week. You must mine at least once to complete the "${quest.name}" quest.`);
+
+		const numMinesDone = activityLogService.getNumLogsDoneThisWeek({
+			byPlayer: player, 
+			ofType: ActivityTypes.MINE_TOKENS
+		});
+		if (numMinesDone < NUM_MINES_NEEDED)
+			return toFailure(`You only mined ${numMinesDone} times this week. You must mine at least ${NUM_MINES_NEEDED} times to complete the "${quest.name}" quest.`);
+
+		const maxMinesDoneInTimeSpan = activityLogService.getMaxLogsDoneThisWeek({
+			byPlayer: player, 
+			ofType: ActivityTypes.MINE_TOKENS,
+			inTimeSpan: TIME_SPAN
+		});
+		const minTimeTakenToDoMines = activityLogService.getMinTimeOfNumLogsDoneThisWeek(NUM_MINES_NEEDED, {
+			byPlayer: player, 
+			ofType: ActivityTypes.MINE_TOKENS
+		})!;
+
+		if (
+			maxMinesDoneInTimeSpan < NUM_MINES_NEEDED && 
+			minTimeTakenToDoMines > getMillisecondsOfDuration(TIME_SPAN)
+		)
+			return toFailure(`You have only mined ${maxMinesDoneInTimeSpan} times at most within ${toDurationText(TIME_SPAN)}. The shortest time it's taken you to mine ${NUM_MINES_NEEDED} times is ${toDurationTextFromTime(minTimeTakenToDoMines)}. You must mine at least ${NUM_MINES_NEEDED} times within ${toDurationText(TIME_SPAN)} time span to complete the "${quest.name}" quest.`);
+
+		return PLAYER_MET_CRITERIA_RESULT;
+
+	}
 } as const;
 
 
