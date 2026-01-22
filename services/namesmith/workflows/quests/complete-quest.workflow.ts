@@ -1657,6 +1657,46 @@ const questIDToMeetsCriteriaCheck = {
 
 		return PLAYER_MET_CRITERIA_RESULT;
 
+	},
+
+	[Quests.MINE_HAUL.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_TOKENS_MINED_NEEDED = 1500;
+		const didPlayerMine = activityLogService.didPlayerDoLogOfTypeThisWeek(player, ActivityTypes.MINE_TOKENS);
+		if (!didPlayerMine)
+			return toFailure(`You did not mine any tokens this week. You must mine at least once to complete the "${quest.name}" quest.`);
+
+		const tokensEarnedFromMining = activityLogService.getTokensEarnedFromLogsThisWeek({
+			byPlayer: player, 
+			ofType: ActivityTypes.MINE_TOKENS
+		});
+		if (tokensEarnedFromMining < NUM_TOKENS_MINED_NEEDED)
+			return toFailure(`You only mined ${tokensEarnedFromMining} tokens this week. You must mine at least ${NUM_TOKENS_MINED_NEEDED} tokens to complete the "${quest.name}" quest.`);
+
+		return PLAYER_MET_CRITERIA_RESULT;
+	},
+
+	[Quests.INSTANT_SQUAD.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_PLAYERS_NEEDED = 6;
+		const TIME_SPAN: Duration = { seconds: 5 };
+		const didPlayerMine = activityLogService.didPlayerDoLogOfTypeThisWeek(player, ActivityTypes.MINE_TOKENS);
+		if (!didPlayerMine)
+			return toFailure(`You did not mine any tokens this week. You must mine at least once to complete the "${quest.name}" quest.`);
+
+		const maxPlayersMinedInTimeSpan = activityLogService.getMaxPlayersDoingLogsThisWeek({
+			ofType: ActivityTypes.MINE_TOKENS,
+			inTimeSpan: TIME_SPAN,
+			withPlayer: player
+		});
+		if (maxPlayersMinedInTimeSpan.length < NUM_PLAYERS_NEEDED)
+			return toFailure(`You only mined with ${maxPlayersMinedInTimeSpan.length - 1} other players at most within ${toDurationText(TIME_SPAN)} this week. You must mine with ${NUM_PLAYERS_NEEDED - 1} other players to complete the "${quest.name}" quest.`);
+
+		return PLAYER_MET_CRITERIA_RESULT;
 	}
 } as const;
 

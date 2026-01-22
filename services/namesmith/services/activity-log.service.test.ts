@@ -1752,7 +1752,7 @@ describe('ActivityLogService', () => {
 			makeSure(activityLogService.getMaxPlayersDoingLogsThisWeek({
 				ofType: ActivityTypes.CHANGE_NAME,
 				inTimeSpan: {days: 2},
-			})).isNull();
+			})).isEmpty();
 		});
 
 		it('returns the only players doing logs if they did it in the given time span', () => {
@@ -1871,14 +1871,143 @@ describe('ActivityLogService', () => {
 				FIVE_DIFFERENT_PLAYERS[1],
 				FIVE_DIFFERENT_PLAYERS[2],
 			);
-		})
+		});
+
+		it('only considers windows that include the required includingPlayer', () => {
+			// many players produce a larger max window earlier
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[0],
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: START_OF_WEEK,
+			});
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[1],
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 10),
+			});
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[2],
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 20),
+			});
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[3],
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 30),
+			});
+
+			// required player logs much later alone
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[4],
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 1000),
+			});
+
+			// overall max window (without requirement) would be players 0-3,
+			// but when requiring player 4 we must only consider windows that include them.
+			makeSure(activityLogService.getMaxPlayersDoingLogsThisWeek({
+				ofType: ActivityTypes.CHANGE_NAME,
+				inTimeSpan: {milliseconds: 30},
+				withPlayer: FIVE_DIFFERENT_PLAYERS[4],
+			})).containsOnly(
+				FIVE_DIFFERENT_PLAYERS[4],
+			);
+		});
+
+		it('requires all players in includingPlayers to be present in the chosen window', () => {
+			// big group earlier
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[0],
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: START_OF_WEEK,
+			});
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[1],
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 10),
+			});
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[2],
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 20),
+			});
+
+			// the required pair close together later (this is the only window that contains both)
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[3],
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 1000),
+			});
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[4],
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 1010),
+			});
+
+			makeSure(activityLogService.getMaxPlayersDoingLogsThisWeek({
+				ofType: ActivityTypes.CHANGE_NAME,
+				inTimeSpan: {milliseconds: 50},
+				withPlayers: [FIVE_DIFFERENT_PLAYERS[3], FIVE_DIFFERENT_PLAYERS[4]],
+			})).containsOnly(
+				FIVE_DIFFERENT_PLAYERS[3],
+				FIVE_DIFFERENT_PLAYERS[4],
+			);
+		});
+
+		it('returns empty if the required includingPlayer did not do any activity logs', () => {
+			// some logs but not from the required player
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[0],
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: START_OF_WEEK,
+			});
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[1],
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 10),
+			});
+
+			makeSure(activityLogService.getMaxPlayersDoingLogsThisWeek({
+				ofType: ActivityTypes.CHANGE_NAME,
+				inTimeSpan: {milliseconds: 50},
+				withPlayer: FIVE_DIFFERENT_PLAYERS[4],
+			})).isEmpty();
+		});
+
+		it('keeps a player in the window if they have multiple logs when the window start advances', () => {
+			// player 0 has two logs inside the window; when the start advances past their first log
+			// they should remain counted because of the second log
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[0],
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: START_OF_WEEK,
+			});
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[1],
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 10),
+			});
+			addMockActivityLog(db, {
+				player: FIVE_DIFFERENT_PLAYERS[0],
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addMilliseconds(START_OF_WEEK, 20),
+			});
+
+			makeSure(activityLogService.getMaxPlayersDoingLogsThisWeek({
+				ofType: ActivityTypes.CHANGE_NAME,
+				inTimeSpan: {milliseconds: 20},
+			})).containsOnly(
+				FIVE_DIFFERENT_PLAYERS[0],
+				FIVE_DIFFERENT_PLAYERS[1],
+			);
+		});
 	});
 
 	describe('getTokensEarnedFromLogsThisWeek()', () => {
 		it('returns null if no player did logs', () => {
 			makeSure(activityLogService.getTokensEarnedFromLogsThisWeek({
 				ofType: ActivityTypes.MINE_TOKENS
-			})).isNull();
+			})).is(0);
 		});
 
 		it('returns null if given player did no logs', () => {
@@ -1890,7 +2019,7 @@ describe('ActivityLogService', () => {
 			makeSure(activityLogService.getTokensEarnedFromLogsThisWeek({
 				byPlayer: SOME_PLAYER.id,
 				ofType: ActivityTypes.MINE_TOKENS
-			})).isNull();
+			})).is(0);
 		});
 
 		it('returns 0 if the given player earned no tokens', () => {
