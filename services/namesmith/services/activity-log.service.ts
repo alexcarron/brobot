@@ -952,35 +952,67 @@ export class ActivityLogService {
 	 * @param parameters.byPlayer - The player doing the activity.
 	 * @param parameters.ofType - The activity type to retrieve the maximum number of players doing.
 	 * @param parameters.inTimeSpan - The time span that the activity logs must be in.
+	 * @param parameters.withPlayer - An optional player that must have done the activity type in the given time span.
+	 * @param parameters.withPlayers - An optional list of players that must have done the activity type in the given time span.
 	 * @returns The different players that have done the given activity type in the given time span, or null if no players have done the given activity type in the given time span.
 	 */
 	getMaxPlayersDoingLogsThisWeek(
-		{ofType, inTimeSpan}: {
+		{ofType, inTimeSpan, withPlayer, withPlayers}: {
 			ofType: ActivityType;
 			inTimeSpan: Duration;
+			withPlayer?: PlayerResolvable;
+			withPlayers?: PlayerResolvable[];
 		}
-	): Player[] | null {
+	): Player[] {
 		const logs = this.activityLogRepository.findActivityLogsAfterTimeWhere(this.startOfWeek, {
 			type: ofType
 		});
 		
 		if (logs.length === 0)
-			return null;
+			return [];
 
-		let maxPlayerIDs: PlayerID[] | null = null;
+		const requiredPlayerIDs = new Set<PlayerID>();
+		if (withPlayer !== undefined)
+			requiredPlayerIDs.add(this.playerService.resolveID(withPlayer));
+
+		if (withPlayers !== undefined) {
+			for (const player of withPlayers)
+				requiredPlayerIDs.add(this.playerService.resolveID(player));
+		}
+
+		const playerIDToNumLogs = new Map<PlayerID, number>();
+		const timeSpanMS = getMillisecondsOfDuration(inTimeSpan);
+		const addNumLogToPlayerID = (playerID: PlayerID) => {
+			let previousNumLogs = playerIDToNumLogs.get(playerID) || 0;
+			previousNumLogs += 1;
+			playerIDToNumLogs.set(playerID, previousNumLogs);
+		};
+
+		const removeNumLogFromPlayerID = (playerID: PlayerID) => {
+			const previousNumLogs = playerIDToNumLogs.get(playerID) || 0;
+
+			// Returns true if removed player
+			if (previousNumLogs === 1) 
+				playerIDToNumLogs.delete(playerID);
+			else 
+				playerIDToNumLogs.set(playerID, previousNumLogs - 1);
+		}
+
+		let maxPlayerIDs: PlayerID[] = [];
 		let startLogIndex = 0;
-		const playerIDs = new Set<PlayerID>();
 		for (let lastLogIndex = 0; lastLogIndex < logs.length; lastLogIndex++) {
 			const lastLog = logs[lastLogIndex];
-			playerIDs.add(lastLog.player.id);
-
+			const lastPlayerID = lastLog.player.id;
+			addNumLogToPlayerID(lastPlayerID);
+			
 			const startLogTime = logs[startLogIndex].timeOccurred.getTime();
 			const lastLogTime = lastLog.timeOccurred.getTime();
 			let timeBetween = lastLogTime - startLogTime;
 
 			// Pick a later start log if we're longer than the given timespan
-			while (timeBetween > getMillisecondsOfDuration(inTimeSpan)) {
-				playerIDs.delete(logs[startLogIndex].player.id);
+			while (timeBetween > timeSpanMS) {
+				const startPlayerID = logs[startLogIndex].player.id;
+				removeNumLogFromPlayerID(startPlayerID);
 				
 				startLogIndex += 1;
 
@@ -989,13 +1021,14 @@ export class ActivityLogService {
 				timeBetween = lastLogTime - startLogTime;
 			}
 			
-			if (maxPlayerIDs === null || playerIDs.size > maxPlayerIDs.length)
-				maxPlayerIDs = Array.from(playerIDs);
+			const playerIDs = new Set(playerIDToNumLogs.keys());
+			if (Array.from(requiredPlayerIDs).every(reqPlayerID => playerIDs.has(reqPlayerID))) {
+				if (maxPlayerIDs.length === 0 || playerIDs.size > maxPlayerIDs.length)
+					maxPlayerIDs = Array.from(playerIDs);
+			}
 		} 
 
-		return maxPlayerIDs === null 
-			? null 
-			: maxPlayerIDs.map(id => this.playerService.resolvePlayer(id));
+		return maxPlayerIDs.map(id => this.playerService.resolvePlayer(id));
 	}
 
 	/**
@@ -1049,23 +1082,18 @@ export class ActivityLogService {
 			byPlayer?: PlayerResolvable;
 			ofType: ActivityType;
 		}
-	): number | null {
+	): number {
 		const logs = this.activityLogRepository.findActivityLogsAfterTimeWhere(this.startOfWeek, {
 			player: byPlayer, 
 			type: ofType
 		});
 
 		if (logs.length === 0)
-			return null;
+			return 0;
 
-		let totalTokensEarned = null;
+		let totalTokensEarned = 0;
 		for (const log of logs) {
-			if (totalTokensEarned === null) {
-				totalTokensEarned = log.tokensDifference;
-			}
-			else {
-				totalTokensEarned += log.tokensDifference;
-			}
+			totalTokensEarned += log.tokensDifference;
 		}
 
 		return totalTokensEarned;

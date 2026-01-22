@@ -2906,6 +2906,132 @@ describe('complete-quest.workflow.ts', () => {
 					makeSure(result.isFailure()).isTrue();
 				});
 			});
+
+			describe('Mine Haul Quest', () => {
+				it('returns success when player has mined 1500 tokens this week', () => {
+					forcePlayerToMineTokens(SOME_PLAYER, 1500);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.MINE_HAUL.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns success when player has mined 1500 tokens across multiple mines this week', () => {
+					for (let numLoop = 0; numLoop < 10; numLoop++) {
+						forcePlayerToMineTokens(SOME_PLAYER, 150);
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.MINE_HAUL.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns failure when player has only mined 1499 tokens this week', () => {
+					forcePlayerToMineTokens(SOME_PLAYER, 1499);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.MINE_HAUL.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when player has not mined any tokens this week', () => {
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.MINE_HAUL.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Instant Squad Quest', () => {
+				let NOW: Date;
+
+				beforeEach(() => {
+					NOW = new Date();
+					jest.useFakeTimers({ now: addHours(NOW, 1) });
+				});
+
+				afterAll(() => {
+					jest.useRealTimers();
+				})
+
+				it('returns success when the player mined at the same moment within 5 seconds as 5 other players', () => {
+					forcePlayerToMineTokens(SOME_PLAYER, 1);
+					forcePlayerToMineTokens(FIVE_DIFFERENT_PLAYERS[0], 1);
+					forcePlayerToMineTokens(FIVE_DIFFERENT_PLAYERS[1], 1);
+					forcePlayerToMineTokens(FIVE_DIFFERENT_PLAYERS[2], 1);
+					forcePlayerToMineTokens(FIVE_DIFFERENT_PLAYERS[3], 1);
+					forcePlayerToMineTokens(FIVE_DIFFERENT_PLAYERS[4], 1);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.INSTANT_SQUAD.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns success when the player mined exactly 5 seconds before 5 other players', () => {
+					forcePlayerToMineTokens(SOME_PLAYER, 1);
+
+					repeatOverDuration(5, { seconds: 5 }, (index) => {
+						forcePlayerToMineTokens(FIVE_DIFFERENT_PLAYERS[index], 1);
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.INSTANT_SQUAD.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns failure when the player mined exactly 6 seconds before 5 other players', () => {
+					forcePlayerToMineTokens(SOME_PLAYER, 1);
+
+					repeatOverDuration(5, { seconds: 6 }, (index) => {
+						forcePlayerToMineTokens(FIVE_DIFFERENT_PLAYERS[index], 1);
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.INSTANT_SQUAD.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when the player mined with only 4 other players within 5 seconds', () => {
+					forcePlayerToMineTokens(SOME_PLAYER, 1);
+
+					repeatOverDuration(4, { seconds: 5 }, (index) => {
+						forcePlayerToMineTokens(FIVE_DIFFERENT_PLAYERS[index], 1);
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.INSTANT_SQUAD.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when the player did not mine any tokens this week', () => {
+					repeatOverDuration(5, { seconds: 5 }, (index) => {
+						forcePlayerToMineTokens(FIVE_DIFFERENT_PLAYERS[index], 1);
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.INSTANT_SQUAD.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
 		});
+
+
 	});
 });
