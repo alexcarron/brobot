@@ -1299,7 +1299,7 @@ describe('ActivityLogService', () => {
 			makeSure(activityLogService.getMaxTokensEarnedFromLogThisWeek({
 				byPlayer: SOME_PLAYER.id,
 				ofType: ActivityTypes.CHANGE_NAME
-			})).is(null);
+			})).is(0);
 		});
 
 		it('returns the maximum amount of tokens a player has earned from a singular log of a given activity type this week', () => {
@@ -1662,11 +1662,11 @@ describe('ActivityLogService', () => {
 
 	describe('getMaxTokensEarnedFromLogsThisWeek()', () => {
 		it('returns null if player has not any activity logs', () => {
-			makeSure(activityLogService.getMaxTokensEarnedFromLogsThisWeek({
+			makeSure(activityLogService.getMaxTotalTokensEarnedFromLogsThisWeek({
 				byPlayer: SOME_PLAYER.id,
 				ofType: ActivityTypes.MINE_TOKENS,
 				inTimeSpan: {days: 2},
-			})).isNull();
+			})).is(0);
 		});
 
 		it('returns zero if player earned zero tokens from one log', () => {
@@ -1676,7 +1676,7 @@ describe('ActivityLogService', () => {
 				tokensDifference: 0,
 			});
 
-			makeSure(activityLogService.getMaxTokensEarnedFromLogsThisWeek({
+			makeSure(activityLogService.getMaxTotalTokensEarnedFromLogsThisWeek({
 				byPlayer: SOME_PLAYER.id,
 				ofType: ActivityTypes.MINE_TOKENS,
 				inTimeSpan: {days: 2},
@@ -1700,7 +1700,7 @@ describe('ActivityLogService', () => {
 				tokensDifference: 3,
 			});
 
-			makeSure(activityLogService.getMaxTokensEarnedFromLogsThisWeek({
+			makeSure(activityLogService.getMaxTotalTokensEarnedFromLogsThisWeek({
 				byPlayer: SOME_PLAYER.id,
 				ofType: ActivityTypes.MINE_TOKENS,
 				inTimeSpan: {days: 2},
@@ -1739,7 +1739,7 @@ describe('ActivityLogService', () => {
 				timeOccurred: addMilliseconds(START_OF_WEEK, 40),
 			});
 
-			makeSure(activityLogService.getMaxTokensEarnedFromLogsThisWeek({
+			makeSure(activityLogService.getMaxTotalTokensEarnedFromLogsThisWeek({
 				byPlayer: SOME_PLAYER.id,
 				ofType: ActivityTypes.MINE_TOKENS,
 				inTimeSpan: {milliseconds: 20},

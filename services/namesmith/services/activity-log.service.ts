@@ -799,17 +799,14 @@ export class ActivityLogService {
 			byPlayer: PlayerResolvable;
 			ofType: ActivityType;
 		}
-	): number | null {
+	): number {
 		const logs = this.activityLogRepository.findActivityLogsAfterTimeWhere(this.startOfWeek, {
 			player: byPlayer, 
 			type: ofType
 		});
 
-		let maxTokensEarned = null;
+		let maxTokensEarned = 0;
 		for (const log of logs) {
-			if (maxTokensEarned === null)
-				maxTokensEarned = log.tokensDifference;
-
 			if (log.tokensDifference > maxTokensEarned)
 				maxTokensEarned = log.tokensDifference;
 		}
@@ -902,22 +899,22 @@ export class ActivityLogService {
 	 * @param parameters.inTimeSpan - The time span that the activity logs must be in.
 	 * @returns The maximum amount of tokens the player has earned from the given activity type in the given time span.
 	 */
-	getMaxTokensEarnedFromLogsThisWeek(
+	getMaxTotalTokensEarnedFromLogsThisWeek(
 		{byPlayer, ofType, inTimeSpan}: {
 			byPlayer: PlayerResolvable;
 			ofType: ActivityType;
 			inTimeSpan: Duration;
 		}
-	): number | null {
+	): number {
 		const logs = this.activityLogRepository.findActivityLogsAfterTimeWhere(this.startOfWeek, {
 			player: byPlayer, 
 			type: ofType
 		});
 		
 		if (logs.length === 0)
-			return null;
+			return 0;
 
-		let maxTokensEarned = null;
+		let maxTokensEarned = 0;
 		let startLogIndex = 0;
 		let totalTokensEarned = 0;
 		for (let lastLogIndex = 0; lastLogIndex < logs.length; lastLogIndex++) {
@@ -939,7 +936,7 @@ export class ActivityLogService {
 				timeBetween = lastLogTime - startLogTime;
 			}
 			
-			if (maxTokensEarned === null || totalTokensEarned > maxTokensEarned)
+			if (totalTokensEarned > maxTokensEarned)
 				maxTokensEarned = totalTokensEarned;
 		} 
 
@@ -1123,7 +1120,6 @@ export class ActivityLogService {
 		const startOfWeekTime = this.startOfWeek.getTime();
 		const firstLogTime = logs[0].timeOccurred.getTime();
 		let maxTimeSpan = firstLogTime - startOfWeekTime;
-		
 
 		for (let startLogIndex = 0; startLogIndex < logs.length - 1; startLogIndex++) {
 			const lastLogIndex = startLogIndex + 1;

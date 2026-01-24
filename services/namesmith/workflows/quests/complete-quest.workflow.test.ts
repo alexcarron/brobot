@@ -1,5 +1,5 @@
 import { addDuration, addHours, addMinutes, addSeconds } from "../../../../utilities/date-time-utils";
-import { failTest, makeSure, repeatOverDuration } from "../../../../utilities/jest/jest-utils";
+import { failTest, makeSure, repeatEveryIntervalUntil, repeatOverDuration } from "../../../../utilities/jest/jest-utils";
 import { getBetween, getRandomUUID } from "../../../../utilities/random-utils";
 import { REFILL_COOLDOWN_HOURS } from "../../constants/namesmith.constants";
 import { Quests } from "../../constants/quests.constants";
@@ -39,8 +39,14 @@ describe('complete-quest.workflow.ts', () => {
 	let THREE_DIFFERENT_PLAYERS: Player[];
 	let FIVE_DIFFERENT_PLAYERS: Player[];
 
+	let START_OF_WEEK: Date;
+	let RIGHT_BEFORE_END_OF_WEEK: Date;
+
   beforeEach(() => {
-    ({ db, playerService, gameStateService, mysteryBoxService } = setupMockNamesmith(addMinutes(new Date(), -1)));
+		START_OF_WEEK = addMinutes(new Date(), -1)
+		RIGHT_BEFORE_END_OF_WEEK = addDuration(START_OF_WEEK, { days: 7, minutes: -1 });
+		
+    ({ db, playerService, gameStateService, mysteryBoxService } = setupMockNamesmith(START_OF_WEEK));
     SOME_PLAYER = addMockPlayer(db, {});
     SOME_QUEST = addMockQuest(db, {
 			name: FREEBIE_QUEST_NAME + getRandomUUID()
@@ -3030,8 +3036,396 @@ describe('complete-quest.workflow.ts', () => {
 					makeSure(result.isFailure()).isTrue();
 				});
 			});
+
+			describe('Ten Minute Rush Quest', () => {
+				let NOW: Date;
+
+				beforeEach(() => {
+					NOW = new Date();
+					jest.useFakeTimers({ now: NOW });
+				});
+
+				afterEach(() => {
+					jest.useRealTimers();
+				});
+
+				it('returns success when player has mined 400 tokens in exactly 10 minutes', () => {
+					repeatOverDuration(40, { minutes: 10 }, () => {
+						forcePlayerToMineTokens(SOME_PLAYER, 10);
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.TEN_MINUTE_RUSH.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns success when player has mined 400 tokens in a single moment', () => {
+					forcePlayerToMineTokens(SOME_PLAYER, 400);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.TEN_MINUTE_RUSH.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns failure when player has only mined 399 tokens within 10 minutes', () => {
+					forcePlayerToMineTokens(SOME_PLAYER, 399);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.TEN_MINUTE_RUSH.id
+					});
+					console.log(result);
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when player has mined 400 tokens but spread across more than 10 minutes', () => {
+					forcePlayerToMineTokens(SOME_PLAYER, 200);
+					jest.setSystemTime(addMinutes(new Date(), 10));
+					jest.setSystemTime(addSeconds(new Date(), 1));
+					forcePlayerToMineTokens(SOME_PLAYER, 200);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.TEN_MINUTE_RUSH.id
+					});
+					console.log(result);
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when player has never mined any tokens', () => {
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.TEN_MINUTE_RUSH.id
+					});
+					console.log(result);
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Coalition Quest', () => {
+				it('returns success when player mined at least once and everyone collectively mined 3500 tokens this week', () => {
+					forcePlayerToMineTokens(SOME_PLAYER, 1);
+					for (let i = 0; i < 3; i++) {
+						forcePlayerToMineTokens(THREE_DIFFERENT_PLAYERS[i], 1200);
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.COALITION.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns failure when player did not mine at all, even if everyone else mined enough', () => {
+					for (let i = 0; i < 3; i++) {
+						forcePlayerToMineTokens(THREE_DIFFERENT_PLAYERS[i], 1200);
+					}
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.COALITION.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when player mined but total mined is less than 3500', () => {
+					forcePlayerToMineTokens(SOME_PLAYER, 1);
+					for (let i = 0; i < 3; i++) {
+						forcePlayerToMineTokens(THREE_DIFFERENT_PLAYERS[i], 1000);
+					}
+					
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.COALITION.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when nobody mined at all', () => {
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.COALITION.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Refill Raid Quest', () => {
+				it('returns success when player claimed a refill that gave them 500 tokens', () => {
+					forcePlayerToClaimRefill(SOME_PLAYER, 500);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.REFILL_RAID.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns success when player claimed a refill that gave them 600 tokens at least once', () => {
+					forcePlayerToClaimRefill(SOME_PLAYER, 100);
+					forcePlayerToClaimRefill(SOME_PLAYER, 250);
+					forcePlayerToClaimRefill(SOME_PLAYER, 600);
+					forcePlayerToClaimRefill(SOME_PLAYER, 75);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.REFILL_RAID.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns failure when player claimed a refill that gave them 499 tokens', () => {
+					forcePlayerToClaimRefill(SOME_PLAYER, 499);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.REFILL_RAID.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when player claimed multiple refills but max is only 499 tokens', () => {
+					forcePlayerToClaimRefill(SOME_PLAYER, 100);
+					forcePlayerToClaimRefill(SOME_PLAYER, 250);
+					forcePlayerToClaimRefill(SOME_PLAYER, 499);
+					forcePlayerToClaimRefill(SOME_PLAYER, 75);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.REFILL_RAID.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when player did not claim any refills', () => {
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.REFILL_RAID.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Mass Refill Quest', () => {
+				let NOW: Date;
+
+				beforeEach(() => {
+					NOW = new Date();
+					jest.useFakeTimers({ now: addHours(NOW, 1) });
+				});
+
+				afterAll(() => {
+					jest.useRealTimers();
+				})
+
+				it('returns success when the player claimed a refill at the same moment as five other players', () => {
+					forcePlayerToClaimRefill(SOME_PLAYER);
+					forcePlayerToClaimRefill(FIVE_DIFFERENT_PLAYERS[0]);
+					forcePlayerToClaimRefill(FIVE_DIFFERENT_PLAYERS[1]);
+					forcePlayerToClaimRefill(FIVE_DIFFERENT_PLAYERS[2]);
+					forcePlayerToClaimRefill(FIVE_DIFFERENT_PLAYERS[3]);
+					forcePlayerToClaimRefill(FIVE_DIFFERENT_PLAYERS[4]);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.MASS_REFILL.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns success when the player claimed a refill exactly 60 seconds before five other players', () => {
+					forcePlayerToClaimRefill(SOME_PLAYER);
+
+					jest.setSystemTime(addSeconds(new Date(), 60));
+					forcePlayerToClaimRefill(FIVE_DIFFERENT_PLAYERS[0]);
+					forcePlayerToClaimRefill(FIVE_DIFFERENT_PLAYERS[1]);
+					forcePlayerToClaimRefill(FIVE_DIFFERENT_PLAYERS[2]);
+					forcePlayerToClaimRefill(FIVE_DIFFERENT_PLAYERS[3]);
+					forcePlayerToClaimRefill(FIVE_DIFFERENT_PLAYERS[4]);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.MASS_REFILL.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns failure when the player claimed a refill exactly 61 seconds before five other players', () => {
+					forcePlayerToClaimRefill(SOME_PLAYER);
+
+					jest.setSystemTime(addSeconds(new Date(), 61));
+					forcePlayerToClaimRefill(FIVE_DIFFERENT_PLAYERS[0]);
+					forcePlayerToClaimRefill(FIVE_DIFFERENT_PLAYERS[1]);
+					forcePlayerToClaimRefill(FIVE_DIFFERENT_PLAYERS[2]);
+					forcePlayerToClaimRefill(FIVE_DIFFERENT_PLAYERS[3]);
+					forcePlayerToClaimRefill(FIVE_DIFFERENT_PLAYERS[4]);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.MASS_REFILL.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when the player claimed a refill at the same moment as only four other players', () => {
+					forcePlayerToClaimRefill(SOME_PLAYER);
+					forcePlayerToClaimRefill(FIVE_DIFFERENT_PLAYERS[0]);
+					forcePlayerToClaimRefill(FIVE_DIFFERENT_PLAYERS[1]);
+					forcePlayerToClaimRefill(FIVE_DIFFERENT_PLAYERS[2]);
+					forcePlayerToClaimRefill(FIVE_DIFFERENT_PLAYERS[3]);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.MASS_REFILL.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when the player never claimed a refill', () => {
+					forcePlayerToClaimRefill(FIVE_DIFFERENT_PLAYERS[0]);
+					forcePlayerToClaimRefill(FIVE_DIFFERENT_PLAYERS[1]);
+					forcePlayerToClaimRefill(FIVE_DIFFERENT_PLAYERS[2]);
+					forcePlayerToClaimRefill(FIVE_DIFFERENT_PLAYERS[3]);
+					forcePlayerToClaimRefill(FIVE_DIFFERENT_PLAYERS[4]);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.MASS_REFILL.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Cold Server Quest', () => {
+				beforeEach(() => {
+					jest.useFakeTimers({ now: addMinutes(START_OF_WEEK, 1) });
+				});
+
+				afterAll(() => {
+					jest.useRealTimers();
+				});
+
+				it('returns success when no player has claimed a refill for exactly 16 hours this week', () => {
+					forcePlayerToClaimRefill(SOME_PLAYER);
+
+					jest.setSystemTime(addHours(new Date(), 16));
+
+					repeatEveryIntervalUntil({ hours: 1 }, RIGHT_BEFORE_END_OF_WEEK,
+						() => forcePlayerToClaimRefill(SOME_PLAYER, 1)
+					);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.COLD_SERVER.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns success when no player has claimed a refill for more than 16 hours this week', () => {
+					forcePlayerToClaimRefill(SOME_PLAYER);
+
+					jest.setSystemTime(addHours(new Date(), 20));
+
+					repeatEveryIntervalUntil({ hours: 1 }, RIGHT_BEFORE_END_OF_WEEK,
+						() => forcePlayerToClaimRefill(SOME_PLAYER, 1)
+					);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.COLD_SERVER.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns failure when no player has gone 16 hours without claiming a refill', () => {
+					forcePlayerToClaimRefill(SOME_PLAYER);
+
+					jest.setSystemTime(addHours(new Date(), 15));
+
+					repeatEveryIntervalUntil({ hours: 1 }, RIGHT_BEFORE_END_OF_WEEK,
+						() => forcePlayerToClaimRefill(SOME_PLAYER, 1)
+					);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.COLD_SERVER.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when max silence is exactly 15 hours and 59 minutes', () => {
+					forcePlayerToClaimRefill(SOME_PLAYER);
+					jest.setSystemTime(addMinutes(addHours(new Date(), 15), 59));
+
+					repeatEveryIntervalUntil({ hours: 1 }, RIGHT_BEFORE_END_OF_WEEK,
+						() => forcePlayerToClaimRefill(SOME_OTHER_PLAYER, 1)
+					);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.COLD_SERVER.id
+					});
+					console.log(result);
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Box Binge Quest', () => {
+				beforeEach(() => {
+					jest.useFakeTimers({ now: addMinutes(START_OF_WEEK, 1) });
+				});
+
+				afterAll(() => {
+					jest.useRealTimers();
+				});
+
+				it('returns success when the player bought 25 mystery boxes this week', () => {
+					for (let numLoop = 0; numLoop < 25; numLoop++) {
+						forcePlayerToBuyMysteryBox(SOME_PLAYER);
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.BOX_BINGE.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns success when the player bought more than 25 mystery boxes this week', () => {
+					for (let numLoop = 0; numLoop < 30; numLoop++) {
+						forcePlayerToBuyMysteryBox(SOME_PLAYER);
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.BOX_BINGE.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns failure when the player bought only 24 mystery boxes this week', () => {
+					for (let numLoop = 0; numLoop < 24; numLoop++) {
+						forcePlayerToBuyMysteryBox(SOME_PLAYER);
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.BOX_BINGE.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when the player did not buy any mystery boxes this week', () => {
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.BOX_BINGE.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
 		});
-
-
 	});
 });

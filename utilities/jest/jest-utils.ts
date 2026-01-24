@@ -3,7 +3,7 @@
  * @description Centralized test utility functions to make writing Jest unit tests easier, more consistent, and discoverable—especially for new developers.
  */
 
-import { addDuration, Duration } from "../date-time-utils";
+import { addDuration, Duration, getMillisecondsOfDuration } from "../date-time-utils";
 import { Class, ElementOfArray, ErrorClass } from "../types/generic-types";
 import { isArray, isNumberOrBigInt, isObject, isStrings } from "../types/type-guards";
 
@@ -741,4 +741,40 @@ export function repeatOverDuration(
 			jest.advanceTimersByTime(millisecondsToAdvance);
 		}
 	}
+}
+
+/**
+ * Repeats a given function at a specified interval until a given end date.
+ * The function will be called with an incrementing index starting from 0.
+ * Assumes jest fake timers are used to simulate the passage of time.
+ * @param intervalDuration - The duration object to use for spacing out the function calls.
+ * @param endDate - The date at which to stop repeating the function.
+ * @param functionToRepeat - The function to repeat.
+ * @example
+ * repeatEveryIntervalUntil({ seconds: 10 }, new Date(Date.now() + 10000), (index) => console.log(index));
+ * // Calls the function every 10 seconds until 10 seconds have passed.
+ */
+export function repeatEveryIntervalUntil(
+	intervalDuration: Duration,
+	endDate: Date,
+	functionToRepeat: (index: number) => void,
+): void {
+	const startDate = new Date();
+
+	if (startDate.getTime() > endDate.getTime()) {
+		throw new Error(`Expected start date (${startDate.toISOString()}) to be before end date (${endDate.toISOString()}).`);
+	}
+	
+	let now = startDate;
+	let index = 0;
+	while (now.getTime() < endDate.getTime()) {
+		functionToRepeat(index);
+		
+		jest.advanceTimersByTime(getMillisecondsOfDuration(intervalDuration));
+
+		index++;
+		now = new Date();
+	}
+
+	jest.setSystemTime(endDate);
 }
