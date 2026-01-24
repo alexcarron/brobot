@@ -471,7 +471,7 @@ export const quests = [
 	{
 		id: 69,
 		name: "Mass Refill",
-		description: "Claim a refill at the same moment as five other players.",
+		description: "Claim a refill with five other players in the span of one minute.",
 		recurrence: "weekly",
 		tokensReward: 855,
 		charactersReward: "5friends"

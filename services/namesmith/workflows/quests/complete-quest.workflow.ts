@@ -1697,9 +1697,120 @@ const questIDToMeetsCriteriaCheck = {
 			return toFailure(`You only mined with ${maxPlayersMinedInTimeSpan.length - 1} other players at most within ${toDurationText(TIME_SPAN)} this week. You must mine with ${NUM_PLAYERS_NEEDED - 1} other players to complete the "${quest.name}" quest.`);
 
 		return PLAYER_MET_CRITERIA_RESULT;
-	}
-} as const;
+	},
 
+	[Quests.TEN_MINUTE_RUSH.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_TOKENS_MINED_NEEDED = 400;
+		const TIME_SPAN = { minutes: 10 };
+		const didPlayerMine = activityLogService.didPlayerDoLogOfTypeThisWeek(player, ActivityTypes.MINE_TOKENS);
+		if (!didPlayerMine)
+			return toFailure(`You did not mine any tokens this week. You must mine at least once to complete the "${quest.name}" quest.`);
+
+		const maxTokensMinedInTimeSpan = activityLogService.getMaxTotalTokensEarnedFromLogsThisWeek({
+			byPlayer: player,
+			ofType: ActivityTypes.MINE_TOKENS,
+			inTimeSpan: TIME_SPAN,
+		});
+		if (maxTokensMinedInTimeSpan < NUM_TOKENS_MINED_NEEDED)
+			return toFailure(`You only mined ${maxTokensMinedInTimeSpan} tokens at most within ${toDurationText(TIME_SPAN)} this week. You must mine at least ${NUM_TOKENS_MINED_NEEDED} tokens within ${toDurationText(TIME_SPAN)} to complete the "${quest.name}" quest.`);
+
+		return PLAYER_MET_CRITERIA_RESULT;
+	},
+
+	[Quests.COALITION.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_TOTAL_TOKENS_MINED_NEEDED = 3500;
+		const didPlayerMine = activityLogService.didPlayerDoLogOfTypeThisWeek(player, ActivityTypes.MINE_TOKENS);
+		if (!didPlayerMine)
+			return toFailure(`You did not mine any tokens this week. You must contribute at least one mine to complete the "${quest.name}" quest.`);
+
+		const totalTokensMined = activityLogService.getTokensEarnedFromLogsThisWeek({
+			ofType: ActivityTypes.MINE_TOKENS,
+		})
+		if (totalTokensMined < NUM_TOTAL_TOKENS_MINED_NEEDED)
+			return toFailure(`Everyone has only collectively mined ${totalTokensMined} tokens this week. Everyone must collectively mine at least ${NUM_TOTAL_TOKENS_MINED_NEEDED} tokens to complete the "${quest.name}" quest.`);
+
+		return PLAYER_MET_CRITERIA_RESULT;
+	},
+
+	[Quests.REFILL_RAID.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_TOKENS_NEEDED = 500;
+		const didPlayerRefill = activityLogService.didPlayerDoLogOfTypeThisWeek(player, ActivityTypes.CLAIM_REFILL);
+		if (!didPlayerRefill)
+			return toFailure(`You did not claim any refills this week. You must claim at least one refill to complete the "${quest.name}" quest.`);
+
+		const maxTokensFromRefill = activityLogService.getMaxTokensEarnedFromLogThisWeek({
+			byPlayer: player,
+			ofType: ActivityTypes.CLAIM_REFILL,
+		});
+		if (maxTokensFromRefill < NUM_TOKENS_NEEDED)
+			return toFailure(`You have only claimed ${maxTokensFromRefill} tokens at most this week from a single refill. You must claim at least ${NUM_TOKENS_NEEDED} tokens from one to complete the "${quest.name}" quest.`);
+
+		return PLAYER_MET_CRITERIA_RESULT;
+	},
+
+	[Quests.MASS_REFILL.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_OTHER_PLAYERS_NEEDED = 5;
+		const TIME_SPAN: Duration = { minutes: 1 };
+		const didPlayerRefill = activityLogService.didPlayerDoLogOfTypeThisWeek(player, ActivityTypes.CLAIM_REFILL);
+		if (!didPlayerRefill)
+			return toFailure(`You did not claim any refills this week. You must claim at least one refill to complete the "${quest.name}" quest.`);
+
+		const maxPlayersRefillInTimeSpan = activityLogService.getMaxPlayersDoingLogsThisWeek({
+			ofType: ActivityTypes.CLAIM_REFILL,
+			inTimeSpan: TIME_SPAN,
+			withPlayer: player
+		});
+		if (maxPlayersRefillInTimeSpan.length < NUM_OTHER_PLAYERS_NEEDED + 1)
+			return toFailure(`You only claimed a refill with ${maxPlayersRefillInTimeSpan.length - 1} other players at most within ${toDurationText(TIME_SPAN)} this week. You must claim a refill with ${NUM_OTHER_PLAYERS_NEEDED} other players to complete the "${quest.name}" quest.`);
+
+		return PLAYER_MET_CRITERIA_RESULT;
+	},
+
+	[Quests.COLD_SERVER.id]: (
+		{quest}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_HOURS_OF_SILENCE_NEEDED = 16;
+		const maxTimeOfNoRefill = activityLogService.getMaxTimeOfNoLogsDoneThisWeek({
+			ofType: ActivityTypes.CLAIM_REFILL
+		});
+		if (maxTimeOfNoRefill < getMillisecondsOfDuration({hours: NUM_HOURS_OF_SILENCE_NEEDED}))
+			return toFailure(`Everyone has only gone ${toDurationTextFromTime(maxTimeOfNoRefill)} without claiming a refill this week. You must ensure no player claims a refill for a continuous ${NUM_HOURS_OF_SILENCE_NEEDED}-hour period to complete the "${quest.name}" quest.`);
+		
+		return PLAYER_MET_CRITERIA_RESULT;
+	},
+
+	[Quests.BOX_BINGE.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_BOXES_NEEDED = 25;
+		const didPlayerBuyBox = activityLogService.didPlayerDoLogOfTypeThisWeek(player, ActivityTypes.BUY_MYSTERY_BOX);
+		if (!didPlayerBuyBox)
+			return toFailure(`You did not buy any mystery boxes this week. You must buy at least one to complete the "${quest.name}" quest.`);
+
+		const numBoxesBought = activityLogService.getNumLogsDoneThisWeek({
+			byPlayer: player,
+			ofType: ActivityTypes.BUY_MYSTERY_BOX
+		});
+		if (numBoxesBought < NUM_BOXES_NEEDED)
+			return toFailure(`You've only bought ${numBoxesBought} mystery boxes this week. You need to buy at least ${NUM_BOXES_NEEDED} to complete the "${quest.name}" quest.`);
+
+		return PLAYER_MET_CRITERIA_RESULT;
+	},
+} as const;
 
 /**
  * Completes a quest for a player.
