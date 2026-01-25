@@ -2113,6 +2113,40 @@ const questIDToMeetsCriteriaCheck = {
 
 		return PLAYER_MET_CRITERIA_RESULT;
 	},
+
+	[Quests.BULK_RECIPE.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_INPUT_CHARACTERS_NEEDED = 5;
+		const NUM_OUTPUT_CHARACTERS_NEEDED = 1;
+		const didCraftCharacters = activityLogService.didPlayerDoLogOfTypeThisWeek(player, ActivityTypes.CRAFT_CHARACTERS);
+		if (!didCraftCharacters)
+			return toFailure(`You have not crafted any characters this week. You must craft at least one to complete the "${quest.name}" quest.`);
+		
+		const craftLogs = activityLogService.getLogsThisWeek({
+			byPlayer: player,
+			ofType: ActivityTypes.CRAFT_CHARACTERS
+		});
+
+		let minOutputCharacters = Number.POSITIVE_INFINITY;
+		let maxInputCharacters = Number.NEGATIVE_INFINITY;
+		for (const craftLog of craftLogs) {
+			if (craftLog.involvedRecipe === null)
+				continue;
+
+			minOutputCharacters = Math.min(minOutputCharacters, craftLog.involvedRecipe.outputCharacters.length);
+			maxInputCharacters = Math.max(maxInputCharacters, craftLog.involvedRecipe.inputCharacters.length);
+		}
+
+		if (minOutputCharacters > NUM_OUTPUT_CHARACTERS_NEEDED)
+			return toFailure(`You never crafted a recipe that gave you only one character this week. You need to craft a recipe that takes at least ${NUM_INPUT_CHARACTERS_NEEDED} characters and gives you one character to complete the "${quest.name}" quest.`);
+
+		if (maxInputCharacters < NUM_INPUT_CHARACTERS_NEEDED)
+			return toFailure(`You only crafted a recipe that gave you one character using at most ${maxInputCharacters} characters this week. You need to craft a recipe using at least ${NUM_INPUT_CHARACTERS_NEEDED} characters to complete the "${quest.name}" quest.`);
+
+		return PLAYER_MET_CRITERIA_RESULT;
+	},
 } as const;
 
 /**
