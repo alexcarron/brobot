@@ -788,6 +788,25 @@ export class ActivityLogService {
 	}
 
 	/**
+	 * Retrieves all activity logs for a given player and activity type that occurred this week.
+	 * @param parameters - The parameters which include:
+	 * @param parameters.byPlayer - The player to retrieve the activity logs for.
+	 * @param parameters.ofType - The type of activity to retrieve the activity logs for.
+	 * @returns An array of activity logs for the given player and activity type that occurred this week.
+	 */
+	getLogsThisWeek(
+		{byPlayer, ofType}: {
+			byPlayer: PlayerResolvable;
+			ofType: ActivityType;
+		}
+	): ActivityLog[] {
+		return this.activityLogRepository.findActivityLogsAfterTimeWhere(this.startOfWeek, {
+			player: byPlayer, 
+			type: ofType
+		});
+	}
+	
+	/**
 	 * Retrieves the maximum amount of tokens a player has earned from a singular log of a given activity type this week.
 	 * @param parameters - The parameters which include:
 	 * @param parameters.byPlayer - The player doing the activity.

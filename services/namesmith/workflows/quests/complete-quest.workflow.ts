@@ -8,7 +8,7 @@ import { hasSymbol, hasLetter, hasNumber, getNumDistinctCharacters, getCharacter
 import { NamesmithServices } from "../../types/namesmith.types";
 import { addDays, Duration, getHoursInTime, getMillisecondsOfDuration, getMinutesDurationFromTime, getMinutesInTime, toDurationTextFromSeconds, getSecondsInTime, toDurationText, toDurationTextFromTime } from "../../../../utilities/date-time-utils";
 import { ActivityLog, ActivityTypes } from "../../types/activity-log.types";
-import { MysteryBoxID } from "../../types/mystery-box.types";
+import { MysteryBoxID, MysteryBoxName } from "../../types/mystery-box.types";
 import { hasUtilityCharacter } from "../../utilities/character.utility";
 import { RecipeID } from "../../types/recipe.types";
 import { sortByDescendingProperty } from "../../../../utilities/data-structure-utils";
@@ -1807,6 +1807,309 @@ const questIDToMeetsCriteriaCheck = {
 		});
 		if (numBoxesBought < NUM_BOXES_NEEDED)
 			return toFailure(`You've only bought ${numBoxesBought} mystery boxes this week. You need to buy at least ${NUM_BOXES_NEEDED} to complete the "${quest.name}" quest.`);
+
+		return PLAYER_MET_CRITERIA_RESULT;
+	},
+
+	[Quests.HYPER_BOXES.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_BOXES_NEEDED = 10;
+		const TIME_SPAN: Duration = { minutes: 3 };
+		const didPlayerBuyBox = activityLogService.didPlayerDoLogOfTypeThisWeek(player, ActivityTypes.BUY_MYSTERY_BOX);
+		if (!didPlayerBuyBox)
+			return toFailure(`You did not buy any mystery boxes this week. You must buy at least one to complete the "${quest.name}" quest.`);
+
+		const maxBoxesInTimeSpan = activityLogService.getMaxLogsDoneThisWeek({
+			byPlayer: player,
+			ofType: ActivityTypes.BUY_MYSTERY_BOX,
+			inTimeSpan: TIME_SPAN
+		});
+		if (maxBoxesInTimeSpan < NUM_BOXES_NEEDED)
+			return toFailure(`You only bought ${maxBoxesInTimeSpan} mystery boxes at most within ${toDurationText(TIME_SPAN)} this week. You must buy at least ${NUM_BOXES_NEEDED} within ${toDurationText(TIME_SPAN)} to complete the "${quest.name}" quest.`);
+
+		return PLAYER_MET_CRITERIA_RESULT;
+	},
+
+	[Quests.NAMESAKE_BOX.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const mysteryBoxLogs = activityLogService.getLogsThisWeek({
+			byPlayer: player,
+			ofType: ActivityTypes.BUY_MYSTERY_BOX
+		});
+
+		if (mysteryBoxLogs.length <= 0)
+			return toFailure(`You have not bought any mystery boxes this week. You must buy a mystery box before you can complete the "${quest.name}" quest.`);
+
+		if (player.publishedName === null)
+			return toFailure(`You have not published your name yet. Your name must be published before you can complete the "${quest.name}" quest.`);
+
+		for (const mysteryBoxLog of mysteryBoxLogs) {
+			if (mysteryBoxLog.involvedMysteryBox === null)
+				continue;
+
+			const boxName = mysteryBoxLog.involvedMysteryBox.name;
+			if (player.publishedName.toLowerCase().includes(boxName.toLowerCase()))
+				return PLAYER_MET_CRITERIA_RESULT;
+		}
+
+		return toFailure(`You never bought a mystery box this week whose name was contained in your published name. You must do so to complete the "${quest.name}" quest.`);
+	},
+
+	[Quests.RIGHTMOST.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const mysteryBoxLogs = activityLogService.getLogsThisWeek({
+			byPlayer: player,
+			ofType: ActivityTypes.BUY_MYSTERY_BOX
+		});
+
+		if (mysteryBoxLogs.length <= 0)
+			return toFailure(`You have not bought any mystery boxes this week. You must buy a mystery box before you can complete the "${quest.name}" quest.`);
+
+
+		for (const mysteryBoxLog of mysteryBoxLogs) {
+			if (mysteryBoxLog.charactersGained === null || mysteryBoxLog.nameChangedFrom === null)
+				continue;
+
+			const rightmostCharacter = mysteryBoxLog.nameChangedFrom[mysteryBoxLog.nameChangedFrom.length - 1];
+			const recievedCharacters = getCharacters(mysteryBoxLog.charactersGained);
+
+			console.log({
+				mysteryBoxLog,
+				rightmostCharacter,
+				recievedCharacters
+			});
+			if (recievedCharacters.includes(rightmostCharacter))
+				return PLAYER_MET_CRITERIA_RESULT;
+		}
+
+		return toFailure(`You have not received the rightmost character of your current name from a mystery box this week. You must receive that character from one to complete the "${quest.name}" quest.`);
+	},
+
+	[Quests.BUYOUT.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService, mysteryBoxService}: NamesmithServices
+	) => {
+		const allMysteryBoxes = mysteryBoxService.getMysteryBoxes();
+		const mysteryBoxLogs = activityLogService.getLogsThisWeek({
+			byPlayer: player,
+			ofType: ActivityTypes.BUY_MYSTERY_BOX
+		});
+
+		if (mysteryBoxLogs.length <= 0)
+			return toFailure(`You have not bought any mystery boxes this week. You must buy at least one of every available mystery box type to complete the "${quest.name}" quest.`);
+
+		const boughtMysteryBoxIDs = new Set<MysteryBoxID>();
+		const missingMysteryBoxNames = new Set<MysteryBoxName>(allMysteryBoxes.map(mysteryBox => mysteryBox.name));
+		for (const mysteryBoxLog of mysteryBoxLogs) {
+			if (mysteryBoxLog.involvedMysteryBox === null)
+				continue;
+
+			boughtMysteryBoxIDs.add(mysteryBoxLog.involvedMysteryBox.id);
+			missingMysteryBoxNames.delete(mysteryBoxLog.involvedMysteryBox.name);
+		}
+
+		const numUniqueMysteryBoxesBought = boughtMysteryBoxIDs.size;
+		const totalAvailableMysteryBoxes = allMysteryBoxes.length;
+
+		if (numUniqueMysteryBoxesBought >= totalAvailableMysteryBoxes)
+			return PLAYER_MET_CRITERIA_RESULT;
+
+		const mysteryBoxNames = Array.from(missingMysteryBoxNames).map(name => `"${name}"`);
+		return toFailure(`You have only bought ${numUniqueMysteryBoxesBought} out of ${totalAvailableMysteryBoxes} available mystery box types this week. You still need to buy ${toListOfWords(mysteryBoxNames)} to complete the "${quest.name}" quest.`);
+	},
+
+	[Quests.TRIPLE_PULL.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_CHARACTERS_NEEDED = 3;
+		const didBuyMysteryBox = activityLogService.didPlayerDoLogOfTypeThisWeek(player, ActivityTypes.BUY_MYSTERY_BOX);
+		if (!didBuyMysteryBox)
+			return toFailure(`You have not bought any mystery boxes this week. You must buy at least one to complete the "${quest.name}" quest.`);
+		
+		const mysteryBoxLogs = activityLogService.getLogsThisWeek({
+			byPlayer: player,
+			ofType: ActivityTypes.BUY_MYSTERY_BOX
+		});
+
+		let maxCharactersReceived = 0;
+		for (const mysteryBoxLog of mysteryBoxLogs) {
+			if (mysteryBoxLog.charactersGained === null)
+				continue;
+
+			const numCharactersReceived = getNumCharacters(mysteryBoxLog.charactersGained);
+
+			if (numCharactersReceived >= NUM_CHARACTERS_NEEDED)
+				return PLAYER_MET_CRITERIA_RESULT;
+
+			if (numCharactersReceived > maxCharactersReceived)
+				maxCharactersReceived = numCharactersReceived;
+		}
+
+		return toFailure(`You have only received ${maxCharactersReceived} characters at most from a mystery box this week. You must receive at least ${NUM_CHARACTERS_NEEDED} to complete the "${quest.name}" quest.`);
+	},
+
+	[Quests.FIND_X.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const CHARACTER_NEEDED = 'x';
+		const didBuyMysteryBox = activityLogService.didPlayerDoLogOfTypeThisWeek(player, ActivityTypes.BUY_MYSTERY_BOX);
+		if (!didBuyMysteryBox)
+			return toFailure(`You have not bought any mystery boxes this week. You must buy at least one to complete the "${quest.name}" quest.`);
+
+		const mysteryBoxLogs = activityLogService.getLogsThisWeek({
+			byPlayer: player,
+			ofType: ActivityTypes.BUY_MYSTERY_BOX
+		});
+
+		for (const mysteryBoxLog of mysteryBoxLogs) {
+			if (mysteryBoxLog.charactersGained === null)
+				continue;
+
+			const receivedCharacters = getCharacters(mysteryBoxLog.charactersGained);
+
+			if (receivedCharacters.includes(CHARACTER_NEEDED))
+				return PLAYER_MET_CRITERIA_RESULT;
+		}
+
+		return toFailure(`You have not received the character "${CHARACTER_NEEDED}" from any mystery box this week. You must do so to complete the "${quest.name}" quest.`);
+	},
+
+	[Quests.SEVENS.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_SAME_CHARACTERS_NEEDED = 7;
+		const didBuyMysteryBox = activityLogService.didPlayerDoLogOfTypeThisWeek(player, ActivityTypes.BUY_MYSTERY_BOX);
+		if (!didBuyMysteryBox)
+			return toFailure(`You have not bought any mystery boxes this week. You must buy at least one to complete the "${quest.name}" quest.`);
+
+		const mysteryBoxLogs = activityLogService.getLogsThisWeek({
+			byPlayer: player,
+			ofType: ActivityTypes.BUY_MYSTERY_BOX
+		});
+
+		const characterCount: Record<string, number> = {};
+		for (const mysteryBoxLog of mysteryBoxLogs) {
+			if (mysteryBoxLog.charactersGained === null)
+				continue;
+
+			const receivedCharacters = getCharacters(mysteryBoxLog.charactersGained);
+
+			for (const character of receivedCharacters) {
+				if (characterCount[character] === undefined)
+					characterCount[character] = 0;
+
+				characterCount[character]++;
+			}
+		}
+
+		let maxCharacterCount = 0;
+		let maxCharacter = null;
+		for (const [character, count] of Object.entries(characterCount)) {
+			if (count >= NUM_SAME_CHARACTERS_NEEDED)
+				return PLAYER_MET_CRITERIA_RESULT;
+
+			if (count > maxCharacterCount) {
+				maxCharacterCount = count;
+				maxCharacter = character;
+			}
+		}
+
+		if (maxCharacter !== null)
+			return toFailure(`You have only received the character "${maxCharacter}" ${maxCharacterCount} times from mystery boxes this week. You need to receive the same character ${NUM_SAME_CHARACTERS_NEEDED} times to complete the "${quest.name}" quest.`);
+		else
+			return toFailure(`You have not received the same character ${NUM_SAME_CHARACTERS_NEEDED} times from mystery boxes this week. You must do so to complete the "${quest.name}" quest.`);
+	},
+
+	[Quests.PRICED_RIGHT.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const didBuyMysteryBox = activityLogService.didPlayerDoLogOfTypeThisWeek(player, ActivityTypes.BUY_MYSTERY_BOX);
+		if (!didBuyMysteryBox)
+			return toFailure(`You have not bought any mystery boxes this week. You must buy at least one to complete the "${quest.name}" quest.`);
+
+		const mysteryBoxLogs = activityLogService.getLogsThisWeek({
+			byPlayer: player,
+			ofType: ActivityTypes.BUY_MYSTERY_BOX
+		});
+
+		for (const mysteryBoxLog of mysteryBoxLogs) {
+			if (mysteryBoxLog.involvedMysteryBox === null || mysteryBoxLog.nameChangedFrom === null)
+				continue;
+
+			const boxPrice = String(mysteryBoxLog.involvedMysteryBox.tokenCost);
+
+			if (mysteryBoxLog.nameChangedFrom.includes(boxPrice))
+				return PLAYER_MET_CRITERIA_RESULT;
+		}
+
+		return toFailure(`You have not bought a mystery box whose price is included in your name this week. You must do so to complete the "${quest.name}" quest.`);
+	},
+
+	[Quests.CRAFTING_MARATHON.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_UNIQUE_RECIPES_NEEDED = 15;
+		const didCraftCharacters = activityLogService.didPlayerDoLogOfTypeThisWeek(player, ActivityTypes.CRAFT_CHARACTERS);
+		if (!didCraftCharacters)
+			return toFailure(`You have not crafted any characters this week. You must craft at least one to complete the "${quest.name}" quest.`);
+
+		const craftLogs = activityLogService.getLogsThisWeek({
+			byPlayer: player,
+			ofType: ActivityTypes.CRAFT_CHARACTERS
+		});
+
+		const uniqueRecipeIDs = new Set<RecipeID>();
+		for (const craftLog of craftLogs) {
+			if (craftLog.involvedRecipe === null)
+				continue;
+
+			uniqueRecipeIDs.add(craftLog.involvedRecipe.id);
+		}
+
+		if (uniqueRecipeIDs.size < NUM_UNIQUE_RECIPES_NEEDED)
+			return toFailure(`You have only crafted using ${uniqueRecipeIDs.size} different recipes this week. You need to craft using at least ${NUM_UNIQUE_RECIPES_NEEDED} different recipes to complete the "${quest.name}" quest.`);
+
+		return PLAYER_MET_CRITERIA_RESULT;
+	},
+
+	[Quests.EMOJI_CRAFT.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_EMOJIS_NEEDED = 3;
+		const didCraftCharacters = activityLogService.didPlayerDoLogOfTypeThisWeek(player, ActivityTypes.CRAFT_CHARACTERS);
+		if (!didCraftCharacters)
+			return toFailure(`You have not crafted any characters this week. You must craft at least one to complete the "${quest.name}" quest.`);
+		
+		const craftLogs = activityLogService.getLogsThisWeek({
+			byPlayer: player,
+			ofType: ActivityTypes.CRAFT_CHARACTERS
+		});
+
+		let numEmojisCrafted = 0;
+		for (const craftLog of craftLogs) {
+			if (craftLog.involvedRecipe === null)
+				continue;
+
+			if (hasEmoji(craftLog.involvedRecipe.outputCharacters))
+				numEmojisCrafted++;
+		}
+
+		if (numEmojisCrafted === 0)
+			return toFailure(`You have not crafted any emoji characters this week. You must craft at least one to complete the "${quest.name}" quest.`);
+		else if (numEmojisCrafted < NUM_EMOJIS_NEEDED)
+			return toFailure(`You have only crafted ${numEmojisCrafted} emoji character(s) this week. You need to craft ${NUM_EMOJIS_NEEDED} to complete the "${quest.name}" quest.`);
 
 		return PLAYER_MET_CRITERIA_RESULT;
 	},
