@@ -4164,5 +4164,109 @@ describe('complete-quest.workflow.ts', () => {
 				});
 			});
 		});
+
+		describe('Bulk Recipe Quest', () => {
+			it('returns success when the player crafted a recipe with 5 input characters and 1 output character', () => {
+				forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+					inputCharacters: '01234',
+					outputCharacters: 'a'
+				});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.BULK_RECIPE.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when the player crafted a recipe with 10 input characters and 1 output character', () => {
+				forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+					inputCharacters: '0123456789',
+					outputCharacters: 'a'
+				});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.BULK_RECIPE.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when the player crafted multiple recipes and one has 5 input characters and 1 output character', () => {
+				forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+					inputCharacters: 'ab',
+					outputCharacters: 'cd'
+				});
+				forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+					inputCharacters: '01234',
+					outputCharacters: 'x'
+				});
+				forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+					inputCharacters: 'efg',
+					outputCharacters: 'hij'
+				});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.BULK_RECIPE.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns failure when the player crafted a recipe with 5 input characters but 2 output characters', () => {
+				forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+					inputCharacters: '01234',
+					outputCharacters: 'ab'
+				});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.BULK_RECIPE.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when the player crafted a recipe with 4 input characters and 1 output character', () => {
+				forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+					inputCharacters: '0123',
+					outputCharacters: 'a'
+				});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.BULK_RECIPE.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when the player crafted recipes but only with less than 5 input characters', () => {
+				forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+					inputCharacters: 'ab',
+					outputCharacters: 'c'
+				});
+				forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+					inputCharacters: 'def',
+					outputCharacters: 'g'
+				});
+				forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+					inputCharacters: 'hij',
+					outputCharacters: 'k'
+				});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.BULK_RECIPE.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when the player has not crafted any characters', () => {
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.BULK_RECIPE.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+		});
 	});
 });
