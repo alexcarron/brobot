@@ -1,5 +1,6 @@
 import { addDuration, addHours, addMinutes, addSeconds } from "../../../../utilities/date-time-utils";
 import { failTest, makeSure, repeatEveryIntervalUntil, repeatOverDuration } from "../../../../utilities/jest/jest-utils";
+import { repeat } from "../../../../utilities/loop-utils";
 import { getBetween, getRandomUUID } from "../../../../utilities/random-utils";
 import { REFILL_COOLDOWN_HOURS } from "../../constants/namesmith.constants";
 import { Quests } from "../../constants/quests.constants";
@@ -3422,6 +3423,742 @@ describe('complete-quest.workflow.ts', () => {
 					const result = completeQuest({
 						playerResolvable: SOME_PLAYER.id,
 						questResolvable: Quests.BOX_BINGE.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Hyper Boxes Quest', () => {
+				beforeEach(() => {
+					jest.useFakeTimers({ now: START_OF_WEEK });
+				});
+
+				afterAll(() => {
+					jest.useRealTimers();
+				})
+
+				it('returns success when the player bought 10 mystery boxes in exactly 3 minutes', () => {
+					repeatOverDuration(10, { minutes: 3 }, () => {
+						forcePlayerToBuyMysteryBox(SOME_PLAYER);
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.HYPER_BOXES.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns success when the player bought 10 mystery boxes in a single moment', () => {
+					repeat(10, () => 
+						forcePlayerToBuyMysteryBox(SOME_PLAYER)
+					);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.HYPER_BOXES.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns failure when the player bought 10 mystery boxes in exactly 3 minutes and 1 second', () => {
+					repeatOverDuration(10, { minutes: 3, seconds: 1 }, () => {
+						forcePlayerToBuyMysteryBox(SOME_PLAYER);
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.HYPER_BOXES.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when the player bought only 9 mystery boxes in exactly 3 minutes', () => {
+					repeatOverDuration(9, { minutes: 3 }, () => {
+						forcePlayerToBuyMysteryBox(SOME_PLAYER);
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.HYPER_BOXES.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when the player did not buy any mystery boxes', () => {
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.HYPER_BOXES.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Namesake Box Quest', () => {
+				it('returns success when player has bought a mystery box whose name is contained in their published name', () => {
+					forcePlayerToPublishName(SOME_PLAYER, 'I love Celestial boxes!');
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, { name: 'Celestial' });
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.NAMESAKE_BOX.id
+					});
+					console.log(result);
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns success when player has bought multiple mystery boxes and one matches their published name', () => {
+					forcePlayerToPublishName(SOME_PLAYER, 'My name has Lunar in it');
+					forcePlayerToBuyMysteryBox(SOME_PLAYER);
+					forcePlayerToBuyMysteryBox(SOME_PLAYER);
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, { name: 'Lunar' });
+					forcePlayerToBuyMysteryBox(SOME_PLAYER);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.NAMESAKE_BOX.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns success when the match is case-insensitive', () => {
+					forcePlayerToPublishName(SOME_PLAYER, 'CELESTIAL is great');
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, { name: 'celestial' });
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.NAMESAKE_BOX.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns failure when player has not published their name', () => {
+					forcePlayerToBuyMysteryBox(SOME_PLAYER);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.NAMESAKE_BOX.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when player has not bought any mystery boxes', () => {
+					forcePlayerToPublishName(SOME_PLAYER, 'Some published name');
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.NAMESAKE_BOX.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when player bought mystery boxes but none match their published name', () => {
+					forcePlayerToPublishName(SOME_PLAYER, 'Unique name here');
+					forcePlayerToBuyMysteryBox(SOME_PLAYER);
+					forcePlayerToBuyMysteryBox(SOME_PLAYER);
+					forcePlayerToBuyMysteryBox(SOME_PLAYER);
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.NAMESAKE_BOX.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Rightmost Quest', () => {
+				it('returns success when player has received the rightmost character of their name from a mystery box', () => {
+					forcePlayerToChangeName(SOME_PLAYER, 'abcdefg');
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						characterOdds: {'g': 1}
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.RIGHTMOST.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns success when player has bought multiple mystery boxes and one contains the rightmost character', () => {
+					forcePlayerToChangeName(SOME_PLAYER, 'hello');
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						characterOdds: {'a': 1}
+					});
+					forcePlayerToChangeName(SOME_PLAYER, 'hello');
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						characterOdds: {'b': 1}
+					});
+					forcePlayerToChangeName(SOME_PLAYER, 'hello');
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						characterOdds: {'o': 1}
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.RIGHTMOST.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns failure when player has not bought any mystery boxes', () => {
+					forcePlayerToChangeName(SOME_PLAYER, 'testname');
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.RIGHTMOST.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when player has bought mystery boxes but none contain the rightmost character', () => {
+					forcePlayerToChangeName(SOME_PLAYER, 'abcdefg');
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						characterOdds: {'a': 1}
+					});
+					forcePlayerToChangeName(SOME_PLAYER, 'abcdefg');
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						characterOdds: {'b': 1}
+					});
+					forcePlayerToChangeName(SOME_PLAYER, 'abcdefg');
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						characterOdds: {'c': 1}
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.RIGHTMOST.id
+					});
+					console.log(result);
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when player has not changed their name', () => {
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						characterOdds: {'a': 1}
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.RIGHTMOST.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Buyout Quest', () => {
+				it('returns success when the player has bought every available mystery box type this week', () => {
+					const allMysteryBoxes = mysteryBoxService.getMysteryBoxes();
+					for (const mysteryBox of allMysteryBoxes) {
+						forcePlayerToBuyMysteryBox(SOME_PLAYER, mysteryBox);
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.BUYOUT.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns success when the player has bought all mystery boxes across multiple purchases', () => {
+					const allMysteryBoxes = mysteryBoxService.getMysteryBoxes();
+					for (const mysteryBox of allMysteryBoxes) {
+						repeat(getBetween(1, 5), () => forcePlayerToBuyMysteryBox(SOME_PLAYER, mysteryBox));
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.BUYOUT.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns failure when the player has not bought any mystery boxes', () => {
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.BUYOUT.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when the player has bought only some of the available mystery box types', () => {
+					const allMysteryBoxes = mysteryBoxService.getMysteryBoxes();
+					const numBoxesToBuy = Math.max(1, allMysteryBoxes.length - 1);
+					for (let i = 0; i < numBoxesToBuy; i++) {
+						forcePlayerToBuyMysteryBox(SOME_PLAYER, allMysteryBoxes[i]);
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.BUYOUT.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when the player has bought one mystery box type multiple times but not all types', () => {
+					const allMysteryBoxes = mysteryBoxService.getMysteryBoxes();
+					for (let i = 0; i < 5; i++) {
+						forcePlayerToBuyMysteryBox(SOME_PLAYER, allMysteryBoxes[0]);
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.BUYOUT.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Triple Pull Quest', () => {
+				it('returns success when the player received 3 characters from a single mystery box', () => {
+					forcePlayerToBuyMysteryBox(SOME_PLAYER, "abc");
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.TRIPLE_PULL.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns success when the player received 5 characters from a single mystery box', () => {					
+					forcePlayerToBuyMysteryBox(SOME_PLAYER, "abcde");
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.TRIPLE_PULL.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns failure when the player only received 2 characters from a mystery box', () => {
+					forcePlayerToBuyMysteryBox(SOME_PLAYER, "ab");
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.TRIPLE_PULL.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when the player received multiple pulls but max is only 2 characters', () => {
+					forcePlayerToBuyMysteryBox(SOME_PLAYER, "ab");
+					forcePlayerToBuyMysteryBox(SOME_PLAYER, "cd");
+					forcePlayerToBuyMysteryBox(SOME_PLAYER, "ef");
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.TRIPLE_PULL.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when the player has not bought any mystery boxes', () => {
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.TRIPLE_PULL.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Find X Quest', () => {
+				it('returns success when the player received the character "x" from a mystery box', () => {
+					forcePlayerToBuyMysteryBox(SOME_PLAYER, "x");
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.FIND_X.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns success when the player received "x" among other characters from a mystery box', () => {
+					forcePlayerToBuyMysteryBox(SOME_PLAYER, "abxc");
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.FIND_X.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns success when the player received "x" from a mystery box after other pulls', () => {
+					forcePlayerToBuyMysteryBox(SOME_PLAYER, "abx");
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.FIND_X.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns failure when the player never received the character "x"', () => {
+					forcePlayerToBuyMysteryBox(SOME_PLAYER, "abc");
+					forcePlayerToBuyMysteryBox(SOME_PLAYER, "de");
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.FIND_X.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when the player has not bought any mystery boxes', () => {
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.FIND_X.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Sevens Quest', () => {
+				it('returns success when the player received the same character 7 times from mystery boxes', () => {
+					for (let numLoop = 0; numLoop < 7; numLoop++) {
+						forcePlayerToBuyMysteryBox(SOME_PLAYER, "a");
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.SEVENS.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns success when the player received the same character 10 times mixed with other characters', () => {
+					for (let numLoop = 0; numLoop < 5; numLoop++) {
+						forcePlayerToBuyMysteryBox(SOME_PLAYER, "ab");
+					}
+					for (let numLoop = 0; numLoop < 5; numLoop++) {
+						forcePlayerToBuyMysteryBox(SOME_PLAYER, "ac");
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.SEVENS.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns failure when the player only received the same character 6 times', () => {
+					for (let numLoop = 0; numLoop < 6; numLoop++) {
+						forcePlayerToBuyMysteryBox(SOME_PLAYER, "a");
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.SEVENS.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when the player received multiple characters but max count is 6', () => {
+					for (let numLoop = 0; numLoop < 6; numLoop++) {
+						forcePlayerToBuyMysteryBox(SOME_PLAYER, "a");
+					}
+					for (let numLoop = 0; numLoop < 5; numLoop++) {
+						forcePlayerToBuyMysteryBox(SOME_PLAYER, "b");
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.SEVENS.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when the player has not bought any mystery boxes', () => {
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.SEVENS.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Priced Right Quest', () => {
+				it('returns success when the player bought a mystery box and their name contains the box price', () => {
+					forcePlayerToChangeName(SOME_PLAYER, 'My price is 50 tokens');
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						tokenCost: 50
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.PRICED_RIGHT.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns success when the player bought a mystery box where the price is exactly the name', () => {
+					forcePlayerToChangeName(SOME_PLAYER, '100');
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						tokenCost: 100
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.PRICED_RIGHT.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns success when the player bought multiple boxes and one matches their name price', () => {
+					forcePlayerToChangeName(SOME_PLAYER, 'Box costs 75 tokens');
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						tokenCost: 50
+					});
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						tokenCost: 75
+					});
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						tokenCost: 100
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.PRICED_RIGHT.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns failure when the player bought a mystery box but the price is not in their name', () => {
+					forcePlayerToChangeName(SOME_PLAYER, 'My name has no price');
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						tokenCost: 50
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.PRICED_RIGHT.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when the player bought boxes but never with a matching name price', () => {
+					forcePlayerToChangeName(SOME_PLAYER, 'Price 123');
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						tokenCost: 50
+					});
+					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
+						tokenCost: 75
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.PRICED_RIGHT.id
+					});
+					console.log(result);
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when the player has not bought any mystery boxes', () => {
+					forcePlayerToChangeName(SOME_PLAYER, 'Some name');
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.PRICED_RIGHT.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Crafting Marathon Quest', () => {
+				it('returns success when the player crafted using 15 different recipes', () => {
+					for (let i = 0; i < 15; i++) {
+						forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+							inputCharacters: String(i),
+							outputCharacters: `output${i}`
+						});
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.CRAFTING_MARATHON.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns success when the player crafted using 20 different recipes', () => {
+					for (let i = 0; i < 20; i++) {
+						forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+							inputCharacters: String(i),
+							outputCharacters: `output${i}`
+						});
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.CRAFTING_MARATHON.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns success when the player crafted using the same 15 recipes multiple times', () => {
+					const recipes: Recipe[] = [];
+					for (let i = 0; i < 15; i++) {
+						recipes.push(addMockRecipe(db, {
+							inputCharacters: String(i),
+							outputCharacters: `output${i}`
+						}));
+					}
+
+					for (let i = 0; i < 3; i++) {
+						for (const recipe of recipes) {
+							forcePlayerToCraftRecipe(SOME_PLAYER, recipe);
+						}
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.CRAFTING_MARATHON.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns failure when the player crafted using only 14 different recipes', () => {
+					for (let i = 0; i < 14; i++) {
+						forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+							inputCharacters: String(i),
+							outputCharacters: `output${i}`
+						});
+					}
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.CRAFTING_MARATHON.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when the player has not crafted any characters', () => {
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.CRAFTING_MARATHON.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+			});
+
+			describe('Emoji Craft Quest', () => {
+				it('returns success when the player crafted 3 recipes with emojis', () => {
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: 'a',
+						outputCharacters: '👾'
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: 'b',
+						outputCharacters: '🎮'
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: 'c',
+						outputCharacters: '⭐'
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.EMOJI_CRAFT.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns success when the player crafted more than 3 emoji recipes', () => {
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: 'a',
+						outputCharacters: '👾'
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: 'b',
+						outputCharacters: '🎮'
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: 'c',
+						outputCharacters: '⭐'
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: 'd',
+						outputCharacters: '🔥'
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.EMOJI_CRAFT.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns success when the player crafted emoji recipes mixed with non-emoji recipes', () => {
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: 'a',
+						outputCharacters: 'abc'
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: 'b',
+						outputCharacters: '👾'
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: 'c',
+						outputCharacters: '123'
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: 'd',
+						outputCharacters: '🎮'
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: 'e',
+						outputCharacters: 'def'
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: 'f',
+						outputCharacters: '⭐'
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.EMOJI_CRAFT.id
+					});
+					makeSure(result.isFailure()).isFalse();
+				});
+
+				it('returns failure when the player crafted only 2 emoji recipes', () => {
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: 'a',
+						outputCharacters: '👾'
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: 'b',
+						outputCharacters: '🎮'
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.EMOJI_CRAFT.id
+					});
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when the player crafted recipes with no emojis', () => {
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: 'a',
+						outputCharacters: 'abc'
+					});
+					forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+						inputCharacters: 'b',
+						outputCharacters: '123'
+					});
+
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.EMOJI_CRAFT.id
+					});
+					console.log(result);
+					makeSure(result.isFailure()).isTrue();
+				});
+
+				it('returns failure when the player has not crafted any characters', () => {
+					const result = completeQuest({
+						playerResolvable: SOME_PLAYER.id,
+						questResolvable: Quests.EMOJI_CRAFT.id
 					});
 					makeSure(result.isFailure()).isTrue();
 				});

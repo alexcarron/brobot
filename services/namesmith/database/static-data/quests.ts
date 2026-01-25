@@ -503,7 +503,7 @@ export const quests = [
 	{
 		id: 73,
 		name: "Namesake Box",
-		description: "Open a mystery box while your published name contains that box's official name.",
+		description: "Open a mystery box while your published name contains that box's official name (case insensitive).",
 		recurrence: "weekly",
 		tokensReward: 1456,
 	},
@@ -520,7 +520,7 @@ export const quests = [
 		name: "Buyout",
 		description: "Purchase at least one of every available mystery box type.",
 		recurrence: "weekly",
-		tokensReward: 2000
+		tokensReward: 4000
 	},
 	{
 		id: 77,
@@ -549,7 +549,7 @@ export const quests = [
 	{
 		id: 80,
 		name: "Priced Right",
-		description: "Buy a mystery box while its token price is included in your published name.",
+		description: "Buy a mystery box while its token price is included in your current name.",
 		recurrence: "weekly",
 		tokensReward: 1234,
 		charactersReward: "★ Gold Star"
