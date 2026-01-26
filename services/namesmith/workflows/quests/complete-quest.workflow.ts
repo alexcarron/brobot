@@ -13,6 +13,7 @@ import { hasUtilityCharacter } from "../../utilities/character.utility";
 import { RecipeID } from "../../types/recipe.types";
 import { sortByDescendingProperty } from "../../../../utilities/data-structure-utils";
 import { toListOfWords } from "../../../../utilities/string-manipulation-utils";
+import { UTILITY_CHARACTERS } from "../../constants/characters.constants";
 
 const PLAYER_MET_CRITERIA_RESULT = 'questSuccess' as const;
 const result = getWorkflowResultCreator({
@@ -2146,6 +2147,156 @@ const questIDToMeetsCriteriaCheck = {
 			return toFailure(`You only crafted a recipe that gave you one character using at most ${maxInputCharacters} characters this week. You need to craft a recipe using at least ${NUM_INPUT_CHARACTERS_NEEDED} characters to complete the "${quest.name}" quest.`);
 
 		return PLAYER_MET_CRITERIA_RESULT;
+	},
+
+	[Quests.UTILITY_MASTER.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const didCraftCharacters = activityLogService.didPlayerDoLogOfTypeThisWeek(player, ActivityTypes.CRAFT_CHARACTERS);
+		if (!didCraftCharacters)
+			return toFailure(`You have not crafted any characters this week. You must craft at least one to complete the "${quest.name}" quest.`);
+
+		const craftLogs = activityLogService.getLogsThisWeek({
+			byPlayer: player,
+			ofType: ActivityTypes.CRAFT_CHARACTERS
+		});
+
+		const utilityCharactersUsed = new Set<string>();
+		for (const craftLog of craftLogs) {
+			if (craftLog.involvedRecipe === null)
+				continue;
+
+			const inputCharacters = craftLog.involvedRecipe.inputCharacters;
+
+			if (hasUtilityCharacter(inputCharacters)) {
+				const utilityChars = getCharacters(inputCharacters);
+				for (const char of utilityChars) {
+					if (hasUtilityCharacter(char)) {
+						utilityCharactersUsed.add(char);
+					}
+				}
+			}
+		}
+
+		if (utilityCharactersUsed.size === 0)
+			return toFailure(`You have not used any utility characters in recipes this week. You must craft a recipe with at least one utility character to complete the "${quest.name}" quest.`);
+
+		const allUtilityCharacters = UTILITY_CHARACTERS;
+		const missingUtilityCharacters = Array.from(allUtilityCharacters).filter(char => !utilityCharactersUsed.has(char));
+		const usedList = toListOfWords(Array.from(utilityCharactersUsed));
+		const missingList = toListOfWords(missingUtilityCharacters);
+
+		if (missingUtilityCharacters.length > 0)
+			return toFailure(`You have only used the utility characters ${usedList} in your recipes this week. You still need to use ${missingList} in a recipe to complete the "${quest.name}" quest.`);
+
+		return PLAYER_MET_CRITERIA_RESULT;
+	},
+
+	[Quests.TRI_FORGE.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const MIN_RECIPES_NEEDED = 3;
+		const didCraftCharacters = activityLogService.didPlayerDoLogOfTypeThisWeek(player, ActivityTypes.CRAFT_CHARACTERS);
+		if (!didCraftCharacters)
+			return toFailure(`You have not crafted any characters this week. You must craft at least one to complete the "${quest.name}" quest.`);
+
+		const craftLogs = activityLogService.getLogsThisWeek({
+			byPlayer: player,
+			ofType: ActivityTypes.CRAFT_CHARACTERS
+		});
+
+		const outputCharacterToRecipes = new Map<string, Set<RecipeID>>();
+		for (const craftLog of craftLogs) {
+			if (craftLog.involvedRecipe === null)
+				continue;
+
+			const outputCharacters = craftLog.involvedRecipe.outputCharacters;
+
+			if (!outputCharacterToRecipes.has(outputCharacters))
+				outputCharacterToRecipes.set(outputCharacters, new Set());
+
+			const recipesSet = outputCharacterToRecipes.get(outputCharacters)!;
+			recipesSet.add(craftLog.involvedRecipe.id);
+
+			if (recipesSet.size >= MIN_RECIPES_NEEDED)
+				return PLAYER_MET_CRITERIA_RESULT;
+		}
+
+		let maxRecipesForSameOutput = 0;
+		for (const recipesSet of outputCharacterToRecipes.values()) {
+			if (recipesSet.size > maxRecipesForSameOutput)
+				maxRecipesForSameOutput = recipesSet.size;
+		}
+
+		if (maxRecipesForSameOutput === 0)
+			return toFailure(`You have not crafted any characters this week. You must craft the same character using at least ${MIN_RECIPES_NEEDED} different recipes to complete the "${quest.name}" quest.`);
+
+		return toFailure(`You have only produced the same character using ${maxRecipesForSameOutput} different recipe(s) this week. You need to produce the same character using at least ${MIN_RECIPES_NEEDED} different recipes to complete the "${quest.name}" quest.`);
+	},
+
+	[Quests.INPUT_REMIX.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const MIN_RECIPES_NEEDED = 3;
+		const MIN_DISTINCT_OUTPUTS_NEEDED = 3;
+		const didCraftCharacters = activityLogService.didPlayerDoLogOfTypeThisWeek(player, ActivityTypes.CRAFT_CHARACTERS);
+		if (!didCraftCharacters)
+			return toFailure(`You have not crafted any characters this week. You must craft at least one to complete the "${quest.name}" quest.`);
+
+		const craftLogs = activityLogService.getLogsThisWeek({
+			byPlayer: player,
+			ofType: ActivityTypes.CRAFT_CHARACTERS
+		});
+
+		const inputCharacterToOutputCharacters = new Map<string, Set<string>>();
+		const inputCharacterToRecipes = new Map<string, Set<RecipeID>>();
+
+		let maxRecipesForInput = 0;
+		let maxDistinctOutputsForInput = 0;
+		for (const craftLog of craftLogs) {
+			if (craftLog.involvedRecipe === null)
+				continue;
+
+			const inputCharacters = craftLog.involvedRecipe.inputCharacters;
+			const outputCharacters = craftLog.involvedRecipe.outputCharacters;
+
+			if (!inputCharacterToOutputCharacters.has(inputCharacters))
+				inputCharacterToOutputCharacters.set(inputCharacters, new Set());
+
+			if (!inputCharacterToRecipes.has(inputCharacters))
+				inputCharacterToRecipes.set(inputCharacters, new Set());
+
+			const outputCharactersSet = inputCharacterToOutputCharacters.get(inputCharacters)!;
+			const recipeIDsSet = inputCharacterToRecipes.get(inputCharacters)!;
+			
+			outputCharactersSet.add(outputCharacters);
+			recipeIDsSet.add(craftLog.involvedRecipe.id);
+
+			if (
+				outputCharactersSet.size >= maxDistinctOutputsForInput && 
+				recipeIDsSet.size >= maxRecipesForInput
+			) {
+				maxDistinctOutputsForInput = outputCharactersSet.size;
+				maxRecipesForInput = recipeIDsSet.size;
+			}
+		}
+
+		for (const [inputChars, outputsSet] of inputCharacterToOutputCharacters.entries()) {
+			const recipesSet = inputCharacterToRecipes.get(inputChars)!;
+			if (recipesSet.size >= MIN_RECIPES_NEEDED && outputsSet.size >= MIN_DISTINCT_OUTPUTS_NEEDED)
+				return PLAYER_MET_CRITERIA_RESULT;
+		}
+
+		if (maxRecipesForInput === 0)
+			return toFailure(`You have not crafted any characters this week. You must use the same input characters in at least ${MIN_RECIPES_NEEDED} different recipes and get ${MIN_DISTINCT_OUTPUTS_NEEDED} distinct outputs to complete the "${quest.name}" quest.`);
+
+		if (maxRecipesForInput < MIN_RECIPES_NEEDED)
+			return toFailure(`You have only used the same input characters in ${maxRecipesForInput} different recipe(s) this week. You need to use the same input characters in at least ${MIN_RECIPES_NEEDED} different recipes to complete the "${quest.name}" quest.`);
+
+		return toFailure(`You have only gotten ${maxDistinctOutputsForInput} different character(s) from the same input characters this week. You need to use the same input characters in three different recipes and get ${MIN_DISTINCT_OUTPUTS_NEEDED} distinct characters to complete the "${quest.name}" quest.`);
 	},
 } as const;
 
