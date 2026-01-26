@@ -2,6 +2,7 @@ import { addDuration, addHours, addMinutes, addSeconds } from "../../../../utili
 import { failTest, makeSure, repeatEveryIntervalUntil, repeatOverDuration } from "../../../../utilities/jest/jest-utils";
 import { repeat } from "../../../../utilities/loop-utils";
 import { getBetween, getRandomUUID } from "../../../../utilities/random-utils";
+import { UTILITY_CHARACTERS } from "../../constants/characters.constants";
 import { REFILL_COOLDOWN_HOURS } from "../../constants/namesmith.constants";
 import { Quests } from "../../constants/quests.constants";
 import { FREEBIE_QUEST_NAME, INVALID_PLAYER_ID, INVALID_QUEST_ID } from "../../constants/test.constants";
@@ -4264,6 +4265,205 @@ describe('complete-quest.workflow.ts', () => {
 				const result = completeQuest({
 					playerResolvable: SOME_PLAYER.id,
 					questResolvable: Quests.BULK_RECIPE.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+		});
+
+		describe('Utility Master Quest', () => {
+			it('return success when the player uses a recipe with all utility characters', () => {
+				forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+					inputCharacters: UTILITY_CHARACTERS.join(''),
+				});
+				
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.UTILITY_MASTER.id
+				});
+				console.log(result);
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when the player uses many recipes that include different utility characters', () => {
+				forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+					inputCharacters: UTILITY_CHARACTERS.join('').slice(0, 3),
+				});
+				forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+					inputCharacters: UTILITY_CHARACTERS.join('').slice(3, 6),
+				});
+				forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+					inputCharacters: UTILITY_CHARACTERS.join('').slice(6),
+				});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.UTILITY_MASTER.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns a failure when the player is missing one utility character', () => {
+				forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+					inputCharacters: UTILITY_CHARACTERS.join('').slice(1),
+				});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.UTILITY_MASTER.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns a failure when the player never used utility characters', () => {
+				forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+					inputCharacters: 'abc',
+				})
+				
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.UTILITY_MASTER.id
+				});
+				console.log(result);
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns a failure when the player never crafted a recipe', () => {
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.UTILITY_MASTER.id
+				});
+				console.log(result);
+				makeSure(result.isFailure()).isTrue();
+			});
+		});
+
+		describe('Tri-Forge Quest', () => {
+			it('returns a success if the player crafted the same character using three different recipes', () => {
+				forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+					inputCharacters: 'abc',
+					outputCharacters: 'def'
+				});
+				forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+					inputCharacters: 'ghi',
+					outputCharacters: 'def'
+				});
+				forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+					inputCharacters: 'jkl',
+					outputCharacters: 'def'
+				});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.TRI_FORGE.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns a failure if the player crafted the same character using two different recipes and similar characters using another recipe', () => {
+				const craftResult = forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+					inputCharacters: 'abc',
+					outputCharacters: 'def'
+				});
+				forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+					inputCharacters: 'ghi',
+					outputCharacters: 'def'
+				});
+				forcePlayerToCraftRecipe(SOME_PLAYER, craftResult.recipeUsed.id);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.TRI_FORGE.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns a failure if the player crafted the same character using only two different recipes', () => {
+				forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+					inputCharacters: 'abc',
+					outputCharacters: 'def'
+				});
+				forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+					inputCharacters: 'ghi',
+					outputCharacters: 'def'
+				});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.TRI_FORGE.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns a failure when the player never crafted a recipe', () => {
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.TRI_FORGE.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+		});
+
+		describe('Input Remix Quest', () => {
+			it('returns a success if the player uses three different recipes that use the same input characters', () => {
+				forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+					inputCharacters: 'abc',
+					outputCharacters: 'def'
+				});
+				forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+					inputCharacters: 'abc',
+					outputCharacters: 'ghi'
+				});
+				forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+					inputCharacters: 'abc',
+					outputCharacters: 'jkl'
+				});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.INPUT_REMIX.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns a failure if the player crafted the same character using two different recipes and similar characters using another recipe', () => {
+				const craftResult = forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+					inputCharacters: 'abc',
+					outputCharacters: 'def'
+				});
+				forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+					inputCharacters: 'abc',
+					outputCharacters: 'ghi'
+				});
+				forcePlayerToCraftRecipe(SOME_PLAYER, craftResult.recipeUsed.id);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.INPUT_REMIX.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns a failure if the player crafted the same character using only two different recipes', () => {
+				forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+					inputCharacters: 'abc',
+					outputCharacters: 'def'
+				});
+				forcePlayerToCraftNewRecipe(SOME_PLAYER, {
+					inputCharacters: 'abc',
+					outputCharacters: 'ghi'
+				});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.INPUT_REMIX.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns a failure when the player never crafted a recipe', () => {
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.INPUT_REMIX.id
 				});
 				makeSure(result.isFailure()).isTrue();
 			});
