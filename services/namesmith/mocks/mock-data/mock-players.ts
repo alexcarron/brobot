@@ -9,6 +9,7 @@ import { mineTokens } from "../../workflows/mine-tokens.workflow";
 import { claimRefill } from "../../workflows/claim-refill.workflow";
 import { addDays } from "../../../../utilities/date-time-utils";
 import { PlayerRepository } from "../../repositories/player.repository";
+import { getCharacters } from "../../../../utilities/string-checks-utils";
 
 /**
  * Creates a mock player object with default values for optional properties.
@@ -125,6 +126,21 @@ export const editMockPlayer = (
 		throw new InvalidArgumentError(`editMockPlayer: No player found with ID ${editedPlayer.id}.`);
 
 	return asMinimalPlayer(row);
+}
+
+/**
+ * Forces a player to have a certain inventory by giving them the characters in the inventory that they don't already have.
+ * @param playerResolvable - The player resolvable to force to have the inventory.
+ * @param inventory - The inventory to force the player to have.
+ */
+export function forcePlayerToHaveInventory(playerResolvable: PlayerResolvable, inventory: string) {
+	const characters = getCharacters(inventory);
+
+	const { playerService } = getNamesmithServices();
+	const currentInvetory = playerService.getInventory(playerResolvable);
+	
+	const missingCharacters = characters.filter(character => !currentInvetory.includes(character));
+	playerService.giveCharacters(playerResolvable, missingCharacters.join(""));
 }
 
 /**

@@ -1,4 +1,4 @@
-import { addDuration, addHours, addMinutes, addSeconds } from "../../../../utilities/date-time-utils";
+import { addDays, addDuration, addHours, addMinutes, addSeconds } from "../../../../utilities/date-time-utils";
 import { failTest, makeSure, repeatEveryIntervalUntil, repeatOverDuration } from "../../../../utilities/jest/jest-utils";
 import { repeat } from "../../../../utilities/loop-utils";
 import { getBetween, getRandomUUID } from "../../../../utilities/random-utils";
@@ -9,12 +9,12 @@ import { FREEBIE_QUEST_NAME, INVALID_PLAYER_ID, INVALID_QUEST_ID } from "../../c
 import { DatabaseQuerier } from "../../database/database-querier";
 import { getLatestActivityLog } from "../../mocks/mock-data/mock-activity-logs";
 import { forcePlayerToBuyMysteryBox, forcePlayerToBuyNewMysteryBox } from "../../mocks/mock-data/mock-mystery-boxes";
-import { addMockPerk } from "../../mocks/mock-data/mock-perks";
-import { addMockPlayer, forcePlayerToChangeName, forcePlayerToClaimRefill, forcePlayerToMineTokens, forcePlayerToPublishName } from '../../mocks/mock-data/mock-players';
-import { addMockQuest, forcePlayerToCompleteNewQuest } from "../../mocks/mock-data/mock-quests";
+import { addMockPerk, forcePlayerToPickNewPerk, forcePlayerToPickPerk } from "../../mocks/mock-data/mock-perks";
+import { addMockPlayer, forcePlayerToChangeName, forcePlayerToClaimRefill, forcePlayerToHaveInventory, forcePlayerToMineTokens, forcePlayerToPublishName } from '../../mocks/mock-data/mock-players';
+import { addMockQuest, forcePlayerToCompleteNewQuest, forcePlayerToCompleteQuest } from "../../mocks/mock-data/mock-quests";
 import { addMockRecipe, forcePlayerToCraftRecipe, forcePlayerToCraftNewRecipe } from '../../mocks/mock-data/mock-recipes';
 import { addMockRole } from "../../mocks/mock-data/mock-roles";
-import { forcePlayerToAcceptNewTrade, forcePlayerToAcceptTrade, forcePlayerToDeclineNewTrade, forcePlayerToDeclineTrade, forcePlayerToInitiateTrade, forcePlayerToModifyNewTrade } from '../../mocks/mock-data/mock-trades';
+import { addMockTrade, forcePlayerToAcceptNewTrade, forcePlayerToAcceptTrade, forcePlayerToDeclineNewTrade, forcePlayerToDeclineTrade, forcePlayerToInitiateTrade, forcePlayerToModifyNewTrade } from '../../mocks/mock-data/mock-trades';
 import { setupMockNamesmith } from "../../mocks/mock-setup";
 import { GameStateService } from "../../services/game-state.service";
 import { MysteryBoxService } from "../../services/mystery-box.service";
@@ -25,6 +25,7 @@ import { Player } from "../../types/player.types";
 import { Quest } from "../../types/quest.types";
 import { Recipe } from '../../types/recipe.types';
 import { Role } from "../../types/role.types";
+import { TradeStatuses } from "../../types/trade.types";
 import { throwIfNotFailure, returnIfNotFailure } from "../../utilities/workflow.utility";
 import { completeQuest } from "./complete-quest.workflow";
 
@@ -40,13 +41,16 @@ describe('complete-quest.workflow.ts', () => {
 	let FIVE_DIFFERENT_RECIPES: Recipe[];
 	let THREE_DIFFERENT_PLAYERS: Player[];
 	let FIVE_DIFFERENT_PLAYERS: Player[];
+	let SEVEN_DIFFERENT_PLAYERS: Player[];
 
 	let START_OF_WEEK: Date;
 	let RIGHT_BEFORE_END_OF_WEEK: Date;
+	let RIGHT_BEFORE_END_OF_DAY: Date;
 
   beforeEach(() => {
 		START_OF_WEEK = addMinutes(new Date(), -1)
 		RIGHT_BEFORE_END_OF_WEEK = addDuration(START_OF_WEEK, { days: 7, minutes: -1 });
+		RIGHT_BEFORE_END_OF_DAY = addDuration(START_OF_WEEK, { days: 1, minutes: -1 });
 		
     ({ db, playerService, gameStateService, mysteryBoxService } = setupMockNamesmith(START_OF_WEEK));
     SOME_PLAYER = addMockPlayer(db, {});
@@ -61,12 +65,17 @@ describe('complete-quest.workflow.ts', () => {
 
 		THREE_DIFFERENT_PLAYERS = [];
 		FIVE_DIFFERENT_PLAYERS = [];
-		for (let i = 0; i < 5; i++) {
+		SEVEN_DIFFERENT_PLAYERS = [];
+		for (let i = 0; i < 7; i++) {
 			if (i < 3) {
 				THREE_DIFFERENT_PLAYERS[i] = addMockPlayer(db);
 			}
 
-			FIVE_DIFFERENT_PLAYERS[i] = addMockPlayer(db);
+			if (i < 5) {
+				FIVE_DIFFERENT_PLAYERS[i] = addMockPlayer(db);
+			}
+
+			SEVEN_DIFFERENT_PLAYERS[i] = addMockPlayer(db);
 		}
 
 		SOME_OTHER_PLAYER = THREE_DIFFERENT_PLAYERS[0];
@@ -520,6 +529,8 @@ describe('complete-quest.workflow.ts', () => {
 						currentName: NAMED_PLAYER.currentName
 					});
 
+					jest.setSystemTime(RIGHT_BEFORE_END_OF_DAY);
+
 					makeSure(
 						completeQuest({
 							playerResolvable: NAMED_PLAYER.id,
@@ -578,6 +589,7 @@ describe('complete-quest.workflow.ts', () => {
 				});
 
 				it('return success if player does absolutely nothing', () => {
+					jest.setSystemTime(RIGHT_BEFORE_END_OF_DAY);
 					makeSure(
 						completeQuest({
 							playerResolvable: SOME_PLAYER.id,
@@ -4464,6 +4476,1496 @@ describe('complete-quest.workflow.ts', () => {
 				const result = completeQuest({
 					playerResolvable: SOME_PLAYER.id,
 					questResolvable: Quests.INPUT_REMIX.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+		});
+
+		describe('Chaotic Trade Quest', () => {
+			it('returns success when player gave 1 character and received 20 characters in a trade', () => {
+				forcePlayerToAcceptNewTrade(SOME_OTHER_PLAYER, {
+					initiatingPlayer: SOME_PLAYER,
+					recipientPlayer: SOME_OTHER_PLAYER,
+					offeredCharacters: 'a',
+					requestedCharacters: '01234567890123456789'
+				});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.CHAOTIC_TRADE.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when player gave 1 character and received more than 20 characters in a trade', () => {
+				const trade = addMockTrade(db, {
+					initiatingPlayer: SOME_PLAYER,
+					recipientPlayer: SOME_OTHER_PLAYER,
+					offeredCharacters: 'x',
+					requestedCharacters: 'abcdefghijklmnopqrstuvwxyz'
+				});
+				forcePlayerToAcceptTrade(SOME_OTHER_PLAYER, trade);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.CHAOTIC_TRADE.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when player was the recipient who gave 1 character and received 20 characters', () => {
+				const trade = addMockTrade(db, {
+					initiatingPlayer: SOME_OTHER_PLAYER,
+					recipientPlayer: SOME_PLAYER,
+					offeredCharacters: '01234567890123456789',
+					requestedCharacters: 'a'
+				});
+				forcePlayerToAcceptTrade(SOME_PLAYER, trade);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.CHAOTIC_TRADE.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when player had multiple trades and one meets criteria', () => {
+				const trade1 = addMockTrade(db, {
+					initiatingPlayer: SOME_PLAYER,
+					recipientPlayer: SOME_OTHER_PLAYER,
+					offeredCharacters: 'abc',
+					requestedCharacters: 'def'
+				});
+				forcePlayerToAcceptTrade(SOME_OTHER_PLAYER, trade1);
+
+				const trade2 = addMockTrade(db, {
+					initiatingPlayer: SOME_PLAYER,
+					recipientPlayer: SOME_OTHER_PLAYER,
+					offeredCharacters: 'x',
+					requestedCharacters: '01234567890123456789'
+				});
+				forcePlayerToAcceptTrade(SOME_OTHER_PLAYER, trade2);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.CHAOTIC_TRADE.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns failure when player gave 1 character but only received 19 characters', () => {
+				const trade = addMockTrade(db, {
+					initiatingPlayer: SOME_PLAYER,
+					recipientPlayer: SOME_OTHER_PLAYER,
+					offeredCharacters: 'a',
+					requestedCharacters: '0123456789012345678'
+				});
+				forcePlayerToAcceptTrade(SOME_OTHER_PLAYER, trade);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.CHAOTIC_TRADE.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when player gave 2 characters and received 20 characters', () => {
+				const trade = addMockTrade(db, {
+					initiatingPlayer: SOME_PLAYER,
+					recipientPlayer: SOME_OTHER_PLAYER,
+					offeredCharacters: 'ab',
+					requestedCharacters: '01234567890123456789'
+				});
+				forcePlayerToAcceptTrade(SOME_OTHER_PLAYER, trade);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.CHAOTIC_TRADE.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when player gave 1 character and received 20 characters but trade was never accepted', () => {
+				addMockTrade(db, {
+					initiatingPlayer: SOME_PLAYER,
+					recipientPlayer: SOME_OTHER_PLAYER,
+					offeredCharacters: 'a',
+					requestedCharacters: '01234567890123456789'
+				});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.CHAOTIC_TRADE.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when player has not been involved in any trades', () => {
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.CHAOTIC_TRADE.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+		});
+
+		describe('Wide Diplomat Quest', () => {
+			it('returns success when 5 different players accepted the player\'s trades', () => {
+				for (let i = 0; i < 5; i++) {
+					const trade = addMockTrade(db, {
+						initiatingPlayer: SOME_PLAYER,
+						recipientPlayer: FIVE_DIFFERENT_PLAYERS[i]
+					});
+					forcePlayerToAcceptTrade(FIVE_DIFFERENT_PLAYERS[i], trade);
+				}
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.WIDE_DIPLOMAT.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when more than 5 different players accepted the player\'s trades', () => {
+				for (let i = 0; i < 7; i++) {
+					const trade = addMockTrade(db, {
+						initiatingPlayer: SOME_PLAYER,
+						recipientPlayer: SEVEN_DIFFERENT_PLAYERS[i]
+					});
+					forcePlayerToAcceptTrade(SEVEN_DIFFERENT_PLAYERS[i], trade);
+				}
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.WIDE_DIPLOMAT.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when 5 players accepted multiple trades each', () => {
+				for (let i = 0; i < 5; i++) {
+					for (let j = 0; j < 3; j++) {
+						const trade = addMockTrade(db, {
+							initiatingPlayer: SOME_PLAYER,
+							recipientPlayer: FIVE_DIFFERENT_PLAYERS[i]
+						});
+						forcePlayerToAcceptTrade(FIVE_DIFFERENT_PLAYERS[i], trade);
+					}
+				}
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.WIDE_DIPLOMAT.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns failure when only 4 different players accepted the player\'s trades', () => {
+				for (let i = 0; i < 4; i++) {
+					const trade = addMockTrade(db, {
+						initiatingPlayer: SOME_PLAYER,
+						recipientPlayer: FIVE_DIFFERENT_PLAYERS[i]
+					});
+					forcePlayerToAcceptTrade(FIVE_DIFFERENT_PLAYERS[i], trade);
+				}
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.WIDE_DIPLOMAT.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when the same player accepted multiple trades', () => {
+				for (let i = 0; i < 5; i++) {
+					const trade = addMockTrade(db, {
+						initiatingPlayer: SOME_PLAYER,
+						recipientPlayer: SOME_OTHER_PLAYER
+					});
+					forcePlayerToAcceptTrade(SOME_OTHER_PLAYER, trade);
+				}
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.WIDE_DIPLOMAT.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when player created trades but none were accepted', () => {
+				for (let i = 0; i < 5; i++) {
+					forcePlayerToInitiateTrade(SOME_PLAYER, {
+						recipientPlayer: FIVE_DIFFERENT_PLAYERS[i]
+					})
+				}
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.WIDE_DIPLOMAT.id
+				});
+				console.log(result);
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when player has not created any trades', () => {
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.WIDE_DIPLOMAT.id
+				});
+				console.log(result);
+				makeSure(result.isFailure()).isTrue();
+			});
+		});
+
+		describe('Chain Five Quest', () => {
+			it('returns success when player accepted 5 distinct trades from 5 different players', () => {
+				for (let i = 0; i < 5; i++) {
+					const trade = addMockTrade(db, {
+						initiatingPlayer: FIVE_DIFFERENT_PLAYERS[i],
+						recipientPlayer: SOME_PLAYER
+					});
+					forcePlayerToAcceptTrade(SOME_PLAYER, trade);
+				}
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.CHAIN_FIVE.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when player accepted more than 5 distinct trades from different players', () => {
+				for (let i = 0; i < 7; i++) {
+					const trade = addMockTrade(db, {
+						initiatingPlayer: SEVEN_DIFFERENT_PLAYERS[i],
+						recipientPlayer: SOME_PLAYER
+					});
+					forcePlayerToAcceptTrade(SOME_PLAYER, trade);
+				}
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.CHAIN_FIVE.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns failure when player accepted 5 trades but from only 4 different players', () => {
+				for (let i = 0; i < 4; i++) {
+					const trade = addMockTrade(db, {
+						initiatingPlayer: FIVE_DIFFERENT_PLAYERS[i],
+						recipientPlayer: SOME_PLAYER
+					});
+					forcePlayerToAcceptTrade(SOME_PLAYER, trade);
+				}
+
+				const trade = addMockTrade(db, {
+					initiatingPlayer: FIVE_DIFFERENT_PLAYERS[0],
+					recipientPlayer: SOME_PLAYER
+				});
+				forcePlayerToAcceptTrade(SOME_PLAYER, trade);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.CHAIN_FIVE.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when player accepted only 4 distinct trades from 5 different players', () => {
+				for (let i = 0; i < 4; i++) {
+					const trade = addMockTrade(db, {
+						initiatingPlayer: FIVE_DIFFERENT_PLAYERS[i],
+						recipientPlayer: SOME_PLAYER
+					});
+					forcePlayerToAcceptTrade(SOME_PLAYER, trade);
+				}
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.CHAIN_FIVE.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when player has not accepted any trades', () => {
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.CHAIN_FIVE.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+		});
+
+		describe('Pity Pass Quest', () => {
+			it('returns success when player declined a trade where they would receive 20 more characters than they give', () => {
+				const trade = addMockTrade(db, {
+					initiatingPlayer: SOME_OTHER_PLAYER,
+					recipientPlayer: SOME_PLAYER,
+					offeredCharacters: '01234567890123456789',
+					requestedCharacters: ''
+				});
+				forcePlayerToDeclineTrade(SOME_PLAYER, trade);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.PITY_PASS.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when player declined a trade where they would receive more than 20 more characters', () => {
+				const trade = addMockTrade(db, {
+					initiatingPlayer: SOME_OTHER_PLAYER,
+					recipientPlayer: SOME_PLAYER,
+					offeredCharacters: 'abcdefghijklmnopqrstuvwxyz',
+					requestedCharacters: ''
+				});
+				forcePlayerToDeclineTrade(SOME_PLAYER, trade);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.PITY_PASS.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when player was the initiator declining their own trade', () => {
+				const trade = addMockTrade(db, {
+					initiatingPlayer: SOME_PLAYER,
+					recipientPlayer: SOME_OTHER_PLAYER,
+					offeredCharacters: '',
+					requestedCharacters: '01234567890123456789',
+					status: TradeStatuses.AWAITING_INITIATOR,
+				});
+				forcePlayerToDeclineTrade(SOME_PLAYER, trade);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.PITY_PASS.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when player declined multiple trades and one meets criteria', () => {
+				const trade1 = addMockTrade(db, {
+					initiatingPlayer: SOME_OTHER_PLAYER,
+					recipientPlayer: SOME_PLAYER,
+					offeredCharacters: 'abc',
+					requestedCharacters: 'def'
+				});
+				forcePlayerToDeclineTrade(SOME_PLAYER, trade1);
+
+				const trade2 = addMockTrade(db, {
+					initiatingPlayer: SOME_OTHER_PLAYER,
+					recipientPlayer: SOME_PLAYER,
+					offeredCharacters: '01234567890123456789',
+					requestedCharacters: ''
+				});
+				forcePlayerToDeclineTrade(SOME_PLAYER, trade2);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.PITY_PASS.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns failure when player declined a trade with only 19 more characters', () => {
+				const trade = addMockTrade(db, {
+					initiatingPlayer: SOME_OTHER_PLAYER,
+					recipientPlayer: SOME_PLAYER,
+					offeredCharacters: '0123456789012345678',
+					requestedCharacters: ''
+				});
+				forcePlayerToDeclineTrade(SOME_PLAYER, trade);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.PITY_PASS.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when player declined a trade with equal characters', () => {
+				const trade = addMockTrade(db, {
+					initiatingPlayer: SOME_OTHER_PLAYER,
+					recipientPlayer: SOME_PLAYER,
+					offeredCharacters: 'abc',
+					requestedCharacters: 'def'
+				});
+				forcePlayerToDeclineTrade(SOME_PLAYER, trade);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.PITY_PASS.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when player declined a trade where they would give more characters', () => {
+				const trade = addMockTrade(db, {
+					initiatingPlayer: SOME_OTHER_PLAYER,
+					recipientPlayer: SOME_PLAYER,
+					offeredCharacters: 'a',
+					requestedCharacters: 'abcdefghij'
+				});
+				forcePlayerToDeclineTrade(SOME_PLAYER, trade);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.PITY_PASS.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when player has not declined any trades', () => {
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.PITY_PASS.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+		});
+
+		describe('Quest Hoard Quest', () => {
+			it('returns success when player completed exactly 20 quests this week', () => {
+				for (let i = 0; i < 20; i++) {
+					forcePlayerToCompleteNewQuest(SOME_PLAYER);
+				}
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.QUEST_HOARD.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when player completed more than 20 quests this week', () => {
+				for (let i = 0; i < 25; i++) {
+					forcePlayerToCompleteNewQuest(SOME_PLAYER);
+				}
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.QUEST_HOARD.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns failure when player completed only 19 quests this week', () => {
+				for (let i = 0; i < 19; i++) {
+					forcePlayerToCompleteNewQuest(SOME_PLAYER);
+				}
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.QUEST_HOARD.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when player has not completed any quests this week', () => {
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.QUEST_HOARD.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+		});
+
+		describe('Quad Combo Quest', () => {
+
+			beforeEach(() => {
+				jest.useFakeTimers({ now: START_OF_WEEK });
+			});
+
+			afterEach(() => {
+				jest.useRealTimers();
+			});
+
+			it('returns success when player completed 4 quests in a single moment', () => {
+				for (let i = 0; i < 4; i++) {
+					forcePlayerToCompleteNewQuest(SOME_PLAYER);
+				}
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.QUAD_COMBO.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when player completed 4 quests in exactly 1 minute', () => {
+				repeatOverDuration(4, { minutes: 1 }, () => {
+					forcePlayerToCompleteNewQuest(SOME_PLAYER);
+				});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.QUAD_COMBO.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when player completed more than 4 quests in 1 minute', () => {
+				repeatOverDuration(6, { minutes: 1 }, () => {
+					forcePlayerToCompleteNewQuest(SOME_PLAYER);
+				});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.QUAD_COMBO.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns failure when player completed 4 quests in exactly 1 minute and 1 second', () => {
+				repeatOverDuration(4, { minutes: 1, seconds: 1 }, () => {
+					forcePlayerToCompleteNewQuest(SOME_PLAYER);
+				});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.QUAD_COMBO.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when player completed only 3 quests in exactly 1 minute', () => {
+				repeatOverDuration(3, { minutes: 1 }, () => {
+					forcePlayerToCompleteNewQuest(SOME_PLAYER);
+				});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.QUAD_COMBO.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when player completed 4 quests but spread over more than 1 minute', () => {
+				forcePlayerToCompleteNewQuest(SOME_PLAYER);
+				forcePlayerToCompleteNewQuest(SOME_PLAYER);
+				jest.setSystemTime(addMinutes(new Date(), 1));
+				jest.setSystemTime(addSeconds(new Date(), 1));
+				forcePlayerToCompleteNewQuest(SOME_PLAYER);
+				forcePlayerToCompleteNewQuest(SOME_PLAYER);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.QUAD_COMBO.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when player has not completed any quests this week', () => {
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.QUAD_COMBO.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+		});
+
+		describe('Name Match Quest', () => {
+			it('returns success when player completed a quest while their name contained the quest name', () => {
+				forcePlayerToChangeName(SOME_PLAYER, 'I love Celestial quest');
+				forcePlayerToCompleteNewQuest(SOME_PLAYER, {name: 'Celestial'});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.NAME_MATCH.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when player name exactly matches the quest name', () => {
+				forcePlayerToChangeName(SOME_PLAYER, 'Celestial');
+				forcePlayerToCompleteNewQuest(SOME_PLAYER, {name: 'Celestial'});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.NAME_MATCH.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success with case-insensitive matching', () => {
+				forcePlayerToChangeName(SOME_PLAYER, 'I did CELESTE THE QUEST today');
+				forcePlayerToCompleteNewQuest(SOME_PLAYER, {name: 'cEleste'});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.NAME_MATCH.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when player completed multiple quests and one matches', () => {
+				forcePlayerToChangeName(SOME_PLAYER, 'doing quests');
+				forcePlayerToCompleteNewQuest(SOME_PLAYER);
+
+				forcePlayerToChangeName(SOME_PLAYER, 'Outer Space time');
+				forcePlayerToCompleteNewQuest(SOME_PLAYER, {name: 'Space'});
+
+				forcePlayerToChangeName(SOME_PLAYER, 'another name');
+				forcePlayerToCompleteNewQuest(SOME_PLAYER);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.NAME_MATCH.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when player changed name after completing quest but name matched during completion', () => {
+				forcePlayerToChangeName(SOME_PLAYER, 'Coalitionists quest');
+				forcePlayerToCompleteNewQuest(SOME_PLAYER, {name: 'Coalitionists'});
+				forcePlayerToChangeName(SOME_PLAYER, 'different name now');
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.NAME_MATCH.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns failure when player completed quests but name never contained any quest name', () => {
+				forcePlayerToChangeName(SOME_PLAYER, 'my unique name');
+				forcePlayerToCompleteNewQuest(SOME_PLAYER);
+				forcePlayerToCompleteNewQuest(SOME_PLAYER, {name: 'another unique name'});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.NAME_MATCH.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when player name contains part of quest name but not the full name', () => {
+				forcePlayerToChangeName(SOME_PLAYER, 'Gold quest');
+				forcePlayerToCompleteNewQuest(SOME_PLAYER, {name: 'Gold Ticket'});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.NAME_MATCH.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when player has not completed any quests this week', () => {
+				forcePlayerToChangeName(SOME_PLAYER, 'Speed Mine');
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.NAME_MATCH.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+		});
+
+		describe('Quest Bounty Quest', () => {
+			it('returns success when the player gained exactly 20 characters from quest rewards this week', () => {
+				forcePlayerToCompleteNewQuest(SOME_PLAYER, {
+					charactersReward: '01234567890123456789'
+				});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.QUEST_BOUNTY.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when the player gained more than 20 characters from quest rewards this week', () => {
+				forcePlayerToCompleteNewQuest(SOME_PLAYER, {
+					charactersReward: 'abcdefghijklmnopqrstuvwxyz'
+				});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.QUEST_BOUNTY.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when the player gained 20 characters across multiple quest completions', () => {
+				forcePlayerToCompleteNewQuest(SOME_PLAYER, {
+					charactersReward: '0123456789'
+				});
+				forcePlayerToCompleteNewQuest(SOME_PLAYER, {
+					charactersReward: 'abcdefghij'
+				});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.QUEST_BOUNTY.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns failure when the player only gained 19 characters from quest rewards this week', () => {
+				forcePlayerToCompleteNewQuest(SOME_PLAYER, {
+					charactersReward: '0123456789012345678'
+				});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.QUEST_BOUNTY.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when the player completed quests but received no character rewards', () => {
+				forcePlayerToCompleteNewQuest(SOME_PLAYER, {
+					charactersReward: '',
+					tokensReward: 100
+				});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.QUEST_BOUNTY.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when the player has not completed any quests this week', () => {
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.QUEST_BOUNTY.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+		});
+
+		describe('Quest Riches Quest', () => {
+			it('returns success when the player gained exactly 1500 tokens from quest rewards this week', () => {
+				forcePlayerToCompleteNewQuest(SOME_PLAYER, {
+					tokensReward: 1500
+				});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.QUEST_RICHES.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when the player gained more than 1500 tokens from quest rewards this week', () => {
+				forcePlayerToCompleteNewQuest(SOME_PLAYER, {
+					tokensReward: 2000
+				});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.QUEST_RICHES.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when the player gained 1500 tokens across multiple quest completions', () => {
+				forcePlayerToCompleteNewQuest(SOME_PLAYER, {
+					tokensReward: 500
+				});
+				forcePlayerToCompleteNewQuest(SOME_PLAYER, {
+					tokensReward: 500
+				});
+				forcePlayerToCompleteNewQuest(SOME_PLAYER, {
+					tokensReward: 500
+				});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.QUEST_RICHES.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns failure when the player only gained 1499 tokens from quest rewards this week', () => {
+				forcePlayerToCompleteNewQuest(SOME_PLAYER, {
+					tokensReward: 1499
+				});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.QUEST_RICHES.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when the player completed quests but lost tokens', () => {
+				forcePlayerToCompleteNewQuest(SOME_PLAYER, {
+					tokensReward: 0
+				});
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.QUEST_RICHES.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when the player has not completed any quests this week', () => {
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.QUEST_RICHES.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+		});
+
+		describe('Synchronized Quest', () => {
+
+			beforeEach(() => {
+				jest.useFakeTimers({ now: START_OF_WEEK });
+			});
+
+			afterAll(() => {
+				jest.useRealTimers();
+			});
+
+			it('returns success when the player completed a quest at the same moment as 5 other players', () => {
+				const quest = addMockQuest(db);
+				forcePlayerToCompleteQuest(SOME_PLAYER, quest);
+				forcePlayerToCompleteQuest(FIVE_DIFFERENT_PLAYERS[0], quest);
+				forcePlayerToCompleteQuest(FIVE_DIFFERENT_PLAYERS[1], quest);
+				forcePlayerToCompleteQuest(FIVE_DIFFERENT_PLAYERS[2], quest);
+				forcePlayerToCompleteQuest(FIVE_DIFFERENT_PLAYERS[3], quest);
+				forcePlayerToCompleteQuest(FIVE_DIFFERENT_PLAYERS[4], quest);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.SYNCHRONIZED.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when the player completed a quest exactly 60 seconds before 5 other players', () => {
+				const quest = addMockQuest(db);
+				forcePlayerToCompleteQuest(SOME_PLAYER, quest);
+
+				jest.setSystemTime(addSeconds(new Date(), 60));
+				forcePlayerToCompleteQuest(FIVE_DIFFERENT_PLAYERS[0], quest);
+				forcePlayerToCompleteQuest(FIVE_DIFFERENT_PLAYERS[1], quest);
+				forcePlayerToCompleteQuest(FIVE_DIFFERENT_PLAYERS[2], quest);
+				forcePlayerToCompleteQuest(FIVE_DIFFERENT_PLAYERS[3], quest);
+				forcePlayerToCompleteQuest(FIVE_DIFFERENT_PLAYERS[4], quest);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.SYNCHRONIZED.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when more than 6 players completed the same quest within 60 seconds', () => {
+				const quest = addMockQuest(db);
+				forcePlayerToCompleteQuest(SOME_PLAYER, quest);
+				forcePlayerToCompleteQuest(FIVE_DIFFERENT_PLAYERS[0], quest);
+				forcePlayerToCompleteQuest(FIVE_DIFFERENT_PLAYERS[1], quest);
+				forcePlayerToCompleteQuest(FIVE_DIFFERENT_PLAYERS[2], quest);
+				forcePlayerToCompleteQuest(FIVE_DIFFERENT_PLAYERS[3], quest);
+				forcePlayerToCompleteQuest(FIVE_DIFFERENT_PLAYERS[4], quest);
+				forcePlayerToCompleteQuest(SOME_OTHER_PLAYER, quest);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.SYNCHRONIZED.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns failure when the player completed a quest exactly 61 seconds before 5 other players', () => {
+				const quest = addMockQuest(db);
+				forcePlayerToCompleteQuest(SOME_PLAYER, quest);
+
+				repeatOverDuration(5, { seconds: 61 }, (index) => {
+					forcePlayerToCompleteQuest(FIVE_DIFFERENT_PLAYERS[index], quest);
+				})
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.SYNCHRONIZED.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when only 4 other players completed the same quest within 60 seconds', () => {
+				const quest = addMockQuest(db);
+				forcePlayerToCompleteQuest(SOME_PLAYER, quest);
+				forcePlayerToCompleteQuest(FIVE_DIFFERENT_PLAYERS[0], quest);
+				forcePlayerToCompleteQuest(FIVE_DIFFERENT_PLAYERS[1], quest);
+				forcePlayerToCompleteQuest(FIVE_DIFFERENT_PLAYERS[2], quest);
+				forcePlayerToCompleteQuest(FIVE_DIFFERENT_PLAYERS[3], quest);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.SYNCHRONIZED.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when the player has not completed any quests this week', () => {
+				const quest = addMockQuest(db);
+				forcePlayerToCompleteQuest(FIVE_DIFFERENT_PLAYERS[0], quest);
+				forcePlayerToCompleteQuest(FIVE_DIFFERENT_PLAYERS[1], quest);
+				forcePlayerToCompleteQuest(FIVE_DIFFERENT_PLAYERS[2], quest);
+				forcePlayerToCompleteQuest(FIVE_DIFFERENT_PLAYERS[3], quest);
+				forcePlayerToCompleteQuest(FIVE_DIFFERENT_PLAYERS[4], quest);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.SYNCHRONIZED.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+		});
+
+		describe('No Perk Quest', () => {
+			beforeEach(() => {
+				jest.useFakeTimers({ now: START_OF_WEEK });
+			});
+
+			afterAll(() => {
+				jest.useRealTimers();
+			});
+
+			it('returns success when the player avoided picking perks for exactly 6 consecutive days', () => {
+				jest.setSystemTime(addDays(START_OF_WEEK, 6));
+				forcePlayerToPickNewPerk(SOME_PLAYER);
+				jest.setSystemTime(RIGHT_BEFORE_END_OF_WEEK);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.NO_PERK.id
+				});
+				console.log(result);
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when the player avoided picking perks for more than 6 consecutive days', () => {
+				forcePlayerToPickNewPerk(SOME_PLAYER);
+				jest.setSystemTime(RIGHT_BEFORE_END_OF_WEEK);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.NO_PERK.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when the player never picked any perks for 6 days since week start', () => {
+				jest.setSystemTime(addDays(START_OF_WEEK, 6));
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.NO_PERK.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when there is a 6-day gap between two perk picks', () => {
+				forcePlayerToPickNewPerk(SOME_PLAYER);
+
+				jest.setSystemTime(addDays(new Date(), 6));
+				forcePlayerToPickNewPerk(SOME_PLAYER);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.NO_PERK.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns failure when the player picked perks with only 5-day gaps', () => {
+				forcePlayerToPickNewPerk(SOME_PLAYER);
+
+				jest.setSystemTime(addDays(new Date(), 5));
+				forcePlayerToPickNewPerk(SOME_PLAYER);
+
+				jest.setSystemTime(RIGHT_BEFORE_END_OF_WEEK);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.NO_PERK.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when the player picked perks every day', () => {
+				for (let i = 0; i < 6; i++) {
+					forcePlayerToPickNewPerk(SOME_PLAYER);
+					jest.setSystemTime(addDays(new Date(), 1));
+				}
+
+				jest.setSystemTime(RIGHT_BEFORE_END_OF_WEEK);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.NO_PERK.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when only 5 days have passed since week start with no picks', () => {
+				jest.setSystemTime(addDays(START_OF_WEEK, 5));
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.NO_PERK.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+		});
+
+		describe('Perk Name Quest', () => {
+			it('returns success when player picked a perk while their current name contains the perk name', () => {
+				const perk = addMockPerk(db, { name: 'Celestial' });
+				forcePlayerToChangeName(SOME_PLAYER, 'I love Celestial perks');
+				forcePlayerToPickPerk(SOME_PLAYER, perk);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.PERK_NAME.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when the current name exactly matches the perk name', () => {
+				const perk = addMockPerk(db, { name: 'Lunar' });
+				forcePlayerToChangeName(SOME_PLAYER, 'Lunar');
+				forcePlayerToPickPerk(SOME_PLAYER, perk);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.PERK_NAME.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when player picked multiple perks and one matches their current name', () => {
+				const perk1 = addMockPerk(db, { name: 'Alpha' });
+				const perk2 = addMockPerk(db, { name: 'Beta' });
+				const perk3 = addMockPerk(db, { name: 'Gamma' });
+
+				forcePlayerToChangeName(SOME_PLAYER, 'other name');
+				forcePlayerToPickPerk(SOME_PLAYER, perk1);
+
+				forcePlayerToChangeName(SOME_PLAYER, 'I choose Beta now');
+				forcePlayerToPickPerk(SOME_PLAYER, perk2);
+
+				forcePlayerToChangeName(SOME_PLAYER, 'different');
+				forcePlayerToPickPerk(SOME_PLAYER, perk3);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.PERK_NAME.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns failure when player picked a perk but their current name does not contain the perk name', () => {
+				const perk = addMockPerk(db, { name: 'Celestial' });
+				forcePlayerToChangeName(SOME_PLAYER, 'My unique name');
+				forcePlayerToPickPerk(SOME_PLAYER, perk);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.PERK_NAME.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when player does not have a current name', () => {
+				const perk = addMockPerk(db, { name: 'Celestial' });
+				forcePlayerToPickPerk(SOME_PLAYER, perk);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.PERK_NAME.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when player has not picked any perks this week', () => {
+				forcePlayerToPublishName(SOME_PLAYER, 'Celestial');
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.PERK_NAME.id
+				});
+				console.log(result);
+				makeSure(result.isFailure()).isTrue();
+			});
+		});
+
+		describe('Unique Perk Quest', () => {
+			it('returns success when player picked a perk that no other player has', () => {
+				const uniquePerk = addMockPerk(db, { name: 'Unique' });
+				forcePlayerToPickPerk(SOME_PLAYER, uniquePerk);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.UNIQUE_PERK.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when player picked multiple perks and one is unique', () => {
+				const sharedPerk = addMockPerk(db, { name: 'Shared' });
+				const uniquePerk = addMockPerk(db, { name: 'Unique' });
+
+				forcePlayerToPickPerk(SOME_OTHER_PLAYER, sharedPerk);
+				forcePlayerToPickPerk(SOME_PLAYER, sharedPerk);
+				forcePlayerToPickPerk(SOME_PLAYER, uniquePerk);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.UNIQUE_PERK.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns failure when all perks the player picked are also selected by other players', () => {
+				const sharedPerk1 = addMockPerk(db, { name: 'Shared1' });
+				const sharedPerk2 = addMockPerk(db, { name: 'Shared2' });
+
+				forcePlayerToPickPerk(SOME_OTHER_PLAYER, sharedPerk1);
+				forcePlayerToPickPerk(THREE_DIFFERENT_PLAYERS[0], sharedPerk2);
+
+				forcePlayerToPickPerk(SOME_PLAYER, sharedPerk1);
+				forcePlayerToPickPerk(SOME_PLAYER, sharedPerk2);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.UNIQUE_PERK.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when player has not picked any perks this week', () => {
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.UNIQUE_PERK.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+		});
+
+		describe('Fast Fortune Quest', () => {
+			it('returns success when player gained exactly 2000 tokens this week', () => {
+				forcePlayerToMineTokens(SOME_PLAYER, 2000);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.FAST_FORTUNE.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when player gained more than 2000 tokens this week', () => {
+				forcePlayerToMineTokens(SOME_PLAYER, 2500);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.FAST_FORTUNE.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when player gained 2000 tokens from multiple sources', () => {
+				forcePlayerToMineTokens(SOME_PLAYER, 1000);
+				forcePlayerToBuyMysteryBox(SOME_PLAYER);
+				forcePlayerToCompleteNewQuest(SOME_PLAYER, { tokensReward: 500 });
+				forcePlayerToClaimRefill(SOME_PLAYER, 500);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.FAST_FORTUNE.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns failure when player only gained 1999 tokens this week', () => {
+				forcePlayerToMineTokens(SOME_PLAYER, 1999);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.FAST_FORTUNE.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when player has not gained any tokens this week', () => {
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.FAST_FORTUNE.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+		});
+
+		describe('Complete Set Quest', () => {
+			it('returns success when player has exactly 100 distinct characters in inventory', () => {
+				let characters = '';
+				for (let i = 0; i < 100; i++) {
+					characters += String.fromCharCode(65 + i);
+				}
+				forcePlayerToHaveInventory(SOME_PLAYER, characters);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.COMPLETE_SET.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when player has more than 100 distinct characters in inventory', () => {
+				let characters = '';
+				for (let i = 0; i < 120; i++) {
+					characters += String.fromCharCode(65 + i);
+				}
+				forcePlayerToHaveInventory(SOME_PLAYER, characters);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.COMPLETE_SET.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when player has 100 distinct characters with duplicates', () => {
+				let characters = '';
+				for (let i = 0; i < 100; i++) {
+					characters += String.fromCharCode(65 + i);
+					characters += String.fromCharCode(65 + i); // Add duplicate
+				}
+				forcePlayerToHaveInventory(SOME_PLAYER, characters);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.COMPLETE_SET.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns failure when player has only 99 distinct characters in inventory', () => {
+				let characters = '';
+				for (let i = 0; i < 99; i++) {
+					characters += String.fromCharCode(65 + i);
+				}
+				forcePlayerToHaveInventory(SOME_PLAYER, characters);
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.COMPLETE_SET.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when player has an empty inventory', () => {
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.COMPLETE_SET.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+		});
+
+		describe('Unmoved Quest', () => {
+			beforeEach(() => {
+				jest.useFakeTimers({ now: START_OF_WEEK });
+			});
+
+			afterEach(() => {
+				jest.useRealTimers();
+			});
+
+			it('returns success when player name remained unchanged for exactly 24 hours', () => {
+				forcePlayerToChangeName(SOME_PLAYER, 'My stable name');
+
+				jest.setSystemTime(addHours(new Date(), 24));
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.UNMOVED.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when player name remained unchanged for more than 24 hours', () => {
+				forcePlayerToChangeName(SOME_PLAYER, 'My stable name');
+
+				jest.setSystemTime(addHours(new Date(), 30));
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.UNMOVED.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when player had multiple name periods and one lasted 24 hours', () => {
+				forcePlayerToChangeName(SOME_PLAYER, 'First name');
+				jest.setSystemTime(addHours(new Date(), 10));
+
+				forcePlayerToChangeName(SOME_PLAYER, 'Second name');
+				jest.setSystemTime(addHours(new Date(), 24));
+
+				forcePlayerToChangeName(SOME_PLAYER, 'Third name');
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.UNMOVED.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns failure when player name remained unchanged for only 23 hours and 59 minutes', () => {
+				forcePlayerToChangeName(SOME_PLAYER, 'My name');
+
+				jest.setSystemTime(addMinutes(addHours(new Date(), 23), 59));
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.UNMOVED.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when player changed their name multiple times within 24 hours', () => {
+				forcePlayerToChangeName(SOME_PLAYER, 'Name 1');
+				jest.setSystemTime(addHours(new Date(), 12));
+
+				forcePlayerToChangeName(SOME_PLAYER, 'Name 2');
+				jest.setSystemTime(addHours(new Date(), 12));
+
+				forcePlayerToChangeName(SOME_PLAYER, 'Name 3');
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.UNMOVED.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when player changed their name via mystery box opening', () => {
+				forcePlayerToChangeName(SOME_PLAYER, 'Name 1');
+				jest.setSystemTime(addHours(new Date(), 12));
+
+				forcePlayerToBuyMysteryBox(SOME_PLAYER);
+				jest.setSystemTime(addHours(new Date(), 12));
+
+				forcePlayerToChangeName(SOME_PLAYER, 'Name 3');
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.UNMOVED.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+		});
+
+		describe('Silent Server Quest', () => {
+			beforeEach(() => {
+				jest.useFakeTimers({ now: addHours(START_OF_WEEK, 1) });
+			});
+
+			afterAll(() => {
+				jest.useRealTimers();
+			});
+
+			it('returns success when no player changed their name for exactly 8 hours this week', () => {
+				forcePlayerToChangeName(SOME_PLAYER, 'First change');
+
+				jest.setSystemTime(addHours(new Date(), 8));
+
+				forcePlayerToChangeName(SOME_OTHER_PLAYER, 'Second change');
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.SILENT_SERVER.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when no player changed their name for more than 8 hours this week', () => {
+				forcePlayerToChangeName(SOME_PLAYER, 'First change');
+
+				jest.setSystemTime(addHours(new Date(), 12));
+
+				forcePlayerToChangeName(SOME_OTHER_PLAYER, 'Second change');
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.SILENT_SERVER.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when there are multiple gaps and one is at least 8 hours', () => {
+				forcePlayerToChangeName(SOME_PLAYER, 'First');
+				jest.setSystemTime(addHours(new Date(), 4));
+
+				forcePlayerToChangeName(SOME_OTHER_PLAYER, 'Second');
+				jest.setSystemTime(addHours(new Date(), 8));
+
+				forcePlayerToChangeName(THREE_DIFFERENT_PLAYERS[0], 'Third');
+				jest.setSystemTime(addHours(new Date(), 2));
+
+				forcePlayerToChangeName(THREE_DIFFERENT_PLAYERS[1], 'Fourth');
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.SILENT_SERVER.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns success when the gap from last change to now is at least 8 hours', () => {
+				forcePlayerToChangeName(SOME_PLAYER, 'First change');
+				jest.setSystemTime(addHours(new Date(), 4));
+
+				forcePlayerToChangeName(SOME_OTHER_PLAYER, 'Last change');
+				jest.setSystemTime(addHours(new Date(), 8));
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.SILENT_SERVER.id
+				});
+				makeSure(result.isFailure()).isFalse();
+			});
+
+			it('returns failure when the longest gap is only 7 hours and 59 minutes', () => {
+				forcePlayerToChangeName(SOME_PLAYER, 'First change');
+
+				jest.setSystemTime(addMinutes(addHours(new Date(), 7), 59));
+
+				forcePlayerToChangeName(SOME_OTHER_PLAYER, 'Second change');
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.SILENT_SERVER.id
+				});
+				makeSure(result.isFailure()).isTrue();
+			});
+
+			it('returns failure when players change names frequently with no 8-hour gap', () => {
+				forcePlayerToChangeName(SOME_PLAYER, 'Change 1');
+				jest.setSystemTime(addHours(new Date(), 3));
+
+				forcePlayerToChangeName(SOME_OTHER_PLAYER, 'Change 2');
+				jest.setSystemTime(addHours(new Date(), 4));
+
+				forcePlayerToChangeName(THREE_DIFFERENT_PLAYERS[0], 'Change 3');
+				jest.setSystemTime(addHours(new Date(), 2));
+
+				forcePlayerToChangeName(THREE_DIFFERENT_PLAYERS[1], 'Change 4');
+
+				const result = completeQuest({
+					playerResolvable: SOME_PLAYER.id,
+					questResolvable: Quests.SILENT_SERVER.id
 				});
 				makeSure(result.isFailure()).isTrue();
 			});

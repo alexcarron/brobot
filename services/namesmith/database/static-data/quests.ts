@@ -651,7 +651,7 @@ export const quests = [
 	{
 		id: 93,
 		name: "Name Match",
-		description: "Complete any quest while your published name contains that quest's exact name.",
+		description: "Complete any quest while your current name contains that quest's exact name (case insensitive).",
 		recurrence: "weekly",
 		tokensReward: 1250,
 		charactersReward: "name-tag"
@@ -691,7 +691,7 @@ export const quests = [
 	{
 		id: 99,
 		name: "Perk Name",
-		description: "Pick a perk while your published name contains that perk's exact name.",
+		description: "Pick a perk while your current name contains that perk's exact name.",
 		recurrence: "weekly",
 		tokensReward: 1800,
 		charactersReward: "😱 no way"

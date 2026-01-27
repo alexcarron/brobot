@@ -1,5 +1,5 @@
 import { getNamesmithServices } from "../../services/get-namesmith-services";
-import { Player, PlayerResolvable } from "../../types/player.types";
+import { Player, PlayerID, PlayerResolvable } from "../../types/player.types";
 import { Quest, QuestResolvable, RewardTypes } from "../../types/quest.types";
 import { getWorkflowResultCreator, provides } from "../workflow-result-creator";
 import { Quests } from '../../constants/quests.constants';
@@ -14,6 +14,7 @@ import { RecipeID } from "../../types/recipe.types";
 import { sortByDescendingProperty } from "../../../../utilities/data-structure-utils";
 import { toListOfWords } from "../../../../utilities/string-manipulation-utils";
 import { UTILITY_CHARACTERS } from "../../constants/characters.constants";
+import { TradeID } from "../../types/trade.types";
 
 const PLAYER_MET_CRITERIA_RESULT = 'questSuccess' as const;
 const result = getWorkflowResultCreator({
@@ -2297,6 +2298,498 @@ const questIDToMeetsCriteriaCheck = {
 			return toFailure(`You have only used the same input characters in ${maxRecipesForInput} different recipe(s) this week. You need to use the same input characters in at least ${MIN_RECIPES_NEEDED} different recipes to complete the "${quest.name}" quest.`);
 
 		return toFailure(`You have only gotten ${maxDistinctOutputsForInput} different character(s) from the same input characters this week. You need to use the same input characters in three different recipes and get ${MIN_DISTINCT_OUTPUTS_NEEDED} distinct characters to complete the "${quest.name}" quest.`);
+	},
+
+	[Quests.CHAOTIC_TRADE.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService, tradeService}: NamesmithServices
+	) => {
+		const MAX_CHARACTERS_GIVEN = 1;
+		const MIN_CHARACTERS_RECEIVED = 20;
+		const acceptTradeLogs = activityLogService.getAcceptTradeLogsThisWeekInvolvingPlayer(player);
+
+		if (acceptTradeLogs.length <= 0)
+			return toFailure(`You have not been involved in any accepted trades this week. You must accept a trade or have a trade of yours accepted before you can complete the "${quest.name}" quest.`);
+
+		let minCharactersGiven = Infinity;
+		let maxCharactersReceived = 0;
+		for (const acceptTradeLog of acceptTradeLogs) {
+			if (acceptTradeLog.involvedTrade === null)
+				continue;
+
+			const givenCharacters = tradeService.getCharactersPlayerIsGiving(acceptTradeLog.involvedTrade, player);
+			const receivedCharacters = tradeService.getCharactersPlayerIsGetting(acceptTradeLog.involvedTrade, player);
+
+			const numGivenCharacters = getNumCharacters(givenCharacters);
+			const numReceivedCharacters = getNumCharacters(receivedCharacters);
+
+			if (
+				numGivenCharacters <= MAX_CHARACTERS_GIVEN && 
+				numReceivedCharacters >= MIN_CHARACTERS_RECEIVED
+			) {
+				return PLAYER_MET_CRITERIA_RESULT;
+			}
+
+			if (numGivenCharacters < minCharactersGiven)
+				minCharactersGiven = numGivenCharacters;
+
+			if (numReceivedCharacters > maxCharactersReceived)
+				maxCharactersReceived = numReceivedCharacters;
+		}
+
+		if (minCharactersGiven > MAX_CHARACTERS_GIVEN)
+			return toFailure(`You've only had trades accepted where you gave away ${minCharactersGiven} characters at the minimum. You must give away only ${MAX_CHARACTERS_GIVEN} character(s) in a trade to complete the "${quest.name}" quest.`);
+
+		return toFailure(`You've only had trades accepted where you received ${maxCharactersReceived} characters at most when giving away ${MAX_CHARACTERS_GIVEN} character(s). You must receive at least ${MIN_CHARACTERS_RECEIVED} character(s) in a trade to complete the "${quest.name}" quest.`);
+	},
+
+	[Quests.WIDE_DIPLOMAT.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_DIFFERENT_PLAYERS_NEEDED = 5;
+		const acceptTradeLogs = activityLogService.getAcceptTradeLogsThisWeekWithRecipient(player);
+
+		if (acceptTradeLogs.length <= 0) {
+			const didCreateTrades = activityLogService.didPlayerDoLogOfTypeThisWeek(player.id, ActivityTypes.INITIATE_TRADE);
+
+			if (!didCreateTrades)
+				return toFailure(`You have not created any trades this week. You must initiate one before you can complete the "${quest.name}" quest.`);
+
+			return toFailure(`You have not had any of your trades accepted this week. You must have at least one accepted before you can complete the "${quest.name}" quest.`);
+		}
+
+		const uniqueAcceptingPlayers = new Set<PlayerID>();
+		for (const acceptTradeLog of acceptTradeLogs) {
+			if (!acceptTradeLog.player) continue;
+			uniqueAcceptingPlayers.add(acceptTradeLog.player.id);
+		}
+
+		if (uniqueAcceptingPlayers.size >= NUM_DIFFERENT_PLAYERS_NEEDED)
+			return PLAYER_MET_CRITERIA_RESULT;
+
+		const numHas = uniqueAcceptingPlayers.size;
+		const numNeeded = NUM_DIFFERENT_PLAYERS_NEEDED;
+		return toFailure(
+			`You have only had ${numHas} distinct player(s) accept your trades this week. You need at least ${numNeeded} different players to accept your trades to complete the "${quest.name}" quest.`
+		);
+	},
+
+	[Quests.CHAIN_FIVE.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_TRADES_NEEDED = 5;
+		const acceptTradeLogs = activityLogService.getLogsThisWeek({
+			byPlayer: player,
+			ofType: ActivityTypes.ACCEPT_TRADE
+		});
+
+		if (acceptTradeLogs.length <= 0)
+			return toFailure(`You have not accepted any trades this week. You must accept trades before you can complete the "${quest.name}" quest.`);
+
+		const uniqueTradeIDs = new Set<TradeID>();
+		const uniqueInitiatingPlayers = new Set<PlayerID>();
+
+		for (const acceptTradeLog of acceptTradeLogs) {
+			if (acceptTradeLog.involvedTrade === null)
+				continue;
+
+			uniqueTradeIDs.add(acceptTradeLog.involvedTrade.id);
+			
+			if (acceptTradeLog.involvedPlayer) {
+				uniqueInitiatingPlayers.add(acceptTradeLog.involvedPlayer.id);
+			}
+		}
+
+		const numDistinctTrades = uniqueTradeIDs.size;
+		const numDifferentPlayers = uniqueInitiatingPlayers.size;
+
+		if (numDistinctTrades < NUM_TRADES_NEEDED)
+			return toFailure(`You have only accepted ${numDistinctTrades} distinct trade(s) this week. You need to accept at least ${NUM_TRADES_NEEDED} distinct trades to complete the "${quest.name}" quest.`);
+
+		if (numDifferentPlayers < NUM_TRADES_NEEDED)
+			return toFailure(`You have only accepted trades from ${numDifferentPlayers} different player(s) this week. You need to accept trades from at least ${NUM_TRADES_NEEDED} different players to complete the "${quest.name}" quest.`);
+
+		return PLAYER_MET_CRITERIA_RESULT;
+	},
+
+	[Quests.PITY_PASS.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService, tradeService}: NamesmithServices
+	) => {
+		const NUM_MORE_CHARACTERS_THAN_GIVING = 20;
+		const declineTradeLogs = activityLogService.getLogsThisWeek({
+			byPlayer: player,
+			ofType: ActivityTypes.DECLINE_TRADE,
+		});
+
+		if (declineTradeLogs.length <= 0)
+			return toFailure(`You have not declined any trades this week. You must decline a trade before you can complete the "${quest.name}" quest.`);
+
+		let maxNumMoreCharactersThanGiving = Number.NEGATIVE_INFINITY;
+
+		for (const declineTradeLog of declineTradeLogs) {
+			if (declineTradeLog.involvedTrade === null)
+				continue;
+
+			const charactersGiven = tradeService.getCharactersPlayerIsGiving(declineTradeLog.involvedTrade, player);
+			const charactersReceived = tradeService.getCharactersPlayerIsGetting(declineTradeLog.involvedTrade, player);
+
+			const numCharactersGiven = getNumCharacters(charactersGiven);
+			const numCharactersReceived = getNumCharacters(charactersReceived);
+
+			const numMoreCharactersThanGiving = numCharactersReceived - numCharactersGiven;
+
+			if (numMoreCharactersThanGiving >= NUM_MORE_CHARACTERS_THAN_GIVING)
+				return PLAYER_MET_CRITERIA_RESULT;
+
+			if (numMoreCharactersThanGiving > maxNumMoreCharactersThanGiving)
+				maxNumMoreCharactersThanGiving = numMoreCharactersThanGiving;
+		}
+
+		if (maxNumMoreCharactersThanGiving > 0) {
+			return toFailure(`You have only declined a trade where you would have received ${maxNumMoreCharactersThanGiving} more characters than you gave. You must decline a trade where you would receive ${NUM_MORE_CHARACTERS_THAN_GIVING} more characters than you give to complete the "${quest.name}" quest.`);
+		}
+		else if (maxNumMoreCharactersThanGiving === 0) {
+			return toFailure(`You have only declined trades where you would receive the same number of characters as you gave. You must decline a trade where you would receive ${NUM_MORE_CHARACTERS_THAN_GIVING} more characters than you give to complete the "${quest.name}" quest.`);
+		}
+		else {
+			const minNumLessCharactersThanGiving = maxNumMoreCharactersThanGiving * -1;
+			return toFailure(`You have only declined trades where you would receive ${minNumLessCharactersThanGiving} less characters than you gave. You must decline a trade where you would receive ${NUM_MORE_CHARACTERS_THAN_GIVING} more characters than you give to complete the "${quest.name}" quest.`);
+		}
+	},
+
+	[Quests.QUEST_HOARD.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_QUESTS_NEEDED = 20;
+		const didCompleteQuests = activityLogService.didPlayerDoLogOfTypeThisWeek(player, ActivityTypes.COMPLETE_QUEST);
+		if (!didCompleteQuests)
+			return toFailure(`You have not completed any quests this week. You must complete at least one quest before you can complete the "${quest.name}" quest.`);
+
+		const numQuestsCompleted = activityLogService.getNumLogsDoneThisWeek({
+			byPlayer: player,
+			ofType: ActivityTypes.COMPLETE_QUEST,
+		});
+
+		if (numQuestsCompleted < NUM_QUESTS_NEEDED)
+			return toFailure(`You have only completed ${numQuestsCompleted} different quest(s) this week. You need to complete at least ${NUM_QUESTS_NEEDED} quests to complete the "${quest.name}" quest.`);
+		
+		return PLAYER_MET_CRITERIA_RESULT;
+	},
+
+	[Quests.QUAD_COMBO.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_QUESTS_NEEDED = 4;
+		const TIME_SPAN = { minutes: 1 };
+		const didCompleteQuests = activityLogService.didPlayerDoLogOfTypeThisWeek(player, ActivityTypes.COMPLETE_QUEST);
+		if (!didCompleteQuests)
+			return toFailure(`You have not completed any quests this week. You must complete at least one quest before you can complete the "${quest.name}" quest.`);
+
+		const numQuestsCompleted = activityLogService.getNumLogsDoneThisWeek({
+			byPlayer: player,
+			ofType: ActivityTypes.COMPLETE_QUEST,
+		});
+		if (numQuestsCompleted < NUM_QUESTS_NEEDED)
+			return toFailure(`You have completed ${numQuestsCompleted} quest(s) this week, but you need to complete at least ${NUM_QUESTS_NEEDED} to complete the "${quest.name}" quest.`);
+
+		const maxQuestsInTimeSpan = activityLogService.getMaxLogsDoneThisWeek({
+			byPlayer: player,
+			ofType: ActivityTypes.COMPLETE_QUEST,
+			inTimeSpan: TIME_SPAN,
+		});
+
+		if (maxQuestsInTimeSpan < NUM_QUESTS_NEEDED)
+			return toFailure(`You have completed at most ${maxQuestsInTimeSpan} quest(s) within ${toDurationText(TIME_SPAN)} this week, but you need to complete at least ${NUM_QUESTS_NEEDED} in ${toDurationText(TIME_SPAN)} to complete the "${quest.name}" quest.`);
+
+		return PLAYER_MET_CRITERIA_RESULT;
+	},
+
+	[Quests.NAME_MATCH.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const didCompleteQuests = activityLogService.didPlayerDoLogOfTypeThisWeek(player, ActivityTypes.COMPLETE_QUEST);
+		if (!didCompleteQuests)
+			return toFailure(`You have not completed any quests this week. You must complete at least one quest before you can complete the "${quest.name}" quest.`);
+
+		const questLogs = activityLogService.getLogsThisWeek({
+			byPlayer: player,
+			ofType: ActivityTypes.COMPLETE_QUEST
+		});
+		
+		for (const questLog of questLogs) {
+			if (questLog.involvedQuest === null)
+				continue;
+
+			let nameDuring = questLog.currentName;
+			if (questLog.nameChangedFrom !== null)
+				nameDuring = questLog.nameChangedFrom;
+
+			const completedQuestName = questLog.involvedQuest.name;
+			if (nameDuring.toLowerCase().includes(completedQuestName.toLowerCase()))
+				return PLAYER_MET_CRITERIA_RESULT;
+		}
+
+		return toFailure(`You have not completed any quest while your name contained that quest's name. You must do so to complete the "${quest.name}" quest.`);
+	},
+
+	[Quests.QUEST_BOUNTY.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_CHARACTERS_NEEDED = 20;
+		const questLogs = activityLogService.getLogsThisWeek({
+			byPlayer: player,
+			ofType: ActivityTypes.COMPLETE_QUEST,
+		});
+
+		if (questLogs.length <= 0)
+			return toFailure(`You have not completed any quests this week. You must complete quests to earn character rewards to complete the "${quest.name}" quest.`);
+
+		let totalCharactersGained = 0;
+		for (const questLog of questLogs) {
+			if (questLog.charactersGained === null)
+				continue;
+
+			totalCharactersGained += getNumCharacters(questLog.charactersGained);
+		}
+
+		if (totalCharactersGained >= NUM_CHARACTERS_NEEDED)
+			return PLAYER_MET_CRITERIA_RESULT;
+
+		return toFailure(`You have only gained ${totalCharactersGained} character(s) from quest rewards this week. You need to gain at least ${NUM_CHARACTERS_NEEDED} characters from quest rewards to complete the "${quest.name}" quest.`);
+	},
+
+	[Quests.QUEST_RICHES.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_TOKENS_NEEDED = 1500;
+		const questLogs = activityLogService.getLogsThisWeek({
+			byPlayer: player,
+			ofType: ActivityTypes.COMPLETE_QUEST,
+		});
+
+		if (questLogs.length <= 0)
+			return toFailure(`You have not completed any quests this week. You must complete quests to earn token rewards to complete the "${quest.name}" quest.`);
+
+		let totalTokensGained = 0;
+		for (const questLog of questLogs) {
+			if (questLog.tokensDifference > 0)
+				totalTokensGained += questLog.tokensDifference;
+		}
+
+		if (totalTokensGained >= NUM_TOKENS_NEEDED)
+			return PLAYER_MET_CRITERIA_RESULT;
+
+		return toFailure(`You have only gained ${totalTokensGained} token(s) from quest rewards this week. You need to gain at least ${NUM_TOKENS_NEEDED} tokens from quest rewards to complete the "${quest.name}" quest.`);
+	},
+
+	[Quests.SYNCHRONIZED.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_OTHER_PLAYERS_NEEDED = 5;
+		const TIME_SPAN = { minutes: 1}
+		const didCompleteQuest = activityLogService.didPlayerDoLogOfTypeThisWeek(player, ActivityTypes.COMPLETE_QUEST);
+		if (!didCompleteQuest)
+			return toFailure(`You have not completed any quests this week. You must complete a quest at the same time as ${NUM_OTHER_PLAYERS_NEEDED} other players to complete the "${quest.name}" quest.`);
+
+		const maxPlayers = activityLogService.getMaxPlayersDoingLogsThisWeek({
+			ofType: ActivityTypes.COMPLETE_QUEST,
+			inTimeSpan: TIME_SPAN,
+			withPlayer: player
+		});
+
+		if (maxPlayers.length === 1)
+			return toFailure(`You have not completed quests at the same time as any other players this week. You must complete a quest at the same moment as ${NUM_OTHER_PLAYERS_NEEDED} other players within ${toDurationText(TIME_SPAN)} to complete the "${quest.name}" quest.`);
+
+		if (maxPlayers.length < NUM_OTHER_PLAYERS_NEEDED + 1)
+			return toFailure(`You have only completed quests at the same time as ${maxPlayers.length - 1} other player(s) this week. You must complete a quest at the same moment as ${NUM_OTHER_PLAYERS_NEEDED} other players within ${toDurationText(TIME_SPAN)} to complete the "${quest.name}" quest.`);
+
+		return PLAYER_MET_CRITERIA_RESULT;
+	},
+
+	[Quests.NO_PERK.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const TIME_SPAN = { days: 6 };
+		const maxTimeNotPickingPerk = activityLogService.getMaxTimeOfNoLogsDoneThisWeek({
+			byPlayer: player,
+			ofType: ActivityTypes.PICK_PERK,
+		});
+
+		if (maxTimeNotPickingPerk < getMillisecondsOfDuration(TIME_SPAN))
+			return toFailure(`You have only avoided picking perks for ${toDurationTextFromTime(maxTimeNotPickingPerk)} at most this week. You must avoid picking any perk for ${toDurationText(TIME_SPAN)} to complete the "${quest.name}" quest.`);
+
+		return PLAYER_MET_CRITERIA_RESULT;
+	},
+
+	[Quests.PERK_NAME.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const pickPerkLogs = activityLogService.getLogsThisWeek({
+			byPlayer: player,
+			ofType: ActivityTypes.PICK_PERK,
+		});
+
+		if (pickPerkLogs.length <= 0)
+			return toFailure(`You have not picked any perks this week. You must pick a perk while your current name contains that perk's exact name to complete the "${quest.name}" quest.`);
+
+		for (const pickPerkLog of pickPerkLogs) {
+			if (pickPerkLog.involvedPerk === null)
+				continue;
+
+			let name = pickPerkLog.currentName;
+			if (pickPerkLog.nameChangedFrom !== null)
+				name = pickPerkLog.nameChangedFrom;
+
+			const pickedPerkName = pickPerkLog.involvedPerk.name;
+
+			if (name.includes(pickedPerkName))
+				return PLAYER_MET_CRITERIA_RESULT;
+		}
+
+		return toFailure(`You have not picked any perk while your current name contained that perk's exact name. You must do so to complete the "${quest.name}" quest.`);
+	},
+
+	[Quests.UNIQUE_PERK.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService, playerService, perkService}: NamesmithServices
+	) => {
+		const pickPerkLogs = activityLogService.getLogsThisWeek({
+			byPlayer: player,
+			ofType: ActivityTypes.PICK_PERK,
+		});
+
+		if (pickPerkLogs.length <= 0)
+			return toFailure(`You have not picked any perks this week. You must pick a perk that no other player has selected to complete the "${quest.name}" quest.`);
+
+		const allPlayers = playerService.getPlayers();
+
+		for (const pickPerkLog of pickPerkLogs) {
+			if (pickPerkLog.involvedPerk === null)
+				continue;
+
+			const pickedPerkID = pickPerkLog.involvedPerk.id;
+
+			// Check if any other player has this perk
+			let isUnique = true;
+			for (const otherPlayer of allPlayers) {
+				if (otherPlayer.id === player.id)
+					continue;
+
+				const otherPlayerPerks = perkService.getPerksOfPlayer(otherPlayer);
+				if (otherPlayerPerks.some(perk => perk.id === pickedPerkID)) {
+					isUnique = false;
+					break;
+				}
+			}
+
+			if (isUnique)
+				return PLAYER_MET_CRITERIA_RESULT;
+		}
+
+		return toFailure(`All the perks you picked this week are also selected by other players. You must pick a perk that no other player on your server has selected to complete the "${quest.name}" quest.`);
+	},
+
+	[Quests.FAST_FORTUNE.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const TOKENS_NEEDED = 2000;
+		const logs = activityLogService.getLogsThisWeek({byPlayer: player});
+
+		let totalTokensGained = 0;
+		for (const log of logs) {
+			if (log.tokensDifference > 0)
+				totalTokensGained += log.tokensDifference;
+		}
+
+		if (totalTokensGained >= TOKENS_NEEDED)
+			return PLAYER_MET_CRITERIA_RESULT;
+
+		return toFailure(`You have only gained ${totalTokensGained} token(s) this week. You need to gain at least ${TOKENS_NEEDED} tokens to complete the "${quest.name}" quest.`);
+	},
+
+	[Quests.COMPLETE_SET.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+	) => {
+		const NUM_DISTINCT_CHARACTERS_NEEDED = 100;
+		const numDistinctCharacters = getNumDistinctCharacters(player.inventory);
+
+		if (numDistinctCharacters >= NUM_DISTINCT_CHARACTERS_NEEDED)
+			return PLAYER_MET_CRITERIA_RESULT;
+
+		return toFailure(`You only have ${numDistinctCharacters} distinct characters in your inventory. You need ${NUM_DISTINCT_CHARACTERS_NEEDED} distinct characters to complete the "${quest.name}" quest.`);
+	},
+
+	[Quests.UNMOVED.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_HOURS_NEEDED = 24;
+
+		const nameIntervals = activityLogService.getNameIntervalsOfPlayerThisWeek(player);
+		console.log(nameIntervals);
+
+		for (const nameInterval of nameIntervals) {
+			const durationTime = nameInterval.endTime.getTime() - nameInterval.startTime.getTime();
+
+			if (getHoursInTime(durationTime) >= NUM_HOURS_NEEDED) {
+				return PLAYER_MET_CRITERIA_RESULT;
+			}
+		}
+
+		return toFailure(
+			`Your current name has not been completely unchanged for at least ${NUM_HOURS_NEEDED} hours. You must ensure no characters are added or removed from your name for ${NUM_HOURS_NEEDED} hours to complete the "${quest.name}" quest.`
+		);
+	},
+
+	// Silent Server (108)
+	[Quests.SILENT_SERVER.id]: (
+		{quest}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_HOURS_OF_SILENCE_NEEDED = 8;
+		const allNameIntervals = activityLogService.getNameIntervalsThisWeek();
+
+		const changeTimestamps: number[] = [];
+		for (const interval of allNameIntervals) {
+			changeTimestamps.push(interval.startTime.getTime());
+		}
+
+		changeTimestamps.sort((a, b) => a - b);
+
+		if (changeTimestamps.length === 0)
+			return PLAYER_MET_CRITERIA_RESULT;
+
+		let maxGap = 0;
+		for (let i = 1; i < changeTimestamps.length; i++) {
+			const gap = changeTimestamps[i] - changeTimestamps[i - 1];
+			if (getHoursInTime(gap) >= NUM_HOURS_OF_SILENCE_NEEDED)
+				return PLAYER_MET_CRITERIA_RESULT;
+
+			maxGap = Math.max(maxGap, gap);
+		}
+
+		const now = new Date().getTime();
+		const gapFromLast = now - changeTimestamps[changeTimestamps.length - 1];
+		if (getHoursInTime(gapFromLast) >= NUM_HOURS_OF_SILENCE_NEEDED)
+			return PLAYER_MET_CRITERIA_RESULT;
+
+		maxGap = Math.max(maxGap, gapFromLast);
+
+		return toFailure(
+			`Players have only gone ${toDurationTextFromTime(maxGap)} at most without anyone changing their name this week. Everyone must ensure no player changes their name for a continuous ${NUM_HOURS_OF_SILENCE_NEEDED}-hour period to complete the "${quest.name}" quest.`
+		);
 	},
 } as const;
 

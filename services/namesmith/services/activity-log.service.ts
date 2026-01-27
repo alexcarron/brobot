@@ -1,5 +1,5 @@
 import { addToArrayMap } from "../../../utilities/data-structure-utils";
-import { addDays, Duration, getMillisecondsOfDuration } from "../../../utilities/date-time-utils";
+import { Duration, getMillisecondsOfDuration } from "../../../utilities/date-time-utils";
 import { DatabaseQuerier } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
 import { ActivityLogRepository } from "../repositories/activity-log.repository";
@@ -346,14 +346,19 @@ export class ActivityLogService {
 		});
 	}
 
-	getNameIntervalsOfPlayerToday(player: PlayerResolvable): NameInterval[] {
+	/**
+	 * Retrieves all name intervals for a given player since a given start time to a given end time.
+	 * @param player - The player to retrieve the name intervals for.
+	 * @param startTime - The start time to retrieve the name intervals since.
+	 * @param endTime - The end time to retrieve the name intervals until.
+	 * @returns An array of name intervals for the given player.
+	 */
+	getNameIntervalsOfPlayerSince(player: PlayerResolvable, startTime: Date, endTime: Date): NameInterval[] {
 		const playerID = this.playerService.resolveID(player);
 		const nameIntervals: NameInterval[] = [];
-		const now = new Date();
-		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
-		const activityLogs = this.activityLogRepository.findActivityLogsAfterTimeWhere(startOfToday, {player});
+		const activityLogs = this.activityLogRepository.findActivityLogsAfterTimeWhere(startTime, {player});
 
-		let previousTime = startOfToday;
+		let previousTime = startTime;
 		let previousName = null;
 		let lastLog;
 		for (const log of activityLogs) {
@@ -377,7 +382,7 @@ export class ActivityLogService {
 		if (lastLog !== undefined) {
 			nameIntervals.push({
 				startTime: lastLog.timeOccurred,
-				endTime: addDays(startOfToday, 1),
+				endTime: endTime,
 				name: lastLog.currentName,
 				playerID: playerID,
 			});
@@ -385,8 +390,8 @@ export class ActivityLogService {
 		else {
 			const resolvedPlayer = this.playerService.resolvePlayer(player);
 			nameIntervals.push({
-				startTime: startOfToday,
-				endTime: addDays(startOfToday, 1),
+				startTime: startTime,
+				endTime: endTime,
 				name: resolvedPlayer.currentName,
 				playerID: playerID,
 			});
@@ -396,21 +401,69 @@ export class ActivityLogService {
 	}
 
 	/**
-	 * Retrieves all name intervals for all players for the current day.
+	 * Retrieves all name intervals for a given player for the current day.
 	 * The returned array is sorted by the start time of the name intervals.
-	 * @returns An array of name intervals for all players for the current day.
+	 * @param player - The player to retrieve the name intervals for.
+	 * @returns An array of name intervals for the given player.
 	 */
-	getNameIntervalsToday(): NameInterval[] {
+	getNameIntervalsOfPlayerToday(player: PlayerResolvable): NameInterval[] {
+		const now = new Date();
+		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
+		return this.getNameIntervalsOfPlayerSince(player, startOfToday, now);
+	}
+
+	/**
+	 * Retrieves all name intervals for a given player for the current week.
+	 * The returned array is sorted by the start time of the name intervals.
+	 * @param player - The player to retrieve the name intervals for.
+	 * @returns An array of name intervals for the given player.
+	 */
+	getNameIntervalsOfPlayerThisWeek(player: PlayerResolvable): NameInterval[] {
+		const now = new Date();
+		const startOfThisWeek = this.startOfWeek;
+		return this.getNameIntervalsOfPlayerSince(player, startOfThisWeek, now);
+	}
+
+	
+		/**
+		 * Retrieves all name intervals for all players since a given start time to a given end time.
+		 * The returned array is sorted by the start time of the name intervals.
+		 * @param startTime - The start time to retrieve the name intervals since.
+		 * @param endTime - The end time to retrieve the name intervals until.
+		 * @returns An array of name intervals for all players for the current day.
+		 */
+	getNameIntervalsSince(startTime: Date, endTime: Date): NameInterval[] {
 		const players = this.playerService.getPlayers();
 		const nameIntervals: NameInterval[] = [];
 		for (const player of players) {
-			const nameIntervalsOfPlayer = this.getNameIntervalsOfPlayerToday(player);
+			const nameIntervalsOfPlayer = this.getNameIntervalsOfPlayerSince(player, startTime, endTime);
 			nameIntervals.push(...nameIntervalsOfPlayer);
 		}
 		return nameIntervals
 			.sort((interval1, interval2) =>
 				interval1.startTime.getTime() - interval2.startTime.getTime()
 			);
+	}
+	
+	/**
+	 * Retrieves all name intervals for all players for the current day.
+	 * The returned array is sorted by the start time of the name intervals.
+	 * @returns An array of name intervals for all players for the current day.
+	 */
+	getNameIntervalsToday(): NameInterval[] {
+		const now = new Date();
+		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
+		return this.getNameIntervalsSince(startOfToday, now);
+	}
+
+	/**
+	 * Retrieves all name intervals for all players for the current week.
+	 * @returns An array of name intervals for all players for the current week.
+	 */
+	getNameIntervalsThisWeek(): NameInterval[] {
+		const now = new Date();
+		const startOfThisWeek = this.startOfWeek;
+		return this.getNameIntervalsSince(startOfThisWeek, now);
 	}
 
 	/**
@@ -797,12 +850,44 @@ export class ActivityLogService {
 	getLogsThisWeek(
 		{byPlayer, ofType}: {
 			byPlayer: PlayerResolvable;
-			ofType: ActivityType;
+			ofType?: ActivityType;
 		}
 	): ActivityLog[] {
 		return this.activityLogRepository.findActivityLogsAfterTimeWhere(this.startOfWeek, {
 			player: byPlayer, 
 			type: ofType
+		});
+	}
+
+	/**
+	 * Retrieves all activity logs for a given player where they accept a trade or have their trade accepted
+	 * @param player - The player to retrieve the activity logs for.
+	 * @returns An array of activity logs where the player accepts a trade or has their trade accepted
+	 */
+	getAcceptTradeLogsThisWeekInvolvingPlayer(
+		player: PlayerResolvable
+	): ActivityLog[] {
+		return this.activityLogRepository.findActivityLogsOfTypeAfterTimeWhereOr(
+			ActivityTypes.ACCEPT_TRADE,
+			this.startOfWeek, 
+			{
+				player: player,
+				involvedPlayer: player
+			}
+		)
+	}
+
+	/**
+	 * Retrieves all activity logs for a given player where they had their trade accepted
+	 * @param player - The player to retrieve the activity logs for.
+	 * @returns An array of activity logs where the given player had their trade accepted
+	 */
+	getAcceptTradeLogsThisWeekWithRecipient(
+		player: PlayerResolvable
+	): ActivityLog[] {
+		return this.activityLogRepository.findActivityLogsAfterTimeWhere(this.startOfWeek, {
+			involvedPlayer: player,
+			type: ActivityTypes.ACCEPT_TRADE,
 		});
 	}
 	
@@ -1128,13 +1213,15 @@ export class ActivityLogService {
 			ofType: ActivityType;
 		}
 	): number {
+		const now = new Date();
 		const logs = this.activityLogRepository.findActivityLogsAfterTimeWhere(this.startOfWeek, {
 			player: byPlayer, 
 			type: ofType
 		});
 
-		if (logs.length === 0)
-			return getMillisecondsOfDuration({ days: 7 });
+		if (logs.length === 0) {
+			return now.getTime() - this.startOfWeek.getTime();
+		}
 
 		const startOfWeekTime = this.startOfWeek.getTime();
 		const firstLogTime = logs[0].timeOccurred.getTime();
@@ -1152,8 +1239,7 @@ export class ActivityLogService {
 		}
 
 		const lastLogTime = logs[logs.length - 1].timeOccurred.getTime();
-		const startOfNextWeekTime = addDays(this.startOfWeek, 7).getTime();
-		const timeBetween = startOfNextWeekTime - lastLogTime;
+		const timeBetween = now.getTime() - lastLogTime;
 
 		if (timeBetween > maxTimeSpan)
 			maxTimeSpan = timeBetween;

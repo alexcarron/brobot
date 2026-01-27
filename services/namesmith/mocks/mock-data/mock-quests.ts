@@ -4,7 +4,7 @@ import { DatabaseQuerier } from "../../database/database-querier";
 import { QuestRepository } from '../../repositories/quest.repository';
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { PlayerResolvable } from "../../types/player.types";
-import { Quest, QuestDefinition } from '../../types/quest.types';
+import { Quest, QuestDefinition, QuestResolvable } from '../../types/quest.types';
 import { returnIfNotFailure } from "../../utilities/workflow.utility";
 import { completeQuest } from "../../workflows/quests/complete-quest.workflow";
 
@@ -42,6 +42,27 @@ export function addMockQuest(
 		isShown,
 	});
 }
+
+/**
+ * Forces a player to complete an existing quest, setting them up so they can successfully complete it without failure.
+ * This will ignore any criteria checks and complete the quest regardless of whether the player has met the criteria or not.
+ * @param playerResolvable - The player resolving to complete the quest.
+ * @param questResolvable - The quest that the player is resolving to complete.
+ * @returns A result indicating if the quest was successfully completed or not.
+ */
+export function forcePlayerToCompleteQuest(
+	playerResolvable: PlayerResolvable,
+	questResolvable: QuestResolvable,
+) {
+	return returnIfNotFailure(
+		completeQuest({
+			playerResolvable: playerResolvable,
+			questResolvable: questResolvable,
+			checkIfMetCriteria: false,
+		})
+	)	
+}
+
 
 /**
  * Forces a player to complete a new quest, setting them up so they can successfully complete it without failure.

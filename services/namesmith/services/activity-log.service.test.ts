@@ -1,4 +1,4 @@
-import { addDays, addHours, addMilliseconds, addMinutes, getMillisecondsOfDuration, getToday, getYesterday } from "../../../utilities/date-time-utils";
+import { addDays, addDuration, addHours, addMilliseconds, addMinutes, getMillisecondsOfDuration, getToday, getYesterday } from "../../../utilities/date-time-utils";
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { getBetween } from "../../../utilities/random-utils";
 import { INVALID_PLAYER_ID } from "../constants/test.constants";
@@ -47,6 +47,7 @@ describe('ActivityLogService', () => {
 	let YESTERDAY: Date;
 	let TODAY: Date;
 	let TOMORROW: Date;
+	let RIGHT_BEFORE_END_OF_DAY: Date;
 
 	beforeEach(() => {
 		TODAY = getToday();
@@ -54,6 +55,7 @@ describe('ActivityLogService', () => {
 		TOMORROW = addDays(TODAY, 1);
 		LAST_WEEK = addDays(TODAY, -7);
 		START_OF_WEEK = addDays(TODAY, -3);
+		RIGHT_BEFORE_END_OF_DAY = addDuration(TODAY, { days: 1, minutes: -1 });
 
 		({ db, activityLogService, gameStateService, playerService } = setupMockNamesmith(START_OF_WEEK));
 
@@ -689,14 +691,12 @@ describe('ActivityLogService', () => {
 
 	describe('getNameIntervalsOfPlayerToday()', () => {
 		let START_OF_TODAY: Date;
-		let END_OF_TODAY: Date;
 		let NOW: Date;
 		let IN_BETWEEN_TIMES: [Date, Date, Date, Date, Date] ;
 
 		beforeEach(() => {
 			NOW = new Date();
 			START_OF_TODAY = gameStateService.getStartOfTodayOrThrow(NOW);
-			END_OF_TODAY = addDays(START_OF_TODAY, 1);
 
 			IN_BETWEEN_TIMES = [NOW, NOW, NOW, NOW, NOW];
 			for (let index = 0; index < 5; index++) {
@@ -712,11 +712,12 @@ describe('ActivityLogService', () => {
 		});
 
 		it('returns an single interval of the entire day when the player has not changed names', () => {
+			jest.setSystemTime(RIGHT_BEFORE_END_OF_DAY);
 			const nameIntervals = activityLogService.getNameIntervalsOfPlayerToday(SOME_PLAYER.id);
 			makeSure(nameIntervals).hasLengthOf(1);
 			makeSure(nameIntervals[0]).is({
 				startTime: START_OF_TODAY,
-				endTime: END_OF_TODAY,
+				endTime: RIGHT_BEFORE_END_OF_DAY,
 				name: SOME_PLAYER.currentName,
 				playerID: SOME_PLAYER.id,
 			});
@@ -726,6 +727,7 @@ describe('ActivityLogService', () => {
 			jest.setSystemTime(IN_BETWEEN_TIMES[0]);
 			forcePlayerToChangeName(SOME_PLAYER.id, 'new name');
 
+			jest.setSystemTime(RIGHT_BEFORE_END_OF_DAY);
 			const nameIntervals = activityLogService.getNameIntervalsOfPlayerToday(SOME_PLAYER.id);
 			makeSure(nameIntervals).hasLengthOf(2);
 			makeSure(nameIntervals[0]).is({
@@ -736,7 +738,7 @@ describe('ActivityLogService', () => {
 			});
 			makeSure(nameIntervals[1]).is({
 				startTime: IN_BETWEEN_TIMES[0],
-				endTime: END_OF_TODAY,
+				endTime: RIGHT_BEFORE_END_OF_DAY,
 				name: 'new name',
 				playerID: SOME_PLAYER.id,
 			});
@@ -749,6 +751,7 @@ describe('ActivityLogService', () => {
 			jest.setSystemTime(IN_BETWEEN_TIMES[1]);
 			forcePlayerToChangeName(SOME_PLAYER.id, 'new name 2');
 
+			jest.setSystemTime(RIGHT_BEFORE_END_OF_DAY);
 			const nameIntervals = activityLogService.getNameIntervalsOfPlayerToday(SOME_PLAYER.id);
 			makeSure(nameIntervals).hasLengthOf(3);
 			makeSure(nameIntervals[0]).is({
@@ -765,7 +768,7 @@ describe('ActivityLogService', () => {
 			});
 			makeSure(nameIntervals[2]).is({
 				startTime: IN_BETWEEN_TIMES[1],
-				endTime: END_OF_TODAY,
+				endTime: RIGHT_BEFORE_END_OF_DAY,
 				name: 'new name 2',
 				playerID: SOME_PLAYER.id,
 			});
@@ -794,6 +797,7 @@ describe('ActivityLogService', () => {
 			jest.setSystemTime(IN_BETWEEN_TIMES[3]);
 			forcePlayerToMineTokens(SOME_PLAYER, 100);
 
+			jest.setSystemTime(RIGHT_BEFORE_END_OF_DAY);
 			const nameIntervals = activityLogService.getNameIntervalsOfPlayerToday(SOME_PLAYER.id);
 			makeSure(nameIntervals).hasLengthOf(4);
 			makeSure(nameIntervals[0]).is({
@@ -816,7 +820,7 @@ describe('ActivityLogService', () => {
 			});
 			makeSure(nameIntervals[3]).is({
 				startTime: IN_BETWEEN_TIMES[2],
-				endTime: END_OF_TODAY,
+				endTime: RIGHT_BEFORE_END_OF_DAY,
 				name: SOME_PLAYER.currentName + "a",
 				playerID: SOME_PLAYER.id,
 			});
@@ -829,6 +833,7 @@ describe('ActivityLogService', () => {
 			jest.setSystemTime(IN_BETWEEN_TIMES[1]);
 			forcePlayerToChangeName(SOME_PLAYER.id, 'new name');
 
+			jest.setSystemTime(RIGHT_BEFORE_END_OF_DAY);
 			const nameIntervals = activityLogService.getNameIntervalsOfPlayerToday(SOME_PLAYER.id);
 			makeSure(nameIntervals).hasLengthOf(2);
 			makeSure(nameIntervals[0]).is({
@@ -839,7 +844,7 @@ describe('ActivityLogService', () => {
 			});
 			makeSure(nameIntervals[1]).is({
 				startTime: IN_BETWEEN_TIMES[0],
-				endTime: END_OF_TODAY,
+				endTime: RIGHT_BEFORE_END_OF_DAY,
 				name: 'new name',
 				playerID: SOME_PLAYER.id,
 			});
@@ -848,14 +853,12 @@ describe('ActivityLogService', () => {
 
 	describe('getNameToNameIntervalsToday()', () => {
 		let START_OF_TODAY: Date;
-		let END_OF_TODAY: Date;
 		let NOW: Date;
 		let IN_BETWEEN_TIMES: [Date, Date, Date, Date, Date];
 
 		beforeEach(() => {
 			NOW = new Date();
 			START_OF_TODAY = gameStateService.getStartOfTodayOrThrow(NOW);
-			END_OF_TODAY = addDays(START_OF_TODAY, 1);
 
 			IN_BETWEEN_TIMES = [NOW, NOW, NOW, NOW, NOW];
 			for (let index = 0; index < 5; index++) {
@@ -874,13 +877,14 @@ describe('ActivityLogService', () => {
 		});
 
 		it('returns a single key-value pair when there is only one player', () => {
+			jest.setSystemTime(RIGHT_BEFORE_END_OF_DAY);
 			const nameToNameIntervals = activityLogService.getNameToNameIntervalsToday();
 			makeSure(nameToNameIntervals).hasLengthOf(1);
 			const nameIntervals = nameToNameIntervals.get(SOME_PLAYER.currentName);
 			makeSure(nameIntervals).hasLengthOf(1);
 			makeSure(nameIntervals![0]).is({
 				startTime: START_OF_TODAY,
-				endTime: END_OF_TODAY,
+				endTime: RIGHT_BEFORE_END_OF_DAY,
 				name: SOME_PLAYER.currentName,
 				playerID: SOME_PLAYER.id,
 			});
@@ -890,6 +894,7 @@ describe('ActivityLogService', () => {
 			const player2 = addMockPlayer(db, {currentName: 'player2'});
 			const player3 = addMockPlayer(db, {currentName: 'player3'});
 
+			jest.setSystemTime(RIGHT_BEFORE_END_OF_DAY);
 			const nameToNameIntervals = activityLogService.getNameToNameIntervalsToday();
 			makeSure(nameToNameIntervals).hasLengthOf(3);
 			makeSure(Array.from(nameToNameIntervals.keys())).containsOnly(
@@ -904,7 +909,7 @@ describe('ActivityLogService', () => {
 				makeSure(nameIntervals).hasLengthOf(1);
 				makeSure(nameIntervals![0]).is({
 					startTime: START_OF_TODAY,
-					endTime: END_OF_TODAY,
+					endTime: RIGHT_BEFORE_END_OF_DAY,
 					name: player.currentName,
 					playerID: player.id,
 				});
@@ -923,6 +928,7 @@ describe('ActivityLogService', () => {
 			jest.setSystemTime(IN_BETWEEN_TIMES[2]);
 			forcePlayerToMineTokens(SOME_PLAYER, 100);
 
+			jest.setSystemTime(RIGHT_BEFORE_END_OF_DAY);
 			const nameToNameIntervals = activityLogService.getNameToNameIntervalsToday();
 			makeSure(nameToNameIntervals).hasLengthOf(3);
 
@@ -948,7 +954,7 @@ describe('ActivityLogService', () => {
 			makeSure(nameIntervals).hasLengthOf(1);
 			makeSure(nameIntervals![0]).is({
 				startTime: IN_BETWEEN_TIMES[1],
-				endTime: END_OF_TODAY,
+				endTime: RIGHT_BEFORE_END_OF_DAY,
 				name: 'new namea',
 				playerID: SOME_PLAYER.id,
 			});
@@ -958,13 +964,14 @@ describe('ActivityLogService', () => {
 			const player2 = addMockPlayer(db, {currentName: SOME_PLAYER.currentName});
 			const player3 = addMockPlayer(db, {currentName: SOME_PLAYER.currentName});
 
+			jest.useFakeTimers({ now: RIGHT_BEFORE_END_OF_DAY });
 			const nameToNameIntervals = activityLogService.getNameToNameIntervalsToday();
 			makeSure(nameToNameIntervals).hasLengthOf(1);
 			const nameIntervals = nameToNameIntervals.get(SOME_PLAYER.currentName);
 			makeSure(nameIntervals).hasLengthOf(3);
 			makeSure(nameIntervals).haveProperties({
 				startTime: START_OF_TODAY,
-				endTime: END_OF_TODAY,
+				endTime: RIGHT_BEFORE_END_OF_DAY,
 				name: SOME_PLAYER.currentName,
 			});
 
@@ -2091,11 +2098,13 @@ describe('ActivityLogService', () => {
 	});
 
 	describe('getMaxTimeOfNoLogsDoneThisWeek()', () => {
-		it('returns 7 days if player has no activity logs', () => {
+		it('returns time from start of week to now if player has no activity logs', () => {
+			jest.useFakeTimers({ now: addDays(START_OF_WEEK, 3) });
 			makeSure(activityLogService.getMaxTimeOfNoLogsDoneThisWeek({
 				byPlayer: SOME_PLAYER.id,
 				ofType: ActivityTypes.CHANGE_NAME
-			})).isEqualTo(getMillisecondsOfDuration({days: 7}));
+			})).isEqualTo(getMillisecondsOfDuration({days: 3}));
+			jest.useRealTimers();
 		});
 
 		it('returns time from log to start of week if player has one activity log late', () => {
@@ -2111,17 +2120,19 @@ describe('ActivityLogService', () => {
 			})).isEqualTo(getMillisecondsOfDuration({days: 5}));
 		});
 
-		it('returns time from log to end of week if player has one activity log early', () => {
+		it('returns time from log to now if player has one activity log early', () => {
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
 				type: ActivityTypes.CHANGE_NAME,
 				timeOccurred: addDays(START_OF_WEEK, 1),
 			});
 
+			jest.useFakeTimers({ now: addDays(START_OF_WEEK, 3) });
 			makeSure(activityLogService.getMaxTimeOfNoLogsDoneThisWeek({
 				byPlayer: SOME_PLAYER.id,
 				ofType: ActivityTypes.CHANGE_NAME
-			})).isEqualTo(getMillisecondsOfDuration({days: 6}));
+			})).isEqualTo(getMillisecondsOfDuration({days: 2}));
+			jest.useRealTimers();
 		});
 
 		it('returns time from log to start of week if it ends up being the longest time', () => {
@@ -2174,10 +2185,13 @@ describe('ActivityLogService', () => {
 				timeOccurred: addDays(START_OF_WEEK, 4),
 			});
 
+			jest.useFakeTimers({ now: addDays(START_OF_WEEK, 6) });
+
 			makeSure(activityLogService.getMaxTimeOfNoLogsDoneThisWeek({
 				byPlayer: SOME_PLAYER.id,
 				ofType: ActivityTypes.CHANGE_NAME
-			})).isEqualTo(getMillisecondsOfDuration({days: 3}));
+			})).isEqualTo(getMillisecondsOfDuration({days: 2}));
+			jest.useRealTimers();
 		});
 
 		it('returns time between farthest apart logs', () => {
@@ -2197,10 +2211,136 @@ describe('ActivityLogService', () => {
 				timeOccurred: addDays(START_OF_WEEK, 5),
 			});
 
+			jest.useFakeTimers({ now: addDays(START_OF_WEEK, 6) });
+
 			makeSure(activityLogService.getMaxTimeOfNoLogsDoneThisWeek({
 				byPlayer: SOME_PLAYER.id,
 				ofType: ActivityTypes.CHANGE_NAME
 			})).isEqualTo(getMillisecondsOfDuration({days: 3}));
+			jest.useRealTimers();
+		});
+	});
+
+	describe('getAcceptTradeLogsThisWeekInvolvingPlayer()', () => {
+		it('returns empty array when player has no activity logs', () => {
+			makeSure(activityLogService.getAcceptTradeLogsThisWeekInvolvingPlayer(SOME_PLAYER)).isEmpty();
+		});
+
+		it('returns correct array of activity logs when player has one activity log of type accept trade', () => {
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.ACCEPT_TRADE,
+				timeOccurred: addHours(START_OF_WEEK, 1)
+			});
+
+			makeSure(activityLogService.getAcceptTradeLogsThisWeekInvolvingPlayer(SOME_PLAYER)).hasLengthOf(1);
+		});
+
+		it('returns correct array of activity logs when player has one activity log of type accept trade and one activity log of type change name', () => {
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.ACCEPT_TRADE,
+				timeOccurred: addHours(START_OF_WEEK, 1)
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addHours(START_OF_WEEK, 2)
+			});
+
+			makeSure(activityLogService.getAcceptTradeLogsThisWeekInvolvingPlayer(SOME_PLAYER)).hasLengthOf(1);
+		});
+
+		it('returns correct array of activity logs when player has two activity logs of type accept trade', () => {
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.ACCEPT_TRADE,
+				timeOccurred: addHours(START_OF_WEEK, 1)
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.ACCEPT_TRADE,
+				timeOccurred: addHours(START_OF_WEEK, 2)
+			});
+
+			makeSure(activityLogService.getAcceptTradeLogsThisWeekInvolvingPlayer(SOME_PLAYER)).hasLengthOf(2);
+		});
+
+		it('returns correct array of activity logs when player has two activity logs of type change name', () => {
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addHours(START_OF_WEEK, 1)
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addHours(START_OF_WEEK, 2)
+			});
+
+			makeSure(activityLogService.getAcceptTradeLogsThisWeekInvolvingPlayer(SOME_PLAYER)).hasLengthOf(0);
+		});
+	});
+
+	describe('getAcceptTradeLogsThisWeekWithRecipient()', () => {
+		it('returns empty array when player has no activity logs', () => {
+			makeSure(activityLogService.getAcceptTradeLogsThisWeekWithRecipient(SOME_PLAYER)).isEmpty();
+		});
+
+		it('returns correct array of activity logs when player has one activity log of type accept trade', () => {
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.ACCEPT_TRADE,
+				timeOccurred: addHours(START_OF_WEEK, 1)
+			});
+
+			makeSure(activityLogService.getAcceptTradeLogsThisWeekWithRecipient(SOME_PLAYER)).hasLengthOf(0);
+		});
+
+		it('returns correct array of activity logs when player has one activity log of type accept trade and one activity log of type change name', () => {
+			addMockActivityLog(db, {
+				type: ActivityTypes.ACCEPT_TRADE,
+				timeOccurred: addHours(START_OF_WEEK, 1),
+				involvedPlayer: SOME_PLAYER,
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addHours(START_OF_WEEK, 2),
+				involvedPlayer: SOME_PLAYER,
+			});
+
+			makeSure(activityLogService.getAcceptTradeLogsThisWeekWithRecipient(SOME_PLAYER)).hasLengthOf(1);
+		});
+
+		it('returns correct array of activity logs when player has two activity logs of type accept trade', () => {
+			addMockActivityLog(db, {
+				type: ActivityTypes.ACCEPT_TRADE,
+				timeOccurred: addHours(START_OF_WEEK, 1),
+				involvedPlayer: SOME_PLAYER,
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.ACCEPT_TRADE,
+				timeOccurred: addHours(START_OF_WEEK, 2)
+			});
+
+			makeSure(activityLogService.getAcceptTradeLogsThisWeekWithRecipient(SOME_PLAYER)).hasLengthOf(1);
+		});
+
+		it('returns correct array of activity logs when player has two activity logs of type change name', () => {
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addHours(START_OF_WEEK, 1)
+			});
+			addMockActivityLog(db, {
+				player: SOME_PLAYER,
+				type: ActivityTypes.CHANGE_NAME,
+				timeOccurred: addHours(START_OF_WEEK, 2)
+			});
+
+			makeSure(activityLogService.getAcceptTradeLogsThisWeekWithRecipient(SOME_PLAYER)).hasLengthOf(0);
 		});
 	});
 });
