@@ -19,19 +19,22 @@ const result = getWorkflowResultCreator({
 /**
  * Attempts to pick a perk for a player.
  * @param parameters - An object containing the following parameters:
- * @param parameters.playerService - The player service to use to check if the player is valid.
- * @param parameters.perkService - The perk service to use to check if the perk is valid.
  * @param parameters.player - The player to pick the perk for.
  * @param parameters.pickedPerk - The perk to be picked.
- * @param parameters.perksPickingFrom - The perks that the player is picking from.
+ * @param parameters.ignoreAlreadyPickedPerk - Whether to ignore if the player has already picked a perk.
+ * @param parameters.ignoreAlreadyHasPerk - Whether to ignore if the player already has the perk.
  * @returns A result indicating if the perk was successfully picked or not.
  */
 export function pickPerk(
-	{player, pickedPerk}: {
+	{player, pickedPerk, ignoreAlreadyPickedPerk, ignoreAlreadyHasPerk}: {
 		player: PlayerResolvable,
 		pickedPerk: PerkResolvable,
+		ignoreAlreadyPickedPerk?: boolean,
+		ignoreAlreadyHasPerk?: boolean
 	}
 ) {
+	if (ignoreAlreadyPickedPerk === undefined) ignoreAlreadyPickedPerk = false;
+	if (ignoreAlreadyHasPerk === undefined) ignoreAlreadyHasPerk = false;
 	const {playerService, perkService, activityLogService} = getNamesmithServices();
 
 	if (!playerService.isPlayer(player)) {
@@ -42,11 +45,11 @@ export function pickPerk(
 		return result.failure.perkDoesNotExist();
 	}
 
-	if (playerService.hasPickedPerk(player)) {
+	if (playerService.hasPickedPerk(player) && !ignoreAlreadyPickedPerk) {
 		return result.failure.perkAlreadyChosen();
 	}
 
-	if (perkService.doesPlayerHave(pickedPerk, player)) {
+	if (perkService.doesPlayerHave(pickedPerk, player) && !ignoreAlreadyHasPerk) {
 		return result.failure.playerAlreadyHasPerk();
 	}
 
