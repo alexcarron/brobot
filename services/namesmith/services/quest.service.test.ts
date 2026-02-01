@@ -186,7 +186,7 @@ describe('QuestService', () => {
 			Math.random = () => 0.6;
 			try {
 				questService.assignNewDailyQuests(SOME_DATE);
-				shownDailyQuests = questService.getCurrentDailyQuests();
+				shownDailyQuests = questService.getShownDailyQuests();
 				makeSure(shownDailyQuests.length).isGreaterThan(0);
 			}
 			finally { Math.random = realRandom }
@@ -204,9 +204,9 @@ describe('QuestService', () => {
 			Math.random = () => 0.6; // deterministic
 			try {
 				questService.assignNewDailyQuests(addDays(SOME_DATE, -1));
-				oldDailyQuests = questService.getCurrentDailyQuests();
+				oldDailyQuests = questService.getShownDailyQuests();
 				questService.assignNewDailyQuests(SOME_DATE);
-				shownDailyQuests = questService.getCurrentDailyQuests();
+				shownDailyQuests = questService.getShownDailyQuests();
 				makeSure(shownDailyQuests.length).isGreaterThan(0);
 			}
 			finally { Math.random = realRandom }
@@ -255,7 +255,7 @@ describe('QuestService', () => {
 			}
 			finally { Math.random = realRandom }
 
-			const dailyQuests = questService.getCurrentDailyQuests();
+			const dailyQuests = questService.getShownDailyQuests();
 			makeSure(dailyQuests.length).isGreaterThan(0);
 
 			const shownDailyQuests = questService.questRepository.getShownDailyQuestDuring(SOME_DATE);
@@ -300,7 +300,7 @@ describe('QuestService', () => {
 			let day = SOME_DATE;
 			for (let i = 0; i < 25; i++) {
 				questService.assignNewDailyQuests(day);
-				makeSure(questService.getCurrentDailyQuests()).haveProperty('recurrence', 'daily');
+				makeSure(questService.getShownDailyQuests()).haveProperty('recurrence', 'daily');
 				day = addDays(day, 1);
 			}
 		});
@@ -373,7 +373,7 @@ describe('QuestService', () => {
 			finally { Math.random = realRandom }
 
 			questService.reset();
-			const dailyQuests = questService.getCurrentDailyQuests();
+			const dailyQuests = questService.getShownDailyQuests();
 			makeSure(dailyQuests).hasLengthOf(0);
 
 			const currentlyShownQuestIDs = questService.questRepository.getCurrentlyShownDailyQuestIDs();
@@ -544,7 +544,7 @@ describe('QuestService', () => {
 			}
 			finally { Math.random = realRandom }
 
-			const shownQuests = questService.getCurrentDailyQuests();
+			const shownQuests = questService.getShownDailyQuests();
 			makeSure(shownQuests.length).isGreaterThan(0);
 
 			const visibleQuest = shownQuests[0];

@@ -5,7 +5,6 @@ import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { Quest } from "../../types/quest.types";
 import { fetchNamesmithChannel } from "../../utilities/discord-fetch.utility";
 import { toQuestButton } from "./complete-quest-button";
-import { regenerateQuestMessage } from "./quest-message";
 
 /**
  * Sends a message to the quests channel containing the daily quests.
@@ -13,7 +12,7 @@ import { regenerateQuestMessage } from "./quest-message";
  */
 export async function sendWeeklyQuestsMessages(): Promise<void> {
 	const {questService} = getNamesmithServices();
-	const weeklyQuests = questService.getCurrentWeeklyQuests();
+	const weeklyQuests = questService.getShownWeeklyQuests();
 	
 	const weeklyQuestsChannel = await fetchNamesmithChannel(ids.namesmith.channels.WEEKLY_QUESTS);
 
@@ -34,9 +33,9 @@ export async function sendWeeklyQuestsMessages(): Promise<void> {
  */
 export async function regenerateWeeklyQuestsMessages() {
 	const {questService} = getNamesmithServices();
-	const dailyQuests = questService.getCurrentDailyQuests();
+	const dailyQuests = questService.getShownWeeklyQuests();
 	for (const quest of dailyQuests) {
-		await regenerateQuestMessage(quest);
+		await regenerateWeeklyQuestMessage(quest);
 	}
 }
 
