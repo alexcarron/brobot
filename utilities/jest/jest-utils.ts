@@ -4,6 +4,7 @@
  */
 
 import { addDuration, Duration, getMillisecondsOfDuration } from "../date-time-utils";
+import { InvalidArgumentError } from "../error-utils";
 import { Class, ElementOfArray, ErrorClass } from "../types/generic-types";
 import { isArray, isNumberOrBigInt, isObject, isStrings } from "../types/type-guards";
 
@@ -777,4 +778,34 @@ export function repeatEveryIntervalUntil(
 	}
 
 	jest.setSystemTime(endDate);
+}
+
+/**
+ * Sets jest to use fake timers and executes a given function at the start date.
+ * If the function is called with a date, it will be used as the start date.
+ * If the function is called with a function, the function will be executed at the current date.
+ * If a callback function is not provided, an error will be thrown.
+ * After the callback function is executed, jest will be set back to use real timers.
+ * @param startDateOrCallback - The date to use as the start date, or a function to execute at the current date.
+ * @param callback - The function to execute at the start date.
+ */
+export function withFakeTimers(
+	startDateOrCallback: Date | (() => void),
+	callback?: () => void,
+): void {
+	let startDate: Date = new Date();
+	if (typeof startDateOrCallback === 'function') {
+		callback = startDateOrCallback;	
+	}
+	else {
+		startDate = startDateOrCallback;
+	}
+
+	if (callback === undefined) {
+		throw new InvalidArgumentError('withFakeTimers() function expected callback function to be provided, but it was not provided.');
+	}
+
+	jest.useFakeTimers({ now: startDate });
+	callback();
+	jest.useRealTimers();
 }
