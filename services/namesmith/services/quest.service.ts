@@ -167,8 +167,7 @@ export class QuestService {
 				availableQuestIDs = [...questIDsNotShownAgain];
 			}
 
-			const randomIndex = Math.floor(Math.random() * availableQuestIDs.length);
-			const questID = availableQuestIDs[randomIndex];
+			const questID = availableQuestIDs[Math.floor(Math.random() * availableQuestIDs.length)];
 
 			newDailyQuestIDs.push(questID);
 			this.questRepository.setWasShown(questID, true);
@@ -202,10 +201,20 @@ export class QuestService {
 	}
 
 	/**
+	 * Returns an array of all the non-hidden daily quests that are currently being shown to the players.
+	 * @returns An array of all the non-hidden daily quests that are currently being shown to the players.
+	 */
+	getShownDailyQuests(): Quest[] {
+		const shownToday = this.questRepository.getShownDailyQuestDuring(new Date());
+		const hiddenQuestIDs = shownToday.filter(s => !s.isHidden).map(s => s.quest.id);
+		return hiddenQuestIDs.map(questID => this.resolveQuest(questID));
+	}
+
+	/**
 	 * Returns an array of all the weekly quests being shown to the players for the week.
 	 * @returns An array of all the weekly quests being shown to the players for the week.
 	 */
-	getCurrentWeeklyQuests(): Quest[] {
+	getShownWeeklyQuests(): Quest[] {
 		return this.questRepository.getCurrentlyShownWeeklyQuestIDs()
 			.map(questID => this.resolveQuest(questID));
 	}

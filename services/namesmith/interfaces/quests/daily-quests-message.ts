@@ -10,7 +10,7 @@ import { regenerateQuestMessage, sendQuestMessage } from "./quest-message";
  */
 export async function sendDailyQuestsMessages(): Promise<void> {
 	const {questService} = getNamesmithServices();
-	const dailyQuests = questService.getCurrentDailyQuests();
+	const dailyQuests = questService.getShownDailyQuests();
 	
 	const questChannel = await fetchNamesmithChannel(ids.namesmith.channels.DAILY_QUESTS);
 
@@ -31,7 +31,7 @@ export async function sendDailyQuestsMessages(): Promise<void> {
  */
 export async function regenerateDailyQuestsMessages() {
 	const {questService} = getNamesmithServices();
-	const dailyQuests = questService.getCurrentDailyQuests();
+	const dailyQuests = questService.getShownDailyQuests();
 	for (const quest of dailyQuests) {
 		await regenerateQuestMessage(quest);
 	}

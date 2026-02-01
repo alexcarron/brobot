@@ -972,7 +972,7 @@ const questIDToMeetsCriteriaCheck = {
 		}
 
 
-		return toFailure(`You have only recieved ${maxNumCharactersRecieved} character(s) today at most. You need to recieve at least ${NUM_RECIEVED_CHARACTERS_NEEDED} characters from a single mystery box to complete the "${quest.name}" quest.`);
+		return toFailure(`You have only recieved ${maxNumCharactersRecieved} character(s) at most from a mystery box today. You need to recieve at least ${NUM_RECIEVED_CHARACTERS_NEEDED} characters from a single mystery box to complete the "${quest.name}" quest.`);
 	},
 
 	// Expected Reward
