@@ -1,4 +1,4 @@
-import { failTest, makeSure, repeatOverDuration, repeatEveryIntervalUntil } from "./jest-utils";
+import { failTest, makeSure, repeatOverDuration, repeatEveryIntervalUntil, withFakeTimers } from "./jest-utils";
 
 describe('jest-utils.js', () => {
   describe('expectValue (makeSure) matcher object', () => {
@@ -197,5 +197,38 @@ describe('jest-utils.js', () => {
 		});
 	});
 
-	
+	describe('withFakeTimers', () => {
+		it('uses fake timers with given date', () => {
+			const SOME_DATE = new Date(1, 2, 3, 4, 5, 6, 7);
+			let ranAtDate: Date = new Date(NaN);
+
+			withFakeTimers(SOME_DATE, () => {
+				ranAtDate = new Date();
+			});
+
+			makeSure(ranAtDate).is(SOME_DATE);
+		});
+
+		it('uses fake timers with current date if none given', () => {
+			let ranAtDate: Date = new Date(NaN);
+
+			const CURRENT_DATE = new Date();
+			withFakeTimers(() => {
+				ranAtDate = new Date();
+			});
+
+			makeSure(ranAtDate).is(CURRENT_DATE);
+		});
+
+		it('brings back real timers after callback', () => {
+			const SOME_DATE = new Date(1, 2, 3, 4, 5, 6, 7);
+
+			const CURRENT_DATE = new Date();
+			withFakeTimers(SOME_DATE, () => {});
+
+			const dateAfterCallback = new Date();
+
+			makeSure(dateAfterCallback).isCloseToDate(CURRENT_DATE);
+		});
+	})
 });
