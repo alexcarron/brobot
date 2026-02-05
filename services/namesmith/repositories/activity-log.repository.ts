@@ -176,7 +176,7 @@ export class ActivityLogRepository {
 	toPartialDBActivityLog(
 		activityLogDefinition: Partial<ActivityLogDefinition>
 	): Partial<DBActivityLog> {
-		const { id, timeOccurred, player, type, nameChangedFrom, currentName, charactersGained, charactersLost, tokensDifference, timeCooldownExpired, involvedPlayer, involvedRecipe, involvedQuest, involvedTrade, involvedPerk, involvedRole, involvedMysteryBox } = activityLogDefinition;
+		const { id, timeOccurred, player, type, currentTokens, nameChangedFrom, currentName, charactersGained, charactersLost, tokensDifference, timeCooldownExpired, involvedPlayer, involvedRecipe, involvedQuest, involvedTrade, involvedPerk, involvedRole, involvedMysteryBox } = activityLogDefinition;
 
 		const playerID = resolveOptional(player,
 			this.playerRepository.resolveID.bind(this.playerRepository)
@@ -208,6 +208,7 @@ export class ActivityLogRepository {
 			timeOccurred: DBDate.orUndefined.fromDomain(timeOccurred),
 			playerID,
 			type,
+			currentTokens,
 			nameChangedFrom,
 			currentName,
 			charactersGained,
@@ -275,7 +276,7 @@ export class ActivityLogRepository {
 	) {
 		this.throwIfAnEntityDoesNotExist(activityLogDefinition);
 
-		let {id, timeOccurred, currentName} = activityLogDefinition;
+		let {id, timeOccurred, currentName, currentTokens} = activityLogDefinition;
 		const {tokensDifference, nameChangedFrom, player, charactersGained, charactersLost, timeCooldownExpired} = activityLogDefinition;
 
 		if (timeOccurred === undefined)
@@ -283,6 +284,9 @@ export class ActivityLogRepository {
 
 		if (currentName === undefined)
 			currentName = this.playerRepository.resolvePlayer(player).currentName;
+
+		if (currentTokens === undefined)
+			currentTokens = this.playerRepository.resolvePlayer(player).tokens;
 
 		if (id !== undefined) {
 			if (this.doesActivityLogExist(id))
@@ -296,6 +300,7 @@ export class ActivityLogRepository {
 				? nameChangedFrom
 				: null,
 			currentName: currentName,
+			currentTokens: currentTokens,
 			charactersGained: charactersGained !== undefined
 				? charactersGained
 				: null,

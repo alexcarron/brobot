@@ -33,11 +33,12 @@ export const DBActivityLogType = object.asTransformableType('MinimalActivityLog'
 	timeOccurred: DBDate,
 	playerID: string,
 	type: strings(...activityTypes),
+	tokensDifference: number,
+	currentTokens: number,
 	nameChangedFrom: string.orNull,
 	currentName: string,
 	charactersGained: string.orNull,
 	charactersLost: string.orNull,
-	tokensDifference: number,
 	timeCooldownExpired: DBDate.orNull,
 	involvedPlayerID: string.orNull,
 	involvedRecipeID: number.orNull,
@@ -57,11 +58,12 @@ export type ActivityLog = {
 	timeOccurred: Date;
 	player: Player;
 	type: ActivityType;
+	tokensDifference: number;
+	currentTokens: number;
 	nameChangedFrom: string | null;
 	currentName: string;
 	charactersGained: string | null;
 	charactersLost: string | null;
-	tokensDifference: number;
 	timeCooldownExpired: Date | null;
 	involvedPlayer: Player | null;
 	involvedRecipe: Recipe | null;
@@ -77,11 +79,12 @@ export type ActivityLogDefinition = {
 	timeOccurred?: Date;
 	player: PlayerResolvable;
 	type: ActivityType;
+	tokensDifference?: number;
+	currentTokens?: number;
 	nameChangedFrom?: string | null;
 	currentName?: string;
 	charactersGained?: string | null;
 	charactersLost?: string | null;
-	tokensDifference?: number;
 	timeCooldownExpired?: Date | null;
 	involvedPlayer?: PlayerResolvable | null;
 	involvedRecipe?: RecipeResolvable | null;

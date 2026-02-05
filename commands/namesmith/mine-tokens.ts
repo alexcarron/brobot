@@ -1,6 +1,7 @@
 import { ids } from "../../bot-config/discord-ids";
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
+import { getTokensEarnedFeedback } from "../../services/namesmith/utilities/feedback-message.utility";
 import { mineTokens } from "../../services/namesmith/workflows/mine-tokens.workflow";
 import { toAmountOfNoun } from "../../utilities/string-manipulation-utils";
 
@@ -20,12 +21,12 @@ export const command = new SlashCommand({
 
 		const { tokensEarned, newTokenCount, hasMineBonusPerk } = result;
 
-		let baseMessage = `**+${toAmountOfNoun(tokensEarned, 'Token')}** ` + '🪙'.repeat(tokensEarned) + `\n`
+		let baseMessage = getTokensEarnedFeedback(tokensEarned, {isOneLine: true}) + `\n`
 
 		if (hasMineBonusPerk) {
 			const baseTokensEarned = tokensEarned - 1;
 			baseMessage =
-				`**+${toAmountOfNoun(baseTokensEarned, 'Token')}** ` + '🪙'.repeat(baseTokensEarned) + `\n` +
+				getTokensEarnedFeedback(baseTokensEarned, {isOneLine: true}) + `\n` +
 				'+1 Bonus Token 🪙\n';
 		}
 

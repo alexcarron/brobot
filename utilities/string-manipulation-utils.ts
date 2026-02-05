@@ -626,7 +626,7 @@ export function addSIfPlural(text: string, amount: number) {
  * toAmountOfNoun(2, 'cat'); // '2 cats'
  */
 export function toAmountOfNoun(amount: number, text: string) {
-	return `${amount} ${addSIfPlural(text, amount)}`;
+	return `${toReadableNumber(amount)} ${addSIfPlural(text, amount)}`;
 }
 
 /**
@@ -910,4 +910,44 @@ export function toConciseReadableDates(dates: Date[]): string {
 
 	lines.push(`${linePrefix}${compactDayStrings.join(' • ')}`);
 	return lines.join('\n');
+}
+
+/**
+ * Converts a number into a human-readable string with commas as thousand separators and without trailing zeros for decimal parts.
+ * @param number - The number to convert.
+ * @returns A human-readable string with commas as
+ * @throws {InvalidArgumentError} If the input is not a number.
+ * thousand separators and without trailing zeros for decimal parts.
+ * @example
+ * toReadableNumber(1234.56) // "1,234.56"
+ * toReadableNumber(1234567.890) // "1,234,567.89"
+ * toReadableNumber("01234.5600") // "12,345.56"
+ */
+export function toReadableNumber(number: number | string): string {
+  const numString = 
+		typeof number === 'number' 
+			? number.toString() 
+			: number;
+  
+  const floatNumber = parseFloat(numString);
+  
+  if (isNaN(floatNumber)) {
+    throw new InvalidArgumentError(`Expected a number to be passed to toReadableNumber(), but got ${numString}.`);
+  }
+  
+  // Split into integer and decimal parts
+  const [integerPart, decimalPart] = numString.replace(/^0+/, '').split('.');
+  
+  // Add commas to integer part
+  const formattedInteger = parseInt(integerPart || '0')
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  
+  // If there's a decimal part, remove trailing zeros
+  if (decimalPart !== undefined) {
+		const formattedDecimal = decimalPart.replace(/0+$/, '');
+		return `${formattedInteger}.${formattedDecimal}`;
+  }
+  
+  return formattedInteger;
 }

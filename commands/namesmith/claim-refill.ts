@@ -4,6 +4,7 @@ import { getNamesmithServices } from "../../services/namesmith/services/get-name
 import { joinLines, toAmountOfNoun } from "../../utilities/string-manipulation-utils";
 import { claimRefill } from "../../services/namesmith/workflows/claim-refill.workflow";
 import { toUnixTimestamp } from "../../utilities/date-time-utils";
+import { getTokensEarnedFeedback, toTokenEmojis } from "../../services/namesmith/utilities/feedback-message.utility";
 
 export const command = new SlashCommand({
 	name: "claim-refill",
@@ -29,16 +30,13 @@ export const command = new SlashCommand({
 		const { baseTokensEarned, newTokenCount, nextRefillTime, tokensFromRefillBonus, tokensFromLuckyDoubleTokens } = refillResult;
 
 
-		const baseTokensLine = joinLines(
-			`**+${toAmountOfNoun(baseTokensEarned, 'Token')}**`,
-			`${'🪙'.repeat(baseTokensEarned)}`,
-		)
+		const baseTokensLine = getTokensEarnedFeedback(baseTokensEarned);
 
 		const luckyDoubleTokensLine = (tokensFromLuckyDoubleTokens > 0)
 			? joinLines(
 				'',
 				`+${toAmountOfNoun(baseTokensEarned, 'Lucky Double Token')}`,
-				`${'🪙'.repeat(baseTokensEarned)}`,
+				toTokenEmojis(tokensFromLuckyDoubleTokens),
 			)
 			: null;
 
@@ -46,7 +44,7 @@ export const command = new SlashCommand({
 			? joinLines(
 				'',
 				`+${toAmountOfNoun(tokensFromRefillBonus, 'Refill Bonus Token')}`,
-				`${'🪙'.repeat(tokensFromRefillBonus)}`,
+				toTokenEmojis(tokensFromRefillBonus),
 			)
 			: null;
 

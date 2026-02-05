@@ -720,14 +720,6 @@ export const quests = [
 		tokensReward: 1500
 	},
 	{
-		id: 107,
-		name: "Unmoved",
-		description: "Keep your current name unchanged for 24 hours.",
-		recurrence: "weekly",
-		tokensReward: 600,
-		charactersReward: "stability"
-	},
-	{
 		id: 108,
 		name: "Silent Server",
 		description: "Ensure no player changes their name for an 8-hour continuous window.",

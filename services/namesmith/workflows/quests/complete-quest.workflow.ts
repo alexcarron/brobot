@@ -2731,28 +2731,6 @@ const questIDToMeetsCriteriaCheck = {
 		return toFailure(`You only have ${numDistinctCharacters} distinct characters in your inventory. You need ${NUM_DISTINCT_CHARACTERS_NEEDED} distinct characters to complete the "${quest.name}" quest.`);
 	},
 
-	[Quests.UNMOVED.id]: (
-		{quest, player}: MeetsCriteriaParameters,
-		{activityLogService}: NamesmithServices
-	) => {
-		const NUM_HOURS_NEEDED = 24;
-
-		const nameIntervals = activityLogService.getNameIntervalsOfPlayerThisWeek(player);
-		console.log(nameIntervals);
-
-		for (const nameInterval of nameIntervals) {
-			const durationTime = nameInterval.endTime.getTime() - nameInterval.startTime.getTime();
-
-			if (getHoursInTime(durationTime) >= NUM_HOURS_NEEDED) {
-				return PLAYER_MET_CRITERIA_RESULT;
-			}
-		}
-
-		return toFailure(
-			`Your current name has not been completely unchanged for at least ${NUM_HOURS_NEEDED} hours. You must ensure no characters are added or removed from your name for ${NUM_HOURS_NEEDED} hours to complete the "${quest.name}" quest.`
-		);
-	},
-
 	// Silent Server (108)
 	[Quests.SILENT_SERVER.id]: (
 		{quest}: MeetsCriteriaParameters,

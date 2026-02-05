@@ -134,6 +134,7 @@ CREATE TABLE IF NOT EXISTS activityLog (
 		('changeName', 'publishName', 'mineTokens', 'claimRefill', 'buyMysteryBox', 'craftCharacters', 'initiateTrade', 'acceptTrade', 'declineTrade', 'modifyTrade', 'completeQuest', 'chooseRole', 'pickPerk')
 	),
 	tokensDifference INTEGER NOT NULL DEFAULT 0,
+	currentTokens INTEGER NOT NULL,
 	nameChangedFrom TEXT DEFAULT NULL,
 	currentName TEXT NOT NULL,
 	charactersGained TEXT DEFAULT NULL,

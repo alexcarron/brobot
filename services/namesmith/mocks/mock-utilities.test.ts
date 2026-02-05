@@ -553,12 +553,13 @@ describe("Mock Utilities", () => {
 				id: 1000000001,
 				timeOccurred: SOME_TIME,
 				player: SOME_PLAYER.id,
+				type: ActivityTypes.COMPLETE_QUEST,
+				tokensDifference: 10,
+				currentTokens: 100,
 				nameChangedFrom: 'NAME_CHANGED_FROM',
 				currentName: 'CURRENT_NAME',
 				charactersGained: 'CHARACTERS_GAINED',
 				charactersLost: 'CHARACTERS_LOST',
-				type: ActivityTypes.COMPLETE_QUEST,
-				tokensDifference: 10,
 				timeCooldownExpired: SOME_TIME,
 				involvedPlayer: SOME_OTHER_PLAYER.id,
 				involvedRecipe: SOME_RECIPE.id,
@@ -570,16 +571,17 @@ describe("Mock Utilities", () => {
 			});
 
 			const activityLogs = db.getRows("SELECT * FROM activityLog");
-			makeSure(activityLogs).contains({
+			makeSure(activityLogs[0]).is({
 				id: 1000000001,
 				timeOccurred: SOME_TIME.getTime(),
 				playerID: SOME_PLAYER.id,
 				type: ActivityTypes.COMPLETE_QUEST,
+				tokensDifference: 10,
+				currentTokens: 100,
 				nameChangedFrom: 'NAME_CHANGED_FROM',
 				currentName: 'CURRENT_NAME',
 				charactersGained: 'CHARACTERS_GAINED',
 				charactersLost: 'CHARACTERS_LOST',
-				tokensDifference: 10,
 				timeCooldownExpired: SOME_TIME.getTime(),
 				involvedPlayerID: SOME_OTHER_PLAYER.id,
 				involvedRecipeID: SOME_RECIPE.id,

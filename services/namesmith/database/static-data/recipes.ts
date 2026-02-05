@@ -691,7 +691,7 @@ export const recipes = [
   },
   {
     "id": 139,
-    "inputCharacters": "II",
+    "inputCharacters": "I\\I",
     "outputCharacters": "N"
   },
   {
@@ -3328,5 +3328,20 @@ export const recipes = [
     "id": 669,
     "inputCharacters": "⏺▴⚭",
     "outputCharacters": "🌢"
-  }
+  },
+  {
+		"id": 670,
+    "inputCharacters": "l",
+    "outputCharacters": "1"
+  },
+  {
+		"id": 671,
+    "inputCharacters": "1",
+    "outputCharacters": "I"
+  },
+  {
+		"id": 672,
+    "inputCharacters": "1",
+    "outputCharacters": "l"
+  },
 ] as const;

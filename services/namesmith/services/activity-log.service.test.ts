@@ -84,6 +84,7 @@ describe('ActivityLogService', () => {
 				type: ActivityTypes.CHANGE_NAME,
 				nameChangedFrom: 'SOME_NAME',
 				currentName: SOME_PLAYER.currentName,
+				currentTokens: SOME_PLAYER.tokens,
 			});
 
 			const resolvedActivityLog = activityLogService.activityLogRepository.getActivityLogOrThrow(activityLog.id);

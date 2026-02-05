@@ -497,8 +497,9 @@ export class PlayerService {
 	 * @param playerResolvable - The player resolvable whose tokens are being increased.
 	 * @param tokens - The number of tokens to add to the player's count.
 	 * @throws {InvalidArgumentError} - If the number of tokens is negative.
+	 * @returns The number of tokens the player now has.
 	 */
-	giveTokens(playerResolvable: PlayerResolvable, tokens: number) {
+	giveTokens(playerResolvable: PlayerResolvable, tokens: number): number {
 		const playerID = this.resolveID(playerResolvable);
 
 		if (tokens < 0)
@@ -507,6 +508,7 @@ export class PlayerService {
 		const currentTokens = this.playerRepository.getTokens(playerID);
 		const newTokens = currentTokens + tokens;
 		this.playerRepository.setTokens(playerID, newTokens);
+		return newTokens;
 	}
 
 	/**

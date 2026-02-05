@@ -4,13 +4,14 @@ import { joinLines, toAmountOfNoun } from "../../../utilities/string-manipulatio
 import { Perk } from "../types/perk.types";
 import { fetchNamesmithChannel } from "../utilities/discord-fetch.utility";
 import { pickPerk } from "../workflows/pick-perk.workflow";
-import { editReplyToInteraction } from "../../../utilities/discord-action-utils";
+import { replyToInteraction } from "../../../utilities/discord-action-utils";
 import { DiscordButtons } from "../../../utilities/discord-interfaces/discord-buttons";
 import { DiscordButtonDefinition } from '../../../utilities/discord-interfaces/discord-button';
 import { ignoreError } from "../../../utilities/error-utils";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { sortByAscendingProperty } from "../../../utilities/data-structure-utils";
 import { confirmInteraction } from "../../../utilities/discord-interfaces/discord-interface";
+import { getTokensEarnedFeedback } from "../utilities/feedback-message.utility";
 
 /**
  * Generates a messaeg that prompts the user to pick a perk.
@@ -77,23 +78,23 @@ export function toPerkButton(
 					});
 
 					if (result.isNotAPlayer())
-						return await editReplyToInteraction(buttonInteraction,
+						return await replyToInteraction(buttonInteraction,
 							'You are not a player, so you cannot pick a perk.'
 						);
 
 					if (result.isPerkDoesNotExist())
-						return await editReplyToInteraction(buttonInteraction,
+						return await replyToInteraction(buttonInteraction,
 							`The perk "${perk.name}" does not exist, so you cannot pick it.`
 						);
 
 					if (result.isPerkAlreadyChosen()) {
-						return await editReplyToInteraction(buttonInteraction,
+						return await replyToInteraction(buttonInteraction,
 							`You already picked a perk. You cannot switch perks after picking one.`
 						);
 					}
 
 					if (result.isPlayerAlreadyHasPerk()) {
-						return await editReplyToInteraction(buttonInteraction,
+						return await replyToInteraction(buttonInteraction,
 							`You already have the "${perk.name}" perk. You cannot have two of the same perk.`
 						);
 					}
@@ -105,12 +106,12 @@ export function toPerkButton(
 						: null;
 
 					if (freeTokensEarned > 0)
-						return await editReplyToInteraction(buttonInteraction,
+						return await replyToInteraction(buttonInteraction,
 							`You now have the "${perk.name}" perk!`,
-							`**+${toAmountOfNoun(freeTokensEarned, 'Token')}**`, '🪙'.repeat(freeTokensEarned)
+							getTokensEarnedFeedback(freeTokensEarned)
 						);
 					else
-						return await editReplyToInteraction(buttonInteraction,
+						return await replyToInteraction(buttonInteraction,
 							lostTokensLine,
 							`You now have the "${perk.name}" perk!`
 						);

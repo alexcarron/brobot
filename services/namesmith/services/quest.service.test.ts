@@ -1,5 +1,5 @@
 import { QuestService } from "./quest.service";
-import { Quest, QuestRecurrences, RewardTypes } from '../types/quest.types';
+import { Quest, QuestID, QuestRecurrences, RewardTypes } from '../types/quest.types';
 import { addMockQuest } from "../mocks/mock-data/mock-quests";
 import { DatabaseQuerier } from "../database/database-querier";
 import { makeSure } from "../../../utilities/jest/jest-utils";
@@ -11,7 +11,7 @@ import { setupMockNamesmith } from "../mocks/mock-setup";
 import { addMockRecipe } from "../mocks/mock-data/mock-recipes";
 import { Recipe } from "../types/recipe.types";
 import { PlayerService } from "./player.service";
-import { toPropertyValues } from "../../../utilities/data-structure-utils";
+import { toPropertyValues } from '../../../utilities/data-structure-utils';
 import { addDays } from "../../../utilities/date-time-utils";
 
 describe('QuestService', () => {
@@ -97,6 +97,27 @@ describe('QuestService', () => {
 			const resolvedPlayer = playerService.resolvePlayer(SOME_PLAYER.id);
 
 			makeSure(resolvedPlayer.inventory).is(originalCharacters + 'characters');
+		});
+
+		it('gives player both the characters and tokens in the quest for multiple quests', () => {
+			const newQuest = addMockQuest(db, {
+				tokensReward: 250,
+				charactersReward: 'characters',
+			});
+			const newQuest2 = addMockQuest(db, {
+				tokensReward: 500,
+				charactersReward: 'different characters',
+			});
+
+			const originalTokens = SOME_PLAYER.tokens;
+			const originalCharacters = SOME_PLAYER.inventory;
+
+			questService.givePlayerRewards(SOME_PLAYER.id, newQuest.id);
+			questService.givePlayerRewards(SOME_PLAYER.id, newQuest2.id);
+			const resolvedPlayer = playerService.resolvePlayer(SOME_PLAYER.id);
+
+			makeSure(resolvedPlayer.tokens).is(originalTokens + 750);
+			makeSure(resolvedPlayer.inventory).is(originalCharacters + 'charactersdifferent characters');
 		});
 
 		it('throws a PlayerNotFoundError if the player does not exist', () => {
@@ -302,6 +323,23 @@ describe('QuestService', () => {
 				questService.assignNewDailyQuests(day);
 				makeSure(questService.getShownDailyQuests()).haveProperty('recurrence', 'daily');
 				day = addDays(day, 1);
+			}
+		});
+
+		it('never assigns the same daily quest twice, even if we have already used up all unique quests', () => {
+			const quests = [];
+			for (let index = 0; index < 1000; index++) {
+				quests[index] = addMockQuest(db);
+			}
+
+			const shownDailyQuestIDs: QuestID[] = [];
+			for (let i = 0; i < 100; i++) {
+				const dailyQuests = questService.assignNewDailyQuests(SOME_DATE);
+				
+				for (const quest of dailyQuests) {
+					makeSure(!shownDailyQuestIDs.includes(quest.id));
+					shownDailyQuestIDs.push(quest.id);
+				}
 			}
 		});
 	});

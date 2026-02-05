@@ -98,12 +98,10 @@ export const command = new SlashCommand({
 					}
 				});
 
-				if (enteredValue !== '') {
-					autocompleteChoices.unshift({
-						name: enteredValue,
-						value: `ENTERED VALUE: ${enteredValue}`
-					});
-				}
+				autocompleteChoices.unshift({
+					name: `Type to search recipes by input (Suggestions won't update if you change output later)`,
+					value: `ENTERED VALUE: ${enteredValue}`
+				});
 
 				return autocompleteChoices;
 			}
@@ -170,12 +168,10 @@ export const command = new SlashCommand({
 					}
 				});
 
-				if (enteredValue !== '') {
-					autocompleteChoices.unshift({
-						name: enteredValue,
-						value: `ENTERED VALUE: ${enteredValue}`
-					});
-				}
+				autocompleteChoices.unshift({
+					name: `Type to search recipes by output (Suggestions won't update if you change input later)`,
+					value: `ENTERED VALUE: ${enteredValue}`
+				});
 
 				return autocompleteChoices;
 			}

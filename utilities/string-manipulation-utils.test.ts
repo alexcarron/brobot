@@ -27,6 +27,7 @@ import {
 	toConciseReadableDates,
 	toConciseReadableTime,
 	toCompactReadableTime,
+	toReadableNumber,
 } from "./string-manipulation-utils";
 import { createNowUnixTimestamp } from "./date-time-utils";
 import { makeSure } from "./jest/jest-utils";
@@ -1076,6 +1077,28 @@ describe('string-manipulation-utils', () => {
 		it('ignores seconds and milliseconds', () => {
 			const date = new Date(2022, 4, 12, 8, 32, 55, 123);
 			makeSure(toCompactReadableTime(date)).is('8:32');
+		});
+	});
+
+	describe('toReadableNumber()', () => {
+		it('formats a full number with commas as thousand separators', () => {
+			makeSure(toReadableNumber(1234)).is('1,234');
+		});
+
+		it('formats a decimal number with commas as thousand separators and without trailing zeros', () => {
+			makeSure(toReadableNumber(1234.56)).is('1,234.56');
+		});
+
+		it('formats a large number with commas as thousand separators', () => {
+			makeSure(toReadableNumber(1234567.890)).is('1,234,567.89');
+		});
+
+		it('formats a number with leading zeros correctly', () => {
+			makeSure(toReadableNumber('01234.5600')).is('1,234.56');
+		});
+
+		it('throws an error for an invalid number', () => {
+			makeSure(() => toReadableNumber('not a number')).toThrow();
 		});
 	});
 });

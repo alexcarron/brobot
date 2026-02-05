@@ -732,9 +732,7 @@ export async function closeChannel(channel: TextChannel): Promise<void> {
 		channel: channel,
 		userOrRoleID: everyoneRole.id,
 		// @ts-ignore
-		unsetPermissions: [PermissionFlagsBits.SendMessages],
-		// @ts-ignore
-		deniedPermissions: [PermissionFlagsBits.ViewChannel],
+		deniedPermissions: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages],
 	});
 }
 

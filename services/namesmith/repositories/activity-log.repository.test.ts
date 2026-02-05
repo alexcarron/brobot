@@ -104,11 +104,12 @@ describe('ActivityLogRepository', () => {
 				id: 10000001,
 				player: SOME_PLAYER.id,
 				type: ActivityTypes.BUY_MYSTERY_BOX,
+				tokensDifference: -50,
+				currentTokens: 100,
 				nameChangedFrom: 'SOME_OLD_NAME',
 				currentName: 'SOME_CURRENT_NAME',
 				charactersGained: 'abc',
 				charactersLost: 'xyz',
-				tokensDifference: -50,
 				involvedPlayer: INVOLVED_PLAYER.id,
 				involvedRecipe: SOME_RECIPE.id,
 				involvedQuest: SOME_QUEST.id,
@@ -122,11 +123,12 @@ describe('ActivityLogRepository', () => {
 				id: 10000001,
 				player: SOME_PLAYER,
 				type: ActivityTypes.BUY_MYSTERY_BOX,
+				tokensDifference: -50,
+				currentTokens: 100,
 				nameChangedFrom: 'SOME_OLD_NAME',
 				currentName: 'SOME_CURRENT_NAME',
 				charactersGained: 'abc',
 				charactersLost: 'xyz',
-				tokensDifference: -50,
 				involvedPlayer: INVOLVED_PLAYER,
 				involvedRecipe: SOME_RECIPE,
 				involvedQuest: SOME_QUEST,
@@ -149,6 +151,17 @@ describe('ActivityLogRepository', () => {
 
 			makeSure(activityLog).hasProperties({
 				currentName: SOME_PLAYER.currentName,
+			});
+		});
+
+		it('retrieves the player\'s current tokens if not provided', () => {
+			const activityLog = activityLogRepository.addActivityLog({
+				player: SOME_PLAYER.id,
+				type: ActivityTypes.BUY_MYSTERY_BOX,
+			});
+
+			makeSure(activityLog).hasProperties({
+				currentTokens: SOME_PLAYER.tokens,
 			});
 		});
 
@@ -470,7 +483,7 @@ describe('ActivityLogRepository', () => {
 				involvedQuest: SOME_QUEST,
 			});
 
-			makeSure(partialDBActivityLog).hasProperties({
+			makeSure(partialDBActivityLog).is({
 				id: SOME_ACTIVITY_LOG.id,
 				playerID: SOME_PLAYER.id,
 				type: ActivityTypes.BUY_MYSTERY_BOX,
@@ -492,7 +505,7 @@ describe('ActivityLogRepository', () => {
 				involvedQuest: null,
 			});
 
-			makeSure(partialDBActivityLog).hasProperties({
+			makeSure(partialDBActivityLog).is({
 				id: SOME_ACTIVITY_LOG.id,
 				playerID: SOME_PLAYER.id,
 				type: ActivityTypes.BUY_MYSTERY_BOX,
@@ -510,7 +523,7 @@ describe('ActivityLogRepository', () => {
 				type: ActivityTypes.BUY_MYSTERY_BOX,
 			});
 
-			makeSure(partialDBActivityLog).hasProperties({
+			makeSure(partialDBActivityLog).is({
 				id: SOME_ACTIVITY_LOG.id,
 				playerID: SOME_PLAYER.id,
 				type: ActivityTypes.BUY_MYSTERY_BOX,
@@ -524,7 +537,7 @@ describe('ActivityLogRepository', () => {
 		it('handles no fields correctly', () => {
 			const partialDBActivityLog = activityLogRepository.toPartialDBActivityLog({});
 
-			makeSure(partialDBActivityLog).hasProperties({
+			makeSure(partialDBActivityLog).is({
 				id: undefined,
 				playerID: undefined,
 				type: undefined,
