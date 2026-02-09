@@ -1,5 +1,8 @@
+import { ids } from "../../../bot-config/discord-ids";
+import { sendMessageInChannel } from "../../../utilities/discord-action-utils";
+import { escapeDiscordMarkdown } from "../../../utilities/string-manipulation-utils";
 import { Player } from "../types/player.types";
-import { sendToPublishedNamesChannel } from '../utilities/discord-action.utility';
+import { fetchNamesmithChannel } from "../utilities/discord-fetch.utility";
 
 /**
  * Sends a message to the 'published names' channel when a player publishes their name.
@@ -11,8 +14,10 @@ import { sendToPublishedNamesChannel } from '../utilities/discord-action.utility
 export async function sendPublishedNameMessage({player}: {
 	player: Player;
 }) {
-	await sendToPublishedNamesChannel(
-		`<@${player.id}> has published their name:\n` +
-		`\`${player.publishedName}\``
+	const publishedNamesChannel = await fetchNamesmithChannel(ids.namesmith.channels.PUBLISHED_NAMES);
+	await sendMessageInChannel(publishedNamesChannel,
+		`_ _`,
+		`<@${player.id}> has published the following name:`,
+		`> ${escapeDiscordMarkdown(player.publishedName!)}`
 	);
 }

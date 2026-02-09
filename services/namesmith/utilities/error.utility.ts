@@ -7,12 +7,12 @@ import { ActivityLogID } from '../types/activity-log.types';
 import { CharacterID } from '../types/character.types';
 import { MinimalMysteryBox, MysteryBoxID } from '../types/mystery-box.types';
 import { Perk, PerkID, PerkName } from '../types/perk.types';
-import { Player } from '../types/player.types';
+import { Player, PlayerID } from '../types/player.types';
 import { QuestID, QuestName } from '../types/quest.types';
 import { Recipe, RecipeID } from '../types/recipe.types';
 import { RoleID, RoleName } from '../types/role.types';
 import { Trade, TradeID, TradeResolvable } from '../types/trade.types';
-import { VoteID } from '../types/vote.types';
+import { Rank, VoteID } from '../types/vote.types';
 
 /**
  * Base class for all errors thrown by the namesmith service
@@ -901,6 +901,9 @@ export class PlayerNotInvolvedInTradeError extends NamesmithError {
 	}
 }
 
+/**
+ * Error thrown when a player tries to pick up a perk that they already have
+ */
 export class PlayerAlreadyHasPerkError extends NamesmithError {
 	declare relevantData: { player: Player, perk: Perk };
 	constructor(player: Player, perk: Perk) {
@@ -913,6 +916,33 @@ export class PlayerAlreadyHasPerkError extends NamesmithError {
 				player,
 				perk,
 			}
+		})
+	}
+}
+
+/**
+ * Error thrown when a user tries to vote a name for a rank when they have not voted a name for a lower rank
+ */
+export class VoteOutOfOrderError extends NamesmithError {
+	declare relevantData: { voterID: VoteID, votedPlayerID: PlayerID, missingRank: Rank, rankVotingFor: Rank };
+	constructor(voterID: VoteID, votedPlayerID: PlayerID, missingRank: Rank, rankVotingFor: Rank) {
+		super({
+			message: joinLines(
+				`Cannot make vote. The user with the ID ${voterID} attempted to vote a name of the player with the ID ${votedPlayerID} in ${rankVotingFor} when they have not voted a name in ${missingRank} yet.`,
+			),
+			relevantData: {voterID, votedPlayerID, missingRank, rankVotingFor}
+		})
+	}
+}
+
+export class NameVotedTwiceError extends NamesmithError {
+	declare relevantData: { voterID: VoteID, votedPlayer: PlayerID, existingRank: Rank, rankVotingFor: Rank };
+	constructor(voterID: VoteID, votedPlayerID: PlayerID, existingRank: Rank, rankVotingFor: Rank) {
+		super({
+			message: joinLines(
+				`Cannot make vote. The user with the ID ${voterID} attempted to vote the name of the player with the ID ${votedPlayerID} in ${rankVotingFor} when they already voted their name in ${existingRank}.`, 
+			),
+			relevantData: {voterID, votedPlayerID, existingRank, rankVotingFor}
 		})
 	}
 }

@@ -70,7 +70,11 @@ CREATE TABLE IF NOT EXISTS playerPerk (
 
 CREATE TABLE IF NOT EXISTS vote (
 	voterID TEXT PRIMARY KEY, -- The Discord ID of the user who voted (Could be a non-player)
-	playerVotedForID TEXT NOT NULL REFERENCES player(id)
+	votedFirstPlayerID TEXT REFERENCES player(id)
+		ON DELETE CASCADE ON UPDATE CASCADE,
+	votedSecondPlayerID TEXT REFERENCES player(id)
+		ON DELETE CASCADE ON UPDATE CASCADE,
+	votedThirdPlayerID TEXT REFERENCES player(id)
 		ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -172,7 +176,7 @@ CREATE INDEX IF NOT EXISTS playerPerk_playerID_index ON playerPerk(playerID);
 CREATE INDEX IF NOT EXISTS playerPerk_perkID_index ON playerPerk(perkID);
 
 -- Votes
-CREATE INDEX IF NOT EXISTS vote_playerVotedForID_index ON vote(playerVotedForID);
+CREATE INDEX IF NOT EXISTS vote_voterID_index ON vote(voterID);
 
 -- Trades
 CREATE INDEX IF NOT EXISTS trade_initiatingPlayerID_index ON trade(initiatingPlayerID);

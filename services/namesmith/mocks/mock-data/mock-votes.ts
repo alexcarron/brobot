@@ -3,7 +3,8 @@ import { Vote, VoteDefinition } from "../../types/vote.types";
 import { addMockPlayer } from "./mock-players";
 import { VoteRepository } from "../../repositories/vote.repository";
 import { getRandomNumericUUID } from "../../../../utilities/random-utils";
-import { PlayerRepository } from "../../repositories/player.repository";
+import { PlayerService } from "../../services/player.service";
+import { PlayerResolvable } from "../../types/player.types";
 
 /**
  * Adds a vote to the database with the given properties.
@@ -17,25 +18,37 @@ export const addMockVote = (
 	db: DatabaseQuerier,
 	voteDefintion: Partial<VoteDefinition> = {}
 ): Vote => {
+	const playerService = PlayerService.fromDB(db);
+	const voteRepository = VoteRepository.fromDB(db);
+
 	let {
-		playerVotedFor = undefined,
+		votedFirstPlayer = null,
+		votedSecondPlayer = null,
+		votedThirdPlayer = null,
 	} = voteDefintion;
+
 	const {
 		voter = getRandomNumericUUID(),
 	} = voteDefintion;
 
-	if (playerVotedFor === undefined)
-		playerVotedFor = addMockPlayer(db);
+	const ensurePlayerExists = (player: PlayerResolvable | null) => {
+		if (player !== null) {
+			const playerID = playerService.resolveID(player);
+			if (!playerService.isPlayer(playerID)) {
+				return addMockPlayer(db, { id: playerID });
+			}
+		}
+		return player;
+	};
 
-	const playerRepository = PlayerRepository.fromDB(db);
-	const playerVotedForID = playerRepository.resolveID(playerVotedFor);
-	if (!playerRepository.doesPlayerExist(playerVotedForID)) {
-		playerVotedFor = addMockPlayer(db, { id: playerVotedForID });
-	}
+	votedFirstPlayer = ensurePlayerExists(votedFirstPlayer);
+	votedSecondPlayer = ensurePlayerExists(votedSecondPlayer);
+	votedThirdPlayer = ensurePlayerExists(votedThirdPlayer);
 
-	const voteRepository = VoteRepository.fromDB(db);
 	return voteRepository.addVote({
 		voter,
-		playerVotedFor,
+		votedFirstPlayer,
+		votedSecondPlayer,
+		votedThirdPlayer,
 	});
 };

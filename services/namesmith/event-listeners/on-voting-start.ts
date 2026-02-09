@@ -1,6 +1,6 @@
-import { sendVotingMessages } from '../interfaces/voting/voting-messages';
 import { closePublishedNamesChannel } from '../utilities/discord-action.utility';
 import { getNamesmithServices } from '../services/get-namesmith-services';
+import { sendVotingDisplay } from '../interfaces/voting/voting-display';
 
 /**
  * Starts the voting phase of the game by doing the following:
@@ -15,8 +15,7 @@ export async function onVotingStart() {
 	playerService.finalizeAllNames();
 
 	await closePublishedNamesChannel();
-
-	await sendVotingMessages();
+	await sendVotingDisplay();
 
 	voteService.reset();
 }

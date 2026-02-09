@@ -178,29 +178,37 @@ export class ActivityLogRepository {
 	): Partial<DBActivityLog> {
 		const { id, timeOccurred, player, type, currentTokens, nameChangedFrom, currentName, charactersGained, charactersLost, tokensDifference, timeCooldownExpired, involvedPlayer, involvedRecipe, involvedQuest, involvedTrade, involvedPerk, involvedRole, involvedMysteryBox } = activityLogDefinition;
 
-		const playerID = resolveOptional(player,
-			this.playerRepository.resolveID.bind(this.playerRepository)
+		const playerID = resolveOptional(
+			this.playerRepository.resolveID.bind(this.playerRepository),
+			player,
 		);
-		const involvedPlayerID = resolveOptional(involvedPlayer,
-			this.playerRepository.resolveID.bind(this.playerRepository)
+		const involvedPlayerID = resolveOptional(
+			this.playerRepository.resolveID.bind(this.playerRepository),
+			involvedPlayer,
 		);
-		const involvedRecipeID = resolveOptional(involvedRecipe,
-			this.recipeRepository.resolveID.bind(this.recipeRepository)
+		const involvedRecipeID = resolveOptional(
+			this.recipeRepository.resolveID.bind(this.recipeRepository),
+			involvedRecipe,
 		);
-		const involvedQuestID = resolveOptional(involvedQuest,
-			this.questRepository.resolveID.bind(this.questRepository)
+		const involvedQuestID = resolveOptional(
+			this.questRepository.resolveID.bind(this.questRepository),
+			involvedQuest,
 		);
-		const involvedTradeID = resolveOptional(involvedTrade,
-			this.tradeRepository.resolveID.bind(this.tradeRepository)
+		const involvedTradeID = resolveOptional(
+			this.tradeRepository.resolveID.bind(this.tradeRepository),
+			involvedTrade,
 		);
-		const involvedPerkID = resolveOptional(involvedPerk,
-			this.perkRepository.resolveID.bind(this.perkRepository)
+		const involvedPerkID = resolveOptional(
+			this.perkRepository.resolveID.bind(this.perkRepository),
+			involvedPerk,
 		);
-		const involvedRoleID = resolveOptional(involvedRole,
-			this.roleRepository.resolveID.bind(this.roleRepository)
+		const involvedRoleID = resolveOptional(
+			this.roleRepository.resolveID.bind(this.roleRepository),
+			involvedRole,
 		);
-		const involvedMysteryBoxID = resolveOptional(involvedMysteryBox,
-			this.mysteryBoxRepository.resolveID.bind(this.mysteryBoxRepository)
+		const involvedMysteryBoxID = resolveOptional(
+			this.mysteryBoxRepository.resolveID.bind(this.mysteryBoxRepository),
+			involvedMysteryBox,
 		);
 
 		return {

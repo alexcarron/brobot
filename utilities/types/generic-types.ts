@@ -322,3 +322,5 @@ export type ToTypeName<Type> =
 	Type extends readonly any[] ? "array" :
 	Type extends object ? "object" :
 	"unknown";
+
+export type RestOrArray<ElementType> = ElementType[] | [ElementType[]];

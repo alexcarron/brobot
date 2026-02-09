@@ -1,6 +1,7 @@
 import { returnNonNullOrThrow } from "../../../utilities/error-utils";
+import { resolveOptionals } from '../../../utilities/optional-utils';
 import { WithRequiredAndOneOther } from '../../../utilities/types/generic-types';
-import { isString } from "../../../utilities/types/type-guards";
+import { isNotNullable, isString } from "../../../utilities/types/type-guards";
 import { DatabaseQuerier } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
 import { asMinimalVote, asMinimalVotes, MinimalVote, Vote, VoteDefinition, VoteID, VoteResolvable } from "../types/vote.types";
@@ -30,12 +31,27 @@ export class VoteRepository {
 		return VoteRepository.fromDB(db);
 	}
 
-	private toVoteFromMinimal(minimalVote: MinimalVote): Vote {
-		const playerVotedFor = this.playerRepository.resolvePlayer(minimalVote.playerVotedForID);
+	get playerResolver() {
+		return this.playerRepository.resolvePlayer.bind(this.playerRepository);
+	}
 
+	get playerIDResolver() {
+		return this.playerRepository.resolveID.bind(this.playerRepository);
+	}
+
+	private toVoteFromMinimal(minimalVote: MinimalVote): Vote {
+		const [votedFirstPlayer, votedSecondPlayer, votedThirdPlayer] = 
+			resolveOptionals(this.playerResolver, 
+				minimalVote.votedFirstPlayerID, 
+				minimalVote.votedSecondPlayerID, 
+				minimalVote.votedThirdPlayerID
+			);
+		
 		return {
 			voterID: minimalVote.voterID,
-			playerVotedFor,
+			votedFirstPlayer,
+			votedSecondPlayer,
+			votedThirdPlayer
 		};
 	}
 
@@ -148,23 +164,35 @@ export class VoteRepository {
 	 * Adds a new vote to the list of votes.
 	 * @param voteDefintion - The vote object to add.
 	 * @param voteDefintion.voter - The user or player who voted.
-	 * @param voteDefintion.playerVotedFor - The player voted for.
+	 * @param voteDefintion.votedFirstPlayer - The player whose name was voted as 1st place.
+	 * @param voteDefintion.votedSecondPlayer - The player whose name was voted as 2nd place.
+	 * @param voteDefintion.votedThirdPlayer - The player whose name was voted as 3rd place.
 	 * @returns The added vote object.
 	 */
 	addVote(
 		{
 			voter: voterResolvable,
-			playerVotedFor: playerVotedForResolvable
+			votedFirstPlayer: votedFirstPlayerResolvable,
+			votedSecondPlayer: votedSecondPlayerResolvable,
+			votedThirdPlayer: votedThirdPlayerResolvable
 		}: VoteDefinition
 	): Vote {
 		const voterID = this.playerRepository.resolveID(voterResolvable);
-		const playerVotedForID = this.playerRepository.resolveID(playerVotedForResolvable);
+		const [votedFirstPlayerID, votedSecondPlayerID, votedThirdPlayerID] = 
+			resolveOptionals(this.playerIDResolver,
+				votedFirstPlayerResolvable,
+				votedSecondPlayerResolvable,
+				votedThirdPlayerResolvable
+			);
 
 		if (this.doesVoteExist(voterID))
 			throw new VoteAlreadyExistsError(voterID);
 
 		this.db.insertIntoTable('vote', {
-			voterID, playerVotedForID
+			voterID, 
+			votedFirstPlayerID, 
+			votedSecondPlayerID, 
+			votedThirdPlayerID
 		});
 
 		return this.getVoteOrThrow(voterID);
@@ -174,23 +202,38 @@ export class VoteRepository {
 	 * Changes the vote of a user by replacing the vote with a new player voted for ID.
 	 * @param voteDefintion - The vote object to update.
 	 * @param voteDefintion.voter - The user or player who voted.
-	 * @param voteDefintion.playerVotedFor - The player voted for.
+	 * @param voteDefintion.votedFirstPlayer - The player whose name was voted as 1st place.
+	 * @param voteDefintion.votedSecondPlayer - The player whose name was voted as 2nd place.
+	 * @param voteDefintion.votedThirdPlayer - The player whose name was voted as 3rd place.
 	 * @returns The updated vote object.
 	 */
 	updateVote(
 		{
 			voter: voterResolvable,
-			playerVotedFor: playerVotedForResolvable
+			votedFirstPlayer: votedFirstPlayerResolvable,
+			votedSecondPlayer: votedSecondPlayerResolvable,
+			votedThirdPlayer: votedThirdPlayerResolvable,
 		}: WithRequiredAndOneOther<VoteDefinition, 'voter'>
 	): Vote {
 		const voterID = this.playerRepository.resolveID(voterResolvable);
-		const playerVotedForID = this.playerRepository.resolveID(playerVotedForResolvable);
+		const [votedFirstPlayerID, votedSecondPlayerID, votedThirdPlayerID] = 
+			resolveOptionals(this.playerIDResolver,
+				votedFirstPlayerResolvable,
+				votedSecondPlayerResolvable,
+				votedThirdPlayerResolvable,
+			);
+
+		for (const playerID of [votedFirstPlayerID, votedSecondPlayerID, votedThirdPlayerID]) {
+			if (isNotNullable(playerID)) {
+				this.playerResolver(playerID);
+			}
+		}
 
 		if (!this.doesVoteExist(voterID))
 			throw new VoteNotFoundError(voterID);
 
 		this.db.updateInTable('vote', {
-			fieldsUpdating: { playerVotedForID },
+			fieldsUpdating: { votedFirstPlayerID, votedSecondPlayerID, votedThirdPlayerID },
 			identifiers: { voterID }
 		});
 

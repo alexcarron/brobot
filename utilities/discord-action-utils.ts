@@ -25,9 +25,7 @@ import {
 	// explicit types used below
 	MessageCreateOptions,
 	MessageEditOptions,
-	InteractionReplyOptions,
-	TextBasedChannel,
-	CategoryChannelResolvable,
+	InteractionReplyOptions, CategoryChannelResolvable,
 	OverwriteResolvable,
 	GuildChannelCreateOptions,
 	PermissionOverwriteOptions,
@@ -1117,7 +1115,7 @@ export function toInteractionReplyFromMessageCreateOptions(createOptions: Messag
  * @param channel - The channel to delete all messages from.
  * @returns A promise that resolves when all messages have been deleted.
  */
-export async function deleteAllMessagesInChannel(channel: TextBasedChannel): Promise<void> {
+export async function deleteAllMessagesInChannel(channel: TextChannel): Promise<void> {
 	const allMessagesInChannel = await fetchAllMessagesInChannel(channel);
 
 	if (allMessagesInChannel.length >= 50)

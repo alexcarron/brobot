@@ -6,7 +6,7 @@ import { regenerateDailyQuestsMessages } from "../interfaces/quests/daily-quests
 import { regenerateHiddenQuestsMessages } from "../interfaces/quests/hidden-quests-message";
 import { regenerateWeeklyQuestsMessages } from "../interfaces/quests/weekly-quests-message";
 import { regenerateAllTradeMessages } from "../interfaces/trading/trade-message";
-import { regenerateVoteDisplay } from "../interfaces/voting/voting-messages";
+import { regenerateVotingDisplay } from "../interfaces/voting/voting-display";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { NamesmithDependencies } from "../types/namesmith.types";
 import { createRepositoriesFromDB, createServicesFromDB } from "../utilities/dependency.utility";
@@ -48,13 +48,13 @@ export const setupNamesmith = async () => {
 	if (gameStateService.hasStarted()) {
 		gameStateService.scheduleGameEvents();
 
-		await regenerateVoteDisplay();
 		await regenerateAllTradeMessages();
 		await regenerateChooseARoleMessage();
 		await regeneratePickAPerkMessage();
 		await regenerateDailyQuestsMessages();
 		await regenerateHiddenQuestsMessages();
 		await regenerateWeeklyQuestsMessages();
+		await regenerateVotingDisplay();
 	}
 
 	logSuccess("Namesmith set up");

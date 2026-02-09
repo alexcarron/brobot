@@ -8,7 +8,7 @@ import { RoleID } from "../types/role.types";
 import { PlayerNotFoundError, PlayerAlreadyExistsError } from "../utilities/error.utility";
 import { RoleRepository } from "./role.repository";
 import { PerkRepository } from './perk.repository';
-import { isString } from "../../../utilities/types/type-guards";
+import { isArray, isString } from "../../../utilities/types/type-guards";
 import { isOneSymbol } from "../../../utilities/string-checks-utils";
 import { createMockDB } from "../mocks/mock-database";
 import { DBDate, DBBoolean } from "../utilities/db.utility";
@@ -142,6 +142,25 @@ export class PlayerRepository {
 
 		return this.getPlayerOrThrow(playerID);
 	}
+
+	/**
+	 * Resolves a list of player resolvables to player objects.
+	 * @param playersResolvables - The list of player resolvables to resolve.
+	 * @returns An array of resolved player objects.
+	 */
+	resolvePlayers(...playersResolvables: PlayerResolvable[] | [PlayerResolvable[]]): Player[] {
+		if (playersResolvables.length === 0) return [];
+
+		if (isArray(playersResolvables[0])) {
+			playersResolvables = playersResolvables[0];
+		}
+		else {
+			playersResolvables = playersResolvables as PlayerResolvable[];
+		}
+		
+		return playersResolvables.map(playerResolvable => this.resolvePlayer(playerResolvable));
+	}
+	
 	/**
 	 * Resolves a player resolvable to a player ID.
 	 * @param playerResolvable - The player resolvable to resolve.
@@ -157,6 +176,24 @@ export class PlayerRepository {
 			const player = playerResolvable;
 			return player.id;
 		}
+	}
+
+	/**
+	 * Resolves a list of player resolvables to player IDs.
+	 * @param playersResolvables - The list of player resolvables to resolve.
+	 * @returns An array of resolved player IDs.
+	 */
+	resolveIDs(...playersResolvables: PlayerResolvable[] | [PlayerResolvable[]]): PlayerID[] {
+		if (playersResolvables.length === 0) return [];
+
+		if (isArray(playersResolvables[0])) {
+			playersResolvables = playersResolvables[0];
+		}
+		else {
+			playersResolvables = playersResolvables as PlayerResolvable[];
+		}
+		
+		return playersResolvables.map(playerResolvable => this.resolveID(playerResolvable));
 	}
 
 	/**

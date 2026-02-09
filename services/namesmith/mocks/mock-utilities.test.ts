@@ -8,7 +8,6 @@ import { Quest } from "../types/quest.types";
 import { Recipe } from "../types/recipe.types";
 import { Role } from "../types/role.types";
 import { MinimalTrade, Trade, TradeStatuses } from "../types/trade.types";
-import { asDBVotes, asMinimalVotes } from "../types/vote.types";
 import { ActivityLogAlreadyExistsError, TradeAlreadyExistsError } from "../utilities/error.utility";
 import { createAllMocks } from "./all-mocks";
 import { addMockActivityLog } from "./mock-data/mock-activity-logs";
@@ -19,7 +18,6 @@ import { addMockQuest } from "./mock-data/mock-quests";
 import { addMockRecipe, forcePlayerToCraftRecipe } from "./mock-data/mock-recipes";
 import { addMockRole } from "./mock-data/mock-roles";
 import { addMockTrade, forcePlayerToAcceptNewTrade, forcePlayerToInitiateTrade } from "./mock-data/mock-trades";
-import { addMockVote } from "./mock-data/mock-votes";
 import { setupMockNamesmith } from "./mock-setup";
 
 describe("Mock Utilities", () => {
@@ -151,39 +149,6 @@ describe("Mock Utilities", () => {
       expect(players).toHaveLength(numPlayers + 1);
       makeSure(players).hasAnItemWhere(player => player.id === "player-1");
     });
-  });
-
-  describe("addMockVote", () => {
-    it("adds a vote to the database", () => {
-			const numVotes = db.getRows("SELECT * FROM vote").length;
-      const voteData = {
-        voter: "10000001",
-        playerVotedFor: "10000002",
-      };
-
-      const vote = addMockVote(db, voteData);
-			makeSure(vote.voterID).is(voteData.voter);
-			makeSure(vote.playerVotedFor.id).is(voteData.playerVotedFor);
-
-      const votes = asMinimalVotes( db.getRows("SELECT * FROM vote") );
-      makeSure(votes).hasLengthOf(numVotes + 1);
-			makeSure(votes).hasAnItemWhere(vote =>
-				vote.voterID === voteData.voter &&
-				vote.playerVotedForID === voteData.playerVotedFor
-			);
-    });
-
-		it('adds a mock vote even with no given data', () => {
-			const numVotes = db.getRows("SELECT * FROM vote").length;
-			const vote = addMockVote(db);
-
-			const dbVotes = asDBVotes( db.getRows("SELECT * FROM vote") );
-			makeSure(dbVotes).hasLengthOf(numVotes + 1);
-			makeSure(dbVotes).hasAnItemWhere(dbVote =>
-				dbVote.voterID === vote.voterID &&
-				dbVote.playerVotedForID === vote.playerVotedFor.id
-			)
-		});
   });
 
 	describe('editMockPlayer', () => {

@@ -35,7 +35,7 @@ describe('PlayerRepository', () => {
 	afterAll(() => {
 		jest.restoreAllMocks();
 	});
-
+	
   describe('getPlayers()', () => {
     it('returns an array of player objects', () => {
       const players = playerRepository.getPlayers();
@@ -559,6 +559,38 @@ describe('PlayerRepository', () => {
 			for (const player of ALL_PLAYERS) {
 				makeSure(playerRepository.getHasPickedPerk(player.id)).is(false);
 			}
+		});
+	});
+
+	describe('resolvePlayers()', () => {
+		it('resolves a rest parameter list of player resolvables to player objects', () => {
+			const playersResolvable = [SOME_PLAYER.id, SOME_OTHER_PLAYER.id];
+			const [player1, player2] = playerRepository.resolvePlayers(...playersResolvable);
+			makeSure(player1).is(SOME_PLAYER);
+			makeSure(player2).is(SOME_OTHER_PLAYER);
+		});
+
+		it('resolves a single given list of player resolvables to player objects', () => {
+			const playersResolvable = [SOME_PLAYER.id, SOME_OTHER_PLAYER.id];
+			const [player1, player2] = playerRepository.resolvePlayers(playersResolvable);
+			makeSure(player1).is(SOME_PLAYER);
+			makeSure(player2).is(SOME_OTHER_PLAYER);
+		});
+	});
+
+	describe('resolveIDs()', () => {
+		it('resolves a rest parameter list of player resolvables to player IDs', () => {
+			const playersResolvable = [SOME_PLAYER.id, SOME_OTHER_PLAYER.id];
+			const [player1ID, player2ID] = playerRepository.resolveIDs(...playersResolvable);
+			makeSure(player1ID).is(SOME_PLAYER.id);
+			makeSure(player2ID).is(SOME_OTHER_PLAYER.id);
+		});
+
+		it('resolves a single given list of player resolvables to player IDs', () => {
+			const playersResolvable = [SOME_PLAYER.id, SOME_OTHER_PLAYER.id];
+			const [player1ID, player2ID] = playerRepository.resolveIDs(playersResolvable);
+			makeSure(player1ID).is(SOME_PLAYER.id);
+			makeSure(player2ID).is(SOME_OTHER_PLAYER.id);
 		});
 	});
 });

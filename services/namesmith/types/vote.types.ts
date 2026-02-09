@@ -1,9 +1,18 @@
 import { ExtractType, object, string } from "../../../utilities/runtime-types-utils";
 import { Player, PlayerResolvable } from "./player.types";
 
+export const Ranks = Object.freeze({
+	FIRST: '1st',
+	SECOND: '2nd',
+	THIRD: '3rd',
+})
+export type Rank = typeof Ranks[keyof typeof Ranks];
+
 export const DBVoteType = object.asType({
 	voterID: string,
-	playerVotedForID: string,
+	votedFirstPlayerID: string.orNull,
+	votedSecondPlayerID: string.orNull,
+	votedThirdPlayerID: string.orNull,
 })
 export const asDBVote = DBVoteType.from;
 export const asDBVotes = DBVoteType.fromAll;
@@ -13,12 +22,16 @@ export type MinimalVote = ExtractType<typeof DBVoteType>
 
 export type Vote = {
 	voterID: string;
-	playerVotedFor: Player;
+	votedFirstPlayer: Player | null;
+	votedSecondPlayer: Player | null;
+	votedThirdPlayer: Player | null;
 }
 
 export type VoteDefinition = {
 	voter: VoteID | PlayerResolvable;
-	playerVotedFor: PlayerResolvable;
+	votedFirstPlayer?: PlayerResolvable | null;
+	votedSecondPlayer?: PlayerResolvable | null;
+	votedThirdPlayer?: PlayerResolvable | null;
 };
 
 export type VoteID = MinimalVote["voterID"];

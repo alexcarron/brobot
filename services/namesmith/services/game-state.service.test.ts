@@ -26,10 +26,6 @@ jest.mock('../utilities/discord-fetch.utility', () => ({
 	fetchNamesToVoteOnChannel: jest.fn(() => Promise.resolve({})),
 }));
 
-jest.mock('../interfaces/voting/voting-messages', () => ({
-	sendVotingMessages: jest.fn(),
-}));
-
 // Mock CronJob
 jest.mock('cron', () => ({
 	CronJob: jest.fn(() => ({

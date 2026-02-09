@@ -468,6 +468,24 @@ export function makeSure<
 		},
 
 		/**
+		 * Asserts that the actual value has a property with the given name and optional value.
+		 * @param propertyName - The name of the property that the actual value should have.
+		 * @param value - The value that the actual value's property should have.
+		 * @example
+		 * makeSure({ name: 'John' }).hasProperty('name');
+		 * makeSure({ id: 1 }).hasProperty('id', 1);
+		 */
+		hasProperty(
+			propertyName: string,
+			value?: unknown
+		): void {
+			if (value === undefined)
+				expect(actualValue).toHaveProperty(propertyName);
+			else
+				expect(actualValue).toHaveProperty(propertyName, value);
+		},
+
+		/**
 		 * Asserts that the object has the given properties
 		 * OR
 		 * Asserts that the object contains the expected properties with the given values
@@ -495,21 +513,46 @@ export function makeSure<
 		},
 
 		/**
-		 * Asserts that the actual value has a property with the given name and optional value.
-		 * @param propertyName - The name of the property that the actual value should have.
-		 * @param value - The value that the actual value's property should have.
+		 * Asserts that the object has ONLY the given properties
+		 * OR
+		 * Asserts that the object contains ONLY the expected properties with the given values
+		 * @param properties - The names of the properties that the object should have or the expected properties and values that the object should ONLY contain.
 		 * @example
-		 * makeSure({ name: 'John' }).hasProperty('name');
-		 * makeSure({ id: 1 }).hasProperty('id', 1);
+		 * makeSure({ id: 1, name: 'John Doe' }).hasOnlyProperties('id');
+		 * makeSure({ id: 1, name: 'John Doe', age: 30 }).hasOnlyProperties({ id: 1, name: 'John Doe' });
 		 */
-		hasProperty(
-			propertyName: string,
-			value?: unknown
-		): void {
-			if (value === undefined)
-				expect(actualValue).toHaveProperty(propertyName);
-			else
-				expect(actualValue).toHaveProperty(propertyName, value);
+		hasOnlyProperties(...properties: string[] | [Partial<ActualType>]): void {
+			if (!isObject(actualValue))
+				throw new Error(`Expected actual value to be an object, but got: ${actualValue}`);
+
+			if (isStrings(properties)) {
+				const propertyNames = properties;
+				propertyNames.forEach(propertyName => {
+					expect(actualValue).toHaveProperty(propertyName);
+				});
+
+				const otherProperties = Object.keys(actualValue).filter(
+					propertyName => !propertyNames.includes(propertyName)
+				);
+				if (otherProperties.length > 0)
+					throw new Error(
+						`Expected object to only have properties: ${propertyNames}, but it has properties: ${otherProperties}`
+					);
+			}
+			else {
+				const expectedObjectSubset = properties[0];
+				expect(actualValue).toEqual(
+					expect.objectContaining(expectedObjectSubset)
+				);
+
+				const otherProperties = Object.keys(actualValue).filter(
+					propertyName => !Object.keys(expectedObjectSubset).includes(propertyName)
+				);
+				if (otherProperties.length > 0)
+					throw new Error(
+						`Expected object to only have properties: ${Object.keys(expectedObjectSubset)}, but it has properties: ${otherProperties}`
+					);
+			}
 		},
 
 		/**
@@ -544,6 +587,52 @@ export function makeSure<
 					expect(object).toEqual(
 						expect.objectContaining(expectedObjectSubset)
 					);
+				}
+			});
+		},
+
+		haveOnlyProperties(...properties:
+			| string[]
+			| [Partial<
+					(ActualType extends object[]
+						? ActualType[number]
+						: never)
+				>]
+		): void {
+			if (!isArray(actualValue))
+				throw new Error(`Expected actual value to be an array, but got: ${actualValue}`);
+
+			actualValue.forEach(object => {
+				if (!isObject(object))
+					throw new Error(`Expected each item in the array to be an object, but got: ${object}`);
+
+				if (isStrings(properties)) {
+					const propertyNames = properties;
+					propertyNames.forEach(propertyName => {
+						expect(object).toHaveProperty(propertyName);
+					});
+
+					const otherProperties = Object.keys(object).filter(
+						propertyName => !propertyNames.includes(propertyName)
+					);
+					if (otherProperties.length > 0)
+						throw new Error(
+							`Expected object to only have properties: ${propertyNames}, but it has properties: ${otherProperties}`
+						);
+				}
+				else {
+					const expectedObjectSubset = properties[0];
+					expect(object).toEqual(
+						expect.objectContaining(expectedObjectSubset)
+					);
+
+					const otherProperties = Object.keys(object).filter(
+						propertyName => !Object.keys(expectedObjectSubset).includes(propertyName)
+					);
+					if (otherProperties.length > 0)
+						throw new Error(
+							`Expected object to only have properties: ${Object.keys(expectedObjectSubset)}, but it has properties: ${otherProperties}`
+						);
 				}
 			});
 		},

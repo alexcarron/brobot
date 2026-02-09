@@ -1,5 +1,5 @@
 import { makeSure } from "./jest/jest-utils";
-import { resolveOptional } from "./optional-utils";
+import { resolveOptional, resolveOptionals } from "./optional-utils";
 
 describe('optional-utils.ts', () => {
 	type Resolvable = string | number | object;
@@ -14,35 +14,35 @@ describe('optional-utils.ts', () => {
 
 	describe('resolveOptional', () => {
 		it('resolves null to null', () => {
-			const result = resolveOptional(null, resolveString)
+			const result = resolveOptional(resolveString, null)
 			makeSure(result).isNull();
 		});
 
 		it('resolves undefined to undefined', () => {
-			const result = resolveOptional(undefined, resolveString)
+			const result = resolveOptional(resolveString, undefined)
 			makeSure(result).isUndefined();
 		});
 
 		it('resolves a string resolvable to the string', () => {
-			const result = resolveOptional("test string", resolveString)
-			makeSure(result).is("test string");
+			const result = resolveOptional(resolveString, "a string")
+			makeSure(result).is("a string");
 		});
 
 		it('resolves a number resolvable to the string representation of the number', () => {
-			const result = resolveOptional(42, resolveString)
+			const result = resolveOptional(resolveString, 42)
 			makeSure(result).is("42");
 		});
 
 		it('resolves an object resolvable to the string representation of the object', () => {
 			const obj = {key: "value"};
-			const result = resolveOptional(obj, resolveString)
+			const result = resolveOptional(resolveString, obj)
 			makeSure(result).is("[object Object]");
 		});
 
 		it('type narrows undefined or null correctly', () => {
 			const maybeNull: undefined | null =
 				Math.random() > 0.5 ? null : undefined;
-			const resolvedValue = resolveOptional(maybeNull, resolveString);
+			const resolvedValue = resolveOptional(resolveString, maybeNull);
 			makeSure(resolvedValue).isNotAString();
 		});
 
@@ -56,7 +56,7 @@ describe('optional-utils.ts', () => {
 					? {key: "value"}
 					: undefined;
 
-			const resolvedValue = resolveOptional(maybeUndefined, resolveString);
+			const resolvedValue = resolveOptional(resolveString, maybeUndefined);
 			makeSure(resolvedValue).isNotNull();
 		});
 
@@ -70,8 +70,39 @@ describe('optional-utils.ts', () => {
 					? {key: "value"}
 					: null;
 					
-			const resolvedValue = resolveOptional(maybeNull, resolveString);
+			const resolvedValue = resolveOptional(resolveString, maybeNull);
 			makeSure(resolvedValue).isNotUndefined();
 		});
 	});
+	
+	describe('resolveOptionals', () => {
+		it('resolves an empty array to an empty array', () => {
+			const result = resolveOptionals(resolveString, []);
+			makeSure(result).isEmpty();
+		});
+	
+		it('resolves an array of single values to an array of resolved values', () => {
+			const values = [null, undefined, "test string", 42, {key: "value"}];
+			const result = resolveOptionals(resolveString, values);
+			makeSure(result).is([
+				null,
+				undefined,
+				"test string",
+				"42",
+				"[object Object]"
+			]);
+		});
+	
+		it('resolves an array passed as a rest parameter to an array of resolved values', () => {
+			const result = resolveOptionals(resolveString, null, undefined, "test string", 42, {key: "value"});
+			makeSure(result).is([
+				null,
+				undefined,
+				"test string",
+				"42",
+				"[object Object]"
+			]);
+		});
+	});
 });
+
