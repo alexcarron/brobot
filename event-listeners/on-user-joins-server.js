@@ -16,10 +16,10 @@ const onUserJoinsServer = async function(guildMember) {
 		await addRoleToMember(guildMember, spectatorRole);
 	}
 	else if (guildMember.guild.id === ids.servers.LL_GAME_SHOW_CENTER) {
-		const LLGameShowsGuild = await fetchGuild(ids.servers.LL_GAME_SHOW_CENTER);
-		const viewerRole = await fetchRole(LLGameShowsGuild, ids.ll_game_shows.roles.viewer);
+		// const LLGameShowsGuild = await fetchGuild(ids.servers.LL_GAME_SHOW_CENTER);
+		// const viewerRole = await fetchRole(LLGameShowsGuild, ids.ll_game_shows.roles.viewer);
 
-		await addRoleToMember(guildMember, viewerRole);
+		// await addRoleToMember(guildMember, viewerRole);
 	}
 	else if (guildMember.guild.id === ids.sandSeason3.guild) {
 		const sandSeason3Guild = await fetchGuild(ids.sandSeason3.guild);

@@ -1,5 +1,5 @@
 import { CronJob } from "cron";
-import { logInfo, logWarning } from "../../../utilities/logging-utils";
+import { logWarning } from "../../../utilities/logging-utils";
 import { GameStateRepository } from "../repositories/game-state.repository";
 import { VoteService } from "./vote.service";
 import { PlayerService } from "./player.service";
@@ -11,7 +11,6 @@ import { DatabaseQuerier } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
 import { NamesmithEvents } from "../event-listeners/namesmith-events";
 import { GameIsNotActiveError, GameStateInitializationError } from "../utilities/error.utility";
-import { joinLines, toConciseReadableDate, toConciseReadableDates } from "../../../utilities/string-manipulation-utils";
 
 /**
  * Provides methods for interacting with the game state.
@@ -94,18 +93,18 @@ export class GameStateService {
 		this.gameStateRepository.setTimeVoting(this.timeVotingStarts);
 		this.gameStateRepository.setTimeVotingEnds(this.timeVotingEnds);
 
-		logInfo(joinLines(
-			`Game timings have been set to:`,
-			`Game Start Time: ${toConciseReadableDate(this.timeGameStarts)}`,
-			`Voting Start Time: ${toConciseReadableDate(this.timeVotingStarts)}`,
-			`Voting End Time: ${toConciseReadableDate(this.timeVotingEnds)}`,
-			``,
-			`Pick a Perk Start Times: ${toConciseReadableDates(this.timesPickAPerkStarts)}`,
-			``,
-			`Day Start Times: ${toConciseReadableDates(this.timesDayStarts)}`,
-			``,
-			`Week Start Times: ${toConciseReadableDates(this.timesWeekStarts)}`,
-		));
+		// logInfo(joinLines(
+		// 	`Game timings have been set to:`,
+		// 	`Game Start Time: ${toConciseReadableDate(this.timeGameStarts)}`,
+		// 	`Voting Start Time: ${toConciseReadableDate(this.timeVotingStarts)}`,
+		// 	`Voting End Time: ${toConciseReadableDate(this.timeVotingEnds)}`,
+		// 	``,
+		// 	`Pick a Perk Start Times: ${toConciseReadableDates(this.timesPickAPerkStarts)}`,
+		// 	``,
+		// 	`Day Start Times: ${toConciseReadableDates(this.timesDayStarts)}`,
+		// 	``,
+		// 	`Week Start Times: ${toConciseReadableDates(this.timesWeekStarts)}`,
+		// ));
 	}
 
 	/**

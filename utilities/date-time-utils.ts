@@ -48,9 +48,8 @@ export const toCronExpression = (date: Date): string => {
  * const fiveDaysLater = addDays(new Date(), 5);
  */
 export const addDays = (date: Date, days: number): Date => {
-	const newDate = new Date(date.getTime());
-	newDate.setDate(newDate.getDate() + days);
-	return newDate;
+	const MS_PER_DAY = 24 * 60 * 60 * 1000;
+	return new Date(date.getTime() + days * MS_PER_DAY);
 }
 
 /**
@@ -62,9 +61,8 @@ export const addDays = (date: Date, days: number): Date => {
  * const fiveHoursLater = addHours(new Date(), 5);
  */
 export const addHours = (date: Date, hours: number): Date => {
-	const newDate = new Date(date.getTime());
-	newDate.setHours(newDate.getHours() + hours);
-	return newDate;
+	const MS_PER_HOUR = 60 * 60 * 1000;
+	return new Date(date.getTime() + hours * MS_PER_HOUR);
 }
 
 /**
@@ -76,9 +74,8 @@ export const addHours = (date: Date, hours: number): Date => {
  * const fiveMinutesLater = addMinutes(new Date(), 5);
  */
 export const addMinutes = (date: Date, minutes: number): Date => {
-	const newDate = new Date(date.getTime());
-	newDate.setMinutes(newDate.getMinutes() + minutes);
-	return newDate;
+	const MS_PER_MINUTE = 60 * 1000;
+	return new Date(date.getTime() + minutes * MS_PER_MINUTE);
 }
 
 /**
@@ -90,9 +87,8 @@ export const addMinutes = (date: Date, minutes: number): Date => {
  * const fiveSecondsLater = addSeconds(new Date(), 5);
  */
 export const addSeconds = (date: Date, seconds: number): Date => {
-	const newDate = new Date(date.getTime());
-	newDate.setSeconds(newDate.getSeconds() + seconds);
-	return newDate;
+	const MS_PER_SECOND = 1000;
+	return new Date(date.getTime() + seconds * MS_PER_SECOND);
 }
 
 /**
@@ -102,9 +98,7 @@ export const addSeconds = (date: Date, seconds: number): Date => {
  * @returns A new Date object with the specified number of milliseconds added to the original date.
  */
 export const addMilliseconds = (date: Date, milliseconds: number): Date => {
-	const newDate = new Date(date.getTime());
-	newDate.setMilliseconds(newDate.getMilliseconds() + milliseconds);
-	return newDate;
+	return new Date(date.getTime() + milliseconds);
 }
 
 /**

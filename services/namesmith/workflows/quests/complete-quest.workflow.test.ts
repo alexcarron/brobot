@@ -4719,6 +4719,7 @@ describe('complete-quest.workflow.ts', () => {
 
 		describe('Chain Five Quest', () => {
 			it('returns success when player accepted 5 distinct trades from 5 different players', () => {
+				jest.useRealTimers();
 				for (let i = 0; i < 5; i++) {
 					const trade = addMockTrade(db, {
 						initiatingPlayer: FIVE_DIFFERENT_PLAYERS[i],
@@ -5468,7 +5469,7 @@ describe('complete-quest.workflow.ts', () => {
 			it('returns success when there is a 6-day gap between two perk picks', () => {
 				forcePlayerToPickNewPerk(SOME_PLAYER);
 
-				jest.setSystemTime(addDays(new Date(), 6));
+				jest.setSystemTime(addDays(START_OF_WEEK, 6));
 				forcePlayerToPickNewPerk(SOME_PLAYER);
 
 				const result = completeQuest({
@@ -5479,9 +5480,10 @@ describe('complete-quest.workflow.ts', () => {
 			});
 
 			it('returns failure when the player picked perks with only 5-day gaps', () => {
+				jest.setSystemTime(START_OF_WEEK);
 				forcePlayerToPickNewPerk(SOME_PLAYER);
 
-				jest.setSystemTime(addDays(new Date(), 5));
+				jest.setSystemTime(addDays(START_OF_WEEK, 5));
 				forcePlayerToPickNewPerk(SOME_PLAYER);
 
 				jest.setSystemTime(RIGHT_BEFORE_END_OF_WEEK);
