@@ -54,12 +54,26 @@ export class VoteService {
 	}
 
 	/**
+	 * Checks if a vote with the given properties exists.
+	 * @param voteResolvable - The vote resolvable to check.
+	 * @returns A boolean indicating if the vote exists.
+	 */
+	doesVoteExist(voteResolvable: VoteResolvable): boolean {
+		const voteID = this.resolveID(voteResolvable);
+		return this.voteRepository.doesVoteExist(voteID);
+	}
+	
+	/**
 	 * Gets the set of ranks a given vote has missing votes for.
 	 * @param voteResolvable - The vote resolvable to get the missing ranks of.
 	 * @returns A set of the ranks that are missing from the vote.
 	 */
 	getMissingRanksOfVote(voteResolvable: VoteResolvable | null): Set<Rank> {
-		if (voteResolvable === null) return new Set([Ranks.FIRST, Ranks.SECOND, Ranks.THIRD]);
+		if (voteResolvable === null) 
+			return new Set([Ranks.FIRST, Ranks.SECOND, Ranks.THIRD]);
+
+		if (!this.doesVoteExist(voteResolvable))
+			return new Set([Ranks.FIRST, Ranks.SECOND, Ranks.THIRD]);
 		
 		const vote = this.resolveVote(voteResolvable);
 		const missingRanks: Set<Rank> = new Set();
@@ -101,6 +115,29 @@ export class VoteService {
 		return playerIDsNotVotedInRank;
 	}
 
+	/**
+	 * Gets the map of ranks to the players voted for in the given vote.
+	 * @param voteResolvable - The vote to look at.
+	 * @returns The map of ranks to the players voted for in the given vote.
+	 */
+	getRanksToVotedPlayer(voteResolvable: VoteResolvable): Map<Rank, Player> {
+		if (!this.doesVoteExist(voteResolvable)) return new Map();
+		
+		const vote = this.resolveVote(voteResolvable);
+		const rankToVotedPlayer: Map<Rank, Player> = new Map();
+		if (vote.votedFirstPlayer !== null) rankToVotedPlayer.set(Ranks.FIRST, vote.votedFirstPlayer);
+		if (vote.votedSecondPlayer !== null) rankToVotedPlayer.set(Ranks.SECOND, vote.votedSecondPlayer);
+		if (vote.votedThirdPlayer !== null) rankToVotedPlayer.set(Ranks.THIRD, vote.votedThirdPlayer);
+		return rankToVotedPlayer;
+	}
+
+
+	/**
+	 * Gets the map of ranks to the players voted for in the given vote, excluding the given rank.
+	 * @param voteResolvable - The vote to look at.
+	 * @param rank - The rank to exclude.
+	 * @returns The map of ranks to the players voted for in the given vote, excluding the given rank.
+	 */
 	getOtherRanksToVotedPlayer(
 		voteResolvable: VoteResolvable,
 		rank: Rank
@@ -133,10 +170,12 @@ export class VoteService {
 	 * @param playerResolvable - The player to look for.
 	 * @returns The rank that the player is voted for in the vote, or null if the player is not voted for in the vote.
 	 */
-	private getRankOfPlayerInVote(
-		voteResolvable: VoteResolvable, 
+	getRankOfPlayerInVote(
+		voteResolvable: VoteResolvable | null, 
 		playerResolvable: PlayerResolvable
 	): Rank | null {
+		if (voteResolvable === null) return null;
+		if (!this.doesVoteExist(voteResolvable)) return null;
 		const vote = this.resolveVote(voteResolvable);
 		const playerID = this.playerService.resolveID(playerResolvable);
 
@@ -163,6 +202,7 @@ export class VoteService {
 		const existingVote = this.voteRepository.getVoteByVoterID(voterID);
 		const votedPlayerID = this.playerService.resolveID(playerResolvable);
 		const missingRanks = this.getMissingRanksOfVote(existingVote);
+		const previousRankOfPlayer = this.getRankOfPlayerInVote(existingVote, playerResolvable);
 		let vote = null;
 
 		switch (rank) {
@@ -190,6 +230,34 @@ export class VoteService {
 			default:
 				throw new InvalidArgumentError(`Expected the rank passed to votePlayerAsRank to be 1st, 2nd, or 3rd, but was ${rank}.`);
 		}
+
+		if (previousRankOfPlayer !== null) {
+			switch (previousRankOfPlayer) {
+				case Ranks.FIRST:
+					if (rank === Ranks.SECOND || rank === Ranks.THIRD)
+						throw new VoteOutOfOrderError(voterID, votedPlayerID, previousRankOfPlayer, rank);
+					break;
+
+				case Ranks.SECOND:
+					if (rank === Ranks.THIRD)
+						throw new VoteOutOfOrderError(voterID, votedPlayerID, previousRankOfPlayer, rank);
+
+					if (rank === Ranks.FIRST)
+						this.voteRepository.updateVote({
+							voter: voterID,
+							votedSecondPlayer: null,
+						});
+					break;
+
+				case Ranks.THIRD:
+					if (rank === Ranks.FIRST || rank === Ranks.SECOND)
+						this.voteRepository.updateVote({
+							voter: voterID,
+							votedThirdPlayer: null,
+						});
+					break;
+			}
+		}
 		
 		if (existingVote === null) {
 			this.voteRepository.addVote({voter: voterID});
@@ -216,7 +284,7 @@ export class VoteService {
 	 * @param rank - The rank to get the player voted for in.
 	 * @returns The player the given user voted for in the given rank
 	 */
-	getPlayerUserVotedInRank(voterID: VoteID, rank: Rank): Player | null {
+	getPlayerVotedInRank(voterID: VoteID, rank: Rank): Player | null {
 		if (!this.voteRepository.doesVoteExist(voterID)) return null;
 		
 		const vote = this.voteRepository.getVoteOrThrow(voterID);

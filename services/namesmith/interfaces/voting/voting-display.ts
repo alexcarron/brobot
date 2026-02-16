@@ -1,5 +1,6 @@
 import { ids } from "../../../../bot-config/discord-ids";
 import { deleteAllMessagesInChannel } from "../../../../utilities/discord-action-utils";
+import { logSetup } from "../../../../utilities/logging-utils";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { openNamesToVoteOnChannel } from "../../utilities/discord-action.utility";
 import { fetchNamesmithChannel } from "../../utilities/discord-fetch.utility";
@@ -31,14 +32,19 @@ export async function sendVotingDisplay() {
 export async function regenerateVotingDisplay() {
 	const { playerService } = getNamesmithServices();
 	const players = playerService.getPlayers();
-	for (const player of players) {
+
+	const regeneratePromises = players.map(player => {
 		if (player.publishedName === null)
-			continue;
+			return Promise.resolve();
 		
 		const finalizedName = player.publishedName;
-		await regenerateNameEntryMessage({
+		return logSetup(`[VOTE ENTRY] ${finalizedName}`, regenerateNameEntryMessage({
 			player: player,
 			name: finalizedName
-		});
-	}
+		}));
+	});
+
+	await Promise.all(regeneratePromises);
+
+	await sendVotingDisplay();
 }

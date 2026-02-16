@@ -460,4 +460,16 @@ export class GameStateService {
 			return false;
 		}
 	}
+
+	isVotingOpen(): boolean {
+		const now = new Date();
+		try {
+			const endTime = this.gameStateRepository.getTimeVoteIsEnding();
+			return now.getTime() < endTime.getTime();
+		}
+		catch {
+			logWarning(`Could not determine if voting is closed because the game state is not fully initialized.`);
+			return false;
+		}
+	}
 }

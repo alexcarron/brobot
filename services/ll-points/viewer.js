@@ -2,7 +2,7 @@ const { ids } = require("../../bot-config/discord-ids");
 const { fetchGuild, fetchGuildMember, fetchUser, fetchRole } = require("../../utilities/discord-fetch-utils.js");
 const { addRoleToMember, removeRoleFromMember } = require("../../utilities/discord-action-utils");
 const { LLPointTier, LLPointThreshold, LLPointReward, LLPointAccomplishment } = require("./ll-point-enums.js");
-const { logInfo, logError, logSuccess, logWarning } = require("../../utilities/logging-utils.js");
+const { logInfo, logError, logSuccess, logWarning } = require("../../utilities/logging-utils");
 const { throwIfNotError } = require("../../utilities/error-utils");
 
 /**

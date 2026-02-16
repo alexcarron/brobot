@@ -6,7 +6,7 @@ const { PermissionFlagsBits } = require('discord.js');
 const { LLPointManager } = require('../../services/ll-points/ll-point-manager.js');
 const { findStringStartingWith } = require('../../utilities/string-manipulation-utils');
 const { confirmInteractionWithButtons } = require('../../utilities/discord-action-utils');
-const { logInfo } = require('../../utilities/logging-utils.js');
+const { logInfo } = require('../../utilities/logging-utils');
 const { getRequiredStringParam, getRequiredNumberParam } = require('../../utilities/discord-fetch-utils.js');
 const Viewer = require('../../services/ll-points/viewer.js');
 

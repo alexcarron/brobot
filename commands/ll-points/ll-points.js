@@ -5,7 +5,7 @@ const { SlashCommand } = require("../../services/command-creation/slash-command"
 const { LLPointManager } = require("../../services/ll-points/ll-point-manager.js");
 const { deferInteraction } = require("../../utilities/discord-action-utils");
 const { LLPointTier } = require('../../services/ll-points/ll-point-enums.js');
-const { logInfo } = require('../../utilities/logging-utils.js');
+const { logInfo } = require('../../utilities/logging-utils');
 const { getStringParamValue } = require('../../utilities/discord-fetch-utils');
 
 

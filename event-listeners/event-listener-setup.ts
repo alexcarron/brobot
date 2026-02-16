@@ -1,7 +1,7 @@
 import {
-  ChannelType,
-  Events,
-  Client,
+	ChannelType,
+	Events,
+	Client,
 	ButtonInteraction,
 	StringSelectMenuInteraction,
 	Message,
@@ -13,7 +13,6 @@ import { onSlashCommandExecuted } from "./on-slash-command-executed";
 import { onSlashCommandAutocomplete } from "./on-slash-command-autocomplete";
 import { isButtonPressedEvent } from "./on-button-pressed";
 import { onUserJoinsServer } from "./on-user-joins-server";
-import { logInfo, logSuccess } from "../utilities/logging-utils";
 import { onMessageDeleted } from "./on-message-deleted";
 import { isMenuOptionSelectedEvent } from "./on-menu-option-selected";
 
@@ -160,12 +159,8 @@ const setupMessageDeleteListener =
 	};
 
 export const setupEventListeners = (client: Client) => {
-	logInfo("Setting up event listeners...");
-
 	setupMessageSentListener(client);
 	setupInteractionCreateListener(client);
 	setupGuildMemberAddListener(client);
 	setupMessageDeleteListener(client);
-
-	logSuccess("Event listeners set up");
 }

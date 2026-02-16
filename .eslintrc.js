@@ -54,6 +54,7 @@ module.exports = {
 				'jsdoc/require-jsdoc': 'off',         // ignore missing @jsdoc
 				'jest/expect-expect': 'off',
 				'@typescript-eslint/ban-ts-comment': 'off',
+				"@typescript-eslint/no-unused-expressions": ["error", { "allowTaggedTemplates": true }] // allow tagged template expressions (e.g., for logging)
         // you can add TS overrides here
       },
     },

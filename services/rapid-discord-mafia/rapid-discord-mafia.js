@@ -7,7 +7,6 @@ const { ids } = require("../../bot-config/discord-ids");
 const { GameManager } = require("./game-manager.js");
 const { fetchRDMGuild, fetchTextChannel } = require("../../utilities/discord-fetch-utils.js");
 const { loadObjectFromJsonInGitHub } = require("../../utilities/persistent-storage-utils.js");
-const { logSuccess } = require("../../utilities/logging-utils.js");
 
 /**
  * Class representing the rapid discord mafia game
@@ -40,7 +39,6 @@ class RapidDiscordMafia {
 		if (!isMockObject) {
 			const rapid_discord_mafia_obj = await loadObjectFromJsonInGitHub("rapid_discord_mafia");
 			global.rapid_discord_mafia.setTo(rapid_discord_mafia_obj);
-			logSuccess("Rapid Discord Mafia Database Downloaded");
 		}
 	}
 

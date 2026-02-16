@@ -1,4 +1,4 @@
-import { logError, logInfo, logSuccess } from "../../../utilities/logging-utils";
+import { logError, logSuccess } from "../../../utilities/logging-utils";
 
 import * as fs from 'fs-extra';
 import * as path from 'path';
@@ -71,8 +71,6 @@ export const createBackup = async (): Promise<void> => {
  * @returns The scheduled cron job instance.
  */
 export async function startBackupCronJob() {
-  logInfo('Starting hourly backup cron job...');
-
   // Schedule: At minute 0 past every hour
   const task = cron.schedule('6 * * * *', async () => {
     await createBackup();

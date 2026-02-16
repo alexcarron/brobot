@@ -1,4 +1,4 @@
-import { logInfo, logSuccess } from "../../../utilities/logging-utils";
+import { logSetup } from "../../../utilities/logging-utils";
 import { setupDatabase } from "../database/setup-database";
 import { regenerateChooseARoleMessage } from "../interfaces/choose-a-role-message";
 import { regeneratePickAPerkMessage } from "../interfaces/pick-a-perk-message";
@@ -38,24 +38,23 @@ export const initializeDependencies = async (): Promise<NamesmithDependencies> =
  * Sets up Namesmith by loading and setting up the necessary repositories and services when the bot starts up.
  */
 export const setupNamesmith = async () => {
-	logInfo("Setting up Namesmith...");
 	await initializeDependencies();
 
 	const { gameStateService } = getNamesmithServices();
 
 	setupEventListeners();
-
+ 
 	if (gameStateService.hasStarted()) {
 		gameStateService.scheduleGameEvents();
 
-		await regenerateAllTradeMessages();
-		await regenerateChooseARoleMessage();
-		await regeneratePickAPerkMessage();
-		await regenerateDailyQuestsMessages();
-		await regenerateHiddenQuestsMessages();
-		await regenerateWeeklyQuestsMessages();
-		await regenerateVotingDisplay();
+		await Promise.all([
+			logSetup('[TRADE MESSAGES]', regenerateAllTradeMessages()),
+			logSetup('[ROLE MESSAGES]', regenerateChooseARoleMessage()),
+			logSetup('[PERK MESSAGES]', regeneratePickAPerkMessage()),
+			logSetup('[DAILY QUEST MESSAGES]', regenerateDailyQuestsMessages()),
+			logSetup('[HIDDEN QUEST MESSAGES]', regenerateHiddenQuestsMessages()),
+			logSetup('[WEEKLY QUEST MESSAGES]', regenerateWeeklyQuestsMessages()),
+			logSetup('[VOTE ENTRY MESSAGES]', regenerateVotingDisplay()),
+		]);
 	}
-
-	logSuccess("Namesmith set up");
 }

@@ -1,6 +1,6 @@
 import { initialBotStatus } from "./bot-config/bot-status";
 import { setupEventListeners } from './event-listeners/event-listener-setup';
-import { logInfo, logSuccess } from './utilities/logging-utils.js';
+import { logInfo, logSetup } from './utilities/logging-utils';
 import { Events } from 'discord.js';
 import { onClientReady } from './bot-config/on-ready.js';
 import { setupAndDeployCommands, setupCommands } from "./bot-config/setup-commands";
@@ -29,9 +29,10 @@ const DEVELOPMENT_ENVIRONMENT_OPTIONS = [
 	'--devEnvironment',
 ];
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+logInfo(`Using discord.js version: ${require('discord.js').version}`);
+
 const startBrobot = async () => {
-	// eslint-disable-next-line @typescript-eslint/no-require-imports
-	logInfo(`Using discord.js version: ${require('discord.js').version}`);
 
 	const commandArguments = process.argv;
 	const isDeploying = commandArguments.some(argument => DEPLOY_GUILD_COMMANDS_OPTIONS.includes(argument));
@@ -56,7 +57,7 @@ const startBrobot = async () => {
 	else
 		setupCommands(client);
 
-	setupEventListeners(client);
+	await logSetup("Event listeners", () => setupEventListeners(client));
 
 	// when the client is ready, run this code
 	// this event will only trigger one time after Brobot has successfully fully connected to the Discord API
@@ -65,6 +66,5 @@ const startBrobot = async () => {
 	});
 }
 
-startBrobot()
-	.then(() => logSuccess("Finished starting Brobot"))
+logSetup("Starting Brobot", startBrobot)
 	.catch(console.error);

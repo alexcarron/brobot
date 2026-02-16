@@ -1,4 +1,4 @@
-import { makeSure } from "../../../utilities/jest/jest-utils";
+import { failTest, makeSure } from "../../../utilities/jest/jest-utils";
 import { getRandomUUID } from "../../../utilities/random-utils";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
@@ -26,7 +26,7 @@ describe('vote-name.workflow', () => {
 		SOME_OTHER_PLAYER = addMockPlayer(db);
 	});
 
-	describe('addVote', () => {
+	describe('voteName()', () => {
 		it('creates a vote from the given user voting that player in 1st', () => {
 			voteName({
 				voterUserID: SOME_USER_ID,
@@ -85,7 +85,7 @@ describe('vote-name.workflow', () => {
 			});
 		});
 
-		it('returns the correct missingRanks and otherRanksToVotedNames on success', () => {
+		it('returns the correct missingRanks, otherRanksToVotedNames, rankToVotedNames, playerPreviouslyInRank, and previousRankOfPlayer on success', () => {
 			addMockVote(db, {
 				voter: SOME_USER_ID,
 				votedFirstPlayer: SOME_PLAYER,
@@ -99,33 +99,130 @@ describe('vote-name.workflow', () => {
 				})
 			);
 
-			makeSure(result).hasOnlyProperties('missingRanks', 'otherRankToVotedName', 'playerPreviouslyInRank');
+			makeSure(result).hasOnlyProperties('missingRanks', 'otherRankToVotedName', 'rankToVotedName', 'playerPreviouslyInRank', 'previousRankOfPlayer');
 
-			const {missingRanks, otherRankToVotedName, playerPreviouslyInRank} = result;
+			const {missingRanks, rankToVotedName, otherRankToVotedName, playerPreviouslyInRank, previousRankOfPlayer} = result;
 			makeSure(missingRanks).containsOnly(Ranks.THIRD);
 			makeSure(otherRankToVotedName).is(new Map([[
 				Ranks.FIRST, 
 				SOME_PLAYER.publishedName!
 			]]));
+			makeSure(rankToVotedName).is(new Map([[
+				Ranks.FIRST, 
+				SOME_PLAYER.publishedName!
+			], [
+				Ranks.SECOND, 
+				SOME_OTHER_PLAYER.publishedName!
+			]]));
 			makeSure(playerPreviouslyInRank).is(null);
-		});
-	});
-
-	it('returns a success object with playerPreviouslyInRank as the player who was originally voted 1st', () => {
-		addMockVote(db, {
-			voter: SOME_USER_ID,
-			votedFirstPlayer: SOME_PLAYER,
+			makeSure(previousRankOfPlayer).is(null);
 		});
 
-		const result = returnIfNotFailure(
-			voteName({
+		it('returns a success object with playerPreviouslyInRank as the player who was originally voted 1st', () => {
+			addMockVote(db, {
+				voter: SOME_USER_ID,
+				votedFirstPlayer: SOME_PLAYER,
+			});
+	
+			const result = returnIfNotFailure(
+				voteName({
+					voterUserID: SOME_USER_ID,
+					votedPlayer: SOME_OTHER_PLAYER,
+					rankVotingFor: Ranks.FIRST,
+				})
+			);
+	
+			const {playerPreviouslyInRank} = result;
+			makeSure(playerPreviouslyInRank).is(SOME_PLAYER);
+		});
+
+		it('returns a votedOutOfOrder failure with correct missingRanks if a user votes 2nd place vote when they dont have a 1st place vote', () => {
+			addMockVote(db, {
+				voter: SOME_USER_ID,
+				votedSecondPlayer: SOME_PLAYER,
+			});
+
+			const result = voteName({
 				voterUserID: SOME_USER_ID,
 				votedPlayer: SOME_OTHER_PLAYER,
-				rankVotingFor: Ranks.FIRST,
-			})
-		);
+				rankVotingFor: Ranks.SECOND,
+			});
 
-		const {playerPreviouslyInRank} = result;
-		makeSure(playerPreviouslyInRank).is(SOME_PLAYER);
+			if (!result.isOutOfOrderVote())
+				failTest(`Expected the voteName workflow to return a votedOutOfOrder failure, but it was not`);
+
+			makeSure(result).hasProperties('missingRanks', 'rankToVotedName');
+			makeSure(result.missingRanks).containsOnly(Ranks.FIRST);
+			makeSure(result.rankToVotedName).is(new Map([[
+				Ranks.SECOND, 
+				SOME_PLAYER.publishedName!
+			]]));
+		});
+
+		it('returns a votedOutOfOrder failure with correct missingRanks if a user votes 3rd place vote when they dont have a 1st or 2nd place vote', () => {
+			addMockVote(db, {
+				voter: SOME_USER_ID,
+				votedThirdPlayer: SOME_PLAYER,
+			});
+
+			const result = voteName({
+				voterUserID: SOME_USER_ID,
+				votedPlayer: SOME_OTHER_PLAYER,
+				rankVotingFor: Ranks.THIRD,
+			});
+
+			if (!result.isOutOfOrderVote())
+				failTest(`Expected the voteName workflow to return a votedOutOfOrder failure, but it was not`);
+
+			makeSure(result).hasProperties('missingRanks', 'rankToVotedName');
+			makeSure(result.missingRanks).containsOnly(Ranks.FIRST, Ranks.SECOND);
+			makeSure(result.rankToVotedName).is(new Map([[
+				Ranks.THIRD, 
+				SOME_PLAYER.publishedName!
+			]]));
+		});
+
+		it('returns a votedOutOfOrder failure with correct missingRanks if a user votes 3rd place vote when they dont have a 2nd place vote', () => {
+			addMockVote(db, {
+				voter: SOME_USER_ID,
+				votedFirstPlayer: SOME_PLAYER,
+			});
+
+			const result = voteName({
+				voterUserID: SOME_USER_ID,
+				votedPlayer: SOME_OTHER_PLAYER,
+				rankVotingFor: Ranks.THIRD,
+			});
+
+			if (!result.isOutOfOrderVote())
+				failTest(`Expected the voteName workflow to return a votedOutOfOrder failure, but it was not`);
+
+			makeSure(result).hasProperties('missingRanks', 'rankToVotedName');
+			makeSure(result.missingRanks).containsOnly(Ranks.SECOND);
+			makeSure(result.rankToVotedName).is(new Map([
+				[Ranks.FIRST, SOME_PLAYER.publishedName!],
+			]));
+		});
+
+		it('returns a repeatedVote failure if a user tries to vote the same player in the same rank', () => {
+			addMockVote(db, {
+				voter: SOME_USER_ID,
+				votedFirstPlayer: SOME_PLAYER,
+			});
+
+			const result = voteName({
+				voterUserID: SOME_USER_ID,
+				votedPlayer: SOME_PLAYER,
+				rankVotingFor: Ranks.FIRST,
+			});
+
+			if (!result.isRepeatedVote())
+				failTest(`Expected the voteName workflow to return a repeatedVote failure, but it was not`);
+
+			makeSure(result).hasProperty('rankToVotedName');
+			makeSure(result.rankToVotedName).is(new Map([
+				[Ranks.FIRST, SOME_PLAYER.publishedName!],
+			]));
+		});
 	});
 });

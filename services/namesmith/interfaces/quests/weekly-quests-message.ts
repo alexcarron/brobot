@@ -1,6 +1,7 @@
 import { ids } from "../../../../bot-config/discord-ids";
 import { setNewMessageInChannel } from "../../../../utilities/discord-action-utils";
 import { ignoreError } from "../../../../utilities/error-utils";
+import { logSetup } from "../../../../utilities/logging-utils";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { Quest } from "../../types/quest.types";
 import { fetchNamesmithChannel } from "../../utilities/discord-fetch.utility";
@@ -34,9 +35,12 @@ export async function sendWeeklyQuestsMessages(): Promise<void> {
 export async function regenerateWeeklyQuestsMessages() {
 	const {questService} = getNamesmithServices();
 	const dailyQuests = questService.getShownWeeklyQuests();
+	const weeklyQuestRegenerations = [];
 	for (const quest of dailyQuests) {
-		await regenerateWeeklyQuestMessage(quest);
+		weeklyQuestRegenerations.push(logSetup(`[WEEKLY QUEST] ${quest.name}`, regenerateWeeklyQuestMessage(quest)));
 	}
+
+	await Promise.all(weeklyQuestRegenerations);
 }
 
 export async function sendWeeklyQuestMessage(quest: Quest): Promise<void> {
