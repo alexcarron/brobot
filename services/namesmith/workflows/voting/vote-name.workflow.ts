@@ -1,7 +1,7 @@
-import { getNamesmithServices } from "../services/get-namesmith-services";
-import { Player, PlayerResolvable } from "../types/player.types";
-import { Rank, Ranks, VoteID } from "../types/vote.types";
-import { getWorkflowResultCreator, provides } from "./workflow-result-creator";
+import { getNamesmithServices } from "../../services/get-namesmith-services";
+import { Player, PlayerResolvable } from "../../types/player.types";
+import { Rank, Ranks, VoteID } from "../../types/vote.types";
+import { getWorkflowResultCreator, provides } from "../workflow-result-creator";
 
 const result = getWorkflowResultCreator({
 	success: provides<{
@@ -48,10 +48,7 @@ export function voteName(
 	const playerPreviouslyInRank = voteService.getPlayerVotedInRank(voterUserID, rankVotingFor);
 	const previousRankOfPlayer = voteService.getRankOfPlayerInVote(voterUserID, votedPlayerResolvable);
 	const previousMissingRanks = voteService.getMissingRanksOfVote(voterUserID);
-	const previousRankToVotedPlayer = voteService.getRanksToVotedPlayer(voterUserID);
-	const previousRankToVotedName = new Map(
-		Array.from(previousRankToVotedPlayer).map(([rank, player]) => [rank, player.publishedName!])
-	)
+	const previousRankToVotedName = voteService.getRanksToVotedName(voterUserID);
 
 	if (previousRankOfPlayer !== null) {
 		if (previousRankOfPlayer === rankVotingFor) {
@@ -110,13 +107,7 @@ export function voteName(
 	const vote = voteService.votePlayerAsRank(voterUserID, votedPlayerResolvable, rankVotingFor);
 	const missingRanks = voteService.getMissingRanksOfVote(vote);
 
-	const rankToVotedPlayer = voteService.getRanksToVotedPlayer(voterUserID);
-	const rankToVotedName = new Map(
-		Array.from(rankToVotedPlayer).map(([rank, player]) => [rank, player.publishedName!])
-	)
-	const otherRankToVotedPlayer = voteService.getOtherRanksToVotedPlayer(voterUserID, rankVotingFor);
-	const otherRankToVotedName = new Map(
-		Array.from(otherRankToVotedPlayer).map(([rank, player]) => [rank, player.publishedName!])
-	)
+	const rankToVotedName = voteService.getRanksToVotedName(voterUserID);
+	const otherRankToVotedName = voteService.getOtherRanksToVotedName(voterUserID, rankVotingFor);
 	return result.success({missingRanks, rankToVotedName, otherRankToVotedName, playerPreviouslyInRank, previousRankOfPlayer});
 }

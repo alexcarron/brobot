@@ -37,7 +37,7 @@ export const initializeDependencies = async (): Promise<NamesmithDependencies> =
 /**
  * Sets up Namesmith by loading and setting up the necessary repositories and services when the bot starts up.
  */
-export const setupNamesmith = async () => {
+export async function setupNamesmith() {
 	await initializeDependencies();
 
 	const { gameStateService } = getNamesmithServices();
@@ -54,7 +54,7 @@ export const setupNamesmith = async () => {
 			logSetup('[DAILY QUEST MESSAGES]', regenerateDailyQuestsMessages()),
 			logSetup('[HIDDEN QUEST MESSAGES]', regenerateHiddenQuestsMessages()),
 			logSetup('[WEEKLY QUEST MESSAGES]', regenerateWeeklyQuestsMessages()),
-			logSetup('[VOTE ENTRY MESSAGES]', regenerateVotingDisplay()),
+			logSetup('[VOTING DISPLAY]', regenerateVotingDisplay()),
 		]);
 	}
 }

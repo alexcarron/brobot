@@ -131,6 +131,22 @@ export class VoteService {
 		return rankToVotedPlayer;
 	}
 
+	private toRanksToVotedName(ranksToVotedPlayer: Map<Rank, Player>): Map<Rank, string> {
+		return new Map(
+			Array.from(ranksToVotedPlayer).map(([rank, player]) => [rank, player.publishedName!])
+		)
+	}
+
+	/**
+	 * Gets the map of ranks to the names of the players voted for in the given vote.
+	 * @param voteResolvable - The vote to look at.
+	 * @returns The map of ranks to the names of the players voted for in the given vote.
+	 */
+	getRanksToVotedName(voteResolvable: VoteResolvable): Map<Rank, string> {
+		const ranksToVotedPlayer = this.getRanksToVotedPlayer(voteResolvable);
+		return this.toRanksToVotedName(ranksToVotedPlayer);
+	}
+
 
 	/**
 	 * Gets the map of ranks to the players voted for in the given vote, excluding the given rank.
@@ -162,6 +178,20 @@ export class VoteService {
 		}
 
 		return rankToVotedPlayer;
+	}
+
+	/**
+	 * Gets the map of ranks to the names of the players voted for in the given vote, excluding the given rank.
+	 * @param voteResolvable - The vote to look at.
+	 * @param rank - The rank to exclude.
+	 * @returns The map of ranks to the names of the players voted for in the given vote, excluding the given rank.
+	 */
+	getOtherRanksToVotedName(
+		voteResolvable: VoteResolvable,
+		rank: Rank
+	): Map<Rank, string> {
+		const otherRanksToVotedPlayer = this.getOtherRanksToVotedPlayer(voteResolvable, rank);
+		return this.toRanksToVotedName(otherRanksToVotedPlayer);
 	}
 
 	/**

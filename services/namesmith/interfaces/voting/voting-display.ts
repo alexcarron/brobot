@@ -4,7 +4,7 @@ import { logSetup } from "../../../../utilities/logging-utils";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { openNamesToVoteOnChannel } from "../../utilities/discord-action.utility";
 import { fetchNamesmithChannel } from "../../utilities/discord-fetch.utility";
-import { sendInitialVotingMessage } from "./initial-voting-message";
+import { regenerateInitialVotingMessage, sendInitialVotingMessage } from "./initial-voting-message";
 import { regenerateNameEntryMessage, sendNameEntryMessage } from "./name-entry-message";
 
 export async function sendVotingDisplay() {
@@ -30,21 +30,25 @@ export async function sendVotingDisplay() {
 }
 
 export async function regenerateVotingDisplay() {
+	const regeneratePromises = [
+		logSetup('[INITIAL VOTING MESSAGE]', regenerateInitialVotingMessage())
+	];
+	
 	const { playerService } = getNamesmithServices();
 	const players = playerService.getPlayers();
 
-	const regeneratePromises = players.map(player => {
-		if (player.publishedName === null)
-			return Promise.resolve();
-		
-		const finalizedName = player.publishedName;
-		return logSetup(`[VOTE ENTRY] ${finalizedName}`, regenerateNameEntryMessage({
-			player: player,
-			name: finalizedName
-		}));
-	});
+	regeneratePromises.push(
+		...players.map(player => {
+			if (player.publishedName === null)
+				return Promise.resolve();
+			
+			const finalizedName = player.publishedName;
+			return logSetup(`[VOTE ENTRY] ${finalizedName}`, regenerateNameEntryMessage({
+				player: player,
+				name: finalizedName
+			}));
+		})
+	);
 
 	await Promise.all(regeneratePromises);
-
-	await sendVotingDisplay();
 }

@@ -35,10 +35,10 @@ describe('VoteService', () => {
 		db = voteService.voteRepository.db;
 
 		VOTER_PLAYER = addMockPlayer(db);
-		VOTED_1ST_PLAYER = addMockPlayer(db);
-		VOTED_2ND_PLAYER = addMockPlayer(db);
-		VOTED_3RD_PLAYER = addMockPlayer(db);
-		SOME_OTHER_PLAYER = addMockPlayer(db);
+		VOTED_1ST_PLAYER = addMockPlayer(db, {publishedName: '1st Player'});
+		VOTED_2ND_PLAYER = addMockPlayer(db, {publishedName: '2nd Player'});
+		VOTED_3RD_PLAYER = addMockPlayer(db, {publishedName: '3rd Player'});
+		SOME_OTHER_PLAYER = addMockPlayer(db, {publishedName: 'Some Other Player'});
 	});
 
 	afterEach(() => {
@@ -351,6 +351,56 @@ describe('VoteService', () => {
 			const rankToVotedPlayer = voteService.getRanksToVotedPlayer(VOTER_PLAYER.id);
 
 			makeSure(rankToVotedPlayer).is(new Map([]));
+		});
+	});
+
+	describe('getRanksToVotedName()', () => {
+		it('returns the map of ranks to the names of the players voted for in the given vote', () => {
+			addMockVote(db, {
+				voter: VOTER_PLAYER.id,
+				votedFirstPlayer: VOTED_1ST_PLAYER.id,
+				votedSecondPlayer: VOTED_2ND_PLAYER.id,
+				votedThirdPlayer: VOTED_3RD_PLAYER.id,
+			});
+
+			const rankToVotedName = voteService.getRanksToVotedName(VOTER_PLAYER.id);
+
+			makeSure(rankToVotedName).is(new Map([
+				[Ranks.FIRST, VOTED_1ST_PLAYER.publishedName!],
+				[Ranks.SECOND, VOTED_2ND_PLAYER.publishedName!],
+				[Ranks.THIRD, VOTED_3RD_PLAYER.publishedName!]
+			]));
+		});
+
+		it('returns the correct map of ranks to names when some ranks are missing', () => {
+			addMockVote(db, {
+				voter: VOTER_PLAYER.id,
+				votedFirstPlayer: VOTED_1ST_PLAYER.id,
+				votedThirdPlayer: VOTED_3RD_PLAYER.id,
+			});
+
+			const rankToVotedName = voteService.getRanksToVotedName(VOTER_PLAYER.id);
+
+			makeSure(rankToVotedName).is(new Map([
+				[Ranks.FIRST, VOTED_1ST_PLAYER.publishedName!],
+				[Ranks.THIRD, VOTED_3RD_PLAYER.publishedName!]
+			]));
+		});
+
+		it('returns an empty map if there are no votes', () => {
+			addMockVote(db, {
+				voter: VOTER_PLAYER.id,
+			});
+
+			const rankToVotedName = voteService.getRanksToVotedName(VOTER_PLAYER.id);
+
+			makeSure(rankToVotedName).is(new Map([]));
+		});
+
+		it('returns an empty map if the vote does not exist', () => {
+			const rankToVotedName = voteService.getRanksToVotedName(VOTER_PLAYER.id);
+
+			makeSure(rankToVotedName).is(new Map([]));
 		});
 	});
 

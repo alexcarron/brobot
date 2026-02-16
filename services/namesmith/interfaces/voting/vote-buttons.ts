@@ -3,8 +3,9 @@ import { replyToInteraction } from "../../../../utilities/discord-action-utils";
 import { DiscordButton, DiscordButtonDefinition } from "../../../../utilities/discord-interfaces/discord-button";
 import { Player } from "../../types/player.types";
 import { Rank, Ranks } from "../../types/vote.types";
-import { voteName } from "../../workflows/vote-name.workflow";
+import { voteName } from "../../workflows/voting/vote-name.workflow";
 import { addSIfPlural, escapeDiscordMarkdown, joinLines, toListOfWords } from "../../../../utilities/string-manipulation-utils";
+import { toRankEmoji } from "../../utilities/feedback-message.utility";
 
 export function getVote1stButton(
 	{player, name}: {player: Player, name: string}
@@ -48,14 +49,6 @@ export function getVote3rdButton(
 				rank: Ranks.THIRD,
 			});
 		}
-	}
-}
-
-function toRankEmoji(rank: Rank): string {
-	switch (rank) {
-		case Ranks.FIRST: return '🥇';
-		case Ranks.SECOND: return '🥈';
-		case Ranks.THIRD: return '🥉';
 	}
 }
 

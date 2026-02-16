@@ -1,4 +1,5 @@
 import { toAmountOfNoun } from "../../../utilities/string-manipulation-utils";
+import { Rank, Ranks } from "../types/vote.types";
 
 export function getTokensEarnedFeedback(
 	numTokensEarned: number,
@@ -32,4 +33,12 @@ export function toTokenEmojis(numTokens: number) {
 	const numMoneyBagEmojis = Math.min(leftoverTokens / 10, MAX_MONEY_BAG_EMOJIS);
 	
 	return `${'💰'.repeat(numMoneyBagEmojis)}${'🪙'.repeat(numTokenEmojis)}`;
+}
+
+export function toRankEmoji(rank: Rank): string {
+	switch (rank) {
+		case Ranks.FIRST: return '🥇';
+		case Ranks.SECOND: return '🥈';
+		case Ranks.THIRD: return '🥉';
+	}
 }

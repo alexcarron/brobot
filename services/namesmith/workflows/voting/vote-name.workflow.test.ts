@@ -1,13 +1,13 @@
-import { failTest, makeSure } from "../../../utilities/jest/jest-utils";
-import { getRandomUUID } from "../../../utilities/random-utils";
-import { DatabaseQuerier } from "../database/database-querier";
-import { addMockPlayer } from "../mocks/mock-data/mock-players";
-import { addMockVote } from "../mocks/mock-data/mock-votes";
-import { setupMockNamesmith } from "../mocks/mock-setup";
-import { VoteService } from "../services/vote.service";
-import { Player } from "../types/player.types";
-import { Ranks, VoteID } from "../types/vote.types";
-import { returnIfNotFailure } from "../utilities/workflow.utility";
+import { failTest, makeSure } from "../../../../utilities/jest/jest-utils";
+import { getRandomUUID } from "../../../../utilities/random-utils";
+import { DatabaseQuerier } from "../../database/database-querier";
+import { addMockPlayer } from "../../mocks/mock-data/mock-players";
+import { addMockVote } from "../../mocks/mock-data/mock-votes";
+import { setupMockNamesmith } from "../../mocks/mock-setup";
+import { VoteService } from "../../services/vote.service";
+import { Player } from "../../types/player.types";
+import { Ranks, VoteID } from "../../types/vote.types";
+import { returnIfNotFailure } from "../../utilities/workflow.utility";
 import { voteName } from "./vote-name.workflow";
 
 describe('vote-name.workflow', () => {
