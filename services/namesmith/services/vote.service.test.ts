@@ -583,4 +583,43 @@ describe('VoteService', () => {
 			makeSure(voteService.doesVoteExist(INVALID_VOTE_ID)).toBe(false);
 		});
 	});
+
+	describe('removeVote()', () => {
+		it('removes a vote that exists', () => {
+			const mockVote = addMockVote(db, {
+				voter: VOTER_PLAYER.id,
+				votedFirstPlayer: VOTED_1ST_PLAYER.id,
+			});
+
+			const deletedVote = voteService.removeVote(mockVote);
+
+			makeSure(deletedVote).is(mockVote);
+		});
+
+		it('returns null if the vote does not exist', () => {
+			const voteResolvable = {
+				voter: VOTER_PLAYER.id,
+			};
+
+			const deletedVote = voteService.removeVote(voteResolvable);
+
+			makeSure(deletedVote).isNull();
+		});
+
+		it('works with vote IDs', () => {
+			const mockVote = addMockVote(db, {
+				voter: VOTER_PLAYER.id,
+				votedFirstPlayer: VOTED_1ST_PLAYER.id,
+			});
+
+			const deletedVote = voteService.removeVote(mockVote.voterID);
+
+			makeSure(deletedVote).is(mockVote);
+		});
+
+		it('returns null on an invalid vote id', () => {
+			const deletedVote = voteService.removeVote(INVALID_VOTE_ID);
+			makeSure(deletedVote).isNull();
+		});
+	});
 });

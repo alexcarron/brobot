@@ -4,6 +4,7 @@ import { DiscordButtons } from "../../../../utilities/discord-interfaces/discord
 import { joinLines } from "../../../../utilities/string-manipulation-utils";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { fetchNamesmithChannel } from "../../utilities/discord-fetch.utility";
+import { getClearMyVotesButton } from "./clear-my-votes-button";
 import { getSeeMyVotesButton } from "./see-my-votes-button";
 
 export function getInitialVotingMessage() {
@@ -24,6 +25,7 @@ export function getInitialVotingMessage() {
 		),
 		buttons: [
 			getSeeMyVotesButton(),
+			getClearMyVotesButton(),
 		],
 	});
 	return initialVotingMessage;

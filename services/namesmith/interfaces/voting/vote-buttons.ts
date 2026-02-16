@@ -1,4 +1,4 @@
-import { ButtonStyle } from "discord.js";
+import { ButtonInteraction, ButtonStyle } from "discord.js";
 import { replyToInteraction } from "../../../../utilities/discord-action-utils";
 import { DiscordButton, DiscordButtonDefinition } from "../../../../utilities/discord-interfaces/discord-button";
 import { Player } from "../../types/player.types";
@@ -175,36 +175,14 @@ export async function onVoteButtonPressed(
 			id: `undo-vote-switch-${rank}-${name}-${originallyVotedName}`,
 			style: ButtonStyle.Secondary,
 			onButtonPressed: async (undoButtonInteraction) => {
-				const undoResult = voteName({
-					voterUserID: buttonInteraction.user.id,
-					votedPlayer: playerPreviouslyInRank.id,
-					rankVotingFor: rank,
-				});
-
-				if (undoResult.isFailure()) {
-					return await replyToInteraction(undoButtonInteraction,
-						`Failed to undo your vote for this name. Please contact the host.`
-					);
-				}
-
-				const redoResult = voteName({
-					voterUserID: buttonInteraction.user.id,
+				await onUndoVoteSwitchButtonPressed({
+					buttonInteraction: undoButtonInteraction,
+					playerPreviouslyInRank,
+					previousRankOfPlayer,
 					votedPlayer: player,
-					rankVotingFor: previousRankOfPlayer,
-				});
-
-				if (redoResult.isVotingClosed())
-					return await replyToInteraction(undoButtonInteraction, 'Voting has ended. You can no longer change your votes.');
-
-				const {rankToVotedName} = redoResult;
-				const currentVoteLines = toCurrentVoteLines(rankToVotedName);
-
-				await replyToInteraction(undoButtonInteraction,
-					`You switched this name's vote back to ${previousRankOfPlayer} place:`,
-					`> ${toRankEmoji(previousRankOfPlayer!)} ${escapeDiscordMarkdown(name)}`,
-					``,
-					currentVoteLines,
-				);
+					votedName: name,
+					rankSwitchedTo: rank,
+				})
 			}
 		});
 
@@ -225,28 +203,86 @@ export async function onVoteButtonPressed(
 		id: `undo-vote-replacement-${rank}-${name}-${originallyVotedName}`,
 		style: ButtonStyle.Secondary,
 		onButtonPressed: async (undoButtonInteraction) => {
-			const undoResult = voteName({
-				voterUserID: buttonInteraction.user.id,
-				votedPlayer: playerPreviouslyInRank,
-				rankVotingFor: rank,
-			});
-
-			if (undoResult.isVotingClosed())
-				return await replyToInteraction(undoButtonInteraction, 'Voting has ended. You can no longer change your votes.');
-
-			const {rankToVotedName} = undoResult;
-			const currentVoteLines = toCurrentVoteLines(rankToVotedName);
-			
-			await replyToInteraction(undoButtonInteraction,
-				`You restored your previous ${rank} place vote on this name:`,
-				`> ${toRankEmoji(rank)} ${escapeDiscordMarkdown(originallyVotedName)}`,
-				``,					
-				currentVoteLines,
-			);
+			await onUndoVoteReplacementButtonPressed({
+				buttonInteraction: undoButtonInteraction,
+				rankVotedFor: rank,
+				playerPreviouslyInRank,
+				namePreviouslyInRank: originallyVotedName,
+			})
 		}
 	});
 
 	return await replyToInteraction(buttonInteraction,
 		replacedVoteMessage.getMessageContents(),
+	);
+}
+
+async function onUndoVoteSwitchButtonPressed(
+	{buttonInteraction, playerPreviouslyInRank, previousRankOfPlayer, votedPlayer, votedName, rankSwitchedTo}: {
+		buttonInteraction: ButtonInteraction, 
+		playerPreviouslyInRank: Player, 
+		previousRankOfPlayer: Rank, 
+		votedPlayer: Player,
+		votedName: string, 
+		rankSwitchedTo: Rank,
+	},
+) {
+	const undoResult = voteName({
+		voterUserID: buttonInteraction.user.id,
+		votedPlayer: playerPreviouslyInRank.id,
+		rankVotingFor: rankSwitchedTo,
+	});
+
+	if (undoResult.isFailure()) {
+		return await replyToInteraction(buttonInteraction,
+			`Failed to undo your vote for this name. Please contact the host.`
+		);
+	}
+
+	const redoResult = voteName({
+		voterUserID: buttonInteraction.user.id,
+		votedPlayer: votedPlayer,
+		rankVotingFor: previousRankOfPlayer,
+	});
+
+	if (redoResult.isVotingClosed())
+		return await replyToInteraction(buttonInteraction, 'Voting has ended. You can no longer change your votes.');
+
+	const {rankToVotedName} = redoResult;
+	const currentVoteLines = toCurrentVoteLines(rankToVotedName);
+
+	await replyToInteraction(buttonInteraction,
+		`You switched this name's vote back to ${previousRankOfPlayer} place:`,
+		`> ${toRankEmoji(previousRankOfPlayer!)} ${escapeDiscordMarkdown(votedName)}`,
+		``,
+		currentVoteLines,
+	);
+}
+
+async function onUndoVoteReplacementButtonPressed(
+	{buttonInteraction, rankVotedFor, playerPreviouslyInRank, namePreviouslyInRank}: {
+		buttonInteraction: ButtonInteraction,
+		rankVotedFor: Rank,
+		playerPreviouslyInRank: Player,
+		namePreviouslyInRank: string,
+	}
+) {
+	const undoResult = voteName({
+		voterUserID: buttonInteraction.user.id,
+		votedPlayer: playerPreviouslyInRank,
+		rankVotingFor: rankVotedFor,
+	});
+
+	if (undoResult.isVotingClosed())
+		return await replyToInteraction(buttonInteraction, 'Voting has ended. You can no longer change your votes.');
+
+	const {rankToVotedName} = undoResult;
+	const currentVoteLines = toCurrentVoteLines(rankToVotedName);
+	
+	await replyToInteraction(buttonInteraction,
+		`You restored your previous ${rankVotedFor} place vote on this name:`,
+		`> ${toRankEmoji(rankVotedFor)} ${escapeDiscordMarkdown(namePreviouslyInRank)}`,
+		``,					
+		currentVoteLines,
 	);
 }

@@ -6,7 +6,7 @@ import { toRankEmoji } from "../../utilities/feedback-message.utility";
 export function getSeeMyVotesButton() {
 	return {
 		label: 'See My Votes',
-		style: ButtonStyle.Primary,
+		style: ButtonStyle.Success,
 		id: `see-my-votes-button`,
 		onButtonPressed: onSeeMyVotesButtonPressed,
 	}
@@ -23,7 +23,7 @@ async function onSeeMyVotesButtonPressed(buttonInteraction: ButtonInteraction) {
 	return await replyToInteraction(buttonInteraction, 
 		`Your current votes are the following:`,
 		[...rankToVotedName.entries()].map(([rank, name]) => 
-			`${toRankEmoji(rank)} ${rank} – ${name}`
+			`> ${toRankEmoji(rank)} ${rank} – ${name}`
 		),
 	);
 }

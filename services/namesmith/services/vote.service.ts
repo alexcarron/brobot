@@ -217,6 +217,26 @@ export class VoteService {
 	}
 
 	/**
+	 * Gets the player the given user voted for in the given rank
+	 * @param voterID - The vote resolvable to get the player voted for in the rank.
+	 * @param rank - The rank to get the player voted for in.
+	 * @returns The player the given user voted for in the given rank
+	 */
+	getPlayerVotedInRank(voterID: VoteID, rank: Rank): Player | null {
+		if (!this.voteRepository.doesVoteExist(voterID)) return null;
+		
+		const vote = this.voteRepository.getVoteOrThrow(voterID);
+		switch (rank) {
+			case Ranks.FIRST:
+				return vote.votedFirstPlayer;
+			case Ranks.SECOND:
+				return vote.votedSecondPlayer;
+			case Ranks.THIRD:
+				return vote.votedThirdPlayer;
+		}
+	}
+
+	/**
 	 * Has a given voter vote a given player as the given rank, adding or updating their vote.
 	 * @param voterResolvable - The user or player who is voting.
 	 * @param playerResolvable - The player being voted on.
@@ -309,23 +329,17 @@ export class VoteService {
 	}
 
 	/**
-	 * Gets the player the given user voted for in the given rank
-	 * @param voterID - The vote resolvable to get the player voted for in the rank.
-	 * @param rank - The rank to get the player voted for in.
-	 * @returns The player the given user voted for in the given rank
+	 * Removes a vote from the vote repository.
+	 * @param voteResolvable - The vote to remove, either a Vote object or a VoteID.
+	 * @returns The vote removed, or null if the vote does not exist.
 	 */
-	getPlayerVotedInRank(voterID: VoteID, rank: Rank): Player | null {
-		if (!this.voteRepository.doesVoteExist(voterID)) return null;
-		
-		const vote = this.voteRepository.getVoteOrThrow(voterID);
-		switch (rank) {
-			case Ranks.FIRST:
-				return vote.votedFirstPlayer;
-			case Ranks.SECOND:
-				return vote.votedSecondPlayer;
-			case Ranks.THIRD:
-				return vote.votedThirdPlayer;
-		}
+	removeVote(voteResolvable: VoteResolvable): Vote | null {
+		const voteID = this.resolveID(voteResolvable);
+		if (!this.voteRepository.doesVoteExist(voteID)) return null;
+
+		const deletedVote = this.voteRepository.getVoteOrThrow(voteID);
+		this.voteRepository.removeVote(voteID);
+		return deletedVote;
 	}
 	
 	/**
