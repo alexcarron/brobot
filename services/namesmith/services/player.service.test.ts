@@ -30,7 +30,6 @@ import { INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { PlayerRepository } from "../repositories/player.repository";
 import { sendToPublishedNamesChannel, sendToNamesToVoteOnChannel, resetMemberToNewPlayer } from "../utilities/discord-action.utility";
-import { fetchNamesmithGuildMembers } from "../utilities/discord-fetch.utility";
 import { PlayerService } from "./player.service";
 import { NameTooLongError, PlayerNotFoundError } from "../utilities/error.utility";
 import { addMockPlayer, createMockPlayerObject } from "../mocks/mock-data/mock-players";
@@ -733,57 +732,17 @@ describe('PlayerService', () => {
   })
 
   describe('addNewPlayer()', () => {
-    it('should add a new player', async () => {
-      await playerService.addNewPlayer("987654321");
+    it('should add a new player', () => {
+      playerService.addNewPlayer("987654321");
       const players = playerService.playerRepository.getPlayers();
       expect(players.length).toBe(ALL_PLAYERS.length + 1);
-
-      const mockMember = {
-        id: "987654321",
-      }
-      expect(resetMemberToNewPlayer).toHaveBeenCalledWith(mockMember);
     });
 
-    it('should throw an error if the player already exists', async () => {
-      await expect(playerService.addNewPlayer(SOME_PLAYER.id)).rejects.toThrow();
+    it('should throw an error if the player already exists', () => {
+      expect(() => playerService.addNewPlayer(SOME_PLAYER.id)).toThrow();
       expect(resetMemberToNewPlayer).not.toHaveBeenCalled();
       const players = playerService.playerRepository.getPlayers();
       expect(players.length).toBe(ALL_PLAYERS.length);
-    });
-  });
-
-  describe('addEveryoneInServer()', () => {
-    it('should add all players in the server', async () => {
-      jest.spyOn(playerService, 'addNewPlayer');
-      (fetchNamesmithGuildMembers as jest.Mock).mockResolvedValue([
-        { id: "1", isPlayer: true },
-        { id: "2", isPlayer: true },
-        { id: "3", isPlayer: false },
-      ]);
-
-      await playerService.addEveryoneInServer();
-
-      expect(playerService.addNewPlayer).toHaveBeenCalledWith("1");
-      expect(playerService.addNewPlayer).toHaveBeenCalledWith("2");
-      expect(playerService.addNewPlayer).not.toHaveBeenCalledWith("3");
-    });
-
-    it('should skip players that already exist', async () => {
-      jest.spyOn(playerService, 'addNewPlayer');
-
-      (fetchNamesmithGuildMembers as jest.Mock).mockResolvedValue([
-        { id: SOME_PLAYER.id, isPlayer: true },
-        { id: SOME_OTHER_PLAYER.id, isPlayer: true },
-        { id: NAMED_PLAYER.id, isPlayer: true },
-        { id: "3", isPlayer: true },
-      ]);
-
-      await playerService.addEveryoneInServer();
-
-      expect(playerService.addNewPlayer).not.toHaveBeenCalledWith(SOME_PLAYER.id);
-      expect(playerService.addNewPlayer).not.toHaveBeenCalledWith(SOME_OTHER_PLAYER.id);
-      expect(playerService.addNewPlayer).not.toHaveBeenCalledWith(NAMED_PLAYER.id);
-      expect(playerService.addNewPlayer).toHaveBeenCalledWith("3");
     });
   });
 

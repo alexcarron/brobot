@@ -4,7 +4,8 @@ import { logSetup } from '../../../utilities/logging-utils';
 import { joinLines } from '../../../utilities/string-manipulation-utils';
 import { sendChooseARoleMessage } from '../interfaces/choose-a-role-message';
 import { getNamesmithServices } from '../services/get-namesmith-services';
-import { clearChooseARoleChannel, clearNamesToVoteOnChannel, clearPickAPerkChannel, clearPublishedNamesChannel, clearQuestsChannel, clearTheResultsChannel, closeNamesToVoteOnChannel, closeTheResultsChannel, openPublishedNamesChannel, sendToNamesmithChannel } from '../utilities/discord-action.utility';
+import { clearChooseARoleChannel, clearNamesToVoteOnChannel, clearPickAPerkChannel, clearPublishedNamesChannel, clearQuestsChannel, clearTheResultsChannel, closeNamesToVoteOnChannel, closeTheResultsChannel, isNonPlayer, openPublishedNamesChannel, resetMemberToNewPlayer, sendToNamesmithChannel } from '../utilities/discord-action.utility';
+import { fetchNamesmithGuildMembers } from '../utilities/discord-fetch.utility';
 import { NamesmithEvents } from './namesmith-events';
 
 /**
@@ -34,7 +35,18 @@ export async function startGame(theme: string): Promise<void> {
 
 	// Set up the players
 	playerService.reset();
-	await playerService.addEveryoneInServer();
+	const guildMembers = await fetchNamesmithGuildMembers();
+
+	for (const guildMember of guildMembers) {
+		if (await isNonPlayer(guildMember))
+			continue;
+
+		if (playerService.isPlayer(guildMember.id))
+			continue;
+
+		playerService.addNewPlayer(guildMember.id);
+		await resetMemberToNewPlayer(guildMember);
+	}
 
 	perkService.reset();
 	questService.reset();

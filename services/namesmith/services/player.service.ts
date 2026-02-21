@@ -1,7 +1,5 @@
-import { isNonPlayer, resetMemberToNewPlayer } from "../utilities/discord-action.utility";
 import { PlayerRepository } from "../repositories/player.repository";
 import { logWarning } from "../../../utilities/logging-utils";
-import { fetchNamesmithGuildMember, fetchNamesmithGuildMembers } from "../utilities/discord-fetch.utility";
 import { attempt, ignoreError, InvalidArgumentError } from "../../../utilities/error-utils";
 import { PlayerAlreadyExistsError, NameTooLongError } from "../utilities/error.utility";
 import { Inventory, Player, PlayerID, PlayerResolvable } from '../types/player.types';
@@ -605,7 +603,7 @@ export class PlayerService {
 	 * @param playerResolvable - The player resolvable to add to the game.
 	 * @throws {Error} - If the player already exists in the game.
 	 */
-	async addNewPlayer(playerResolvable: PlayerResolvable): Promise<void> {
+	addNewPlayer(playerResolvable: PlayerResolvable): void {
 		const playerID = this.resolveID(playerResolvable);
 
 		if (typeof playerID !== "string")
@@ -614,31 +612,8 @@ export class PlayerService {
 		if (this.playerRepository.doesPlayerExist(playerID))
 			throw new PlayerAlreadyExistsError(playerID);
 
-		const guildMember = await fetchNamesmithGuildMember(playerID);
-
-		await resetMemberToNewPlayer(guildMember);
-
 		this.playerRepository.createPlayer(playerID);
 	}
-
-	/**
-	 * Adds all members in the Namesmith server to the game.
-	 * Excludes players with the Spectator or Staff roles.
-	 */
-	async addEveryoneInServer() {
-		const guildMembers = await fetchNamesmithGuildMembers();
-
-		for (const guildMember of guildMembers) {
-			if (await isNonPlayer(guildMember))
-				continue;
-
-			if (this.playerRepository.doesPlayerExist(guildMember.id))
-				continue;
-
-			await this.addNewPlayer(guildMember.id);
-		}
-	}
-
 	setHasPickedPerk(playerResolvable: PlayerResolvable, hasPickedPerk: boolean) {
 		const playerID = this.resolveID(playerResolvable);
 		this.playerRepository.setHasPickedPerk(playerID, hasPickedPerk);

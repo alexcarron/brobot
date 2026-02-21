@@ -4,9 +4,7 @@ import {
 	removeRoleFromMember,
 	addRoleToMember,
 	closeChannel,
-	openChannel,
-	removeAllRolesFromMember,
-	deleteAllMessagesInChannel,
+	openChannel, deleteAllMessagesInChannel
 } from "../../../utilities/discord-action-utils";
 import { ids } from "../../../bot-config/discord-ids";
 import {
@@ -211,7 +209,8 @@ export const isNonPlayer = async (guildMember: GuildMember): Promise<boolean> =>
  * @returns A promise that resolves once the guild member has been reset.
  */
 export const resetMemberToNewPlayer = async (guildMember: GuildMember) => {
-	await removeAllRolesFromMember(guildMember);
+	await removeRoleFromMember(guildMember, ids.namesmith.roles.smithedName);
+	await removeRoleFromMember(guildMember, ids.namesmith.roles.namesmither);
 	await addRoleToMember(guildMember, ids.namesmith.roles.noName);
 	await setNicknameOfMember(guildMember, DISCORD_NICKNAME_FOR_NO_NAME);
 }

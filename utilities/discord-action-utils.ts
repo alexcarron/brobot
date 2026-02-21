@@ -160,6 +160,9 @@ export async function addRoleToMember(guildMember: GuildMember, role: import('di
  * @returns A promise that resolves when the role is removed.
  */
 export async function removeRoleFromMember(guildMember: GuildMember, role: import('discord.js').RoleResolvable): Promise<void> {
+	// If member does not have role, do nothing
+	if (!guildMember.roles.cache.some((memberRole) => memberRole.id === role)) return;
+	
 	await guildMember.roles.remove(role);
 }
 

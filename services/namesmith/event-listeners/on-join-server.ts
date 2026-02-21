@@ -1,6 +1,7 @@
 import { GuildMember } from "discord.js";
 import { ids } from "../../../bot-config/discord-ids";
 import { getNamesmithServices } from "../services/get-namesmith-services";
+import { resetMemberToNewPlayer } from "../utilities/discord-action.utility";
 
 /**
  * Checks if a guild member is a member of the Namesmith server.
@@ -18,5 +19,6 @@ export const isMemberInNamesmith = function(guildMember: GuildMember): boolean {
  */
 export const onUserJoinsNamesmith = async function(guildMember: GuildMember) {
 	const { playerService } = getNamesmithServices();
-	await playerService.addNewPlayer(guildMember.id);
+	playerService.addNewPlayer(guildMember.id);
+	await resetMemberToNewPlayer(guildMember);
 }
