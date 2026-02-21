@@ -83,6 +83,16 @@ export class MysteryBoxService {
 	}
 
 	/**
+	 * Returns the name of a mystery box.
+	 * @param mysteryBoxResolvable - The mystery box to get the name of.
+	 * @returns The name of the mystery box.
+	 */
+	getName(mysteryBoxResolvable: MysteryBoxResolvable): string {
+		const mysteryBoxID = this.resolveID(mysteryBoxResolvable);
+		return this.mysteryBoxRepository.getName(mysteryBoxID);
+	}
+	
+	/**
 	 * Returns a character from the mystery box with the given ID. The character is chosen using the weighted random distribution of the mystery box.
 	 * @param mysteryBoxResolvable - The mystery box from which to retrieve a character.
 	 * @returns The character retrieved from the mystery box.

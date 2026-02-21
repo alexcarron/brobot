@@ -67,6 +67,7 @@ type AutocompleteFunction = (parameters: {
 
 type StringParameterOptions = {
 	isAutocomplete?: boolean;
+	isAutocompleteFiltered?: boolean;
 	autocomplete?:
 		| AutocompleteFunction
 		| {[autocomplete_entry: string]: string};
@@ -102,6 +103,8 @@ export class Parameter<
 	isRequired;
 
 	isAutocomplete;
+
+	isAutocompleteFiltered;
 
 	min_value;
 
@@ -166,8 +169,9 @@ export class Parameter<
 		}
 
 		if (type === 'string') {
-			const { isAutocomplete, autocomplete } = options as StringParameterOptions;
+			const { isAutocomplete, isAutocompleteFiltered, autocomplete } = options as StringParameterOptions;
 			this.isAutocomplete = isAutocomplete;
+			this.isAutocompleteFiltered = isAutocompleteFiltered;
 			this.autocomplete = autocomplete;
 		}
 	}

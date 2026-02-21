@@ -195,6 +195,21 @@ export class MysteryBoxRepository {
 	}
 
 	/**
+	 * Returns the name of a mystery box.
+	 * @param mysteryBoxID - The ID of the mystery box to get the name for.
+	 * @returns The name of the mystery box.
+	 * @throws {MysteryBoxNotFoundError} If a mystery box with the given ID does not exist.
+	 */
+	getName(mysteryBoxID: MysteryBoxID): string {
+		const mysteryBox = this.getMinimalMysteryBox(mysteryBoxID);
+
+		if (mysteryBox === null)
+			throw new MysteryBoxNotFoundError(mysteryBoxID);
+
+		return mysteryBox.name;
+	}
+
+	/**
 	 * Checks if a mystery box with the given ID exists in the database.
 	 * @param id - The ID of the mystery box to check for existence.
 	 * @returns True if the mystery box with the given ID exists, false otherwise.

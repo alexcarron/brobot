@@ -314,6 +314,44 @@ export async function editReplyToInteraction(interaction: CommandInteraction | M
 	throw new Error('Interaction is not deferred or replied');
 }
 
+export async function addReplyToInteraction(interaction: CommandInteraction | MessageComponentInteraction | ModalSubmitInteraction | ButtonInteraction, ...lines: any[]) {
+	let interactionReplyOptions: InteractionReplyOptions;
+	if (isArrayOfOneObject(lines)) {
+		interactionReplyOptions = toInteractionReplyFromMessageCreateOptions(lines[0]);
+	}
+	else {
+		interactionReplyOptions = { content: joinLines(...lines) };
+	}
+
+	try {
+		if (
+			interaction &&
+			"reply" in interaction &&
+			typeof interaction.reply === "function" &&
+			!interaction.replied && 
+			!interaction.deferred
+		) {
+			return await interaction.reply({
+				...interactionReplyOptions,
+				flags: MessageFlags.Ephemeral,
+			});
+		}
+
+		throw new InvalidArgumentTypeError({
+			functionName: "replyToInteraction",
+			argumentName: "interaction",
+			expectedType: "ReplyableInteraction",
+			actualValue: interaction
+		});
+	}
+	catch {
+		return interaction.followUp({
+			...interactionReplyOptions,
+			flags: MessageFlags.Ephemeral,
+		});
+	}
+}
+
 /**
  * Shows a modal to a user, prompting them for text input. Returns the text entered by the user.
  * @param options - Options for showing the modal.

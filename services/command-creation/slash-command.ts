@@ -328,15 +328,14 @@ export class SlashCommand<
 
 				const autocompleteChoicesResolvable = await parameter.autocomplete({enteredValue, user, enteredValueByParameter});
 
-				const choices = toAutocompleteChoices(autocompleteChoicesResolvable);
+				let choices = toAutocompleteChoices(autocompleteChoicesResolvable);
 
-				await interaction.respond(
-					limitAutocompleteChoices(
-					filterAutocompleteByEnteredValue(
-						choices, enteredValue
-					)
-					)
-				);
+				if (parameter.isAutocompleteFiltered !== false)
+					choices = filterAutocompleteByEnteredValue(choices, enteredValue);
+
+				choices = limitAutocompleteChoices(choices);
+
+				await interaction.respond(choices);
 			}
 		}
 		await this.autocomplete(interaction);
