@@ -1,5 +1,6 @@
-import { sendWinnerMessages } from "../interfaces/winner-messages";
-import { closeNamesToVoteOnChannel, openTheWinnerChannel } from "../utilities/discord-action.utility";
+import { sendResultsDisplay } from "../interfaces/results/results-display";
+import { getNamesmithServices } from "../services/get-namesmith-services";
+import { clearTheResultsChannel, closeNamesToVoteOnChannel, closePublishedNamesChannel, openTheResultsChannel } from "../utilities/discord-action.utility";
 
 /**
  * Ends the voting phase of the game by doing the following:
@@ -7,7 +8,12 @@ import { closeNamesToVoteOnChannel, openTheWinnerChannel } from "../utilities/di
  * - Showing the winner of the voting phase
  */
 export async function onVotingEnd() {
+	await clearTheResultsChannel();
 	await closeNamesToVoteOnChannel();
-	await openTheWinnerChannel();
-	await sendWinnerMessages({winningPlayer: null});
+	await closePublishedNamesChannel();
+	await openTheResultsChannel();
+
+	const { voteService } = getNamesmithServices();
+	const placements = voteService.getPlacements();
+	await sendResultsDisplay({ placements });
 }

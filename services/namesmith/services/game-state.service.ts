@@ -472,4 +472,13 @@ export class GameStateService {
 			return false;
 		}
 	}
+
+	reset(): void {
+		this.endGameCronJob = undefined;
+		this.voteIsEndingCronJob = undefined;
+		this.pickAPerkCronJobs = [];
+		this.dayStartCronJobs = [];
+		this.weekStartCronJobs = [];
+		this.gameStateRepository.reset();
+	}
 }

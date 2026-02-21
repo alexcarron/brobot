@@ -7,11 +7,12 @@ import { PlayerAlreadyExistsError, NameTooLongError } from "../utilities/error.u
 import { Inventory, Player, PlayerID, PlayerResolvable } from '../types/player.types';
 import { removeCharactersAsGivenFromEnd, removeMissingCharacters } from "../../../utilities/string-manipulation-utils";
 import { areCharactersInString, hasLetter, hasNumber, hasSpace } from "../../../utilities/string-checks-utils";
-import { MAX_NAME_LENGTH, REFILL_COOLDOWN_HOURS } from "../constants/namesmith.constants";
+import { REFILL_COOLDOWN_HOURS } from "../constants/namesmith.constants";
 import { addHours, OLDEST_DATE } from "../../../utilities/date-time-utils";
 import { NamesmithEvents } from "../event-listeners/namesmith-events";
 import { DatabaseQuerier } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
+import { MAX_NAME_LENGTH } from "../constants/player.constants";
 
 /**
  * Provides methods for interacting with players.

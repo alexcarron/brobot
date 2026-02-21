@@ -19,7 +19,8 @@ import {
 import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { GuildMember, TextChannel } from "discord.js";
 import { MessageContentResolvable } from "../../../utilities/types/discord-types";
-import { DISCORD_NICKNAME_FOR_NO_NAME, MAX_NAME_LENGTH } from "../constants/namesmith.constants";
+import { DISCORD_NICKNAME_FOR_NO_NAME } from "../constants/namesmith.constants";
+import { MAX_NAME_LENGTH } from "../constants/player.constants";
 
 /**
  * Changes a player's current name in Discord.
@@ -139,7 +140,7 @@ export const clearNamesToVoteOnChannel = async () => {
  * @param message The message to be sent.
  * @returns A promise that resolves once the message has been sent.
  */
-export const sendToTheWinnerChannel = async (message: string) => {
+export const sendToTheResultsChannel = async (message: string) => {
 	const theWinnerChannel = await fetchTheWinnerChannel();
 	await theWinnerChannel.send(message);
 }
@@ -148,7 +149,7 @@ export const sendToTheWinnerChannel = async (message: string) => {
  * Opens the 'The Winner' channel to allow everyone to view it but not send messages.
  * @returns A promise that resolves once the channel has been opened.
  */
-export const openTheWinnerChannel = async () => {
+export const openTheResultsChannel = async () => {
 	const theWinnerChannel = await fetchTheWinnerChannel();
 	await openChannel(theWinnerChannel);
 }
@@ -157,7 +158,7 @@ export const openTheWinnerChannel = async () => {
  * Closes the 'The Winner' channel to everyone so they can't view it until it is opened again.
  * @returns A promise that resolves once the channel has been closed.
  */
-export const closeTheWinnerChannel = async () => {
+export const closeTheResultsChannel = async () => {
 	const theWinnerChannel = await fetchTheWinnerChannel();
 	await closeChannel(theWinnerChannel);
 }
@@ -165,7 +166,7 @@ export const closeTheWinnerChannel = async () => {
 /**
  * Deletes all messages in the 'The Winner' channel.
  */
-export const clearTheWinnerChannel = async () => {
+export const clearTheResultsChannel = async () => {
 	const theWinnerChannel = await fetchTheWinnerChannel();
 	await deleteAllMessagesInChannel(theWinnerChannel);
 }

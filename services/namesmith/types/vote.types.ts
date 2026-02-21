@@ -7,6 +7,7 @@ export const Ranks = Object.freeze({
 	THIRD: '3rd',
 })
 export type Rank = typeof Ranks[keyof typeof Ranks];
+export const RANKS = [Ranks.FIRST, Ranks.SECOND, Ranks.THIRD];
 
 export const DBVoteType = object.asType({
 	voterID: string,
@@ -39,3 +40,21 @@ export type VoteResolvable =
 	| {voter: VoteID | PlayerResolvable}
 	| {voterID: VoteID}
 	| VoteID;
+
+export type VoteInfo = {
+	points: number;
+	firstPlaceVotes: number;
+	firstPlacePoints: number;
+	secondPlaceVotes: number;
+	secondPlacePoints: number;
+	thirdPlaceVotes: number;
+	thirdPlacePoints: number;
+}
+	
+export type Placement = 
+	& VoteInfo
+	& {
+		rank: number;
+		player: Player;
+		name: string;
+	};

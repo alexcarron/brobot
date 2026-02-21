@@ -1,4 +1,4 @@
-import { closePublishedNamesChannel } from '../utilities/discord-action.utility';
+import { clearNamesToVoteOnChannel, closePublishedNamesChannel, closeTheResultsChannel, openNamesToVoteOnChannel } from '../utilities/discord-action.utility';
 import { getNamesmithServices } from '../services/get-namesmith-services';
 import { sendVotingDisplay } from '../interfaces/voting/voting-display';
 
@@ -14,7 +14,10 @@ export async function onVotingStart() {
 	playerService.publishUnpublishedNames();
 	playerService.finalizeAllNames();
 
+	await clearNamesToVoteOnChannel();
+	await closeTheResultsChannel();
 	await closePublishedNamesChannel();
+	await openNamesToVoteOnChannel();
 	await sendVotingDisplay();
 
 	voteService.reset();

@@ -155,4 +155,20 @@ export class GameStateRepository {
 			DBDate.fromDomain(timeVoteIsEnding)
 		)
 	}
+
+	reset(): void {
+		const doesExist = this.db.doesExistInTable('gameState', { id: 1 });
+
+		if (doesExist)
+			this.db.updateInTable('gameState', { 
+				fieldsUpdating: { 
+					timeStarted: null,
+					timeEnding: null,
+					timeVoteIsEnding: null
+				}, 
+				identifiers: { id: 1 } 
+			});
+		else
+			this.db.insertIntoTable('gameState', { id: 1 });
+	}
 }

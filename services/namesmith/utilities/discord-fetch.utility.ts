@@ -57,7 +57,7 @@ export const fetchNamesToVoteOnChannel = async (): Promise<TextChannel> => {
  * @returns A promise that resolves to the TextChannel object for the 'the winner' channel.
  */
 export const fetchTheWinnerChannel = async (): Promise<TextChannel> => {
-	return await fetchNamesmithChannel(ids.namesmith.channels.THE_WINNER);
+	return await fetchNamesmithChannel(ids.namesmith.channels.THE_RESULTS);
 }
 
 /**

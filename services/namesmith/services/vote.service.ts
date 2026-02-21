@@ -1,9 +1,10 @@
 import { InvalidArgumentError } from "../../../utilities/error-utils";
+import { FIRST_PLACE_POINTS, SECOND_PLACE_POINTS, THIRD_PLACE_POINTS } from "../constants/vote.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
 import { VoteRepository } from "../repositories/vote.repository";
 import { Player, PlayerID, PlayerResolvable } from "../types/player.types";
-import { Rank, Ranks, Vote, VoteID, VoteResolvable } from "../types/vote.types";
+import { Placement, Rank, Ranks, Vote, VoteInfo, VoteID, VoteResolvable } from "../types/vote.types";
 import { NameVotedTwiceError, VoteOutOfOrderError } from "../utilities/error.utility";
 import { PlayerService } from "./player.service";
 
@@ -347,5 +348,126 @@ export class VoteService {
 	 */
 	reset() {
 		this.voteRepository.removeVotes();
+	}
+
+	/**
+	 * Gets the current points of all players based on the votes
+	 * @returns A map of player IDs to their current points in order of highest to lowest score.
+	 */
+	getPlayerIDToPoints(): Map<PlayerID, number> {
+		const votes = this.voteRepository.getVotes();
+		const playerIDToPoints = new Map<PlayerID, number>();
+
+		const allPlayers = this.playerService.getPlayers();
+		for (const player of allPlayers) {
+			playerIDToPoints.set(player.id, 0);
+		}
+
+		for (const vote of votes) {
+			if (vote.votedFirstPlayer !== null) {
+				const playerID = vote.votedFirstPlayer.id;
+				const previousScore = playerIDToPoints.get(playerID) ?? 0;
+				playerIDToPoints.set(playerID, previousScore + FIRST_PLACE_POINTS);
+			}
+			
+			if (vote.votedSecondPlayer !== null) {
+				const playerID = vote.votedSecondPlayer.id;
+				const previousScore = playerIDToPoints.get(playerID) ?? 0;
+				playerIDToPoints.set(playerID, previousScore + SECOND_PLACE_POINTS);
+			}
+			
+			if (vote.votedThirdPlayer !== null) {
+				const playerID = vote.votedThirdPlayer.id;
+				const previousScore = playerIDToPoints.get(playerID) ?? 0;
+				playerIDToPoints.set(playerID, previousScore + THIRD_PLACE_POINTS);
+			}
+		}
+
+		return new Map(
+			[...playerIDToPoints.entries()].sort(([ , points1], [ , points2]) =>
+				points2 - points1
+			)
+		);
+	}
+
+	/**
+	 * Gets the placements of the players in the current vote in order of highest to lowest points.
+	 * @returns The placements of the players in the current vote in order of highest to lowest points.
+	 */
+	getPlacements(): Placement[] {
+		const votes = this.voteRepository.getVotes();
+		const playerIdToVoteInfo = new Map<PlayerID, VoteInfo>();
+
+		const playersWithNameEntries = this.playerService.getPlayersWithPublishedName();
+		for (const player of playersWithNameEntries) {
+			playerIdToVoteInfo.set(player.id, {
+				points: 0,
+				firstPlaceVotes: 0,
+				firstPlacePoints: 0,
+				secondPlaceVotes: 0,
+				secondPlacePoints: 0,
+				thirdPlaceVotes: 0,
+				thirdPlacePoints: 0
+			});
+		}
+
+		for (const vote of votes) {
+			if (vote.votedFirstPlayer !== null) {
+				const playerID = vote.votedFirstPlayer.id;
+				playerIdToVoteInfo.get(playerID)!.points += FIRST_PLACE_POINTS;
+				playerIdToVoteInfo.get(playerID)!.firstPlaceVotes += 1;
+				playerIdToVoteInfo.get(playerID)!.firstPlacePoints += FIRST_PLACE_POINTS;
+
+			}
+			
+			if (vote.votedSecondPlayer !== null) {
+				const playerID = vote.votedSecondPlayer.id;
+				playerIdToVoteInfo.get(playerID)!.points += SECOND_PLACE_POINTS;
+				playerIdToVoteInfo.get(playerID)!.secondPlaceVotes += 1;
+				playerIdToVoteInfo.get(playerID)!.secondPlacePoints += SECOND_PLACE_POINTS;
+			}
+			
+			if (vote.votedThirdPlayer !== null) {
+				const playerID = vote.votedThirdPlayer.id;
+				playerIdToVoteInfo.get(playerID)!.points += THIRD_PLACE_POINTS;
+				playerIdToVoteInfo.get(playerID)!.thirdPlaceVotes += 1;
+				playerIdToVoteInfo.get(playerID)!.thirdPlacePoints += THIRD_PLACE_POINTS;
+			}
+		}
+
+		const sortedPlayerIDToVoteInfo = new Map(
+			[...playerIdToVoteInfo.entries()].sort(([ , {points: score1}], [ , {points: score2}]) =>
+				score2 - score1
+			)
+		);
+
+		const placements: Placement[] = [];
+		let previousPoints: number | null = null;
+		let rank = 1;
+		let index = 0;
+		for (const [playerID, voteInfo] of [...sortedPlayerIDToVoteInfo.entries()]) {
+			if (voteInfo.points === previousPoints) {
+				rank -= 1;
+			}
+			else {
+				rank = index + 1;
+			}
+			
+			const player = this.playerService.resolvePlayer(playerID);
+			const placement: Placement = {
+				rank: rank,
+				player,
+				name: player.publishedName!,
+				...voteInfo,
+			};
+
+			placements.push(placement);
+			
+			previousPoints = voteInfo.points;
+			rank += 1;
+			index += 1;
+		}
+
+		return placements;
 	}
 }

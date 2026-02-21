@@ -291,7 +291,7 @@ export const ids = {
 					production: "1387849216319291553",
 				});
 			},
-			get THE_WINNER() {
+			get THE_RESULTS() {
 				return chooseByEnv({
 					development: "1388286079110611057",
 					production: "1388286117786292284",

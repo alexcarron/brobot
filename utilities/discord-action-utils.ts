@@ -29,7 +29,8 @@ import {
 	OverwriteResolvable,
 	GuildChannelCreateOptions,
 	PermissionOverwriteOptions,
-	User
+	User,
+	OverwriteType
 } from 'discord.js';
 
 import { Role } from '../services/rapid-discord-mafia/role';
@@ -724,14 +725,34 @@ export async function removeAllPermissionsFromChannel(channel: TextChannel): Pro
 export async function closeChannel(channel: TextChannel): Promise<void> {
 	const everyoneRole = getEveryoneRole(channel.guild);
 
-	await removeAllPermissionsFromChannel(channel);
-	
-	await changePermissionOnChannel({
-		channel: channel,
-		userOrRoleID: everyoneRole.id,
-		// @ts-ignore
-		deniedPermissions: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages],
-	});
+  const existingOverwrites = channel.permissionOverwrites.cache.map(overwrite => ({
+    id: overwrite.id,
+    type: overwrite.type,
+    allow: overwrite.allow.bitfield,
+    deny: overwrite.deny.bitfield,
+  }));
+
+  const hasEveryone = existingOverwrites.some(overwrite => overwrite.id === everyoneRole.id);
+
+  const newOverwrites = hasEveryone
+    ? existingOverwrites.map(overwrite =>
+        overwrite.id === everyoneRole.id
+          ? { ...overwrite, deny: BigInt(overwrite.deny) | PermissionFlagsBits.ViewChannel }
+          : overwrite
+      )
+    : [
+        ...existingOverwrites,
+        {
+          id: everyoneRole,
+          type: OverwriteType.Role,
+          allow: BigInt(0),
+          deny: PermissionFlagsBits.ViewChannel,
+        },
+      ];
+
+  await channel.edit({
+    permissionOverwrites: newOverwrites,
+  });
 }
 
 

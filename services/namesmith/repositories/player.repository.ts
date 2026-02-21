@@ -1,7 +1,6 @@
 import { InvalidArgumentError, returnNonNullOrThrow } from "../../../utilities/error-utils";
 import { getRandomNumericUUID } from "../../../utilities/random-utils";
 import { Override, WithOptional, WithRequiredAndOneOther } from "../../../utilities/types/generic-types";
-import { MAX_NAME_LENGTH } from "../constants/namesmith.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { asMinimalPlayer, asMinimalPlayers, MinimalPlayer, Player, PlayerDefinition, PlayerID, PlayerResolvable } from "../types/player.types";
 import { RoleID } from "../types/role.types";
@@ -12,6 +11,7 @@ import { isArray, isString } from "../../../utilities/types/type-guards";
 import { isOneSymbol } from "../../../utilities/string-checks-utils";
 import { createMockDB } from "../mocks/mock-database";
 import { DBDate, DBBoolean } from "../utilities/db.utility";
+import { MAX_NAME_LENGTH } from "../constants/player.constants";
 
 /**
  * Provides access to the dynamic player data.

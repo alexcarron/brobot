@@ -622,4 +622,232 @@ describe('VoteService', () => {
 			makeSure(deletedVote).isNull();
 		});
 	});
+
+	describe('getPlayerIDToPoints()', () => {
+		it('returns an map of all players to 0 if there are no votes', () => {
+			const scores = voteService.getPlayerIDToPoints();
+			makeSure(scores).is(new Map([
+				[VOTER_PLAYER.id, 0],
+				[SOME_OTHER_PLAYER.id, 0],
+				[VOTED_1ST_PLAYER.id, 0],
+				[VOTED_2ND_PLAYER.id, 0],
+				[VOTED_3RD_PLAYER.id, 0],
+			]));
+		});
+
+		it('returns the correct score for players based on the votes in the repository', () => {
+			addMockVote(db, {
+				voter: VOTER_PLAYER.id,
+				votedFirstPlayer: VOTED_1ST_PLAYER.id,
+				votedSecondPlayer: VOTED_2ND_PLAYER.id,
+				votedThirdPlayer: VOTED_3RD_PLAYER.id,
+			});
+
+			const scores = voteService.getPlayerIDToPoints();
+
+			makeSure(scores).is(new Map([
+				[VOTER_PLAYER.id, 0],
+				[SOME_OTHER_PLAYER.id, 0],
+				[VOTED_1ST_PLAYER.id, 3],
+				[VOTED_2ND_PLAYER.id, 2],
+				[VOTED_3RD_PLAYER.id, 1],
+
+			]))
+		});
+
+		it('returns score totals for players if there are multiple votes', () => {
+			addMockVote(db, {
+				voter: VOTER_PLAYER.id,
+				votedFirstPlayer: VOTED_1ST_PLAYER.id,
+				votedSecondPlayer: VOTED_2ND_PLAYER.id,
+				votedThirdPlayer: VOTED_3RD_PLAYER.id,
+			});
+
+			addMockVote(db, {
+				voter: SOME_OTHER_PLAYER.id,
+				votedFirstPlayer: VOTED_2ND_PLAYER.id,
+				votedSecondPlayer: VOTED_3RD_PLAYER.id,
+				votedThirdPlayer: VOTER_PLAYER.id,
+			});
+
+			const scores = voteService.getPlayerIDToPoints();
+
+			makeSure(scores).is(new Map([
+				[VOTER_PLAYER.id, 1],
+				[SOME_OTHER_PLAYER.id, 0],
+				[VOTED_1ST_PLAYER.id, 3],
+				[VOTED_2ND_PLAYER.id, 5],
+				[VOTED_3RD_PLAYER.id, 3],
+			]));
+		});
+
+		it('returns score map in order of highest score to lowest score', () => {
+			addMockVote(db, {
+				voter: VOTER_PLAYER.id,
+				votedFirstPlayer: VOTED_1ST_PLAYER.id,
+				votedSecondPlayer: VOTED_2ND_PLAYER.id,
+				votedThirdPlayer: VOTED_3RD_PLAYER.id,
+			});
+
+			addMockVote(db, {
+				voter: SOME_OTHER_PLAYER.id,
+				votedFirstPlayer: VOTED_2ND_PLAYER.id,
+				votedSecondPlayer: VOTED_3RD_PLAYER.id,
+				votedThirdPlayer: VOTER_PLAYER.id,
+			});
+
+			const scores = voteService.getPlayerIDToPoints();
+
+			makeSure([...scores.entries()]).is([
+				[VOTED_2ND_PLAYER.id, 5],
+				[VOTED_1ST_PLAYER.id, 3],
+				[VOTED_3RD_PLAYER.id, 3],
+				[VOTER_PLAYER.id, 1],
+				[SOME_OTHER_PLAYER.id, 0],
+			]);
+		});
+	});
+
+	describe('getPlacements()', () => {
+		const NO_POINTS_VOTE_INFO = {
+			points: 0,
+			firstPlaceVotes: 0,
+			firstPlacePoints: 0,
+			secondPlaceVotes: 0,
+			secondPlacePoints: 0,
+			thirdPlaceVotes: 0,
+			thirdPlacePoints: 0
+		}
+		
+		it('returns an array of placements with no votes', () => {
+			const placements = voteService.getPlacements();
+			makeSure(placements).hasLengthOf(4);
+			makeSure(placements).is([
+				{ player: VOTED_1ST_PLAYER, name: VOTED_1ST_PLAYER.publishedName,  rank: 1, ...NO_POINTS_VOTE_INFO },
+				{ player: VOTED_2ND_PLAYER, name: VOTED_2ND_PLAYER.publishedName,  rank: 1, ...NO_POINTS_VOTE_INFO },
+				{ player: VOTED_3RD_PLAYER, name: VOTED_3RD_PLAYER.publishedName,  rank: 1, ...NO_POINTS_VOTE_INFO },
+				{ player: SOME_OTHER_PLAYER, name: SOME_OTHER_PLAYER.publishedName, rank: 1, ...NO_POINTS_VOTE_INFO },
+			]);
+		});
+
+		it('returns the correct placements for players based on the votes in the repository', () => {
+			addMockVote(db, {
+				voter: VOTER_PLAYER.id,
+				votedFirstPlayer: VOTED_1ST_PLAYER.id,
+				votedSecondPlayer: VOTED_2ND_PLAYER.id,
+				votedThirdPlayer: VOTED_3RD_PLAYER.id,
+			});
+
+			const placements = voteService.getPlacements();
+
+			makeSure(placements).is([
+				{ 
+					player: VOTED_1ST_PLAYER,
+					name: VOTED_1ST_PLAYER.publishedName,
+					rank: 1, 
+					points: 3, 
+					firstPlaceVotes: 1, 
+					firstPlacePoints: 3, 
+					secondPlaceVotes: 0, 
+					secondPlacePoints: 0, 
+					thirdPlaceVotes: 0, 
+					thirdPlacePoints: 0 
+				},
+				{ 
+					player: VOTED_2ND_PLAYER,
+					name: VOTED_2ND_PLAYER.publishedName,
+					rank: 2, 
+					points: 2, 
+					firstPlaceVotes: 0, 
+					firstPlacePoints: 0, 
+					secondPlaceVotes: 1, 
+					secondPlacePoints: 2, 
+					thirdPlaceVotes: 0, 
+					thirdPlacePoints: 0 
+				},
+				{
+					player: VOTED_3RD_PLAYER,
+					name: VOTED_3RD_PLAYER.publishedName,
+					rank: 3,
+					points: 1,
+					firstPlaceVotes: 0,
+					firstPlacePoints: 0,
+					secondPlaceVotes: 0,
+					secondPlacePoints: 0,
+					thirdPlaceVotes: 1,
+					thirdPlacePoints: 1,
+				},
+				{ player: SOME_OTHER_PLAYER, name: SOME_OTHER_PLAYER.publishedName, rank: 4, ...NO_POINTS_VOTE_INFO },
+			]);
+		});
+
+		it('returns correct placements for players when there are multiple votes', () => {
+			addMockVote(db, {
+				voter: VOTER_PLAYER.id,
+				votedFirstPlayer: VOTED_1ST_PLAYER.id,
+				votedSecondPlayer: VOTED_2ND_PLAYER.id,
+				votedThirdPlayer: VOTED_3RD_PLAYER.id,
+			});
+
+			addMockVote(db, {
+				voter: VOTED_1ST_PLAYER.id,
+				votedFirstPlayer: VOTED_2ND_PLAYER.id,
+				votedSecondPlayer: VOTED_3RD_PLAYER.id,
+				votedThirdPlayer: SOME_OTHER_PLAYER.id,
+			});
+
+			const placements = voteService.getPlacements();
+
+			makeSure(placements).is([
+				{ 
+					player: VOTED_2ND_PLAYER,
+					name: VOTED_2ND_PLAYER.publishedName,
+					rank: 1, 
+					points: 5, 
+					firstPlaceVotes: 1, 
+					firstPlacePoints: 3, 
+					secondPlaceVotes: 1, 
+					secondPlacePoints: 2, 
+					thirdPlaceVotes: 0, 
+					thirdPlacePoints: 0 
+				},
+				{ 
+					player: VOTED_1ST_PLAYER,
+					name: VOTED_1ST_PLAYER.publishedName,
+					rank: 2, 
+					points: 3, 
+					firstPlaceVotes: 1, 
+					firstPlacePoints: 3, 
+					secondPlaceVotes: 0, 
+					secondPlacePoints: 0, 
+					thirdPlaceVotes: 0, 
+					thirdPlacePoints: 0 
+				},
+				{
+					player: VOTED_3RD_PLAYER,
+					name: VOTED_3RD_PLAYER.publishedName,
+					rank: 2,
+					points: 3,
+					firstPlaceVotes: 0,
+					firstPlacePoints: 0,
+					secondPlaceVotes: 1,
+					secondPlacePoints: 2,
+					thirdPlaceVotes: 1,
+					thirdPlacePoints: 1,
+				},
+				{ 
+					player: SOME_OTHER_PLAYER, 
+					name: SOME_OTHER_PLAYER.publishedName, 
+					rank: 4, 
+					points: 1, 
+					firstPlaceVotes: 0, 
+					firstPlacePoints: 0, 
+					secondPlaceVotes: 0, 
+					secondPlacePoints: 0, 
+					thirdPlaceVotes: 1, 
+					thirdPlacePoints: 1,
+				},
+			]);
+		});
+	});
 });

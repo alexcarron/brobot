@@ -183,8 +183,6 @@ export type WithRequiredAndOneOther<
 					Pick<ObjectType, Exclude<keyof ObjectType, Identifier>>
 				>;
 
-console.log(test);
-
 /**
  * Expands a type to include all of its properties
  */

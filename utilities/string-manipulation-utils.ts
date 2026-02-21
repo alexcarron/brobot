@@ -360,7 +360,6 @@ export const wrapTextByLineWidth = (text: string, lineWidth: number): string[] =
 	// While there is more text to wrap
 	while (currentText.length > lineWidth) {
 		let newLine = currentText.substring(0, lineWidth);
-		console.log({currentText, newLine});
 
 		let lineEndIndex = newLine.length;
 		let lineEndCharacter = currentText.charAt(lineEndIndex);
@@ -378,15 +377,12 @@ export const wrapTextByLineWidth = (text: string, lineWidth: number): string[] =
 			lineEndIndex = newLine.length;
 			nextLineStartIndex = lineEndIndex;
 		}
-		console.log({ lineEndIndex, nextLineStartIndex });
 
 		// Trim the line to the last space
 		newLine = newLine.substring(0, lineEndIndex);
-		console.log({ newLine });
 
 		// Trim any accidental surrounding whitespace (optional, keeps lines clean)
 		newLine = newLine.trim();
-		console.log({ newLine });
 
 		// Trim the current text to remove the line we just processed
 		currentText = currentText.substring(nextLineStartIndex);

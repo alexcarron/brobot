@@ -1,6 +1,7 @@
 import { ids } from "../../../../bot-config/discord-ids";
 import { toUnixTimestamp } from "../../../../utilities/date-time-utils";
 import { DiscordButtons } from "../../../../utilities/discord-interfaces/discord-buttons";
+import { ignoreError } from "../../../../utilities/error-utils";
 import { joinLines } from "../../../../utilities/string-manipulation-utils";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { fetchNamesmithChannel } from "../../utilities/discord-fetch.utility";
@@ -40,5 +41,5 @@ export const sendInitialVotingMessage = async () => {
 export async function regenerateInitialVotingMessage() {
 	const namesToVoteOnChannel = await fetchNamesmithChannel(ids.namesmith.channels.NAMES_TO_VOTE_ON);
 	const initialVotingMessage = getInitialVotingMessage();
-	await initialVotingMessage.regenerate({channel: namesToVoteOnChannel});
+	await ignoreError(initialVotingMessage.regenerate({channel: namesToVoteOnChannel}));
 }
