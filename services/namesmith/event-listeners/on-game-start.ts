@@ -1,4 +1,5 @@
 import { ids } from '../../../bot-config/discord-ids';
+import { toUnixTimestamp } from '../../../utilities/date-time-utils';
 import { logSetup } from '../../../utilities/logging-utils';
 import { joinLines } from '../../../utilities/string-manipulation-utils';
 import { sendChooseARoleMessage } from '../interfaces/choose-a-role-message';
@@ -46,10 +47,14 @@ export async function startGame(theme: string): Promise<void> {
 	gameStateService.setupTimings(now);
 	gameStateService.scheduleGameEvents();
 
+	const timeVotingStarts = gameStateService.timeVotingStarts;
+	
 	await sendToNamesmithChannel(ids.namesmith.channels.DEVELOPMENT_NEWS, joinLines(
 		`<@&${ids.namesmith.roles.smithedName}> <@&${ids.namesmith.roles.noName}>`,
 		`A new Namesmith game has started!`,
 		`The theme is: **${theme}**`,
+		``,
+		`-# The time to build your name ends and voting starts <t:${toUnixTimestamp(timeVotingStarts)}:R>`,
 	));
 
 	NamesmithEvents.DayStart.triggerEvent({});
