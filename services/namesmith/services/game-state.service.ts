@@ -5,12 +5,12 @@ import { VoteService } from "./vote.service";
 import { PlayerService } from "./player.service";
 import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { RecipeService } from "./recipe.service";
-import { BIWEEKLY_PERK_DAYS_FROM_WEEK_START, DAYS_TO_BUILD_NAME, DAYS_TO_VOTE } from "../constants/namesmith.constants";
 import { addDays } from "../../../utilities/date-time-utils";
 import { DatabaseQuerier } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
 import { NamesmithEvents } from "../event-listeners/namesmith-events";
 import { GameIsNotActiveError, GameStateInitializationError } from "../utilities/error.utility";
+import { BIWEEKLY_PERK_DAYS_FROM_WEEK_START, DAYS_TO_BUILD_NAME, DAYS_TO_VOTE } from "../constants/game-state.constants";
 
 /**
  * Provides methods for interacting with the game state.

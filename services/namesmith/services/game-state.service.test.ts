@@ -39,10 +39,10 @@ import { GameStateRepository } from "../repositories/game-state.repository";
 import { GameStateService } from "./game-state.service";
 import { PlayerService } from "./player.service";
 import { VoteService } from "./vote.service";
-import { DAYS_TO_BUILD_NAME, DAYS_TO_VOTE } from "../constants/namesmith.constants";
 import { addDays } from "../../../utilities/date-time-utils";
 import { GameIsNotActiveError } from "../utilities/error.utility";
 import { makeSure } from "../../../utilities/jest/jest-utils";
+import { DAYS_TO_BUILD_NAME, DAYS_TO_VOTE } from "../constants/game-state.constants";
 
 
 describe('GameStateService', () => {

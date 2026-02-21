@@ -1,8 +1,7 @@
 import { getYesterday } from "../../../utilities/date-time-utils";
 import { dmUser } from "../../../utilities/discord-action-utils";
 import { toAmountOfNoun } from "../../../utilities/string-manipulation-utils";
-import { Perks } from "../constants/perks.constants";
-import { IDLE_INTEREST_TOKEN_REWARD, INVESTMENT_PERCENTAGE } from "../constants/quests.constants";
+import { IDLE_INTEREST_TOKEN_REWARD, INVESTMENT_PERCENTAGE, Perks } from "../constants/perks.constants";
 import { sendDailyQuestsMessages } from "../interfaces/quests/daily-quests-message";
 import { sendHiddenQuestsMessages } from "../interfaces/quests/hidden-quests-message";
 import { getNamesmithServices } from "../services/get-namesmith-services";

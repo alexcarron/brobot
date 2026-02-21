@@ -6,6 +6,7 @@ import { WithAtLeastOneProperty } from "./types/generic-types";
  * The oldest possible Date object.
  */
 export const OLDEST_DATE = new Date(0);
+export const DAYS_IN_WEEK = 7;
 
 /**
  * Converts a given Date object to its corresponding Unix timestamp.
