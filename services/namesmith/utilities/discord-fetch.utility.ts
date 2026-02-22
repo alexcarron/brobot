@@ -15,7 +15,7 @@ export const isNamesmithChannelID = (channelID: string): boolean =>
  * Fetches the Namesmith server from Discord.
  * @returns A promise that resolves to the Namesmith Guild object.
  */
-export const fetchNamesmithServer = async (): Promise<Guild> => {
+export const fetchNamesmithGuild = async (): Promise<Guild> => {
 	return await fetchGuild(ids.servers.NAMESMITH);
 }
 
@@ -31,7 +31,7 @@ export const fetchNamesmithChannel = async (
 		throw new InvalidArgumentError(`fetchNamesmithChannel: channelID '${channelID}' is not a Namesmith channel ID.`);
 
 	return await fetchTextChannel(
-		await fetchNamesmithServer(),
+		await fetchNamesmithGuild(),
 		channelID
 	);
 }
@@ -56,7 +56,7 @@ export const fetchNamesToVoteOnChannel = async (): Promise<TextChannel> => {
  * Fetches the 'the winner' channel from the Namesmith server.
  * @returns A promise that resolves to the TextChannel object for the 'the winner' channel.
  */
-export const fetchTheWinnerChannel = async (): Promise<TextChannel> => {
+export const fetchTheResultsChannel = async (): Promise<TextChannel> => {
 	return await fetchNamesmithChannel(ids.namesmith.channels.THE_RESULTS);
 }
 
@@ -67,7 +67,7 @@ export const fetchTheWinnerChannel = async (): Promise<TextChannel> => {
  */
 export const fetchNamesmithGuildMember = async (playerID: string): Promise<GuildMember> => {
 	return await fetchGuildMember(
-		await fetchNamesmithServer(),
+		await fetchNamesmithGuild(),
 		playerID
 	);
 }
@@ -77,7 +77,7 @@ export const fetchNamesmithGuildMember = async (playerID: string): Promise<Guild
  * @returns A promise that resolves to an array of all guild members in the Namesmith server.
  */
 export const fetchNamesmithGuildMembers = async (): Promise<GuildMember[]> => {
-	const namesmithGuild = await fetchNamesmithServer();
+	const namesmithGuild = await fetchNamesmithGuild();
 	const guildMembers = await fetchAllGuildMembers(namesmithGuild);
 	return guildMembers;
 }

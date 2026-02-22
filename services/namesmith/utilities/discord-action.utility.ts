@@ -11,7 +11,7 @@ import {
 	fetchPublishedNamesChannel,
 	fetchNamesmithGuildMember,
 	fetchNamesToVoteOnChannel,
-	fetchTheWinnerChannel,
+	fetchTheResultsChannel,
 	fetchNamesmithChannel
 } from "./discord-fetch.utility";
 import { InvalidArgumentError } from "../../../utilities/error-utils";
@@ -139,7 +139,7 @@ export const clearNamesToVoteOnChannel = async () => {
  * @returns A promise that resolves once the message has been sent.
  */
 export const sendToTheResultsChannel = async (message: string) => {
-	const theWinnerChannel = await fetchTheWinnerChannel();
+	const theWinnerChannel = await fetchTheResultsChannel();
 	await theWinnerChannel.send(message);
 }
 
@@ -148,7 +148,7 @@ export const sendToTheResultsChannel = async (message: string) => {
  * @returns A promise that resolves once the channel has been opened.
  */
 export const openTheResultsChannel = async () => {
-	const theWinnerChannel = await fetchTheWinnerChannel();
+	const theWinnerChannel = await fetchTheResultsChannel();
 	await openChannel(theWinnerChannel);
 }
 
@@ -157,7 +157,7 @@ export const openTheResultsChannel = async () => {
  * @returns A promise that resolves once the channel has been closed.
  */
 export const closeTheResultsChannel = async () => {
-	const theWinnerChannel = await fetchTheWinnerChannel();
+	const theWinnerChannel = await fetchTheResultsChannel();
 	await closeChannel(theWinnerChannel);
 }
 
@@ -165,7 +165,7 @@ export const closeTheResultsChannel = async () => {
  * Deletes all messages in the 'The Winner' channel.
  */
 export const clearTheResultsChannel = async () => {
-	const theWinnerChannel = await fetchTheWinnerChannel();
+	const theWinnerChannel = await fetchTheResultsChannel();
 	await deleteAllMessagesInChannel(theWinnerChannel);
 }
 

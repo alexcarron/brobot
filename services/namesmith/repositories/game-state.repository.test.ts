@@ -21,6 +21,7 @@ describe('GameStateRepository', () => {
 				timeStarted: TEST_DATE,
 				timeEnding: TEST_DATE,
 				timeVoteIsEnding: TEST_DATE,
+				theme: 'Theme',
 			});
 
       const gameState = gameStateRepo.getDefinedGameState();
@@ -28,6 +29,7 @@ describe('GameStateRepository', () => {
 			expect(gameState).toHaveProperty('timeStarted', TEST_DATE);
 			expect(gameState).toHaveProperty('timeEnding', TEST_DATE);
 			expect(gameState).toHaveProperty('timeVoteIsEnding', TEST_DATE);
+			expect(gameState).toHaveProperty('theme', 'Theme');
     });
 	});
 
@@ -37,6 +39,7 @@ describe('GameStateRepository', () => {
 				timeStarted: null,
 				timeEnding: null,
 				timeVoteIsEnding: null,
+				theme: null,
 			}
 			expect(() => gameStateRepo.throwIfNotDefined(undefinedGameState)).toThrow(GameStateInitializationError);
 		});
@@ -46,6 +49,7 @@ describe('GameStateRepository', () => {
 				timeStarted: null,
 				timeEnding: TEST_DATE,
 				timeVoteIsEnding: TEST_DATE,
+				theme: 'Theme',
 			}
 			expect(() => gameStateRepo.throwIfNotDefined(undefinedGameState)).toThrow(GameStateInitializationError);
 		});
@@ -55,6 +59,7 @@ describe('GameStateRepository', () => {
 				timeStarted: TEST_DATE,
 				timeEnding: TEST_DATE,
 				timeVoteIsEnding: TEST_DATE,
+				theme: 'Theme',
 			}
 			expect(() => gameStateRepo.throwIfNotDefined(undefinedGameState)).not.toThrow();
 		});
@@ -66,6 +71,7 @@ describe('GameStateRepository', () => {
 				timeStarted: TEST_DATE,
 				timeEnding: TEST_DATE,
 				timeVoteIsEnding: TEST_DATE,
+				theme: 'Theme',
 			});
 
 			const gameState = gameStateRepo.getDefinedGameState();
@@ -73,6 +79,7 @@ describe('GameStateRepository', () => {
 			expect(gameState).toHaveProperty('timeStarted', TEST_DATE);
 			expect(gameState).toHaveProperty('timeEnding', TEST_DATE);
 			expect(gameState).toHaveProperty('timeVoteIsEnding', TEST_DATE);
+			expect(gameState).toHaveProperty('theme', 'Theme');
 		});
 
 		it('should partially update the game state', () => {
@@ -80,6 +87,7 @@ describe('GameStateRepository', () => {
 				timeStarted: TEST_DATE,
 				timeEnding: TEST_DATE,
 				timeVoteIsEnding: TEST_DATE,
+				theme: 'Theme',
 			});
 			gameStateRepo.setGameState({
 				timeStarted: DIFFERENT_DATE,
@@ -95,6 +103,7 @@ describe('GameStateRepository', () => {
 			expect(gameState).toHaveProperty('timeVoteIsEnding',
 				TEST_DATE
 			);
+			expect(gameState).toHaveProperty('theme', 'Theme');
 		});
 	});
 
@@ -116,6 +125,7 @@ describe('GameStateRepository', () => {
 				timeStarted: TEST_DATE,
 				timeEnding: TEST_DATE,
 				timeVoteIsEnding: TEST_DATE,
+				theme: 'Theme',
 			});
 
 			gameStateRepo.setTimeStarted(DIFFERENT_DATE);
@@ -143,6 +153,7 @@ describe('GameStateRepository', () => {
 				timeStarted: TEST_DATE,
 				timeEnding: TEST_DATE,
 				timeVoteIsEnding: TEST_DATE,
+				theme: 'Theme',
 			});
 
 			gameStateRepo.setTimeVoting(DIFFERENT_DATE);
@@ -170,10 +181,45 @@ describe('GameStateRepository', () => {
 				timeStarted: TEST_DATE,
 				timeEnding: TEST_DATE,
 				timeVoteIsEnding: TEST_DATE,
+				theme: 'Theme',
 			});
 			gameStateRepo.setTimeVotingEnds(DIFFERENT_DATE);
 			const gameState = gameStateRepo.getDefinedGameState();
 			expect(gameState.timeVoteIsEnding).toEqual(DIFFERENT_DATE);
+		});
+	});
+	describe('getTheme()', () => {
+		it('should return the theme property', () => {
+			gameStateRepo.setGameState({
+				timeStarted: TEST_DATE,
+				timeEnding: TEST_DATE,
+				timeVoteIsEnding: TEST_DATE,
+				theme: 'Theme',
+			});
+
+			const theme = gameStateRepo.getTheme();
+			expect(theme).toEqual('Theme');
+		});
+
+		it('should return null if no theme is set', () => {
+			const theme = gameStateRepo.getTheme();
+			expect(theme).toBeNull();
+		});
+	});
+
+	describe('setTheme()', () => {
+		it('should set the theme property', () => {
+			gameStateRepo.setGameState({
+				timeStarted: TEST_DATE,
+				timeEnding: TEST_DATE,
+				timeVoteIsEnding: TEST_DATE,
+				theme: 'Theme',
+			});
+
+			gameStateRepo.setTheme('DifferentTheme');
+
+			const gameState = gameStateRepo.getDefinedGameState();
+			expect(gameState.theme).toEqual('DifferentTheme');
 		});
 	});
 });

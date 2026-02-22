@@ -5,6 +5,8 @@ import { WithAtLeastOneProperty } from '../../../utilities/types/generic-types';
 import { GameStateInitializationError } from "../utilities/error.utility";
 import { createMockDB } from "../mocks/mock-database";
 import { DBDate } from "../utilities/db.utility";
+import { asString } from "../../../utilities/types/type-assertions";
+import { isNullable } from "../../../utilities/types/type-guards";
 
 /**
  * Provides access to the game state data.
@@ -58,9 +60,10 @@ export class GameStateRepository {
 	 * @param newGameState.timeStarted - The time when the game started.
 	 * @param newGameState.timeEnding - The time when the game is expected to end.
 	 * @param newGameState.timeVoteIsEnding - The time when voting is expected to end.
+	 * @param newGameState.theme - The theme of the game.
 	 * @throws If there are no fields provided to update.
 	 */
-	setGameState({ timeStarted, timeEnding, timeVoteIsEnding }: WithAtLeastOneProperty<DefinedGameState>) {
+	setGameState({ timeStarted, timeEnding, timeVoteIsEnding, theme }: WithAtLeastOneProperty<DefinedGameState>) {
 		const assignmentExpressions: string[] = [];
 		const fieldToValue: Record<string, string> = {};
 
@@ -75,6 +78,10 @@ export class GameStateRepository {
 		if (timeVoteIsEnding !== undefined) {
 			assignmentExpressions.push('timeVoteIsEnding = @timeVoteIsEnding');
 			fieldToValue.timeVoteIsEnding = timeVoteIsEnding.getTime().toString();
+		}
+		if (theme !== undefined) {
+			assignmentExpressions.push('theme = @theme');
+			fieldToValue.theme = asString(theme);
 		}
 
 		if (assignmentExpressions.length === 0)
@@ -154,6 +161,31 @@ export class GameStateRepository {
 			'UPDATE gameState SET timeVoteIsEnding = ? WHERE id = 1',
 			DBDate.fromDomain(timeVoteIsEnding)
 		)
+	}
+
+	/**
+	 * Retrieves the theme of the game.
+	 * @returns The theme of the game. If no theme is set, returns an empty string.
+	 */
+	getTheme(): string | null {
+		const theme = this.db.getValue(
+			'SELECT theme FROM gameState WHERE id = 1'
+		);
+
+		if (isNullable(theme)) return null;
+
+		return asString(theme);
+	}
+
+	/**
+	 * Sets the theme of the game.
+	 * @param theme - The theme of the game.
+	 */
+	setTheme(theme: string) {
+		this.db.updateInTable('gameState', {
+			fieldsUpdating: { theme },
+			identifiers: { id: 1 }
+		});
 	}
 
 	reset(): void {

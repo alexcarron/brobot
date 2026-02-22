@@ -473,6 +473,26 @@ export class GameStateService {
 		}
 	}
 
+	/**
+	 * Sets the theme of the game.
+	 * @param {string} theme - The theme of the game.
+	 */
+	setTheme(theme: string): void {
+		this.gameStateRepository.setTheme(theme);
+	}
+
+	/**
+	 * Retrieves the theme of the game from the game state.
+	 * @returns The theme of the game.
+	 */
+	getTheme(): string {
+		const theme = this.gameStateRepository.getTheme();
+		if (theme === null) {
+			throw new GameStateInitializationError();
+		}
+		return theme;
+	}
+
 	reset(): void {
 		this.endGameCronJob = undefined;
 		this.voteIsEndingCronJob = undefined;

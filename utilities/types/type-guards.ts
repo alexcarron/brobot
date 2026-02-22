@@ -130,6 +130,23 @@ export function isDefined<
 }
 
 /**
+ * Checks if a given value is null or undefined.
+ * @param value - The value to check.
+ * @returns If the value is null or undefined.
+ * @example
+ * expect(isNullable(null)).toBe(true);
+ * expect(isNullable(undefined)).toBe(true);
+ * expect(isNullable(0)).toBe(false);
+ */
+export function isNullable<
+	TypeOrNullOrUndefined extends null | undefined | unknown
+>(
+	value: TypeOrNullOrUndefined
+): value is TypeOrNullOrUndefined & (null | undefined) {
+	return isNull(value) || isUndefined(value);
+}
+
+/**
  * Checks if a given value is neither null nor undefined.
  * @param value - The value to check.
  * @returns If the value is neither null nor undefined.

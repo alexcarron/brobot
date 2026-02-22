@@ -1,4 +1,4 @@
-import { escapeDiscordMarkdown, joinLines, toNumericOrdinal } from "../../../../utilities/string-manipulation-utils";
+import { addSIfPlural, escapeDiscordMarkdown, joinLines, toNumericOrdinal } from "../../../../utilities/string-manipulation-utils";
 import { Placement, Rank, RANKS, Ranks } from "../../types/vote.types";
 import { toRankEmoji } from "../../utilities/feedback-message.utility";
 
@@ -19,7 +19,7 @@ function getNormalPlacementMessageContents(placement: Placement) {
 		
 	return joinLines(
 		`_ _`,
-		`**${rankOrdinal} (${totalPoints} pts)**`,
+		`**${rankOrdinal} (${totalPoints} ${addSIfPlural('pt', totalPoints)})**`,
 		`${escapeDiscordMarkdown(name)}`,
 		rankVotesLine,
 		`-# Created by <@${playerID}>`,
@@ -35,13 +35,13 @@ function getTop3PlacementMessageContents(placement: Placement) {
 	const rankVotes = extractRankVotes(placement);
 
 	const rankVoteLines = rankVotes.map(({ rank, votes, points }) => 
-		`> ${toRankEmoji(rank)} x${votes} (${points} pts)`
+		`> ${toRankEmoji(rank)} x${votes} (${points} ${addSIfPlural('pt', points)})`
 	);
 
 	return joinLines(
 		`_ _`,
 		`_ _`,
-		`${'#'.repeat(rank)} ${toRankEmoji(RANKS[rank - 1])} ${rankOrdinal} Place (${totalPoints} points)`,
+		`${'#'.repeat(rank)} ${toRankEmoji(RANKS[rank - 1])} ${rankOrdinal} Place (${totalPoints} ${addSIfPlural('point', totalPoints)})`,
 		`**${escapeDiscordMarkdown(name)}**`,
 		...rankVoteLines,
 		``,

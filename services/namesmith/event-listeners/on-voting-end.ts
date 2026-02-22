@@ -1,3 +1,4 @@
+import { sendNameArchiveDisplay } from "../interfaces/name-archive-display";
 import { sendResultsDisplay } from "../interfaces/results/results-display";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { clearTheResultsChannel, closeNamesToVoteOnChannel, closePublishedNamesChannel, openTheResultsChannel } from "../utilities/discord-action.utility";
@@ -16,4 +17,5 @@ export async function onVotingEnd() {
 	const { voteService } = getNamesmithServices();
 	const placements = voteService.getPlacements();
 	await sendResultsDisplay({ placements });
+	await sendNameArchiveDisplay();
 }

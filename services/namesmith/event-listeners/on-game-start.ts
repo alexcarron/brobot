@@ -56,6 +56,7 @@ export async function startGame(theme: string): Promise<void> {
 	// Set the game start and end times
 	gameStateService.reset();
 	const now = new Date();
+	gameStateService.setTheme(theme);
 	gameStateService.setupTimings(now);
 	gameStateService.scheduleGameEvents();
 

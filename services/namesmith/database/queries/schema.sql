@@ -2,7 +2,8 @@ CREATE TABLE IF NOT EXISTS gameState (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	timeStarted NUMBER, -- Unix timestamp in milliseconds
 	timeEnding NUMBER, -- Unix timestamp in milliseconds
-	timeVoteIsEnding NUMBER -- Unix timestamp in milliseconds
+	timeVoteIsEnding NUMBER, -- Unix timestamp in milliseconds
+	theme TEXT
 );
 
 CREATE TABLE IF NOT EXISTS character (
