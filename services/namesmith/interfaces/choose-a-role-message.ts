@@ -11,7 +11,7 @@ import { ignoreError } from "../../../utilities/error-utils";
 import { DiscordButtonDefinition } from "../../../utilities/discord-interfaces/discord-button";
 import { DiscordButtons } from "../../../utilities/discord-interfaces/discord-buttons";
 import { getNamesmithServices } from "../services/get-namesmith-services";
-import { confirmInteraction } from "../../../utilities/discord-interfaces/discord-interface";
+import { confirmInteraction } from "../../../utilities/discord-interfaces/discord-interface-utils";
 
 /**
  * Generates a message that asks the user to choose one of the given roles.

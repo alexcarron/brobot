@@ -1,7 +1,6 @@
 import { ButtonInteraction, ButtonStyle } from "discord.js";
 import { replyToInteraction } from "../../../../utilities/discord-action-utils";
 import { toRankEmoji } from "../../utilities/feedback-message.utility";
-import { confirmInteraction } from "../../../../utilities/discord-interfaces/discord-interface";
 import { clearMyVotes } from "../../workflows/voting/clear-my-votes.workflow";
 import { DiscordButton } from "../../../../utilities/discord-interfaces/discord-button";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
@@ -9,6 +8,7 @@ import { escapeDiscordMarkdown, joinLines } from "../../../../utilities/string-m
 import { voteName } from "../../workflows/voting/vote-name.workflow";
 import { Rank, Ranks } from "../../types/vote.types";
 import { Player } from "../../types/player.types";
+import { confirmInteraction } from "../../../../utilities/discord-interfaces/discord-interface-utils";
 
 export function getClearMyVotesButton() {
 	return {

@@ -12,3 +12,4 @@ export const INVALID_QUEST_ID = 172151920;
 export const INVALID_QUEST_NAME = "Invalid Quest Name";
 export const FREEBIE_QUEST_NAME = 'The Special Freebie Quest Used in Testing Only';
 export const INVALID_ACTIVITY_LOG_ID = 132092292025;
+export const INVALID_DAY_ID = 4125094;

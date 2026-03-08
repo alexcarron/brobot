@@ -552,7 +552,7 @@ describe('QuestRepository', () => {
 	describe('getCurrentlyShownDailyQuestIDs()', () => {
 		it('returns all daily quest IDs thare have isShown set to true', () => {
 			questRepository.updateQuest({id: SOME_DAILY_QUEST.id, isShown: true});
-			const questIDsBeingShown = questRepository.getCurrentlyShownDailyQuestIDs();
+			const questIDsBeingShown = questRepository.getCurrentDailyQuestIDs();
 			makeSure(questIDsBeingShown).containsOnly(SOME_DAILY_QUEST.id);
 		});
 
@@ -562,13 +562,13 @@ describe('QuestRepository', () => {
 				quest: SOME_DAILY_QUEST.id,
 			});
 
-			const questIDsBeingShown = questRepository.getCurrentlyShownDailyQuestIDs();
+			const questIDsBeingShown = questRepository.getCurrentDailyQuestIDs();
 			makeSure(questIDsBeingShown).doesNotContain(SOME_DAILY_QUEST.id);
 		});
 
 		it('does not return weekly quests', () => {
 			questRepository.updateQuest({id: SOME_WEEKLY_QUEST.id, isShown: true});
-			const questIDsBeingShown = questRepository.getCurrentlyShownDailyQuestIDs();
+			const questIDsBeingShown = questRepository.getCurrentDailyQuestIDs();
 			makeSure(questIDsBeingShown).doesNotContain(SOME_WEEKLY_QUEST.id);
 		});
 	});
@@ -576,7 +576,7 @@ describe('QuestRepository', () => {
 	describe('getCurrentlyShownWeeklyQuestIDs()', () => {
 		it('returns all weekly quest IDs thare have isShown set to true', () => {
 			questRepository.updateQuest({id: SOME_WEEKLY_QUEST.id, isShown: true});
-			const questIDsBeingShown = questRepository.getCurrentlyShownWeeklyQuestIDs();
+			const questIDsBeingShown = questRepository.getCurrentWeeklyQuestIDs();
 			makeSure(questIDsBeingShown).containsOnly(SOME_WEEKLY_QUEST.id);
 		});
 
@@ -586,13 +586,13 @@ describe('QuestRepository', () => {
 				quest: SOME_WEEKLY_QUEST.id,
 			});
 
-			const questIDsBeingShown = questRepository.getCurrentlyShownWeeklyQuestIDs();
+			const questIDsBeingShown = questRepository.getCurrentWeeklyQuestIDs();
 			makeSure(questIDsBeingShown).doesNotContain(SOME_WEEKLY_QUEST.id);
 		});
 
 		it('does not return weekly quests', () => {
 			questRepository.updateQuest({id: SOME_WEEKLY_QUEST.id, isShown: true});
-			const questIDsBeingShown = questRepository.getCurrentlyShownDailyQuestIDs();
+			const questIDsBeingShown = questRepository.getCurrentDailyQuestIDs();
 			makeSure(questIDsBeingShown).doesNotContain(SOME_WEEKLY_QUEST.id);
 		});
 	});

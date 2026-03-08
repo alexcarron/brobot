@@ -2,7 +2,7 @@ import { getYesterday } from "../../../utilities/date-time-utils";
 import { dmUser } from "../../../utilities/discord-action-utils";
 import { toAmountOfNoun } from "../../../utilities/string-manipulation-utils";
 import { IDLE_INTEREST_TOKEN_REWARD, INVESTMENT_PERCENTAGE, Perks } from "../constants/perks.constants";
-import { sendDailyQuestsMessages } from "../interfaces/quests/daily-quests-message";
+import { sendDailyQuestsDisplay } from "../interfaces/quests/daily-quests-display";
 import { sendHiddenQuestsMessages } from "../interfaces/quests/hidden-quests-message";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { getTokensEarnedFeedback } from "../utilities/feedback-message.utility";
@@ -15,7 +15,9 @@ export async function onDayStart() {
 	const now = new Date();
 
 	questService.assignNewDailyQuests(now);
-	await sendDailyQuestsMessages();
+	console.log(questService.getDailyQuestsShownToday());
+	console.log(questService.getCurrentDailyQuests());
+	await sendDailyQuestsDisplay();
 	await sendHiddenQuestsMessages();
 
 	await perkService.doForAllPlayersWithPerk(Perks.INVESTMENT,

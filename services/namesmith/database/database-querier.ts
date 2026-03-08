@@ -552,6 +552,46 @@ export class DatabaseQuerier {
 	}
 
 	/**
+	 * Selects all rows from a table in the database
+	 * @param tableName - The name of the table to select from
+	 * @returns An array of objects representing the rows in the table
+	 */
+	selectAllFromTable(tableName: string): unknown[] {
+		return this.getRows(`SELECT * FROM ${tableName}`);
+	}
+
+	/**
+	 * Selects rows from a table in the database based on the given identifiers
+	 * @param tableName - The name of the table to select from
+	 * @param options - An object containing the fieldsSelecting and identifiers parameters
+	 * @param options.fieldsSelecting - An array of column names to select
+	 * @param options.identifiers - An object of column names to the values to use as identifiers in the WHERE clause
+	 * @returns An array of objects representing the rows in the table
+	 */
+	selectFromTable(
+		tableName: string,
+		{fieldsSelecting, identifiers}: {
+			fieldsSelecting: string[]; 
+			identifiers: Record<string, unknown>
+		}
+	): unknown[] {
+		return this.getRows(
+			`SELECT ${fieldsSelecting.join(", ")} FROM ${tableName} WHERE ${toParameterOrWhereClause(identifiers)}`,
+			identifiers
+		)
+	}
+
+	/**
+	 * Selects a single row from a table in the database based on the given id
+	 * @param tableName - The name of the table to select from
+	 * @param id - The id of the row to select
+	 * @returns An array with a single object representing the row in the table, or an empty array if no row is found
+	 */
+	selectRowFromTableByID(tableName: string, id: number): unknown {
+		return this.getRow(`SELECT * FROM ${tableName} WHERE id = ?`, id);
+	}
+
+	/**
 	 * Inserts a new row into a table in the database
 	 * @param tableName - The name of the table to insert into
 	 * @param insertedFieldToValue - An object of column/field names to the values to insert
@@ -653,5 +693,86 @@ export class DatabaseQuerier {
 			LIMIT 1`,
 			identifiers
 		) === 1;
+	}
+
+	/**
+	 * Reads all rows from a SQLite table and converts them into a format suitable for table display
+	 * @param tableName - The name of the table to read from
+	 * @param options - An object with optional parameters for the table data
+	 * @param options.columns - Specific columns to select (default: all columns via *)
+	 * @param options.where - An object of column/field names to filter by (AND conditions)
+	 * @param options.orderBy - A column name to order results by
+	 * @param options.limit - Maximum number of rows to return
+	 * @returns An object with `headers` (column names) and `rows` (stringified cell values)
+	 * @example
+	 * const { headers, rows } = db.toTableData('players', {
+	 *   columns: ['name', 'score', 'wins'],
+	 *   orderBy: 'score',
+	 *   limit: 10,
+	 * });
+	 * await channel.send(createDiscordTable(headers, rows, { title: '🏆 Leaderboard' }));
+	 */
+	toTableData(
+			tableName: string,
+			options: {
+					columns?: string[];
+					where?: Record<string, unknown>;
+					orderBy?: string;
+					limit?: number;
+			} = {}
+	): { headers: string[]; rows: string[][] } {
+			const { columns, where, orderBy, limit } = options;
+
+			const selectedColumns = columns?.length
+					? columns.map(c => `\`${c}\``).join(', ')
+					: '*';
+
+			const whereParts: string[] = [];
+			const whereParams: Record<string, unknown> = {};
+
+			if (where && Object.keys(where).length > 0) {
+					whereParts.push(`WHERE ${toParameterAndWhereClause(where)}`);
+					Object.assign(whereParams, where);
+			}
+
+			const orderPart  = orderBy ? `ORDER BY \`${orderBy}\`` : '';
+			const limitPart  = limit   ? `LIMIT ${Number(limit)}`  : '';
+
+			const sqlQuery = [
+					`SELECT ${selectedColumns} FROM \`${tableName}\``,
+					...whereParts,
+					orderPart,
+					limitPart,
+			].filter(Boolean).join(' ');
+
+			const rawRows = this.getRows(
+					sqlQuery,
+					...(Object.keys(whereParams).length ? [whereParams] : [])
+			) as Record<string, unknown>[];
+
+			if (rawRows.length === 0) {
+					// Fall back to PRAGMA to get column names even with no data
+					const pragmaRows = this.getRows(
+							`PRAGMA table_info(\`${tableName}\`)`
+					) as { name: string }[];
+
+					const headers = columns?.length
+							? columns
+							: pragmaRows.map(r => r.name);
+
+					return { headers, rows: [] };
+			}
+
+			const headers = columns?.length ? columns : Object.keys(rawRows[0]);
+
+			const rows = rawRows.map(row =>
+					headers.map(header => {
+							const value = row[header];
+							if (value === null || value === undefined) return '';
+							return String(value);
+					})
+			);
+
+			return { headers, rows };
 	}
 }

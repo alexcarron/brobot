@@ -1,10 +1,12 @@
 import { getRandomUUID } from "../random-utils";
 import { ActionRowBuilder, ModalBuilder, TextInputBuilder } from "@discordjs/builders";
-import { ModalSubmitInteraction, TextInputStyle } from "discord.js";
+import { ButtonInteraction, ButtonStyle, CommandInteraction, MessageComponentInteraction, ModalSubmitInteraction, TextInputStyle } from "discord.js";
 import { throwIfNotError } from "../error-utils";
 import { InteractionWithModalSupport } from "../constants/discord-interface.constants";
 import { logError } from "../logging-utils";
 import { mapToObject } from "../data-structure-utils";
+import { editReplyToInteraction, replyToInteraction } from "../discord-action-utils";
+import { DiscordButtons } from "./discord-buttons";
 
 
 /**
@@ -105,4 +107,72 @@ export async function showModalWithTextInputs<
 		throwIfNotError(error);
 		logError(`Error while waiting for user to submit modal`, error);
 	}
+}
+
+/**
+ * Confirms an interaction by sending a prompt with a confirm and cancel button.
+ * When the user presses the confirm button, the function will call the onConfirm callback with the button interaction.
+ * When the user presses the cancel button, the function will call the onCancel callback with the button interaction.
+ * @param options - The options for the confirmation prompt
+ * @param options.interactionToConfirm - The interaction to confirm
+ * @param options.confirmPromptText - The text to display in the confirmation prompt
+ * @param options.confirmButtonText - The text to display on the confirm button
+ * @param options.cancelButtonText - The text to display on the cancel button
+ * @param options.confirmButtonStyle - The style of the confirm button
+ * @param options.cancelButtonStyle - The style of the cancel button
+ * @param options.onConfirm - The callback to call when the user presses the confirm button or a string to reply with when the user presses the confirm button
+ * @param options.onCancel - The callback to call when the user presses the cancel button or a string to reply with when the user presses the cancel button
+ * @returns {Promise<void>}
+ */
+export async function confirmInteraction(
+	{interactionToConfirm, confirmPromptText, confirmButtonText, cancelButtonText, confirmButtonStyle, cancelButtonStyle, onConfirm, onCancel}: {
+		interactionToConfirm: CommandInteraction | MessageComponentInteraction | ModalSubmitInteraction | ButtonInteraction;
+		confirmPromptText: string;
+		confirmButtonText: string;
+		cancelButtonText: string;
+		confirmButtonStyle?: ButtonStyle;
+		cancelButtonStyle?: ButtonStyle;
+		onConfirm: string | ((buttonInteraction: ButtonInteraction) => any);
+		onCancel: string | ((buttonInteraction: ButtonInteraction) => any);
+	}
+) {
+	const buttons = new DiscordButtons({
+		promptText: confirmPromptText,
+		buttons: [
+			{
+				id: `confirm-${getRandomUUID()}`,
+				label: confirmButtonText,
+				style: confirmButtonStyle ?? ButtonStyle.Success,
+				onButtonPressed: async (buttonInteraction: ButtonInteraction) => {
+					if (typeof onConfirm === 'string') {
+						return await editReplyToInteraction(interactionToConfirm, {
+							content: onConfirm,
+							components: [],
+						});
+					}
+					else {
+						return await onConfirm(buttonInteraction);
+					}
+				}
+			},
+			{
+				id: `cancel-${getRandomUUID()}`,
+				label: cancelButtonText,
+				style: cancelButtonStyle ?? ButtonStyle.Danger,
+				onButtonPressed: async (buttonInteraction: ButtonInteraction) => {
+					if (typeof onCancel === 'string') {
+						return await editReplyToInteraction(interactionToConfirm, {
+							content: onCancel,
+							components: [],
+						});
+					}
+					else {
+						return await onCancel(buttonInteraction);
+					}
+				}
+			}
+		]
+	});
+
+	await replyToInteraction(interactionToConfirm, buttons.getMessageContents());
 }

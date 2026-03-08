@@ -567,13 +567,57 @@ export const removeMissingCharacters = (
 }
 
 /**
- * Escapes Discord markdown characters in a string.
+ * Escapes Discord markdown characters in a string, context-aware:
+ *  - Inside triple-backtick code blocks: preserved as-is (Discord renders them verbatim).
+ *  - Inside inline code spans (` or ``): preserved as-is.
+ *  - Everywhere else: all markdown characters are escaped.
  * @param text - The string to escape.
- * @returns The string with Discord markdown characters escaped.
+ * @returns The string with Discord markdown characters escaped where needed.
  */
 export const escapeDiscordMarkdown = (text: string): string => {
-	return text.replace(/([_*~`>|()[\]{}#+\-=.!\\])/g, "\\$1");
-}
+	/** Characters that Discord treats as markdown formatting outside of code contexts. */
+	const MARKDOWN_CHARS = /[_*~`<|()[\]{}#+\\]|(-#)/g;
+
+  const result: string[] = [];
+  let index = 0;
+
+  while (index < text.length) {
+    if (text.startsWith("```", index)) {
+      const closeCodeBlockIndex = text.indexOf("```", index + 3);
+      if (closeCodeBlockIndex !== -1) {
+        // Preserve the entire block verbatim; Discord renders it literally.
+        result.push(text.slice(index, closeCodeBlockIndex + 3));
+        index = closeCodeBlockIndex + 3;
+        continue;
+      }
+    }
+
+    if (text.startsWith("``", index) && !text.startsWith("```", index)) {
+      const closeCodeBlockIndex = text.indexOf("``", index + 2);
+      if (closeCodeBlockIndex !== -1) {
+        result.push(text.slice(index, closeCodeBlockIndex + 2));
+        index = closeCodeBlockIndex + 2;
+        continue;
+      }
+    }
+
+    if (text[index] === "`") {
+      const closeCodeLineIndex = text.indexOf("`", index + 1);
+      if (closeCodeLineIndex !== -1) {
+        result.push(text.slice(index, closeCodeLineIndex + 1));
+        index = closeCodeLineIndex + 1;
+        continue;
+      }
+    }
+
+    const char = text[index];
+    result.push(MARKDOWN_CHARS.test(char) ? `\\${char}` : char);
+    MARKDOWN_CHARS.lastIndex = 0; // reset stateful regex after .test()
+    index++;
+  }
+
+  return result.join("");
+};
 
 /**
  * Returns either the singular or plural form of a word based on a given number.

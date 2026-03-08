@@ -295,4 +295,114 @@ describe('DatabaseQuerier', () => {
 			expect(dbQuerier.getRows('SELECT * FROM character')).toEqual([]);
 		});
 	});
+
+	describe('.toTableData()', () => {
+    it('returns all columns as headers and all rows as stringified data', () => {
+			const { headers, rows } = dbQuerier.toTableData('character');
+			expect(headers).toEqual(['id', 'value', 'rarity']);
+			expect(rows).toEqual([
+				['1', 'character1', 'common'],
+				['2', 'character2', 'rare'],
+			]);
+    });
+
+    it('returns only the specified columns when the columns option is provided', () => {
+			const { headers, rows } = dbQuerier.toTableData('character', {
+				columns: ['value', 'rarity'],
+			});
+			expect(headers).toEqual(['value', 'rarity']);
+			expect(rows).toEqual([
+				['character1', 'common'],
+				['character2', 'rare'],
+			]);
+    });
+
+    it('filters rows by the where option', () => {
+			const { headers, rows } = dbQuerier.toTableData('character', {
+				where: { rarity: 'rare' },
+			});
+			expect(headers).toEqual(['id', 'value', 'rarity']);
+			expect(rows).toEqual([['2', 'character2', 'rare']]);
+    });
+
+    it('returns an empty rows array and correct headers when no rows match the where clause', () => {
+			const { headers, rows } = dbQuerier.toTableData('character', {
+				where: { rarity: 'legendary' },
+			});
+			expect(headers).toEqual(['id', 'value', 'rarity']);
+			expect(rows).toEqual([]);
+    });
+
+    it('returns correct headers from PRAGMA even when the table is empty', () => {
+			dbQuerier.deleteAllFromTable('character');
+			const { headers, rows } = dbQuerier.toTableData('character');
+			expect(headers).toEqual(['id', 'value', 'rarity']);
+			expect(rows).toEqual([]);
+    });
+
+    it('returns only the specified columns as headers when the table is empty', () => {
+			dbQuerier.deleteAllFromTable('character');
+			const { headers, rows } = dbQuerier.toTableData('character', {
+				columns: ['value', 'rarity'],
+			});
+			expect(headers).toEqual(['value', 'rarity']);
+			expect(rows).toEqual([]);
+    });
+
+    it('orders results by the orderBy option ascending', () => {
+			dbQuerier.run(`INSERT INTO character (value, rarity) VALUES ('character3', 'common')`);
+			const { rows } = dbQuerier.toTableData('character', {
+				columns: ['value'],
+				orderBy: 'value',
+			});
+			expect(rows).toEqual([['character1'], ['character2'], ['character3']]);
+    });
+
+    it('limits the number of rows returned by the limit option', () => {
+			dbQuerier.run(`INSERT INTO character (value, rarity) VALUES ('character3', 'legendary')`);
+			const { rows } = dbQuerier.toTableData('character', { limit: 2 });
+			expect(rows).toHaveLength(2);
+    });
+
+    it('combines columns, where, orderBy, and limit options together', () => {
+			dbQuerier.run(`INSERT INTO character (value, rarity) VALUES ('character3', 'common')`);
+			const { headers, rows } = dbQuerier.toTableData('character', {
+				columns: ['value'],
+				where: { rarity: 'common' },
+				orderBy: 'value',
+				limit: 1,
+			});
+			expect(headers).toEqual(['value']);
+			expect(rows).toEqual([['character1']]);
+    });
+
+    it('converts numeric values to strings', () => {
+			const { rows } = dbQuerier.toTableData('character', {
+				columns: ['id'],
+			});
+			expect(rows).toEqual([['1'], ['2']]);
+    });
+
+    it('converts null values to empty strings', () => {
+			dbQuerier.exec(`
+				CREATE TABLE nullable_test (
+					id INTEGER PRIMARY KEY,
+					name TEXT,
+					optional TEXT
+				);
+				INSERT INTO nullable_test (name, optional) VALUES ('present', NULL);
+			`);
+			const { rows } = dbQuerier.toTableData('nullable_test');
+			expect(rows[0][2]).toBe('');
+    });
+
+    it('works correctly on a different table', () => {
+			const { headers, rows } = dbQuerier.toTableData('player');
+			expect(headers).toEqual(['id', 'name']);
+			expect(rows).toEqual([
+				['1', 'player1'],
+				['2', 'player2'],
+			]);
+    });
+	});
 });

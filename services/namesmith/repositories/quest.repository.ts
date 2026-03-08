@@ -438,7 +438,7 @@ export class QuestRepository {
 	 * Returns an array of all the quest IDs of the daily quests picked for today.
 	 * @returns An array of the quest IDs of the daily quests picked for today.
 	 */
-	getCurrentlyShownDailyQuestIDs(): QuestID[] {
+	getCurrentDailyQuestIDs(): QuestID[] {
 		const isShownRows = this.db.getRows(
 			`SELECT id FROM quest
 			WHERE 
@@ -453,7 +453,7 @@ export class QuestRepository {
 	 * Returns the ids of the weekly quests currently being shown to players.
 	 * @returns The ids of the weekly quests currently being shown to players.
 	 */
-	getCurrentlyShownWeeklyQuestIDs(): QuestID[] {
+	getCurrentWeeklyQuestIDs(): QuestID[] {
 		const isShownRows = this.db.getRows(
 			`SELECT id FROM quest
 			WHERE 

@@ -10,8 +10,8 @@ import { DiscordButtonDefinition } from '../../../utilities/discord-interfaces/d
 import { ignoreError } from "../../../utilities/error-utils";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { sortByAscendingProperty } from "../../../utilities/data-structure-utils";
-import { confirmInteraction } from "../../../utilities/discord-interfaces/discord-interface";
 import { getTokensEarnedFeedback } from "../utilities/feedback-message.utility";
+import { confirmInteraction } from "../../../utilities/discord-interfaces/discord-interface-utils";
 
 /**
  * Generates a messaeg that prompts the user to pick a perk.

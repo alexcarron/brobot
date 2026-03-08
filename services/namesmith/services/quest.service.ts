@@ -142,7 +142,7 @@ export class QuestService {
 		let availableQuestIDs = [...questIDsNotShown];
 
 		// Clear current shown flags
-		const currentDailyQuestIDs = this.questRepository.getCurrentlyShownDailyQuestIDs();
+		const currentDailyQuestIDs = this.questRepository.getCurrentDailyQuestIDs();
 		for (const questID of currentDailyQuestIDs) {
 			this.questRepository.setIsShown(questID, false);
 		}
@@ -196,7 +196,7 @@ export class QuestService {
 	 * @returns An array of all the daily quests that are currently being shown to the players.
 	 */
 	getCurrentDailyQuests(): Quest[] {
-		return this.questRepository.getCurrentlyShownDailyQuestIDs()
+		return this.questRepository.getCurrentDailyQuestIDs()
 			.map(questID => this.resolveQuest(questID));
 	}
 
@@ -204,7 +204,7 @@ export class QuestService {
 	 * Returns an array of all the non-hidden daily quests that are currently being shown to the players.
 	 * @returns An array of all the non-hidden daily quests that are currently being shown to the players.
 	 */
-	getShownDailyQuests(): Quest[] {
+	getDailyQuestsShownToday(): Quest[] {
 		const shownToday = this.questRepository.getShownDailyQuestDuring(new Date());
 		const hiddenQuestIDs = shownToday.filter(s => !s.isHidden).map(s => s.quest.id);
 		return hiddenQuestIDs.map(questID => this.resolveQuest(questID));
@@ -214,8 +214,8 @@ export class QuestService {
 	 * Returns an array of all the weekly quests being shown to the players for the week.
 	 * @returns An array of all the weekly quests being shown to the players for the week.
 	 */
-	getShownWeeklyQuests(): Quest[] {
-		return this.questRepository.getCurrentlyShownWeeklyQuestIDs()
+	getCurrentWeeklyQuests(): Quest[] {
+		return this.questRepository.getCurrentWeeklyQuestIDs()
 			.map(questID => this.resolveQuest(questID));
 	}
 
@@ -223,7 +223,7 @@ export class QuestService {
 	 * Returns an array of all the hidden quests for today.
 	 * @returns An array of all the hidden quests for today.
 	 */
-	getHiddenDailyQuests(): Quest[] {
+	getHiddenDailyQuestsShownToday(): Quest[] {
 		const shownToday = this.questRepository.getShownDailyQuestDuring(new Date());
 		const hiddenQuestIDs = shownToday.filter(s => s.isHidden).map(s => s.quest.id);
 		return hiddenQuestIDs.map(questID => this.resolveQuest(questID));
@@ -273,7 +273,7 @@ export class QuestService {
 	 */
 	assignNewWeeklyQuests(startOfWeek: Date): Quest[] {
 		// Remove previously shown weekly quests
-		const currentWeeklyQuestIDs = this.questRepository.getCurrentlyShownWeeklyQuestIDs();
+		const currentWeeklyQuestIDs = this.questRepository.getCurrentWeeklyQuestIDs();
 		for (const questID of currentWeeklyQuestIDs) {
 			this.questRepository.setIsShown(questID, false);
 		}

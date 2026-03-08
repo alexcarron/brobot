@@ -28,6 +28,7 @@ import {
 	toConciseReadableTime,
 	toCompactReadableTime,
 	toReadableNumber,
+	escapeDiscordMarkdown,
 } from "./string-manipulation-utils";
 import { createNowUnixTimestamp } from "./date-time-utils";
 import { makeSure } from "./jest/jest-utils";
@@ -1099,6 +1100,48 @@ describe('string-manipulation-utils', () => {
 
 		it('throws an error for an invalid number', () => {
 			makeSure(() => toReadableNumber('not a number')).toThrow();
+		});
+	});
+
+	describe('escapeDiscordMarkdown()', () => {
+		it('escapes underscores', () => {
+				makeSure(escapeDiscordMarkdown('hello_world')).is('hello\\_world');
+		});
+
+		it('escapes asterisks', () => {
+				makeSure(escapeDiscordMarkdown('**bold**')).is('\\*\\*bold\\*\\*');
+		});
+
+		it('escapes tilde', () => {
+				makeSure(escapeDiscordMarkdown('~~strike~~')).is('\\~\\~strike\\~\\~');
+		});
+
+		it('escapes multiple markdown characters in one string', () => {
+				makeSure(escapeDiscordMarkdown('_bold_ and *italic*')).is('\\_bold\\_ and \\*italic\\*');
+		});
+
+		it('does not escape characters inside a single-backtick inline code span', () => {
+				makeSure(escapeDiscordMarkdown('`_not escaped_`')).is('`_not escaped_`');
+		});
+
+		it('does not escape characters inside a double-backtick inline code span', () => {
+				makeSure(escapeDiscordMarkdown('``**not escaped**``')).is('``**not escaped**``');
+		});
+
+		it('does not escape characters inside a triple-backtick code block', () => {
+				makeSure(escapeDiscordMarkdown('```_not escaped_```')).is('```_not escaped_```');
+		});
+
+		it('escapes text outside a code block but not inside', () => {
+				makeSure(escapeDiscordMarkdown('_escaped_ ```_not escaped_```')).is('\\_escaped\\_ ```_not escaped_```');
+		});
+
+		it('returns plain text unchanged', () => {
+				makeSure(escapeDiscordMarkdown('hello world')).is('hello world');
+		});
+
+		it('returns an empty string unchanged', () => {
+				makeSure(escapeDiscordMarkdown('')).is('');
 		});
 	});
 });

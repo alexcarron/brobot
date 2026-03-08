@@ -44,8 +44,7 @@ import {
 } from './discord-fetch-utils';
 import {
 	incrementEndNumber,
-	joinLines,
-	wrapTextByLineWidth
+	joinLines
 } from './string-manipulation-utils';
 import {
 	logInfo,
@@ -1297,7 +1296,55 @@ function parseMessageArgs(
 }
 
 /**
- * Splits a MessageCreateOptions object into multiple MessageCreateOptions objects if the content exceeds the maximum length.
+ * Splits a string into chunks that never exceed maxLength, always breaking on newline boundaries so that no individual line is ever cut mid-character. If a single line is longer than maxLength it is placed in its own chunk and left intact — truncating a table row would produce worse output than a slightly oversized message.
+ * @param content - The string to split into chunks.
+ * @param maxLength - The maximum length of a chunk.
+ * @returns An array of chunks.
+ */
+function splitOnNewlines(content: string, maxLength: number): string[] {
+	const lines = content.split("\n");
+	const chunks: string[] = [];
+	let current = "";
+
+	for (const line of lines) {
+		const appended = current.length === 0 ? line : `${current}\n${line}`;
+
+		if (appended.length <= maxLength) {
+			current = appended;
+		} else {
+			if (current.length > 0) {
+				chunks.push(current);
+			}
+			// A single line that is already too long gets its own chunk untouched
+			// rather than being cut mid-character and producing broken output.
+			if (line.length > maxLength) {
+				chunks.push(line);
+				current = "";
+			} else {
+				current = line;
+			}
+		}
+	}
+
+	if (current.length > 0) {
+		chunks.push(current);
+	}
+
+	return chunks;
+}
+
+/**
+ * Extracts the opening code block fence from a string, if present
+ * @param content - The string to extract the fence from.
+ * @returns The opening code block fence, or null if none is present.
+ */
+function extractOpeningCodeFence(content: string): string | null {
+	const match = content.match(/^(```[^\n]*)\n/);
+	return match ? match[1] : null;
+}
+
+/**
+ * Splits a MessageCreateOptions object into multiple MessageCreateOptions objects if the content exceeds the maximum length
  * @param messageOptions - The MessageCreateOptions object to split.
  * @param maxMessageLength - The maximum length of a message.
  * @returns An array of MessageCreateOptions objects.
@@ -1307,26 +1354,40 @@ function chunkMessageOptions(
 	maxMessageLength: number = MAX_CHANNEL_MESSAGE_LENGTH,
 ): MessageCreateOptions[] {
 	const content = messageOptions.content ?? "";
-	const chunks =
-		typeof content === "string" && content.length > maxMessageLength
-			? wrapTextByLineWidth(content, maxMessageLength)
-			: [content];
 
-	const messageCreateOptions: MessageCreateOptions[] =  [];
-
-	for (const chunk of chunks) {
-		messageCreateOptions.push({
-			...messageOptions,
-			content: chunk,
-		});
+	if (typeof content !== "string" || content.length <= maxMessageLength) {
+		return [messageOptions];
 	}
 
-	return messageCreateOptions;
+	const fence = extractOpeningCodeFence(content);
+
+	if (!fence) {
+		return splitOnNewlines(content, maxMessageLength).map((chunk) => ({
+			...messageOptions,
+			content: chunk,
+		}));
+	}
+
+	// Strip the opening fence line and the closing ``` to get the raw inner content.
+	// Input format is: "```md\n<inner content>\n```"
+	const afterFence = content.slice(fence.length + 1); // remove "```md\n"
+	const innerContent = afterFence.endsWith("\n```")
+		? afterFence.slice(0, -4) // remove trailing "\n```"
+		: afterFence;
+
+	// Budget: maxMessageLength minus "```md\n" (fence + 1) and "\n```" (4)
+	const fenceOverhead = fence.length + 1 + 4;
+	const innerMaxLength = maxMessageLength - fenceOverhead;
+
+	return splitOnNewlines(innerContent, innerMaxLength).map((chunk) => ({
+		...messageOptions,
+		content: `${fence}\n${chunk}\n\`\`\``,
+	}));
 }
 
 /**
  * Parses the given arguments into one or more MessageCreateOptions objects, splitting them into chunks if they exceed the maximum length.
- * @param maxMessageLength - The maximum length of a message. 
+ * @param maxMessageLength - The maximum length of a message.
  * @param args - The arguments to parse.
  * @returns An array of MessageCreateOptions objects.
  */
@@ -1339,6 +1400,8 @@ function parseMessageArgsIntoChunks(
 	const messageOptions = parseMessageArgs(args);
 	return chunkMessageOptions(messageOptions, maxMessageLength);
 }
+
+
 
 export async function dmUser(
 	userID: User["id"],

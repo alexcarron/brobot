@@ -13,7 +13,7 @@ import { toQuestButton } from "./complete-quest-button";
  */
 export async function sendWeeklyQuestsMessages(): Promise<void> {
 	const {questService} = getNamesmithServices();
-	const weeklyQuests = questService.getShownWeeklyQuests();
+	const weeklyQuests = questService.getCurrentWeeklyQuests();
 	
 	const weeklyQuestsChannel = await fetchNamesmithChannel(ids.namesmith.channels.WEEKLY_QUESTS);
 
@@ -34,7 +34,7 @@ export async function sendWeeklyQuestsMessages(): Promise<void> {
  */
 export async function regenerateWeeklyQuestsMessages() {
 	const {questService} = getNamesmithServices();
-	const dailyQuests = questService.getShownWeeklyQuests();
+	const dailyQuests = questService.getCurrentWeeklyQuests();
 	const weeklyQuestRegenerations = [];
 	for (const quest of dailyQuests) {
 		weeklyQuestRegenerations.push(logSetup(`[WEEKLY QUEST] ${quest.name}`, regenerateWeeklyQuestMessage(quest)));

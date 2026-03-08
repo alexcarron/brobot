@@ -113,6 +113,15 @@ CREATE TABLE IF NOT EXISTS quest (
 	isShown BOOLEAN NOT NULL DEFAULT 0
 );
 
+-- For keeping track of each day without forcing them to be 24 hours
+CREATE TABLE IF NOT EXISTS day (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	timeStarted NUMBER NOT NULL
+);
+
+-- Reset id to start counting from one
+DELETE FROM sqlite_sequence WHERE name = 'day';
+
 -- For keeping track of previously shown daily quest for history
 CREATE TABLE IF NOT EXISTS shownDailyQuest (
 	timeShown NUMBER NOT NULL,

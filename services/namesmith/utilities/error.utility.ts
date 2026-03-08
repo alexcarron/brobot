@@ -13,6 +13,7 @@ import { Recipe, RecipeID } from '../types/recipe.types';
 import { RoleID, RoleName } from '../types/role.types';
 import { Trade, TradeID, TradeResolvable } from '../types/trade.types';
 import { Rank, VoteID } from '../types/vote.types';
+import { DayID } from '../types/day.types';
 
 /**
  * Base class for all errors thrown by the namesmith service
@@ -333,6 +334,18 @@ export class QuestAlreadyExistsError extends ResourceAlreadyExistsError {
 				relevantData: { questName: questIDOrName }
 			})
 		}
+	}
+}
+
+export class DayAlreadyExistsError extends ResourceAlreadyExistsError {
+	declare relevantData: {
+		dayID?: DayID
+	}
+	constructor(dayID: DayID) {
+		super({
+			message: `Cannot add day. Day with ID ${dayID} already exists.`,
+			relevantData: { dayID }
+		})
 	}
 }
 

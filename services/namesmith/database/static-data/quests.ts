@@ -410,7 +410,7 @@ export const quests = [
 	{
 		id: 57,
 		name: "Show Tokens",
-		description: "Include the exact number of tokens you currently hold in your published name.",
+		description: "Include the exact number of tokens you currently hold in your published name",
 		recurrence: "weekly",
 		tokensReward: 1000,
 		charactersReward: "exact count"
@@ -418,7 +418,7 @@ export const quests = [
 	{
 		id: 58,
 		name: "Gold Spike",
-		description: "Earn at least 10 tokens from a single mine attempt.",
+		description: "Earn at least 10 tokens from a single mine attempt",
 		recurrence: "weekly",
 		tokensReward: 500,
 		charactersReward: "gold+"
@@ -426,14 +426,14 @@ export const quests = [
 	{
 		id: 60,
 		name: "Speed Mine",
-		description: "Execute 250 mining actions within a 10-minute span.",
+		description: "Execute 250 mining actions within a 10-minute span",
 		recurrence: "weekly",
 		tokensReward: 650
 	},
 	{
 		id: 61,
 		name: "Mine Haul",
-		description: "Earn at least 1,500 total tokens from mining this week.",
+		description: "Earn at least 1,500 total tokens from mining this week",
 		recurrence: "weekly",
 		tokensReward: 900,
 		charactersReward: "mineshaft"
@@ -441,14 +441,14 @@ export const quests = [
 	{
 		id: 63,
 		name: "Instant Squad",
-		description: "Coordinate with five other players to mine together within a 5-second window.",
+		description: "Coordinate with five other players to mine together within a 5-second window",
 		recurrence: "weekly",
 		tokensReward: 875,
 	},
 	{
 		id: 64,
 		name: "Ten-Minute Rush",
-		description: "Collect at least 400 tokens total from only mines within a 10-minute window.",
+		description: "Collect at least 400 tokens total from only mines within a 10-minute window",
 		recurrence: "weekly",
 		tokensReward: 1000,
 		charactersReward: "diamonds"
@@ -456,14 +456,14 @@ export const quests = [
 	{
 		id: 65,
 		name: "Coalition",
-		description: "Help the server earn 3,500 total tokens from mining this week.",
+		description: "Help the server earn 3,500 total tokens from mining this week",
 		recurrence: "weekly",
 		tokensReward: 1500
 	},
 	{
 		id: 66,
 		name: "Refill Raid",
-		description: "Claim a single refill that grants at least 500 tokens.",
+		description: "Claim a single refill that grants at least 500 tokens",
 		recurrence: "weekly",
 		tokensReward: 750,
 		charactersReward: "big-refill"
@@ -471,7 +471,7 @@ export const quests = [
 	{
 		id: 69,
 		name: "Mass Refill",
-		description: "Claim a refill with five other players in the span of one minute.",
+		description: "Claim a refill with five other players in the span of one minute",
 		recurrence: "weekly",
 		tokensReward: 855,
 		charactersReward: "5friends"
@@ -479,7 +479,7 @@ export const quests = [
 	{
 		id: 70,
 		name: "Cold Server",
-		description: "Ensure no player claims a refill for a continuous 16-hour period.",
+		description: "Ensure no player claims a refill for a continuous 16-hour period",
 		recurrence: "weekly",
 		tokensReward: 1000,
 		charactersReward: "16 quiet hours"
@@ -487,7 +487,7 @@ export const quests = [
 	{
 		id: 71,
 		name: "Box Binge",
-		description: "Open 25 mystery boxes during the week.",
+		description: "Open 25 mystery boxes during the week",
 		recurrence: "weekly",
 		tokensReward: 500,
 		charactersReward: "boxlover"
@@ -495,7 +495,7 @@ export const quests = [
 	{
 		id: 72,
 		name: "Hyper Boxes",
-		description: "Open 10 mystery boxes within a 3-minute window.",
+		description: "Open 10 mystery boxes within a 3-minute window",
 		recurrence: "weekly",
 		tokensReward: 800,
 		charactersReward: "open(x10)"
@@ -503,14 +503,14 @@ export const quests = [
 	{
 		id: 73,
 		name: "Namesake Box",
-		description: "Open a mystery box while your published name contains that box's official name (case insensitive).",
+		description: "Open a mystery box while your published name contains that box's official name (case insensitive)",
 		recurrence: "weekly",
 		tokensReward: 1456,
 	},
 	{
 		id: 74,
 		name: "Rightmost",
-		description: "Obtain the rightmost character of your current name from a mystery box.",
+		description: "Obtain the rightmost character of your current name from a mystery box",
 		recurrence: "weekly",
 		tokensReward: 925,
 		charactersReward: "→end"
@@ -518,14 +518,14 @@ export const quests = [
 	{
 		id: 76,
 		name: "Buyout",
-		description: "Purchase at least one of every available mystery box type.",
+		description: "Purchase at least one of every available mystery box type",
 		recurrence: "weekly",
 		tokensReward: 4000
 	},
 	{
 		id: 77,
 		name: "Triple Pull",
-		description: "Open one mystery box and receive three characters from that single box.",
+		description: "Open one mystery box and receive three characters from that single box",
 		recurrence: "weekly",
 		tokensReward: 1000,
 		charactersReward: "triple!"
@@ -533,7 +533,7 @@ export const quests = [
 	{
 		id: 78,
 		name: "Find X",
-		description: "Obtain the character \"x\" from any mystery box.",
+		description: "Obtain the character \"x\" from any mystery box",
 		recurrence: "weekly",
 		tokensReward: 650,
 		charactersReward: "xxxxx"
@@ -541,7 +541,7 @@ export const quests = [
 	{
 		id: 79,
 		name: "Sevens",
-		description: "Receive the same character from a mystery box seven separate times this week.",
+		description: "Receive the same character from a mystery box seven separate times this week",
 		recurrence: "weekly",
 		tokensReward: 1100,
 		charactersReward: "unlucky7"
@@ -549,7 +549,7 @@ export const quests = [
 	{
 		id: 80,
 		name: "Priced Right",
-		description: "Buy a mystery box while its token price is included in your current name.",
+		description: "Buy a mystery box while its token price is included in your current name",
 		recurrence: "weekly",
 		tokensReward: 1234,
 		charactersReward: "★ Gold Star"
@@ -557,7 +557,7 @@ export const quests = [
 	{
 		id: 81,
 		name: "Crafting Marathon",
-		description: "Craft using at least 15 different recipes during the week.",
+		description: "Craft using at least 15 different recipes during the week",
 		recurrence: "weekly",
 		tokensReward: 815,
 		charactersReward: "crafting table"
@@ -565,7 +565,7 @@ export const quests = [
 	{
 		id: 82,
 		name: "Emoji Craft",
-		description: "Craft three emoji characters this week.",
+		description: "Craft three emoji characters this week",
 		recurrence: "weekly",
 		tokensReward: 1280,
 		charactersReward: "😯😃😶"
@@ -573,14 +573,14 @@ export const quests = [
 	{
 		id: 83,
 		name: "Bulk Recipe",
-		description: "Use a recipe that requires at least five input characters and returns a single character.",
+		description: "Use a recipe that requires at least five input characters and returns a single character",
 		recurrence: "weekly",
 		tokensReward: 1303
 	},
 	{
 		id: 84,
 		name: "Utility Master",
-		description: "Craft characters using every available recipe utility character at least once.",
+		description: "Craft characters using every available recipe utility character at least once",
 		recurrence: "weekly",
 		tokensReward: 1200,
 		charactersReward: "multi-tool"
@@ -588,7 +588,7 @@ export const quests = [
 	{
 		id: 85,
 		name: "Tri-Forge",
-		description: "Produce the same character using three different recipes.",
+		description: "Produce the same character using three different recipes",
 		recurrence: "weekly",
 		tokensReward: 900,
 		charactersReward: "three-way-forge"
@@ -596,7 +596,7 @@ export const quests = [
 	{
 		id: 86,
 		name: "Input Remix",
-		description: "Use the same input characters in three different recipes and get three distinct outputs.",
+		description: "Use the same input characters in three different recipes and get three distinct outputs",
 		recurrence: "weekly",
 		tokensReward: 900,
 		charactersReward: "↻↻↻⇋⇋⇋⤻⤻↹↹⚭⚭✂⤡⇔"
@@ -604,7 +604,7 @@ export const quests = [
 	{
 		id: 87,
 		name: "Chaotic Trade",
-		description: "Trade a single character and receive at least 20 characters in return.",
+		description: "Trade a single character and receive at least 20 characters in return",
 		recurrence: "weekly",
 		tokensReward: 987,
 		charactersReward: "scammed!!!"
@@ -612,7 +612,7 @@ export const quests = [
 	{
 		id: 88,
 		name: "Wide Diplomat",
-		description: "Have trades accepted by five different players this week.",
+		description: "Have trades accepted by five different players this week",
 		recurrence: "weekly",
 		tokensReward: 865,
 		charactersReward: "trade5"
@@ -620,7 +620,7 @@ export const quests = [
 	{
 		id: 89,
 		name: "Chain Five",
-		description: "Accept five distinct trades from five different players.",
+		description: "Accept five distinct trades from five different players",
 		recurrence: "weekly",
 		tokensReward: 865,
 		charactersReward: "popular5"
@@ -628,7 +628,7 @@ export const quests = [
 	{
 		id: 90,
 		name: "Pity Pass",
-		description: "Decline a trade that would have given you 20 or more characters than you offered.",
+		description: "Decline a trade that would have given you 20 or more characters than you offered",
 		recurrence: "weekly",
 		tokensReward: 700,
 		charactersReward: ":-,)"
@@ -636,14 +636,14 @@ export const quests = [
 	{
 		id: 91,
 		name: "Quest Hoard",
-		description: "Complete 20 different quests during the week.",
+		description: "Complete 20 different quests during the week",
 		recurrence: "weekly",
 		tokensReward: 1000
 	},
 	{
 		id: 92,
 		name: "Quad Combo",
-		description: "Complete four quests within the span of one minute.",
+		description: "Complete four quests within the span of one minute",
 		recurrence: "weekly",
 		tokensReward: 1111,
 		charactersReward: "QUEST SYNC"
@@ -651,7 +651,7 @@ export const quests = [
 	{
 		id: 93,
 		name: "Name Match",
-		description: "Complete any quest while your current name contains that quest's exact name (case insensitive).",
+		description: "Complete any quest while your current name contains that quest's exact name (case insensitive)",
 		recurrence: "weekly",
 		tokensReward: 1250,
 		charactersReward: "name-tag"
@@ -659,7 +659,7 @@ export const quests = [
 	{
 		id: 94,
 		name: "Quest Bounty",
-		description: "Gain a total of 20 characters from quest rewards this week.",
+		description: "Gain a total of 20 characters from quest rewards this week",
 		recurrence: "weekly",
 		tokensReward: 850,
 		charactersReward: "here's 14 more"
@@ -667,7 +667,7 @@ export const quests = [
 	{
 		id: 95,
 		name: "Quest Riches",
-		description: "Earn a total of 1,500 tokens from quest rewards during the week.",
+		description: "Earn a total of 1,500 tokens from quest rewards during the week",
 		recurrence: "weekly",
 		tokensReward: 950,
 		charactersReward: "qqq1500"
@@ -675,7 +675,7 @@ export const quests = [
 	{
 		id: 96,
 		name: "Synchronized",
-		description: "Complete the same quest at the same moment as five other players within one minute.",
+		description: "Complete the same quest at the same moment as five other players within one minute",
 		recurrence: "weekly",
 		tokensReward: 1200,
 		charactersReward: "sync5"
@@ -683,7 +683,7 @@ export const quests = [
 	{
 		id: 98,
 		name: "No Perk",
-		description: "Avoid picking any perk for six consecutive days.",
+		description: "Avoid picking any perk for six consecutive days",
 		recurrence: "weekly",
 		tokensReward: 765,
 		charactersReward: "I am perk free"
@@ -691,7 +691,7 @@ export const quests = [
 	{
 		id: 99,
 		name: "Perk Name",
-		description: "Pick a perk while your current name contains that perk's exact name.",
+		description: "Pick a perk while your current name contains that perk's exact name",
 		recurrence: "weekly",
 		tokensReward: 1800,
 		charactersReward: "😱 no way"
@@ -699,7 +699,7 @@ export const quests = [
 	{
 		id: 100,
 		name: "Unique Perk",
-		description: "Pick a perk that no other player on your server has selected.",
+		description: "Pick a perk that no other player on your server has selected",
 		recurrence: "weekly",
 		tokensReward: 1000,
 		charactersReward: "you are special :)"
@@ -707,7 +707,7 @@ export const quests = [
 	{
 		id: 102,
 		name: "Fast Fortune",
-		description: "Gain 2,000 total tokens by any means during the week.",
+		description: "Gain 2,000 total tokens by any means during the week",
 		recurrence: "weekly",
 		tokensReward: 950,
 		charactersReward: "A Fast 2k"
@@ -715,14 +715,14 @@ export const quests = [
 	{
 		id: 105,
 		name: "Complete Set",
-		description: "Have 100 unique characters in your inventory.",
+		description: "Have 100 unique characters in your inventory",
 		recurrence: "weekly",
 		tokensReward: 1500
 	},
 	{
 		id: 108,
 		name: "Silent Server",
-		description: "Ensure no player changes their name for an 8-hour continuous window.",
+		description: "Ensure no player changes their name for an 8-hour continuous window",
 		recurrence: "weekly",
 		tokensReward: 900,
 		charactersReward: "aaaeeeiiiooouuu"
