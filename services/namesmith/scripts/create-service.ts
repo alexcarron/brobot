@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 
+/**
+ * Usage: npm run create-service <entity name>
+ */
+
 import fs from 'fs';
 import path from 'path';
 import { toServiceFile } from './templates/service.template';

@@ -5,8 +5,10 @@ import { HIDDEN_QUEST_TOKEN_MULTIPLIER } from "../constants/quests.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
 import { QuestRepository } from "../repositories/quest.repository";
+import { Day } from "../types/day.types";
 import { PlayerResolvable } from "../types/player.types";
 import { Quest, QuestID, QuestResolvable, Reward, RewardTypes } from "../types/quest.types";
+import { Week } from "../types/week.types";
 import { createReward } from "../utilities/quest.utility";
 import { ActivityLogService } from "./activity-log.service";
 import { PlayerService } from "./player.service";
@@ -132,10 +134,12 @@ export class QuestService {
 	 * There is a 50% chance of having either 3 or 4 daily quests.
 	 * If there are 3 daily quests, 1 will be hidden.
 	 * If there are 4 daily quests, there is a 50% chance of having either 1 or 2 hidden quests.
-	 * @param startOfDay - The start of the day for which to assign new daily quests.
+	 * @param today - The day these daily quests are assigned for.
 	 * @returns The daily quests for today including the hidden quests.
 	 */
-	assignNewDailyQuests(startOfDay: Date): Quest[] {
+	assignNewDailyQuests(today: Day): Quest[] {
+		const startOfDay = today.timeStarted;
+		
 		// Determine total number of quests for today: 50% chance of 3 or 4
 		const newDailyQuestIDs: number[] = [];
 		const questIDsNotShown = this.questRepository.getNotShownDailyQuestIDs();
@@ -268,10 +272,12 @@ export class QuestService {
 	/**
 	 * Decides the new weekly quests for the week and assigns them.
 	 * There's a 2/3 chance of 3 weekly quests and a 1/3 chance of 4 weekly quests.
-	 * @param startOfWeek - The start of the week for which to assign new weekly quests.
+	 * @param thisWeek - The week for which to assign new weekly quests.
 	 * @returns  The weekly quests for the week.
 	 */
-	assignNewWeeklyQuests(startOfWeek: Date): Quest[] {
+	assignNewWeeklyQuests(thisWeek: Week): Quest[] {
+		const startOfWeek = thisWeek.timeStarted;
+		
 		// Remove previously shown weekly quests
 		const currentWeeklyQuestIDs = this.questRepository.getCurrentWeeklyQuestIDs();
 		for (const questID of currentWeeklyQuestIDs) {

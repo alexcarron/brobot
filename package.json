@@ -31,7 +31,9 @@
 		"start:dev": "npm run build:dev && npm run dev",
 		"dev:start": "npm run start:dev",
 		"ssh": "ssh brobot",
-		"create-service": "node -r ts-node/register services/namesmith/scripts/create-service.ts"
+		"create-service": "node -r ts-node/register services/namesmith/scripts/create-service.ts",
+		"create-repo": "node -r ts-node/register services/namesmith/scripts/create-repository.ts",
+		"create-repository": "npm run create-repo"
 	},
 	"dependencies": {
 		"@discordjs/builders": "^1.6.5",

@@ -5,9 +5,10 @@ import { getNamesmithServices } from "../services/get-namesmith-services";
  * Triggers any game events that must occur at the start of each week
  */
 export async function onWeekStart() {
-	const { questService } = getNamesmithServices();
+	const { questService, weekService } = getNamesmithServices();
 	const now = new Date();
 
-	questService.assignNewWeeklyQuests(now);
+	const thisWeek = weekService.addNewWeek(now);
+	questService.assignNewWeeklyQuests(thisWeek);
 	await sendWeeklyQuestsMessages();
 }

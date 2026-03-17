@@ -15,3 +15,6 @@ export type DayDefinition = {
 };
 
 export type DayID = Day['id'];
+export type DayResolvable = 
+	| DayID
+	| { id: DayID };

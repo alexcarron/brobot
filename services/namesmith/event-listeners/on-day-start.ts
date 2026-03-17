@@ -11,10 +11,11 @@ import { getTokensEarnedFeedback } from "../utilities/feedback-message.utility";
  * Triggers any game events that must occur at the start of each day
  */
 export async function onDayStart() {
-	const { perkService, playerService, activityLogService, questService } = getNamesmithServices();
+	const { perkService, playerService, activityLogService, questService, dayService } = getNamesmithServices();
 	const now = new Date();
 
-	questService.assignNewDailyQuests(now);
+	const today = dayService.addNewDay(now);
+	questService.assignNewDailyQuests(today);
 	console.log(questService.getDailyQuestsShownToday());
 	console.log(questService.getCurrentDailyQuests());
 	await sendDailyQuestsDisplay();

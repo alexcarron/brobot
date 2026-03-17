@@ -22,6 +22,10 @@ import { RecipeService } from "../services/recipe.service";
 import { RoleService } from "../services/role.service";
 import { TradeService } from "../services/trade.service";
 import { VoteService } from "../services/vote.service";
+import { DayService } from "../services/day.service";
+import { DayRepository } from "../repositories/day.repository";
+import { WeekService } from "../services/week.service";
+import { WeekRepository } from "../repositories/week.repository";
 
 /**
  * A record of all database classes in Namesmith
@@ -52,6 +56,8 @@ export const NamesmithRepositoryClasses = {
 	roleRepository: RoleRepository,
 	questRepository: QuestRepository,
 	activityLogRepository: ActivityLogRepository,
+	dayRepository: DayRepository,
+	weekRepository: WeekRepository,
 };
 
 /**
@@ -76,6 +82,8 @@ export const NamesmithServiceClasses = {
 	roleService: RoleService,
 	questService: QuestService,
 	activityLogService: ActivityLogService,
+	dayService: DayService,
+	weekService: WeekService,
 };
 
 /**

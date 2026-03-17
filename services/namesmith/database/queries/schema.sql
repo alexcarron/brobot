@@ -119,6 +119,13 @@ CREATE TABLE IF NOT EXISTS day (
 	timeStarted NUMBER NOT NULL
 );
 
+-- For keeping track of each week without forcing them to be 7 days
+CREATE TABLE IF NOT EXISTS week (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	timeStarted NUMBER NOT NULL
+);
+
+
 -- Reset id to start counting from one
 DELETE FROM sqlite_sequence WHERE name = 'day';
 

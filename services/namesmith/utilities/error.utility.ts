@@ -14,6 +14,7 @@ import { RoleID, RoleName } from '../types/role.types';
 import { Trade, TradeID, TradeResolvable } from '../types/trade.types';
 import { Rank, VoteID } from '../types/vote.types';
 import { DayID } from '../types/day.types';
+import { WeekID } from '../types/week.types';
 
 /**
  * Base class for all errors thrown by the namesmith service
@@ -258,6 +259,19 @@ export class QuestNotFoundError extends ResourceNotFoundError {
 	}
 }
 
+/**
+ * Error thrown when a requested namesmith day is not found.
+ */
+export class DayNotFoundError extends ResourceNotFoundError {
+	declare relevantData: { dayID: DayID }
+	constructor(dayID: DayID) {
+		super({
+			message: `Day with ID ${dayID} not found.`,
+			relevantData: { dayID }
+		})
+	}
+}
+
 export class ShownDailyQuestNotFoundError extends ResourceNotFoundError {
 	declare relevantData: { timeShown: Date, questID: QuestID }
 	constructor({timeShown, questID}: { timeShown: Date, questID: QuestID }) {
@@ -461,14 +475,39 @@ export class VoteAlreadyExistsError extends ResourceAlreadyExistsError {
 }
 
 /**
- * Error thrown when the state of an entity is not initialized before it is used.
+ * Error thrown when a requested week is not found.
  */
-export class StateInitializationError extends NamesmithError {}
+export class WeekNotFoundError extends ResourceNotFoundError {
+	declare relevantData: { weekID: WeekID }
+	constructor(weekID: WeekID) {
+		super({
+			message: `Week with ID ${weekID} not found.`,
+			relevantData: { weekID }
+		})
+	}
+}
+
+/**
+ * Error thrown when attempting to create a week that already exists.
+ */
+export class WeekAlreadyExistsError extends ResourceAlreadyExistsError {
+	declare relevantData: {
+		weekID?: WeekID
+	}
+	constructor(weekID: WeekID) {
+		super({
+			message: `Cannot add week. Week with ID ${weekID} already exists.`,
+			relevantData: { weekID }
+		})
+	}
+}
+
+
 
 /**
  * Error thrown when the state of the game is not initialized before it is used.
  */
-export class GameStateInitializationError extends StateInitializationError {
+export class GameStateInitializationError extends NamesmithError {
 	constructor() {
 		super({
 			message: "The Namesmith game state has not initialized before it was used.",

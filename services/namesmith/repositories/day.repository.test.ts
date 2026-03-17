@@ -3,7 +3,7 @@ import { INVALID_DAY_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockDay } from "../mocks/mock-data/mock-days";
 import { Day } from "../types/day.types";
-import { DayAlreadyExistsError } from "../utilities/error.utility";
+import { DayNotFoundError } from "../utilities/error.utility";
 import { DayRepository } from "./day.repository";
 
 describe('DayRepository', () => {
@@ -50,10 +50,10 @@ describe('DayRepository', () => {
 			makeSure(day).is(MOCK_DAY);
 		});
 
-		it('throws a DayAlreadyExistsError if no day with the given ID exists', () => {
+		it('throws a DayNotFoundError if no day with the given ID exists', () => {
 			makeSure(() =>
 				dayRepository.getDayOrThrow(INVALID_DAY_ID)
-			).throws(DayAlreadyExistsError);
+			).throws(DayNotFoundError);
 		});
 	});
 
@@ -99,6 +99,23 @@ describe('DayRepository', () => {
 			const days = dayRepository.getDays();
 			makeSure(days).contains(day1);
 			makeSure(days).contains(day2);
+		});
+	});
+
+	describe('getDayWithHighestID()', () => {
+		it('returns null if the database is empty', () => {
+			db.deleteAllFromTable('day');
+			makeSure(dayRepository.getDays()).isEmpty();
+			makeSure(dayRepository.getDayWithHighestID()).isNull();
+		});
+
+		it('returns the day with the highest ID from the database', () => {
+			dayRepository.addDay({ timeStarted: new Date('2023-01-01') });
+			dayRepository.addDay({ timeStarted: new Date('2023-01-03') });
+			const day2 = dayRepository.addDay({ timeStarted: new Date('2023-01-02') });
+
+			const highestDay = dayRepository.getDayWithHighestID();
+			makeSure(highestDay).is(day2);
 		});
 	});
 });
