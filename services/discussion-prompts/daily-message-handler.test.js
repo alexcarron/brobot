@@ -13,7 +13,7 @@ jest.mock('../../bot-config/discord-ids', () => ({
         empty: 'mockEmptyChannelId',
       },
       roles: {
-        daily_questions: 'mockDailyQuestionsRoleId',
+        daily_questions: 'mockShownDailyQuestionsRoleId',
       },
     },
   },

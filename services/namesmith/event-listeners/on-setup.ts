@@ -3,17 +3,17 @@ import { logSetup } from "../../../utilities/logging-utils";
 import { setupDatabase } from "../database/setup-database";
 import { regenerateChooseARoleMessage } from "../interfaces/choose-a-role-message";
 import { regeneratePickAPerkMessage } from "../interfaces/pick-a-perk-message";
-import { regenerateDailyQuestsDisplay } from "../interfaces/quests/daily-quests-display";
+import { regenerateShownDailyQuestsDisplay } from "../interfaces/quests/daily-quests-display";
 import { regenerateHiddenQuestsMessages } from "../interfaces/quests/hidden-quests-message";
-import { regenerateWeeklyQuestsMessages } from "../interfaces/quests/weekly-quests-message";
+import { regenerateShownWeeklyQuestsMessages } from "../interfaces/quests/weekly-quests-message";
 import { regenerateAllTradeMessages } from "../interfaces/trading/trade-message";
 import { regenerateVotingDisplay } from "../interfaces/voting/voting-display";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 // import { regenerateChooseARoleMessage } from "../interfaces/choose-a-role-message";
 // import { regeneratePickAPerkMessage } from "../interfaces/pick-a-perk-message";
-// import { regenerateDailyQuestsDisplay } from "../interfaces/quests/daily-quests-display";
+// import { regenerateShownDailyQuestsDisplay } from "../interfaces/quests/daily-quests-display";
 // import { regenerateHiddenQuestsMessages } from "../interfaces/quests/hidden-quests-message";
-// import { regenerateWeeklyQuestsMessages } from "../interfaces/quests/weekly-quests-message";
+// import { regenerateShownWeeklyQuestsMessages } from "../interfaces/quests/weekly-quests-message";
 // import { regenerateAllTradeMessages } from "../interfaces/trading/trade-message";
 // import { regenerateVotingDisplay } from "../interfaces/voting/voting-display";
 // import { getNamesmithServices } from "../services/get-namesmith-services";
@@ -60,9 +60,9 @@ export async function setupNamesmith() {
 			logSetup('[TRADE MESSAGES]', regenerateAllTradeMessages()),
 			logSetup('[ROLE MESSAGES]', regenerateChooseARoleMessage()),
 			logSetup('[PERK MESSAGES]', regeneratePickAPerkMessage()),
-			logSetup('[DAILY QUEST MESSAGES]', regenerateDailyQuestsDisplay()),
+			logSetup('[DAILY QUEST MESSAGES]', regenerateShownDailyQuestsDisplay()),
 			logSetup('[HIDDEN QUEST MESSAGES]', regenerateHiddenQuestsMessages()),
-			logSetup('[WEEKLY QUEST MESSAGES]', regenerateWeeklyQuestsMessages()),
+			logSetup('[WEEKLY QUEST MESSAGES]', regenerateShownWeeklyQuestsMessages()),
 			logSetup('[VOTING DISPLAY]', regenerateVotingDisplay()),
 		]);
 	}

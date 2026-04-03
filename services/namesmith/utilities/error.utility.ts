@@ -273,21 +273,21 @@ export class DayNotFoundError extends ResourceNotFoundError {
 }
 
 export class ShownDailyQuestNotFoundError extends ResourceNotFoundError {
-	declare relevantData: { timeShown: Date, questID: QuestID }
-	constructor({timeShown, questID}: { timeShown: Date, questID: QuestID }) {
+	declare relevantData: { dayID: DayID, questID: QuestID }
+	constructor({dayID, questID}: { dayID: DayID, questID: QuestID }) {
 		super({
-			message: `Shown daily quest with time shown ${timeShown} and quest ID ${questID} not found.`,
-			relevantData: { timeShown, questID }
+			message: `Shown daily quest with day id ${dayID} and quest ID ${questID} not found.`,
+			relevantData: { dayID, questID }
 		});
 	}
 }
 
 export class ShownWeeklyQuestNotFoundError extends ResourceNotFoundError {
-	declare relevantData: { timeShown: Date, questID: QuestID }
-	constructor({timeShown, questID}: { timeShown: Date, questID: QuestID }) {
+	declare relevantData: { weekID: WeekID, questID: QuestID }
+	constructor({weekID, questID}: { weekID: WeekID, questID: QuestID }) {
 		super({
-			message: `Shown weekly quest with time shown ${timeShown} and quest ID ${questID} not found.`,
-			relevantData: { timeShown, questID }
+			message: `Shown weekly quest with time shown ${weekID} and quest ID ${questID} not found.`,
+			relevantData: { weekID, questID }
 		}); 
 	}
 }
@@ -502,7 +502,14 @@ export class WeekAlreadyExistsError extends ResourceAlreadyExistsError {
 	}
 }
 
-
+export class NoDaysExistError extends NamesmithError {
+	constructor() {
+		super({
+			message: "Cannot find any days. No days exist in the database.",
+			relevantData: {}
+		})
+	}
+}
 
 /**
  * Error thrown when the state of the game is not initialized before it is used.

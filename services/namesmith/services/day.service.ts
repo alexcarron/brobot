@@ -2,6 +2,7 @@ import { DayRepository } from "../repositories/day.repository";
 import { DatabaseQuerier } from "../database/database-querier";
 import { Day, DayID, DayResolvable } from "../types/day.types";
 import { createMockDB } from "../mocks/mock-database";
+import { NoDaysExistError } from "../utilities/error.utility";
 
 /**
  * Provides methods for interacting with days.
@@ -57,5 +58,17 @@ export class DayService {
 	 */
 	getLastAddedDay(): Day | null {
 		return this.dayRepository.getDayWithHighestID();
+	}
+
+	/**
+	 * Returns the last added day, or throws an error if there are no days
+	 * @returns The last added day
+	 */
+	getCurrentDayOrThrow(): Day {
+		const lastAddedDay = this.getLastAddedDay();
+		if (lastAddedDay === null) 
+			throw new NoDaysExistError();
+
+		return lastAddedDay;
 	}
 }

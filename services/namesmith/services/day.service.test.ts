@@ -3,7 +3,7 @@ import { INVALID_DAY_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockDay } from "../mocks/mock-data/mock-days";
 import { Day } from "../types/day.types";
-import { DayNotFoundError } from "../utilities/error.utility";
+import { DayNotFoundError, NoDaysExistError } from "../utilities/error.utility";
 import { DayService } from "./day.service";
 
 describe('DayService', () => {
@@ -84,6 +84,21 @@ describe('DayService', () => {
 				const day = dayService.addNewDay();
 				makeSure(day.timeStarted).is(SOME_TIME);
 			})
+		});
+	});
+
+	describe('getCurrentDayOrThrow()', () => {
+		it('should return the last added day', () => {
+			const SOME_DAY = dayService.addNewDay();
+			const lastAddedDay = dayService.getCurrentDayOrThrow();
+
+			makeSure(lastAddedDay).is(SOME_DAY);
+		});
+
+		it('should throw an error if there are no days', () => {
+			db.deleteAllFromTable('day');
+
+			makeSure(() => dayService.getCurrentDayOrThrow()).throws(NoDaysExistError);
 		});
 	});
 });

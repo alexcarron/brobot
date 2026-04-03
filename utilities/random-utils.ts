@@ -114,10 +114,16 @@ export function getRandomBoolean(probabilityOfTrue: number = 0.5): boolean {
  * @param second - The second value to return.
  * @returns The first value with probability `probabilityOfFirst`, or the second value otherwise.
  */
-export function chooseFirstWithProbability<
+export function chooseWithProbability<
 	FirstType, SecondType
 >(probabilityOfFirst: number, first: FirstType, second: SecondType): FirstType | SecondType {
 	return getRandomBoolean(probabilityOfFirst) ? first : second;
+}
+
+export function chooseRandomly<
+	FirstType, SecondType
+>(first: FirstType, second: SecondType): FirstType | SecondType {
+	return getRandomBoolean() ? first : second;
 }
 
 /**

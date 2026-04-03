@@ -41,6 +41,19 @@ export const toCronExpression = (date: Date): string => {
 }
 
 /**
+ * Adds a specified number of weeks to a given Date object.
+ * @param date - The Date object to modify.
+ * @param weeks - The number of weeks to add to the given Date object.
+ * @returns A new Date object with the specified number of weeks added to the original date.
+ * @example
+ * const fiveWeeksLater = addWeeks(new Date(), 5);
+ */
+export const addWeeks = (date: Date, weeks: number): Date => {
+	const MS_PER_WEEK = 7 * 24 * 60 * 60 * 1000;
+	return new Date(date.getTime() + weeks * MS_PER_WEEK);
+}
+
+/**
  * Adds a specified number of days to a given Date object.
  * @param date - The Date object to modify.
  * @param days - The number of days to add to the given Date object.

@@ -1,7 +1,9 @@
 import { toEnumFromStrings, ValuesOf } from "../../../utilities/enum-utilts";
 import { object, number, string, ExtractDomainType, strings } from '../../../utilities/runtime-types-utils';
 import { WithOptional } from "../../../utilities/types/generic-types";
-import { DBBoolean, DBDate } from "../utilities/db.utility";
+import { DBBoolean } from "../utilities/db.utility";
+import { Day, DayResolvable } from "./day.types";
+import { Week, WeekResolvable } from "./week.types";
 
 export const QuestRecurrences = toEnumFromStrings('daily', 'weekly');
 
@@ -70,7 +72,7 @@ export type Reward =
 
 // Shown Daily Quest Entity
 export const DBShownDailyQuest = object.asTransformableType('MinimalShownDailyQuest', {
-	timeShown: DBDate,
+	dayID: number,
 	questID: number,
 	isHidden: DBBoolean,
 });
@@ -79,13 +81,13 @@ export const asMinimalShownDailyQuest = DBShownDailyQuest.toMinimalShownDailyQue
 export type MinimalShownDailyQuest = ExtractDomainType<typeof DBShownDailyQuest>;
 
 export type ShownDailyQuest = {
-	timeShown: Date,
+	day: Day,
 	quest: Quest,
 	isHidden: boolean,
 };
 
 export type ShownDailyQuestDefinition = {
-	timeShown: Date;
+	day: DayResolvable;
 	quest: QuestResolvable;
 	isHidden?: boolean;
 }
@@ -93,7 +95,7 @@ export type ShownDailyQuestDefinition = {
 
 // Shown Weekly Quest Entity
 export const DBShownWeeklyQuest = object.asTransformableType('MinimalShownWeeklyQuest', {
-	timeShown: DBDate,
+	weekID: number,
 	questID: number,
 });
 export const toDBShownWeeklyQuest = DBShownWeeklyQuest.fromMinimalShownWeeklyQuest;
@@ -101,11 +103,11 @@ export const asMinimalShownWeeklyQuest = DBShownWeeklyQuest.toMinimalShownWeekly
 export type MinimalShownWeeklyQuest = ExtractDomainType<typeof DBShownWeeklyQuest>;
 
 export type ShownWeeklyQuest = {
-	timeShown: Date,
+	week: Week,
 	quest: Quest,
 };
 
 export type ShownWeeklyQuestDefinition = {
-	timeShown: Date;
+	week: WeekResolvable,
 	quest: QuestResolvable;
 }

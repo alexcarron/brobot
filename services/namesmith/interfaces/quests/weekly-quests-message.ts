@@ -11,20 +11,20 @@ import { toQuestButton } from "./complete-quest-button";
  * Sends a message to the quests channel containing the daily quests.
  * @returns A promise that resolves when the message has been sent.
  */
-export async function sendWeeklyQuestsMessages(): Promise<void> {
+export async function sendShownWeeklyQuestsMessages(): Promise<void> {
 	const {questService} = getNamesmithServices();
-	const weeklyQuests = questService.getCurrentWeeklyQuests();
+	const shownWeeklyQuests = questService.getCurrentShownWeeklyQuests();
 	
-	const weeklyQuestsChannel = await fetchNamesmithChannel(ids.namesmith.channels.WEEKLY_QUESTS);
+	const shownWeeklyQuestsChannel = await fetchNamesmithChannel(ids.namesmith.channels.WEEKLY_QUESTS);
 
-	await setNewMessageInChannel(weeklyQuestsChannel,
+	await setNewMessageInChannel(shownWeeklyQuestsChannel,
 		'# Weekly Quests',
 		`<@&${ids.namesmith.roles.smithedName}> <@&${ids.namesmith.roles.noName}>`,
 		'Every week, 3-4 weekly quests are shown here for you to complete. These quests take longer and require more effort than daily quests, but they grant higher rewards. Do what the quest asks and click the "Complete Quest" button to claim your reward!',
 	);
 
-	for (const quest of weeklyQuests) {
-		await sendWeeklyQuestMessage(quest);
+	for (const quest of shownWeeklyQuests) {
+		await sendShownWeeklyQuestMessage(quest);
 	}
 }
 
@@ -32,27 +32,27 @@ export async function sendWeeklyQuestsMessages(): Promise<void> {
  * Regenerates the message that was sent to the quests channel containing the details of the given daily quests.
  * @returns A promise that resolves when the message has been regenerated.
  */
-export async function regenerateWeeklyQuestsMessages() {
+export async function regenerateShownWeeklyQuestsMessages() {
 	const {questService} = getNamesmithServices();
-	const dailyQuests = questService.getCurrentWeeklyQuests();
-	const weeklyQuestRegenerations = [];
-	for (const quest of dailyQuests) {
-		weeklyQuestRegenerations.push(logSetup(`[WEEKLY QUEST] ${quest.name}`, regenerateWeeklyQuestMessage(quest)));
+	const shownDailyQuests = questService.getCurrentShownWeeklyQuests();
+	const shownWeeklyQuestRegenerations = [];
+	for (const quest of shownDailyQuests) {
+		shownWeeklyQuestRegenerations.push(logSetup(`[WEEKLY QUEST] ${quest.name}`, regenerateShownWeeklyQuestMessage(quest)));
 	}
 
-	await Promise.all(weeklyQuestRegenerations);
+	await Promise.all(shownWeeklyQuestRegenerations);
 }
 
-export async function sendWeeklyQuestMessage(quest: Quest): Promise<void> {
+export async function sendShownWeeklyQuestMessage(quest: Quest): Promise<void> {
 	const message = toQuestButton(quest);
-	const weeklyQuestsChannel = await fetchNamesmithChannel(ids.namesmith.channels.WEEKLY_QUESTS);
-	await message.sendIn(weeklyQuestsChannel);
+	const shownWeeklyQuestsChannel = await fetchNamesmithChannel(ids.namesmith.channels.WEEKLY_QUESTS);
+	await message.sendIn(shownWeeklyQuestsChannel);
 }
 
-export async function regenerateWeeklyQuestMessage(quest: Quest) {
+export async function regenerateShownWeeklyQuestMessage(quest: Quest) {
 	const message = toQuestButton(quest);
-	const weeklyQuestsChannel = await fetchNamesmithChannel(ids.namesmith.channels.WEEKLY_QUESTS);
+	const shownWeeklyQuestsChannel = await fetchNamesmithChannel(ids.namesmith.channels.WEEKLY_QUESTS);
 	await ignoreError(
-		message.regenerate({channel: weeklyQuestsChannel})
+		message.regenerate({channel: shownWeeklyQuestsChannel})
 	);
 }

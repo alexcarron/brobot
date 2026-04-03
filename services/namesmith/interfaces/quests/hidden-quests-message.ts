@@ -14,7 +14,7 @@ import { getNamesmithServices } from "../../services/get-namesmith-services";
  */
 export async function sendHiddenQuestsMessages(): Promise<void> {
 	const {questService} = getNamesmithServices();
-	const hiddenQuests = questService.getHiddenDailyQuestsShownToday();
+	const hiddenQuests = questService.getHiddenShownDailyQuestsToday();
 
 	const hiddenChannel = await fetchNamesmithChannel(ids.namesmith.channels.HIDDEN_QUESTS);
 	await closeChannel(hiddenChannel);
@@ -31,7 +31,7 @@ export async function sendHiddenQuestsMessages(): Promise<void> {
 
 export async function regenerateHiddenQuestsMessages() {
 	const {questService} = getNamesmithServices();
-	const hiddenQuests = questService.getHiddenDailyQuestsShownToday();
+	const hiddenQuests = questService.getHiddenShownDailyQuestsToday();
 	for (const quest of hiddenQuests) {
 		await regenerateHiddenQuestMessage(quest);
 	}

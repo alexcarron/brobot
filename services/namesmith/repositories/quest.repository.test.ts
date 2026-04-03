@@ -1,11 +1,15 @@
 import { toPropertyValues } from "../../../utilities/data-structure-utils";
-import { addDays, addHours } from "../../../utilities/date-time-utils";
+import { addDays, addWeeks } from "../../../utilities/date-time-utils";
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { Quests } from "../constants/quests.constants";
 import { INVALID_QUEST_ID, INVALID_QUEST_NAME } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
+import { addMockDay } from "../mocks/mock-data/mock-days";
 import { addMockQuest } from "../mocks/mock-data/mock-quests";
+import { addMockWeek } from "../mocks/mock-data/mock-weeks";
+import { Day } from "../types/day.types";
 import { Quest, QuestRecurrences } from "../types/quest.types";
+import { Week } from "../types/week.types";
 import { QuestNotFoundError, ShownDailyQuestNotFoundError, ShownWeeklyQuestNotFoundError } from "../utilities/error.utility";
 import { QuestRepository } from "./quest.repository";
 
@@ -15,10 +19,15 @@ describe('QuestRepository', () => {
 
 	let SOME_DAILY_QUEST: Quest;
 	let SOME_WEEKLY_QUEST: Quest;
+	let SOME_DAY: Day;
+	let SOME_WEEK: Week;
 
 	beforeEach(() => {
 		questRepository = QuestRepository.asMock();
 		db = questRepository.db;
+
+		SOME_DAY = addMockDay(db);
+		SOME_WEEK = addMockWeek(db);
 
 		SOME_DAILY_QUEST = addMockQuest(db, {
 			name: 'Some Daily Quest',
@@ -287,28 +296,26 @@ describe('QuestRepository', () => {
 	});
 
 	describe('addShownDailyQuest()', () => {
-		const TIME_SHOWN = new Date('2023-01-01');
-
 		it('adds a new shown daily quest to the database.', () => {
 			const quest = questRepository.addShownDailyQuest({
-				timeShown: TIME_SHOWN,
+				day: SOME_DAY.id,
 				quest: SOME_DAILY_QUEST.id,
 			});
 
 			makeSure(quest).is({
-				timeShown: TIME_SHOWN,
+				day: SOME_DAY,
 				quest: SOME_DAILY_QUEST,
 				isHidden: false,
 			});
 
-			const resolvedQuest = questRepository.getShownDailyQuestOrThrow({timeShown: TIME_SHOWN, questID: SOME_DAILY_QUEST.id});
+			const resolvedQuest = questRepository.getShownDailyQuestOrThrow({dayID: SOME_DAY.id, questID: SOME_DAILY_QUEST.id});
 			makeSure(resolvedQuest).is(quest);
 		});
 
 		it('throws a QuestNotFoundError if no quest with the given ID exists.', () => {
 			makeSure(() =>
 				questRepository.addShownDailyQuest({
-					timeShown: TIME_SHOWN,
+					day: SOME_DAY.id,
 					quest: INVALID_QUEST_ID,
 				})
 			).throws(QuestNotFoundError);
@@ -316,27 +323,25 @@ describe('QuestRepository', () => {
 	});
 
 	describe('addShownWeeklyQuest()', () => {
-		const TIME_SHOWN = new Date('2023-01-01');
-
 		it('adds a new shown weekly quest to the database.', () => {
 			const quest = questRepository.addShownWeeklyQuest({
-				timeShown: TIME_SHOWN,
+				week: SOME_WEEK.id,
 				quest: SOME_WEEKLY_QUEST.id,
 			});
 
 			makeSure(quest).is({
-				timeShown: TIME_SHOWN,
+				week: SOME_WEEK,
 				quest: SOME_WEEKLY_QUEST,
 			});
 
-			const resolvedQuest = questRepository.getShownWeeklyQuestOrThrow({timeShown: TIME_SHOWN, questID: SOME_WEEKLY_QUEST.id});
+			const resolvedQuest = questRepository.getShownWeeklyQuestOrThrow({weekID: SOME_WEEK.id, questID: SOME_WEEKLY_QUEST.id});
 			makeSure(resolvedQuest).is(quest);
 		});
 		
 		it('throws a QuestNotFoundError if no quest with the given ID exists.', () => {
 			makeSure(() =>
 				questRepository.addShownWeeklyQuest({
-					timeShown: TIME_SHOWN,
+					week: SOME_WEEK.id,
 					quest: INVALID_QUEST_ID,
 				})
 			).throws(QuestNotFoundError);
@@ -346,17 +351,17 @@ describe('QuestRepository', () => {
 	describe('getShownDailyQuestOrThrow()', () => {
 		it('returns the shown daily quest with the given date and quest id', () => {
 			const newShownDailyQuest = questRepository.addShownDailyQuest({
-				timeShown: new Date('2023-01-01'),
+				day: SOME_DAY.id,
 				quest: SOME_DAILY_QUEST.id,
 			});
 
-			const shownDailyQuest = questRepository.getShownDailyQuestOrThrow({timeShown: new Date('2023-01-01'), questID: SOME_DAILY_QUEST.id});
+			const shownDailyQuest = questRepository.getShownDailyQuestOrThrow({dayID: SOME_DAY.id, questID: SOME_DAILY_QUEST.id});
 			makeSure(shownDailyQuest).is(newShownDailyQuest);
 		});
 
 		it('throws a ShownDailyQuestNotFoundError if no shown daily quest with the given date and quest id exists', () => {
 			makeSure(() =>
-				questRepository.getShownDailyQuestOrThrow({timeShown: new Date('2023-01-01'), questID: INVALID_QUEST_ID})
+				questRepository.getShownDailyQuestOrThrow({dayID: SOME_DAY.id, questID: INVALID_QUEST_ID})
 			).throws(ShownDailyQuestNotFoundError);
 		});
 	});
@@ -364,42 +369,43 @@ describe('QuestRepository', () => {
 	describe('getShownWeeklyQuestOrThrow()', () => {
 		it('returns the shown weekly quest with the given date and quest id', () => {
 			const newShownWeeklyQuest = questRepository.addShownWeeklyQuest({
-				timeShown: new Date('2023-01-01'),
+				week: SOME_WEEK.id,
 				quest: SOME_WEEKLY_QUEST.id,
 			});
 
-			const shownWeeklyQuest = questRepository.getShownWeeklyQuestOrThrow({timeShown: new Date('2023-01-01'), questID: SOME_WEEKLY_QUEST.id});
+			const shownWeeklyQuest = questRepository.getShownWeeklyQuestOrThrow({weekID: SOME_WEEK.id, questID: SOME_WEEKLY_QUEST.id});
 			makeSure(shownWeeklyQuest).is(newShownWeeklyQuest);
 		});
 
 		it('throws a ShownWeeklyQuestNotFoundError if no shown weekly quest with the given date and quest id exists', () => {
 			makeSure(() =>
-				questRepository.getShownWeeklyQuestOrThrow({timeShown: new Date('2023-01-01'), questID: INVALID_QUEST_ID})
+				questRepository.getShownWeeklyQuestOrThrow({weekID: SOME_WEEK.id, questID: INVALID_QUEST_ID})
 			).throws(ShownWeeklyQuestNotFoundError);
 		});
 	});
 
 	describe('getShownDailyQuestDuring()', () => {
-		const SOME_DATE = new Date('2023-01-01');
 		it('returns all shown daily quests', () => {
-			let shownDailyQuests = questRepository.getShownDailyQuestDuring(SOME_DATE);
+			let shownDailyQuests = questRepository.getShownDailyQuestsDuringDay(SOME_DAY.id);
 			makeSure(shownDailyQuests).isEmpty();
 
 			questRepository.addShownDailyQuest({
-				timeShown: SOME_DATE,
+				day: SOME_DAY.id,
 				quest: SOME_DAILY_QUEST.id,
 			});
 
-			shownDailyQuests = questRepository.getShownDailyQuestDuring(SOME_DATE);
+			shownDailyQuests = questRepository.getShownDailyQuestsDuringDay(SOME_DAY.id);
 			makeSure(shownDailyQuests).is([{
-				timeShown: SOME_DATE,
+				day: SOME_DAY,
 				quest: SOME_DAILY_QUEST,
 				isHidden: false,
 			}]);
 		});
 
 		it('returns only shown daily quests within given time frame', () => {
-			const SOME_YESTERDAY = addDays(SOME_DATE, -1);
+			const SOME_DAY_YESTERDAY = addMockDay(db, {
+				timeStarted: addDays(SOME_DAY.timeStarted, -1),
+			})
 			const SOME_QUESTS = [
 				SOME_DAILY_QUEST,
 				addMockQuest(db),
@@ -408,48 +414,48 @@ describe('QuestRepository', () => {
 			];
 
 			questRepository.addShownDailyQuest({
-				timeShown: SOME_YESTERDAY,
+				day: SOME_DAY_YESTERDAY,
 				quest: SOME_QUESTS[0].id,
 			});
 
 			questRepository.addShownDailyQuest({
-				timeShown: SOME_YESTERDAY,
+				day: SOME_DAY_YESTERDAY,
 				quest: SOME_QUESTS[1].id,
 			});
 
 			questRepository.addShownDailyQuest({
-				timeShown: SOME_DATE,
+				day: SOME_DAY,
 				quest: SOME_QUESTS[2].id,
 			});
 
 			questRepository.addShownDailyQuest({
-				timeShown: SOME_DATE,
+				day: SOME_DAY,
 				quest: SOME_QUESTS[3].id,
 			});
 
-			let shownDailyQuests = questRepository.getShownDailyQuestDuring(addHours(SOME_DATE, -1));
+			let shownDailyQuests = questRepository.getShownDailyQuestsDuringDay(SOME_DAY_YESTERDAY.id);
 			makeSure(shownDailyQuests).containsOnly(
 				{
-					timeShown: SOME_YESTERDAY,
+					day: SOME_DAY_YESTERDAY,
 					quest: SOME_QUESTS[0],
 					isHidden: false,
 				},
 				{
-					timeShown: SOME_YESTERDAY,
+					day: SOME_DAY_YESTERDAY,
 					quest: SOME_QUESTS[1],
 					isHidden: false,
 				},
 			);
 
-			shownDailyQuests = questRepository.getShownDailyQuestDuring(addHours(SOME_DATE, 1));
+			shownDailyQuests = questRepository.getShownDailyQuestsDuringDay(SOME_DAY.id);
 			makeSure(shownDailyQuests).containsOnly(
 				{
-					timeShown: SOME_DATE,
+					day: SOME_DAY,
 					quest: SOME_QUESTS[2],
 					isHidden: false,
 				},
 				{
-					timeShown: SOME_DATE,
+					day: SOME_DAY,
 					quest: SOME_QUESTS[3],
 					isHidden: false,
 				},
@@ -458,26 +464,26 @@ describe('QuestRepository', () => {
 	});
 
 	describe('getShownWeeklyQuestDuring()', () => {
-		const SOME_DATE = new Date('2023-01-01');
-
 		it('returns all shown weekly quests', () => {
-			let shownWeeklyQuests = questRepository.getShownWeeklyQuestDuring(SOME_DATE);
+			let shownWeeklyQuests = questRepository.getShownWeeklyQuestDuring(SOME_WEEK.id);
 			makeSure(shownWeeklyQuests).isEmpty();
 
 			questRepository.addShownWeeklyQuest({
-				timeShown: SOME_DATE,
+				week: SOME_WEEK.id,
 				quest: SOME_WEEKLY_QUEST.id,
 			});
 
-			shownWeeklyQuests = questRepository.getShownWeeklyQuestDuring(SOME_DATE);
+			shownWeeklyQuests = questRepository.getShownWeeklyQuestDuring(SOME_WEEK.id);
 			makeSure(shownWeeklyQuests).is([{
-				timeShown: SOME_DATE,
+				week: SOME_WEEK,
 				quest: SOME_WEEKLY_QUEST,
 			}]);
 		});
 
 		it('returns only shown weekly quests within given time frame', () => {
-			const SOME_LAST_WEEK = addDays(SOME_DATE, -7);
+			const SOME_WEEK_LAST_WEEK = addMockWeek(db, {
+				timeStarted: addWeeks(SOME_WEEK.timeStarted, -1),
+			})
 			const SOME_QUESTS = [
 				SOME_WEEKLY_QUEST,
 				addMockQuest(db, {recurrence: QuestRecurrences.WEEKLY}),
@@ -486,65 +492,65 @@ describe('QuestRepository', () => {
 			];
 
 			questRepository.addShownWeeklyQuest({
-				timeShown: SOME_LAST_WEEK,
+				week: SOME_WEEK_LAST_WEEK,
 				quest: SOME_QUESTS[0].id,
 			});
 
 			questRepository.addShownWeeklyQuest({
-				timeShown: SOME_LAST_WEEK,
+				week: SOME_WEEK_LAST_WEEK,
 				quest: SOME_QUESTS[1].id,
 			});
 
 			questRepository.addShownWeeklyQuest({
-				timeShown: SOME_DATE,
+				week: SOME_WEEK,
 				quest: SOME_QUESTS[2].id,
 			});
 
 			questRepository.addShownWeeklyQuest({
-				timeShown: SOME_DATE,
+				week: SOME_WEEK,
 				quest: SOME_QUESTS[3].id,
 			});
 
-			let shownWeeklyQuests = questRepository.getShownWeeklyQuestDuring(addHours(SOME_DATE, -1));
-			makeSure(shownWeeklyQuests).haveProperty('timeShown', SOME_LAST_WEEK);
+			let shownWeeklyQuests = questRepository.getShownWeeklyQuestDuring(SOME_WEEK_LAST_WEEK.id);
+			makeSure(shownWeeklyQuests).haveProperty('week', SOME_WEEK_LAST_WEEK);
 
-			shownWeeklyQuests = questRepository.getShownWeeklyQuestDuring(addHours(SOME_DATE, 1));
-			makeSure(shownWeeklyQuests).haveProperty('timeShown', SOME_DATE);
+			shownWeeklyQuests = questRepository.getShownWeeklyQuestDuring(SOME_WEEK.id);
+			makeSure(shownWeeklyQuests).haveProperty('week', SOME_WEEK);
 		});
 	});
 
 	describe('getNotShownDailyQuestIDs()', () => {
 		it('returns all quest IDs that have not been shown daily', () => {
-			let dailyQuestIDsNotShown = questRepository.getNotShownDailyQuestIDs();
-			const dailyQuests = Object.values(Quests).filter(quest => quest.recurrence === QuestRecurrences.DAILY);
-			makeSure(dailyQuestIDsNotShown).containsOnly(
-				...toPropertyValues(dailyQuests, 'id'),
+			let shownDailyQuestIDsNotShown = questRepository.getNotShownDailyQuestIDs();
+			const shownDailyQuests = Object.values(Quests).filter(quest => quest.recurrence === QuestRecurrences.DAILY);
+			makeSure(shownDailyQuestIDsNotShown).containsOnly(
+				...toPropertyValues(shownDailyQuests, 'id'),
 				SOME_DAILY_QUEST.id,
 			);
 
 			questRepository.setWasShown(SOME_DAILY_QUEST.id, true);
 
-			dailyQuestIDsNotShown = questRepository.getNotShownDailyQuestIDs();
-			makeSure(dailyQuestIDsNotShown).containsOnly(
-				...toPropertyValues(dailyQuests, 'id'),
+			shownDailyQuestIDsNotShown = questRepository.getNotShownDailyQuestIDs();
+			makeSure(shownDailyQuestIDsNotShown).containsOnly(
+				...toPropertyValues(shownDailyQuests, 'id'),
 			);
 		});
 	});
 
 	describe('getNotShownWeeklyQuestIDs()', () => {
 		it('returns all quest IDs that have not been shown weekly', () => {
-			let weeklyQuestIDsNotShown = questRepository.getNotShownWeeklyQuestIDs();
-			const weeklyQuests = Object.values(Quests).filter(quest => quest.recurrence === QuestRecurrences.WEEKLY);
-			makeSure(weeklyQuestIDsNotShown).containsOnly(
-				...toPropertyValues(weeklyQuests, 'id'),
+			let shownWeeklyQuestIDsNotShown = questRepository.getNotShownWeeklyQuestIDs();
+			const shownWeeklyQuests = Object.values(Quests).filter(quest => quest.recurrence === QuestRecurrences.WEEKLY);
+			makeSure(shownWeeklyQuestIDsNotShown).containsOnly(
+				...toPropertyValues(shownWeeklyQuests, 'id'),
 				SOME_WEEKLY_QUEST.id,
 			);
 
 			questRepository.setWasShown(SOME_WEEKLY_QUEST.id, true);
 
-			weeklyQuestIDsNotShown = questRepository.getNotShownWeeklyQuestIDs();
-			makeSure(weeklyQuestIDsNotShown).containsOnly(
-				...toPropertyValues(weeklyQuests, 'id'),
+			shownWeeklyQuestIDsNotShown = questRepository.getNotShownWeeklyQuestIDs();
+			makeSure(shownWeeklyQuestIDsNotShown).containsOnly(
+				...toPropertyValues(shownWeeklyQuests, 'id'),
 			);
 		});
 	});
@@ -552,23 +558,23 @@ describe('QuestRepository', () => {
 	describe('getCurrentlyShownDailyQuestIDs()', () => {
 		it('returns all daily quest IDs thare have isShown set to true', () => {
 			questRepository.updateQuest({id: SOME_DAILY_QUEST.id, isShown: true});
-			const questIDsBeingShown = questRepository.getCurrentDailyQuestIDs();
+			const questIDsBeingShown = questRepository.getCurrentlyShownDailyQuestIDs();
 			makeSure(questIDsBeingShown).containsOnly(SOME_DAILY_QUEST.id);
 		});
 
 		it('returns quests with isShown set to true but NOT quests being currently shown daily', () => {
 			questRepository.addShownDailyQuest({
-				timeShown: new Date('2023-01-01'),
+				day: SOME_DAY.id,
 				quest: SOME_DAILY_QUEST.id,
 			});
 
-			const questIDsBeingShown = questRepository.getCurrentDailyQuestIDs();
+			const questIDsBeingShown = questRepository.getCurrentlyShownDailyQuestIDs();
 			makeSure(questIDsBeingShown).doesNotContain(SOME_DAILY_QUEST.id);
 		});
 
 		it('does not return weekly quests', () => {
 			questRepository.updateQuest({id: SOME_WEEKLY_QUEST.id, isShown: true});
-			const questIDsBeingShown = questRepository.getCurrentDailyQuestIDs();
+			const questIDsBeingShown = questRepository.getCurrentlyShownDailyQuestIDs();
 			makeSure(questIDsBeingShown).doesNotContain(SOME_WEEKLY_QUEST.id);
 		});
 	});
@@ -576,23 +582,23 @@ describe('QuestRepository', () => {
 	describe('getCurrentlyShownWeeklyQuestIDs()', () => {
 		it('returns all weekly quest IDs thare have isShown set to true', () => {
 			questRepository.updateQuest({id: SOME_WEEKLY_QUEST.id, isShown: true});
-			const questIDsBeingShown = questRepository.getCurrentWeeklyQuestIDs();
+			const questIDsBeingShown = questRepository.getCurrentlyShownWeeklyQuestIDs();
 			makeSure(questIDsBeingShown).containsOnly(SOME_WEEKLY_QUEST.id);
 		});
 
 		it('returns quests with isShown set to true but NOT quests being currently shown weekly', () => {
 			questRepository.addShownWeeklyQuest({
-				timeShown: new Date('2023-01-01'),
+				week: SOME_WEEK.id,
 				quest: SOME_WEEKLY_QUEST.id,
 			});
 
-			const questIDsBeingShown = questRepository.getCurrentWeeklyQuestIDs();
+			const questIDsBeingShown = questRepository.getCurrentlyShownWeeklyQuestIDs();
 			makeSure(questIDsBeingShown).doesNotContain(SOME_WEEKLY_QUEST.id);
 		});
 
 		it('does not return weekly quests', () => {
 			questRepository.updateQuest({id: SOME_WEEKLY_QUEST.id, isShown: true});
-			const questIDsBeingShown = questRepository.getCurrentDailyQuestIDs();
+			const questIDsBeingShown = questRepository.getCurrentlyShownDailyQuestIDs();
 			makeSure(questIDsBeingShown).doesNotContain(SOME_WEEKLY_QUEST.id);
 		});
 	});
@@ -642,7 +648,7 @@ describe('QuestRepository', () => {
 			questRepository.setWasShown(anotherQuest.id, true);
 			questRepository.setIsShown(anotherQuest.id, true);
 
-			questRepository.resetWasShownForUnshownDailyQuests();
+			questRepository.resetWasShownForNonShownDailyQuests();
 			const quest1 = questRepository.resolveQuest(SOME_DAILY_QUEST.id);
 			const quest2 = questRepository.resolveQuest(anotherQuest.id);
 			makeSure(quest1).hasProperties({
@@ -658,7 +664,7 @@ describe('QuestRepository', () => {
 		it('ignores weekly quests, keeping their original wasShown value', () => {
 			questRepository.setWasShown(SOME_WEEKLY_QUEST.id, true);
 			questRepository.setIsShown(SOME_WEEKLY_QUEST.id, false);
-			questRepository.resetWasShownForUnshownDailyQuests();
+			questRepository.resetWasShownForNonShownDailyQuests();
 			const quest = questRepository.resolveQuest(SOME_WEEKLY_QUEST.id);
 			makeSure(quest).hasProperties({
 				wasShown: true,
@@ -676,7 +682,7 @@ describe('QuestRepository', () => {
 			questRepository.setWasShown(anotherQuest.id, true);
 			questRepository.setIsShown(anotherQuest.id, true);
 
-			questRepository.resetWasShownForUnshownWeeklyQuests();
+			questRepository.resetWasShownForShownWeeklyQuests();
 			const quest1 = questRepository.resolveQuest(SOME_WEEKLY_QUEST.id);
 			const quest2 = questRepository.resolveQuest(anotherQuest.id);
 			makeSure(quest1).hasProperties({
@@ -690,10 +696,10 @@ describe('QuestRepository', () => {
 		});
 	});
 
-	describe('getWeeklyQuests()', () => {
+	describe('getShownWeeklyQuests()', () => {
 		it('returns only weekly quests', () => {
-			const weeklyQuests = questRepository.getWeeklyQuests();
-			makeSure(weeklyQuests).haveProperty('recurrence', QuestRecurrences.WEEKLY);
+			const shownWeeklyQuests = questRepository.getQuestsRecurringWeekly();
+			makeSure(shownWeeklyQuests).haveProperty('recurrence', QuestRecurrences.WEEKLY);
 		});
 	});
 });

@@ -3,6 +3,7 @@ import { ForeignKeyConstraintError, MultiStatementQueryError, QueryUsageError } 
 import { AnyFunction } from "../../../utilities/types/generic-types";
 import { attempt } from '../../../utilities/error-utils';
 import { isArray, isDefined, isObject } from "../../../utilities/types/type-guards";
+import { createTableString } from "../../../utilities/string-table-utils";
 
 /**
  * A union type representing a set of possible values that can be used as the rest parameter of a DatabaseQuerier query function.
@@ -774,5 +775,18 @@ export class DatabaseQuerier {
 			);
 
 			return { headers, rows };
+	}
+
+	toTableString(
+		tableName: string,
+		options: {
+			columns?: string[];
+			where?: Record<string, unknown>;
+			orderBy?: string;
+			limit?: number;
+		} = {}
+	): string {
+		const { headers, rows } = this.toTableData(tableName, options);
+		return createTableString(headers, rows);
 	}
 }

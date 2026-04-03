@@ -131,19 +131,19 @@ DELETE FROM sqlite_sequence WHERE name = 'day';
 
 -- For keeping track of previously shown daily quest for history
 CREATE TABLE IF NOT EXISTS shownDailyQuest (
-	timeShown NUMBER NOT NULL,
+	dayID INTEGER NOT NULL REFERENCES day(id),
 	questID INTEGER NOT NULL REFERENCES quest(id)
 		ON DELETE CASCADE ON UPDATE CASCADE,
 	isHidden BOOLEAN NOT NULL DEFAULT 0, -- Whether or not the quest is a hidden one revealed when all daily quests are complete
-	PRIMARY KEY (timeShown, questID)
+	PRIMARY KEY (dayID, questID)
 );
 
 -- For keeping track of previously shown weekly quest for history
 CREATE TABLE IF NOT EXISTS shownWeeklyQuest (
-	timeShown NUMBER NOT NULL,
+	weekID INTEGER NOT NULL REFERENCES week(id),
 	questID INTEGER NOT NULL REFERENCES quest(id)
 		ON DELETE CASCADE ON UPDATE CASCADE,
-	PRIMARY KEY (timeShown, questID)
+	PRIMARY KEY (weekID, questID)
 );
 
 CREATE TABLE IF NOT EXISTS activityLog (

@@ -1,5 +1,5 @@
 import { getShuffledArray } from "../../../utilities/data-structure-utils";
-import { chooseFirstWithProbability } from "../../../utilities/random-utils";
+import { chooseRandomly, chooseWithProbability, getRandomElement } from "../../../utilities/random-utils";
 import { isObject } from "../../../utilities/types/type-guards";
 import { HIDDEN_QUEST_TOKEN_MULTIPLIER } from "../constants/quests.constants";
 import { DatabaseQuerier } from "../database/database-querier";
@@ -11,6 +11,7 @@ import { Quest, QuestID, QuestResolvable, Reward, RewardTypes } from "../types/q
 import { Week } from "../types/week.types";
 import { createReward } from "../utilities/quest.utility";
 import { ActivityLogService } from "./activity-log.service";
+import { DayService } from "./day.service";
 import { PlayerService } from "./player.service";
 
 /**
@@ -21,6 +22,7 @@ export class QuestService {
 		public questRepository: QuestRepository,
 		public activityLogService: ActivityLogService,
 		public playerService: PlayerService,
+		public dayService: DayService,
 	) {}
 
 	static fromDB(db: DatabaseQuerier) {
@@ -28,6 +30,7 @@ export class QuestService {
 			QuestRepository.fromDB(db),
 			ActivityLogService.fromDB(db),
 			PlayerService.fromDB(db),
+			DayService.fromDB(db),
 		);
 	}
 
@@ -137,70 +140,101 @@ export class QuestService {
 	 * @param today - The day these daily quests are assigned for.
 	 * @returns The daily quests for today including the hidden quests.
 	 */
-	assignNewDailyQuests(today: Day): Quest[] {
-		const startOfDay = today.timeStarted;
-		
-		// Determine total number of quests for today: 50% chance of 3 or 4
-		const newDailyQuestIDs: number[] = [];
+	assignNewShownDailyQuests(today: Day): Quest[] {
+		const todaysDailyQuestIDs: number[] = [];
 		const questIDsNotShown = this.questRepository.getNotShownDailyQuestIDs();
 		let availableQuestIDs = [...questIDsNotShown];
 
-		// Clear current shown flags
-		const currentDailyQuestIDs = this.questRepository.getCurrentDailyQuestIDs();
-		for (const questID of currentDailyQuestIDs) {
-			this.questRepository.setIsShown(questID, false);
-		}
-
-		const totalQuests = Math.random() < 0.5 ? 3 : 4;
-		let hiddenCount = 0;
-		if (totalQuests === 3) {
-			hiddenCount = 1; // 3 total -> 1 hidden, 2 shown
+		// Remove previously shown daily quests
+		this.questRepository.resetIsShownForDailyQuests();
+		
+		// There are 3-4 daily quests, 1 hidden if 3 total, 1-2 hidden if 4 total
+		const numDailyQuests = chooseRandomly(3, 4);
+		let numHiddenQuests = 0;
+		if (numDailyQuests === 3) {
+			numHiddenQuests = 1;
 		}
 		else {
-			// 4 total -> 50% chance of 1 or 2 hidden
-			hiddenCount = Math.random() < 0.5 ? 1 : 2;
+			numHiddenQuests = chooseRandomly(1, 2);
 		}
 
-		const totalToPick = totalQuests;
-
-		// Pick totalQuests distinct quests from available pool, resetting wasShown pool if needed
-		for (let i = 0; i < totalToPick; i++) {
+		for (let i = 0; i < numDailyQuests; i++) {
+			// If all quests have been shown, reset all wasShown flags
 			if (availableQuestIDs.length === 0) {
-				this.questRepository.resetWasShownForUnshownDailyQuests();
-				const questIDsNotShownAgain = this.questRepository.getNotShownDailyQuestIDs();
-				availableQuestIDs = [...questIDsNotShownAgain];
+				this.questRepository.resetWasShownForNonShownDailyQuests();
+				availableQuestIDs = [...this.questRepository.getNotShownDailyQuestIDs()];
 			}
 
-			const questID = availableQuestIDs[Math.floor(Math.random() * availableQuestIDs.length)];
+			const randomQuestID = getRandomElement(availableQuestIDs);
 
-			newDailyQuestIDs.push(questID);
-			this.questRepository.setWasShown(questID, true);
-			this.questRepository.setIsShown(questID, true);
-			availableQuestIDs = availableQuestIDs.filter(id => id !== questID);
+			todaysDailyQuestIDs.push(randomQuestID);
+			this.questRepository.setWasShown(randomQuestID, true);
+			this.questRepository.setIsShown(randomQuestID, true);
+			availableQuestIDs = availableQuestIDs.filter(id => id !== randomQuestID);
 		}
 
 		// From the picked quests, randomly choose hiddenCount to be hidden
-		const shuffled = [...newDailyQuestIDs].sort(() => Math.random() - 0.5);
-		const hiddenSet = new Set(shuffled.slice(0, hiddenCount));
+		const shuffledDailyQuestIDs = getShuffledArray(todaysDailyQuestIDs);
+		const hiddenQuestIDs = new Set(shuffledDailyQuestIDs.slice(0, numHiddenQuests));
 
-		for (const questID of newDailyQuestIDs) {
-			const isHidden = hiddenSet.has(questID);
+		for (const questID of todaysDailyQuestIDs) {
+			const isHidden = hiddenQuestIDs.has(questID);
 			this.questRepository.addShownDailyQuest({
-				timeShown: startOfDay,
+				day: today,
 				quest: questID,
 				isHidden,
 			});
 		}
 
-		return newDailyQuestIDs.map(questID => this.resolveQuest(questID));
+		return todaysDailyQuestIDs.map(questID => this.resolveQuest(questID));
+	}
+
+	/**
+	 * Decides the new weekly quests for the week and assigns them.
+	 * There's a 2/3 chance of 3 weekly quests and a 1/3 chance of 4 weekly quests.
+	 * @param thisWeek - The week for which to assign new weekly quests.
+	 * @returns  The weekly quests for the week.
+	 */
+	assignNewShownWeeklyQuests(thisWeek: Week): Quest[] {
+		const newShownWeeklyQuestIDs: number[] = [];
+		const questIDsNotShown = this.questRepository.getNotShownWeeklyQuestIDs();
+		let questIDsCanPickFrom = [...questIDsNotShown];
+
+		// Remove previously shown weekly quests
+		this.questRepository.resetIsShownForWeeklyQuests();
+
+		const numShownWeeklyQuests = chooseWithProbability(2/3, 3, 4); // 2/3 chance of 3, 1/3 chance of 4
+
+		// Pick numShownWeeklyQuests distinct quests from available pool, resetting wasShown pool if needed
+		for (let i = 0; i < numShownWeeklyQuests; i++) {
+			if (questIDsCanPickFrom.length === 0) {
+				this.questRepository.resetWasShownForShownWeeklyQuests();
+				const questIDsNotShown = this.questRepository.getNotShownWeeklyQuestIDs();
+				questIDsCanPickFrom = [...questIDsNotShown];
+			}
+
+			const randomQuestID = getRandomElement(questIDsCanPickFrom);
+			newShownWeeklyQuestIDs.push(randomQuestID);
+			this.questRepository.setWasShown(randomQuestID, true);
+			this.questRepository.setIsShown(randomQuestID, true);
+			this.questRepository.addShownWeeklyQuest({
+				week: thisWeek,
+				quest: randomQuestID,
+			});
+			questIDsCanPickFrom = questIDsCanPickFrom.filter(id => id !== randomQuestID);
+		}
+
+		return getShuffledArray(newShownWeeklyQuestIDs).map(questID => 
+			this.resolveQuest(questID)
+		);
 	}
 
 	/**
 	 * Returns an array of all the daily quests that are currently being shown to the players.
 	 * @returns An array of all the daily quests that are currently being shown to the players.
 	 */
-	getCurrentDailyQuests(): Quest[] {
-		return this.questRepository.getCurrentDailyQuestIDs()
+	getCurrentShownDailyQuests(): Quest[] {
+		return this.questRepository.getCurrentlyShownDailyQuestIDs()
 			.map(questID => this.resolveQuest(questID));
 	}
 
@@ -208,9 +242,10 @@ export class QuestService {
 	 * Returns an array of all the non-hidden daily quests that are currently being shown to the players.
 	 * @returns An array of all the non-hidden daily quests that are currently being shown to the players.
 	 */
-	getDailyQuestsShownToday(): Quest[] {
-		const shownToday = this.questRepository.getShownDailyQuestDuring(new Date());
-		const hiddenQuestIDs = shownToday.filter(s => !s.isHidden).map(s => s.quest.id);
+	getTodaysNonHiddenDailyQuests(): Quest[] {
+		const currentDay = this.dayService.getCurrentDayOrThrow();
+		const shownDailyQuestsToday = this.questRepository.getShownDailyQuestsDuringDay(currentDay.id);
+		const hiddenQuestIDs = shownDailyQuestsToday.filter(s => !s.isHidden).map(s => s.quest.id);
 		return hiddenQuestIDs.map(questID => this.resolveQuest(questID));
 	}
 
@@ -218,8 +253,8 @@ export class QuestService {
 	 * Returns an array of all the weekly quests being shown to the players for the week.
 	 * @returns An array of all the weekly quests being shown to the players for the week.
 	 */
-	getCurrentWeeklyQuests(): Quest[] {
-		return this.questRepository.getCurrentWeeklyQuestIDs()
+	getCurrentShownWeeklyQuests(): Quest[] {
+		return this.questRepository.getCurrentlyShownWeeklyQuestIDs()
 			.map(questID => this.resolveQuest(questID));
 	}
 
@@ -227,8 +262,11 @@ export class QuestService {
 	 * Returns an array of all the hidden quests for today.
 	 * @returns An array of all the hidden quests for today.
 	 */
-	getHiddenDailyQuestsShownToday(): Quest[] {
-		const shownToday = this.questRepository.getShownDailyQuestDuring(new Date());
+	getHiddenShownDailyQuestsToday(): Quest[] {
+		const currentDay = this.dayService.getLastAddedDay();
+		if (currentDay === null) return [];
+
+		const shownToday = this.questRepository.getShownDailyQuestsDuringDay(currentDay.id);
 		const hiddenQuestIDs = shownToday.filter(s => s.isHidden).map(s => s.quest.id);
 		return hiddenQuestIDs.map(questID => this.resolveQuest(questID));
 	}
@@ -240,8 +278,11 @@ export class QuestService {
 	 * @throws {QuestNotFoundError} If no quest with the given ID or name exists.
 	 */
 	isHiddenQuest(questResolvable: QuestResolvable): boolean {
+		const currentDay = this.dayService.getLastAddedDay();
+		if (currentDay === null) return false;
+
 		const questID = this.resolveID(questResolvable);
-		const shownToday = this.questRepository.getShownDailyQuestDuring(new Date());
+		const shownToday = this.questRepository.getShownDailyQuestsDuringDay(currentDay.id);
 		return shownToday.some(s => s.isHidden && s.quest.id === questID);
 	}
 
@@ -252,7 +293,10 @@ export class QuestService {
 	 * @returns True if the hidden quest is unlocked, false otherwise.
 	 */
 	isHiddenQuestUnlockedForPlayer(playerResolvable: PlayerResolvable): boolean {
-		const shownToday = this.questRepository.getShownDailyQuestDuring(new Date());
+		const currentDay = this.dayService.getLastAddedDay();
+		if (currentDay === null) return false;
+
+		const shownToday = this.questRepository.getShownDailyQuestsDuringDay(currentDay.id);
 		const nonHidden = shownToday.filter((s) => !s.isHidden).map((s) => s.quest);
 
 		// If there are no visible quests today, nothing to unlock
@@ -269,54 +313,8 @@ export class QuestService {
 		return true;
 	}
 
-	/**
-	 * Decides the new weekly quests for the week and assigns them.
-	 * There's a 2/3 chance of 3 weekly quests and a 1/3 chance of 4 weekly quests.
-	 * @param thisWeek - The week for which to assign new weekly quests.
-	 * @returns  The weekly quests for the week.
-	 */
-	assignNewWeeklyQuests(thisWeek: Week): Quest[] {
-		const startOfWeek = thisWeek.timeStarted;
-		
-		// Remove previously shown weekly quests
-		const currentWeeklyQuestIDs = this.questRepository.getCurrentWeeklyQuestIDs();
-		for (const questID of currentWeeklyQuestIDs) {
-			this.questRepository.setIsShown(questID, false);
-		}
-		
-		const newWeeklyQuestIDs: number[] = [];
-		const questIDsNotShown = this.questRepository.getNotShownWeeklyQuestIDs();
-		let questIDsCanPickFrom = [...questIDsNotShown];
-
-		const numWeeklyQuests = chooseFirstWithProbability(2/3, 3, 4); // 2/3 chance of 3, 1/3 chance of 4
-
-		// Pick numWeeklyQuests distinct quests from available pool, resetting wasShown pool if needed
-		for (let i = 0; i < numWeeklyQuests; i++) {
-			if (questIDsCanPickFrom.length === 0) {
-				this.questRepository.resetWasShownForUnshownWeeklyQuests();
-				const questIDsNotShown = this.questRepository.getNotShownWeeklyQuestIDs();
-				questIDsCanPickFrom = [...questIDsNotShown];
-			}
-
-			const randomIndex = Math.floor(Math.random() * questIDsCanPickFrom.length);
-			const questID = questIDsCanPickFrom[randomIndex];
-			newWeeklyQuestIDs.push(questID);
-			this.questRepository.setWasShown(questID, true);
-			this.questRepository.setIsShown(questID, true);
-			this.questRepository.addShownWeeklyQuest({
-				timeShown: startOfWeek,
-				quest: questID,
-			});
-			questIDsCanPickFrom = questIDsCanPickFrom.filter(id => id !== questID);
-		}
-
-		return getShuffledArray(newWeeklyQuestIDs).map(questID => 
-			this.resolveQuest(questID)
-		);
-	}
-
 	reset(): void {
-		this.questRepository.resetQuestShownFields();
+		this.questRepository.resetShownFieldsForAllQuests();
 		this.questRepository.resetShownDailyQuests();
 	}
 }

@@ -9,14 +9,14 @@ import { regenerateQuestMessage, sendQuestMessage } from "./quest-message";
  * Sends a message to the quests channel containing the daily quests.
  * @returns A promise that resolves when the message has been sent.
  */
-export async function sendDailyQuestsDisplay(): Promise<void> {
+export async function sendShownDailyQuestsDisplay(): Promise<void> {
 	const questChannel = await fetchNamesmithChannel(ids.namesmith.channels.DAILY_QUESTS);
 	await deleteAllMessagesInChannel(questChannel);
-	await sendInitialDailyQuestsMessage(questChannel);
+	await sendInitialShownDailyQuestsMessage(questChannel);
 	await sendQuestMessages();
 }
 
-async function sendInitialDailyQuestsMessage(questChannel: TextChannel) {
+async function sendInitialShownDailyQuestsMessage(questChannel: TextChannel) {
 	await setNewMessageInChannel(questChannel,
 		'# Daily Quests',
 		`<@&${ids.namesmith.roles.smithedName}> <@&${ids.namesmith.roles.noName}>`,
@@ -26,8 +26,8 @@ async function sendInitialDailyQuestsMessage(questChannel: TextChannel) {
 
 async function sendQuestMessages() {
 	const {questService} = getNamesmithServices();
-	const dailyQuests = questService.getCurrentDailyQuests();
-	for (const quest of dailyQuests) {
+	const shownDailyQuests = questService.getTodaysNonHiddenDailyQuests();
+	for (const quest of shownDailyQuests) {
 		await sendQuestMessage(quest);
 	}
 }
@@ -36,10 +36,10 @@ async function sendQuestMessages() {
  * Regenerates the message that was sent to the quests channel containing the details of the given daily quests.
  * @returns A promise that resolves when the message has been regenerated.
  */
-export async function regenerateDailyQuestsDisplay() {
+export async function regenerateShownDailyQuestsDisplay() {
 	const {questService} = getNamesmithServices();
-	const dailyQuests = questService.getDailyQuestsShownToday();
-	for (const quest of dailyQuests) {
+	const shownDailyQuests = questService.getTodaysNonHiddenDailyQuests();
+	for (const quest of shownDailyQuests) {
 		await regenerateQuestMessage(quest);
 	}
 }

@@ -15,6 +15,8 @@ import { toPropertyValues } from '../../../utilities/data-structure-utils';
 import { addDays } from "../../../utilities/date-time-utils";
 import { addMockDay } from "../mocks/mock-data/mock-days";
 import { Day } from "../types/day.types";
+import { Week } from "../types/week.types";
+import { addMockWeek } from "../mocks/mock-data/mock-weeks";
 
 describe('QuestService', () => {
 	let db: DatabaseQuerier;
@@ -200,7 +202,7 @@ describe('QuestService', () => {
 		});
 	});
 
-	describe('assignNewDailyQuests()', () => {
+	describe('assignNewShownDailyQuests()', () => {
 		let SOME_DAY: Day;
 		
 		beforeEach(() => {
@@ -212,8 +214,8 @@ describe('QuestService', () => {
 			const realRandom = Math.random;
 			Math.random = () => 0.6;
 			try {
-				questService.assignNewDailyQuests(SOME_DAY);
-				shownDailyQuests = questService.getDailyQuestsShownToday();
+				questService.assignNewShownDailyQuests(SOME_DAY);
+				shownDailyQuests = questService.getTodaysNonHiddenDailyQuests();
 				makeSure(shownDailyQuests.length).isGreaterThan(0);
 			}
 			finally { Math.random = realRandom }
@@ -226,17 +228,18 @@ describe('QuestService', () => {
 
 		it('Marks new random quests as shown and adds them to shown daily quests if the current date is different', () => {
 			let shownDailyQuests: Quest[];
-			let oldDailyQuests: Quest[];
+			let oldShownDailyQuests: Quest[];
 			const realRandom = Math.random;
 			Math.random = () => 0.6; // deterministic
 			try {
+				questService.assignNewShownDailyQuests(SOME_DAY);
+				oldShownDailyQuests = questService.getTodaysNonHiddenDailyQuests();
+
 				const NEXT_DAY = addMockDay(db, {
-					timeStarted: addDays(SOME_DAY.timeStarted, -1),
+					timeStarted: addDays(SOME_DAY.timeStarted, 1),
 				});
-				questService.assignNewDailyQuests(NEXT_DAY);
-				oldDailyQuests = questService.getDailyQuestsShownToday();
-				questService.assignNewDailyQuests(SOME_DAY);
-				shownDailyQuests = questService.getDailyQuestsShownToday();
+				questService.assignNewShownDailyQuests(NEXT_DAY);
+				shownDailyQuests = questService.getTodaysNonHiddenDailyQuests();
 				makeSure(shownDailyQuests.length).isGreaterThan(0);
 			}
 			finally { Math.random = realRandom }
@@ -245,7 +248,7 @@ describe('QuestService', () => {
 				wasShown: true,
 			});
 			makeSure(toPropertyValues(shownDailyQuests, 'id')).areAllDifferent();
-			makeSure(toPropertyValues(shownDailyQuests, 'id')).doesNotContain(toPropertyValues(oldDailyQuests, 'id'));
+			makeSure(toPropertyValues(shownDailyQuests, 'id')).doesNotContain(toPropertyValues(oldShownDailyQuests, 'id'));
 		});
 
 		it('Assigns already chosen quests when we run out', () => {
@@ -256,27 +259,27 @@ describe('QuestService', () => {
 				quests[index] = addMockQuest(db);
 			}
 
-			let oldDailyQuests: Quest[];
-			let newDailyQuests: Quest[];
+			let oldShownDailyQuests: Quest[];
+			let newShownDailyQuests: Quest[];
 			const realRandom = Math.random;
 			Math.random = () => 0.6; // deterministic
 			try {
 				const NEXT_DAY = addMockDay(db, {
 					timeStarted: addDays(SOME_DAY.timeStarted, -1),
 				});
-				questService.assignNewDailyQuests(NEXT_DAY);
-				oldDailyQuests = questService.getCurrentDailyQuests();
+				questService.assignNewShownDailyQuests(NEXT_DAY);
+				oldShownDailyQuests = questService.getCurrentShownDailyQuests();
 
-				questService.assignNewDailyQuests(SOME_DAY);
-				newDailyQuests = 	questService.getCurrentDailyQuests();
+				questService.assignNewShownDailyQuests(SOME_DAY);
+				newShownDailyQuests = 	questService.getCurrentShownDailyQuests();
 			}
 			finally { Math.random = realRandom }
 
-			makeSure(newDailyQuests.length).isGreaterThan(0);
+			makeSure(newShownDailyQuests.length).isGreaterThan(0);
 			// When we run out of unique quests it's valid for the service to
 			// reuse already-chosen quests; ensure at least one overlap exists.
-			makeSure(toPropertyValues(newDailyQuests, 'id')).hasAnItemWhere(questID =>
-				toPropertyValues(oldDailyQuests, 'id').includes(questID)
+			makeSure(toPropertyValues(newShownDailyQuests, 'id')).hasAnItemWhere(questID =>
+				toPropertyValues(oldShownDailyQuests, 'id').includes(questID)
 			)
 		});
 
@@ -284,18 +287,18 @@ describe('QuestService', () => {
 			const realRandom = Math.random;
 			Math.random = () => 0.6;
 			try {
-				questService.assignNewDailyQuests(SOME_DAY);
+				questService.assignNewShownDailyQuests(SOME_DAY);
 			}
 			finally { Math.random = realRandom }
 
-			const dailyQuests = questService.getDailyQuestsShownToday();
-			makeSure(dailyQuests.length).isGreaterThan(0);
+			const nonHiddenshownDailyQuests = questService.getTodaysNonHiddenDailyQuests();
+			makeSure(nonHiddenshownDailyQuests.length).isGreaterThan(0);
 
-			const shownDailyQuests = questService.questRepository.getShownDailyQuestDuring(SOME_DAY.timeStarted);
+			const shownDailyQuests = questService.questRepository.getShownDailyQuestsDuringDay(SOME_DAY.id);
 
 			const quests = toPropertyValues(shownDailyQuests, 'quest')
 			makeSure(shownDailyQuests).haveProperties({
-				timeShown: SOME_DAY.timeStarted,
+				day: SOME_DAY,
 			});
 			const visibleQuests = quests.filter(q => q.isShown);
 			makeSure(visibleQuests.length).isGreaterThan(0);
@@ -307,12 +310,12 @@ describe('QuestService', () => {
 			const NEXT_DAY = addMockDay(db, {
 				timeStarted: addDays(SOME_DAY.timeStarted, -1),
 			});
-			questService.assignNewDailyQuests(NEXT_DAY);
+			questService.assignNewShownDailyQuests(NEXT_DAY);
 
-			const shownDailyQuestsTomorrow = questService.questRepository.getShownDailyQuestDuring(NEXT_DAY.timeStarted);
+			const shownDailyQuestsTomorrow = questService.questRepository.getShownDailyQuestsDuringDay(NEXT_DAY.id);
 			const questsTomorrow = toPropertyValues(shownDailyQuestsTomorrow, 'quest')
 			makeSure(shownDailyQuestsTomorrow).haveProperties({
-				timeShown: NEXT_DAY.timeStarted,
+				day: NEXT_DAY,
 			});
 			const visibleQuestsTomorrow = questsTomorrow.filter(q => q.isShown);
 			makeSure(visibleQuestsTomorrow.length).isGreaterThan(0);
@@ -332,8 +335,8 @@ describe('QuestService', () => {
 				const day = addMockDay(db, {
 					timeStarted: timeOfDay,
 				})
-				questService.assignNewDailyQuests(day);
-				makeSure(questService.getDailyQuestsShownToday()).haveProperty('recurrence', 'daily');
+				questService.assignNewShownDailyQuests(day);
+				makeSure(questService.getTodaysNonHiddenDailyQuests()).haveProperty('recurrence', 'daily');
 				timeOfDay = addDays(timeOfDay, 1);
 			}
 		});
@@ -346,9 +349,9 @@ describe('QuestService', () => {
 
 			const shownDailyQuestIDs: QuestID[] = [];
 			for (let i = 0; i < 100; i++) {
-				const dailyQuests = questService.assignNewDailyQuests(SOME_DAY);
+				const shownDailyQuests = questService.assignNewShownDailyQuests(SOME_DAY);
 				
-				for (const quest of dailyQuests) {
+				for (const quest of shownDailyQuests) {
 					makeSure(!shownDailyQuestIDs.includes(quest.id));
 					shownDailyQuestIDs.push(quest.id);
 				}
@@ -356,31 +359,31 @@ describe('QuestService', () => {
 		});
 	});
 
-	describe('assignNewWeeklyQuests()', () => {
-		let SOME_DAY: Day;
+	describe('assignNewShownWeeklyQuests()', () => {
+		let SOME_WEEK: Week;
 		
 		beforeEach(() => {
-			SOME_DAY = addMockDay(db);
+			SOME_WEEK = addMockWeek(db);
 		})
 
 		it('Marks three random quests as shown and adds them to shown weekly quests', () => {
-			const shownWeeklyQuests = questService.assignNewWeeklyQuests(SOME_DAY);
+			const shownWeeklyQuests = questService.assignNewShownWeeklyQuests(SOME_WEEK);
 			makeSure(shownWeeklyQuests.length).isBetween(3, 4);
 			makeSure(toPropertyValues(shownWeeklyQuests, 'id')).areAllDifferent();
 		});
 
 		it('Marks new random quests as shown and adds them to shown weekly quests if the current week is different', () => {
-			const LAST_WEEK = addMockDay(db, {
-				timeStarted: addDays(SOME_DAY.timeStarted, -7),
+			const LAST_WEEK = addMockWeek(db, {
+				timeStarted: addDays(SOME_WEEK.timeStarted, -7),
 			})
-			let shownWeeklyQuests = questService.assignNewWeeklyQuests(LAST_WEEK);
-			const oldWeeklyQuestsIDs = toPropertyValues(shownWeeklyQuests, 'id');
-			makeSure(oldWeeklyQuestsIDs).areAllDifferent();
+			let shownWeeklyQuests = questService.assignNewShownWeeklyQuests(LAST_WEEK);
+			const oldShownWeeklyQuestsIDs = toPropertyValues(shownWeeklyQuests, 'id');
+			makeSure(oldShownWeeklyQuestsIDs).areAllDifferent();
 
-			shownWeeklyQuests = questService.assignNewWeeklyQuests(SOME_DAY);
-			const newWeeklyQuestsIDs = toPropertyValues(shownWeeklyQuests, 'id');
-			makeSure(newWeeklyQuestsIDs).areAllDifferent();
-			makeSure(newWeeklyQuestsIDs).doesNotContain(oldWeeklyQuestsIDs);
+			shownWeeklyQuests = questService.assignNewShownWeeklyQuests(SOME_WEEK);
+			const newShownWeeklyQuestsIDs = toPropertyValues(shownWeeklyQuests, 'id');
+			makeSure(newShownWeeklyQuestsIDs).areAllDifferent();
+			makeSure(newShownWeeklyQuestsIDs).doesNotContain(oldShownWeeklyQuestsIDs);
 		});
 
 		it('Assigns already chosen quests when we run out', () => {
@@ -391,28 +394,28 @@ describe('QuestService', () => {
 				quests[index] = addMockQuest(db, { recurrence: QuestRecurrences.WEEKLY });
 			}
 
-			const LAST_WEEK = addMockDay(db, {
-				timeStarted: addDays(SOME_DAY.timeStarted, -7),
+			const LAST_WEEK = addMockWeek(db, {
+				timeStarted: addDays(SOME_WEEK.timeStarted, -7),
 			})
-			const oldWeeklyQuests = questService.assignNewWeeklyQuests(LAST_WEEK);
-			const newWeeklyQuests = questService.assignNewWeeklyQuests(SOME_DAY);
+			const oldShownWeeklyQuests = questService.assignNewShownWeeklyQuests(LAST_WEEK);
+			const newShownWeeklyQuests = questService.assignNewShownWeeklyQuests(SOME_WEEK);
 
-			const oldWeeklyQuestsIDs = toPropertyValues(oldWeeklyQuests, 'id');
-			const newWeeklyQuestsIDs = toPropertyValues(newWeeklyQuests, 'id');
+			const oldShownWeeklyQuestsIDs = toPropertyValues(oldShownWeeklyQuests, 'id');
+			const newShownWeeklyQuestsIDs = toPropertyValues(newShownWeeklyQuests, 'id');
 			
-			makeSure(oldWeeklyQuestsIDs).areAllDifferent();
-			makeSure(newWeeklyQuestsIDs).areAllDifferent();
-			makeSure(toPropertyValues(newWeeklyQuests, 'id')).hasAnItemWhere(questID =>
-				oldWeeklyQuestsIDs.includes(questID)
+			makeSure(oldShownWeeklyQuestsIDs).areAllDifferent();
+			makeSure(newShownWeeklyQuestsIDs).areAllDifferent();
+			makeSure(toPropertyValues(newShownWeeklyQuests, 'id')).hasAnItemWhere(questID =>
+				oldShownWeeklyQuestsIDs.includes(questID)
 			);
 		});
 
 		it('Adds quests correctly to shownWeeklyQuest table', () => {
-			const chosenQuests = questService.assignNewWeeklyQuests(SOME_DAY);
-			const shownWeeklyQuests = questService.questRepository.getShownWeeklyQuestDuring(SOME_DAY.timeStarted);
+			const chosenQuests = questService.assignNewShownWeeklyQuests(SOME_WEEK);
+			const shownWeeklyQuests = questService.questRepository.getShownWeeklyQuestDuring(SOME_WEEK.id);
 			makeSure(shownWeeklyQuests.length).isBetween(3, 4);
 			makeSure(shownWeeklyQuests).haveProperties({
-				timeShown: SOME_DAY.timeStarted,
+				week: SOME_WEEK,
 			});
 			makeSure(toPropertyValues(shownWeeklyQuests, 'quest').map(q => q.id)).containsOnly(
 				...chosenQuests.map(q => q.id)
@@ -426,17 +429,17 @@ describe('QuestService', () => {
 			const realRandom = Math.random;
 			Math.random = () => 0.6;
 			try {
-				questService.assignNewDailyQuests(SOME_DAY);
-				questService.assignNewDailyQuests(SOME_DAY);
-				questService.assignNewDailyQuests(SOME_DAY);
+				questService.assignNewShownDailyQuests(SOME_DAY);
+				questService.assignNewShownDailyQuests(SOME_DAY);
+				questService.assignNewShownDailyQuests(SOME_DAY);
 			}
 			finally { Math.random = realRandom }
 
 			questService.reset();
-			const dailyQuests = questService.getDailyQuestsShownToday();
-			makeSure(dailyQuests).hasLengthOf(0);
+			const shownDailyQuests = questService.getTodaysNonHiddenDailyQuests();
+			makeSure(shownDailyQuests).hasLengthOf(0);
 
-			const currentlyShownQuestIDs = questService.questRepository.getCurrentDailyQuestIDs();
+			const currentlyShownQuestIDs = questService.questRepository.getCurrentlyShownDailyQuestIDs();
 			makeSure(currentlyShownQuestIDs).hasLengthOf(0);
 
 			const quests = questService.questRepository.getQuests();
@@ -458,11 +461,11 @@ describe('QuestService', () => {
 			const realRandom = Math.random;
 			Math.random = () => 0.4;
 			try {
-				questService.assignNewDailyQuests(SOME_DAY);
+				questService.assignNewShownDailyQuests(SOME_DAY);
 			}
 			finally { Math.random = realRandom }
 
-			const shown = questService.questRepository.getShownDailyQuestDuring(SOME_DAY.timeStarted);
+			const shown = questService.questRepository.getShownDailyQuestsDuringDay(SOME_DAY.id);
 			// There should be one hidden quest and at least one visible quest
 			const visible = shown.filter(s => !s.isHidden);
 			const hidden = shown.filter(s => s.isHidden);
@@ -489,7 +492,7 @@ describe('QuestService', () => {
 		});
 	});
 
-	describe('getHiddenDailyQuests', () => {
+	describe('getHiddenShownDailyQuests', () => {
 		it('returns an array of all hidden quests for today', () => {
 			const SOME_DAY = addMockDay(db);
 
@@ -500,17 +503,17 @@ describe('QuestService', () => {
 			const realRandom = Math.random;
 			Math.random = () => 0.4;
 			try {
-				questService.assignNewDailyQuests(SOME_DAY);
+				questService.assignNewShownDailyQuests(SOME_DAY);
 			}
 			finally { Math.random = realRandom }
 
-			const hiddenQuests = questService.getHiddenDailyQuestsShownToday();
+			const hiddenQuests = questService.getHiddenShownDailyQuestsToday();
 
 			// Verify we have hidden quests
 			makeSure(hiddenQuests.length).isGreaterThan(0);
 
 			// Verify all returned quests are actually hidden
-			const shownToday = questService.questRepository.getShownDailyQuestDuring(SOME_DAY.timeStarted);
+			const shownToday = questService.questRepository.getShownDailyQuestsDuringDay(SOME_DAY.id);
 			const actualHiddenQuests = shownToday.filter(s => s.isHidden).map(s => s.quest);
 			makeSure(hiddenQuests).hasLengthOf(actualHiddenQuests.length);
 			for (const quest of hiddenQuests) {
@@ -521,7 +524,7 @@ describe('QuestService', () => {
 
 		it('returns an empty array when there are no hidden quests for today', () => {
 			// Don't assign any daily quests
-			const hiddenQuests = questService.getHiddenDailyQuestsShownToday();
+			const hiddenQuests = questService.getHiddenShownDailyQuestsToday();
 			makeSure(hiddenQuests).hasLengthOf(0);
 		});
 	});
@@ -537,11 +540,11 @@ describe('QuestService', () => {
 			const realRandom = Math.random;
 			Math.random = () => 0.4;
 			try {
-				questService.assignNewDailyQuests(SOME_DAY);
+				questService.assignNewShownDailyQuests(SOME_DAY);
 			}
 			finally { Math.random = realRandom }
 
-			const hiddenQuests = questService.getHiddenDailyQuestsShownToday();
+			const hiddenQuests = questService.getHiddenShownDailyQuestsToday();
 			makeSure(hiddenQuests.length).isGreaterThan(0);
 
 			const hiddenQuest = hiddenQuests[0];
@@ -558,11 +561,11 @@ describe('QuestService', () => {
 			const realRandom = Math.random;
 			Math.random = () => 0.4;
 			try {
-				questService.assignNewDailyQuests(SOME_DAY);
+				questService.assignNewShownDailyQuests(SOME_DAY);
 			}
 			finally { Math.random = realRandom }
 
-			const hiddenQuests = questService.getHiddenDailyQuestsShownToday();
+			const hiddenQuests = questService.getHiddenShownDailyQuestsToday();
 			makeSure(hiddenQuests.length).isGreaterThan(0);
 
 			const hiddenQuest = hiddenQuests[0];
@@ -579,11 +582,11 @@ describe('QuestService', () => {
 			const realRandom = Math.random;
 			Math.random = () => 0.4;
 			try {
-				questService.assignNewDailyQuests(SOME_DAY);
+				questService.assignNewShownDailyQuests(SOME_DAY);
 			}
 			finally { Math.random = realRandom }
 
-			const hiddenQuests = questService.getHiddenDailyQuestsShownToday();
+			const hiddenQuests = questService.getHiddenShownDailyQuestsToday();
 			makeSure(hiddenQuests.length).isGreaterThan(0);
 
 			const hiddenQuest = hiddenQuests[0];
@@ -600,11 +603,11 @@ describe('QuestService', () => {
 			const realRandom = Math.random;
 			Math.random = () => 0.4;
 			try {
-				questService.assignNewDailyQuests(SOME_DAY);
+				questService.assignNewShownDailyQuests(SOME_DAY);
 			}
 			finally { Math.random = realRandom }
 
-			const shownQuests = questService.getDailyQuestsShownToday();
+			const shownQuests = questService.getTodaysNonHiddenDailyQuests();
 			makeSure(shownQuests.length).isGreaterThan(0);
 
 			const visibleQuest = shownQuests[0];
@@ -621,13 +624,13 @@ describe('QuestService', () => {
 			const realRandom = Math.random;
 			Math.random = () => 0.4;
 			try {
-				questService.assignNewDailyQuests(SOME_DAY);
+				questService.assignNewShownDailyQuests(SOME_DAY);
 			}
 			finally { Math.random = realRandom }
 
 			// Get a quest that wasn't picked for today
 			const allQuests = questService.questRepository.getQuests();
-			const shownQuestIDs = questService.questRepository.getShownDailyQuestDuring(SOME_DAY.timeStarted).map(s => s.quest.id);
+			const shownQuestIDs = questService.questRepository.getShownDailyQuestsDuringDay(SOME_DAY.id).map(s => s.quest.id);
 			const notShownQuest = allQuests.find(q => !shownQuestIDs.includes(q.id));
 
 			makeSure(notShownQuest).isNotNull();

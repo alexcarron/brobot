@@ -37,14 +37,14 @@ Craft characters at least five times using at least three different recipes
 	- By defualt `canShow` is true
 	- `canShow` for all quests should reset to true once all quests are used up
 - What quests are for today
-	- Use `timeShown` on `dailyQuest` table with today's day start date from `gameStateService`
-	- When a quest is picked to be used for today, add it to `dailyQuest` table with today's day start date from `gameStateService`
+	- Use `timeShown` on `shownDailyQuest` table with today's day start date from `gameStateService`
+	- When a quest is picked to be used for today, add it to `shownDailyQuest` table with today's day start date from `gameStateService`
 - What quests are being shown for today that are not hidden
-	- Use `isHidden` on `dailyQuest` table with today's day start date from `gameStateService`
-	- When a quest is picked to be used for today, add it to `dailyQuest` table with today's day start date from `gameStateService`, marking `isHidden` as false if its a normal daily quest
+	- Use `isHidden` on `shownDailyQuest` table with today's day start date from `gameStateService`
+	- When a quest is picked to be used for today, add it to `shownDailyQuest` table with today's day start date from `gameStateService`, marking `isHidden` as false if its a normal daily quest
 - What quests are the hidden quests for today
-	- Use `isHidden` on `dailyQuest` table with today's day start date from `gameStateService`
-	- When a quest is picked to be used for today, add it to `dailyQuest` table with today's day start date from `gameStateService`, marking `isHidden` as true if its a hidden daily quest
+	- Use `isHidden` on `shownDailyQuest` table with today's day start date from `gameStateService`
+	- When a quest is picked to be used for today, add it to `shownDailyQuest` table with today's day start date from `gameStateService`, marking `isHidden` as true if its a hidden daily quest
 - What quest do we choose as the hidden quest
 	- Pick a random one out of the available quest
 - What the augmented rewards are for a hidden quest
@@ -53,4 +53,4 @@ Craft characters at least five times using at least three different recipes
 	- Use the `activityLogService` to find the completeQuest logs for today
 # Proposed Data Models
 - quest(**id**, name, description, tokenRewards, charactersRewards, canShow)
-- dailyQuest(**timeShown, questID**, isHidden)
+- shownDailyQuest(**timeShown, questID**, isHidden)

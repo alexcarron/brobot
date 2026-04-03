@@ -1,3 +1,8 @@
+import { ids } from "../bot-config/discord-ids";
+import { getDatabase } from "../services/namesmith/database/get-database";
+import { fetchNamesmithChannel } from "../services/namesmith/utilities/discord-fetch.utility";
+import { sendMessageInChannel } from "./discord-action-utils";
+
 export interface TableOptions {
   /** Alignment per column index: 'left' | 'center' | 'right' (default: 'left') */
   align?: Array<"left" | "center" | "right">;
@@ -292,4 +297,13 @@ export function createLeaderboardString(
     align: ["center", ...Array(headers.length).fill("left")],
     ...options,
   });
+}
+
+export async function sendNamesmithTable(tableName: string) {
+	const db = getDatabase();
+	const { headers, rows } = db.toTableData(tableName);
+	const tableString = createTableString(headers, rows);
+	
+	const channel = await fetchNamesmithChannel(ids.namesmith.channels.DEVELOPMENT_NEWS);
+	await sendMessageInChannel(channel, `\`\`\`${tableString}\`\`\``);
 }

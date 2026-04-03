@@ -1,4 +1,4 @@
-import { sendWeeklyQuestsMessages } from "../interfaces/quests/weekly-quests-message";
+import { sendShownWeeklyQuestsMessages } from "../interfaces/quests/weekly-quests-message";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 
 /**
@@ -9,6 +9,6 @@ export async function onWeekStart() {
 	const now = new Date();
 
 	const thisWeek = weekService.addNewWeek(now);
-	questService.assignNewWeeklyQuests(thisWeek);
-	await sendWeeklyQuestsMessages();
+	questService.assignNewShownWeeklyQuests(thisWeek);
+	await sendShownWeeklyQuestsMessages();
 }
