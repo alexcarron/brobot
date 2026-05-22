@@ -25,7 +25,7 @@ import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { NamesmithEvents } from "../event-listeners/namesmith-events";
 import { Perks } from "../constants/perks.constants";
 import { returnIfNotFailure } from "../utilities/workflow.utility";
-import { isOneSymbol, getNumCharacters } from '../../../utilities/string-checks-utils';
+import { isOneSymbol, getCharacters } from '../../../utilities/string-checks-utils';
 import { getLatestActivityLog } from "../mocks/mock-data/mock-activity-logs";
 import { ActivityTypes } from "../types/activity-log.types";
 
@@ -199,8 +199,9 @@ describe('buy-mystery-box.workflow', () => {
 				})
 			);
 
-			makeSure(getNumCharacters(result.receivedCharacterValues)).is(2);
-			makeSure(result.receivedCharacterValues[0]).is(result.receivedCharacterValues[1]);
+			const receivedChars = getCharacters(result.receivedCharacterValues);
+			makeSure(receivedChars.length).is(2);
+			makeSure(receivedChars[0]).is(receivedChars[1]);
 			makeSure(result.player.inventory).is(
 				playerWithPerk.inventory + result.receivedCharacterValues
 			);
