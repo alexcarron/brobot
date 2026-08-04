@@ -1,29 +1,29 @@
-# Node JS Modules
+# Secrets
+*token.json
+*token.js
+
+# Dependencies
 node_modules/
 
-# Stored Unused Files
-unused/
+# Build Artifacts & Caches
+.eslintcache
+tsconfig.tsbuildinfo
 
-# Local Only
-*token.json
-.vscode
-.npm
-*token.js
-*cookies.txt
-
-# Planning & Design
-planning/
-
-# In Memory Files
-audioUrl.mp3
-
-local/
-
-# Lite Databases
+# Databases
 *.db*
 
-# ES Lint
-.eslintcache
+# Editor Settings
+.vscode
 
-# TSC
-tsconfig.tsbuildinfo
+# Claude Code
+CLAUDE.md
+.claude
+
+# Local & Scratch Files
+local/
+planning/
+archived/
+*.local*
+
+# Temporary Files for Text To Speech Service
+audioUrl.mp3

@@ -1011,6 +1011,17 @@ export async function waitForButtonPressThen(messsageWithButton: Message, button
 }
 
 /**
+ * Removes all buttons and other components from a followed-up interaction message. Can be ephemeral or non-ephemeral.
+ * - Ephemeral follow-up messages cannot be edited through Message.edit(), since that routes through the channel messages REST endpoint, which does not have access to ephemeral messages. This must go through the interaction's webhook instead.
+ * @param interaction - The interaction whose webhook sent the message.
+ * @param messageToRemoveButtonsFrom - The message to strip components from.
+ * @returns A promise that resolves with the edited message.
+ */
+export async function removeComponentsFromInteractionMessage(interaction: ChatInputCommandInteraction | CommandInteraction | MessageComponentInteraction | ModalSubmitInteraction | ButtonInteraction, messageToRemoveButtonsFrom: Message): Promise<Message> {
+	return await interaction.webhook.editMessage(messageToRemoveButtonsFrom.id, { components: [] });
+}
+
+/**
  * Converts a MessageCreateOptions object into a MessageEditOptions object.
  * @param createOptions - The object to convert.
  * @returns The converted object.

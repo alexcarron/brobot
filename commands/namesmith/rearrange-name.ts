@@ -1,6 +1,6 @@
 import { ids } from "../../bot-config/discord-ids";
 import { SlashCommand } from "../../services/command-creation/slash-command";
-import { getInputFromCreatedTextModal, addButtonToMessageContents, waitForButtonPressThen } from "../../utilities/discord-action-utils";
+import { getInputFromCreatedTextModal, addButtonToMessageContents, waitForButtonPressThen, removeComponentsFromInteractionMessage } from "../../utilities/discord-action-utils";
 import { getCharacterDifferences } from "../../utilities/data-structure-utils";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { MessageFlags } from "discord.js";
@@ -66,6 +66,8 @@ export const command = new SlashCommand({
 					placeholder: currentName,
 				}) || "";
 			});
+
+			await removeComponentsFromInteractionMessage(interaction, messageWithButton);
 		}
 
 		const nameBefore = playerService.getCurrentName(playerID);

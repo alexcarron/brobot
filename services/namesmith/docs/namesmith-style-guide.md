@@ -1,4 +1,5 @@
 # Namesmith Style Guide
+
 ## Colors
 
 **Vibrant Namesmith Purple Highlight**: \#5500ff
