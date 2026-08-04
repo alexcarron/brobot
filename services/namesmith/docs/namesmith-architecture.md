@@ -210,7 +210,6 @@ All Namesmith errors extend `NamesmithError`, defined in `utilities/error.utilit
 - **MissingRequestedCharactersError**: A trade request includes a character the recipient does not have.
 - **TradeAlreadyRespondedToError**: The trade has already been accepted, declined, or ignored.
 - **TradeAwaitingDifferentPlayerError**: The responding player is not the one the trade is waiting on.
-- **RecipeNotUnlockedError**: The player has not unlocked the recipe being crafted.
 - **InvalidNameError**: The chosen name fails validation. `NameTooLongError` is its current subclass.
 
 ## Perk Application

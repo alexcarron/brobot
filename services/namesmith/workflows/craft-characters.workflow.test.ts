@@ -7,7 +7,6 @@ import { DatabaseQuerier } from "../database/database-querier";
 import { setupMockNamesmith } from "../mocks/mock-setup";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PlayerService } from "../services/player.service";
-import { RecipeService } from "../services/recipe.service";
 import { craftCharacters } from './craft-characters.workflow';
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { addMockRecipe } from "../mocks/mock-data/mock-recipes";
@@ -16,14 +15,12 @@ import { getLatestActivityLog } from "../mocks/mock-data/mock-activity-logs";
 import { ActivityTypes } from "../types/activity-log.types";
 
 describe('craft-character.workflow', () => {
-	let recipeService: RecipeService;
 	let playerService: PlayerService;
 	let db: DatabaseQuerier;
 
 	beforeEach(() => {
 		setupMockNamesmith();
 		const services = getNamesmithServices();
-		recipeService = services.recipeService;
 		playerService = services.playerService;
 		db = playerService.playerRepository.db;
 	});
@@ -112,23 +109,5 @@ describe('craft-character.workflow', () => {
 			makeSure(result.isMissingRequiredCharacters()).isTrue();
 		});
 
-		it('should throw RecipeNotUnlockedError if the recipe is not unlocked for the player.', () => {
-			const isUnlockedForPlayer = jest.spyOn(recipeService, 'isUnlockedForPlayer');
-			isUnlockedForPlayer.mockReturnValue(false);
-
-			const player = addMockPlayer(db, {
-				inventory: 'aabbccdd'
-			});
-			const recipe = addMockRecipe(db, {
-				inputCharacters: 'abb',
-				outputCharacters: 'c'
-			});
-
-			const result = craftCharacters({
-				player, recipe
-			})
-
-			makeSure(result.isRecipeNotUnlocked()).isTrue();
-		});
 	});
 });

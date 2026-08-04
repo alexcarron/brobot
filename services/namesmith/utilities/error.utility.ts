@@ -697,24 +697,6 @@ export class CannotRespondToTradeError extends UserActionError {
 }
 
 /**
- * Error thrown when a recipe is not unlocked for a player
- */
-export class RecipeNotUnlockedError extends UserActionError {
-	declare relevantData: { player: Player, recipe: Recipe };
-	constructor(player: Player, recipe: Recipe) {
-		super({
-			message: `Recipe is not unlocked for player`,
-			userFriendlyMessage:
-				`You must unlock this recipe before you can use it.`,
-			relevantData: {
-				player,
-				recipe,
-			}
-		})
-	}
-}
-
-/**
  * Error thrown when a player attempts to claim a refill before the next available refill time
  */
 export class RefillAlreadyClaimedError extends UserActionError {

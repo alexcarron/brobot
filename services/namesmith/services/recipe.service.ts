@@ -87,22 +87,6 @@ export class RecipeService {
 	}
 
 	/**
-	 * Determines if a recipe is unlocked for a given player.
-	 * @param recipeResolvable - The recipe resolvable to check for unlocking.
-	 * @param playerResolvable - The player resolvable for whom the recipe unlock status is being checked.
-	 * @returns A boolean indicating if the recipe is unlocked for the player.
-	 */
-	isUnlockedForPlayer(
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		recipeResolvable: RecipeResolvable,
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		playerResolvable: PlayerResolvable
-	): boolean {
-		// TODO: Add logic for locking recipes or delete this method
-		return true;
-	}
-
-	/**
 	 * Checks if a player has all the characters needed to use a recipe.
 	 * @param recipeResolvable - The recipe to check if the player has the needed characters for.
 	 * @param playerResolvable - The player to check if they have the needed characters for the recipe.

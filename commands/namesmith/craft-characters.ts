@@ -202,9 +202,6 @@ export const command = new SlashCommand({
 		if (result.isNotAPlayer()) {
 			return `You're not a player, so you can't craft characters.`;
 		}
-		else if (result.isRecipeNotUnlocked()) {
-			return `You haven't unlocked this recipe yet.`;
-		}
 		else if (result.isMissingRequiredCharacters()) {
 			const { missingCharacters } = result;
 			return `You are missing ${missingCharacters.length} required characters for this recipe: ${missingCharacters}`;

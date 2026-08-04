@@ -15,7 +15,6 @@ const result = getWorkflowResultCreator({
 	missingRequiredCharacters: provides<{
 		missingCharacters: string
 	}>(),
-	recipeNotUnlocked: provides<{}>(),
 })
 
 
@@ -28,7 +27,6 @@ const result = getWorkflowResultCreator({
  * @param parameters.recipe - The recipe used to craft the character
  * @returns An object containing the new inventory, the crafted character, the recipe used, and the player who is crafting the character.
  * - MissingRequiredCharactersError if the player does not have all the required characters to craft the character.
- * - RecipeNotUnlockedError if the recipe is not unlocked for the player.
  */
 export const craftCharacters = (
 	{player: playerResolvable, recipe: recipeResolvable}: {
@@ -52,11 +50,6 @@ export const craftCharacters = (
 		return result.failure.missingRequiredCharacters({
 			missingCharacters: missingCharacters.join(''),
 		});
-	}
-
-	const isUnlocked = recipeService.isUnlockedForPlayer(recipeResolvable, playerResolvable);
-	if (!isUnlocked) {
-		return result.failure.recipeNotUnlocked({});
 	}
 
 	const nameBefore = playerService.getCurrentName(playerResolvable);
