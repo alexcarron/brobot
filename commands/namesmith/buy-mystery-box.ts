@@ -131,11 +131,20 @@ export const command = new SlashCommand({
 			const tokensOwned = playerService.getTokens(interaction.user.id);
 			const tokensNeeded = totalPrice - tokensOwned;
 
-			return (
-				`You need **${tokensNeeded} more ${addSIfPlural('token', tokensNeeded)}** to afford ${amount} "${mysteryBoxName}" mystery ${chooseByPlurality(amount, 'box', 'boxes')}\n` +
-				`-# You only have **${toAmountOfNoun(tokensOwned, 'token')}**\n` +
-				`-# <#${ids.namesmith.channels.MINE_TOKENS}> and <#${ids.namesmith.channels.CLAIM_REFILL}> to get more \n`
-			);
+			if (amount === 1) {
+				return joinLines(
+					`You need **${tokensNeeded} more ${addSIfPlural('token', tokensNeeded)}** to afford the "${mysteryBoxName}" mystery box`,
+					`-# You only have **${toAmountOfNoun(tokensOwned, 'token')}**`,
+					`-# <#${ids.namesmith.channels.MINE_TOKENS}> and <#${ids.namesmith.channels.CLAIM_REFILL}> to get more`
+				);
+			}
+			else {
+				return joinLines(
+					`You need **${tokensNeeded} more ${addSIfPlural('token', tokensNeeded)}** to afford ${amount} "${mysteryBoxName}" mystery ${chooseByPlurality(amount, 'box', 'boxes')}`,
+					`-# You only have **${toAmountOfNoun(tokensOwned, 'token')}**`,
+					`-# <#${ids.namesmith.channels.MINE_TOKENS}> and <#${ids.namesmith.channels.CLAIM_REFILL}> to get more`
+				);
+			}
 		}
 		
 		for (let numMysteryBox = 1; numMysteryBox <= amount; numMysteryBox++) {
