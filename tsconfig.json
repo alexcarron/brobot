@@ -26,6 +26,7 @@
 		"**/*.test.js",
 		"**/__tests__/**",
 		"unused/**",
+		"archived/**",
 	],
 	"module": "ESNext",
 	"type": "module"

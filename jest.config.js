@@ -10,6 +10,10 @@ module.exports = {
 	testMatch: [
 		"**/?(*.)+(spec|test).[tj]s?(x)"
 	],
+	testPathIgnorePatterns: [
+		'/node_modules/',
+		'<rootDir>/archived/',
+	],
   transformIgnorePatterns: [
 		'/node_modules/',           // Ignore transforming node_modules by default
   ],

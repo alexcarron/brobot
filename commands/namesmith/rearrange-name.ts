@@ -20,12 +20,16 @@ export const command = new SlashCommand({
 		const currentName = playerService.getCurrentName(playerID);
 		const inventory = playerService.getInventory(playerID);
 
-		let correctlyRearrangedName = false;
-		let newName = await getInputFromCreatedTextModal({
+		const initialInput = await getInputFromCreatedTextModal({
 			interaction,
 			modalTitle: `Rearrange The Characters In Your Name`,
 			placeholder: currentName,
-		}) || "";
+		});
+
+		if (initialInput === undefined) return;
+
+		let correctlyRearrangedName = false;
+		let newName = initialInput;
 
 		while (!correctlyRearrangedName) {
 			const { extraCharacters } = getCharacterDifferences(inventory, newName);
@@ -60,11 +64,13 @@ export const command = new SlashCommand({
 			const messageWithButton = await interaction.followUp(messageContents);
 
 			await waitForButtonPressThen(messageWithButton, "rearrange-name", async (buttonInteraction) => {
-				newName = await getInputFromCreatedTextModal({
+				const retryInput = await getInputFromCreatedTextModal({
 					interaction: buttonInteraction,
 					modalTitle: `Rearrange The Characters In Your Name`,
 					placeholder: currentName,
-				}) || "";
+				});
+
+				if (retryInput !== undefined) newName = retryInput;
 			});
 
 			await removeComponentsFromInteractionMessage(interaction, messageWithButton);
@@ -76,5 +82,12 @@ export const command = new SlashCommand({
 			playerChangingName: playerID,
 			nameBefore,
 		});
+
+		if (interaction.isRepliable()) {
+			await interaction.followUp({
+				content: `Good work. Your name is now \`${newName}\`.`,
+				flags: MessageFlags.Ephemeral,
+			});
+		}
 	}
 });
