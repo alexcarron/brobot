@@ -60,14 +60,6 @@ export const quests = [
 		tokensReward: 500,
 	},
 	{
-		id: 9,
-		name: "Hour of Silence",
-		description: "Ensure that no player changes their name for an hour straight",
-		recurrence: 'daily',
-		tokensReward: 250,
-		charactersReward: "shhh",
-	},
-	{
 		id: 10,
 		name: "Even Number Name",
 		description: "Publish a name that uses one of the following characters: 02468",
@@ -285,7 +277,7 @@ export const quests = [
 		name: "Crafty Crafter",
 		description: "Craft three recipes that require a utility character",
 		recurrence: 'daily',
-		tokensReward: 200,
+		tokensReward: 400,
 		charactersReward: "⇋Flip",
 	},
 	{
@@ -495,9 +487,9 @@ export const quests = [
 	{
 		id: 72,
 		name: "Hyper Boxes",
-		description: "Open 10 mystery boxes within a 3-minute window",
+		description: "Open 20 mystery boxes within a 3-minute window",
 		recurrence: "weekly",
-		tokensReward: 800,
+		tokensReward: 1200,
 		charactersReward: "open(x10)"
 	},
 	{

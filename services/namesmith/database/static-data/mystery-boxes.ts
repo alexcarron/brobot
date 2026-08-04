@@ -634,7 +634,7 @@ export const mysteryBoxes = [
 	{
 		"id": 6,
 		"name": "Symbols",
-		"tokenCost": 250,
+		"tokenCost": 150,
 		"characterOdds": {
 			" ": 48,
 			"_": 36,

@@ -1,4 +1,4 @@
-import { addDays, getHoursInTime, getMinutesInTime, toDurationTextFromTime } from "../../../../../utilities/date-time-utils";
+import { getHoursInTime, toDurationTextFromTime } from "../../../../../utilities/date-time-utils";
 import { getNumDistinctCharacters, hasLetter, hasNumber, hasSymbol } from "../../../../../utilities/string-checks-utils";
 import { toListOfWords } from "../../../../../utilities/string-manipulation-utils";
 import { Quests } from "../../../constants/quests.constants";
@@ -176,59 +176,6 @@ export const namingEligibilityChecks = {
 
 		return toFailure(
 			`Your current name has not been completely unchanged for at least ${NUM_HOURS_NEEDED} hours. You must ensure no characters are added or removed from your name for ${NUM_HOURS_NEEDED} hours to complete the "${quest.name}" quest.`
-		);
-	},
-
-	// Hour of Silence
-	[Quests.HOUR_OF_SILENCE.id]: (
-		{quest, player}: MeetsCriteriaParameters,
-		{ activityLogService, gameStateService }: NamesmithServices
-	) => {
-		const NUM_HOURS_OF_SILENCE_NEEDED = 1;
-
-		// Automatically ordered by startTime
-		const nameIntervals = activityLogService.getNameIntervalsOfPlayerToday(player);
-
-		if (nameIntervals.length <= 1) {
-			return PLAYER_MET_CRITERIA_RESULT;
-		}
-
-		let previousTime: Date | null = null;
-		let maxDuration = 0;
-		let maxNameInterval = null;
-		for (const nameInterval of nameIntervals) {
-			if (previousTime === null) {
-				previousTime = nameInterval.startTime;
-				continue;
-			}
-
-			const durationTime = nameInterval.startTime.getTime() - previousTime.getTime();
-			if (getHoursInTime(durationTime) >= NUM_HOURS_OF_SILENCE_NEEDED) {
-				return PLAYER_MET_CRITERIA_RESULT;
-			}
-
-			if (durationTime > maxDuration) {
-				maxDuration = durationTime;
-				maxNameInterval = nameInterval;
-			}
-
-			previousTime = nameInterval.startTime;
-		}
-
-		const startOfToday = gameStateService.getStartOfTodayOrThrow(new Date());
-		const endOfToday = addDays(startOfToday, 1);
-		const durationTime = endOfToday.getTime() - previousTime!.getTime();
-		if (getHoursInTime(durationTime) >= NUM_HOURS_OF_SILENCE_NEEDED) {
-			return PLAYER_MET_CRITERIA_RESULT;
-		}
-
-		const maxDurationMinutes = getMinutesInTime(maxDuration);
-		const durationDisplay = maxDurationMinutes > 60
-			? `${Math.floor(maxDurationMinutes / 60)} hours and ${maxDurationMinutes % 60} minutes`
-			: `${maxDurationMinutes} minutes`;
-
-		return toFailure(
-			`Everyone has kept their current name unchanged for only ${durationDisplay}. When <@${maxNameInterval!.playerID}> had their name changed to "${maxNameInterval!.name}", they broke the streak. Make sure nobody's current name is changed for at least ${NUM_HOURS_OF_SILENCE_NEEDED} hour(s) to complete the "${quest.name}" quest.`
 		);
 	},
 

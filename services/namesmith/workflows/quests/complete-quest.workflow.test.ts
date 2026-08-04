@@ -638,55 +638,6 @@ describe('complete-quest.workflow.ts', () => {
 				})
 			});
 
-			describe('Hour of Silence Quest', () => {
-				it('return success if everyone does absolutely nothing', () => {
-					makeSure(
-						completeQuest({
-							playerResolvable: SOME_PLAYER.id,
-							questResolvable: Quests.HOUR_OF_SILENCE.id
-						}).isFailure()
-					).isFalse();
-				});
-
-				it('return success if everyone changes their name every hour', () => {
-					jest.useFakeTimers({ now: new Date() });
-
-					const ANOTHER_PLAYER = addMockPlayer(db);
-					for (let numLoop = 0; numLoop < 24; numLoop++) {
-						jest.setSystemTime(addHours(new Date(), 1));
-						forcePlayerToChangeName(SOME_PLAYER, `Name ${numLoop}`);
-						forcePlayerToChangeName(ANOTHER_PLAYER, `Name ${numLoop}`);
-					}
-
-					makeSure(
-						completeQuest({
-							playerResolvable: SOME_PLAYER.id,
-							questResolvable: Quests.HOUR_OF_SILENCE.id
-						}).isFailure()
-					).isFalse();
-
-					jest.useRealTimers();
-				});
-
-				it('return failure if a single person changes their name every 59 minutes', () => {
-					jest.useFakeTimers({ now: new Date() });
-					forcePlayerToChangeName(SOME_PLAYER, `Name 0`);
-					for (let numLoop = 1; numLoop <= 24; numLoop++) {
-						jest.setSystemTime(addMinutes(new Date(), 59));
-						forcePlayerToChangeName(SOME_PLAYER, `Name ${numLoop}`);
-					}
-
-					makeSure(
-						completeQuest({
-							playerResolvable: SOME_PLAYER.id,
-							questResolvable: Quests.HOUR_OF_SILENCE.id
-						}).isFailure()
-					).isTrue();
-
-					jest.useRealTimers();
-				});
-			});
-
 			describe('Even Number Name Quest', () => {
 				it('returns a success if the player has published a name with a 2 in it', () => {
 					forcePlayerToPublishName(SOME_PLAYER, "abcdefhj2iojfklsf");
