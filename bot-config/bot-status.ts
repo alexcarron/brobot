@@ -23,5 +23,7 @@ export const initialBotStatus: typeof global.botStatus = {
 	testUsersAndDevelopers: [
 		"599383947016929293", // The Impartial Narrator,
 		"529143263265816576", // Dead Spaghetti Luigi
+		"1095682901942751252",
+		"1123827315479167058",
 	],
 }

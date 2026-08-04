@@ -1,3 +1,4 @@
+import { ids } from "../../bot-config/discord-ids";
 import { Parameter, ParameterTypes } from "../../services/command-creation/parameter";
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { NamesmithEvents } from "../../services/namesmith/event-listeners/namesmith-events";
@@ -23,6 +24,7 @@ export const command = new SlashCommand({
 	parameters: [
 		Parameters.EVENT,
 	],
+	required_servers: [ids.servers.NAMESMITH],
 	isInDevelopment: true,
 	execute: function (interaction, {event: eventKey}) {
 		if (eventKey in NamesmithEvents === false)
