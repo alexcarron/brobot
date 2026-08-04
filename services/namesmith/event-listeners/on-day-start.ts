@@ -16,8 +16,6 @@ export async function onDayStart() {
 
 	const today = dayService.addNewDay(now);
 	questService.assignNewShownDailyQuests(today);
-	console.log(questService.getTodaysNonHiddenDailyQuests());
-	console.log(questService.getCurrentShownDailyQuests());
 	await sendShownDailyQuestsDisplay();
 	await sendHiddenQuestsMessages();
 

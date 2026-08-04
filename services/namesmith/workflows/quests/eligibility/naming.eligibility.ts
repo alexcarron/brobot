@@ -1,0 +1,361 @@
+import { addDays, getHoursInTime, getMinutesInTime, toDurationTextFromTime } from "../../../../../utilities/date-time-utils";
+import { getNumDistinctCharacters, hasLetter, hasNumber, hasSymbol } from "../../../../../utilities/string-checks-utils";
+import { toListOfWords } from "../../../../../utilities/string-manipulation-utils";
+import { Quests } from "../../../constants/quests.constants";
+import { NamesmithServices } from "../../../types/namesmith.types";
+import { MeetsCriteriaParameters, PLAYER_MET_CRITERIA_RESULT, toFailure } from "./quest-eligibility";
+
+/**
+ * Eligibility checks for quests about the contents and history of a player's name.
+ */
+export const namingEligibilityChecks = {
+
+	// Diverse Name
+	[Quests.DIVERSE_NAME.id]: ({quest, player}: MeetsCriteriaParameters) => {
+		const publishedName = player.publishedName;
+		let type = null;
+
+		if (publishedName === null) {
+			return toFailure(`You have not published your name yet. Your name must be published before you can complete the ${quest.name} quest.`)
+		}
+		else if (!hasLetter(publishedName))
+			type = 'letter';
+		else if (!hasSymbol(publishedName))
+			type = 'symbol';
+		else if (!hasNumber(publishedName))
+			type = 'number';
+		else
+			return PLAYER_MET_CRITERIA_RESULT;
+
+		return toFailure(`Your name must have at least one ${type} before you can complete the ${quest.name} quest.`)
+	},
+
+	// Twinsies
+	[Quests.TWINSIES.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{ playerService }: NamesmithServices
+	) => {
+		if (player.publishedName === null)
+			return toFailure(`You have not published your name yet. Your name must be published before you can complete the ${quest.name} quest.`)
+
+		const allPublishedNames = playerService.getAllPublishedNames();
+
+		const numSamePublishedNames =
+			allPublishedNames.filter(publishedName =>
+				publishedName !== null &&
+				publishedName === player.publishedName
+			).length;
+
+		if (numSamePublishedNames < 2)
+			return toFailure(`Nobody has the same name as you. You must have at least one player that shares the same published name as you to complete the ${quest.name} quest.`);
+
+		return PLAYER_MET_CRITERIA_RESULT;
+	},
+
+	// Echoed Name
+	[Quests.ECHOED_NAME.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{ activityLogService }: NamesmithServices
+	) => {
+		const changeNameLogs = activityLogService.getChangeNameLogsTodayByPlayer(player);
+
+		if (changeNameLogs.length <= 0)
+			return toFailure(`You have not changed your name yet. Your name must be changed before you can complete the ${quest.name} quest.`);
+
+		for (const changeNameLog of changeNameLogs) {
+			const previousName = changeNameLog.nameChangedFrom;
+			const newName = changeNameLog.currentName;
+
+			if (previousName === null || newName === null)
+				continue;
+
+			if (previousName.repeat(2) === newName)
+				return PLAYER_MET_CRITERIA_RESULT;
+		}
+
+		return toFailure(`You have not changed your name into a repeated version of itself. You must do that before you can complete the ${quest.name} quest.`);
+	},
+
+	// Identity Theft
+	[Quests.IDENTITY_THEFT.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{ activityLogService }: NamesmithServices
+	) => {
+		const NUM_HOURS_NEEDED = 2;
+
+		const nameToNameIntervals = activityLogService.getNameToNameIntervalsToday();
+		const playerNames = activityLogService.getNamesOfPlayerToday(player);
+		let sharedNameWithOthers = false;
+		let overlapedWithOthers = false;
+		let overlapedLongEnough = false;
+		for (const playerName of playerNames) {
+			const nameIntervals = nameToNameIntervals.get(playerName);
+			if (nameIntervals === undefined)
+				continue;
+
+			const playerIntervals = [];
+			const otherIntervals = [];
+			for (const nameInterval of nameIntervals) {
+				if (nameInterval.playerID === player.id)
+					playerIntervals.push(nameInterval);
+				else
+					otherIntervals.push(nameInterval);
+			}
+
+			if (otherIntervals.length <= 0)
+				continue;
+
+			sharedNameWithOthers = true;
+
+			// Check if any player name intervals intersect with any other player name intervals for 2 hours
+			for (const playerInterval of playerIntervals) {
+				for (const otherInterval of otherIntervals) {
+					const overlapStart =
+						playerInterval.startTime > otherInterval.startTime
+							? playerInterval.startTime
+							: otherInterval.startTime;
+
+					const overlapEnd =
+						playerInterval.endTime < otherInterval.endTime
+							? playerInterval.endTime
+							: otherInterval.endTime;
+
+					const overlapDuration = overlapEnd.getTime() - overlapStart.getTime();
+
+					if (overlapDuration <= 0)
+						continue;
+
+					overlapedWithOthers = true;
+
+					if (getHoursInTime(overlapDuration) >= NUM_HOURS_NEEDED) {
+						overlapedLongEnough = true;
+						return PLAYER_MET_CRITERIA_RESULT;
+					}
+				}
+			}
+		}
+
+		if (!sharedNameWithOthers) {
+			return toFailure(
+				`You haven't matched another player's name today. To complete the "${quest.name}" quest, first change your name to exactly match another player's current name.`
+			);
+		}
+		else if (!overlapedWithOthers) {
+			return toFailure(
+				`You and another player have never had the same name at the same time. For the "${quest.name}" quest, you must hold the same name as another player simultaneously.`
+			);
+		}
+		else if (!overlapedLongEnough) {
+			return toFailure(
+				`You haven't kept the same name as another player long enough. Maintain the matching name for at least ${NUM_HOURS_NEEDED} hours to complete the "${quest.name}" quest.`
+			);
+		}
+		else {
+			return toFailure(
+				`To complete the "${quest.name}" quest, you must keep the same name as another player for at least ${NUM_HOURS_NEEDED} hours.`
+			);
+		}
+	},
+
+	// Fragile Name
+	[Quests.FRAGILE_NAME.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{ activityLogService }: NamesmithServices
+	) => {
+		const NUM_HOURS_NEEDED = 8;
+
+		const nameIntervals = activityLogService.getNameIntervalsOfPlayerToday(player);
+
+		for (const nameInterval of nameIntervals) {
+			const durationTime = nameInterval.endTime.getTime() - nameInterval.startTime.getTime();
+
+			if (getHoursInTime(durationTime) >= NUM_HOURS_NEEDED) {
+				return PLAYER_MET_CRITERIA_RESULT;
+			}
+		}
+
+		return toFailure(
+			`Your current name has not been completely unchanged for at least ${NUM_HOURS_NEEDED} hours. You must ensure no characters are added or removed from your name for ${NUM_HOURS_NEEDED} hours to complete the "${quest.name}" quest.`
+		);
+	},
+
+	// Hour of Silence
+	[Quests.HOUR_OF_SILENCE.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{ activityLogService, gameStateService }: NamesmithServices
+	) => {
+		const NUM_HOURS_OF_SILENCE_NEEDED = 1;
+
+		// Automatically ordered by startTime
+		const nameIntervals = activityLogService.getNameIntervalsOfPlayerToday(player);
+
+		if (nameIntervals.length <= 1) {
+			return PLAYER_MET_CRITERIA_RESULT;
+		}
+
+		let previousTime: Date | null = null;
+		let maxDuration = 0;
+		let maxNameInterval = null;
+		for (const nameInterval of nameIntervals) {
+			if (previousTime === null) {
+				previousTime = nameInterval.startTime;
+				continue;
+			}
+
+			const durationTime = nameInterval.startTime.getTime() - previousTime.getTime();
+			if (getHoursInTime(durationTime) >= NUM_HOURS_OF_SILENCE_NEEDED) {
+				return PLAYER_MET_CRITERIA_RESULT;
+			}
+
+			if (durationTime > maxDuration) {
+				maxDuration = durationTime;
+				maxNameInterval = nameInterval;
+			}
+
+			previousTime = nameInterval.startTime;
+		}
+
+		const startOfToday = gameStateService.getStartOfTodayOrThrow(new Date());
+		const endOfToday = addDays(startOfToday, 1);
+		const durationTime = endOfToday.getTime() - previousTime!.getTime();
+		if (getHoursInTime(durationTime) >= NUM_HOURS_OF_SILENCE_NEEDED) {
+			return PLAYER_MET_CRITERIA_RESULT;
+		}
+
+		const maxDurationMinutes = getMinutesInTime(maxDuration);
+		const durationDisplay = maxDurationMinutes > 60
+			? `${Math.floor(maxDurationMinutes / 60)} hours and ${maxDurationMinutes % 60} minutes`
+			: `${maxDurationMinutes} minutes`;
+
+		return toFailure(
+			`Everyone has kept their current name unchanged for only ${durationDisplay}. When <@${maxNameInterval!.playerID}> had their name changed to "${maxNameInterval!.name}", they broke the streak. Make sure nobody's current name is changed for at least ${NUM_HOURS_OF_SILENCE_NEEDED} hour(s) to complete the "${quest.name}" quest.`
+		);
+	},
+
+	// Even Number Name
+	[Quests.EVEN_NUMBER_NAME.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{ activityLogService }: NamesmithServices
+	) => {
+		const publishNameLogs = activityLogService.getPublishNameLogsTodayByPlayer(player);
+
+		if (publishNameLogs.length <= 0)
+			return toFailure(`You have not published a name yet today. You must publish a name before you can complete the "${quest.name}" quest.`);
+
+		for (const publishNameLog of publishNameLogs) {
+			if (/[02468]/.test(publishNameLog.currentName))
+				return PLAYER_MET_CRITERIA_RESULT;
+		}
+
+		return toFailure(`You need to publish a name with an even number to complete the "${quest.name}" quest.`);
+	},
+
+	// Distinct Dozen
+	[Quests.DISTINCT_DOZEN.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_REQUIRED_UNQIUE_CHARACTERS = 12;
+		const publishNameLogs = activityLogService.getPublishNameLogsTodayByPlayer(player);
+
+		if (publishNameLogs.length <= 0)
+			return toFailure(`You have not published a name yet today. You must publish a name before you can complete the "${quest.name}" quest.`);
+
+		let maxCharacters = 0;
+		for (const publishNameLog of publishNameLogs) {
+			const numCharacters = getNumDistinctCharacters(publishNameLog.currentName);
+
+			if (numCharacters >= NUM_REQUIRED_UNQIUE_CHARACTERS)
+				return PLAYER_MET_CRITERIA_RESULT;
+
+			if (numCharacters > maxCharacters)
+				maxCharacters = numCharacters;
+		}
+
+		return toFailure(`You've only published a name with ${maxCharacters} unique characters at the most. You need to publish a name with at least ${NUM_REQUIRED_UNQIUE_CHARACTERS} unique characters to complete the "${quest.name}" quest.`);
+	},
+
+	[Quests.PERK_PRIDE.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{playerService, perkService}: NamesmithServices
+	) => {
+		const perkNames = perkService.getPerkNamesOfPlayer(player);
+		const nameHasPerkName = playerService.doesNameContainAny(player, perkNames);
+
+		if (nameHasPerkName)
+			return PLAYER_MET_CRITERIA_RESULT;
+
+		const listOfPerkNames = toListOfWords(perkNames.map(name => `"${name}"`), 'or');
+		return toFailure(`Your current name does not contain the names of any of your perks. Your name must include ${listOfPerkNames} to complete the "${quest.name}" quest.`);
+	},
+
+	[Quests.ROLE_CALL.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{playerService, roleService}: NamesmithServices
+	) => {
+		const role = roleService.getRoleOfPlayer(player);
+		if (role === null)
+			return toFailure(`You do not have a role. You must have a role to complete the "${quest.name}" quest.`);
+		
+		const nameHasRoleName = playerService.doesNameContain(player, role.name);
+		if (!nameHasRoleName)
+			return toFailure(`Your current name does not contain your role's name. Your name must include "${role.name}" to complete the "${quest.name}" quest.`);
+			
+		return PLAYER_MET_CRITERIA_RESULT;
+	},
+
+	[Quests.SHOW_TOKENS.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{playerService}: NamesmithServices
+	) => {
+		const numTokensHas = playerService.getTokens(player);
+		
+		if (!playerService.hasPublishedName(player))
+			return toFailure(`You do not have a published name. You must have publish a name to complete the "${quest.name}" quest.`);
+
+		const publishedNameHasTokens = playerService.doesPublishedNameContain(player, String(numTokensHas));
+		if (!publishedNameHasTokens)
+			return toFailure(`Your published name does not contain the number of tokens you have. Your published name should have contained "${numTokensHas}" to complete the "${quest.name}" quest.`);
+			
+		return PLAYER_MET_CRITERIA_RESULT;
+	},
+
+	// Silent Server (108)
+	[Quests.SILENT_SERVER.id]: (
+		{quest}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_HOURS_OF_SILENCE_NEEDED = 8;
+		const allNameIntervals = activityLogService.getNameIntervalsThisWeek();
+
+		const changeTimestamps: number[] = [];
+		for (const interval of allNameIntervals) {
+			changeTimestamps.push(interval.startTime.getTime());
+		}
+
+		changeTimestamps.sort((a, b) => a - b);
+
+		if (changeTimestamps.length === 0)
+			return PLAYER_MET_CRITERIA_RESULT;
+
+		let maxGap = 0;
+		for (let i = 1; i < changeTimestamps.length; i++) {
+			const gap = changeTimestamps[i] - changeTimestamps[i - 1];
+			if (getHoursInTime(gap) >= NUM_HOURS_OF_SILENCE_NEEDED)
+				return PLAYER_MET_CRITERIA_RESULT;
+
+			maxGap = Math.max(maxGap, gap);
+		}
+
+		const now = new Date().getTime();
+		const gapFromLast = now - changeTimestamps[changeTimestamps.length - 1];
+		if (getHoursInTime(gapFromLast) >= NUM_HOURS_OF_SILENCE_NEEDED)
+			return PLAYER_MET_CRITERIA_RESULT;
+
+		maxGap = Math.max(maxGap, gapFromLast);
+
+		return toFailure(
+			`Players have only gone ${toDurationTextFromTime(maxGap)} at most without anyone changing their name this week. Everyone must ensure no player changes their name for a continuous ${NUM_HOURS_OF_SILENCE_NEEDED}-hour period to complete the "${quest.name}" quest.`
+		);
+	},
+} as const;

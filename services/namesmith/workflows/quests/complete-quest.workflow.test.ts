@@ -1068,7 +1068,6 @@ describe('complete-quest.workflow.ts', () => {
 						playerResolvable: SOME_PLAYER.id,
 						questResolvable: Quests.MINE_TOGETHER.id
 					});
-					console.log(result);
 					makeSure(result.isFailure()).isFalse();
 				});
 
@@ -1082,7 +1081,6 @@ describe('complete-quest.workflow.ts', () => {
 						playerResolvable: SOME_PLAYER.id,
 						questResolvable: Quests.MINE_TOGETHER.id
 					});
-					console.log(result);
 					makeSure(result.isFailure()).isTrue();
 				});
 
@@ -1096,7 +1094,6 @@ describe('complete-quest.workflow.ts', () => {
 						playerResolvable: SOME_PLAYER.id,
 						questResolvable: Quests.MINE_TOGETHER.id
 					});
-					console.log(result);
 					makeSure(result.isFailure()).isTrue();
 				});
 
@@ -1110,7 +1107,6 @@ describe('complete-quest.workflow.ts', () => {
 						playerResolvable: SOME_PLAYER.id,
 						questResolvable: Quests.MINE_TOGETHER.id
 					});
-					console.log(result);
 				makeSure(result.isFailure()).isTrue();
 				});
 			});
@@ -2510,7 +2506,6 @@ describe('complete-quest.workflow.ts', () => {
 						playerResolvable: SOME_PLAYER.id,
 						questResolvable: Quests.HOARD_TOKENS.id
 					});
-					console.log(result);
 					makeSure(result.isFailure()).isTrue();
 				});
 
@@ -2844,7 +2839,6 @@ describe('complete-quest.workflow.ts', () => {
 						playerResolvable: SOME_PLAYER,
 						questResolvable: Quests.GOLD_SPIKE
 					});
-					console.log(result);
 					makeSure(result.isFailure()).isTrue();
 				});
 
@@ -2853,7 +2847,6 @@ describe('complete-quest.workflow.ts', () => {
 						playerResolvable: SOME_PLAYER,
 						questResolvable: Quests.GOLD_SPIKE
 					});
-					console.log(result);
 					makeSure(result.isFailure()).isTrue();
 				});
 			})
@@ -3092,7 +3085,6 @@ describe('complete-quest.workflow.ts', () => {
 						playerResolvable: SOME_PLAYER.id,
 						questResolvable: Quests.TEN_MINUTE_RUSH.id
 					});
-					console.log(result);
 					makeSure(result.isFailure()).isTrue();
 				});
 
@@ -3106,7 +3098,6 @@ describe('complete-quest.workflow.ts', () => {
 						playerResolvable: SOME_PLAYER.id,
 						questResolvable: Quests.TEN_MINUTE_RUSH.id
 					});
-					console.log(result);
 					makeSure(result.isFailure()).isTrue();
 				});
 
@@ -3115,7 +3106,6 @@ describe('complete-quest.workflow.ts', () => {
 						playerResolvable: SOME_PLAYER.id,
 						questResolvable: Quests.TEN_MINUTE_RUSH.id
 					});
-					console.log(result);
 					makeSure(result.isFailure()).isTrue();
 				});
 			});
@@ -3382,7 +3372,6 @@ describe('complete-quest.workflow.ts', () => {
 						playerResolvable: SOME_PLAYER.id,
 						questResolvable: Quests.COLD_SERVER.id
 					});
-					console.log(result);
 					makeSure(result.isFailure()).isTrue();
 				});
 			});
@@ -3516,7 +3505,6 @@ describe('complete-quest.workflow.ts', () => {
 						playerResolvable: SOME_PLAYER.id,
 						questResolvable: Quests.NAMESAKE_BOX.id
 					});
-					console.log(result);
 					makeSure(result.isFailure()).isFalse();
 				});
 
@@ -3642,7 +3630,6 @@ describe('complete-quest.workflow.ts', () => {
 						playerResolvable: SOME_PLAYER.id,
 						questResolvable: Quests.RIGHTMOST.id
 					});
-					console.log(result);
 					makeSure(result.isFailure()).isTrue();
 				});
 
@@ -3961,7 +3948,6 @@ describe('complete-quest.workflow.ts', () => {
 						playerResolvable: SOME_PLAYER.id,
 						questResolvable: Quests.PRICED_RIGHT.id
 					});
-					console.log(result);
 					makeSure(result.isFailure()).isTrue();
 				});
 
@@ -4164,7 +4150,6 @@ describe('complete-quest.workflow.ts', () => {
 						playerResolvable: SOME_PLAYER.id,
 						questResolvable: Quests.EMOJI_CRAFT.id
 					});
-					console.log(result);
 					makeSure(result.isFailure()).isTrue();
 				});
 
@@ -4292,7 +4277,6 @@ describe('complete-quest.workflow.ts', () => {
 					playerResolvable: SOME_PLAYER.id,
 					questResolvable: Quests.UTILITY_MASTER.id
 				});
-				console.log(result);
 				makeSure(result.isFailure()).isFalse();
 			});
 
@@ -4335,7 +4319,6 @@ describe('complete-quest.workflow.ts', () => {
 					playerResolvable: SOME_PLAYER.id,
 					questResolvable: Quests.UTILITY_MASTER.id
 				});
-				console.log(result);
 				makeSure(result.isFailure()).isTrue();
 			});
 
@@ -4344,7 +4327,6 @@ describe('complete-quest.workflow.ts', () => {
 					playerResolvable: SOME_PLAYER.id,
 					questResolvable: Quests.UTILITY_MASTER.id
 				});
-				console.log(result);
 				makeSure(result.isFailure()).isTrue();
 			});
 		});
@@ -4703,7 +4685,6 @@ describe('complete-quest.workflow.ts', () => {
 					playerResolvable: SOME_PLAYER.id,
 					questResolvable: Quests.WIDE_DIPLOMAT.id
 				});
-				console.log(result);
 				makeSure(result.isFailure()).isTrue();
 			});
 
@@ -4712,7 +4693,6 @@ describe('complete-quest.workflow.ts', () => {
 					playerResolvable: SOME_PLAYER.id,
 					questResolvable: Quests.WIDE_DIPLOMAT.id
 				});
-				console.log(result);
 				makeSure(result.isFailure()).isTrue();
 			});
 		});
@@ -5441,7 +5421,6 @@ describe('complete-quest.workflow.ts', () => {
 					playerResolvable: SOME_PLAYER.id,
 					questResolvable: Quests.NO_PERK.id
 				});
-				console.log(result);
 				makeSure(result.isFailure()).isFalse();
 			});
 
@@ -5597,7 +5576,6 @@ describe('complete-quest.workflow.ts', () => {
 					playerResolvable: SOME_PLAYER.id,
 					questResolvable: Quests.PERK_NAME.id
 				});
-				console.log(result);
 				makeSure(result.isFailure()).isTrue();
 			});
 		});

@@ -117,18 +117,15 @@ describe('error.utility', () => {
 
 					const result = attempt(callbackFunction)
 						.onError(RangeError, () => {
-							console.log("Range error");
 							results.message = "Range error";
 							throw new HandledError(results.message);
 						})
 						.onError(TypeError, () => {
-							console.log("Type error");
 							results.message = "Type error";
 							throw new HandledError(results.message);
 						})
 						.getReturnValue();
 
-					console.log("Not Executed");
 
 					results.result = result;
 				}
