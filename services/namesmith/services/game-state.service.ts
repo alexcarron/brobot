@@ -50,37 +50,58 @@ export class GameStateService {
 		return GameStateService.fromDB(db);
 	}
 
-	get timeGameStarts(): Date {
-		return this.gameStateRepository.getTimeStarted();
+	/**
+	 * Retrieves the current game state, without requiring it to be fully defined.
+	 * @returns The current game state, with any unset fields as null.
+	 */
+	getGameState() {
+		return this.gameStateRepository.getGameState();
 	}
 
-	get timeVotingStarts(): Date {
-		return addDays(this.timeGameStarts, DAYS_TO_BUILD_NAME);
+	/**
+	 * Retrieves the current game state.
+	 * @throws {GameStateInitializationError} - If the game state is not defined.
+	 * @returns The current game state, with all fields defined.
+	 */
+	getDefinedGameState() {
+		return this.gameStateRepository.getDefinedGameState();
 	}
 
-	get timeVotingEnds(): Date {
-		return addDays(this.timeGameStarts, DAYS_TO_BUILD_NAME + DAYS_TO_VOTE);
+	throwIfNotDefined(): void {
+		this.gameStateRepository.getDefinedGameState();
 	}
 
-	get timesPickAPerkStarts(): Date[] {
+	getTimeGameStarts(): Date {
+		return this.gameStateRepository.getDefinedGameState().timeStarted;
+	}
+
+	getTimeVotingStarts(): Date {
+		return addDays(this.getTimeGameStarts(), DAYS_TO_BUILD_NAME);
+	}
+
+	getTimeVotingEnds(): Date {
+		return addDays(this.getTimeGameStarts(), DAYS_TO_BUILD_NAME + DAYS_TO_VOTE);
+	}
+
+	getTimesPickAPerkStarts(): Date[] {
 		return this.computeTimesPickAPerkStarts(
-			this.timeGameStarts,
-			this.timeVotingStarts,
+			this.getTimeGameStarts(),
+			this.getTimeVotingStarts(),
 			BIWEEKLY_PERK_DAYS_FROM_WEEK_START
 		);
 	}
 
-	get timesDayStarts(): Date[] {
+	getTimesDayStarts(): Date[] {
 		return this.computeTimesDayStarts(
-			this.timeGameStarts,
-			this.timeVotingStarts
+			this.getTimeGameStarts(),
+			this.getTimeVotingStarts()
 		);
 	}
 
-	get timesWeekStarts(): Date[] {
+	getTimesWeekStarts(): Date[] {
 		return this.computeTimesWeekStarts(
-			this.timeGameStarts,
-			this.timeVotingStarts
+			this.getTimeGameStarts(),
+			this.getTimeVotingStarts()
 		);
 	}
 
@@ -89,44 +110,14 @@ export class GameStateService {
 	 * @param startDate - The date to set as the start of the game.
 	 */
 	setupTimings(startDate: Date) {
-		this.gameStateRepository.setTimeStarted(startDate);
-		this.gameStateRepository.setTimeVoting(this.timeVotingStarts);
-		this.gameStateRepository.setTimeVotingEnds(this.timeVotingEnds);
+		const timeVotingStarts = addDays(startDate, DAYS_TO_BUILD_NAME);
+		const timeVotingEnds = addDays(startDate, DAYS_TO_BUILD_NAME + DAYS_TO_VOTE);
 
-		// logInfo(joinLines(
-		// 	`Game timings have been set to:`,
-		// 	`Game Start Time: ${toConciseReadableDate(this.timeGameStarts)}`,
-		// 	`Voting Start Time: ${toConciseReadableDate(this.timeVotingStarts)}`,
-		// 	`Voting End Time: ${toConciseReadableDate(this.timeVotingEnds)}`,
-		// 	``,
-		// 	`Pick a Perk Start Times: ${toConciseReadableDates(this.timesPickAPerkStarts)}`,
-		// 	``,
-		// 	`Day Start Times: ${toConciseReadableDates(this.timesDayStarts)}`,
-		// 	``,
-		// 	`Week Start Times: ${toConciseReadableDates(this.timesWeekStarts)}`,
-		// ));
-	}
-
-	/**
-	 * Throws a GameStateInitializationError if the game state is not defined.
-	 * @throws {GameStateInitializationError} - If the game state is not defined.
-	 */
-	throwIfNotDefined() {
-		const startTime = this.timeGameStarts;
-		const votingStartTime = this.timeVotingStarts;
-		const votingEndTime = this.timeVotingEnds;
-		const pickAPerkTime = this.timesPickAPerkStarts;
-		const dayStartTimes = this.timesDayStarts;
-
-		if (
-			!startTime ||
-			!votingStartTime ||
-			!votingEndTime ||
-			pickAPerkTime.length === 0 ||
-			dayStartTimes.length === 0
-		) {
-			throw new GameStateInitializationError();
-		}
+		this.gameStateRepository.setGameState({
+			timeStarted: startDate,
+			timeEnding: timeVotingStarts,
+			timeVoteIsEnding: timeVotingEnds,
+		});
 	}
 
 	/**
@@ -211,7 +202,7 @@ export class GameStateService {
 	getStartOfToday(now: Date): Date | null {
 		this.throwIfNotDefined();
 
-		const dayStarts = this.timesDayStarts;
+		const dayStarts = this.getTimesDayStarts();
 		if (dayStarts.length === 0)
 			throw new GameStateInitializationError();
 
@@ -234,7 +225,7 @@ export class GameStateService {
 	getStartOfWeek(now: Date): Date | null {
 		this.throwIfNotDefined();
 
-		const weekStarts = this.timesWeekStarts;
+		const weekStarts = this.getTimesWeekStarts();
 		if (weekStarts.length === 0)
 			throw new GameStateInitializationError();
 
@@ -260,7 +251,7 @@ export class GameStateService {
 		const dayStart = this.getStartOfToday(now);
 
 		if (dayStart === null) {
-			throw new GameIsNotActiveError(now, this.timeGameStarts!, this.timeVotingStarts!);
+			throw new GameIsNotActiveError(now, this.getTimeGameStarts(), this.getTimeVotingStarts());
 		}
 
 		return dayStart;
@@ -277,7 +268,7 @@ export class GameStateService {
 		const weekStart = this.getStartOfWeek(now);
 
 		if (weekStart === null) {
-			throw new GameIsNotActiveError(now, this.timeGameStarts!, this.timeVotingStarts!);
+			throw new GameIsNotActiveError(now, this.getTimeGameStarts(), this.getTimeVotingStarts());
 		}
 
 		return weekStart;
@@ -288,7 +279,7 @@ export class GameStateService {
 	 * If the current time is before the end time, the job will be started.
 	 * @param endDate - The end time of the game.
 	 */
-	startEndGameCronJob(endDate: Date) {
+	startEndGameCronJob(endDate: Date | null) {
 		if (endDate === null || endDate === undefined) {
 			logWarning(`The game has not been started yet, so the end game cron job will not be started.`);
 			return;
@@ -319,7 +310,7 @@ export class GameStateService {
 	 * If the current time is before the vote ending time, the job will be started.
 	 * @param voteEndingDate - The vote ending time.
 	 */
-	startVoteIsEndingCronJob(voteEndingDate: Date) {
+	startVoteIsEndingCronJob(voteEndingDate: Date | null) {
 		if (voteEndingDate === null || voteEndingDate === undefined) {
 			logWarning(`The game has not been started yet, so the vote is ending cron job will not be started.`);
 			return;
@@ -433,16 +424,17 @@ export class GameStateService {
 			weekStartCronJob.stop();
 		}
 
-		this.startEndGameCronJob(this.gameStateRepository.getTimeEnding());
-		this.startVoteIsEndingCronJob(this.gameStateRepository.getTimeVoteIsEnding());
+		const gameState = this.gameStateRepository.getGameState();
+		this.startEndGameCronJob(gameState.timeEnding);
+		this.startVoteIsEndingCronJob(gameState.timeVoteIsEnding);
 
-		const pickAPerkTimes = this.timesPickAPerkStarts;
+		const pickAPerkTimes = this.getTimesPickAPerkStarts();
 		this.startPickAPerkCronJobs(pickAPerkTimes);
 
-		const dayStartTimes = this.timesDayStarts;
+		const dayStartTimes = this.getTimesDayStarts();
 		this.startDayStartCronJobs(dayStartTimes);
 
-		const weekStartTimes = this.timesWeekStarts;
+		const weekStartTimes = this.getTimesWeekStarts();
 		this.startWeekStartCronJobs(weekStartTimes);
 	}
 
@@ -451,26 +443,22 @@ export class GameStateService {
 	 * @returns Whether the game has started.
 	 */
 	hasStarted(): boolean {
+		const { timeStarted } = this.gameStateRepository.getGameState();
+		if (timeStarted === null) return false;
+
 		const now = new Date();
-		try {
-			const startTime = this.gameStateRepository.getTimeStarted();
-			return now > startTime;
-		}
-		catch {
-			return false;
-		}
+		return now > timeStarted;
 	}
 
 	isVotingOpen(): boolean {
-		const now = new Date();
-		try {
-			const endTime = this.gameStateRepository.getTimeVoteIsEnding();
-			return now.getTime() < endTime.getTime();
-		}
-		catch {
+		const { timeVoteIsEnding } = this.gameStateRepository.getGameState();
+		if (timeVoteIsEnding === null) {
 			logWarning(`Could not determine if voting is closed because the game state is not fully initialized.`);
 			return false;
 		}
+
+		const now = new Date();
+		return now.getTime() < timeVoteIsEnding.getTime();
 	}
 
 	/**
@@ -478,18 +466,25 @@ export class GameStateService {
 	 * @param {string} theme - The theme of the game.
 	 */
 	setTheme(theme: string): void {
-		this.gameStateRepository.setTheme(theme);
+		this.gameStateRepository.setGameState({ theme });
 	}
 
 	/**
 	 * Retrieves the theme of the game from the game state.
-	 * @returns The theme of the game.
+	 * @returns The theme of the game, or null if no theme is set.
 	 */
-	getTheme(): string {
-		const theme = this.gameStateRepository.getTheme();
-		if (theme === null) {
-			throw new GameStateInitializationError();
-		}
+	getTheme(): string | null {
+		return this.gameStateRepository.getGameState().theme;
+	}
+
+	/**
+	 * Retrieves the theme for the current game from the game state, throwing if it hasn't been set.
+	 * @throws {GameStateInitializationError} - If no theme is set.
+	 * @returns The theme for the current game.
+	 */
+	getThemeOrThrow(): string {
+		const theme = this.getTheme();
+		if (theme === null) throw new GameStateInitializationError();
 		return theme;
 	}
 

@@ -11,12 +11,17 @@ describe('GameStateRepository', () => {
 		gameStateRepo = GameStateRepository.asMock();
 	})
 
-  describe('getGameState()', () => {
-    it('should throw an error if the game state is not set', () => {
-			expect(() => gameStateRepo.getDefinedGameState()).toThrow();
-    });
+	describe('getGameState()', () => {
+		it('should return an object with null properties if the game state is not set', () => {
+			const gameState = gameStateRepo.getGameState();
 
-    it('should return an object with timeStarted, timeEnding, and timeVoteIsEnding properties when set', () => {
+			expect(gameState).toHaveProperty('timeStarted', null);
+			expect(gameState).toHaveProperty('timeEnding', null);
+			expect(gameState).toHaveProperty('timeVoteIsEnding', null);
+			expect(gameState).toHaveProperty('theme', null);
+		});
+
+		it('should return an object with timeStarted, timeEnding, and timeVoteIsEnding properties when set', () => {
 			gameStateRepo.setGameState({
 				timeStarted: TEST_DATE,
 				timeEnding: TEST_DATE,
@@ -24,13 +29,35 @@ describe('GameStateRepository', () => {
 				theme: 'Theme',
 			});
 
-      const gameState = gameStateRepo.getDefinedGameState();
+			const gameState = gameStateRepo.getGameState();
 
 			expect(gameState).toHaveProperty('timeStarted', TEST_DATE);
 			expect(gameState).toHaveProperty('timeEnding', TEST_DATE);
 			expect(gameState).toHaveProperty('timeVoteIsEnding', TEST_DATE);
 			expect(gameState).toHaveProperty('theme', 'Theme');
-    });
+		});
+	});
+
+	describe('getDefinedGameState()', () => {
+		it('should throw an error if the game state is not set', () => {
+			expect(() => gameStateRepo.getDefinedGameState()).toThrow();
+		});
+
+		it('should return an object with timeStarted, timeEnding, and timeVoteIsEnding properties when set', () => {
+			gameStateRepo.setGameState({
+				timeStarted: TEST_DATE,
+				timeEnding: TEST_DATE,
+				timeVoteIsEnding: TEST_DATE,
+				theme: 'Theme',
+			});
+
+			const gameState = gameStateRepo.getDefinedGameState();
+
+			expect(gameState).toHaveProperty('timeStarted', TEST_DATE);
+			expect(gameState).toHaveProperty('timeEnding', TEST_DATE);
+			expect(gameState).toHaveProperty('timeVoteIsEnding', TEST_DATE);
+			expect(gameState).toHaveProperty('theme', 'Theme');
+		});
 	});
 
 	describe('throwIfNotDefined()', () => {
@@ -107,119 +134,4 @@ describe('GameStateRepository', () => {
 		});
 	});
 
-	describe('getTimeStarted()', () => {
-		it('should return the timeStarted property', () => {
-			gameStateRepo.setGameState({
-				timeStarted: DIFFERENT_DATE,
-				timeEnding: TEST_DATE,
-				timeVoteIsEnding: TEST_DATE,
-			});
-			const timeStarted = gameStateRepo.getTimeStarted();
-			expect(timeStarted).toEqual(DIFFERENT_DATE);
-		});
-	});
-
-	describe('setTimeStarted()', () => {
-		it('should set the timeStarted property', () => {
-			gameStateRepo.setGameState({
-				timeStarted: TEST_DATE,
-				timeEnding: TEST_DATE,
-				timeVoteIsEnding: TEST_DATE,
-				theme: 'Theme',
-			});
-
-			gameStateRepo.setTimeStarted(DIFFERENT_DATE);
-
-			const gameState = gameStateRepo.getDefinedGameState();
-			expect(gameState.timeStarted).toEqual(DIFFERENT_DATE);
-		});
-	});
-
-	describe('getTimeEnding()', () => {
-		it('should return the timeEnding property', () => {
-			gameStateRepo.setGameState({
-				timeStarted: TEST_DATE,
-				timeEnding: DIFFERENT_DATE,
-				timeVoteIsEnding: TEST_DATE,
-			});
-			const timeEnding = gameStateRepo.getTimeEnding();
-			expect(timeEnding).toEqual(DIFFERENT_DATE);
-		});
-	});
-
-	describe('setTimeEnding()', () => {
-		it('should set the timeEnding property', () => {
-			gameStateRepo.setGameState({
-				timeStarted: TEST_DATE,
-				timeEnding: TEST_DATE,
-				timeVoteIsEnding: TEST_DATE,
-				theme: 'Theme',
-			});
-
-			gameStateRepo.setTimeVoting(DIFFERENT_DATE);
-			const gameState = gameStateRepo.getDefinedGameState();
-			expect(gameState.timeEnding).toEqual(DIFFERENT_DATE);
-		});
-	});
-
-	describe('getTimeVoteIsEnding()', () => {
-		it('should return the timeVoteIsEnding property', () => {
-			gameStateRepo.setGameState({
-				timeStarted: TEST_DATE,
-				timeEnding: TEST_DATE,
-				timeVoteIsEnding: DIFFERENT_DATE,
-			});
-
-			const timeVoteIsEnding = gameStateRepo.getTimeVoteIsEnding();
-			expect(timeVoteIsEnding).toEqual(DIFFERENT_DATE);
-		});
-	});
-
-	describe('setTimeVoteIsEnding()', () => {
-		it('should set the timeVoteIsEnding property', () => {
-			gameStateRepo.setGameState({
-				timeStarted: TEST_DATE,
-				timeEnding: TEST_DATE,
-				timeVoteIsEnding: TEST_DATE,
-				theme: 'Theme',
-			});
-			gameStateRepo.setTimeVotingEnds(DIFFERENT_DATE);
-			const gameState = gameStateRepo.getDefinedGameState();
-			expect(gameState.timeVoteIsEnding).toEqual(DIFFERENT_DATE);
-		});
-	});
-	describe('getTheme()', () => {
-		it('should return the theme property', () => {
-			gameStateRepo.setGameState({
-				timeStarted: TEST_DATE,
-				timeEnding: TEST_DATE,
-				timeVoteIsEnding: TEST_DATE,
-				theme: 'Theme',
-			});
-
-			const theme = gameStateRepo.getTheme();
-			expect(theme).toEqual('Theme');
-		});
-
-		it('should return null if no theme is set', () => {
-			const theme = gameStateRepo.getTheme();
-			expect(theme).toBeNull();
-		});
-	});
-
-	describe('setTheme()', () => {
-		it('should set the theme property', () => {
-			gameStateRepo.setGameState({
-				timeStarted: TEST_DATE,
-				timeEnding: TEST_DATE,
-				timeVoteIsEnding: TEST_DATE,
-				theme: 'Theme',
-			});
-
-			gameStateRepo.setTheme('DifferentTheme');
-
-			const gameState = gameStateRepo.getDefinedGameState();
-			expect(gameState.theme).toEqual('DifferentTheme');
-		});
-	});
 });

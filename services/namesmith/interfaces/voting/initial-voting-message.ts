@@ -10,11 +10,23 @@ import { getSeeMyVotesButton } from "./see-my-votes-button";
 
 export function getInitialVotingMessage() {
 	const {gameStateService} = getNamesmithServices();
-	const voteEndDate = gameStateService.timeVotingEnds;
-	
+	const voteEndDate = gameStateService.getTimeVotingEnds();
+	const theme = gameStateService.getTheme();
+
+	let themeSection = undefined;
+	if (theme) {
+		themeSection = [
+			`The theme players had to follow was **${theme}**.`,
+			``,
+		];
+	}
+
 	const initialVotingMessage = new DiscordButtons({
 		promptText: joinLines(
-			`The game has ended. Now you can vote on the players' final names.`,
+			`The game has ended.`,
+			``,
+			themeSection,
+			`Now you can vote on the players' final names.`,
 			``,
 			`Select your top three favorite names using the buttons below each name:`,
 			`🥇 **Vote 1st** (Your favorite)`,

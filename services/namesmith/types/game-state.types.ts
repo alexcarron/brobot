@@ -14,7 +14,7 @@ export const DefinedGameStateType = object.asType({
 	timeStarted: date,
 	timeEnding: date,
 	timeVoteIsEnding: date,
-	theme: string,
+	theme: string.orNull,
 });
 export const isGameStateDefined = DefinedGameStateType.isType;
 export type DefinedGameState = ExtractType<typeof DefinedGameStateType>;

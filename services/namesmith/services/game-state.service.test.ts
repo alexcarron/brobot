@@ -251,4 +251,37 @@ describe('GameStateService', () => {
 			expect(() => gameStateService.getStartOfTodayOrThrow(now)).toThrow(GameIsNotActiveError);
 		});
 	});
+
+	describe('getTheme()', () => {
+		it('should return null instead of throwing if the game state is not set', () => {
+			expect(gameStateService.getTheme()).toBeNull();
+		});
+
+		it('should return the theme once set', () => {
+			gameStateService.setTheme('Theme');
+			expect(gameStateService.getTheme()).toEqual('Theme');
+		});
+	});
+
+	describe('hasStarted()', () => {
+		it('should return false instead of throwing if the game state is not set', () => {
+			expect(gameStateService.hasStarted()).toBe(false);
+		});
+
+		it('should return true once the game has started', () => {
+			gameStateService.setupTimings(new Date('2025-07-11T12:00:00.000Z'));
+			expect(gameStateService.hasStarted()).toBe(true);
+		});
+	});
+
+	describe('isVotingOpen()', () => {
+		it('should return false instead of throwing if the game state is not set', () => {
+			expect(gameStateService.isVotingOpen()).toBe(false);
+		});
+
+		it('should return true while voting is still open', () => {
+			gameStateService.setupTimings(new Date('2025-07-12T12:00:00.000Z'));
+			expect(gameStateService.isVotingOpen()).toBe(true);
+		});
+	});
 });

@@ -60,7 +60,7 @@ export async function startGame(theme: string): Promise<void> {
 	gameStateService.setupTimings(now);
 	gameStateService.scheduleGameEvents();
 
-	const timeVotingStarts = gameStateService.timeVotingStarts;
+	const timeVotingStarts = gameStateService.getTimeVotingStarts();
 	
 	await sendToNamesmithChannel(ids.namesmith.channels.DEVELOPMENT_NEWS, joinLines(
 		`<@&${ids.namesmith.roles.smithedName}> <@&${ids.namesmith.roles.noName}>`,

@@ -9,13 +9,16 @@ import { toRankEmoji } from "../utilities/feedback-message.utility";
 function getNameArchiveMessageContents(
 	{guildName, theme, placements}: {
 		guildName: string;
-		theme: string;
+		theme: string | null;
 		placements: Placement[];
 	}
 ): string {
+	let themeLine = undefined;
+	if (theme) themeLine = `The theme was **${theme}**.`;
+	
 	return joinLines(
 		`# ${guildName}`,
-		`The theme was **${theme}**.`,
+		themeLine,
 		...placements.map(({rank, player, name}) =>
 			rank <= 3 
 				? `> ${toRankEmoji(RANKS[rank - 1])} <@${player.id}> ${name}`
