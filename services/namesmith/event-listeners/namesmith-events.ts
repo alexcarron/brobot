@@ -21,6 +21,10 @@ export const NamesmithEvents = {
 	}>(),
 
 	PickAPerk: createEventHandler<{}>(),
+
+	RefillReminder: createEventHandler<{
+		playerID: string;
+	}>(),
 };
 
 export type RelevantDataOf<

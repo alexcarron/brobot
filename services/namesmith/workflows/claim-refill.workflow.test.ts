@@ -3,6 +3,13 @@ jest.mock("../../../utilities/random-utils", () => ({
   getAnticipatedRandomNum: jest.fn(({expectedValue}) => expectedValue),
 }));
 
+jest.mock('cron', () => ({
+  CronJob: jest.fn(() => ({
+    start: jest.fn(),
+    stop: jest.fn(),
+  })),
+}));
+
 import { addDays, addHours } from "../../../utilities/date-time-utils";
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { AVERAGE_TOKENS_FROM_REFILLING, REFILL_COOLDOWN_HOURS } from "../constants/namesmith.constants";
@@ -202,6 +209,35 @@ describe('claim-tokens.workflow', () => {
 			});
 
 			makeSure(result.isNotAPlayer()).isTrue();
+		});
+
+		it('should schedule a refill reminder if the player has reminders enabled', () => {
+			const mockPlayer = addMockPlayer(db, { tokens: 10 });
+			const { playerService, refillReminderService } = getNamesmithServices();
+			playerService.setRefillReminderEnabled(mockPlayer.id, true);
+
+			const scheduleReminder = jest.spyOn(refillReminderService, 'scheduleReminder');
+
+			const result = returnIfNotFailure(claimRefill({
+				...getNamesmithServices(),
+				playerRefilling: mockPlayer.id
+			}));
+
+			expect(scheduleReminder).toHaveBeenCalledWith(mockPlayer.id, result.nextRefillTime);
+		});
+
+		it('should not schedule a refill reminder if the player does not have reminders enabled', () => {
+			const mockPlayer = addMockPlayer(db, { tokens: 10 });
+			const { refillReminderService } = getNamesmithServices();
+
+			const scheduleReminder = jest.spyOn(refillReminderService, 'scheduleReminder');
+
+			claimRefill({
+				...getNamesmithServices(),
+				playerRefilling: mockPlayer.id
+			});
+
+			expect(scheduleReminder).not.toHaveBeenCalled();
 		});
 	});
 });

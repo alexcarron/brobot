@@ -316,6 +316,14 @@ export async function editReplyToInteraction(interaction: CommandInteraction | M
 	throw new Error('Interaction is not deferred or replied');
 }
 
+/**
+ * Adds a reply to an interaction with the provided message content.
+ * Alternatively, edits the reply if the interaction has already been replied to. 
+ * If the interaction has not been replied to or deferred, it will attempt to reply ephemerally first, then normally, and finally as a follow-up if all else fails.
+ * @param interaction - The interaction to reply to.
+ * @param lines - The content of the message to reply with.
+ * @returns A promise that resolves when the message is sent.
+ */
 export async function addReplyToInteraction(interaction: CommandInteraction | MessageComponentInteraction | ModalSubmitInteraction | ButtonInteraction, ...lines: any[]) {
 	let interactionReplyOptions: InteractionReplyOptions;
 	if (isArrayOfOneObject(lines)) {
@@ -352,6 +360,15 @@ export async function addReplyToInteraction(interaction: CommandInteraction | Me
 			flags: MessageFlags.Ephemeral,
 		});
 	}
+}
+
+/**
+ * Removes all components (buttons, select menus, etc.) from the message a button interaction was triggered on, so a stale button can't be pressed again. This also acknowledges the interaction, so any further reply to it must be a follow-up rather than a reply.
+ * @param buttonInteraction - The button interaction whose message is having its components removed.
+ * @returns A promise that resolves once the message has been updated.
+ */
+export async function removeComponentsFromButtonInteractionMessage(buttonInteraction: ButtonInteraction): Promise<void> {
+	await buttonInteraction.update({ components: [] });
 }
 
 /**

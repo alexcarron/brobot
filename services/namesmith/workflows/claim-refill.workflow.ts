@@ -39,7 +39,7 @@ export const claimRefill = (
 		tokenOverride?: number
 	}
 ) => {
-	const {playerService, perkService, activityLogService} = getNamesmithServices();
+	const {playerService, perkService, activityLogService, refillReminderService} = getNamesmithServices();
 
 	if (!playerService.isPlayer(playerRefilling)) {
 		return result.failure.notAPlayer();
@@ -116,6 +116,11 @@ export const claimRefill = (
 
 	const newTokenCount = playerService.getTokens(playerRefilling);
 	const nextRefillTime = addHours(newLastRefillTime, REFILL_COOLDOWN_HOURS);
+
+	if (playerService.hasRefillReminderEnabled(playerRefilling)) {
+		refillReminderService.scheduleReminder(playerService.resolveID(playerRefilling), nextRefillTime);
+	}
+
 	return result.success({
 		baseTokensEarned,
 		newTokenCount,

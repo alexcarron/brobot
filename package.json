@@ -74,6 +74,7 @@
 		"@types/fluent-ffmpeg": "^2.1.24",
 		"@types/fs-extra": "^11.0.4",
 		"@types/jest": "^30.0.0",
+		"@types/mocha": "^10.0.10",
 		"@types/node": "^24.0.14",
 		"@types/request": "^2.48.13",
 		"@types/ws": "^8.18.1",

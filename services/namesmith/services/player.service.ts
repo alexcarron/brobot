@@ -628,6 +628,20 @@ export class PlayerService {
 		this.playerRepository.resetAllHasPickedPerk();
 	}
 
+	hasRefillReminderEnabled(playerResolvable: PlayerResolvable): boolean {
+		const playerID = this.resolveID(playerResolvable);
+		return this.playerRepository.getRefillReminderEnabled(playerID);
+	}
+
+	setRefillReminderEnabled(playerResolvable: PlayerResolvable, enabled: boolean) {
+		const playerID = this.resolveID(playerResolvable);
+		this.playerRepository.setRefillReminderEnabled(playerID, enabled);
+	}
+
+	getPlayerIDsWithRefillReminderEnabled(): PlayerID[] {
+		return this.playerRepository.getPlayerIDsWithRefillReminderEnabled();
+	}
+
 	/**
 	 * Checks if the current name of a player contains a given substring.
 	 * Case is ignored.

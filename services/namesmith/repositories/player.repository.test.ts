@@ -562,6 +562,50 @@ describe('PlayerRepository', () => {
 		});
 	});
 
+	describe('getRefillReminderEnabled()', () => {
+		it('returns false if the player has never toggled reminders', () => {
+			makeSure(playerRepository.getRefillReminderEnabled(SOME_PLAYER.id)).is(false);
+		});
+
+		it('returns true after being enabled', () => {
+			playerRepository.setRefillReminderEnabled(SOME_PLAYER.id, true);
+			makeSure(playerRepository.getRefillReminderEnabled(SOME_PLAYER.id)).is(true);
+		});
+	});
+
+	describe('setRefillReminderEnabled()', () => {
+		it('sets refillReminderEnabled to true', () => {
+			playerRepository.setRefillReminderEnabled(SOME_PLAYER.id, true);
+			makeSure(playerRepository.getRefillReminderEnabled(SOME_PLAYER.id)).is(true);
+		});
+
+		it('sets refillReminderEnabled to false after being enabled', () => {
+			playerRepository.setRefillReminderEnabled(SOME_PLAYER.id, true);
+			playerRepository.setRefillReminderEnabled(SOME_PLAYER.id, false);
+			makeSure(playerRepository.getRefillReminderEnabled(SOME_PLAYER.id)).is(false);
+		});
+
+		it('does not affect other players', () => {
+			playerRepository.setRefillReminderEnabled(SOME_PLAYER.id, true);
+			makeSure(playerRepository.getRefillReminderEnabled(SOME_OTHER_PLAYER.id)).is(false);
+		});
+
+		it('throws an error if the player is not found', () => {
+			expect(() => playerRepository.setRefillReminderEnabled(INVALID_PLAYER_ID, true)).toThrow();
+		});
+	});
+
+	describe('getPlayerIDsWithRefillReminderEnabled()', () => {
+		it('returns an empty array if no player has enabled reminders', () => {
+			makeSure(playerRepository.getPlayerIDsWithRefillReminderEnabled()).is([]);
+		});
+
+		it('returns the IDs of only the players who have enabled reminders', () => {
+			playerRepository.setRefillReminderEnabled(SOME_PLAYER.id, true);
+			makeSure(playerRepository.getPlayerIDsWithRefillReminderEnabled()).is([SOME_PLAYER.id]);
+		});
+	});
+
 	describe('resolvePlayers()', () => {
 		it('resolves a rest parameter list of player resolvables to player objects', () => {
 			const playersResolvable = [SOME_PLAYER.id, SOME_OTHER_PLAYER.id];

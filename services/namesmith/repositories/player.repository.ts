@@ -497,6 +497,50 @@ export class PlayerRepository {
 	}
 
 	/**
+	 * Retrieves whether a player has opted in to refill cooldown reminders.
+	 * @param playerID - The ID of the player whose refill reminder setting is being retrieved.
+	 * @returns True if the player has opted in, otherwise false. Defaults to false if the player has never toggled reminders.
+	 */
+	getRefillReminderEnabled(playerID: PlayerID): boolean {
+		const refillReminderEnabled = this.db.getValue(
+			"SELECT refillReminderEnabled FROM playerReminder WHERE playerID = @id",
+			{ id: playerID }
+		);
+
+		return refillReminderEnabled === 1;
+	}
+
+	/**
+	 * Sets whether a player has opted in to refill cooldown reminders.
+	 * @param playerID - The ID of the player whose refill reminder setting is being set.
+	 * @param enabled - Whether the player should receive refill cooldown reminders.
+	 * @throws {PlayerNotFoundError} - If the player with the specified ID is not found.
+	 */
+	setRefillReminderEnabled(playerID: PlayerID, enabled: boolean): void {
+		if (this.doesPlayerExist(playerID) === false)
+			throw new PlayerNotFoundError(playerID);
+
+		this.db.run(
+			`INSERT INTO playerReminder (playerID, refillReminderEnabled)
+			VALUES (@id, @enabled)
+			ON CONFLICT(playerID) DO UPDATE SET refillReminderEnabled = @enabled`,
+			{ id: playerID, enabled: DBBoolean.fromDomain(enabled) }
+		);
+	}
+
+	/**
+	 * Retrieves the IDs of all players who have opted in to refill cooldown reminders.
+	 * @returns An array of player IDs.
+	 */
+	getPlayerIDsWithRefillReminderEnabled(): PlayerID[] {
+		const rows = this.db.getRows(
+			"SELECT playerID FROM playerReminder WHERE refillReminderEnabled = 1"
+		) as { playerID: PlayerID }[];
+
+		return rows.map(row => row.playerID);
+	}
+
+	/**
 	 * Retrieves the role ID of a player from the namesmith database.
 	 * @param playerID - The ID of the player whose role ID is being retrieved.
 	 * @returns The role ID of the player, or null if the player does not exist.

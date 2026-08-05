@@ -3,6 +3,7 @@ import { onDayStart } from './on-day-start';
 import { onNameChange } from './on-name-change';
 import { onNamePublish } from './on-name-publish';
 import { onPickAPerk } from './on-pick-a-perk';
+import { onRefillReminder } from './on-refill-reminder';
 import { onVotingEnd } from './on-voting-end';
 import { onVotingStart } from './on-voting-start';
 import { onVotingStartReminder } from './on-voting-start-reminder';
@@ -20,4 +21,5 @@ export function setupEventListeners() {
 	NamesmithEvents.PickAPerk.doWhenItOccurs(onPickAPerk);
 	NamesmithEvents.DayStart.doWhenItOccurs(onDayStart);
 	NamesmithEvents.WeekStart.doWhenItOccurs(onWeekStart);
+	NamesmithEvents.RefillReminder.doWhenItOccurs(onRefillReminder);
 }

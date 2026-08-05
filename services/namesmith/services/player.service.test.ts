@@ -731,6 +731,37 @@ describe('PlayerService', () => {
     })
   })
 
+  describe('hasRefillReminderEnabled()', () => {
+    it('should return false if the player has never toggled reminders', () => {
+      makeSure(playerService.hasRefillReminderEnabled(SOME_PLAYER.id)).isFalse();
+    });
+
+    it('should return true after being enabled', () => {
+      playerService.setRefillReminderEnabled(SOME_PLAYER.id, true);
+      makeSure(playerService.hasRefillReminderEnabled(SOME_PLAYER.id)).isTrue();
+    });
+  });
+
+  describe('setRefillReminderEnabled()', () => {
+    it('should enable refill reminders for the player', () => {
+      playerService.setRefillReminderEnabled(SOME_PLAYER.id, true);
+      makeSure(playerService.hasRefillReminderEnabled(SOME_PLAYER.id)).isTrue();
+    });
+
+    it('should disable refill reminders for the player', () => {
+      playerService.setRefillReminderEnabled(SOME_PLAYER.id, true);
+      playerService.setRefillReminderEnabled(SOME_PLAYER.id, false);
+      makeSure(playerService.hasRefillReminderEnabled(SOME_PLAYER.id)).isFalse();
+    });
+  });
+
+  describe('getPlayerIDsWithRefillReminderEnabled()', () => {
+    it('should return only the IDs of players who have enabled reminders', () => {
+      playerService.setRefillReminderEnabled(SOME_PLAYER.id, true);
+      makeSure(playerService.getPlayerIDsWithRefillReminderEnabled()).is([SOME_PLAYER.id]);
+    });
+  });
+
   describe('addNewPlayer()', () => {
     it('should add a new player', () => {
       playerService.addNewPlayer("987654321");

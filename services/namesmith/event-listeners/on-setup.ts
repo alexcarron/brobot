@@ -49,12 +49,13 @@ export const initializeDependencies = async (): Promise<NamesmithDependencies> =
 export async function setupNamesmith() {
 	await initializeDependencies();
 
-	const { gameStateService } = getNamesmithServices();
+	const { gameStateService, refillReminderService } = getNamesmithServices();
 
 	setupEventListeners();
- 
+
 	if (gameStateService.hasStarted()) {
 		gameStateService.scheduleGameEvents();
+		refillReminderService.rescheduleAllPendingReminders();
 
 		await Promise.all([
 			logSetup('[TRADE MESSAGES]', regenerateAllTradeMessages()),

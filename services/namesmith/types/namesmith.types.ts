@@ -26,6 +26,7 @@ import { DayService } from "../services/day.service";
 import { DayRepository } from "../repositories/day.repository";
 import { WeekService } from "../services/week.service";
 import { WeekRepository } from "../repositories/week.repository";
+import { RefillReminderService } from "../services/refill-reminder.service";
 
 /**
  * A record of all database classes in Namesmith
@@ -84,6 +85,7 @@ export const NamesmithServiceClasses = {
 	activityLogService: ActivityLogService,
 	dayService: DayService,
 	weekService: WeekService,
+	refillReminderService: RefillReminderService,
 };
 
 /**
