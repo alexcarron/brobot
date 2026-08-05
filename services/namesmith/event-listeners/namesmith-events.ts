@@ -16,6 +16,10 @@ export const NamesmithEvents = {
 	StartVoting: createEventHandler<{}>(),
 	EndVoting: createEventHandler<{}>(),
 
+	VotingStartReminder: createEventHandler<{
+		hoursUntilVotingStarts: number;
+	}>(),
+
 	PickAPerk: createEventHandler<{}>(),
 };
 

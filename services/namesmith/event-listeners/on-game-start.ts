@@ -7,6 +7,7 @@ import { getNamesmithServices } from '../services/get-namesmith-services';
 import { clearChooseARoleChannel, clearNamesToVoteOnChannel, clearPickAPerkChannel, clearPublishedNamesChannel, clearQuestsChannel, clearTheResultsChannel, closeNamesToVoteOnChannel, closeTheResultsChannel, isNonPlayer, openPublishedNamesChannel, resetMemberToNewPlayer, sendToNamesmithChannel } from '../utilities/discord-action.utility';
 import { fetchNamesmithGuildMembers } from '../utilities/discord-fetch.utility';
 import { NamesmithEvents } from './namesmith-events';
+import { getPingForAllPlayers } from '../utilities/player-message.utility';
 
 /**
  * Starts a new game by doing the following
@@ -63,7 +64,7 @@ export async function startGame(theme: string): Promise<void> {
 	const timeVotingStarts = gameStateService.getTimeVotingStarts();
 	
 	await sendToNamesmithChannel(ids.namesmith.channels.DEVELOPMENT_NEWS, joinLines(
-		`<@&${ids.namesmith.roles.smithedName}> <@&${ids.namesmith.roles.noName}>`,
+		getPingForAllPlayers(),
 		`A new Namesmith game has started!`,
 		`The theme is: **${theme}**`,
 		``,

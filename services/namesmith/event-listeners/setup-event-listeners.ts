@@ -5,6 +5,7 @@ import { onNamePublish } from './on-name-publish';
 import { onPickAPerk } from './on-pick-a-perk';
 import { onVotingEnd } from './on-voting-end';
 import { onVotingStart } from './on-voting-start';
+import { onVotingStartReminder } from './on-voting-start-reminder';
 import { onWeekStart } from './on-week-start';
 
 /**
@@ -14,6 +15,7 @@ export function setupEventListeners() {
 	NamesmithEvents.ChangeName.doWhenItOccurs(onNameChange);
 	NamesmithEvents.PublishName.doWhenItOccurs(onNamePublish);
 	NamesmithEvents.StartVoting.doWhenItOccurs(onVotingStart);
+	NamesmithEvents.VotingStartReminder.doWhenItOccurs(onVotingStartReminder);
 	NamesmithEvents.EndVoting.doWhenItOccurs(onVotingEnd);
 	NamesmithEvents.PickAPerk.doWhenItOccurs(onPickAPerk);
 	NamesmithEvents.DayStart.doWhenItOccurs(onDayStart);

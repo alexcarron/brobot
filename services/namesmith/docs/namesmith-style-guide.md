@@ -6,19 +6,19 @@
 
 - Used for player names and highlights
 
-**Pure White**: \#ffffff
+**Pure White**: #ffffff
 
 - Used for most things including text and neutral buttons
 
-**Invisible Dark Gray**: \#202024
+**Invisible Dark Gray**: #202024
 
 - Used for player with no names meant to hide them
 
-**Faded Gray** \#d9d9d9
+**Faded Gray** #d9d9d9
 
 - A rarely used secondary color for Pure White
 
-**Pure Black**: \#010002
+**Pure Black**: #010002
 
 - A rarely used color for element we want very dark
 

@@ -4,7 +4,7 @@ import { getNamesmithServices } from "../../services/namesmith/services/get-name
 import { joinLines, toAmountOfNoun } from "../../utilities/string-manipulation-utils";
 import { claimRefill } from "../../services/namesmith/workflows/claim-refill.workflow";
 import { toUnixTimestamp } from "../../utilities/date-time-utils";
-import { getTokensEarnedFeedback, toTokenEmojis } from "../../services/namesmith/utilities/feedback-message.utility";
+import { getTokensEarnedFeedback, toTokenEmojis } from "../../services/namesmith/utilities/player-message.utility";
 
 export const command = new SlashCommand({
 	name: "claim-refill",

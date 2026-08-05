@@ -1,6 +1,6 @@
 import { addSIfPlural, escapeDiscordMarkdown, joinLines, toNumericOrdinal } from "../../../../utilities/string-manipulation-utils";
 import { Placement, Rank, RANKS, Ranks } from "../../types/vote.types";
-import { toRankEmoji } from "../../utilities/feedback-message.utility";
+import { toRankEmoji } from "../../utilities/player-message.utility";
 
 function getNormalPlacementMessageContents(placement: Placement) {
 	const rankOrdinal = toNumericOrdinal(placement.rank);

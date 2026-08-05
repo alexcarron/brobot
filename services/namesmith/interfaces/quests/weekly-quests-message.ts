@@ -6,6 +6,7 @@ import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { Quest } from "../../types/quest.types";
 import { fetchNamesmithChannel } from "../../utilities/discord-fetch.utility";
 import { toQuestButton } from "./complete-quest-button";
+import { getPingForAllPlayers } from "../../utilities/player-message.utility";
 
 /**
  * Sends a message to the quests channel containing the daily quests.
@@ -19,7 +20,7 @@ export async function sendShownWeeklyQuestsMessages(): Promise<void> {
 
 	await setNewMessageInChannel(shownWeeklyQuestsChannel,
 		'# Weekly Quests',
-		`<@&${ids.namesmith.roles.smithedName}> <@&${ids.namesmith.roles.noName}>`,
+		getPingForAllPlayers(),
 		'Every week, 3-4 weekly quests are shown here for you to complete. These quests take longer and require more effort than daily quests, but they grant higher rewards. Do what the quest asks and click the "Complete Quest" button to claim your reward!',
 	);
 

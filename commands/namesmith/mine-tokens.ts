@@ -1,7 +1,7 @@
 import { ids } from "../../bot-config/discord-ids";
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
-import { getTokensEarnedFeedback } from "../../services/namesmith/utilities/feedback-message.utility";
+import { getTokensEarnedFeedback } from "../../services/namesmith/utilities/player-message.utility";
 import { mineTokens } from "../../services/namesmith/workflows/mine-tokens.workflow";
 import { toAmountOfNoun } from "../../utilities/string-manipulation-utils";
 

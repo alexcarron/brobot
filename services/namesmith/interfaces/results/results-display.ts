@@ -6,6 +6,7 @@ import { Duration } from '../../../../utilities/date-time-utils';
 import { wait } from "../../../../utilities/realtime-utils";
 import { isString } from "../../../../utilities/types/type-guards";
 import { getPlacementMessageContents } from "./placement-message";
+import { getPingForAllPlayers } from "../../utilities/player-message.utility";
 
 /**
  * Sends the display messages for announcing the winner after voting ends
@@ -18,7 +19,7 @@ export async function sendResultsDisplay(
 }) {
 	await sendWithDelay(`# The Results`);
 	await sendWithDelay(
-		`<@&${ids.namesmith.roles.smithedName}> <@&${ids.namesmith.roles.noName}>`,
+		getPingForAllPlayers(),
 		`Voting has ended. Each name now has a total score.`
 	);
 	await sendWithDelay(`You will NOW see the final rankings revealed from last place to 1st place.`);

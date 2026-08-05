@@ -4,7 +4,7 @@ import { joinLines } from "../../../utilities/string-manipulation-utils";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { Placement, RANKS } from "../types/vote.types";
 import { fetchNamesmithChannel, fetchNamesmithGuild } from "../utilities/discord-fetch.utility";
-import { toRankEmoji } from "../utilities/feedback-message.utility";
+import { toRankEmoji } from "../utilities/player-message.utility";
 
 function getNameArchiveMessageContents(
 	{guildName, theme, placements}: {

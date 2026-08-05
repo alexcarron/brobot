@@ -1,5 +1,15 @@
+import { ids } from "../../../bot-config/discord-ids";
 import { toAmountOfNoun } from "../../../utilities/string-manipulation-utils";
 import { Rank, Ranks } from "../types/vote.types";
+
+/**
+ * Returns the mentions that ping every player in the game, whether or not they have smithed a name yet.
+ * This is a function rather than a constant because the role IDs are resolved from the current environment each time they are read.
+ * @returns The mentions to include in a message that should ping every player.
+ */
+export function getPingForAllPlayers(): string {
+	return `<@&${ids.namesmith.roles.smithedName}> <@&${ids.namesmith.roles.noName}>`;
+}
 
 export function getTokensEarnedFeedback(
 	numTokensEarned: number,

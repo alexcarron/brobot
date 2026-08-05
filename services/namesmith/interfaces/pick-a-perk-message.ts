@@ -9,7 +9,7 @@ import { DiscordButtonDefinition } from '../../../utilities/discord-interfaces/d
 import { ignoreError } from "../../../utilities/error-utils";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { sortByAscendingProperty } from "../../../utilities/data-structure-utils";
-import { getTokensEarnedFeedback } from "../utilities/feedback-message.utility";
+import { getPingForAllPlayers, getTokensEarnedFeedback } from "../utilities/player-message.utility";
 import { confirmInteraction } from "../../../utilities/discord-interfaces/discord-interface-utils";
 
 /**
@@ -27,7 +27,7 @@ export function createPickAPerkMessage(
 
 	const message = joinLines(
 		'# Pick a Perk',
-		`<@&${ids.namesmith.roles.smithedName}> <@&${ids.namesmith.roles.noName}>`,
+		getPingForAllPlayers(),
 		'Choose one of the three perks below to gain a unique, permanent enhancement to your Namesmith gameplay.',
 		threePerks.map(toPerkBulletPoint),
 		'',

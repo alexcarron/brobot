@@ -1,27 +1,22 @@
-import { CronJob } from "cron";
 import { logWarning } from "../../../utilities/logging-utils";
 import { GameStateRepository } from "../repositories/game-state.repository";
 import { VoteService } from "./vote.service";
 import { PlayerService } from "./player.service";
-import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { RecipeService } from "./recipe.service";
-import { addDays } from "../../../utilities/date-time-utils";
+import { addDays, addHours } from "../../../utilities/date-time-utils";
+import { CronJobScheduler } from "../../../utilities/cron-job-scheduler";
 import { DatabaseQuerier } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
 import { NamesmithEvents } from "../event-listeners/namesmith-events";
 import { GameIsNotActiveError, GameStateInitializationError } from "../utilities/error.utility";
-import { BIWEEKLY_PERK_DAYS_FROM_WEEK_START, DAYS_TO_BUILD_NAME, DAYS_TO_VOTE } from "../constants/game-state.constants";
+import { BIWEEKLY_PERK_DAYS_FROM_WEEK_START, DAYS_TO_BUILD_NAME, DAYS_TO_VOTE, HOURS_BEFORE_VOTING_TO_SEND_REMINDER } from "../constants/game-state.constants";
 
 /**
  * Provides methods for interacting with the game state.
  */
 export class GameStateService {
-	private endGameCronJob?: CronJob;
-	private voteIsEndingCronJob?: CronJob;
-	private pickAPerkCronJobs: CronJob[] = [];
-	private dayStartCronJobs: CronJob[] = [];
-	private weekStartCronJobs: CronJob[] = [];
-	
+	private gameEventsScheduler = new CronJobScheduler("Namesmith game events");
+
 	/**
 	 * Constructs a new GameStateService instance.
 	 * @param gameStateRepository - The repository used for accessing the game state.
@@ -103,6 +98,19 @@ export class GameStateService {
 			this.getTimeGameStarts(),
 			this.getTimeVotingStarts()
 		);
+	}
+
+	/**
+	 * Returns when each reminder to finalize a name is sent, along with how many hours before voting starts that reminder is.
+	 * @returns An entry for each configured reminder, in the order the reminders are configured.
+	 */
+	getTimesVotingStartRemindersSend(): { time: Date; hoursUntilVotingStarts: number }[] {
+		const timeVotingStarts = this.getTimeVotingStarts();
+
+		return HOURS_BEFORE_VOTING_TO_SEND_REMINDER.map(hoursUntilVotingStarts => ({
+			time: addHours(timeVotingStarts, -hoursUntilVotingStarts),
+			hoursUntilVotingStarts,
+		}));
 	}
 
 	/**
@@ -275,167 +283,41 @@ export class GameStateService {
 	}
 
 	/**
-	 * Starts a cron job that will end the game at the end time stored in the game state.
-	 * If the current time is before the end time, the job will be started.
-	 * @param endDate - The end time of the game.
-	 */
-	startEndGameCronJob(endDate: Date | null) {
-		if (endDate === null || endDate === undefined) {
-			logWarning(`The game has not been started yet, so the end game cron job will not be started.`);
-			return;
-		}
-
-		if (this.endGameCronJob !== undefined) {
-			logWarning(`The end game cron job has already been started, so it will not be started again.`);
-			return;
-		}
-
-		const now = new Date();
-
-		const endGameCronJob = new CronJob(
-			endDate,
-			() => {
-				NamesmithEvents.StartVoting.triggerEvent({});
-			},
-		);
-
-		if (now < endDate && !this.endGameCronJob) {
-			endGameCronJob.start();
-			this.endGameCronJob = endGameCronJob;
-		}
-	}
-
-	/**
-	 * Starts a cron job that will end voting at the vote ending time stored in the game state.
-	 * If the current time is before the vote ending time, the job will be started.
-	 * @param voteEndingDate - The vote ending time.
-	 */
-	startVoteIsEndingCronJob(voteEndingDate: Date | null) {
-		if (voteEndingDate === null || voteEndingDate === undefined) {
-			logWarning(`The game has not been started yet, so the vote is ending cron job will not be started.`);
-			return;
-		}
-
-		if (!(voteEndingDate instanceof Date))
-			throw new InvalidArgumentError(`The vote ending date is not a Date object: ${voteEndingDate}`);
-
-		if (this.voteIsEndingCronJob !== undefined) {
-			logWarning(`The vote is ending cron job has already been started, so it will not be started again.`);
-			return;
-		}
-
-		const now = new Date();
-
-		const voteIsEndingCronJob = new CronJob(
-			voteEndingDate,
-			() => {
-				NamesmithEvents.EndVoting.triggerEvent({});
-			},
-		);
-
-		if (now < voteEndingDate && !this.voteIsEndingCronJob) {
-			voteIsEndingCronJob.start();
-			this.voteIsEndingCronJob = voteIsEndingCronJob;
-		}
-	}
-
-	/**
-	 * Starts a cron job for each of the given pick a perk times, which will trigger the NamesmithEvents.PickAPerk event when the time is reached.
-	 * If the current time is before the pick a perk time, the job will be started.
-	 * If the pick a perk cron job has already been started, a warning will be logged and the job will not be started again.
-	 * @param pickAPerkTimes - The times at which to trigger the NamesmithEvents.PickAPerk event.
-	 */
-	startPickAPerkCronJobs(pickAPerkTimes: Date[]) {
-		if (this.pickAPerkCronJobs.length > 0) {
-			logWarning(`The pick a perk cron job has already been started, so it will not be started again.`);
-			return;
-		}
-
-		const now = new Date();
-		for (const pickAPerkTime of pickAPerkTimes) {
-			const pickAPerkCronJob = new CronJob(
-				pickAPerkTime,
-				() => {
-					NamesmithEvents.PickAPerk.triggerEvent({});
-				},
-			);
-
-			if (now < pickAPerkTime) {
-				pickAPerkCronJob.start();
-				this.pickAPerkCronJobs.push(pickAPerkCronJob);
-			}
-		}
-	}
-
-	/**
-	 * Starts a cron job for each of the given day start times, which will trigger the NamesmithEvents.DayStart event when the time is reached.
-	 * If the current time is before the day start time, the job will be started.
-	 * If the day start cron job has already been started, a warning will be logged and the job will not be started again.
-	 * @param dayStartTimes - The times at which to trigger the NamesmithEvents.DayStart event.
-	 */
-	startDayStartCronJobs(dayStartTimes: Date[]) {
-		for (const dayStartTime of dayStartTimes) {
-			const dayStartCronJob = new CronJob(
-				dayStartTime,
-				() => {
-					NamesmithEvents.DayStart.triggerEvent({});
-				},
-			);
-
-			const now = new Date();
-			if (now < dayStartTime) {
-				dayStartCronJob.start();
-				this.dayStartCronJobs.push(dayStartCronJob);
-			}
-		}
-	}
-
-	startWeekStartCronJobs(weekStartTimes: Date[]) {
-		for (const weekStartTime of weekStartTimes) {
-			const weekStartCronJob = new CronJob(
-				weekStartTime,
-				() => {
-					NamesmithEvents.WeekStart.triggerEvent({});
-				},
-			);
-
-			const now = new Date();
-			if (now < weekStartTime) {
-				weekStartCronJob.start();
-				this.weekStartCronJobs.push(weekStartCronJob);
-			}
-		}
-	}
-
-	/**
-	 * Starts the cron jobs to end the game and end voting at the times stored in the game state.
-	 * If the current time is before the stored times, the jobs will be started.
+	 * Schedules every timed game event, cancelling any previously scheduled ones first so this is safe to call again after a bot restart.
+	 * Events whose time has already passed are skipped rather than fired immediately.
 	 */
 	scheduleGameEvents(): void {
-		this.voteIsEndingCronJob?.stop();
-		this.endGameCronJob?.stop();
-		for (const pickAPerkCronJob of this.pickAPerkCronJobs) {
-			pickAPerkCronJob.stop();
+		this.gameEventsScheduler.cancelAll();
+
+		const { timeEnding, timeVoteIsEnding } = this.gameStateRepository.getGameState();
+
+		this.gameEventsScheduler.scheduleTaskAt("start voting", timeEnding,
+			() => NamesmithEvents.StartVoting.triggerEvent({})
+		);
+
+		this.gameEventsScheduler.scheduleTaskAt("end voting", timeVoteIsEnding,
+			() => NamesmithEvents.EndVoting.triggerEvent({})
+		);
+
+		this.gameEventsScheduler.scheduleTaskAtEachDate("pick a perk", this.getTimesPickAPerkStarts(),
+			() => NamesmithEvents.PickAPerk.triggerEvent({})
+		);
+
+		this.gameEventsScheduler.scheduleTaskAtEachDate("day start", this.getTimesDayStarts(),
+			() => NamesmithEvents.DayStart.triggerEvent({})
+		);
+
+		this.gameEventsScheduler.scheduleTaskAtEachDate("week start", this.getTimesWeekStarts(),
+			() => NamesmithEvents.WeekStart.triggerEvent({})
+		);
+
+		for (const { time, hoursUntilVotingStarts } of this.getTimesVotingStartRemindersSend()) {
+			this.gameEventsScheduler.scheduleTaskAt(
+				`voting start reminder ${hoursUntilVotingStarts} hours before`,
+				time,
+				() => NamesmithEvents.VotingStartReminder.triggerEvent({ hoursUntilVotingStarts })
+			);
 		}
-		for (const dayStartCronJob of this.dayStartCronJobs) {
-			dayStartCronJob.stop();
-		}
-		for (const weekStartCronJob of this.weekStartCronJobs) {
-			weekStartCronJob.stop();
-		}
-
-		const gameState = this.gameStateRepository.getGameState();
-		this.startEndGameCronJob(gameState.timeEnding);
-		this.startVoteIsEndingCronJob(gameState.timeVoteIsEnding);
-
-		const pickAPerkTimes = this.getTimesPickAPerkStarts();
-		this.startPickAPerkCronJobs(pickAPerkTimes);
-
-		const dayStartTimes = this.getTimesDayStarts();
-		this.startDayStartCronJobs(dayStartTimes);
-
-		const weekStartTimes = this.getTimesWeekStarts();
-		this.startWeekStartCronJobs(weekStartTimes);
 	}
 
 	/**
@@ -489,11 +371,7 @@ export class GameStateService {
 	}
 
 	reset(): void {
-		this.endGameCronJob = undefined;
-		this.voteIsEndingCronJob = undefined;
-		this.pickAPerkCronJobs = [];
-		this.dayStartCronJobs = [];
-		this.weekStartCronJobs = [];
+		this.gameEventsScheduler.cancelAll();
 		this.gameStateRepository.reset();
 	}
 }

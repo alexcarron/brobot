@@ -12,6 +12,7 @@ import { DiscordButtonDefinition } from "../../../utilities/discord-interfaces/d
 import { DiscordButtons } from "../../../utilities/discord-interfaces/discord-buttons";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { confirmInteraction } from "../../../utilities/discord-interfaces/discord-interface-utils";
+import { getPingForAllPlayers } from "../utilities/player-message.utility";
 
 /**
  * Generates a message that asks the user to choose one of the given roles.
@@ -25,7 +26,7 @@ export function getChooseARoleMessage(): DiscordButtons {
 
 	const message = joinLines(
 		'# Choose Your Role!',
-		`<@&${ids.namesmith.roles.smithedName}> <@&${ids.namesmith.roles.noName}>`,
+		getPingForAllPlayers(),
 		'Choose one of the three roles below to define your Namesmith journey. Each role gives you unique, permanent perks that enhance different parts of the game. Pick the one that best matches your playstyle!',
 		...roles.map(toRoleMessage),
 		'',

@@ -1,7 +1,7 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
-import { getTokensEarnedFeedback, toTokenEmojis } from "./feedback-message.utility";
+import { getTokensEarnedFeedback, toTokenEmojis } from "./player-message.utility";
 
-describe('feedback-message.utility', () => {
+describe('player-message.utility', () => {
 	describe('getTokensEarnedFeedback()', () => {
 		it('should return a string with the correct number of emojis', () => {
 			makeSure(getTokensEarnedFeedback(0)).is('**+0 Tokens**');

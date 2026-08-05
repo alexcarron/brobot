@@ -5,7 +5,7 @@ import { Player } from "../../types/player.types";
 import { Rank, Ranks } from "../../types/vote.types";
 import { voteName } from "../../workflows/voting/vote-name.workflow";
 import { addSIfPlural, escapeDiscordMarkdown, joinLines, toListOfWords } from "../../../../utilities/string-manipulation-utils";
-import { toRankEmoji } from "../../utilities/feedback-message.utility";
+import { toRankEmoji } from "../../utilities/player-message.utility";
 
 export function getVote1stButton(
 	{player, name}: {player: Player, name: string}

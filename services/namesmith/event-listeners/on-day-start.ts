@@ -5,7 +5,7 @@ import { IDLE_INTEREST_TOKEN_REWARD, INVESTMENT_PERCENTAGE, Perks } from "../con
 import { sendShownDailyQuestsDisplay } from "../interfaces/quests/daily-quests-display";
 import { sendHiddenQuestsMessages } from "../interfaces/quests/hidden-quests-message";
 import { getNamesmithServices } from "../services/get-namesmith-services";
-import { getTokensEarnedFeedback } from "../utilities/feedback-message.utility";
+import { getTokensEarnedFeedback } from "../utilities/player-message.utility";
 
 /**
  * Triggers any game events that must occur at the start of each day

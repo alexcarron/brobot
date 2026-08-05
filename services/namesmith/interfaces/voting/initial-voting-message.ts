@@ -5,6 +5,7 @@ import { ignoreError } from "../../../../utilities/error-utils";
 import { joinLines } from "../../../../utilities/string-manipulation-utils";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { fetchNamesmithChannel } from "../../utilities/discord-fetch.utility";
+import { getPingForAllPlayers } from "../../utilities/player-message.utility";
 import { getClearMyVotesButton } from "./clear-my-votes-button";
 import { getSeeMyVotesButton } from "./see-my-votes-button";
 
@@ -23,6 +24,7 @@ export function getInitialVotingMessage() {
 
 	const initialVotingMessage = new DiscordButtons({
 		promptText: joinLines(
+			getPingForAllPlayers(),
 			`The game has ended.`,
 			``,
 			themeSection,

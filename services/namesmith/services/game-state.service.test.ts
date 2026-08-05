@@ -39,10 +39,10 @@ import { GameStateRepository } from "../repositories/game-state.repository";
 import { GameStateService } from "./game-state.service";
 import { PlayerService } from "./player.service";
 import { VoteService } from "./vote.service";
-import { addDays } from "../../../utilities/date-time-utils";
+import { addDays, addHours } from "../../../utilities/date-time-utils";
 import { GameIsNotActiveError } from "../utilities/error.utility";
 import { makeSure } from "../../../utilities/jest/jest-utils";
-import { DAYS_TO_BUILD_NAME, DAYS_TO_VOTE } from "../constants/game-state.constants";
+import { HOURS_BEFORE_VOTING_TO_SEND_REMINDER } from "../constants/game-state.constants";
 
 
 describe('GameStateService', () => {
@@ -73,36 +73,61 @@ describe('GameStateService', () => {
 		});
 	});
 
-	describe('.startEndGameCronJob()', () => {
-		it('should start a cron job to end the game', async () => {
-			const now = new Date();
-			const expectedEndTime = new Date(now.getTime() + DAYS_TO_BUILD_NAME * 24 * 60 * 60 * 1000);
-			await gameStateService.startEndGameCronJob(expectedEndTime);
+	describe('.getTimesVotingStartRemindersSend()', () => {
+		it('should return a time for each configured reminder, counted back from when voting starts', () => {
+			gameStateService.setupTimings(new Date());
+			const timeVotingStarts = gameStateService.getTimeVotingStarts();
 
-			expect(CronJob).toHaveBeenCalledTimes(1);
-			expect(CronJob).toHaveBeenNthCalledWith(
-				1,
-				expectedEndTime,
-				expect.any(Function)
+			const reminders = gameStateService.getTimesVotingStartRemindersSend();
+
+			makeSure(reminders).is(
+				HOURS_BEFORE_VOTING_TO_SEND_REMINDER.map(hoursUntilVotingStarts => ({
+					time: addHours(timeVotingStarts, -hoursUntilVotingStarts),
+					hoursUntilVotingStarts,
+				}))
 			);
 		});
 	});
 
-	describe('.startVoteIsEndingCronJob()', () => {
-		it('should start a cron job to end voting', () => {
-			const now = new Date();
-			const totalDays = DAYS_TO_BUILD_NAME + DAYS_TO_VOTE;
-			const expectedEndTime = new Date(now.getTime() +
-				totalDays * 24 * 60 * 60 * 1000
-			);
-			gameStateService.startVoteIsEndingCronJob(expectedEndTime);
+	describe('.scheduleGameEvents()', () => {
+		it('should schedule a cron job at the time voting starts and the time voting ends', () => {
+			gameStateService.setupTimings(new Date());
 
-			expect(CronJob).toHaveBeenCalledTimes(1);
-			expect(CronJob).toHaveBeenNthCalledWith(
-				1,
-				expectedEndTime,
+			gameStateService.scheduleGameEvents();
+
+			expect(CronJob).toHaveBeenCalledWith(
+				gameStateService.getTimeVotingStarts(),
 				expect.any(Function)
 			);
+			expect(CronJob).toHaveBeenCalledWith(
+				gameStateService.getTimeVotingEnds(),
+				expect.any(Function)
+			);
+		});
+
+		it('should schedule a cron job for each voting start reminder', () => {
+			gameStateService.setupTimings(new Date());
+
+			gameStateService.scheduleGameEvents();
+
+			for (const { time } of gameStateService.getTimesVotingStartRemindersSend()) {
+				expect(CronJob).toHaveBeenCalledWith(time, expect.any(Function));
+			}
+		});
+
+		it('should skip reminders whose time has already passed', () => {
+			gameStateService.setupTimings(new Date());
+			const reminders = gameStateService.getTimesVotingStartRemindersSend();
+			const [earliestReminder, ...laterReminders] = reminders;
+
+			// Move to just after the earliest reminder was due, as if the bot restarted partway through the game
+			jest.setSystemTime(addHours(earliestReminder.time, 1));
+			gameStateService.scheduleGameEvents();
+
+			expect(CronJob).not.toHaveBeenCalledWith(earliestReminder.time, expect.any(Function));
+			for (const { time } of laterReminders) {
+				expect(CronJob).toHaveBeenCalledWith(time, expect.any(Function));
+			}
 		});
 	});
 

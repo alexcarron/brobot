@@ -1,7 +1,12 @@
 import { ids } from "../../bot-config/discord-ids";
 import { Parameter, ParameterTypes } from "../../services/command-creation/parameter";
 import { SlashCommand } from "../../services/command-creation/slash-command";
+import { HOURS_BEFORE_VOTING_TO_SEND_REMINDER } from "../../services/namesmith/constants/game-state.constants";
 import { NamesmithEvents } from "../../services/namesmith/event-listeners/namesmith-events";
+
+type EventWithoutDataKey = 'PickAPerk' | 'DayStart' | 'StartVoting' | 'EndVoting' | 'WeekStart';
+
+const VOTING_START_REMINDER_KEY = 'VotingStartReminder';
 
 const Parameters = Object.freeze({
 	EVENT: new Parameter({
@@ -14,8 +19,15 @@ const Parameters = Object.freeze({
 			"Start Voting": 'StartVoting',
 			"End Voting": 'EndVoting',
 			"Week Start": 'WeekStart',
+			"Voting Start Reminder": VOTING_START_REMINDER_KEY,
 		}
-	})
+	}),
+	HOURS_UNTIL_VOTING_STARTS: new Parameter({
+		type: ParameterTypes.INTEGER,
+		name: "hours-until-voting-starts",
+		description: "For Voting Start Reminder: which reminder to send, by how many hours before voting starts it is",
+		isOptional: true,
+	}),
 });
 
 export const command = new SlashCommand({
@@ -23,14 +35,21 @@ export const command = new SlashCommand({
 	description: 'Triggers a Namesmith event',
 	parameters: [
 		Parameters.EVENT,
+		Parameters.HOURS_UNTIL_VOTING_STARTS,
 	],
 	required_servers: [ids.servers.NAMESMITH],
 	isInDevelopment: true,
-	execute: function (interaction, {event: eventKey}) {
+	execute: function (interaction, {event: eventKey, hoursUntilVotingStarts}) {
 		if (eventKey in NamesmithEvents === false)
 			return `You provided an invalid event key: \`${eventKey}\``;
 
-		const NamesmithEvent = NamesmithEvents[eventKey as 'PickAPerk' | 'DayStart' | 'StartVoting' | 'EndVoting' | 'WeekStart'];
+		if (eventKey === VOTING_START_REMINDER_KEY) {
+			const hours = hoursUntilVotingStarts ?? Math.max(...HOURS_BEFORE_VOTING_TO_SEND_REMINDER);
+			NamesmithEvents.VotingStartReminder.triggerEvent({ hoursUntilVotingStarts: hours });
+			return `Successfully triggered the \`${eventKey}\` Namesmith event for ${hours} hours before voting starts!`;
+		}
+
+		const NamesmithEvent = NamesmithEvents[eventKey as EventWithoutDataKey];
 
 		if (NamesmithEvent === undefined)
 			return `You provided an invalid event key: \`${eventKey}\``;
