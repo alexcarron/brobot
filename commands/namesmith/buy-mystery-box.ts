@@ -3,12 +3,13 @@ import { Parameter, ParameterTypes } from "../../services/command-creation/param
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { Perks } from "../../services/namesmith/constants/perks.constants";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
-import { getHowToEarnMoreTokensHint, toDisplayOrderedCharacters, toTokenEmojis as toTokenEmojis } from "../../services/namesmith/utilities/player-message.utility";
-import { getStaticMysteryBox, getStaticMysteryBoxes } from "../../services/namesmith/utilities/mystery-box.utility";
+import { getHowToEarnMoreTokensHint, toDisplayedDollars, toDisplayOrderedCharacters, toTokenEmojis as toTokenEmojis } from "../../services/namesmith/utilities/player-message.utility";
+import { getMysteryBoxCharacterPreview, getStaticMysteryBox, getStaticMysteryBoxes } from "../../services/namesmith/utilities/mystery-box.utility";
+import { MAX_AUTOCOMPLETE_OPTION_NAME_LENGTH } from "../../services/command-creation/autocomplete-utils";
 import { buyMysteryBox } from "../../services/namesmith/workflows/buy-mystery-box.workflow";
 import { sortByAscendingProperty } from "../../utilities/data-structure-utils";
 import { addReplyToInteraction } from "../../utilities/discord-action-utils";
-import { addSIfPlural, chooseByPlurality, joinLines, toAmountOfNoun } from "../../utilities/string-manipulation-utils";
+import { addSIfPlural, chooseByPlurality, joinLines, toAmountOfNoun, toReadableNumber } from "../../utilities/string-manipulation-utils";
 
 const INVALID_MYSTERY_BOX_AMOUNT = 'INVALID_MYSTERY_BOX_AMOUNT';
 
@@ -23,15 +24,19 @@ const Parameters = Object.freeze({
 				.map(mysteryBox => {
 					const {id, name, characterOdds} = mysteryBox;
 					let {tokenCost} = mysteryBox;
-					const characters = Object.keys(characterOdds);
+					const characterCount = Object.keys(characterOdds).length;
 
 					const { perkService } = getNamesmithServices();
 					perkService.doIfPlayerHas(Perks.DISCOUNT, user.id, () => {
 						tokenCost = Math.ceil(tokenCost * 0.9);
 					});
 
+					const mysteryBoxDisplayPrefix = `${toDisplayedDollars(tokenCost)} - ${name} (${characterCount}) `;
+					const previewLength = MAX_AUTOCOMPLETE_OPTION_NAME_LENGTH - mysteryBoxDisplayPrefix.length;
+					const mysteryBoxCharacterPreview = getMysteryBoxCharacterPreview(characterOdds, previewLength);
+
 					return {
-						name: `$${tokenCost} - ${name}: ${characters.sort().join("")}`,
+						name: `${mysteryBoxDisplayPrefix}${mysteryBoxCharacterPreview}`,
 						value: id.toString()
 					}
 				});
@@ -91,7 +96,7 @@ const Parameters = Object.freeze({
 					mysteryBoxCost = Math.ceil(mysteryBoxCost * 0.9);
 				});
 				const tokenCost = amount * mysteryBoxCost;
-				const feedback = `${amount} "${mysteryBox.name}" Mystery ${chooseByPlurality(amount, 'Box', 'Boxes')} - $${tokenCost}`;
+				const feedback = `${toDisplayedDollars(tokenCost)} - ${toReadableNumber(amount)} ${chooseByPlurality(amount, 'Box', 'Boxes')} (${mysteryBox.name})`;
 				return [
 					{
 						name: feedback,
@@ -136,14 +141,14 @@ export const command = new SlashCommand({
 
 			if (amount === 1) {
 				return joinLines(
-					`You need **${tokensNeeded} more ${addSIfPlural('token', tokensNeeded)}** to afford the "${mysteryBoxName}" mystery box`,
+					`You need **${toReadableNumber(tokensNeeded)} more ${addSIfPlural('token', tokensNeeded)}** to afford the "${mysteryBoxName}" mystery box`,
 					`-# You only have **${toAmountOfNoun(tokensOwned, 'token')}**`,
 					howToEarnMoreTokensHint
 				);
 			}
 			else {
 				return joinLines(
-					`You need **${tokensNeeded} more ${addSIfPlural('token', tokensNeeded)}** to afford ${amount} "${mysteryBoxName}" mystery ${chooseByPlurality(amount, 'box', 'boxes')}`,
+					`You need **${toReadableNumber(tokensNeeded)} more ${addSIfPlural('token', tokensNeeded)}** to afford ${toReadableNumber(amount)} "${mysteryBoxName}" mystery ${chooseByPlurality(amount, 'box', 'boxes')}`,
 					`-# You only have **${toAmountOfNoun(tokensOwned, 'token')}**`,
 					howToEarnMoreTokensHint
 				);
@@ -171,7 +176,7 @@ export const command = new SlashCommand({
 				});
 
 				return await addReplyToInteraction(interaction,
-					`You need **${tokensNeeded} more ${addSIfPlural('token', tokensNeeded)}** to afford ${chooseByPlurality(numMysteryBox, 'the', 'another')} "${mysteryBoxName}" mystery box\n` +
+					`You need **${toReadableNumber(tokensNeeded)} more ${addSIfPlural('token', tokensNeeded)}** to afford ${chooseByPlurality(numMysteryBox, 'the', 'another')} "${mysteryBoxName}" mystery box\n` +
 					`-# You only have **${toAmountOfNoun(tokensOwned, 'token')}**\n` +
 					`${howToEarnMoreTokensHint} \n`
 				);

@@ -9,6 +9,11 @@ export type AutocompleteChoicesResolvable =
 	| {name: string; value: string}[]
 
 /**
+ * The maximum length Discord allows for an autocomplete option's display name.
+ */
+export const MAX_AUTOCOMPLETE_OPTION_NAME_LENGTH = 100;
+
+/**
  * Checks if the autocomplete interaction is focused on the specified parameter.
  * @param autocompleteInteraction The autocomplete interaction to check.
  * @param parameter The parameter to check if the autocomplete interaction is focused on.
@@ -80,7 +85,7 @@ export function toAutocompleteChoices(
 	if (isStrings(autocompleteChoicesResolvable)) {
 		const autocompleteValues = autocompleteChoicesResolvable;
 		return autocompleteValues.map(value => ({
-			name: truncateText(value, 100),
+			name: truncateText(value, MAX_AUTOCOMPLETE_OPTION_NAME_LENGTH),
 			value: value
 		}));
 	}
@@ -88,7 +93,7 @@ export function toAutocompleteChoices(
 		const autocompleteNameToValue = autocompleteChoicesResolvable;
 		return Object.entries(autocompleteNameToValue).map(
 			([name, value]) => ({
-				name: truncateText(name, 100),
+				name: truncateText(name, MAX_AUTOCOMPLETE_OPTION_NAME_LENGTH),
 				value: value
 			})
 		);
@@ -96,7 +101,7 @@ export function toAutocompleteChoices(
 	else {
 		return autocompleteChoicesResolvable.map(choice => ({
 			...choice,
-			name: truncateText(choice.name, 100)
+			name: truncateText(choice.name, MAX_AUTOCOMPLETE_OPTION_NAME_LENGTH)
 		}));
 	}
 }

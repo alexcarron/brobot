@@ -1,5 +1,5 @@
 import { ids } from "../../../bot-config/discord-ids";
-import { toAmountOfNoun, toListOfWords } from "../../../utilities/string-manipulation-utils";
+import { toAmountOfNoun, toListOfWords, toReadableNumber } from "../../../utilities/string-manipulation-utils";
 import { getCharacters, hasLetter, hasNumber, hasSpace } from "../../../utilities/string-checks-utils";
 import { Rank, Ranks } from "../types/vote.types";
 
@@ -57,6 +57,15 @@ export function getTokensEarnedFeedback(
 	else {
 		return lines.join('\n');
 	}
+}
+
+/**
+ * Formats a currency amount for display as a dollar sign followed by a comma-separated number (e.g. 12236 becomes "$12,236").
+ * @param amount - The currency amount to format.
+ * @returns The amount formatted as a dollar-prefixed, comma-separated string.
+ */
+export function toDisplayedDollars(amount: number): string {
+	return `$${toReadableNumber(amount)}`;
 }
 
 export function toTokenEmojis(numTokens: number) {
