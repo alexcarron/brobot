@@ -1,5 +1,5 @@
 import { ids } from "../../../bot-config/discord-ids";
-import { toAmountOfNoun } from "../../../utilities/string-manipulation-utils";
+import { toAmountOfNoun, toListOfWords } from "../../../utilities/string-manipulation-utils";
 import { getCharacters, hasLetter, hasNumber, hasSpace } from "../../../utilities/string-checks-utils";
 import { Rank, Ranks } from "../types/vote.types";
 
@@ -10,6 +10,29 @@ import { Rank, Ranks } from "../types/vote.types";
  */
 export function getPingForAllPlayers(): string {
 	return `<@&${ids.namesmith.roles.smithedName}> <@&${ids.namesmith.roles.noName}>`;
+}
+
+/**
+ * Builds the hint line pointing a player to every channel where they can currently earn more tokens.
+ * @param options - Whether the player has unlocked hidden quests, since #hidden-quests is only visible to players who've unlocked it and shouldn't be hinted at otherwise.
+ * @param options.hasHiddenQuestsUnlocked - Whether the player has unlocked hidden quests.
+ * @returns The hint line to append to messages telling a player they don't have enough tokens.
+ */
+export function getHowToEarnMoreTokensHint({ hasHiddenQuestsUnlocked }: { hasHiddenQuestsUnlocked: boolean }): string {
+	const channelIDs = [
+		ids.namesmith.channels.MINE_TOKENS,
+		ids.namesmith.channels.CLAIM_REFILL,
+		ids.namesmith.channels.DAILY_QUESTS,
+		ids.namesmith.channels.WEEKLY_QUESTS,
+	];
+
+	if (hasHiddenQuestsUnlocked) {
+		channelIDs.push(ids.namesmith.channels.HIDDEN_QUESTS);
+	}
+
+	const channelMentions = channelIDs.map(channelID => `<#${channelID}>`);
+
+	return `-# ${toListOfWords(channelMentions)} to get more`;
 }
 
 export function getTokensEarnedFeedback(

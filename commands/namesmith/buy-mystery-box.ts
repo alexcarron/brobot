@@ -3,7 +3,7 @@ import { Parameter, ParameterTypes } from "../../services/command-creation/param
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { Perks } from "../../services/namesmith/constants/perks.constants";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
-import { toTokenEmojis as toTokenEmojis } from "../../services/namesmith/utilities/player-message.utility";
+import { getHowToEarnMoreTokensHint, toTokenEmojis as toTokenEmojis } from "../../services/namesmith/utilities/player-message.utility";
 import { getStaticMysteryBox, getStaticMysteryBoxes } from "../../services/namesmith/utilities/mystery-box.utility";
 import { buyMysteryBox } from "../../services/namesmith/workflows/buy-mystery-box.workflow";
 import { sortByAscendingProperty } from "../../utilities/data-structure-utils";
@@ -120,7 +120,7 @@ export const command = new SlashCommand({
 
 		const mysteryBoxID = parseInt(mysteryBoxIDString);
 		
-		const {mysteryBoxService, playerService, perkService} = getNamesmithServices();
+		const {mysteryBoxService, playerService, perkService, questService} = getNamesmithServices();
 		let mysteryBoxCost = mysteryBoxService.getCost(mysteryBoxID);
 		perkService.doIfPlayerHas(Perks.DISCOUNT, interaction.user.id, () => {
 			mysteryBoxCost = Math.ceil(mysteryBoxCost * 0.9);
@@ -130,19 +130,22 @@ export const command = new SlashCommand({
 			const mysteryBoxName = mysteryBoxService.getName(mysteryBoxID);
 			const tokensOwned = playerService.getTokens(interaction.user.id);
 			const tokensNeeded = totalPrice - tokensOwned;
+			const howToEarnMoreTokensHint = getHowToEarnMoreTokensHint({
+				hasHiddenQuestsUnlocked: questService.isHiddenQuestUnlockedForPlayer(interaction.user.id)
+			});
 
 			if (amount === 1) {
 				return joinLines(
 					`You need **${tokensNeeded} more ${addSIfPlural('token', tokensNeeded)}** to afford the "${mysteryBoxName}" mystery box`,
 					`-# You only have **${toAmountOfNoun(tokensOwned, 'token')}**`,
-					`-# <#${ids.namesmith.channels.MINE_TOKENS}> and <#${ids.namesmith.channels.CLAIM_REFILL}> to get more`
+					howToEarnMoreTokensHint
 				);
 			}
 			else {
 				return joinLines(
 					`You need **${tokensNeeded} more ${addSIfPlural('token', tokensNeeded)}** to afford ${amount} "${mysteryBoxName}" mystery ${chooseByPlurality(amount, 'box', 'boxes')}`,
 					`-# You only have **${toAmountOfNoun(tokensOwned, 'token')}**`,
-					`-# <#${ids.namesmith.channels.MINE_TOKENS}> and <#${ids.namesmith.channels.CLAIM_REFILL}> to get more`
+					howToEarnMoreTokensHint
 				);
 			}
 		}
@@ -163,10 +166,14 @@ export const command = new SlashCommand({
 			else if (result.isPlayerCantAffordMysteryBox()) {
 				const { mysteryBoxName, tokensNeeded, tokensOwned } = result;
 	
+				const howToEarnMoreTokensHint = getHowToEarnMoreTokensHint({
+					hasHiddenQuestsUnlocked: questService.isHiddenQuestUnlockedForPlayer(interaction.user.id)
+				});
+
 				return await addReplyToInteraction(interaction,
 					`You need **${tokensNeeded} more ${addSIfPlural('token', tokensNeeded)}** to afford ${chooseByPlurality(numMysteryBox, 'the', 'another')} "${mysteryBoxName}" mystery box\n` +
 					`-# You only have **${toAmountOfNoun(tokensOwned, 'token')}**\n` +
-					`-# <#${ids.namesmith.channels.MINE_TOKENS}> and <#${ids.namesmith.channels.CLAIM_REFILL}> to get more \n`
+					`${howToEarnMoreTokensHint} \n`
 				);
 			}
 	
