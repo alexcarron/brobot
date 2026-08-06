@@ -10,14 +10,11 @@ import { ToCamelCase } from './types/casing-types';
  * @returns The string in title case.
  */
 export const toTitleCase = (string: string): string => {
-// Matches words in a string
 	const wordRegex = /\w\S*/g;
 
-	// Replaces each word with its title case equivalent
 	return string.replace(
 		wordRegex,
 		(word) =>
-			// Uppercases the first character and lowercases the rest
 			word.charAt(0).toUpperCase() +
 			word.substr(1).toLowerCase()
 	);
@@ -38,18 +35,14 @@ export function toCamelFromKebabCase<
  * @returns The given string in camelCase
  */
 export function toCamelFromKebabCase(kebabCaseString: string) {
-	// Fast path for empty input
 	if (kebabCaseString === '') return '';
 
-	// Split on '-' and ignore empty segments (handles leading/trailing/duplicate '-')
 	const parts = kebabCaseString.split('-').filter(Boolean);
 
 	if (parts.length === 0) return '';
 
-	// Lowercase the whole first segment
 	const head = parts[0].toLowerCase();
 
-	// For the rest: lowercase them fully, then capitalize the first character
 	const rest = parts
 		.slice(1)
 		.map(part => {
@@ -60,7 +53,6 @@ export function toCamelFromKebabCase(kebabCaseString: string) {
 
 	const result = head + rest;
 
-	// Assert to match the type-level result when used with string literal generics
 	return result as any;
 }
 

@@ -4,7 +4,8 @@ import { attempt, ignoreError, InvalidArgumentError } from "../../../utilities/e
 import { PlayerAlreadyExistsError, NameTooLongError } from "../utilities/error.utility";
 import { Inventory, Player, PlayerID, PlayerResolvable } from '../types/player.types';
 import { removeCharactersAsGivenFromEnd, removeMissingCharacters } from "../../../utilities/string-manipulation-utils";
-import { areCharactersInString, hasLetter, hasNumber, hasSpace } from "../../../utilities/string-checks-utils";
+import { areCharactersInString, getCharacterCounts, getCharacters } from "../../../utilities/string-checks-utils";
+import { sortCharactersForDisplay, toDisplayOrderedCharacters } from "../utilities/player-message.utility";
 import { REFILL_COOLDOWN_HOURS } from "../constants/namesmith.constants";
 import { addHours, OLDEST_DATE } from "../../../utilities/date-time-utils";
 import { NamesmithEvents } from "../event-listeners/namesmith-events";
@@ -128,22 +129,31 @@ export class PlayerService {
 	 */
 	getDisplayedInventory(playerResolvable: PlayerResolvable): string {
 		const inventory = this.getInventory(playerResolvable);
-		return [...inventory].sort((char1, char2) => {
-			// Letters come first
-			if (hasLetter(char1) && !hasLetter(char2)) return -1;
-			if (!hasLetter(char1) && hasLetter(char2)) return 1;
+		return toDisplayOrderedCharacters(inventory);
+	}
 
-			// Numbers come second
-			if (hasNumber(char1) && !hasNumber(char2)) return -1;
-			if (!hasNumber(char1) && hasNumber(char2)) return 1;
+	/**
+	 * Retrieves the characters in a player's inventory that are not present in a given name, in the same sorted display order as getDisplayedInventory.
+	 * @param playerResolvable - The player resolvable whose inventory is being checked.
+	 * @param name - The name whose characters should be excluded from the result.
+	 * @returns The inventory characters not used in the given name, in display order.
+	 */
+	getUnusedInventoryCharacters(playerResolvable: PlayerResolvable, name: string): string[] {
+		const inventory = this.getInventory(playerResolvable);
+		const sortedInventoryCharacters = sortCharactersForDisplay(inventory);
+		const nameCharacterCounts = getCharacterCounts(getCharacters(name));
 
-			// Spaces come third
-			if (hasSpace(char1) && !hasSpace(char2)) return -1;
-			if (!hasSpace(char1) && hasSpace(char2)) return 1;
-
-			// Otherwise, sort alphabetically
-			return char1.localeCompare(char2);
-		}).join("");
+		const unusedCharacters: string[] = [];
+		for (const character of sortedInventoryCharacters) {
+			const remainingCount = nameCharacterCounts.get(character) ?? 0;
+			if (remainingCount > 0) {
+				nameCharacterCounts.set(character, remainingCount - 1);
+			}
+			else {
+				unusedCharacters.push(character);
+			}
+		}
+		return unusedCharacters;
 	}
 
 	/**

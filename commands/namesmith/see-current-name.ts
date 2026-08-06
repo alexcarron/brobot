@@ -3,9 +3,10 @@ import { Parameter, ParameterTypes } from "../../services/command-creation/param
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { getInvalidPlayerMessageOrPlayer } from "../../services/namesmith/utilities/interface.utility";
+import { toDisplayedName } from "../../services/namesmith/utilities/player-message.utility";
 import { fetchPlayerAutocompleteChoices } from "../../services/namesmith/utilities/player.utility";
 import { fetchUser } from "../../utilities/discord-fetch-utils";
-import { escapeDiscordMarkdown, joinLines } from "../../utilities/string-manipulation-utils";
+import { joinLines } from "../../utilities/string-manipulation-utils";
 import { isString } from "../../utilities/types/type-guards";
 
 const Parameters = Object.freeze({
@@ -34,13 +35,12 @@ export const command = new SlashCommand({
 		const user = await fetchUser(player.id);
 		const currentName = playerService.getCurrentName(player.id);
 
-		let firstLine = `${user}'s current name contains the following characters:`;
+		let firstPart = `${user}'s current name is `;
 		if (interaction.user.id === player.id)
-			firstLine = `Your current name contains the following characters:`;
+			firstPart = `Your current name is `;
 
 		return joinLines(
-			firstLine,
-			`> ${escapeDiscordMarkdown(currentName)}_ _`,
+			firstPart + toDisplayedName(currentName),
 		);
 	}
 })

@@ -803,7 +803,49 @@ describe('PlayerService', () => {
 				inventory: "4b!!3 c6a#",
 			});
 			const result = playerService.getDisplayedInventory(mockPlayer.id);
-			makeSure(result).is("abc346 !!#");
+			makeSure(result).is("abc346` `!!#");
+		});
+
+		it('should keep multi-codepoint characters intact when sorting', () => {
+			const mockPlayer = addMockPlayer(db, {
+				inventory: "b👨‍👩‍👧‍👦a",
+			});
+			const result = playerService.getDisplayedInventory(mockPlayer.id);
+			makeSure(result).is("ab👨‍👩‍👧‍👦");
+		});
+	});
+
+	describe('getUnusedInventoryCharacters()', () => {
+		it('should return the inventory characters not present in the given name, in display order', () => {
+			const mockPlayer = addMockPlayer(db, {
+				inventory: "4b!!3 c6a#",
+			});
+			const result = playerService.getUnusedInventoryCharacters(mockPlayer.id, "ac");
+			makeSure(result).is(["b", "3", "4", "6", " ", "!", "!", "#"]);
+		});
+
+		it('should return an empty array when every inventory character is used', () => {
+			const mockPlayer = addMockPlayer(db, {
+				inventory: "abc",
+			});
+			const result = playerService.getUnusedInventoryCharacters(mockPlayer.id, "cba");
+			makeSure(result).is([]);
+		});
+
+		it('should only count a repeated character as unused as many times as it is unused', () => {
+			const mockPlayer = addMockPlayer(db, {
+				inventory: "aaa",
+			});
+			const result = playerService.getUnusedInventoryCharacters(mockPlayer.id, "a");
+			makeSure(result).is(["a", "a"]);
+		});
+
+		it('should keep multi-codepoint characters intact when comparing against the name', () => {
+			const mockPlayer = addMockPlayer(db, {
+				inventory: "a👨‍👩‍👧‍👦",
+			});
+			const result = playerService.getUnusedInventoryCharacters(mockPlayer.id, "a");
+			makeSure(result).is(["👨‍👩‍👧‍👦"]);
 		});
 	});
 

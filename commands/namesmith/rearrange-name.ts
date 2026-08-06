@@ -3,6 +3,7 @@ import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getInputFromCreatedTextModal, addButtonToMessageContents, waitForButtonPressThen, removeComponentsFromInteractionMessage } from "../../utilities/discord-action-utils";
 import { getCharacterDifferences } from "../../utilities/data-structure-utils";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
+import { toDisplayedName, toDisplayOrderedCharacters } from "../../services/namesmith/utilities/player-message.utility";
 import { MessageFlags } from "discord.js";
 
 export const command = new SlashCommand({
@@ -40,17 +41,14 @@ export const command = new SlashCommand({
 			}
 
 			let message = "";
-			// if (missingCharacters.length > 0) {
-			// 	message += `You're missing the following characters in your name: ${missingCharacters.map(char => `\`${char}\``).join(', ')}!`;
-			// }
 
 			if (extraCharacters.length > 0) {
-				message += `\nYou added the following characters which you don't have in your inventory: ${extraCharacters.map(char => `\`${char}\``).join(', ')}!`;
+				message += `\nYou added the following characters which you don't have in your inventory:\n> ${toDisplayOrderedCharacters(extraCharacters)}`;
 			}
 
 			const initialMessageText =
 				message +
-				"\n\nClick the button to try to rearrange the characters in your name again";
+				"\n\nClick the button to try to rearrange the characters in your name again.";
 
 			const messageContents = addButtonToMessageContents({
 				contents: {
@@ -83,9 +81,16 @@ export const command = new SlashCommand({
 			nameBefore,
 		});
 
+		const unusedCharacters = playerService.getUnusedInventoryCharacters(playerID, newName);
+
+		let successMessage = `Good work. Your name is now ${toDisplayedName(newName)}.`;
+		if (unusedCharacters.length > 0) {
+			successMessage += `\nYou still have the following unused characters in your inventory:\n> ${toDisplayOrderedCharacters(unusedCharacters)}`;
+		}
+
 		if (interaction.isRepliable()) {
 			await interaction.followUp({
-				content: `Good work. Your name is now \`${newName}\`.`,
+				content: successMessage,
 				flags: MessageFlags.Ephemeral,
 			});
 		}
