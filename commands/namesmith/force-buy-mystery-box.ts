@@ -4,7 +4,7 @@ import { SlashCommand } from "../../services/command-creation/slash-command";
 import { Perks } from "../../services/namesmith/constants/perks.constants";
 import { forcePlayerToBuyMysteryBox } from "../../services/namesmith/mocks/mock-data/mock-mystery-boxes";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
-import { toTokenEmojis } from "../../services/namesmith/utilities/player-message.utility";
+import { toDisplayOrderedCharacters, toTokenEmojis } from "../../services/namesmith/utilities/player-message.utility";
 import { sortByAscendingProperty } from "../../utilities/data-structure-utils";
 import { joinLines, toAmountOfNoun } from "../../utilities/string-manipulation-utils";
 import { isNotNullable } from "../../utilities/types/type-guards";
@@ -75,8 +75,8 @@ export const command = new SlashCommand({
 
 		const { receivedCharacterValues: recievedCharacterValues, mysteryBox, tokenCost, player, wasRefunded, gotDuplicate, gotAnotherCharacter } = result;
 		const newTokenCount = player.tokens;
-		const newInventory = player.inventory;
 
+		const displayedNewInventory = toDisplayOrderedCharacters(player.inventory);
 		const luckyRefundLine = (wasRefunded)
 			? joinLines(
 				`**Lucky Refund!** You also got your ${toAmountOfNoun(tokenCost, 'token')} back.`,
@@ -107,7 +107,7 @@ export const command = new SlashCommand({
 			luckyDoubleLine,
 			luckyRefundLine,
 			`-# You now have ${toAmountOfNoun(newTokenCount, 'token')}`,
-			`-# Your inventory now contains: ${newInventory}`,
+			`-# Your inventory now contains: ${displayedNewInventory}`,
 		);
 	}
 });

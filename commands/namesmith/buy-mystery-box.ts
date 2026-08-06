@@ -3,7 +3,7 @@ import { Parameter, ParameterTypes } from "../../services/command-creation/param
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { Perks } from "../../services/namesmith/constants/perks.constants";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
-import { getHowToEarnMoreTokensHint, toTokenEmojis as toTokenEmojis } from "../../services/namesmith/utilities/player-message.utility";
+import { getHowToEarnMoreTokensHint, toDisplayOrderedCharacters, toTokenEmojis as toTokenEmojis } from "../../services/namesmith/utilities/player-message.utility";
 import { getStaticMysteryBox, getStaticMysteryBoxes } from "../../services/namesmith/utilities/mystery-box.utility";
 import { buyMysteryBox } from "../../services/namesmith/workflows/buy-mystery-box.workflow";
 import { sortByAscendingProperty } from "../../utilities/data-structure-utils";
@@ -179,7 +179,7 @@ export const command = new SlashCommand({
 	
 			const { receivedCharacterValues: recievedCharacterValues, mysteryBox, tokenCost, player, wasRefunded, gotDuplicate, gotAnotherCharacter } = result;
 			const newTokenCount = player.tokens;
-			const newInventory = player.inventory;
+			const displayedNewInventory = toDisplayOrderedCharacters(player.inventory);
 	
 			const luckyRefundLine = (wasRefunded)
 				? joinLines(
@@ -211,7 +211,7 @@ export const command = new SlashCommand({
 				luckyDoubleLine,
 				luckyRefundLine,
 				`-# You now have ${toAmountOfNoun(newTokenCount, 'token')}`,
-				`-# Your inventory now contains: ${newInventory}`,
+				`-# Your inventory now contains: ${displayedNewInventory}`,
 			);
 		}
 	}
