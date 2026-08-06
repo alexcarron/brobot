@@ -16,8 +16,6 @@ export async function sendPublishedNameMessage({player}: {
 }) {
 	const publishedNamesChannel = await fetchNamesmithChannel(ids.namesmith.channels.PUBLISHED_NAMES);
 	await sendMessageInChannel(publishedNamesChannel,
-		`_ _`,
-		`<@${player.id}> has published the following name:`,
-		`> ${escapeDiscordMarkdown(player.publishedName!)}`
+		`<@${player.id}> published the name **${escapeDiscordMarkdown(player.publishedName!)}**`
 	);
 }

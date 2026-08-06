@@ -26,6 +26,30 @@
 
 - A rarely used color for element we want to stand out while staying dark
 
+## Plain-Text Message Conventions
+
+All player-facing messages are sent as plain string content.
+
+**Spacer line**: `_ _`
+
+- Sent as the first line of a message to create empty vertical space above or below the content.
+
+**Blockquotes**: `> `
+
+- Used to set off a single key piece of content from the surrounding message, most often a published or submitted name.
+
+**Bold**: `**text**`
+
+- Used for player names and other content that should stand out or be clearly indicated as user-affected.
+
+**Escaping player input**: `escapeDiscordMarkdown` (`utilities/string-manipulation-utils.ts`)
+
+- Must be applied to any player-submitted free text (e.g. a custom name) before interpolating it into a message, so player-controlled text can't break or spoof message formatting.
+
+**Footers**: `-# text`
+
+- Used for trailing subtext, such as caveats or attribution (e.g. `-# Created by <@playerID>`).
+
 ## Character "Icons"
 
 These are characters used as "icons" since this game is run through Discord
