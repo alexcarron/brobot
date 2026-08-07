@@ -33,7 +33,8 @@
 		"ssh": "ssh brobot",
 		"create-service": "node -r ts-node/register services/namesmith/scripts/create-service.ts",
 		"create-repo": "node -r ts-node/register services/namesmith/scripts/create-repository.ts",
-		"create-repository": "npm run create-repo"
+		"create-repository": "npm run create-repo",
+		"reset-namesmith-db": "node -r ts-node/register services/namesmith/scripts/reset-database.ts"
 	},
 	"dependencies": {
 		"@discordjs/builders": "^1.6.5",

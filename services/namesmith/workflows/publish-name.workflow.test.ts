@@ -82,7 +82,7 @@ describe('publish-name.workflow', () => {
 			makeSure(result.slotNumber).is(1);
 			makeSure(result.tokensSpent).is(0);
 			makeSure(result.tokensRemaining).is(NAMED_PLAYER.tokens);
-			makeSure(publishedNameService.getSolePublishedNameStringOfPlayer(NAMED_PLAYER.id)).is('Namey');
+			makeSure(publishedNameService.getPublishedNamesOfPlayer(NAMED_PLAYER.id)[0].name).is('Namey');
 		});
 
 		it('deducts exactly the published name cost and creates the published name for a paid published name', () => {

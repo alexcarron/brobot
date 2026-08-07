@@ -3,6 +3,7 @@ import { getNumDistinctCharacters, hasLetter, hasNumber, hasSymbol } from "../..
 import { toListOfWords } from "../../../../../utilities/string-manipulation-utils";
 import { Quests } from "../../../constants/quests.constants";
 import { NamesmithServices } from "../../../types/namesmith.types";
+import { toDisplayedName } from "../../../utilities/player-message.utility";
 import { MeetsCriteriaParameters, PLAYER_MET_CRITERIA_RESULT, toFailure } from "./quest-eligibility";
 
 /**
@@ -15,22 +16,21 @@ export const namingEligibilityChecks = {
 		{quest, player}: MeetsCriteriaParameters,
 		{ publishedNameService }: NamesmithServices
 	) => {
-		const publishedName = publishedNameService.getSolePublishedNameStringOfPlayer(player);
-		let type = null;
+		const publishedNames = publishedNameService.getPublishedNamesOfPlayer(player);
 
-		if (publishedName === null) {
+		if (publishedNames.length === 0) {
 			return toFailure(`You have not published your name yet. Your name must be published before you can complete the ${quest.name} quest.`)
 		}
-		else if (!hasLetter(publishedName))
-			type = 'letter';
-		else if (!hasSymbol(publishedName))
-			type = 'symbol';
-		else if (!hasNumber(publishedName))
-			type = 'number';
-		else
+
+		const hasDiverseName = publishedNames.some(publishedName =>
+			hasLetter(publishedName.name) && hasSymbol(publishedName.name) && hasNumber(publishedName.name)
+		);
+
+		if (hasDiverseName)
 			return PLAYER_MET_CRITERIA_RESULT;
 
-		return toFailure(`Your name must have at least one ${type} before you can complete the ${quest.name} quest.`)
+		const listOfPublishedNames = toListOfWords(publishedNames.map(publishedName => toDisplayedName(publishedName.name)));
+		return toFailure(`None of your published names (${listOfPublishedNames}) have at least one letter, one symbol, and one number all in the same name. You must publish a name like that to complete the ${quest.name} quest.`)
 	},
 
 	// Twinsies
@@ -38,18 +38,17 @@ export const namingEligibilityChecks = {
 		{quest, player}: MeetsCriteriaParameters,
 		{ publishedNameService }: NamesmithServices
 	) => {
-		const playerPublishedName = publishedNameService.getSolePublishedNameStringOfPlayer(player);
-		if (playerPublishedName === null)
+		const playerPublishedNames = publishedNameService.getPublishedNamesOfPlayer(player);
+		if (playerPublishedNames.length === 0)
 			return toFailure(`You have not published your name yet. Your name must be published before you can complete the ${quest.name} quest.`)
 
 		const allPublishedNames = publishedNameService.getAllPublishedNameStrings();
 
-		const numSamePublishedNames =
-			allPublishedNames.filter(publishedName =>
-				publishedName === playerPublishedName
-			).length;
+		const hasMatchingPublishedName = playerPublishedNames.some(publishedName =>
+			allPublishedNames.filter(name => name === publishedName.name).length >= 2
+		);
 
-		if (numSamePublishedNames < 2)
+		if (!hasMatchingPublishedName)
 			return toFailure(`Nobody has the same name as you. You must have at least one player that shares the same published name as you to complete the ${quest.name} quest.`);
 
 		return PLAYER_MET_CRITERIA_RESULT;
@@ -259,14 +258,18 @@ export const namingEligibilityChecks = {
 		{playerService, publishedNameService}: NamesmithServices
 	) => {
 		const numTokensHas = playerService.getTokens(player);
+		const publishedNames = publishedNameService.getPublishedNamesOfPlayer(player);
 
-		if (!publishedNameService.doesPlayerHaveAPublishedName(player))
+		if (publishedNames.length === 0)
 			return toFailure(`You do not have a published name. You must have publish a name to complete the "${quest.name}" quest.`);
 
-		const publishedNameHasTokens = publishedNameService.doesSolePublishedNameOfPlayerContain(player, String(numTokensHas));
+		const tokenCountText = String(numTokensHas).toLowerCase();
+		const publishedNameHasTokens = publishedNames.some(publishedName =>
+			publishedName.name.toLowerCase().includes(tokenCountText)
+		);
 		if (!publishedNameHasTokens)
-			return toFailure(`Your published name does not contain the number of tokens you have. Your published name should have contained "${numTokensHas}" to complete the "${quest.name}" quest.`);
-			
+			return toFailure(`None of your published names contain the number of tokens you have. One of your published names should have contained "${numTokensHas}" to complete the "${quest.name}" quest.`);
+
 		return PLAYER_MET_CRITERIA_RESULT;
 	},
 

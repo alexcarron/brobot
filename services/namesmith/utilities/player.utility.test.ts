@@ -6,7 +6,7 @@ describe('player.utility', () => {
 			expect(isPlayer({
 				id: "player-id",
 				currentName: "Current Name",
-				publishedName: "Published Name",
+				publishedNames: [],
 				tokens: 10,
 				role: "Role",
 				inventory: "Inventory",
@@ -33,7 +33,7 @@ describe('player.utility', () => {
 			expect(isPlayer({
 				id: "player-id",
 				currentName: "Current Name",
-				publishedName: "Published Name",
+				publishedNames: [],
 				tokens: 10,
 				role: "Role",
 			})).toBe(false);
@@ -41,7 +41,7 @@ describe('player.utility', () => {
 			expect(isPlayer({
 				id: "player-id",
 				currentName: "Current Name",
-				publishedName: "Published Name",
+				publishedNames: [],
 				tokens: 10,
 				inventory: "Inventory",
 			})).toBe(false);
@@ -49,7 +49,7 @@ describe('player.utility', () => {
 			expect(isPlayer({
 				id: "player-id",
 				currentName: "Current Name",
-				publishedName: "Published Name",
+				publishedNames: [],
 				role: "Role",
 				inventory: "Inventory",
 			})).toBe(false);
@@ -64,7 +64,7 @@ describe('player.utility', () => {
 
 			expect(isPlayer({
 				id: "player-id",
-				publishedName: "Published Name",
+				publishedNames: [],
 				tokens: 10,
 				role: "Role",
 				inventory: "Inventory",
@@ -72,7 +72,7 @@ describe('player.utility', () => {
 
 			expect(isPlayer({
 				currentName: "Current Name",
-				publishedName: "Published Name",
+				publishedNames: [],
 				tokens: 10,
 				role: "Role",
 				inventory: "Inventory",
@@ -83,7 +83,7 @@ describe('player.utility', () => {
 			expect(isPlayer({
 				id: "player-id",
 				currentName: "Current Name",
-				publishedName: "Published Name",
+				publishedNames: [],
 				tokens: "10",
 				role: "Role",
 				inventory: "Inventory",

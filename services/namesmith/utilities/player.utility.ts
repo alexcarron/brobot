@@ -14,11 +14,8 @@ export const isPlayer = (value: unknown): value is Player => (
 	typeof value.id === 'string' &&
 	'currentName' in value &&
 	typeof value.currentName === 'string' &&
-	'publishedName' in value &&
-	(
-		value.publishedName === null ||
-		typeof value.publishedName === 'string'
-	) &&
+	'publishedNames' in value &&
+	Array.isArray(value.publishedNames) &&
 	'tokens' in value &&
 	typeof value.tokens === 'number' &&
 	'role' in value &&

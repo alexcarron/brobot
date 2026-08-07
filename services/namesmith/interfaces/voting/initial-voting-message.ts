@@ -28,7 +28,7 @@ export function getInitialVotingMessage() {
 			`The game has ended.`,
 			``,
 			themeSection,
-			`Now you can vote on the players' final names.`,
+			`Now you can vote on the players' published names.`,
 			``,
 			`Select your top three favorite names using the buttons below each name:`,
 			`🥇 **Vote 1st** (Your favorite)`,

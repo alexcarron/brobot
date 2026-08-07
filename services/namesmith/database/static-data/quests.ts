@@ -9,7 +9,7 @@ export const quests = [
 	{
 		id: 2,
 		name: "Diverse Name",
-		description: "Have your currently published name contain at least 1 letter, 1 symbol, and 1 number",
+		description: "Have any of your published names contain at least 1 letter, 1 symbol, and 1 number",
 		recurrence: 'daily',
 		tokensReward: 350,
 	},
@@ -24,7 +24,7 @@ export const quests = [
 	{
 		id: 4,
 		name: "Twinsies",
-		description: "Coordinate with another player to have the same published name as them",
+		description: "Coordinate with another player to have one of your published names match one of theirs",
 		recurrence: 'daily',
 		tokensReward: 200,
 		charactersReward: "x",
@@ -402,7 +402,7 @@ export const quests = [
 	{
 		id: 57,
 		name: "Show Tokens",
-		description: "Include the exact number of tokens you currently hold in your published name",
+		description: "Include the exact number of tokens you currently hold in any of your published names",
 		recurrence: "weekly",
 		tokensReward: 1000,
 		charactersReward: "exact count"
@@ -495,7 +495,7 @@ export const quests = [
 	{
 		id: 73,
 		name: "Namesake Box",
-		description: "Open a mystery box while your published name contains that box's official name (case insensitive)",
+		description: "Open a mystery box while any of your published names contains that box's official name (case insensitive)",
 		recurrence: "weekly",
 		tokensReward: 1456,
 	},

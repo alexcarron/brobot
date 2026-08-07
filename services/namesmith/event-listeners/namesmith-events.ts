@@ -11,6 +11,7 @@ export const NamesmithEvents = {
 	PublishName: createEventHandler<{
 		player: Player;
 		publishedName: PublishedName;
+		tokensSpent: number;
 	}>(),
 
 	DayStart: createEventHandler<{}>(),

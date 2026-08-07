@@ -153,8 +153,11 @@ export function forcePlayerToChangeName(
 ): Player {
 	const { playerService, activityLogService } = getNamesmithServices();
 	const nameBefore = playerService.getCurrentName(playerResolvable);
-	playerService.giveCharacters(playerResolvable, newName);
+	const currentInventory = playerService.getInventory(playerResolvable);
+
+	playerService.setInventory(playerResolvable, currentInventory + newName);
 	playerService.changeCurrentName(playerResolvable, newName);
+
 	activityLogService.logChangeName({
 		playerChangingName: playerResolvable,
 		nameBefore,
@@ -175,7 +178,29 @@ export function forcePlayerToPublishName(
 	const { playerService, publishedNameService, activityLogService } = getNamesmithServices();
 	playerService.giveCharacters(playerResolvable, publishedName);
 	playerService.changeCurrentName(playerResolvable, publishedName);
-	publishedNameService.replaceSolePublishedNameOfPlayer(playerResolvable);
+	publishedNameService.forceSetPublishedNameInSlot(playerResolvable, publishedName, 1);
+	activityLogService.logPublishName({
+		playerPublishingName: playerResolvable,
+	});
+	return playerService.resolvePlayer(playerResolvable);
+}
+
+/**
+ * Forces a player to publish a name into a specific published name slot, overwriting whatever currently occupies that slot, by giving them the input characters, changing their current name to the published name, and force-setting the published name slot.
+ * @param playerResolvable - The player resolvable to force to publish the name.
+ * @param publishedName - The name to force the player to publish.
+ * @param slotNumber - The published name slot to overwrite.
+ * @returns The resolved player after the name has been published.
+ */
+export function forcePlayerToPublishNameInSlot(
+	playerResolvable: PlayerResolvable,
+	publishedName: string,
+	slotNumber: number
+): Player {
+	const { playerService, publishedNameService, activityLogService } = getNamesmithServices();
+	playerService.giveCharacters(playerResolvable, publishedName);
+	playerService.changeCurrentName(playerResolvable, publishedName);
+	publishedNameService.forceSetPublishedNameInSlot(playerResolvable, publishedName, slotNumber);
 	activityLogService.logPublishName({
 		playerPublishingName: playerResolvable,
 	});

@@ -194,33 +194,6 @@ export class PublishedNameService {
 		);
 	}
 
-	/**
-	 * Returns a player's first published name text (the one in their lowest published name slot), or null if they have none.
-	 * @param player - The player whose published name is being retrieved.
-	 * @returns The player's first published name text, or null.
-	 */
-	getSolePublishedNameStringOfPlayer(player: PlayerResolvable): string | null {
-		const publishedNames = this.getPublishedNamesOfPlayer(player);
-		if (publishedNames.length === 0)
-			return null;
-
-		return publishedNames[0].name;
-	}
-
-	/**
-	 * Checks whether a player's first published name contains a given substring. Case is ignored.
-	 * @param player - The player whose published name is being checked.
-	 * @param nameSubstring - The substring to look for.
-	 * @returns True if the player's first published name contains the substring, otherwise false.
-	 */
-	doesSolePublishedNameOfPlayerContain(player: PlayerResolvable, nameSubstring: string): boolean {
-		const publishedName = this.getSolePublishedNameStringOfPlayer(player);
-		if (publishedName === null)
-			return false;
-
-		return publishedName.toLowerCase().includes(nameSubstring.toLowerCase());
-	}
-
 	private validateName(name: string): void {
 		if (name.length > MAX_NAME_LENGTH)
 			throw new NameTooLongError(name, MAX_NAME_LENGTH);
@@ -255,7 +228,7 @@ export class PublishedNameService {
 			slotNumber,
 		});
 
-		this.triggerPublishNameEvent(player.id, publishedName);
+		this.triggerPublishNameEvent(player.id, publishedName, 0);
 		return publishedName;
 	}
 
@@ -295,36 +268,36 @@ export class PublishedNameService {
 			});
 		});
 
-		this.triggerPublishNameEvent(player.id, publishedName);
+		this.triggerPublishNameEvent(player.id, publishedName, tokensSpent);
 		return { publishedName, tokensSpent };
 	}
 
 	/**
-	 * Publishes a name for a player as their single published name, replacing any existing published names. Used for the current single-name publish behavior.
-	 * @param playerResolvable - The player publishing the name.
-	 * @param name - The name to publish. Defaults to the player's current name.
-	 * @returns The created published name, or null if there was no name to publish.
+	 * Force-sets a specific published name slot for a player, overwriting whatever currently occupies that slot. Bypasses token cost and slot-limit checks. Used for developer debug tooling.
+	 * @param playerResolvable - The player whose published name slot is being force-set.
+	 * @param name - The name to publish into the slot.
+	 * @param slotNumber - The published name slot to overwrite.
+	 * @returns The created published name.
 	 * @throws {NameTooLongError} If the name exceeds the maximum length.
 	 */
-	replaceSolePublishedNameOfPlayer(playerResolvable: PlayerResolvable, name?: string): PublishedName | null {
+	forceSetPublishedNameInSlot(playerResolvable: PlayerResolvable, name: string, slotNumber: number): PublishedName {
 		const player = this.playerRepository.resolvePlayer(playerResolvable);
-		const nameToPublish = name ?? player.currentName;
+		this.validateName(name);
 
-		if (nameToPublish.length === 0) {
-			logWarning(`replaceSolePublishedNameOfPlayer: player ${player.id} has no name to publish.`);
-			return null;
-		}
+		const existingPublishedNameInSlot = this.getPublishedNamesOfPlayer(player.id).find(
+			publishedName => publishedName.slotNumber === slotNumber
+		);
+		
+		if (existingPublishedNameInSlot !== undefined)
+			this.publishedNameRepository.removePublishedName(existingPublishedNameInSlot.id);
 
-		this.validateName(nameToPublish);
-
-		this.publishedNameRepository.removePublishedNamesByPlayer(player.id);
 		const publishedName = this.publishedNameRepository.addPublishedName({
 			playerID: player.id,
-			name: nameToPublish,
-			slotNumber: 1,
+			name,
+			slotNumber,
 		});
 
-		this.triggerPublishNameEvent(player.id, publishedName);
+		this.triggerPublishNameEvent(player.id, publishedName, 0);
 		return publishedName;
 	}
 
@@ -339,7 +312,7 @@ export class PublishedNameService {
 			if (player.currentName.length === 0)
 				continue;
 
-			this.replaceSolePublishedNameOfPlayer(player.id);
+			this.publishNameForPlayer(player.id);
 		}
 	}
 
@@ -370,10 +343,11 @@ export class PublishedNameService {
 		this.publishedNameRepository.removePublishedNames();
 	}
 
-	private triggerPublishNameEvent(playerID: PlayerID, publishedName: PublishedName): void {
+	private triggerPublishNameEvent(playerID: PlayerID, publishedName: PublishedName, tokensSpent: number): void {
 		NamesmithEvents.PublishName.triggerEvent({
 			player: this.playerRepository.getPlayerOrThrow(playerID),
 			publishedName,
+			tokensSpent,
 		});
 	}
 }

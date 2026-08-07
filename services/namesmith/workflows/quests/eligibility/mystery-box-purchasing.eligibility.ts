@@ -236,20 +236,24 @@ export const mysteryBoxPurchasingEligibilityChecks = {
 		if (mysteryBoxLogs.length <= 0)
 			return toFailure(`You have not bought any mystery boxes this week. You must buy a mystery box before you can complete the "${quest.name}" quest.`);
 
-		const publishedName = publishedNameService.getSolePublishedNameStringOfPlayer(player);
-		if (publishedName === null)
+		const publishedNames = publishedNameService.getPublishedNamesOfPlayer(player);
+		if (publishedNames.length === 0)
 			return toFailure(`You have not published your name yet. Your name must be published before you can complete the "${quest.name}" quest.`);
 
 		for (const mysteryBoxLog of mysteryBoxLogs) {
 			if (mysteryBoxLog.involvedMysteryBox === null)
 				continue;
 
-			const boxName = mysteryBoxLog.involvedMysteryBox.name;
-			if (publishedName.toLowerCase().includes(boxName.toLowerCase()))
+			const boxName = mysteryBoxLog.involvedMysteryBox.name.toLowerCase();
+			const isBoxNameInAnyPublishedName = publishedNames.some(publishedName =>
+				publishedName.name.toLowerCase().includes(boxName)
+			);
+
+			if (isBoxNameInAnyPublishedName)
 				return PLAYER_MET_CRITERIA_RESULT;
 		}
 
-		return toFailure(`You never bought a mystery box this week whose name was contained in your published name. You must do so to complete the "${quest.name}" quest.`);
+		return toFailure(`You never bought a mystery box this week whose name was contained in one of your published names. You must do so to complete the "${quest.name}" quest.`);
 	},
 
 	[Quests.BUYOUT.id]: (

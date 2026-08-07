@@ -82,38 +82,34 @@ describe('PublishedNameService', () => {
 		});
 	});
 
-	describe('replaceSolePublishedName()', () => {
-		it('replaces all existing entries with a single slot 1 entry', () => {
+	describe('forceSetPublishedNameInSlot()', () => {
+		it('inserts into an empty slot without disturbing other slots', () => {
+			publishedNameService.publishNameForPlayer(NAMED_PLAYER.id, 'First');
+
+			const forced = publishedNameService.forceSetPublishedNameInSlot(NAMED_PLAYER.id, 'Forced', 3);
+
+			makeSure(forced.slotNumber).is(3);
+			makeSure(publishedNameService.getNumPublishedNamesOfPlayer(NAMED_PLAYER.id)).is(2);
+			makeSure(publishedNameService.getPublishedNamesOfPlayer(NAMED_PLAYER.id)[0].name).is('First');
+		});
+
+		it('overwrites whatever previously occupied the target slot', () => {
 			publishedNameService.publishNameForPlayer(NAMED_PLAYER.id, 'First');
 			publishedNameService.publishNameForPlayer(NAMED_PLAYER.id, 'Second');
 
-			const replacement = publishedNameService.replaceSolePublishedNameOfPlayer(NAMED_PLAYER.id, 'Only');
+			publishedNameService.forceSetPublishedNameInSlot(NAMED_PLAYER.id, 'Overwritten', 2);
 
-			makeSure(replacement!.slotNumber).is(1);
-			makeSure(publishedNameService.getNumPublishedNamesOfPlayer(NAMED_PLAYER.id)).is(1);
-			makeSure(publishedNameService.getSolePublishedNameStringOfPlayer(NAMED_PLAYER.id)).is('Only');
-		});
-	});
-
-	describe('getSolePublishedNameStringOfPlayer()', () => {
-		it('returns the first entry name', () => {
-			publishedNameService.publishNameForPlayer(NAMED_PLAYER.id, 'First');
-			makeSure(publishedNameService.getSolePublishedNameStringOfPlayer(NAMED_PLAYER.id)).is('First');
+			makeSure(publishedNameService.getNumPublishedNamesOfPlayer(NAMED_PLAYER.id)).is(2);
+			const names = publishedNameService.getPublishedNamesOfPlayer(NAMED_PLAYER.id);
+			makeSure(names.find(publishedName => publishedName.slotNumber === 2)!.name).is('Overwritten');
 		});
 
-		it('returns null when the player has no entries', () => {
-			makeSure(publishedNameService.getSolePublishedNameStringOfPlayer(NAMED_PLAYER.id)).isNull();
-		});
-	});
+		it('triggers the PublishName event with no tokens spent', () => {
+			const triggerEvent = jest.spyOn(NamesmithEvents.PublishName, 'triggerEvent');
+			publishedNameService.forceSetPublishedNameInSlot(NAMED_PLAYER.id, 'Forced', 1);
 
-	describe('doesSolePublishedNameOfPlayerContain()', () => {
-		it('returns true when the first entry contains the substring, ignoring case', () => {
-			publishedNameService.publishNameForPlayer(NAMED_PLAYER.id, 'Joseph');
-			makeSure(publishedNameService.doesSolePublishedNameOfPlayerContain(NAMED_PLAYER.id, 'sep')).isTrue();
-		});
-
-		it('returns false when the player has no entries', () => {
-			makeSure(publishedNameService.doesSolePublishedNameOfPlayerContain(NAMED_PLAYER.id, 'x')).isFalse();
+			expect(triggerEvent).toHaveBeenCalledTimes(1);
+			expect(triggerEvent.mock.calls[0][0].tokensSpent).toBe(0);
 		});
 	});
 
@@ -145,14 +141,14 @@ describe('PublishedNameService', () => {
 		it('publishes the current name of players who have not published', () => {
 			publishedNameService.autoPublishCurrentNames();
 
-			makeSure(publishedNameService.getSolePublishedNameStringOfPlayer(NAMED_PLAYER.id)).is('Namey');
-			makeSure(publishedNameService.getSolePublishedNameStringOfPlayer(OTHER_NAMED_PLAYER.id)).is('Othery');
+			makeSure(publishedNameService.getPublishedNamesOfPlayer(NAMED_PLAYER.id)[0].name).is('Namey');
+			makeSure(publishedNameService.getPublishedNamesOfPlayer(OTHER_NAMED_PLAYER.id)[0].name).is('Othery');
 		});
 
 		it('does not overwrite players who already published', () => {
 			publishedNameService.publishNameForPlayer(NAMED_PLAYER.id, 'Chosen');
 			publishedNameService.autoPublishCurrentNames();
-			makeSure(publishedNameService.getSolePublishedNameStringOfPlayer(NAMED_PLAYER.id)).is('Chosen');
+			makeSure(publishedNameService.getPublishedNamesOfPlayer(NAMED_PLAYER.id)[0].name).is('Chosen');
 		});
 	});
 
