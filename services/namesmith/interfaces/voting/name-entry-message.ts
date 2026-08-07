@@ -2,33 +2,32 @@ import { DiscordButtons } from "../../../../utilities/discord-interfaces/discord
 import { fetchNamesmithChannel } from "../../utilities/discord-fetch.utility";
 import { ids } from "../../../../bot-config/discord-ids";
 import { getVote1stButton, getVote2ndButton, getVote3rdButton } from "./vote-buttons";
-import { Player } from "../../types/player.types";
+import { PublishedName } from "../../types/published-name.types";
 import { ignoreError } from "../../../../utilities/error-utils";
 
 export function createNameEntryInterface(
-	{ player, name }: {
-		player: Player, 
-		name: string
+	{ publishedName }: {
+		publishedName: PublishedName
 	}
 ): DiscordButtons {
 	return new DiscordButtons({
-		promptText: `_ _\n${name}`,
+		promptText: `_ _\n${publishedName.name}`,
 		buttons: [
-			getVote1stButton({player, name}),
-			getVote2ndButton({player, name}),
-			getVote3rdButton({player, name}),
+			getVote1stButton({publishedName}),
+			getVote2ndButton({publishedName}),
+			getVote3rdButton({publishedName}),
 		]
 	});
 }
 
-export async function sendNameEntryMessage({ player, name }: {player: Player, name: string}) {
-	const nameEntryInterface = createNameEntryInterface({ player, name });
+export async function sendNameEntryMessage({ publishedName }: {publishedName: PublishedName}) {
+	const nameEntryInterface = createNameEntryInterface({ publishedName });
 	const namesToVoteOnChannel = await fetchNamesmithChannel(ids.namesmith.channels.NAMES_TO_VOTE_ON);
 	await nameEntryInterface.sendIn(namesToVoteOnChannel);
 }
 
-export async function regenerateNameEntryMessage({ player, name }: {player: Player, name: string}) {
-	const nameEntryInterface = createNameEntryInterface({ player, name });
+export async function regenerateNameEntryMessage({ publishedName }: {publishedName: PublishedName}) {
+	const nameEntryInterface = createNameEntryInterface({ publishedName });
 	const namesToVoteOnChannel = await fetchNamesmithChannel(ids.namesmith.channels.NAMES_TO_VOTE_ON);
 	await ignoreError(nameEntryInterface.regenerate({channel: namesToVoteOnChannel}));
 }

@@ -226,7 +226,7 @@ export const mysteryBoxPurchasingEligibilityChecks = {
 
 	[Quests.NAMESAKE_BOX.id]: (
 		{quest, player}: MeetsCriteriaParameters,
-		{activityLogService}: NamesmithServices
+		{activityLogService, publishedNameService}: NamesmithServices
 	) => {
 		const mysteryBoxLogs = activityLogService.getLogsThisWeek({
 			byPlayer: player,
@@ -236,7 +236,8 @@ export const mysteryBoxPurchasingEligibilityChecks = {
 		if (mysteryBoxLogs.length <= 0)
 			return toFailure(`You have not bought any mystery boxes this week. You must buy a mystery box before you can complete the "${quest.name}" quest.`);
 
-		if (player.publishedName === null)
+		const publishedName = publishedNameService.getSolePublishedNameStringOfPlayer(player);
+		if (publishedName === null)
 			return toFailure(`You have not published your name yet. Your name must be published before you can complete the "${quest.name}" quest.`);
 
 		for (const mysteryBoxLog of mysteryBoxLogs) {
@@ -244,7 +245,7 @@ export const mysteryBoxPurchasingEligibilityChecks = {
 				continue;
 
 			const boxName = mysteryBoxLog.involvedMysteryBox.name;
-			if (player.publishedName.toLowerCase().includes(boxName.toLowerCase()))
+			if (publishedName.toLowerCase().includes(boxName.toLowerCase()))
 				return PLAYER_MET_CRITERIA_RESULT;
 		}
 

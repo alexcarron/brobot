@@ -1,11 +1,11 @@
 import { getNamesmithServices } from "../../services/get-namesmith-services";
-import { Player } from "../../types/player.types";
+import { PublishedName } from "../../types/published-name.types";
 import { Rank, VoteID } from "../../types/vote.types";
 import { getWorkflowResultCreator, provides } from "../workflow-result-creator";
 
 const result = getWorkflowResultCreator({
 	success: provides<{
-		rankToVotedPlayer: Map<Rank, Player>,
+		rankToVotedPublishedName: Map<Rank, PublishedName>,
 	}>(),
 })
 
@@ -20,9 +20,9 @@ export function clearMyVotes(
 ) {
 	const {voteService} = getNamesmithServices();
 
-	const rankToVotedPlayer = voteService.getRanksToVotedPlayer(voterUserID);
+	const rankToVotedPublishedName = voteService.getRanksToVotedPublishedName(voterUserID);
 
 	voteService.removeVote(voterUserID);
-	
-	return result.success({rankToVotedPlayer});
+
+	return result.success({rankToVotedPublishedName});
 }

@@ -5,7 +5,9 @@ describe('vote.utility', () => {
 		it('should return true if the value is an object with the expected properties of a vote', () => {
 			expect(isVote({
 				voterID: "voter-id",
-				playerVotedForID: "player-id",
+				votedFirstPublishedName: null,
+				votedSecondPublishedName: null,
+				votedThirdPublishedName: null,
 			})).toBe(true);
 		});
 
@@ -30,14 +32,18 @@ describe('vote.utility', () => {
 				voterID: "voter-id",
 			})).toBe(false);
 			expect(isVote({
-				playerVotedForID: "player-id",
+				votedFirstPublishedName: null,
+				votedSecondPublishedName: null,
+				votedThirdPublishedName: null,
 			})).toBe(false);
 		});
 
-		it('should return false if the value is an object with invalid property types', () => {
+		it('should return false if the voterID is not a string', () => {
 			expect(isVote({
-				voterID: "voter-id",
-				playerVotedForID: 1,
+				voterID: 1,
+				votedFirstPublishedName: null,
+				votedSecondPublishedName: null,
+				votedThirdPublishedName: null,
 			})).toBe(false);
 		});
 	});

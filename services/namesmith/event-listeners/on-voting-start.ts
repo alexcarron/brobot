@@ -9,10 +9,10 @@ import { sendVotingDisplay } from '../interfaces/voting/voting-display';
  * - Resetting the vote service
  */
 export async function onVotingStart() {
-	const { playerService, voteService } = getNamesmithServices();
+	const { publishedNameService, voteService } = getNamesmithServices();
 
-	playerService.publishUnpublishedNames();
-	playerService.finalizeAllNames();
+	publishedNameService.autoPublishCurrentNames();
+	publishedNameService.finalizeAllNames();
 
 	await clearNamesToVoteOnChannel();
 	await closeTheResultsChannel();

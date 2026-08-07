@@ -10,6 +10,7 @@ export const isVote = (value: unknown): value is Vote => (
 	typeof value === 'object' &&
 	'voterID' in value &&
 	typeof value.voterID === 'string' &&
-	'playerVotedForID' in value &&
-	typeof value.playerVotedForID === 'string'
+	'votedFirstPublishedName' in value &&
+	'votedSecondPublishedName' in value &&
+	'votedThirdPublishedName' in value
 )

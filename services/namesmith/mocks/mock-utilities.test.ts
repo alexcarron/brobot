@@ -137,7 +137,6 @@ describe("Mock Utilities", () => {
       addMockPlayer(db, {
         id: "player-1",
         currentName: "John Doe",
-        publishedName: null,
         tokens: 100,
         role: null,
         inventory: "{}",
@@ -158,7 +157,6 @@ describe("Mock Utilities", () => {
 			ORIGINAL_PLAYER = addMockPlayer(db, {
 				id: "123",
 				currentName: "John Doe",
-				publishedName: null,
 				tokens: 100,
 				role: null,
 				inventory: "{}",
@@ -183,6 +181,7 @@ describe("Mock Utilities", () => {
 			expect({
 				...minimalPlayer,
 				perks: [],
+				publishedNames: [],
 			}).toEqual({
 				...ORIGINAL_PLAYER,
 				currentName: "Jane Doe",
@@ -629,7 +628,7 @@ describe("Mock Utilities", () => {
 			const player = forcePlayerToPublishName(SOME_PLAYER, 'abc');
 			makeSure(player.currentName).is('abc');
 			makeSure(player.inventory).is('abc');
-			makeSure(player.publishedName).is('abc');
+			makeSure(player.publishedNames[0].name).is('abc');
 		});
 
 		it('works when repeated many times', () => {
@@ -637,7 +636,7 @@ describe("Mock Utilities", () => {
 				const publishedName = 'abc' + numLoops + "$".repeat(numLoops);
 				const player = forcePlayerToPublishName(SOME_PLAYER, publishedName);
 				makeSure(player.currentName).is(publishedName);
-				makeSure(player.publishedName).is(publishedName);
+				makeSure(player.publishedNames[0].name).is(publishedName);
 			}
 		});
 	});

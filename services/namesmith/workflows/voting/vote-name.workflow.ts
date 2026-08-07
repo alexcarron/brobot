@@ -1,5 +1,5 @@
 import { getNamesmithServices } from "../../services/get-namesmith-services";
-import { Player, PlayerResolvable } from "../../types/player.types";
+import { PublishedName, PublishedNameResolvable } from "../../types/published-name.types";
 import { Rank, Ranks, VoteID } from "../../types/vote.types";
 import { getWorkflowResultCreator, provides } from "../workflow-result-creator";
 
@@ -8,8 +8,8 @@ const result = getWorkflowResultCreator({
 		missingRanks: Set<Rank>,
 		rankToVotedName: Map<Rank, string>,
 		otherRankToVotedName: Map<Rank, string>,
-		playerPreviouslyInRank: Player | null,
-		previousRankOfPlayer: Rank | null,
+		publishedNamePreviouslyInRank: PublishedName | null,
+		previousRankOfPublishedName: Rank | null,
 	}>(),
 
 	repeatedVote: provides<{ rankToVotedName: Map<Rank, string> }>(),
@@ -26,17 +26,17 @@ const result = getWorkflowResultCreator({
 })
 
 /**
- * Attempts to have a user vote a player's name the given rank
+ * Attempts to have a user vote a published name the given rank
  * @param parameters - An object containing the following parameters:
  * @param parameters.voterUserID - The ID of the user who is voting
- * @param parameters.votedPlayer - The player who is being voted on
- * @param parameters.rankVotingFor - The rank of the player being voted on
+ * @param parameters.votedPublishedName - The published name that is being voted on
+ * @param parameters.rankVotingFor - The rank of the published name being voted on
  * @returns The result of the workflow
  */
 export function voteName(
-	{voterUserID, votedPlayer: votedPlayerResolvable, rankVotingFor}: {
+	{voterUserID, votedPublishedName: votedPublishedNameResolvable, rankVotingFor}: {
 		voterUserID: VoteID,
-		votedPlayer: PlayerResolvable,
+		votedPublishedName: PublishedNameResolvable,
 		rankVotingFor: Rank
 	}
 ) {
@@ -45,17 +45,17 @@ export function voteName(
 	if (!gameStateService.isVotingOpen())
 		return result.failure.votingClosed();
 
-	const playerPreviouslyInRank = voteService.getPlayerVotedInRank(voterUserID, rankVotingFor);
-	const previousRankOfPlayer = voteService.getRankOfPlayerInVote(voterUserID, votedPlayerResolvable);
+	const publishedNamePreviouslyInRank = voteService.getPublishedNameVotedInRank(voterUserID, rankVotingFor);
+	const previousRankOfPublishedName = voteService.getRankOfPublishedNameInVote(voterUserID, votedPublishedNameResolvable);
 	const previousMissingRanks = voteService.getMissingRanksOfVote(voterUserID);
 	const previousRankToVotedName = voteService.getRanksToVotedName(voterUserID);
 
-	if (previousRankOfPlayer !== null) {
-		if (previousRankOfPlayer === rankVotingFor) {
+	if (previousRankOfPublishedName !== null) {
+		if (previousRankOfPublishedName === rankVotingFor) {
 			return result.failure.repeatedVote({rankToVotedName: previousRankToVotedName});
 		}
-		
-		switch (previousRankOfPlayer) {
+
+		switch (previousRankOfPublishedName) {
 			case Ranks.FIRST:
 				return result.failure.invalidSwitchedVote({
 					rankToVotedName: previousRankToVotedName,
@@ -104,10 +104,10 @@ export function voteName(
 			break;
 	}
 	
-	const vote = voteService.votePlayerAsRank(voterUserID, votedPlayerResolvable, rankVotingFor);
+	const vote = voteService.votePublishedNameAsRank(voterUserID, votedPublishedNameResolvable, rankVotingFor);
 	const missingRanks = voteService.getMissingRanksOfVote(vote);
 
 	const rankToVotedName = voteService.getRanksToVotedName(voterUserID);
 	const otherRankToVotedName = voteService.getOtherRanksToVotedName(voterUserID, rankVotingFor);
-	return result.success({missingRanks, rankToVotedName, otherRankToVotedName, playerPreviouslyInRank, previousRankOfPlayer});
+	return result.success({missingRanks, rankToVotedName, otherRankToVotedName, publishedNamePreviouslyInRank, previousRankOfPublishedName});
 }

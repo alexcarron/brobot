@@ -6,6 +6,7 @@ import { GameStateRepository } from "../repositories/game-state.repository";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
 import { PerkRepository } from "../repositories/perk.repository";
 import { PlayerRepository } from "../repositories/player.repository";
+import { PublishedNameRepository } from "../repositories/published-name.repository";
 import { QuestRepository } from "../repositories/quest.repository";
 import { RecipeRepository } from "../repositories/recipe.repository";
 import { RoleRepository } from "../repositories/role.repository";
@@ -17,6 +18,7 @@ import { GameStateService } from "../services/game-state.service";
 import { MysteryBoxService } from "../services/mystery-box.service";
 import { PerkService } from "../services/perk.service";
 import { PlayerService } from "../services/player.service";
+import { PublishedNameService } from "../services/published-name.service";
 import { QuestService } from "../services/quest.service";
 import { RecipeService } from "../services/recipe.service";
 import { RoleService } from "../services/role.service";
@@ -49,6 +51,7 @@ export const NamesmithRepositoryClasses = {
 	mysteryBoxRepository: MysteryBoxRepository,
 	characterRepository: CharacterRepository,
 	playerRepository: PlayerRepository,
+	publishedNameRepository: PublishedNameRepository,
 	gameStateRepository: GameStateRepository,
 	voteRepository: VoteRepository,
 	recipeRepository: RecipeRepository,
@@ -75,6 +78,7 @@ export const NamesmithServiceClasses = {
 	mysteryBoxService: MysteryBoxService,
 	characterService: CharacterService,
 	playerService: PlayerService,
+	publishedNameService: PublishedNameService,
 	gameStateService: GameStateService,
 	voteService: VoteService,
 	recipeService: RecipeService,

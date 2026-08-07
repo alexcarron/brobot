@@ -1,11 +1,11 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
-import { INVALID_VOTE_ID } from "../constants/test.constants";
+import { INVALID_PUBLISHED_NAME_ID, INVALID_VOTE_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
-import { addMockPlayer } from "../mocks/mock-data/mock-players";
+import { addMockPublishedName } from "../mocks/mock-data/mock-published-names";
 import { addMockVote } from "../mocks/mock-data/mock-votes";
-import { Player } from "../types/player.types";
+import { PublishedName } from "../types/published-name.types";
 import { Vote } from "../types/vote.types";
-import { PlayerNotFoundError, VoteNotFoundError } from "../utilities/error.utility";
+import { PublishedNameNotFoundError, VoteNotFoundError } from "../utilities/error.utility";
 import { VoteRepository } from "./vote.repository";
 
 describe('VoteRepository', () => {
@@ -13,27 +13,27 @@ describe('VoteRepository', () => {
 	let voteRepository: VoteRepository;
 
 	let SOME_VOTE: Vote;
-	let SOME_PLAYER: Player;
-	let SOME_OTHER_PLAYER: Player;
-	let SOME_THIRD_PLAYER: Player;
-	let SOME_FOURTH_PLAYER: Player;
+	let SOME_NAME: PublishedName;
+	let SOME_OTHER_NAME: PublishedName;
+	let SOME_THIRD_NAME: PublishedName;
+	let SOME_FOURTH_NAME: PublishedName;
 
 	beforeEach(() => {
 		voteRepository = VoteRepository.asMock();
 		db = voteRepository.db;
 
 		SOME_VOTE = addMockVote(db);
-		SOME_PLAYER = addMockPlayer(db);
-		SOME_OTHER_PLAYER = addMockPlayer(db);
-		SOME_THIRD_PLAYER = addMockPlayer(db);
-		SOME_FOURTH_PLAYER = addMockPlayer(db);
+		SOME_NAME = addMockPublishedName(db);
+		SOME_OTHER_NAME = addMockPublishedName(db);
+		SOME_THIRD_NAME = addMockPublishedName(db);
+		SOME_FOURTH_NAME = addMockPublishedName(db);
 	})
 
 	describe('getVotes()', () => {
 		it('returns a list of votes', () => {
 			const votes = voteRepository.getVotes();
 			makeSure(votes).contains(SOME_VOTE);
-			makeSure(votes).haveOnlyProperties('voterID', 'votedFirstPlayer', 'votedSecondPlayer', 'votedThirdPlayer');
+			makeSure(votes).haveOnlyProperties('voterID', 'votedFirstPublishedName', 'votedSecondPublishedName', 'votedThirdPublishedName');
 		});
 	});
 
@@ -66,15 +66,15 @@ describe('VoteRepository', () => {
 		it('adds a new vote', () => {
 			voteRepository.addVote({
 				voter: "10000001",
-				votedFirstPlayer: SOME_PLAYER.id,
-				votedSecondPlayer: SOME_OTHER_PLAYER.id,
-				votedThirdPlayer: SOME_THIRD_PLAYER.id,
+				votedFirstPublishedName: SOME_NAME.id,
+				votedSecondPublishedName: SOME_OTHER_NAME.id,
+				votedThirdPublishedName: SOME_THIRD_NAME.id,
 			});
 			const vote = voteRepository.getVoteOrThrow("10000001");
 			makeSure(vote.voterID).is("10000001");
-			makeSure(vote.votedFirstPlayer!.id).is(SOME_PLAYER.id);
-			makeSure(vote.votedSecondPlayer!.id).is(SOME_OTHER_PLAYER.id);
-			makeSure(vote.votedThirdPlayer!.id).is(SOME_THIRD_PLAYER.id);
+			makeSure(vote.votedFirstPublishedName!.id).is(SOME_NAME.id);
+			makeSure(vote.votedSecondPublishedName!.id).is(SOME_OTHER_NAME.id);
+			makeSure(vote.votedThirdPublishedName!.id).is(SOME_THIRD_NAME.id);
 		});
 
 		it('adds a new vote with no votes', () => {
@@ -83,23 +83,23 @@ describe('VoteRepository', () => {
 			});
 			const vote = voteRepository.getVoteOrThrow("10000001");
 			makeSure(vote.voterID).is("10000001");
-			makeSure(vote.votedFirstPlayer).isNull();
-			makeSure(vote.votedSecondPlayer).isNull();
-			makeSure(vote.votedThirdPlayer).isNull();
+			makeSure(vote.votedFirstPublishedName).isNull();
+			makeSure(vote.votedSecondPublishedName).isNull();
+			makeSure(vote.votedThirdPublishedName).isNull();
 		});
 
 		it('adds a new vote with some null votes', () => {
 			voteRepository.addVote({
 				voter: "10000001",
-				votedFirstPlayer: null,
-				votedSecondPlayer: SOME_OTHER_PLAYER.id,
-				votedThirdPlayer: null,
+				votedFirstPublishedName: null,
+				votedSecondPublishedName: SOME_OTHER_NAME.id,
+				votedThirdPublishedName: null,
 			});
 			const vote = voteRepository.getVoteOrThrow("10000001");
 			makeSure(vote.voterID).is("10000001");
-			makeSure(vote.votedFirstPlayer).isNull();
-			makeSure(vote.votedSecondPlayer!.id).is(SOME_OTHER_PLAYER.id);
-			makeSure(vote.votedThirdPlayer).isNull();
+			makeSure(vote.votedFirstPublishedName).isNull();
+			makeSure(vote.votedSecondPublishedName!.id).is(SOME_OTHER_NAME.id);
+			makeSure(vote.votedThirdPublishedName).isNull();
 		});
 
 		it('throws an error if the voter ID already exists', () => {
@@ -107,7 +107,7 @@ describe('VoteRepository', () => {
 
 			expect(() => voteRepository.addVote({
 				voter: existingVote.voterID,
-				votedFirstPlayer: SOME_OTHER_PLAYER.id,
+				votedFirstPublishedName: SOME_OTHER_NAME.id,
 			})).toThrow();
 		});
 	});
@@ -115,49 +115,49 @@ describe('VoteRepository', () => {
 	describe('updateVote()', () => {
 		it('changes the vote of a user', () => {
 			voteRepository.addVote({
-				voter: SOME_PLAYER.id,
-				votedFirstPlayer: SOME_OTHER_PLAYER.id,
-				votedSecondPlayer: SOME_THIRD_PLAYER.id,
-				votedThirdPlayer: SOME_FOURTH_PLAYER,
+				voter: "10000001",
+				votedFirstPublishedName: SOME_OTHER_NAME.id,
+				votedSecondPublishedName: SOME_THIRD_NAME.id,
+				votedThirdPublishedName: SOME_FOURTH_NAME,
 			})
 
 			const vote = voteRepository.updateVote({
-				voter: SOME_PLAYER.id,
-				votedFirstPlayer: SOME_THIRD_PLAYER.id,
-				votedSecondPlayer: SOME_OTHER_PLAYER.id,
-				votedThirdPlayer: SOME_THIRD_PLAYER,
+				voter: "10000001",
+				votedFirstPublishedName: SOME_THIRD_NAME.id,
+				votedSecondPublishedName: SOME_OTHER_NAME.id,
+				votedThirdPublishedName: SOME_THIRD_NAME,
 			});
 
-			makeSure(vote.voterID).is(SOME_PLAYER.id);
-			makeSure(vote.votedFirstPlayer!.id).is(SOME_THIRD_PLAYER.id);
-			makeSure(vote.votedSecondPlayer!.id).is(SOME_OTHER_PLAYER.id);
-			makeSure(vote.votedThirdPlayer!.id).is(SOME_THIRD_PLAYER.id);
+			makeSure(vote.voterID).is("10000001");
+			makeSure(vote.votedFirstPublishedName!.id).is(SOME_THIRD_NAME.id);
+			makeSure(vote.votedSecondPublishedName!.id).is(SOME_OTHER_NAME.id);
+			makeSure(vote.votedThirdPublishedName!.id).is(SOME_THIRD_NAME.id);
 
-			const resolvedVote = voteRepository.getVoteByVoterID(SOME_PLAYER.id);
+			const resolvedVote = voteRepository.getVoteByVoterID("10000001");
 
 			makeSure(resolvedVote).is(vote);
 		});
 
 		it('can change votes to null', () => {
 			voteRepository.addVote({
-				voter: SOME_PLAYER.id,
-				votedFirstPlayer: SOME_OTHER_PLAYER.id,
-				votedSecondPlayer: SOME_THIRD_PLAYER.id,
-				votedThirdPlayer: SOME_FOURTH_PLAYER,
+				voter: "10000001",
+				votedFirstPublishedName: SOME_OTHER_NAME.id,
+				votedSecondPublishedName: SOME_THIRD_NAME.id,
+				votedThirdPublishedName: SOME_FOURTH_NAME,
 			})
 
 			const vote = voteRepository.updateVote({
-				voter: SOME_PLAYER.id,
-				votedFirstPlayer: null,
-				votedSecondPlayer: null,
-				votedThirdPlayer: null,
+				voter: "10000001",
+				votedFirstPublishedName: null,
+				votedSecondPublishedName: null,
+				votedThirdPublishedName: null,
 			});
 
-			makeSure(vote.votedFirstPlayer).isNull();
-			makeSure(vote.votedSecondPlayer).isNull();
-			makeSure(vote.votedThirdPlayer).isNull();
+			makeSure(vote.votedFirstPublishedName).isNull();
+			makeSure(vote.votedSecondPublishedName).isNull();
+			makeSure(vote.votedThirdPublishedName).isNull();
 
-			const resolvedVote = voteRepository.getVoteByVoterID(SOME_PLAYER.id);
+			const resolvedVote = voteRepository.getVoteByVoterID("10000001");
 
 			makeSure(resolvedVote).is(vote);
 		});
@@ -165,31 +165,31 @@ describe('VoteRepository', () => {
 		it('throws an error if the voter ID does not exist', () => {
 			makeSure(() => voteRepository.updateVote({
 				voter: INVALID_VOTE_ID,
-				votedFirstPlayer: SOME_OTHER_PLAYER.id,
+				votedFirstPublishedName: SOME_OTHER_NAME.id,
 			})).throws(VoteNotFoundError);
 		});
 
-		it('throws an error if the player ID does not exist', () => {
+		it('throws an error if the published name ID does not exist', () => {
 			voteRepository.addVote({
-				voter: SOME_PLAYER.id,
-				votedFirstPlayer: SOME_OTHER_PLAYER.id
+				voter: "10000001",
+				votedFirstPublishedName: SOME_OTHER_NAME.id
 			})
-			
+
 			makeSure(() => voteRepository.updateVote({
-				voter: SOME_PLAYER.id,
-				votedFirstPlayer: INVALID_VOTE_ID,
-			})).throws(PlayerNotFoundError);
+				voter: "10000001",
+				votedFirstPublishedName: INVALID_PUBLISHED_NAME_ID,
+			})).throws(PublishedNameNotFoundError);
 		});
 	});
 
 	describe('deleteVote()', () => {
 		it('deletes a vote by voterID', () => {
 			voteRepository.addVote({
-				voter: SOME_PLAYER.id,
-				votedFirstPlayer: SOME_OTHER_PLAYER.id
+				voter: "10000001",
+				votedFirstPublishedName: SOME_OTHER_NAME.id
 			});
-			voteRepository.removeVote(SOME_PLAYER.id);
-			const result = voteRepository.getVoteByVoterID(SOME_PLAYER.id);
+			voteRepository.removeVote("10000001");
+			const result = voteRepository.getVoteByVoterID("10000001");
 			expect(result).toBeNull();
 		});
 

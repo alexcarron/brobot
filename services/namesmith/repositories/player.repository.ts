@@ -1,12 +1,13 @@
 import { InvalidArgumentError, returnNonNullOrThrow } from "../../../utilities/error-utils";
 import { getRandomNumericUUID } from "../../../utilities/random-utils";
-import { Override, WithOptional, WithRequiredAndOneOther } from "../../../utilities/types/generic-types";
+import { WithOptional, WithRequiredAndOneOther } from "../../../utilities/types/generic-types";
 import { DatabaseQuerier } from "../database/database-querier";
 import { asMinimalPlayer, asMinimalPlayers, MinimalPlayer, Player, PlayerDefinition, PlayerID, PlayerResolvable } from "../types/player.types";
 import { RoleID } from "../types/role.types";
-import { PlayerNotFoundError, PlayerAlreadyExistsError } from "../utilities/error.utility";
+import { PlayerNotFoundError, PlayerAlreadyExistsError, NotEnoughTokensError } from "../utilities/error.utility";
 import { RoleRepository } from "./role.repository";
 import { PerkRepository } from './perk.repository';
+import { PublishedNameRepository } from './published-name.repository';
 import { isArray, isString } from "../../../utilities/types/type-guards";
 import { isOneSymbol } from "../../../utilities/string-checks-utils";
 import { createMockDB } from "../mocks/mock-database";
@@ -22,17 +23,20 @@ export class PlayerRepository {
 	 * @param db - The database querier instance used for executing SQL statements.
 	 * @param roleRepository - The role repository instance used for retrieving role data.
 	 * @param perkRepository - The perk repository instance used for retrieving perk data.
+	 * @param publishedNameRepository - The published name repository instance used for composing a player's published name entries.
 	 */
 	constructor(
 		public db: DatabaseQuerier,
 		public roleRepository: RoleRepository,
-		public perkRepository: PerkRepository
+		public perkRepository: PerkRepository,
+		public publishedNameRepository: PublishedNameRepository
 	) {}
 
 	static fromDB(db: DatabaseQuerier) {
 		return new PlayerRepository(db,
 			RoleRepository.fromDB(db),
-			PerkRepository.fromDB(db)
+			PerkRepository.fromDB(db),
+			PublishedNameRepository.fromDB(db)
 		);
 	}
 
@@ -56,11 +60,13 @@ export class PlayerRepository {
 	): Player {
 		const role = this.roleRepository.getRoleOfPlayerID(minimalPlayer.id);
 		const perks = this.perkRepository.getPerksOfPlayerID(minimalPlayer.id);
+		const publishedNames = this.publishedNameRepository.getPublishedNamesByPlayer(minimalPlayer.id);
 
 		return {
 			...minimalPlayer,
 			role,
 			perks,
+			publishedNames,
 		};
 	}
 
@@ -229,60 +235,6 @@ export class PlayerRepository {
 		return this.db.doesExistInTable('player', { id })
 	}
 
-	private getMinimalPlayersWithoutPublishedNames(): Override<MinimalPlayer, {
-		publishedName: null
-	}>[]  {
-		const rows = this.db.getRows(
-			'SELECT * FROM player WHERE publishedName IS NULL'
-		);
-
-		return rows.map(row => ({
-			...asMinimalPlayer(row),
-			publishedName: null
-		}));
-	}
-
-	/**
-	 * Retrieves a list of players without published names.
-	 * @returns An array of player objects without a published name.
-	 */
-	getPlayersWithoutPublishedNames(): Override<Player, {
-		publishedName: null
-	}>[] {
-		const minimalPlayers = this.getMinimalPlayersWithoutPublishedNames();
-		return this.toPlayersFromMinimals(minimalPlayers) as any;
-	}
-
-	/**
-	 * Retrieves a list of players with published names.
-	 * @returns An array of minimal player objects with published names.
-	 */
-	private getMinimalPlayersWithPublishedNames(): Override<MinimalPlayer, {
-		publishedName: string
-	}>[]  {
-		const rows = this.db.getRows(
-			'SELECT * FROM player WHERE publishedName IS NOT NULL'
-		)
-		return rows.map(row => {
-			const minimalPlayer = asMinimalPlayer(row)
-			return {
-				...minimalPlayer,
-				publishedName: minimalPlayer.publishedName!
-			}
-		});
-	}
-
-	/**
-	 * Retrieves a list of players with published names.
-	 * @returns An array of player objects with a published name.
-	 */
-	getPlayersWithPublishedNames(): Override<Player,
-		{publishedName: string}
-	>[] {
-		const minimalPlayers = this.getMinimalPlayersWithPublishedNames();
-		return this.toPlayersFromMinimals(minimalPlayers) as any;
-	}
-
 	/**
 	 * Retrieves the inventory of a player.
 	 * @param playerID - The ID of the player whose inventory is being retrieved.
@@ -368,40 +320,6 @@ export class PlayerRepository {
 	}
 
 	/**
-	 * Retrieves a player's published name from the namesmith database.
-	 * @param playerID - The ID of the player whose name is being retrieved.
-	 * @returns The published name of the player, or undefined if the player has no published name.
-	 */
-	getPublishedName(playerID: string): string | null {
-		const player = this.getPlayerByID(playerID);
-		if (!player)
-			throw new PlayerNotFoundError(playerID);
-
-		return player.publishedName;
-	}
-
-	/**
-	 * Publishes a player's name to the namesmith database.
-	 * @param playerID - The ID of the player whose name is being published.
-	 * @param name - The name to be published for the player.
-	 */
-	setPublishedName(playerID: string, name: string) {
-		if (name.length > MAX_NAME_LENGTH)
-			throw new InvalidArgumentError(`publishName: name must be less than or equal to ${MAX_NAME_LENGTH}.`);
-
-		const query = `
-			UPDATE player
-			SET publishedName = @name
-			WHERE id = @id
-		`;
-
-		const publishName = this.db.prepare(query);
-		const result = publishName.run({ name, id: playerID });
-		if (result.changes === 0)
-			throw new PlayerNotFoundError(playerID);
-	}
-
-	/**
 	 * Retrieves the number of tokens a player has.
 	 * @param playerID - The ID of the player whose tokens are being retrieved.
 	 * @returns The number of tokens the player has.
@@ -433,6 +351,37 @@ export class PlayerRepository {
 		const result = this.db.run(query, { tokens, id: playerID });
 		if (result.changes === 0)
 			throw new PlayerNotFoundError(playerID);
+	}
+
+	/**
+	 * Deducts tokens from a player in a single write, refusing to let their token count drop below zero.
+	 * @param playerID - The ID of the player whose tokens are being deducted.
+	 * @param tokensToTake - The number of tokens to deduct.
+	 * @returns The player's token count after the deduction.
+	 * @throws {InvalidArgumentError} - If the number of tokens to take is negative.
+	 * @throws {PlayerNotFoundError} - If the player with the specified ID is not found.
+	 * @throws {NotEnoughTokensError} - If the player does not have enough tokens to cover the deduction.
+	 */
+	deductTokens(playerID: string, tokensToTake: number): number {
+		if (tokensToTake < 0)
+			throw new InvalidArgumentError(`deductTokens: tokensToTake must be a non-negative number, but got ${tokensToTake}.`);
+
+		const result = this.db.run(
+			`UPDATE player 
+			SET tokens = tokens - @tokensToTake 
+			WHERE id = @id AND tokens >= @tokensToTake`,
+			{ tokensToTake, id: playerID }
+		);
+
+		if (result.changes === 0) {
+			const player = this.getPlayerByID(playerID);
+			if (!player)
+				throw new PlayerNotFoundError(playerID);
+
+			throw new NotEnoughTokensError(playerID, tokensToTake, player.tokens);
+		}
+
+		return this.getTokens(playerID);
 	}
 
 	/**
@@ -591,7 +540,6 @@ export class PlayerRepository {
 		this.db.insertIntoTable('player', {
 			id: playerID,
 			currentName: "",
-			publishedName: null,
 			tokens: 0,
 			role: null,
 			inventory: ""
@@ -603,7 +551,6 @@ export class PlayerRepository {
 	 * @param minimalPlayerDefinition - The properties of the minimal player to be added.
 	 * @param minimalPlayerDefinition.id - The ID of the player to be added (optional).
 	 * @param minimalPlayerDefinition.currentName - The current name of the player (optional).
-	 * @param minimalPlayerDefinition.publishedName - The published name of the player (optional).
 	 * @param minimalPlayerDefinition.tokens - The number of tokens the player has (optional).
 	 * @param minimalPlayerDefinition.role - The role of the player (optional).
 	 * @param minimalPlayerDefinition.inventory - The player's inventory (optional).
@@ -612,7 +559,7 @@ export class PlayerRepository {
 	 * @throws {PlayerAlreadyExistsError} - If a player with the given ID already exists.
 	 * @returns The minimal player object with the given properties and the generated ID.
 	 */
-	private addMinimalPlayer({id, currentName, publishedName, tokens, role, inventory, lastClaimedRefillTime, hasPickedPerk}:
+	private addMinimalPlayer({id, currentName, tokens, role, inventory, lastClaimedRefillTime, hasPickedPerk}:
 		WithOptional<MinimalPlayer, 'id'>
 	): MinimalPlayer {
 		if (id === undefined) {
@@ -624,7 +571,7 @@ export class PlayerRepository {
 		}
 
 		this.db.insertIntoTable('player', {
-			id, currentName, publishedName, tokens, role, inventory,
+			id, currentName, tokens, role, inventory,
 			lastClaimedRefillTime: DBDate.orNull.fromDomain(lastClaimedRefillTime),
 			hasPickedPerk: DBBoolean.fromDomain(hasPickedPerk)
 		});
@@ -637,7 +584,6 @@ export class PlayerRepository {
 	 * @param playerDefinition - The properties of the player to be added.
 	 * @param playerDefinition.id - The ID of the player to be added (optional).
 	 * @param playerDefinition.currentName - The current name of the player (optional).
-	 * @param playerDefinition.publishedName - The published name of the player (optional).
 	 * @param playerDefinition.tokens - The number of tokens the player has (optional).
 	 * @param playerDefinition.inventory - The player's inventory (optional).
 	 * @param playerDefinition.lastClaimedRefillTime - The last time the player claimed a refill (optional).
@@ -650,7 +596,7 @@ export class PlayerRepository {
 	 * @returns The player object with the given properties and the generated ID.
 	 */
 	addPlayer({
-		id, currentName, publishedName, tokens, inventory, lastClaimedRefillTime, hasPickedPerk,
+		id, currentName, tokens, inventory, lastClaimedRefillTime, hasPickedPerk,
 		role: maybeRoleResolvable,
 		perks: perkResolvables
 	}: PlayerDefinition) {
@@ -661,7 +607,7 @@ export class PlayerRepository {
 		}
 
 		const minimalPlayer = this.addMinimalPlayer({
-			id, currentName, publishedName, tokens, role: roleID, inventory, lastClaimedRefillTime,
+			id, currentName, tokens, role: roleID, inventory, lastClaimedRefillTime,
 			hasPickedPerk: hasPickedPerk ?? false,
 		});
 
@@ -683,7 +629,6 @@ export class PlayerRepository {
 	 * @param minimalPlayerDefinition - The properties of the minimal player to be updated.
 	 * @param minimalPlayerDefinition.id - The ID of the player to be updated.
 	 * @param minimalPlayerDefinition.currentName - The current name of the player (optional).
-	 * @param minimalPlayerDefinition.publishedName - The published name of the player (optional).
 	 * @param minimalPlayerDefinition.tokens - The number of tokens the player has (optional).
 	 * @param minimalPlayerDefinition.inventory - The player's inventory (optional).
 	 * @param minimalPlayerDefinition.lastClaimedRefillTime - The last time the player claimed a refill (optional).
@@ -692,7 +637,7 @@ export class PlayerRepository {
 	 * @returns The minimal player object with the given properties and the generated ID.
 	 */
 	private updateMinimalPlayer(
-		{id, currentName, publishedName, tokens, inventory, lastClaimedRefillTime, hasPickedPerk}:
+		{id, currentName, tokens, inventory, lastClaimedRefillTime, hasPickedPerk}:
 			WithRequiredAndOneOther<Player, "id">
 	): MinimalPlayer {
 		if (this.doesPlayerExist(id) === false) {
@@ -701,7 +646,7 @@ export class PlayerRepository {
 
 		this.db.updateInTable('player', {
 			fieldsUpdating: {
-				currentName, publishedName, tokens, inventory,
+				currentName, tokens, inventory,
 				lastClaimedRefillTime: DBDate.orNull.orUndefined.fromDomain(lastClaimedRefillTime),
 				hasPickedPerk: DBBoolean.orUndefined.fromDomain(hasPickedPerk)
 			},
@@ -712,16 +657,16 @@ export class PlayerRepository {
 	}
 
 	updatePlayer({
-		id, currentName, publishedName, tokens, inventory, lastClaimedRefillTime, hasPickedPerk,
+		id, currentName, tokens, inventory, lastClaimedRefillTime, hasPickedPerk,
 		role: roleResolvable,
 		perks: perkResolvables
 	}:
 		WithRequiredAndOneOther<PlayerDefinition, "id">
 	) {
 		if (
-			[currentName, publishedName, tokens, inventory, lastClaimedRefillTime, hasPickedPerk].some((value) => value !== undefined)
+			[currentName, tokens, inventory, lastClaimedRefillTime, hasPickedPerk].some((value) => value !== undefined)
 		) {
-			this.updateMinimalPlayer({ id, currentName, publishedName, tokens: tokens!, inventory, lastClaimedRefillTime, hasPickedPerk });
+			this.updateMinimalPlayer({ id, currentName, tokens: tokens!, inventory, lastClaimedRefillTime, hasPickedPerk });
 		}
 
 		if (roleResolvable !== undefined) {

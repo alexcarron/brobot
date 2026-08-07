@@ -29,12 +29,11 @@ import { REFILL_COOLDOWN_HOURS } from "../constants/namesmith.constants";
 import { INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { PlayerRepository } from "../repositories/player.repository";
-import { sendToPublishedNamesChannel, sendToNamesToVoteOnChannel, resetMemberToNewPlayer } from "../utilities/discord-action.utility";
+import { resetMemberToNewPlayer } from "../utilities/discord-action.utility";
 import { PlayerService } from "./player.service";
 import { NameTooLongError, PlayerNotFoundError } from "../utilities/error.utility";
 import { addMockPlayer, createMockPlayerObject } from "../mocks/mock-data/mock-players";
 import { NamesmithEvents } from "../event-listeners/namesmith-events";
-import { isNotNullable } from "../../../utilities/types/type-guards";
 import { Player } from "../types/player.types";
 import { InvalidArgumentError } from "../../../utilities/error-utils";
 
@@ -44,7 +43,6 @@ describe('PlayerService', () => {
 
   let SOME_PLAYER: Player;
 	let SOME_OTHER_PLAYER: Player;
-	let NAMED_PLAYER: Player;
 	let ALL_PLAYERS: Player[];
 
   beforeEach(() => {
@@ -53,7 +51,7 @@ describe('PlayerService', () => {
 
 		SOME_PLAYER = addMockPlayer(db);
 		SOME_OTHER_PLAYER = addMockPlayer(db);
-		NAMED_PLAYER = addMockPlayer(db, {
+		addMockPlayer(db, {
 			currentName: "Some Name"
 		});
 		ALL_PLAYERS = playerService.playerRepository.getPlayers();
@@ -494,102 +492,6 @@ describe('PlayerService', () => {
     });
   });
 
-  describe(".getPublishedName()", () => {
-    it("should return the published name of a player", () => {
-      const result = playerService.getPublishedName(SOME_PLAYER.id);
-      expect(result).toEqual(SOME_PLAYER.publishedName);
-    });
-
-    it("should throw an error if the player is not found", () => {
-      expect(() => playerService.getPublishedName(INVALID_PLAYER_ID)).toThrow();
-    });
-  });
-
-  describe(".publishName()", () => {
-    const announceNamePublishEvent = jest.spyOn(NamesmithEvents.PublishName, "triggerEvent");
-
-    it("should publish the player's current name", () => {
-      playerService.publishName(NAMED_PLAYER.id);
-
-      const publishedName = playerService.getPublishedName(NAMED_PLAYER.id);
-      expect(publishedName).toEqual(NAMED_PLAYER.currentName);
-      expect(announceNamePublishEvent).toHaveBeenCalledWith({
-        player: {
-          ...NAMED_PLAYER,
-          publishedName: NAMED_PLAYER.currentName
-        }
-      });
-    });
-
-    it("should throw an error if the player is not found", () => {
-      expect(() => playerService.publishName(INVALID_PLAYER_ID)).toThrow();
-    });
-
-    it("should not publish name if it is an empty string", () => {
-      playerService.changeCurrentName(SOME_OTHER_PLAYER.id, "");
-      playerService.publishName(SOME_OTHER_PLAYER.id);
-
-      const publishedName = playerService.getPublishedName(SOME_OTHER_PLAYER.id);
-      expect(publishedName).toEqual(SOME_OTHER_PLAYER.publishedName);
-      expect(sendToPublishedNamesChannel).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('publishUnpublishedNames()', () => {
-    it('should publish all unpublished names', () => {
-      const unpublishedPlayers = ALL_PLAYERS.filter(player =>
-				player.publishedName === null &&
-				player.currentName.length !== 0
-			);
-
-      playerService.publishUnpublishedNames();
-
-      for (const player of unpublishedPlayers) {
-        const publishedName = playerService.getPublishedName(player.id);
-        expect(publishedName).toEqual(player.currentName);
-      }
-    });
-  });
-
-  describe('finalizeName()', () => {
-    it('should change current name of player to their published name when they have one', async () => {
-			const publishedPlayer = addMockPlayer(db, {
-				currentName: "joseph",
-				publishedName: "publishedName",
-			})
-      await playerService.finalizeName(publishedPlayer.id);
-      const currentName = playerService.getCurrentName(publishedPlayer.id);
-      expect(currentName).toEqual(publishedPlayer.publishedName);
-    });
-
-    it('should not change current name of player to their published name when they don\'t have one', async () => {
-      await playerService.finalizeName(NAMED_PLAYER.id);
-      const currentName = playerService.getCurrentName(NAMED_PLAYER.id);
-      const publishedName = playerService.getPublishedName(NAMED_PLAYER.id);
-      expect(currentName).toEqual(NAMED_PLAYER.currentName);
-      expect(publishedName).toEqual(NAMED_PLAYER.publishedName);
-      expect(sendToNamesToVoteOnChannel).not.toHaveBeenCalled();
-    });
-
-    it('should throw an error if the player is not found', () => {
-      makeSure(() =>
-				playerService.finalizeName(INVALID_PLAYER_ID)
-			).throws(PlayerNotFoundError);
-    });
-  });
-
-  describe('finalizeAllNames()', () => {
-    it('should finalize all names', () => {
-      playerService.finalizeAllNames();
-      for (const player of ALL_PLAYERS) {
-        if (player.publishedName === null) continue;
-        const currentName = playerService.getCurrentName(player.id);
-        const publishedName = playerService.getPublishedName(player.id);
-        expect(currentName).toEqual(publishedName);
-      }
-    });
-  });
-
   describe('giveTokens()', () => {
     it('should give tokens to a player', () => {
       playerService.giveTokens(SOME_PLAYER.id, 10);
@@ -786,17 +688,6 @@ describe('PlayerService', () => {
     });
   });
 
-	describe('getAllPublishedNames()', () => {
-		it('should return all published names', () => {
-			const result = playerService.getAllPublishedNames();
-			expect(result).toEqual(
-				ALL_PLAYERS
-					.map(player => player.publishedName)
-					.filter(isNotNullable)
-			);
-		});
-	});
-
 	describe('getDisplayedInventory()', () => {
 		it('should return the inventory of a player in a readable format', () => {
 			const mockPlayer = addMockPlayer(db, {
@@ -897,55 +788,4 @@ describe('PlayerService', () => {
 		});
 	});
 
-	describe('doesPublishedNameContain', () => {
-		it('should return true if the published name of a player is the given substring', () => {
-			const mockPlayer = addMockPlayer(db, { publishedName: "Joseph" });
-			makeSure(playerService.doesPublishedNameContain(mockPlayer.id, "Joseph")).isTrue();
-		});
-
-		it('should return true if the given substring is contains in the middle of the player\'s name', () => {
-			const mockPlayer = addMockPlayer(db, { publishedName: "Joseph" });
-			makeSure(playerService.doesPublishedNameContain(mockPlayer.id, "eph")).isTrue();
-		});
-
-		it('should return true if the given substring is not in the same case as the player\'s name', () => {
-			const mockPlayer = addMockPlayer(db, { publishedName: "joseph" });
-			makeSure(playerService.doesPublishedNameContain(mockPlayer.id, "OsEp")).isTrue();
-		});
-
-		it('should return false if given substring is not in publishedName of player', () => {
-			const mockPlayer = addMockPlayer(db, { publishedName: "abc" });
-			makeSure(playerService.doesPublishedNameContain(mockPlayer.id, "def")).isFalse();
-		});
-
-		it('should return false if the given substring is not in the exact same order as the characters in the player\'s name', () => {
-			const mockPlayer = addMockPlayer(db, { publishedName: "abcdef" });
-			makeSure(playerService.doesPublishedNameContain(mockPlayer.id, "bced")).isFalse();
-		});
-
-		it('should throw InvalidArgumentError if the given substring is empty', () => {
-			const mockPlayer = addMockPlayer(db, { publishedName: "abcdef" });
-			makeSure(() => 
-				playerService.doesPublishedNameContain(mockPlayer.id, "")
-			).throws(InvalidArgumentError);
-		});
-	});
-
-	describe('hasPublishedName()', () => {
-		it('should return true if the player has a published name', () => {
-			const mockPlayer = addMockPlayer(db, { publishedName: "abc" });
-			makeSure(playerService.hasPublishedName(mockPlayer.id)).isTrue();
-		});
-
-		it('should return false if the player does not have a published name', () => {
-			const mockPlayer = addMockPlayer(db, { publishedName: null });
-			makeSure(playerService.hasPublishedName(mockPlayer.id)).isFalse();
-		});
-
-		it('should return true when they publish their name', () => {
-			const mockPlayer = addMockPlayer(db, { currentName: "abc", publishedName: null });
-			playerService.publishName(mockPlayer.id);
-			makeSure(playerService.hasPublishedName(mockPlayer.id)).isTrue();
-		});
-	});
 });

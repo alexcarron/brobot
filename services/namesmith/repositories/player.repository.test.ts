@@ -1,3 +1,4 @@
+import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { Perks } from "../constants/perks.constants";
 import { INVALID_PLAYER_ID } from "../constants/test.constants";
@@ -5,7 +6,7 @@ import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { Player } from "../types/player.types";
 import { Role } from "../types/role.types";
-import { PlayerAlreadyExistsError, PlayerNotFoundError } from "../utilities/error.utility";
+import { NotEnoughTokensError, PlayerAlreadyExistsError, PlayerNotFoundError } from "../utilities/error.utility";
 import { PlayerRepository } from "./player.repository";
 import { RoleRepository } from "./role.repository";
 
@@ -40,7 +41,7 @@ describe('PlayerRepository', () => {
     it('returns an array of player objects', () => {
       const players = playerRepository.getPlayers();
       makeSure(players).isNotEmpty();
-			makeSure(players).haveProperties('id', 'currentName', 'publishedName', 'tokens', 'role', 'perks', 'inventory', 'lastClaimedRefillTime');
+			makeSure(players).haveProperties('id', 'currentName', 'publishedNames', 'tokens', 'role', 'perks', 'inventory', 'lastClaimedRefillTime');
     });
   });
 
@@ -99,26 +100,6 @@ describe('PlayerRepository', () => {
 		});
   });
 
-	describe('getPlayersWithoutPublishedNames()', () => {
-		it('returns an array of player objects without a published name', () => {
-			const result = playerRepository.getPlayersWithoutPublishedNames();
-
-			expect(result).toEqual(
-				ALL_PLAYERS.filter(player => player.publishedName === null)
-			);
-		});
-	});
-
-	describe('getPlayersWithPublishedNames()', () => {
-		it('returns an array of player objects with a published name', () => {
-			const result = playerRepository.getPlayersWithPublishedNames();
-
-			expect(result).toEqual(
-				ALL_PLAYERS.filter(player => player.publishedName !== null)
-			);
-		});
-	})
-
 	describe('getInventory()', () => {
 		it('returns the inventory of a player', () => {
 			const result = playerRepository.getInventory(SOME_PLAYER.id);
@@ -169,33 +150,6 @@ describe('PlayerRepository', () => {
 		});
 	});
 
-	describe('getPublishedName()', () => {
-		it('returns the published name of a player', () => {
-			const result = playerRepository.getPublishedName(SOME_PLAYER.id);
-			expect(result).toEqual(SOME_PLAYER.publishedName);
-		});
-
-		it('throws an error if the player is not found', () => {
-			expect(() => playerRepository.getPublishedName(INVALID_PLAYER_ID)).toThrow();
-		});
-	});
-
-	describe('publishName()', () => {
-		it('changes the published name of a player', () => {
-			playerRepository.setPublishedName(SOME_PLAYER.id, "new name");
-			const result = playerRepository.getPublishedName(SOME_PLAYER.id);
-			expect(result).toEqual("new name");
-		});
-
-		it('throws an error if the player is not found', () => {
-			expect(() => playerRepository.setPublishedName(INVALID_PLAYER_ID, "new name")).toThrow();
-		});
-
-		it('throws an error if the new name is too long', () => {
-			expect(() => playerRepository.setPublishedName(SOME_OTHER_PLAYER.id, "a".repeat(33))).toThrow();
-		});
-	});
-
 	describe('getTokens()', () => {
 		it('returns the number of tokens a player has', () => {
 			const result = playerRepository.getTokens(SOME_PLAYER.id);
@@ -229,6 +183,36 @@ describe('PlayerRepository', () => {
 
 		it('throws an error if the player is not found', () => {
 			makeSure(() => playerRepository.setTokens(INVALID_PLAYER_ID, 500)).throws(PlayerNotFoundError);
+		});
+	});
+
+	describe('deductTokens()', () => {
+		it('deducts tokens and returns the new balance', () => {
+			playerRepository.setTokens(SOME_PLAYER.id, 500);
+			const newBalance = playerRepository.deductTokens(SOME_PLAYER.id, 200);
+			makeSure(newBalance).is(300);
+			makeSure(playerRepository.getTokens(SOME_PLAYER.id)).is(300);
+		});
+
+		it('allows deducting exactly the full balance down to zero', () => {
+			playerRepository.setTokens(SOME_PLAYER.id, 250);
+			const newBalance = playerRepository.deductTokens(SOME_PLAYER.id, 250);
+			makeSure(newBalance).is(0);
+		});
+
+		it('throws NotEnoughTokensError and leaves the balance unchanged when the player cannot afford it', () => {
+			playerRepository.setTokens(SOME_PLAYER.id, 100);
+			makeSure(() => playerRepository.deductTokens(SOME_PLAYER.id, 101)).throws(NotEnoughTokensError);
+			makeSure(playerRepository.getTokens(SOME_PLAYER.id)).is(100);
+		});
+
+		it('throws if the number of tokens to take is negative', () => {
+			playerRepository.setTokens(SOME_PLAYER.id, 100);
+			makeSure(() => playerRepository.deductTokens(SOME_PLAYER.id, -1)).throws(InvalidArgumentError);
+		});
+
+		it('throws if the player is not found', () => {
+			makeSure(() => playerRepository.deductTokens(INVALID_PLAYER_ID, 1)).throws(PlayerNotFoundError);
 		});
 	});
 
@@ -312,7 +296,6 @@ describe('PlayerRepository', () => {
 			makeSure(result).hasProperties({
 				id: "new-player-id",
 				currentName: "",
-				publishedName: null,
 				tokens: 0,
 				role: null,
 				perks: [],
@@ -371,7 +354,6 @@ describe('PlayerRepository', () => {
 			const player = playerRepository.addPlayer({
 				id: "new-player-id",
 				currentName: "test",
-				publishedName: "test",
 				tokens: 0,
 				inventory: "",
 				lastClaimedRefillTime: null,
@@ -382,7 +364,6 @@ describe('PlayerRepository', () => {
 			makeSure(player).hasProperties({
 				id: "new-player-id",
 				currentName: "test",
-				publishedName: "test",
 				tokens: 0,
 				inventory: "",
 				lastClaimedRefillTime: null,
@@ -398,7 +379,6 @@ describe('PlayerRepository', () => {
 			const player = playerRepository.addPlayer({
 				id: "new-player-id",
 				currentName: "currentName",
-				publishedName: "publishedName",
 				tokens: 100,
 				inventory: "currentNameAndInventory",
 				lastClaimedRefillTime: new Date('2023-01-01T00:00:00.000Z'),
@@ -409,7 +389,6 @@ describe('PlayerRepository', () => {
 			makeSure(player).hasProperties({
 				id: "new-player-id",
 				currentName: "currentName",
-				publishedName: "publishedName",
 				tokens: 100,
 				inventory: "currentNameAndInventory",
 				lastClaimedRefillTime: new Date('2023-01-01T00:00:00.000Z')
@@ -430,7 +409,6 @@ describe('PlayerRepository', () => {
 		it('generated an id if not provided', () => {
 			const player = playerRepository.addPlayer({
 				currentName: "test",
-				publishedName: "test",
 				tokens: 0,
 				inventory: "",
 				lastClaimedRefillTime: null,
@@ -447,7 +425,6 @@ describe('PlayerRepository', () => {
 				playerRepository.addPlayer({
 					id: SOME_PLAYER.id,
 					currentName: "test",
-					publishedName: "test",
 					tokens: 0,
 					inventory: "",
 					lastClaimedRefillTime: null,
@@ -468,7 +445,6 @@ describe('PlayerRepository', () => {
 			makeSure(player).hasProperties({
 				id: SOME_PLAYER.id,
 				currentName: "test",
-				publishedName: SOME_PLAYER.publishedName,
 				tokens: SOME_PLAYER.tokens,
 				inventory: SOME_PLAYER.inventory,
 				lastClaimedRefillTime: SOME_PLAYER.lastClaimedRefillTime,
@@ -484,7 +460,6 @@ describe('PlayerRepository', () => {
 			const player = playerRepository.updatePlayer({
 				id: SOME_PLAYER.id,
 				currentName: "currentName",
-				publishedName: "publishedName",
 				tokens: 100,
 				inventory: "currentNameAndInventory",
 				lastClaimedRefillTime: new Date('2023-01-01T00:00:00.000Z'),
@@ -495,7 +470,6 @@ describe('PlayerRepository', () => {
 			makeSure(player).hasProperties({
 				id: SOME_PLAYER.id,
 				currentName: "currentName",
-				publishedName: "publishedName",
 				tokens: 100,
 				inventory: "currentNameAndInventory",
 				lastClaimedRefillTime: new Date('2023-01-01T00:00:00.000Z')

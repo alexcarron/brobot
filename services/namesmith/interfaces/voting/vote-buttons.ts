@@ -1,21 +1,21 @@
 import { ButtonInteraction, ButtonStyle } from "discord.js";
 import { replyToInteraction } from "../../../../utilities/discord-action-utils";
 import { DiscordButton, DiscordButtonDefinition } from "../../../../utilities/discord-interfaces/discord-button";
-import { Player } from "../../types/player.types";
+import { PublishedName } from "../../types/published-name.types";
 import { Rank, Ranks } from "../../types/vote.types";
 import { voteName } from "../../workflows/voting/vote-name.workflow";
 import { addSIfPlural, escapeDiscordMarkdown, joinLines, toListOfWords } from "../../../../utilities/string-manipulation-utils";
 import { toRankEmoji } from "../../utilities/player-message.utility";
 
 export function getVote1stButton(
-	{player, name}: {player: Player, name: string}
+	{publishedName}: {publishedName: PublishedName}
 ): DiscordButtonDefinition {
 	return {
 		label: '🥇 Vote 1st',
-		id: `vote-1st-${name}`,
+		id: `vote-1st-${publishedName.id}`,
 		style: ButtonStyle.Success,
 		onButtonPressed: async (buttonInteraction) => {
-			await onVoteButtonPressed({player, name, buttonInteraction,
+			await onVoteButtonPressed({publishedName, buttonInteraction,
 				rank: Ranks.FIRST,
 			});
 		}
@@ -23,14 +23,14 @@ export function getVote1stButton(
 }
 
 export function getVote2ndButton(
-	{player, name}: {player: Player, name: string}
+	{publishedName}: {publishedName: PublishedName}
 ): DiscordButtonDefinition {
 	return {
 		label: '🥈 Vote 2nd',
-		id: `vote-2nd-${name}`,
+		id: `vote-2nd-${publishedName.id}`,
 		style: ButtonStyle.Secondary,
 		onButtonPressed: async (buttonInteraction) => {
-			await onVoteButtonPressed({player, name, buttonInteraction,
+			await onVoteButtonPressed({publishedName, buttonInteraction,
 				rank: Ranks.SECOND,
 			});
 		}
@@ -38,14 +38,14 @@ export function getVote2ndButton(
 }
 
 export function getVote3rdButton(
-	{player, name}: {player: Player, name: string}
+	{publishedName}: {publishedName: PublishedName}
 ): DiscordButtonDefinition {
 	return {
 		label: '🥉 Vote 3rd',
-		id: `vote-3rd-${name}`,
+		id: `vote-3rd-${publishedName.id}`,
 		style: ButtonStyle.Secondary,
 		onButtonPressed: async (buttonInteraction) => {
-			await onVoteButtonPressed({player, name, buttonInteraction,
+			await onVoteButtonPressed({publishedName, buttonInteraction,
 				rank: Ranks.THIRD,
 			});
 		}
@@ -69,16 +69,16 @@ function toEmptyRankLines(missingRanks: Set<Rank>): string[] {
 }
 
 export async function onVoteButtonPressed(
-	{player, name, rank, buttonInteraction}: {
-		player: Player,
-		name: string,
+	{publishedName, rank, buttonInteraction}: {
+		publishedName: PublishedName,
 		rank: Rank,
 		buttonInteraction: any
 	}
 ) {
+	const name = publishedName.name;
 	const result = voteName({
 		voterUserID: buttonInteraction.user.id,
-		votedPlayer: player,
+		votedPublishedName: publishedName,
 		rankVotingFor: rank,
 	});
 
@@ -115,7 +115,7 @@ export async function onVoteButtonPressed(
 		const firstLine = missingRanks.size > 1
 			? `You must vote names in ${listOfMissingRanks} place before making your ${rank} place vote.`
 			: `You must vote a name in ${listOfMissingRanks} place before making your ${rank} place vote.`;
-		
+
 		await replyToInteraction(buttonInteraction,
 			firstLine,
 			``,
@@ -124,11 +124,11 @@ export async function onVoteButtonPressed(
 		return;
 	}
 
-	const {missingRanks, otherRankToVotedName, playerPreviouslyInRank, previousRankOfPlayer} = result;
+	const {missingRanks, otherRankToVotedName, publishedNamePreviouslyInRank, previousRankOfPublishedName} = result;
 	const voteMissingRanksLine = toMissingRanksLine(missingRanks);
 
-	if (playerPreviouslyInRank === null && previousRankOfPlayer === null) {
-		return await replyToInteraction(buttonInteraction, 
+	if (publishedNamePreviouslyInRank === null && previousRankOfPublishedName === null) {
+		return await replyToInteraction(buttonInteraction,
 			`You voted this name in ${rank} place:`,
 			`> ${toRankEmoji(rank)} ${escapeDiscordMarkdown(name)}`,
 			``,
@@ -139,9 +139,9 @@ export async function onVoteButtonPressed(
 
 	const otherVoteLines = toCurrentVoteLines(otherRankToVotedName);
 
-	if (playerPreviouslyInRank === null) {
-		return await replyToInteraction(buttonInteraction, 
-			`You somehow illegally changed your vote for this name from ${previousRankOfPlayer} place to ${rank} place, leaving ${previousRankOfPlayer} place empty:`,
+	if (publishedNamePreviouslyInRank === null) {
+		return await replyToInteraction(buttonInteraction,
+			`You somehow illegally changed your vote for this name from ${previousRankOfPublishedName} place to ${rank} place, leaving ${previousRankOfPublishedName} place empty:`,
 			`> ${toRankEmoji(rank)} ${escapeDiscordMarkdown(name)}`,
 			``,
 			`Contact the host to notify them of this bug`,
@@ -150,9 +150,9 @@ export async function onVoteButtonPressed(
 			voteMissingRanksLine,
 		);
 	}
-	
-	const originallyVotedName = playerPreviouslyInRank.publishedName!;
-	const originalVoteLine = 
+
+	const originallyVotedName = publishedNamePreviouslyInRank.name;
+	const originalVoteLine =
 		`-# Your ${rank} place vote was originally for ${escapeDiscordMarkdown(originallyVotedName)}`;
 
 	const rankIndex = Number(rank.charAt(0)) - 1;
@@ -162,24 +162,24 @@ export async function onVoteButtonPressed(
 			...otherVoteLines.slice(rankIndex)
 	];
 
-	if (previousRankOfPlayer !== null) {
+	if (previousRankOfPublishedName !== null) {
 		const switchedRankMessage = new DiscordButton({
 			promptText: joinLines(
-				`You switched this name's vote from ${previousRankOfPlayer} to ${rank} place:`,
+				`You switched this name's vote from ${previousRankOfPublishedName} to ${rank} place:`,
 				`> ${toRankEmoji(rank)} ${escapeDiscordMarkdown(name)}`,
 				``,
 				lines,
 				toEmptyRankLines(missingRanks),
 			),
 			label: "Undo",
-			id: `undo-vote-switch-${rank}-${name}-${originallyVotedName}`,
+			id: `undo-vote-switch-${rank}-${publishedName.id}-${originallyVotedName}`,
 			style: ButtonStyle.Secondary,
 			onButtonPressed: async (undoButtonInteraction) => {
 				await onUndoVoteSwitchButtonPressed({
 					buttonInteraction: undoButtonInteraction,
-					playerPreviouslyInRank,
-					previousRankOfPlayer,
-					votedPlayer: player,
+					publishedNamePreviouslyInRank,
+					previousRankOfPublishedName,
+					votedPublishedName: publishedName,
 					votedName: name,
 					rankSwitchedTo: rank,
 				})
@@ -200,13 +200,13 @@ export async function onVoteButtonPressed(
 			voteMissingRanksLine,
 		),
 		label: "Undo",
-		id: `undo-vote-replacement-${rank}-${name}-${originallyVotedName}`,
+		id: `undo-vote-replacement-${rank}-${publishedName.id}-${originallyVotedName}`,
 		style: ButtonStyle.Secondary,
 		onButtonPressed: async (undoButtonInteraction) => {
 			await onUndoVoteReplacementButtonPressed({
 				buttonInteraction: undoButtonInteraction,
 				rankVotedFor: rank,
-				playerPreviouslyInRank,
+				publishedNamePreviouslyInRank,
 				namePreviouslyInRank: originallyVotedName,
 			})
 		}
@@ -218,18 +218,18 @@ export async function onVoteButtonPressed(
 }
 
 async function onUndoVoteSwitchButtonPressed(
-	{buttonInteraction, playerPreviouslyInRank, previousRankOfPlayer, votedPlayer, votedName, rankSwitchedTo}: {
-		buttonInteraction: ButtonInteraction, 
-		playerPreviouslyInRank: Player, 
-		previousRankOfPlayer: Rank, 
-		votedPlayer: Player,
-		votedName: string, 
+	{buttonInteraction, publishedNamePreviouslyInRank, previousRankOfPublishedName, votedPublishedName, votedName, rankSwitchedTo}: {
+		buttonInteraction: ButtonInteraction,
+		publishedNamePreviouslyInRank: PublishedName,
+		previousRankOfPublishedName: Rank,
+		votedPublishedName: PublishedName,
+		votedName: string,
 		rankSwitchedTo: Rank,
 	},
 ) {
 	const undoResult = voteName({
 		voterUserID: buttonInteraction.user.id,
-		votedPlayer: playerPreviouslyInRank.id,
+		votedPublishedName: publishedNamePreviouslyInRank,
 		rankVotingFor: rankSwitchedTo,
 	});
 
@@ -241,8 +241,8 @@ async function onUndoVoteSwitchButtonPressed(
 
 	const redoResult = voteName({
 		voterUserID: buttonInteraction.user.id,
-		votedPlayer: votedPlayer,
-		rankVotingFor: previousRankOfPlayer,
+		votedPublishedName: votedPublishedName,
+		rankVotingFor: previousRankOfPublishedName,
 	});
 
 	if (redoResult.isVotingClosed())
@@ -252,24 +252,24 @@ async function onUndoVoteSwitchButtonPressed(
 	const currentVoteLines = toCurrentVoteLines(rankToVotedName);
 
 	await replyToInteraction(buttonInteraction,
-		`You switched this name's vote back to ${previousRankOfPlayer} place:`,
-		`> ${toRankEmoji(previousRankOfPlayer!)} ${escapeDiscordMarkdown(votedName)}`,
+		`You switched this name's vote back to ${previousRankOfPublishedName} place:`,
+		`> ${toRankEmoji(previousRankOfPublishedName!)} ${escapeDiscordMarkdown(votedName)}`,
 		``,
 		currentVoteLines,
 	);
 }
 
 async function onUndoVoteReplacementButtonPressed(
-	{buttonInteraction, rankVotedFor, playerPreviouslyInRank, namePreviouslyInRank}: {
+	{buttonInteraction, rankVotedFor, publishedNamePreviouslyInRank, namePreviouslyInRank}: {
 		buttonInteraction: ButtonInteraction,
 		rankVotedFor: Rank,
-		playerPreviouslyInRank: Player,
+		publishedNamePreviouslyInRank: PublishedName,
 		namePreviouslyInRank: string,
 	}
 ) {
 	const undoResult = voteName({
 		voterUserID: buttonInteraction.user.id,
-		votedPlayer: playerPreviouslyInRank,
+		votedPublishedName: publishedNamePreviouslyInRank,
 		rankVotingFor: rankVotedFor,
 	});
 
@@ -278,11 +278,11 @@ async function onUndoVoteReplacementButtonPressed(
 
 	const {rankToVotedName} = undoResult;
 	const currentVoteLines = toCurrentVoteLines(rankToVotedName);
-	
+
 	await replyToInteraction(buttonInteraction,
 		`You restored your previous ${rankVotedFor} place vote on this name:`,
 		`> ${toRankEmoji(rankVotedFor)} ${escapeDiscordMarkdown(namePreviouslyInRank)}`,
-		``,					
+		``,
 		currentVoteLines,
 	);
 }

@@ -7,7 +7,7 @@ import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { escapeDiscordMarkdown, joinLines } from "../../../../utilities/string-manipulation-utils";
 import { voteName } from "../../workflows/voting/vote-name.workflow";
 import { Rank, Ranks } from "../../types/vote.types";
-import { Player } from "../../types/player.types";
+import { PublishedName } from "../../types/published-name.types";
 import { confirmInteraction } from "../../../../utilities/discord-interfaces/discord-interface-utils";
 
 export function getClearMyVotesButton() {
@@ -54,7 +54,7 @@ async function onConfirmDeleteVotes(buttonInteraction: ButtonInteraction) {
 	const voterUserID = buttonInteraction.user.id;
 	const result = clearMyVotes({voterUserID});
 
-	const {rankToVotedPlayer} = result;
+	const {rankToVotedPublishedName} = result;
 
 	const deleteConfirmationMessage = new DiscordButton({
 		promptText: `You have deleted all your votes.`,
@@ -62,19 +62,19 @@ async function onConfirmDeleteVotes(buttonInteraction: ButtonInteraction) {
 		style: ButtonStyle.Secondary,
 		id: `undo-delete-votes-${voterUserID}`,
 		onButtonPressed: async (buttonInteraction) => {
-			await onUndoDeleteVotesButtonPressed({buttonInteraction, rankToVotedPlayer});
+			await onUndoDeleteVotesButtonPressed({buttonInteraction, rankToVotedPublishedName});
 		}
 	});
 	await replyToInteraction(buttonInteraction, deleteConfirmationMessage.getMessageContents());
 }
 
 async function onUndoDeleteVotesButtonPressed(
-	{buttonInteraction, rankToVotedPlayer}: {
+	{buttonInteraction, rankToVotedPublishedName}: {
 		buttonInteraction: ButtonInteraction,
-		rankToVotedPlayer: Map<Rank, Player>
+		rankToVotedPublishedName: Map<Rank, PublishedName>
 	}
 ) {
-	const sortedRankNameEntries = [...rankToVotedPlayer.entries()].sort(([rank1], [rank2]) => {
+	const sortedRankNameEntries = [...rankToVotedPublishedName.entries()].sort(([rank1], [rank2]) => {
 		const rankValue1 =
 			rank1 === Ranks.FIRST ? 1 :
 			rank1 === Ranks.SECOND ? 2 :
@@ -89,10 +89,10 @@ async function onUndoDeleteVotesButtonPressed(
 	});
 	
 	let rankToVotedName: Map<Rank, string> = new Map();
-	for (const [rank, name] of sortedRankNameEntries) {
+	for (const [rank, publishedName] of sortedRankNameEntries) {
 		const undoVoteResult = voteName({
 			voterUserID: buttonInteraction.user.id,
-			votedPlayer: name,
+			votedPublishedName: publishedName,
 			rankVotingFor: rank,
 		});
 

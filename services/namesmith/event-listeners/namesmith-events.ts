@@ -1,4 +1,5 @@
 import { Player } from "../types/player.types";
+import { PublishedName } from "../types/published-name.types";
 
 export const NamesmithEvents = {
   ChangeName: createEventHandler<{
@@ -9,6 +10,7 @@ export const NamesmithEvents = {
 
 	PublishName: createEventHandler<{
 		player: Player;
+		publishedName: PublishedName;
 	}>(),
 
 	DayStart: createEventHandler<{}>(),

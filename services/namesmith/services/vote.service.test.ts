@@ -2,31 +2,47 @@ import { makeSure } from "../../../utilities/jest/jest-utils";
 import { VoteRepository } from "../repositories/vote.repository";
 import { PlayerService } from "./player.service";
 import { VoteService } from "./vote.service";
-import { INVALID_PLAYER_ID, INVALID_VOTE_ID } from "../constants/test.constants";
+import { INVALID_PUBLISHED_NAME_ID, INVALID_VOTE_ID } from "../constants/test.constants";
 import { addMockVote } from "../mocks/mock-data/mock-votes";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
-import { Rank, Ranks } from "../types/vote.types";
+import { addMockPublishedName } from "../mocks/mock-data/mock-published-names";
+import { Placement, Rank, Ranks } from "../types/vote.types";
 import { DatabaseQuerier } from "../database/database-querier";
 import { Player } from "../types/player.types";
+import { PublishedName } from "../types/published-name.types";
 import { InvalidArgumentError } from "../../../utilities/error-utils";
-import { PlayerNotFoundError, VoteOutOfOrderError } from "../utilities/error.utility";
+import { PublishedNameNotFoundError, VoteOutOfOrderError } from "../utilities/error.utility";
+
+// Projects a placement to the fields that do not depend on resolved player/entry object identity.
+const toComparablePlacement = (placement: Placement) => ({
+	name: placement.name,
+	rank: placement.rank,
+	points: placement.points,
+	firstPlaceVotes: placement.firstPlaceVotes,
+	firstPlacePoints: placement.firstPlacePoints,
+	secondPlaceVotes: placement.secondPlaceVotes,
+	secondPlacePoints: placement.secondPlacePoints,
+	thirdPlaceVotes: placement.thirdPlaceVotes,
+	thirdPlacePoints: placement.thirdPlacePoints,
+});
 
 describe('VoteService', () => {
 	let db: DatabaseQuerier;
 	let voteService: VoteService;
 
 	let VOTER_PLAYER: Player;
-	let VOTED_1ST_PLAYER: Player;
-	let VOTED_2ND_PLAYER: Player;
-	let VOTED_3RD_PLAYER: Player;
-	let SOME_OTHER_PLAYER: Player;
-	
+	let SECOND_VOTER_PLAYER: Player;
+	let VOTED_1ST_NAME: PublishedName;
+	let VOTED_2ND_NAME: PublishedName;
+	let VOTED_3RD_NAME: PublishedName;
+	let SOME_OTHER_NAME: PublishedName;
+
 	const addSomeVote = () => {
 		return addMockVote(db, {
 			voter: VOTER_PLAYER.id,
-			votedFirstPlayer: VOTED_1ST_PLAYER.id,
-			votedSecondPlayer: VOTED_2ND_PLAYER.id,
-			votedThirdPlayer: VOTED_3RD_PLAYER.id,
+			votedFirstPublishedName: VOTED_1ST_NAME.id,
+			votedSecondPublishedName: VOTED_2ND_NAME.id,
+			votedThirdPublishedName: VOTED_3RD_NAME.id,
 		});
 	}
 
@@ -35,10 +51,11 @@ describe('VoteService', () => {
 		db = voteService.voteRepository.db;
 
 		VOTER_PLAYER = addMockPlayer(db);
-		VOTED_1ST_PLAYER = addMockPlayer(db, {publishedName: '1st Player'});
-		VOTED_2ND_PLAYER = addMockPlayer(db, {publishedName: '2nd Player'});
-		VOTED_3RD_PLAYER = addMockPlayer(db, {publishedName: '3rd Player'});
-		SOME_OTHER_PLAYER = addMockPlayer(db, {publishedName: 'Some Other Player'});
+		SECOND_VOTER_PLAYER = addMockPlayer(db);
+		VOTED_1ST_NAME = addMockPublishedName(db, {name: '1st Name'});
+		VOTED_2ND_NAME = addMockPublishedName(db, {name: '2nd Name'});
+		VOTED_3RD_NAME = addMockPublishedName(db, {name: '3rd Name'});
+		SOME_OTHER_NAME = addMockPublishedName(db, {name: 'Some Other Name'});
 	});
 
 	afterEach(() => {
@@ -79,7 +96,7 @@ describe('VoteService', () => {
 			const SOME_VOTE = addSomeVote();
 			const OUTDATED_VOTE = {
 				...SOME_VOTE,
-				votedFirstPlayer: INVALID_PLAYER_ID
+				votedFirstPublishedName: null
 			};
 
 			const resolvedVote = voteService.resolveVote(OUTDATED_VOTE);
@@ -92,154 +109,154 @@ describe('VoteService', () => {
 		});
 	});
 
-	describe('votePlayerAsRank()', () => {
-		it('should vote a player as first place', () => {
-			const vote = voteService.votePlayerAsRank(VOTER_PLAYER.id, VOTED_1ST_PLAYER.id, Ranks.FIRST);
+	describe('votePublishedNameAsRank()', () => {
+		it('should vote a name as first place', () => {
+			const vote = voteService.votePublishedNameAsRank(VOTER_PLAYER.id, VOTED_1ST_NAME.id, Ranks.FIRST);
 
 			makeSure(vote).hasOnlyProperties({
 				voterID: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER,
-				votedSecondPlayer: null,
-				votedThirdPlayer: null
+				votedFirstPublishedName: VOTED_1ST_NAME,
+				votedSecondPublishedName: null,
+				votedThirdPublishedName: null
 			});
 
 			const resolvedVote = voteService.resolveVote(VOTER_PLAYER.id);
 			makeSure(resolvedVote).is(vote);
 		});
 
-		it('throws a VoteOutOfOrderError if voting a player as second place when there is no 1st place vote', () => {
-			makeSure(() => 
-				voteService.votePlayerAsRank(VOTER_PLAYER.id, VOTED_2ND_PLAYER.id, Ranks.SECOND)
+		it('throws a VoteOutOfOrderError if voting a name as second place when there is no 1st place vote', () => {
+			makeSure(() =>
+				voteService.votePublishedNameAsRank(VOTER_PLAYER.id, VOTED_2ND_NAME.id, Ranks.SECOND)
 			).throws(VoteOutOfOrderError);
 		});
 
-		it('throws a VoteOutOfOrderError if voting a player as third place when there is no 1st place vote', () => {
-			makeSure(() => 
-				voteService.votePlayerAsRank(VOTER_PLAYER.id, VOTED_3RD_PLAYER.id, Ranks.THIRD)
+		it('throws a VoteOutOfOrderError if voting a name as third place when there is no 1st place vote', () => {
+			makeSure(() =>
+				voteService.votePublishedNameAsRank(VOTER_PLAYER.id, VOTED_3RD_NAME.id, Ranks.THIRD)
 			).throws(VoteOutOfOrderError);
 		});
 
-		it('throws a VoteOutOfOrderError if voting a player as third place when there is no 2nd place vote', () => {
+		it('throws a VoteOutOfOrderError if voting a name as third place when there is no 2nd place vote', () => {
 			addMockVote(db, {
 				voter: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER.id,
+				votedFirstPublishedName: VOTED_1ST_NAME.id,
 			});
 
-			makeSure(() => 
-				voteService.votePlayerAsRank(VOTER_PLAYER.id, VOTED_3RD_PLAYER.id, Ranks.THIRD)
+			makeSure(() =>
+				voteService.votePublishedNameAsRank(VOTER_PLAYER.id, VOTED_3RD_NAME.id, Ranks.THIRD)
 			).throws(VoteOutOfOrderError);
 		});
 
-		it('throws VoteOutOfOrderError if voting the same player in 2nd place that you voted in 1st place', () => {
+		it('throws VoteOutOfOrderError if voting the same name in 2nd place that you voted in 1st place', () => {
 			addMockVote(db, {
 				voter: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER.id,
+				votedFirstPublishedName: VOTED_1ST_NAME.id,
 			});
 
-			makeSure(() => 
-				voteService.votePlayerAsRank(VOTER_PLAYER.id, VOTED_1ST_PLAYER.id, Ranks.SECOND)
+			makeSure(() =>
+				voteService.votePublishedNameAsRank(VOTER_PLAYER.id, VOTED_1ST_NAME.id, Ranks.SECOND)
 			).throws(VoteOutOfOrderError);
 		});
 
-		it('throws VoteOutOfOrderError if voting the same player in 3rd place that you voted in 2nd place', () => {
+		it('throws VoteOutOfOrderError if voting the same name in 3rd place that you voted in 2nd place', () => {
 			addMockVote(db, {
 				voter: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER.id,
-				votedSecondPlayer: VOTED_2ND_PLAYER.id,
+				votedFirstPublishedName: VOTED_1ST_NAME.id,
+				votedSecondPublishedName: VOTED_2ND_NAME.id,
 			});
 
-			makeSure(() => 
-				voteService.votePlayerAsRank(VOTER_PLAYER.id, VOTED_2ND_PLAYER.id, Ranks.THIRD)
+			makeSure(() =>
+				voteService.votePublishedNameAsRank(VOTER_PLAYER.id, VOTED_2ND_NAME.id, Ranks.THIRD)
 			).throws(VoteOutOfOrderError);
 		});
 
-		it('throws VoteOutOfOrderError if voting the same player in 3rd place that you voted in 1st place', () => {
+		it('throws VoteOutOfOrderError if voting the same name in 3rd place that you voted in 1st place', () => {
 			addMockVote(db, {
 				voter: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER.id,
-				votedSecondPlayer: VOTED_2ND_PLAYER.id,
+				votedFirstPublishedName: VOTED_1ST_NAME.id,
+				votedSecondPublishedName: VOTED_2ND_NAME.id,
 			});
 
-			makeSure(() => 
-				voteService.votePlayerAsRank(VOTER_PLAYER.id, VOTED_1ST_PLAYER.id, Ranks.THIRD)
+			makeSure(() =>
+				voteService.votePublishedNameAsRank(VOTER_PLAYER.id, VOTED_1ST_NAME.id, Ranks.THIRD)
 			).throws(VoteOutOfOrderError);
 		});
-		
+
 		it('should update an existing vote that has a 2nd place vote with also a 1st place vote', () => {
 			addMockVote(db, {
 				voter: VOTER_PLAYER.id,
-				votedSecondPlayer: VOTED_2ND_PLAYER.id,
+				votedSecondPublishedName: VOTED_2ND_NAME.id,
 			});
 
-			const vote = voteService.votePlayerAsRank(VOTER_PLAYER.id, VOTED_1ST_PLAYER.id, Ranks.FIRST);
+			const vote = voteService.votePublishedNameAsRank(VOTER_PLAYER.id, VOTED_1ST_NAME.id, Ranks.FIRST);
 
 			makeSure(vote).hasOnlyProperties({
 				voterID: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER,
-				votedSecondPlayer: VOTED_2ND_PLAYER,
-				votedThirdPlayer: null
+				votedFirstPublishedName: VOTED_1ST_NAME,
+				votedSecondPublishedName: VOTED_2ND_NAME,
+				votedThirdPublishedName: null
 			});
 		});
 
 		it('should fill out all three ranks when used three times on different ranks', () => {
-			voteService.votePlayerAsRank(VOTER_PLAYER.id, VOTED_1ST_PLAYER.id, Ranks.FIRST);
-			voteService.votePlayerAsRank(VOTER_PLAYER.id, VOTED_2ND_PLAYER.id, Ranks.SECOND);
-			const vote = voteService.votePlayerAsRank(VOTER_PLAYER.id, VOTED_3RD_PLAYER.id, Ranks.THIRD);
+			voteService.votePublishedNameAsRank(VOTER_PLAYER.id, VOTED_1ST_NAME.id, Ranks.FIRST);
+			voteService.votePublishedNameAsRank(VOTER_PLAYER.id, VOTED_2ND_NAME.id, Ranks.SECOND);
+			const vote = voteService.votePublishedNameAsRank(VOTER_PLAYER.id, VOTED_3RD_NAME.id, Ranks.THIRD);
 
 			makeSure(vote).hasOnlyProperties({
 				voterID: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER,
-				votedSecondPlayer: VOTED_2ND_PLAYER,
-				votedThirdPlayer: VOTED_3RD_PLAYER
+				votedFirstPublishedName: VOTED_1ST_NAME,
+				votedSecondPublishedName: VOTED_2ND_NAME,
+				votedThirdPublishedName: VOTED_3RD_NAME
 			});
 		});
 
 		it('should replace an existing vote with a new one', () => {
 			addMockVote(db, {
 				voter: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER.id,
-				votedSecondPlayer: VOTED_2ND_PLAYER.id,
-				votedThirdPlayer: VOTED_3RD_PLAYER.id,
+				votedFirstPublishedName: VOTED_1ST_NAME.id,
+				votedSecondPublishedName: VOTED_2ND_NAME.id,
+				votedThirdPublishedName: VOTED_3RD_NAME.id,
 			});
 
-			const vote = voteService.votePlayerAsRank(VOTER_PLAYER.id, SOME_OTHER_PLAYER.id, Ranks.THIRD);
+			const vote = voteService.votePublishedNameAsRank(VOTER_PLAYER.id, SOME_OTHER_NAME.id, Ranks.THIRD);
 
 			makeSure(vote).hasOnlyProperties({
 				voterID: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER,
-				votedSecondPlayer: VOTED_2ND_PLAYER,
-				votedThirdPlayer: SOME_OTHER_PLAYER
+				votedFirstPublishedName: VOTED_1ST_NAME,
+				votedSecondPublishedName: VOTED_2ND_NAME,
+				votedThirdPublishedName: SOME_OTHER_NAME
 			});
 		});
 
 		it('should throw an error if the rank is invalid', () => {
-			makeSure(() => 
-				voteService.votePlayerAsRank(VOTER_PLAYER.id, VOTED_1ST_PLAYER.id, '4th' as Rank)
+			makeSure(() =>
+				voteService.votePublishedNameAsRank(VOTER_PLAYER.id, VOTED_1ST_NAME.id, '4th' as Rank)
 			).throws(InvalidArgumentError);
 		});
 
-		it('should throw an error if the player is invalid', () => {
-			makeSure(() => 
-				voteService.votePlayerAsRank(VOTER_PLAYER.id, INVALID_PLAYER_ID, Ranks.FIRST)
-			).throws(PlayerNotFoundError);
+		it('should throw an error if the published name is invalid', () => {
+			makeSure(() =>
+				voteService.votePublishedNameAsRank(VOTER_PLAYER.id, INVALID_PUBLISHED_NAME_ID, Ranks.FIRST)
+			).throws(PublishedNameNotFoundError);
 		});
 
-		it('should remove original vote for player if already voted in another rank', () => {
+		it('should remove original vote for name if already voted in another rank', () => {
 			addMockVote(db, {
 				voter: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER.id,
-				votedSecondPlayer: VOTED_2ND_PLAYER.id,
+				votedFirstPublishedName: VOTED_1ST_NAME.id,
+				votedSecondPublishedName: VOTED_2ND_NAME.id,
 			});
 
-			voteService.votePlayerAsRank(VOTER_PLAYER.id, VOTED_2ND_PLAYER.id, Ranks.FIRST);
+			voteService.votePublishedNameAsRank(VOTER_PLAYER.id, VOTED_2ND_NAME.id, Ranks.FIRST);
 
 			const vote = voteService.resolveVote(VOTER_PLAYER.id);
 
 			makeSure(vote).hasOnlyProperties({
 				voterID: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_2ND_PLAYER,
-				votedSecondPlayer: null,
-				votedThirdPlayer: null
+				votedFirstPublishedName: VOTED_2ND_NAME,
+				votedSecondPublishedName: null,
+				votedThirdPublishedName: null
 			});
 		})
 	});
@@ -248,8 +265,8 @@ describe('VoteService', () => {
 		it('returns the third place rank that is missing from the vote', () => {
 			addMockVote(db, {
 				voter: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER.id,
-				votedSecondPlayer: VOTED_2ND_PLAYER.id,
+				votedFirstPublishedName: VOTED_1ST_NAME.id,
+				votedSecondPublishedName: VOTED_2ND_NAME.id,
 			});
 
 			const missingRanks = voteService.getMissingRanksOfVote(VOTER_PLAYER.id);
@@ -260,7 +277,7 @@ describe('VoteService', () => {
 		it('returns the first and second place ranks that are missing from the vote', () => {
 			addMockVote(db, {
 				voter: VOTER_PLAYER.id,
-				votedThirdPlayer: VOTED_1ST_PLAYER.id,
+				votedThirdPublishedName: VOTED_1ST_NAME.id,
 			});
 
 			const missingRanks = voteService.getMissingRanksOfVote(VOTER_PLAYER.id);
@@ -293,9 +310,9 @@ describe('VoteService', () => {
 		it('returns no ranks if the vote is complete', () => {
 			addMockVote(db, {
 				voter: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER.id,
-				votedSecondPlayer: VOTED_2ND_PLAYER.id,
-				votedThirdPlayer: VOTED_3RD_PLAYER.id,
+				votedFirstPublishedName: VOTED_1ST_NAME.id,
+				votedSecondPublishedName: VOTED_2ND_NAME.id,
+				votedThirdPublishedName: VOTED_3RD_NAME.id,
 			});
 
 			const missingRanks = voteService.getMissingRanksOfVote(VOTER_PLAYER.id);
@@ -304,86 +321,86 @@ describe('VoteService', () => {
 		});
 	});
 
-	describe('getRanksToVotedPlayer()', () => {
-		it('returns the map of ranks to players voted for in the given vote', () => {
+	describe('getRanksToVotedPublishedName()', () => {
+		it('returns the map of ranks to names voted for in the given vote', () => {
 			addMockVote(db, {
 				voter: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER.id,
-				votedSecondPlayer: VOTED_2ND_PLAYER.id,
-				votedThirdPlayer: VOTED_3RD_PLAYER.id,
+				votedFirstPublishedName: VOTED_1ST_NAME.id,
+				votedSecondPublishedName: VOTED_2ND_NAME.id,
+				votedThirdPublishedName: VOTED_3RD_NAME.id,
 			});
 
-			const rankToVotedPlayer = voteService.getRanksToVotedPlayer(VOTER_PLAYER.id);
+			const rankToVotedPublishedName = voteService.getRanksToVotedPublishedName(VOTER_PLAYER.id);
 
-			makeSure(rankToVotedPlayer).is(new Map([
-				[Ranks.FIRST, VOTED_1ST_PLAYER],
-				[Ranks.SECOND, VOTED_2ND_PLAYER],
-				[Ranks.THIRD, VOTED_3RD_PLAYER]
-			]));
-		});
-
-		it('returns the correct map of ranks to players when some ranks are missing', () => {
-			addMockVote(db, {
-				voter: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER.id,
-				votedThirdPlayer: VOTED_3RD_PLAYER.id,
-			});
-
-			const rankToVotedPlayer = voteService.getRanksToVotedPlayer(VOTER_PLAYER.id);
-
-			makeSure(rankToVotedPlayer).is(new Map([
-				[Ranks.FIRST, VOTED_1ST_PLAYER],
-				[Ranks.THIRD, VOTED_3RD_PLAYER]
-			]));
-		});
-
-		it('returns an empty map if there are no votes', () => {
-			addMockVote(db, {
-				voter: VOTER_PLAYER.id,
-			});
-
-			const rankToVotedPlayer = voteService.getRanksToVotedPlayer(VOTER_PLAYER.id);
-
-			makeSure(rankToVotedPlayer).is(new Map([]));
-		});
-
-		it('returns an empty map if the vote does not exist', () => {
-			const rankToVotedPlayer = voteService.getRanksToVotedPlayer(VOTER_PLAYER.id);
-
-			makeSure(rankToVotedPlayer).is(new Map([]));
-		});
-	});
-
-	describe('getRanksToVotedName()', () => {
-		it('returns the map of ranks to the names of the players voted for in the given vote', () => {
-			addMockVote(db, {
-				voter: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER.id,
-				votedSecondPlayer: VOTED_2ND_PLAYER.id,
-				votedThirdPlayer: VOTED_3RD_PLAYER.id,
-			});
-
-			const rankToVotedName = voteService.getRanksToVotedName(VOTER_PLAYER.id);
-
-			makeSure(rankToVotedName).is(new Map([
-				[Ranks.FIRST, VOTED_1ST_PLAYER.publishedName!],
-				[Ranks.SECOND, VOTED_2ND_PLAYER.publishedName!],
-				[Ranks.THIRD, VOTED_3RD_PLAYER.publishedName!]
+			makeSure(rankToVotedPublishedName).is(new Map([
+				[Ranks.FIRST, VOTED_1ST_NAME],
+				[Ranks.SECOND, VOTED_2ND_NAME],
+				[Ranks.THIRD, VOTED_3RD_NAME]
 			]));
 		});
 
 		it('returns the correct map of ranks to names when some ranks are missing', () => {
 			addMockVote(db, {
 				voter: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER.id,
-				votedThirdPlayer: VOTED_3RD_PLAYER.id,
+				votedFirstPublishedName: VOTED_1ST_NAME.id,
+				votedThirdPublishedName: VOTED_3RD_NAME.id,
+			});
+
+			const rankToVotedPublishedName = voteService.getRanksToVotedPublishedName(VOTER_PLAYER.id);
+
+			makeSure(rankToVotedPublishedName).is(new Map([
+				[Ranks.FIRST, VOTED_1ST_NAME],
+				[Ranks.THIRD, VOTED_3RD_NAME]
+			]));
+		});
+
+		it('returns an empty map if there are no votes', () => {
+			addMockVote(db, {
+				voter: VOTER_PLAYER.id,
+			});
+
+			const rankToVotedPublishedName = voteService.getRanksToVotedPublishedName(VOTER_PLAYER.id);
+
+			makeSure(rankToVotedPublishedName).is(new Map([]));
+		});
+
+		it('returns an empty map if the vote does not exist', () => {
+			const rankToVotedPublishedName = voteService.getRanksToVotedPublishedName(VOTER_PLAYER.id);
+
+			makeSure(rankToVotedPublishedName).is(new Map([]));
+		});
+	});
+
+	describe('getRanksToVotedName()', () => {
+		it('returns the map of ranks to the names voted for in the given vote', () => {
+			addMockVote(db, {
+				voter: VOTER_PLAYER.id,
+				votedFirstPublishedName: VOTED_1ST_NAME.id,
+				votedSecondPublishedName: VOTED_2ND_NAME.id,
+				votedThirdPublishedName: VOTED_3RD_NAME.id,
 			});
 
 			const rankToVotedName = voteService.getRanksToVotedName(VOTER_PLAYER.id);
 
 			makeSure(rankToVotedName).is(new Map([
-				[Ranks.FIRST, VOTED_1ST_PLAYER.publishedName!],
-				[Ranks.THIRD, VOTED_3RD_PLAYER.publishedName!]
+				[Ranks.FIRST, VOTED_1ST_NAME.name],
+				[Ranks.SECOND, VOTED_2ND_NAME.name],
+				[Ranks.THIRD, VOTED_3RD_NAME.name]
+			]));
+		});
+
+		it('returns the correct map of ranks to names when some ranks are missing', () => {
+			addMockVote(db, {
+				voter: VOTER_PLAYER.id,
+				votedFirstPublishedName: VOTED_1ST_NAME.id,
+				votedThirdPublishedName: VOTED_3RD_NAME.id,
+			});
+
+			const rankToVotedName = voteService.getRanksToVotedName(VOTER_PLAYER.id);
+
+			makeSure(rankToVotedName).is(new Map([
+				[Ranks.FIRST, VOTED_1ST_NAME.name],
+				[Ranks.THIRD, VOTED_3RD_NAME.name]
 			]));
 		});
 
@@ -404,47 +421,47 @@ describe('VoteService', () => {
 		});
 	});
 
-	describe('getOtherRanksToVotedPlayer()', () => {
+	describe('getOtherRanksToVotedPublishedName()', () => {
 		it('returns the first and second place rank when the 3rd rank is given', () => {
 			addMockVote(db, {
 				voter: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER.id,
-				votedSecondPlayer: VOTED_2ND_PLAYER.id,
+				votedFirstPublishedName: VOTED_1ST_NAME.id,
+				votedSecondPublishedName: VOTED_2ND_NAME.id,
 			});
 
-			const rankToVotedPlayer = voteService.getOtherRanksToVotedPlayer(VOTER_PLAYER.id, Ranks.THIRD);
+			const rankToVotedPublishedName = voteService.getOtherRanksToVotedPublishedName(VOTER_PLAYER.id, Ranks.THIRD);
 
-			makeSure(rankToVotedPlayer).is(new Map([
-				[Ranks.FIRST, VOTED_1ST_PLAYER],
-				[Ranks.SECOND, VOTED_2ND_PLAYER],
+			makeSure(rankToVotedPublishedName).is(new Map([
+				[Ranks.FIRST, VOTED_1ST_NAME],
+				[Ranks.SECOND, VOTED_2ND_NAME],
 			]));
 		});
 
 		it('returns 2nd and 3rd place ranks when the 1st rank is given', () => {
 			addMockVote(db, {
 				voter: VOTER_PLAYER.id,
-				votedSecondPlayer: VOTED_2ND_PLAYER.id,
-				votedThirdPlayer: VOTED_3RD_PLAYER.id,
+				votedSecondPublishedName: VOTED_2ND_NAME.id,
+				votedThirdPublishedName: VOTED_3RD_NAME.id,
 			});
 
-			const rankToVotedPlayer = voteService.getOtherRanksToVotedPlayer(VOTER_PLAYER.id, Ranks.FIRST);
+			const rankToVotedPublishedName = voteService.getOtherRanksToVotedPublishedName(VOTER_PLAYER.id, Ranks.FIRST);
 
-			makeSure(rankToVotedPlayer).is(new Map([
-				[Ranks.SECOND, VOTED_2ND_PLAYER],
-				[Ranks.THIRD, VOTED_3RD_PLAYER],
+			makeSure(rankToVotedPublishedName).is(new Map([
+				[Ranks.SECOND, VOTED_2ND_NAME],
+				[Ranks.THIRD, VOTED_3RD_NAME],
 			]));
 		});
 
 		it('returns 1st place rank when 2nd place is empty and 3rd place is given', () => {
 			addMockVote(db, {
 				voter: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER.id,
+				votedFirstPublishedName: VOTED_1ST_NAME.id,
 			});
 
-			const rankToVotedPlayer = voteService.getOtherRanksToVotedPlayer(VOTER_PLAYER.id, Ranks.THIRD);
+			const rankToVotedPublishedName = voteService.getOtherRanksToVotedPublishedName(VOTER_PLAYER.id, Ranks.THIRD);
 
-			makeSure(rankToVotedPlayer).is(new Map([
-				[Ranks.FIRST, VOTED_1ST_PLAYER],
+			makeSure(rankToVotedPublishedName).is(new Map([
+				[Ranks.FIRST, VOTED_1ST_NAME],
 			]));
 		});
 
@@ -452,107 +469,107 @@ describe('VoteService', () => {
 			addMockVote(db, {
 				voter: VOTER_PLAYER.id,
 			})
-			const rankToVotedPlayer = voteService.getOtherRanksToVotedPlayer(VOTER_PLAYER.id, Ranks.THIRD);
+			const rankToVotedPublishedName = voteService.getOtherRanksToVotedPublishedName(VOTER_PLAYER.id, Ranks.THIRD);
 
-			makeSure(rankToVotedPlayer).is(new Map([]));
+			makeSure(rankToVotedPublishedName).is(new Map([]));
 		});
 	});
 
-	describe(`getPlayerVotedInRank()`, () => {
-		it(`gets the player voted 1st`, () => {
+	describe(`getPublishedNameVotedInRank()`, () => {
+		it(`gets the name voted 1st`, () => {
 			addMockVote(db, {
 				voter: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER.id,
+				votedFirstPublishedName: VOTED_1ST_NAME.id,
 			});
 
-			const player = voteService.getPlayerVotedInRank(VOTER_PLAYER.id, Ranks.FIRST);
+			const publishedName = voteService.getPublishedNameVotedInRank(VOTER_PLAYER.id, Ranks.FIRST);
 
-			makeSure(player).is(VOTED_1ST_PLAYER);
+			makeSure(publishedName).is(VOTED_1ST_NAME);
 		});
 
-		it('gets the player voted 3rd', () => {
+		it('gets the name voted 3rd', () => {
 			addMockVote(db, {
 				voter: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER.id,
-				votedSecondPlayer: VOTED_2ND_PLAYER.id,
-				votedThirdPlayer: VOTED_3RD_PLAYER.id,
+				votedFirstPublishedName: VOTED_1ST_NAME.id,
+				votedSecondPublishedName: VOTED_2ND_NAME.id,
+				votedThirdPublishedName: VOTED_3RD_NAME.id,
 			});
 
-			const player = voteService.getPlayerVotedInRank(VOTER_PLAYER.id, Ranks.THIRD);
+			const publishedName = voteService.getPublishedNameVotedInRank(VOTER_PLAYER.id, Ranks.THIRD);
 
-			makeSure(player).is(VOTED_3RD_PLAYER);
+			makeSure(publishedName).is(VOTED_3RD_NAME);
 		});
 
-		it('gets null when no player is voted 2nd', () => {
+		it('gets null when no name is voted 2nd', () => {
 			addMockVote(db, {
 				voter: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER.id,
+				votedFirstPublishedName: VOTED_1ST_NAME.id,
 			});
 
-			const player = voteService.getPlayerVotedInRank(VOTER_PLAYER.id, Ranks.SECOND);
+			const publishedName = voteService.getPublishedNameVotedInRank(VOTER_PLAYER.id, Ranks.SECOND);
 
-			makeSure(player).is(null);
+			makeSure(publishedName).is(null);
 		});
 
 		it('gets null when the user has not voted yet', () => {
-			const player = voteService.getPlayerVotedInRank(VOTER_PLAYER.id, Ranks.FIRST);
-			makeSure(player).is(null);
+			const publishedName = voteService.getPublishedNameVotedInRank(VOTER_PLAYER.id, Ranks.FIRST);
+			makeSure(publishedName).is(null);
 		});
 	});
 
-	describe('getRankOfPlayerInVote()', () => {
+	describe('getRankOfPublishedNameInVote()', () => {
 		it('returns null if the vote does not exist', () => {
-			const rank = voteService.getRankOfPlayerInVote(VOTER_PLAYER.id, VOTED_1ST_PLAYER);
+			const rank = voteService.getRankOfPublishedNameInVote(VOTER_PLAYER.id, VOTED_1ST_NAME);
 			makeSure(rank).isNull();
 		});
 
-		it('returns null if the player is not voted for in the vote', () => {
+		it('returns null if the name is not voted for in the vote', () => {
 			const mockVote = addMockVote(db, {
 				voter: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER.id,
+				votedFirstPublishedName: VOTED_1ST_NAME.id,
 			});
 
-			const rank = voteService.getRankOfPlayerInVote(mockVote, SOME_OTHER_PLAYER);
+			const rank = voteService.getRankOfPublishedNameInVote(mockVote, SOME_OTHER_NAME);
 
 			makeSure(rank).isNull();
 		});
 
-		it('returns the rank of the player if they are voted for in the vote', () => {
+		it('returns the rank of the name if it is voted for in the vote', () => {
 			const voteResolvable = addMockVote(db, {
 				voter: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER.id,
-				votedSecondPlayer: VOTED_2ND_PLAYER.id,
-				votedThirdPlayer: VOTED_3RD_PLAYER.id,
+				votedFirstPublishedName: VOTED_1ST_NAME.id,
+				votedSecondPublishedName: VOTED_2ND_NAME.id,
+				votedThirdPublishedName: VOTED_3RD_NAME.id,
 			});
 
-			const rank = voteService.getRankOfPlayerInVote(voteResolvable, VOTED_2ND_PLAYER);
+			const rank = voteService.getRankOfPublishedNameInVote(voteResolvable, VOTED_2ND_NAME);
 
 			makeSure(rank).is(Ranks.SECOND);
 		});
 
-		it('returns the correct rank of the player for all ranks', () => {
+		it('returns the correct rank of the name for all ranks', () => {
 			const voteResolvable = addMockVote(db, {
 				voter: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER.id,
-				votedSecondPlayer: VOTED_2ND_PLAYER.id,
-				votedThirdPlayer: VOTED_3RD_PLAYER.id,
+				votedFirstPublishedName: VOTED_1ST_NAME.id,
+				votedSecondPublishedName: VOTED_2ND_NAME.id,
+				votedThirdPublishedName: VOTED_3RD_NAME.id,
 			});
 
-			const rank1 = voteService.getRankOfPlayerInVote(voteResolvable, VOTED_1ST_PLAYER);
-			const rank2 = voteService.getRankOfPlayerInVote(voteResolvable, VOTED_2ND_PLAYER);
-			const rank3 = voteService.getRankOfPlayerInVote(voteResolvable, VOTED_3RD_PLAYER);
+			const rank1 = voteService.getRankOfPublishedNameInVote(voteResolvable, VOTED_1ST_NAME);
+			const rank2 = voteService.getRankOfPublishedNameInVote(voteResolvable, VOTED_2ND_NAME);
+			const rank3 = voteService.getRankOfPublishedNameInVote(voteResolvable, VOTED_3RD_NAME);
 
 			makeSure(rank1).is(Ranks.FIRST);
 			makeSure(rank2).is(Ranks.SECOND);
 			makeSure(rank3).is(Ranks.THIRD);
 		});
 	});
-	
+
 	describe('doesVoteExist()', () => {
 		it('returns true if the vote exists', () => {
 			const voteResolvable = {
 				voter: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER.id,
+				votedFirstPublishedName: VOTED_1ST_NAME.id,
 			};
 
 			addMockVote(db, voteResolvable);
@@ -565,7 +582,7 @@ describe('VoteService', () => {
 		it('returns false if the vote does not exist', () => {
 			const voteResolvable = {
 				voter: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER.id,
+				votedFirstPublishedName: VOTED_1ST_NAME.id,
 			};
 
 			const doesVoteExist = voteService.doesVoteExist(voteResolvable);
@@ -576,7 +593,7 @@ describe('VoteService', () => {
 		it('works with vote IDs', () => {
 			const mockVote = addMockVote(db, {
 				voter: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER.id,
+				votedFirstPublishedName: VOTED_1ST_NAME.id,
 			});
 
 			makeSure(voteService.doesVoteExist(mockVote.voterID)).toBe(true);
@@ -588,7 +605,7 @@ describe('VoteService', () => {
 		it('removes a vote that exists', () => {
 			const mockVote = addMockVote(db, {
 				voter: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER.id,
+				votedFirstPublishedName: VOTED_1ST_NAME.id,
 			});
 
 			const deletedVote = voteService.removeVote(mockVote);
@@ -609,7 +626,7 @@ describe('VoteService', () => {
 		it('works with vote IDs', () => {
 			const mockVote = addMockVote(db, {
 				voter: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER.id,
+				votedFirstPublishedName: VOTED_1ST_NAME.id,
 			});
 
 			const deletedVote = voteService.removeVote(mockVote.voterID);
@@ -623,87 +640,82 @@ describe('VoteService', () => {
 		});
 	});
 
-	describe('getPlayerIDToPoints()', () => {
-		it('returns an map of all players to 0 if there are no votes', () => {
-			const scores = voteService.getPlayerIDToPoints();
+	describe('getPublishedNameIDToPoints()', () => {
+		it('returns a map of all published names to 0 if there are no votes', () => {
+			const scores = voteService.getPublishedNameIDToPoints();
 			makeSure(scores).is(new Map([
-				[VOTER_PLAYER.id, 0],
-				[SOME_OTHER_PLAYER.id, 0],
-				[VOTED_1ST_PLAYER.id, 0],
-				[VOTED_2ND_PLAYER.id, 0],
-				[VOTED_3RD_PLAYER.id, 0],
+				[VOTED_1ST_NAME.id, 0],
+				[VOTED_2ND_NAME.id, 0],
+				[VOTED_3RD_NAME.id, 0],
+				[SOME_OTHER_NAME.id, 0],
 			]));
 		});
 
-		it('returns the correct score for players based on the votes in the repository', () => {
+		it('returns the correct score for names based on the votes in the repository', () => {
 			addMockVote(db, {
 				voter: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER.id,
-				votedSecondPlayer: VOTED_2ND_PLAYER.id,
-				votedThirdPlayer: VOTED_3RD_PLAYER.id,
+				votedFirstPublishedName: VOTED_1ST_NAME.id,
+				votedSecondPublishedName: VOTED_2ND_NAME.id,
+				votedThirdPublishedName: VOTED_3RD_NAME.id,
 			});
 
-			const scores = voteService.getPlayerIDToPoints();
+			const scores = voteService.getPublishedNameIDToPoints();
 
 			makeSure(scores).is(new Map([
-				[VOTER_PLAYER.id, 0],
-				[SOME_OTHER_PLAYER.id, 0],
-				[VOTED_1ST_PLAYER.id, 3],
-				[VOTED_2ND_PLAYER.id, 2],
-				[VOTED_3RD_PLAYER.id, 1],
-
+				[VOTED_1ST_NAME.id, 3],
+				[VOTED_2ND_NAME.id, 2],
+				[VOTED_3RD_NAME.id, 1],
+				[SOME_OTHER_NAME.id, 0],
 			]))
 		});
 
-		it('returns score totals for players if there are multiple votes', () => {
+		it('returns score totals for names if there are multiple votes', () => {
 			addMockVote(db, {
 				voter: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER.id,
-				votedSecondPlayer: VOTED_2ND_PLAYER.id,
-				votedThirdPlayer: VOTED_3RD_PLAYER.id,
+				votedFirstPublishedName: VOTED_1ST_NAME.id,
+				votedSecondPublishedName: VOTED_2ND_NAME.id,
+				votedThirdPublishedName: VOTED_3RD_NAME.id,
 			});
 
 			addMockVote(db, {
-				voter: SOME_OTHER_PLAYER.id,
-				votedFirstPlayer: VOTED_2ND_PLAYER.id,
-				votedSecondPlayer: VOTED_3RD_PLAYER.id,
-				votedThirdPlayer: VOTER_PLAYER.id,
+				voter: SECOND_VOTER_PLAYER.id,
+				votedFirstPublishedName: VOTED_2ND_NAME.id,
+				votedSecondPublishedName: VOTED_3RD_NAME.id,
+				votedThirdPublishedName: SOME_OTHER_NAME.id,
 			});
 
-			const scores = voteService.getPlayerIDToPoints();
+			const scores = voteService.getPublishedNameIDToPoints();
 
 			makeSure(scores).is(new Map([
-				[VOTER_PLAYER.id, 1],
-				[SOME_OTHER_PLAYER.id, 0],
-				[VOTED_1ST_PLAYER.id, 3],
-				[VOTED_2ND_PLAYER.id, 5],
-				[VOTED_3RD_PLAYER.id, 3],
+				[VOTED_2ND_NAME.id, 5],
+				[VOTED_1ST_NAME.id, 3],
+				[VOTED_3RD_NAME.id, 3],
+				[SOME_OTHER_NAME.id, 1],
 			]));
 		});
 
 		it('returns score map in order of highest score to lowest score', () => {
 			addMockVote(db, {
 				voter: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER.id,
-				votedSecondPlayer: VOTED_2ND_PLAYER.id,
-				votedThirdPlayer: VOTED_3RD_PLAYER.id,
+				votedFirstPublishedName: VOTED_1ST_NAME.id,
+				votedSecondPublishedName: VOTED_2ND_NAME.id,
+				votedThirdPublishedName: VOTED_3RD_NAME.id,
 			});
 
 			addMockVote(db, {
-				voter: SOME_OTHER_PLAYER.id,
-				votedFirstPlayer: VOTED_2ND_PLAYER.id,
-				votedSecondPlayer: VOTED_3RD_PLAYER.id,
-				votedThirdPlayer: VOTER_PLAYER.id,
+				voter: SECOND_VOTER_PLAYER.id,
+				votedFirstPublishedName: VOTED_2ND_NAME.id,
+				votedSecondPublishedName: VOTED_3RD_NAME.id,
+				votedThirdPublishedName: SOME_OTHER_NAME.id,
 			});
 
-			const scores = voteService.getPlayerIDToPoints();
+			const scores = voteService.getPublishedNameIDToPoints();
 
 			makeSure([...scores.entries()]).is([
-				[VOTED_2ND_PLAYER.id, 5],
-				[VOTED_1ST_PLAYER.id, 3],
-				[VOTED_3RD_PLAYER.id, 3],
-				[VOTER_PLAYER.id, 1],
-				[SOME_OTHER_PLAYER.id, 0],
+				[VOTED_2ND_NAME.id, 5],
+				[VOTED_1ST_NAME.id, 3],
+				[VOTED_3RD_NAME.id, 3],
+				[SOME_OTHER_NAME.id, 1],
 			]);
 		});
 	});
@@ -718,135 +730,58 @@ describe('VoteService', () => {
 			thirdPlaceVotes: 0,
 			thirdPlacePoints: 0
 		}
-		
+
 		it('returns an array of placements with no votes', () => {
 			const placements = voteService.getPlacements();
 			makeSure(placements).hasLengthOf(4);
-			makeSure(placements).is([
-				{ player: VOTED_1ST_PLAYER, name: VOTED_1ST_PLAYER.publishedName,  rank: 1, ...NO_POINTS_VOTE_INFO },
-				{ player: VOTED_2ND_PLAYER, name: VOTED_2ND_PLAYER.publishedName,  rank: 1, ...NO_POINTS_VOTE_INFO },
-				{ player: VOTED_3RD_PLAYER, name: VOTED_3RD_PLAYER.publishedName,  rank: 1, ...NO_POINTS_VOTE_INFO },
-				{ player: SOME_OTHER_PLAYER, name: SOME_OTHER_PLAYER.publishedName, rank: 1, ...NO_POINTS_VOTE_INFO },
+			makeSure(placements.map(toComparablePlacement)).is([
+				{ name: VOTED_1ST_NAME.name, rank: 1, ...NO_POINTS_VOTE_INFO },
+				{ name: VOTED_2ND_NAME.name, rank: 1, ...NO_POINTS_VOTE_INFO },
+				{ name: VOTED_3RD_NAME.name, rank: 1, ...NO_POINTS_VOTE_INFO },
+				{ name: SOME_OTHER_NAME.name, rank: 1, ...NO_POINTS_VOTE_INFO },
 			]);
 		});
 
-		it('returns the correct placements for players based on the votes in the repository', () => {
+		it('returns the correct placements for names based on the votes in the repository', () => {
 			addMockVote(db, {
 				voter: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER.id,
-				votedSecondPlayer: VOTED_2ND_PLAYER.id,
-				votedThirdPlayer: VOTED_3RD_PLAYER.id,
+				votedFirstPublishedName: VOTED_1ST_NAME.id,
+				votedSecondPublishedName: VOTED_2ND_NAME.id,
+				votedThirdPublishedName: VOTED_3RD_NAME.id,
 			});
 
 			const placements = voteService.getPlacements();
 
-			makeSure(placements).is([
-				{ 
-					player: VOTED_1ST_PLAYER,
-					name: VOTED_1ST_PLAYER.publishedName,
-					rank: 1, 
-					points: 3, 
-					firstPlaceVotes: 1, 
-					firstPlacePoints: 3, 
-					secondPlaceVotes: 0, 
-					secondPlacePoints: 0, 
-					thirdPlaceVotes: 0, 
-					thirdPlacePoints: 0 
-				},
-				{ 
-					player: VOTED_2ND_PLAYER,
-					name: VOTED_2ND_PLAYER.publishedName,
-					rank: 2, 
-					points: 2, 
-					firstPlaceVotes: 0, 
-					firstPlacePoints: 0, 
-					secondPlaceVotes: 1, 
-					secondPlacePoints: 2, 
-					thirdPlaceVotes: 0, 
-					thirdPlacePoints: 0 
-				},
-				{
-					player: VOTED_3RD_PLAYER,
-					name: VOTED_3RD_PLAYER.publishedName,
-					rank: 3,
-					points: 1,
-					firstPlaceVotes: 0,
-					firstPlacePoints: 0,
-					secondPlaceVotes: 0,
-					secondPlacePoints: 0,
-					thirdPlaceVotes: 1,
-					thirdPlacePoints: 1,
-				},
-				{ player: SOME_OTHER_PLAYER, name: SOME_OTHER_PLAYER.publishedName, rank: 4, ...NO_POINTS_VOTE_INFO },
+			makeSure(placements.map(toComparablePlacement)).is([
+				{ name: VOTED_1ST_NAME.name, rank: 1, points: 3, firstPlaceVotes: 1, firstPlacePoints: 3, secondPlaceVotes: 0, secondPlacePoints: 0, thirdPlaceVotes: 0, thirdPlacePoints: 0 },
+				{ name: VOTED_2ND_NAME.name, rank: 2, points: 2, firstPlaceVotes: 0, firstPlacePoints: 0, secondPlaceVotes: 1, secondPlacePoints: 2, thirdPlaceVotes: 0, thirdPlacePoints: 0 },
+				{ name: VOTED_3RD_NAME.name, rank: 3, points: 1, firstPlaceVotes: 0, firstPlacePoints: 0, secondPlaceVotes: 0, secondPlacePoints: 0, thirdPlaceVotes: 1, thirdPlacePoints: 1 },
+				{ name: SOME_OTHER_NAME.name, rank: 4, ...NO_POINTS_VOTE_INFO },
 			]);
 		});
 
-		it('returns correct placements for players when there are multiple votes', () => {
+		it('returns correct placements for names when there are multiple votes', () => {
 			addMockVote(db, {
 				voter: VOTER_PLAYER.id,
-				votedFirstPlayer: VOTED_1ST_PLAYER.id,
-				votedSecondPlayer: VOTED_2ND_PLAYER.id,
-				votedThirdPlayer: VOTED_3RD_PLAYER.id,
+				votedFirstPublishedName: VOTED_1ST_NAME.id,
+				votedSecondPublishedName: VOTED_2ND_NAME.id,
+				votedThirdPublishedName: VOTED_3RD_NAME.id,
 			});
 
 			addMockVote(db, {
-				voter: VOTED_1ST_PLAYER.id,
-				votedFirstPlayer: VOTED_2ND_PLAYER.id,
-				votedSecondPlayer: VOTED_3RD_PLAYER.id,
-				votedThirdPlayer: SOME_OTHER_PLAYER.id,
+				voter: SECOND_VOTER_PLAYER.id,
+				votedFirstPublishedName: VOTED_2ND_NAME.id,
+				votedSecondPublishedName: VOTED_3RD_NAME.id,
+				votedThirdPublishedName: SOME_OTHER_NAME.id,
 			});
 
 			const placements = voteService.getPlacements();
 
-			makeSure(placements).is([
-				{ 
-					player: VOTED_2ND_PLAYER,
-					name: VOTED_2ND_PLAYER.publishedName,
-					rank: 1, 
-					points: 5, 
-					firstPlaceVotes: 1, 
-					firstPlacePoints: 3, 
-					secondPlaceVotes: 1, 
-					secondPlacePoints: 2, 
-					thirdPlaceVotes: 0, 
-					thirdPlacePoints: 0 
-				},
-				{ 
-					player: VOTED_1ST_PLAYER,
-					name: VOTED_1ST_PLAYER.publishedName,
-					rank: 2, 
-					points: 3, 
-					firstPlaceVotes: 1, 
-					firstPlacePoints: 3, 
-					secondPlaceVotes: 0, 
-					secondPlacePoints: 0, 
-					thirdPlaceVotes: 0, 
-					thirdPlacePoints: 0 
-				},
-				{
-					player: VOTED_3RD_PLAYER,
-					name: VOTED_3RD_PLAYER.publishedName,
-					rank: 2,
-					points: 3,
-					firstPlaceVotes: 0,
-					firstPlacePoints: 0,
-					secondPlaceVotes: 1,
-					secondPlacePoints: 2,
-					thirdPlaceVotes: 1,
-					thirdPlacePoints: 1,
-				},
-				{ 
-					player: SOME_OTHER_PLAYER, 
-					name: SOME_OTHER_PLAYER.publishedName, 
-					rank: 4, 
-					points: 1, 
-					firstPlaceVotes: 0, 
-					firstPlacePoints: 0, 
-					secondPlaceVotes: 0, 
-					secondPlacePoints: 0, 
-					thirdPlaceVotes: 1, 
-					thirdPlacePoints: 1,
-				},
+			makeSure(placements.map(toComparablePlacement)).is([
+				{ name: VOTED_2ND_NAME.name, rank: 1, points: 5, firstPlaceVotes: 1, firstPlacePoints: 3, secondPlaceVotes: 1, secondPlacePoints: 2, thirdPlaceVotes: 0, thirdPlacePoints: 0 },
+				{ name: VOTED_1ST_NAME.name, rank: 2, points: 3, firstPlaceVotes: 1, firstPlacePoints: 3, secondPlaceVotes: 0, secondPlacePoints: 0, thirdPlaceVotes: 0, thirdPlacePoints: 0 },
+				{ name: VOTED_3RD_NAME.name, rank: 2, points: 3, firstPlaceVotes: 0, firstPlacePoints: 0, secondPlaceVotes: 1, secondPlacePoints: 2, thirdPlaceVotes: 1, thirdPlacePoints: 1 },
+				{ name: SOME_OTHER_NAME.name, rank: 4, points: 1, firstPlaceVotes: 0, firstPlacePoints: 0, secondPlaceVotes: 0, secondPlacePoints: 0, thirdPlaceVotes: 1, thirdPlacePoints: 1 },
 			]);
 		});
 	});

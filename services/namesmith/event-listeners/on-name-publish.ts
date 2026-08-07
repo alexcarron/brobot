@@ -5,10 +5,11 @@ import { NamesmithEvents, RelevantDataOf } from "./namesmith-events";
  * Called when a player's name is published
  * @param data - The data passed to the event listener.
  * @param data.player - The player whose name was published.
- * @returns A promise that resolves once the player's name has been changed in Discord.
+ * @param data.publishedName - The published name that was created.
+ * @returns A promise that resolves once the published name message has been sent.
  */
-export async function onNamePublish({player}:
+export async function onNamePublish({player, publishedName}:
 	RelevantDataOf<typeof NamesmithEvents.PublishName>
 ) {
-	await sendPublishedNameMessage({player});
+	await sendPublishedNameMessage({player, publishedName});
 }

@@ -1,5 +1,4 @@
 import { PlayerRepository } from "../repositories/player.repository";
-import { logWarning } from "../../../utilities/logging-utils";
 import { attempt, ignoreError, InvalidArgumentError } from "../../../utilities/error-utils";
 import { PlayerAlreadyExistsError, NameTooLongError } from "../utilities/error.utility";
 import { Inventory, Player, PlayerID, PlayerResolvable } from '../types/player.types';
@@ -71,23 +70,6 @@ export class PlayerService {
 	 */
 	getPlayersByName(name: string): Player[] {
 		return this.playerRepository.getPlayersByCurrentName(name);
-	}
-
-	/**
-	 * Retrieves all players with published names.
-	 * @returns An array of players with published names.
-	 */
-	getPlayersWithPublishedName(){
-		return this.playerRepository.getPlayersWithPublishedNames();
-	}
-
-	/**
-	 * Retrieves all published names from the game.
-	 * @returns An array of all published names in the game.
-	 */
-	getAllPublishedNames() {
-		const playersWithPublishedNames = this.getPlayersWithPublishedName();
-		return playersWithPublishedNames.map(player => player.publishedName);
 	}
 
 	/**
@@ -426,82 +408,6 @@ export class PlayerService {
 	}
 
 	/**
-	 * Retrieves the published name of a player.
-	 * @param playerResolvable - The player resolvable whose published name is being retrieved.
-	 * @returns The published name of the player, or null if no published name exists.
-	 */
-	getPublishedName(playerResolvable: PlayerResolvable): string | null {
-		const playerID = this.resolveID(playerResolvable);
-		return this.playerRepository.getPublishedName(playerID);
-	}
-
-	/**
-	 * Publishes a player's current name to the 'Names to Vote On' channel.
-	 * If the player has no current name, logs a warning and does nothing.
-	 * @param playerResolvable - The player resolvable whose name is being published.
-	 */
-	publishName(playerResolvable: PlayerResolvable): void {
-		const playerID = this.resolveID(playerResolvable);
-		const currentName = this.getCurrentName(playerResolvable);
-
-		if (
-			currentName === undefined ||
-			currentName === null ||
-			currentName.length === 0
-		) {
-			logWarning(`publishName: player ${playerID} has no current name to publish.`)
-			return;
-		}
-
-		this.playerRepository.setPublishedName(playerID, currentName);
-
-		NamesmithEvents.PublishName.triggerEvent({
-			player: this.resolvePlayer(playerID)
-		});
-	}
-
-	/**
-	 * Publishes names of players who have not yet published their names.
-	 */
-	publishUnpublishedNames(): void {
-		const players = this.playerRepository.getPlayersWithoutPublishedNames();
-		for (const player of players) {
-			if (player.currentName.length !== 0)
-				this.publishName(player.id);
-		}
-	}
-
-	/**
-	 * Finalizes a player's name by setting their current name to their published name.
-	 * If the player has no published name, logs a warning and does nothing.
-	 * Also sends a message to the 'Names to Vote On' channel announcing the final name.
-	 * @param playerResolvable - The player resolvable whose name is being finalized.
-	 */
-	finalizeName(playerResolvable: PlayerResolvable): void {
-		const playerID = this.resolveID(playerResolvable);
-		const publishedName = this.getPublishedName(playerResolvable);
-
-		if (
-			publishedName === undefined ||
-			publishedName === null ||
-			publishedName.length === 0
-		) {
-			logWarning(`finalizeName: player ${playerID} has no published name to finalize.`);
-			return;
-		}
-
-		this.changeCurrentName(playerResolvable, publishedName);
-	}
-
-	finalizeAllNames() {
-		const players = this.playerRepository.getPlayers();
-
-		for (const player of players) {
-			this.finalizeName(player.id);
-		}
-	}
-
-	/**
 	 * Adds tokens to a player's token count.
 	 * @param playerResolvable - The player resolvable whose tokens are being increased.
 	 * @param tokens - The number of tokens to add to the player's count.
@@ -680,33 +586,6 @@ export class PlayerService {
 				return true;
 			
 		return false;
-	}
-
-	/**
-	 * Checks if the published name of a player contains a given substring.
-	 * Case is ignored.
-	 * @param playerResolvable - The player resolvable to check the name of.
-	 * @param nameSubstring - The substring to check for in the player's name.
-	 * @returns true if the player's published name contains the substring, false otherwise.
-	 */
-	doesPublishedNameContain(playerResolvable: PlayerResolvable, nameSubstring: string): boolean {
-		if (nameSubstring === '')
-			throw new InvalidArgumentError('Expected nameSubstring argument of doesPublishedNameContain() method to be a non-empty string, but it was empty.');
-		
-		const publishedName = this.getPublishedName(playerResolvable);
-		if (publishedName === null)
-			return false;
-		
-		return publishedName.toLowerCase().includes(nameSubstring.toLowerCase());
-	}
-
-	/**
-	 * Checks if a player has a published name.
-	 * @param playerResolvable - The player resolvable to check for a published name.
-	 * @returns true if the player has a published name, false otherwise.
-	 */
-	hasPublishedName(playerResolvable: PlayerResolvable): boolean {
-		return this.getPublishedName(playerResolvable) !== null;
 	}
 
 	/**

@@ -16,10 +16,10 @@ import { getCharacters } from "../../../../utilities/string-checks-utils";
  * @param options - An object with the following properties:
  * @param options.id - The ID of the player.
  * @param options.currentName - The current name of the player.
- * @param options.publishedName - The published name of the player.
  * @param options.tokens - The number of tokens the player has.
  * @param options.role - The role of the player.
  * @param options.perks - The perks the player has.
+ * @param options.publishedNames - The player's published names.
  * @param options.inventory - The player's inventory.
  * @param options.lastClaimedRefillTime - The last time the player claimed a refill.
  * @param options.hasPickedPerk - Whether the player has picked a perk.
@@ -28,10 +28,10 @@ import { getCharacters } from "../../../../utilities/string-checks-utils";
 export const createMockPlayerObject = ({
 	id,
 	currentName = "",
-	publishedName = null,
 	tokens = 0,
 	role = null,
 	perks = [],
+	publishedNames = [],
 	inventory = "",
 	lastClaimedRefillTime = null,
 	hasPickedPerk = false,
@@ -39,7 +39,7 @@ export const createMockPlayerObject = ({
 	if (id === undefined || typeof id !== "string")
 		throw new InvalidArgumentError(`createMockPlayerObject: player id must be a string, but got ${id}.`);
 
-	return {id, currentName, publishedName, tokens, role, perks, inventory, lastClaimedRefillTime, hasPickedPerk};
+	return {id, currentName, tokens, role, perks, publishedNames, inventory, lastClaimedRefillTime, hasPickedPerk};
 }
 
 /**
@@ -48,7 +48,6 @@ export const createMockPlayerObject = ({
  * @param playerData - The player data to add.
  * @param playerData.id - The ID of the player.
  * @param playerData.currentName - The current name of the player.
- * @param playerData.publishedName - The published name of the player.
  * @param playerData.tokens - The number of tokens the player has.
  * @param playerData.role - The role of the player.
  * @param playerData.inventory - The player's inventory.
@@ -69,7 +68,6 @@ export const addMockPlayer = (
 	{
 		id = undefined,
 		currentName = "",
-		publishedName = null,
 		tokens = 0,
 		role = null,
 		perks = [],
@@ -87,7 +85,7 @@ export const addMockPlayer = (
 
 	const playerRepository = PlayerRepository.fromDB(db);
 	return playerRepository.addPlayer({
-		id, currentName, publishedName, tokens, role, perks, inventory, lastClaimedRefillTime, hasPickedPerk
+		id, currentName, tokens, role, perks, inventory, lastClaimedRefillTime, hasPickedPerk
 	})
 };
 
@@ -174,10 +172,10 @@ export function forcePlayerToPublishName(
 	playerResolvable: PlayerResolvable,
 	publishedName: string
 ): Player {
-	const { playerService, activityLogService } = getNamesmithServices();
+	const { playerService, publishedNameService, activityLogService } = getNamesmithServices();
 	playerService.giveCharacters(playerResolvable, publishedName);
 	playerService.changeCurrentName(playerResolvable, publishedName);
-	playerService.publishName(playerResolvable);
+	publishedNameService.replaceSolePublishedNameOfPlayer(playerResolvable);
 	activityLogService.logPublishName({
 		playerPublishingName: playerResolvable,
 	});

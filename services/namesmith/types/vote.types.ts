@@ -1,5 +1,6 @@
-import { ExtractType, object, string } from "../../../utilities/runtime-types-utils";
+import { ExtractType, number, object, string } from "../../../utilities/runtime-types-utils";
 import { Player, PlayerResolvable } from "./player.types";
+import { PublishedName, PublishedNameResolvable } from "./published-name.types";
 
 export const Ranks = Object.freeze({
 	FIRST: '1st',
@@ -11,9 +12,9 @@ export const RANKS = [Ranks.FIRST, Ranks.SECOND, Ranks.THIRD];
 
 export const DBVoteType = object.asType({
 	voterID: string,
-	votedFirstPlayerID: string.orNull,
-	votedSecondPlayerID: string.orNull,
-	votedThirdPlayerID: string.orNull,
+	votedFirstPublishedNameID: number.orNull,
+	votedSecondPublishedNameID: number.orNull,
+	votedThirdPublishedNameID: number.orNull,
 })
 export const asDBVote = DBVoteType.from;
 export const asDBVotes = DBVoteType.fromAll;
@@ -23,16 +24,16 @@ export type MinimalVote = ExtractType<typeof DBVoteType>
 
 export type Vote = {
 	voterID: string;
-	votedFirstPlayer: Player | null;
-	votedSecondPlayer: Player | null;
-	votedThirdPlayer: Player | null;
+	votedFirstPublishedName: PublishedName | null;
+	votedSecondPublishedName: PublishedName | null;
+	votedThirdPublishedName: PublishedName | null;
 }
 
 export type VoteDefinition = {
 	voter: VoteID | PlayerResolvable;
-	votedFirstPlayer?: PlayerResolvable | null;
-	votedSecondPlayer?: PlayerResolvable | null;
-	votedThirdPlayer?: PlayerResolvable | null;
+	votedFirstPublishedName?: PublishedNameResolvable | null;
+	votedSecondPublishedName?: PublishedNameResolvable | null;
+	votedThirdPublishedName?: PublishedNameResolvable | null;
 };
 
 export type VoteID = MinimalVote["voterID"];
@@ -50,11 +51,12 @@ export type VoteInfo = {
 	thirdPlaceVotes: number;
 	thirdPlacePoints: number;
 }
-	
-export type Placement = 
+
+export type Placement =
 	& VoteInfo
 	& {
 		rank: number;
+		publishedName: PublishedName;
 		player: Player;
 		name: string;
 	};

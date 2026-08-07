@@ -7,7 +7,8 @@ import { ActivityLogID } from '../types/activity-log.types';
 import { CharacterID } from '../types/character.types';
 import { MinimalMysteryBox, MysteryBoxID } from '../types/mystery-box.types';
 import { Perk, PerkID, PerkName } from '../types/perk.types';
-import { Player, PlayerID } from '../types/player.types';
+import { Player } from '../types/player.types';
+import { PublishedNameID } from '../types/published-name.types';
 import { QuestID, QuestName } from '../types/quest.types';
 import { Recipe, RecipeID } from '../types/recipe.types';
 import { RoleID, RoleName } from '../types/role.types';
@@ -127,6 +128,18 @@ export class VoteNotFoundError extends ResourceNotFoundError {
 		super({
 			message: `Vote with ID ${voteID} not found.`,
 			relevantData: { voteID }
+		})
+	}
+}
+
+/**
+ * Error thrown when a namesmith published name is not found.
+ */
+export class PublishedNameNotFoundError extends ResourceNotFoundError {
+	constructor(publishedNameID: PublishedNameID) {
+		super({
+			message: `Published name with ID ${publishedNameID} not found.`,
+			relevantData: { publishedNameID }
 		})
 	}
 }
@@ -965,25 +978,53 @@ export class PlayerAlreadyHasPerkError extends NamesmithError {
  * Error thrown when a user tries to vote a name for a rank when they have not voted a name for a lower rank
  */
 export class VoteOutOfOrderError extends NamesmithError {
-	declare relevantData: { voterID: VoteID, votedPlayerID: PlayerID, missingRank: Rank, rankVotingFor: Rank };
-	constructor(voterID: VoteID, votedPlayerID: PlayerID, missingRank: Rank, rankVotingFor: Rank) {
+	declare relevantData: { voterID: VoteID, votedPublishedNameID: PublishedNameID, missingRank: Rank, rankVotingFor: Rank };
+	constructor(voterID: VoteID, votedPublishedNameID: PublishedNameID, missingRank: Rank, rankVotingFor: Rank) {
 		super({
 			message: joinLines(
-				`Cannot make vote. The user with the ID ${voterID} attempted to vote a name of the player with the ID ${votedPlayerID} in ${rankVotingFor} when they have not voted a name in ${missingRank} yet.`,
+				`Cannot make vote. The user with the ID ${voterID} attempted to vote the published name with the ID ${votedPublishedNameID} in ${rankVotingFor} when they have not voted a name in ${missingRank} yet.`,
 			),
-			relevantData: {voterID, votedPlayerID, missingRank, rankVotingFor}
+			relevantData: {voterID, votedPublishedNameID, missingRank, rankVotingFor}
 		})
 	}
 }
 
 export class NameVotedTwiceError extends NamesmithError {
-	declare relevantData: { voterID: VoteID, votedPlayer: PlayerID, existingRank: Rank, rankVotingFor: Rank };
-	constructor(voterID: VoteID, votedPlayerID: PlayerID, existingRank: Rank, rankVotingFor: Rank) {
+	declare relevantData: { voterID: VoteID, votedPublishedNameID: PublishedNameID, existingRank: Rank, rankVotingFor: Rank };
+	constructor(voterID: VoteID, votedPublishedNameID: PublishedNameID, existingRank: Rank, rankVotingFor: Rank) {
 		super({
 			message: joinLines(
-				`Cannot make vote. The user with the ID ${voterID} attempted to vote the name of the player with the ID ${votedPlayerID} in ${rankVotingFor} when they already voted their name in ${existingRank}.`, 
+				`Cannot make vote. The user with the ID ${voterID} attempted to vote the published name with the ID ${votedPublishedNameID} in ${rankVotingFor} when they already voted that name in ${existingRank}.`,
 			),
-			relevantData: {voterID, votedPlayerID, existingRank, rankVotingFor}
+			relevantData: {voterID, votedPublishedNameID, existingRank, rankVotingFor}
+		})
+	}
+}
+
+/**
+ * Error thrown when a player attempts to publish a name but all of their published name slots are already used.
+ */
+export class AllPublishedNameSlotsUsedError extends UserActionError {
+	declare relevantData: { player: Player, publishedNameSlotLimit: number };
+	constructor(player: Player, publishedNameSlotLimit: number) {
+		super({
+			message: `Player ${player.currentName} attempted to publish a name but has already used all ${publishedNameSlotLimit} of their published name slots.`,
+			userFriendlyMessage: `You have already used all ${publishedNameSlotLimit} of your published name slots.`,
+			relevantData: { player, publishedNameSlotLimit }
+		})
+	}
+}
+
+/**
+ * Error thrown when an operation would take more tokens from a player than they have, which would leave their token count below zero.
+ */
+export class NotEnoughTokensError extends UserActionError {
+	declare relevantData: { playerID: string, tokensToTake: number, tokensOwned: number };
+	constructor(playerID: string, tokensToTake: number, tokensOwned: number) {
+		super({
+			message: `Cannot take ${tokensToTake} tokens from player ${playerID} because they only have ${tokensOwned}.`,
+			userFriendlyMessage: `You do not have enough tokens.`,
+			relevantData: { playerID, tokensToTake, tokensOwned }
 		})
 	}
 }

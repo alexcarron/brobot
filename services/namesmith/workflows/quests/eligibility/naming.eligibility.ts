@@ -11,8 +11,11 @@ import { MeetsCriteriaParameters, PLAYER_MET_CRITERIA_RESULT, toFailure } from "
 export const namingEligibilityChecks = {
 
 	// Diverse Name
-	[Quests.DIVERSE_NAME.id]: ({quest, player}: MeetsCriteriaParameters) => {
-		const publishedName = player.publishedName;
+	[Quests.DIVERSE_NAME.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{ publishedNameService }: NamesmithServices
+	) => {
+		const publishedName = publishedNameService.getSolePublishedNameStringOfPlayer(player);
 		let type = null;
 
 		if (publishedName === null) {
@@ -33,17 +36,17 @@ export const namingEligibilityChecks = {
 	// Twinsies
 	[Quests.TWINSIES.id]: (
 		{quest, player}: MeetsCriteriaParameters,
-		{ playerService }: NamesmithServices
+		{ publishedNameService }: NamesmithServices
 	) => {
-		if (player.publishedName === null)
+		const playerPublishedName = publishedNameService.getSolePublishedNameStringOfPlayer(player);
+		if (playerPublishedName === null)
 			return toFailure(`You have not published your name yet. Your name must be published before you can complete the ${quest.name} quest.`)
 
-		const allPublishedNames = playerService.getAllPublishedNames();
+		const allPublishedNames = publishedNameService.getAllPublishedNameStrings();
 
 		const numSamePublishedNames =
 			allPublishedNames.filter(publishedName =>
-				publishedName !== null &&
-				publishedName === player.publishedName
+				publishedName === playerPublishedName
 			).length;
 
 		if (numSamePublishedNames < 2)
@@ -253,14 +256,14 @@ export const namingEligibilityChecks = {
 
 	[Quests.SHOW_TOKENS.id]: (
 		{quest, player}: MeetsCriteriaParameters,
-		{playerService}: NamesmithServices
+		{playerService, publishedNameService}: NamesmithServices
 	) => {
 		const numTokensHas = playerService.getTokens(player);
-		
-		if (!playerService.hasPublishedName(player))
+
+		if (!publishedNameService.doesPlayerHaveAPublishedName(player))
 			return toFailure(`You do not have a published name. You must have publish a name to complete the "${quest.name}" quest.`);
 
-		const publishedNameHasTokens = playerService.doesPublishedNameContain(player, String(numTokensHas));
+		const publishedNameHasTokens = publishedNameService.doesSolePublishedNameOfPlayerContain(player, String(numTokensHas));
 		if (!publishedNameHasTokens)
 			return toFailure(`Your published name does not contain the number of tokens you have. Your published name should have contained "${numTokensHas}" to complete the "${quest.name}" quest.`);
 			

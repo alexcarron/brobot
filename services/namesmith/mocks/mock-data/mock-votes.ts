@@ -1,54 +1,35 @@
 import { DatabaseQuerier } from "../../database/database-querier";
 import { Vote, VoteDefinition } from "../../types/vote.types";
-import { addMockPlayer } from "./mock-players";
 import { VoteRepository } from "../../repositories/vote.repository";
 import { getRandomNumericUUID } from "../../../../utilities/random-utils";
-import { PlayerService } from "../../services/player.service";
-import { PlayerResolvable } from "../../types/player.types";
 
 /**
- * Adds a vote to the database with the given properties.
+ * Adds a vote to the database with the given properties. The voted published names must already exist in the database.
  * @param db - The in-memory database.
  * @param voteDefintion - The vote data to add.
  * @param voteDefintion.voter - The user or player who voted.
- * @param voteDefintion.playerVotedFor - The player voted for.
+ * @param voteDefintion.votedFirstPublishedName - The published name voted as 1st place.
+ * @param voteDefintion.votedSecondPublishedName - The published name voted as 2nd place.
+ * @param voteDefintion.votedThirdPublishedName - The published name voted as 3rd place.
  * @returns The vote object that was added.
  */
 export const addMockVote = (
 	db: DatabaseQuerier,
 	voteDefintion: Partial<VoteDefinition> = {}
 ): Vote => {
-	const playerService = PlayerService.fromDB(db);
 	const voteRepository = VoteRepository.fromDB(db);
-
-	let {
-		votedFirstPlayer = null,
-		votedSecondPlayer = null,
-		votedThirdPlayer = null,
-	} = voteDefintion;
 
 	const {
 		voter = getRandomNumericUUID(),
+		votedFirstPublishedName = null,
+		votedSecondPublishedName = null,
+		votedThirdPublishedName = null,
 	} = voteDefintion;
-
-	const ensurePlayerExists = (player: PlayerResolvable | null) => {
-		if (player !== null) {
-			const playerID = playerService.resolveID(player);
-			if (!playerService.isPlayer(playerID)) {
-				return addMockPlayer(db, { id: playerID });
-			}
-		}
-		return player;
-	};
-
-	votedFirstPlayer = ensurePlayerExists(votedFirstPlayer);
-	votedSecondPlayer = ensurePlayerExists(votedSecondPlayer);
-	votedThirdPlayer = ensurePlayerExists(votedThirdPlayer);
 
 	return voteRepository.addVote({
 		voter,
-		votedFirstPlayer,
-		votedSecondPlayer,
-		votedThirdPlayer,
+		votedFirstPublishedName,
+		votedSecondPublishedName,
+		votedThirdPublishedName,
 	});
 };

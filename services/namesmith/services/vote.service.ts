@@ -3,29 +3,33 @@ import { FIRST_PLACE_POINTS, SECOND_PLACE_POINTS, THIRD_PLACE_POINTS } from "../
 import { DatabaseQuerier } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
 import { VoteRepository } from "../repositories/vote.repository";
-import { Player, PlayerID, PlayerResolvable } from "../types/player.types";
+import { PublishedName, PublishedNameID, PublishedNameResolvable } from "../types/published-name.types";
 import { Placement, Rank, Ranks, Vote, VoteInfo, VoteID, VoteResolvable } from "../types/vote.types";
 import { NameVotedTwiceError, VoteOutOfOrderError } from "../utilities/error.utility";
 import { PlayerService } from "./player.service";
+import { PublishedNameService } from "./published-name.service";
 
 /**
- * Provides access to the dynamic votes data.
+ * Provides access to the dynamic votes data. Votes point at published name entries, each of which is one anonymous voting entry.
  */
 export class VoteService {
 	/**
 	 * Constructs a new VoteService instance.
 	 * @param voteRepository - The repository used for accessing votes.
-	 * @param playerService - The service used for accessing players.
+	 * @param playerService - The service used for resolving the players who own published names.
+	 * @param publishedNameService - The service used for accessing published name entries.
 	 */
 	constructor(
 		public voteRepository: VoteRepository,
-		public playerService: PlayerService
+		public playerService: PlayerService,
+		public publishedNameService: PublishedNameService
 	) {}
 
 	static fromDB(db: DatabaseQuerier) {
 		return new VoteService(
 			VoteRepository.fromDB(db),
 			PlayerService.fromDB(db),
+			PublishedNameService.fromDB(db),
 		);
 	}
 
@@ -33,7 +37,7 @@ export class VoteService {
 		const db = createMockDB();
 		return VoteService.fromDB(db);
 	}
-	
+
 	/**
 	 * Resolves a vote from the given resolvable.
 	 * @param voteResolvable - The vote resolvable to resolve.
@@ -63,240 +67,239 @@ export class VoteService {
 		const voteID = this.resolveID(voteResolvable);
 		return this.voteRepository.doesVoteExist(voteID);
 	}
-	
+
 	/**
 	 * Gets the set of ranks a given vote has missing votes for.
 	 * @param voteResolvable - The vote resolvable to get the missing ranks of.
 	 * @returns A set of the ranks that are missing from the vote.
 	 */
 	getMissingRanksOfVote(voteResolvable: VoteResolvable | null): Set<Rank> {
-		if (voteResolvable === null) 
+		if (voteResolvable === null)
 			return new Set([Ranks.FIRST, Ranks.SECOND, Ranks.THIRD]);
 
 		if (!this.doesVoteExist(voteResolvable))
 			return new Set([Ranks.FIRST, Ranks.SECOND, Ranks.THIRD]);
-		
+
 		const vote = this.resolveVote(voteResolvable);
 		const missingRanks: Set<Rank> = new Set();
-		if (vote.votedFirstPlayer === null) missingRanks.add(Ranks.FIRST);
-		if (vote.votedSecondPlayer === null) missingRanks.add(Ranks.SECOND);
-		if (vote.votedThirdPlayer === null) missingRanks.add(Ranks.THIRD);
+		if (vote.votedFirstPublishedName === null) missingRanks.add(Ranks.FIRST);
+		if (vote.votedSecondPublishedName === null) missingRanks.add(Ranks.SECOND);
+		if (vote.votedThirdPublishedName === null) missingRanks.add(Ranks.THIRD);
 		return missingRanks;
 	}
 
 	/**
-	 * Gets the set of players who are voted in the ranks besides the given rank.
+	 * Gets the set of published name IDs that are voted in the ranks besides the given rank.
 	 * @param voteResolvable - The vote to look at.
 	 * @param rank - The rank to ignore.
-	 * @returns The set of players who are voted in the ranks besides the given rank.
+	 * @returns The set of published name IDs voted in the ranks besides the given rank.
 	 */
-	private getPlayerIDsNotVotedInRank(
+	private getPublishedNameIDsNotVotedInRank(
 		voteResolvable: VoteResolvable,
 		rank: Rank
-	): Set<PlayerID> {
+	): Set<PublishedNameID> {
 		const vote = this.resolveVote(voteResolvable);
-		const playerIDsNotVotedInRank: Set<PlayerID> = new Set();
+		const publishedNameIDsNotVotedInRank: Set<PublishedNameID> = new Set();
 		switch (rank) {
-			case Ranks.FIRST: 
-				if (vote.votedSecondPlayer !== null) playerIDsNotVotedInRank.add(vote.votedSecondPlayer.id);
-				if (vote.votedThirdPlayer !== null) playerIDsNotVotedInRank.add(vote.votedThirdPlayer.id);
+			case Ranks.FIRST:
+				if (vote.votedSecondPublishedName !== null) publishedNameIDsNotVotedInRank.add(vote.votedSecondPublishedName.id);
+				if (vote.votedThirdPublishedName !== null) publishedNameIDsNotVotedInRank.add(vote.votedThirdPublishedName.id);
 				break;
 
 			case Ranks.SECOND:
-				if (vote.votedFirstPlayer !== null) playerIDsNotVotedInRank.add(vote.votedFirstPlayer.id);
-				if (vote.votedThirdPlayer !== null) playerIDsNotVotedInRank.add(vote.votedThirdPlayer.id);
+				if (vote.votedFirstPublishedName !== null) publishedNameIDsNotVotedInRank.add(vote.votedFirstPublishedName.id);
+				if (vote.votedThirdPublishedName !== null) publishedNameIDsNotVotedInRank.add(vote.votedThirdPublishedName.id);
 				break;
 
 			case Ranks.THIRD:
-				if (vote.votedFirstPlayer !== null) playerIDsNotVotedInRank.add(vote.votedFirstPlayer.id);
-				if (vote.votedSecondPlayer !== null) playerIDsNotVotedInRank.add(vote.votedSecondPlayer.id);
+				if (vote.votedFirstPublishedName !== null) publishedNameIDsNotVotedInRank.add(vote.votedFirstPublishedName.id);
+				if (vote.votedSecondPublishedName !== null) publishedNameIDsNotVotedInRank.add(vote.votedSecondPublishedName.id);
 				break;
 		}
 
-		return playerIDsNotVotedInRank;
+		return publishedNameIDsNotVotedInRank;
 	}
 
 	/**
-	 * Gets the map of ranks to the players voted for in the given vote.
+	 * Gets the map of ranks to the published names voted for in the given vote.
 	 * @param voteResolvable - The vote to look at.
-	 * @returns The map of ranks to the players voted for in the given vote.
+	 * @returns The map of ranks to the published names voted for in the given vote.
 	 */
-	getRanksToVotedPlayer(voteResolvable: VoteResolvable): Map<Rank, Player> {
+	getRanksToVotedPublishedName(voteResolvable: VoteResolvable): Map<Rank, PublishedName> {
 		if (!this.doesVoteExist(voteResolvable)) return new Map();
-		
+
 		const vote = this.resolveVote(voteResolvable);
-		const rankToVotedPlayer: Map<Rank, Player> = new Map();
-		if (vote.votedFirstPlayer !== null) rankToVotedPlayer.set(Ranks.FIRST, vote.votedFirstPlayer);
-		if (vote.votedSecondPlayer !== null) rankToVotedPlayer.set(Ranks.SECOND, vote.votedSecondPlayer);
-		if (vote.votedThirdPlayer !== null) rankToVotedPlayer.set(Ranks.THIRD, vote.votedThirdPlayer);
-		return rankToVotedPlayer;
+		const rankToVotedPublishedName: Map<Rank, PublishedName> = new Map();
+		if (vote.votedFirstPublishedName !== null) rankToVotedPublishedName.set(Ranks.FIRST, vote.votedFirstPublishedName);
+		if (vote.votedSecondPublishedName !== null) rankToVotedPublishedName.set(Ranks.SECOND, vote.votedSecondPublishedName);
+		if (vote.votedThirdPublishedName !== null) rankToVotedPublishedName.set(Ranks.THIRD, vote.votedThirdPublishedName);
+		return rankToVotedPublishedName;
 	}
 
-	private toRanksToVotedName(ranksToVotedPlayer: Map<Rank, Player>): Map<Rank, string> {
+	private toRanksToVotedName(rankToVotedPublishedName: Map<Rank, PublishedName>): Map<Rank, string> {
 		return new Map(
-			Array.from(ranksToVotedPlayer).map(([rank, player]) => [rank, player.publishedName!])
+			Array.from(rankToVotedPublishedName).map(([rank, publishedName]) => [rank, publishedName.name])
 		)
 	}
 
 	/**
-	 * Gets the map of ranks to the names of the players voted for in the given vote.
+	 * Gets the map of ranks to the names voted for in the given vote.
 	 * @param voteResolvable - The vote to look at.
-	 * @returns The map of ranks to the names of the players voted for in the given vote.
+	 * @returns The map of ranks to the names voted for in the given vote.
 	 */
 	getRanksToVotedName(voteResolvable: VoteResolvable): Map<Rank, string> {
-		const ranksToVotedPlayer = this.getRanksToVotedPlayer(voteResolvable);
-		return this.toRanksToVotedName(ranksToVotedPlayer);
+		const rankToVotedPublishedName = this.getRanksToVotedPublishedName(voteResolvable);
+		return this.toRanksToVotedName(rankToVotedPublishedName);
 	}
 
-
 	/**
-	 * Gets the map of ranks to the players voted for in the given vote, excluding the given rank.
+	 * Gets the map of ranks to the published names voted for in the given vote, excluding the given rank.
 	 * @param voteResolvable - The vote to look at.
 	 * @param rank - The rank to exclude.
-	 * @returns The map of ranks to the players voted for in the given vote, excluding the given rank.
+	 * @returns The map of ranks to the published names voted for in the given vote, excluding the given rank.
 	 */
-	getOtherRanksToVotedPlayer(
+	getOtherRanksToVotedPublishedName(
 		voteResolvable: VoteResolvable,
 		rank: Rank
-	): Map<Rank, Player> {
+	): Map<Rank, PublishedName> {
 		const vote = this.resolveVote(voteResolvable);
-		const rankToVotedPlayer: Map<Rank, Player> = new Map();
+		const rankToVotedPublishedName: Map<Rank, PublishedName> = new Map();
 		switch (rank) {
-			case Ranks.FIRST: 
-				if (vote.votedSecondPlayer !== null) rankToVotedPlayer.set(Ranks.SECOND, vote.votedSecondPlayer);
-				if (vote.votedThirdPlayer !== null) rankToVotedPlayer.set(Ranks.THIRD, vote.votedThirdPlayer);
+			case Ranks.FIRST:
+				if (vote.votedSecondPublishedName !== null) rankToVotedPublishedName.set(Ranks.SECOND, vote.votedSecondPublishedName);
+				if (vote.votedThirdPublishedName !== null) rankToVotedPublishedName.set(Ranks.THIRD, vote.votedThirdPublishedName);
 				break;
 
 			case Ranks.SECOND:
-				if (vote.votedFirstPlayer !== null) rankToVotedPlayer.set(Ranks.FIRST, vote.votedFirstPlayer);
-				if (vote.votedThirdPlayer !== null) rankToVotedPlayer.set(Ranks.THIRD, vote.votedThirdPlayer);
+				if (vote.votedFirstPublishedName !== null) rankToVotedPublishedName.set(Ranks.FIRST, vote.votedFirstPublishedName);
+				if (vote.votedThirdPublishedName !== null) rankToVotedPublishedName.set(Ranks.THIRD, vote.votedThirdPublishedName);
 				break;
 
 			case Ranks.THIRD:
-				if (vote.votedFirstPlayer !== null) rankToVotedPlayer.set(Ranks.FIRST, vote.votedFirstPlayer);
-				if (vote.votedSecondPlayer !== null) rankToVotedPlayer.set(Ranks.SECOND, vote.votedSecondPlayer);
+				if (vote.votedFirstPublishedName !== null) rankToVotedPublishedName.set(Ranks.FIRST, vote.votedFirstPublishedName);
+				if (vote.votedSecondPublishedName !== null) rankToVotedPublishedName.set(Ranks.SECOND, vote.votedSecondPublishedName);
 				break;
 		}
 
-		return rankToVotedPlayer;
+		return rankToVotedPublishedName;
 	}
 
 	/**
-	 * Gets the map of ranks to the names of the players voted for in the given vote, excluding the given rank.
+	 * Gets the map of ranks to the names voted for in the given vote, excluding the given rank.
 	 * @param voteResolvable - The vote to look at.
 	 * @param rank - The rank to exclude.
-	 * @returns The map of ranks to the names of the players voted for in the given vote, excluding the given rank.
+	 * @returns The map of ranks to the names voted for in the given vote, excluding the given rank.
 	 */
 	getOtherRanksToVotedName(
 		voteResolvable: VoteResolvable,
 		rank: Rank
 	): Map<Rank, string> {
-		const otherRanksToVotedPlayer = this.getOtherRanksToVotedPlayer(voteResolvable, rank);
-		return this.toRanksToVotedName(otherRanksToVotedPlayer);
+		const otherRanksToVotedPublishedName = this.getOtherRanksToVotedPublishedName(voteResolvable, rank);
+		return this.toRanksToVotedName(otherRanksToVotedPublishedName);
 	}
 
 	/**
-	 * Gets the rank that a given player is voted for in a vote if they are voted for in the vote.
+	 * Gets the rank that a given published name is voted for in a vote, if any.
 	 * @param voteResolvable - The vote to look at.
-	 * @param playerResolvable - The player to look for.
-	 * @returns The rank that the player is voted for in the vote, or null if the player is not voted for in the vote.
+	 * @param publishedNameResolvable - The published name to look for.
+	 * @returns The rank the published name is voted for in the vote, or null if it is not voted for.
 	 */
-	getRankOfPlayerInVote(
-		voteResolvable: VoteResolvable | null, 
-		playerResolvable: PlayerResolvable
+	getRankOfPublishedNameInVote(
+		voteResolvable: VoteResolvable | null,
+		publishedNameResolvable: PublishedNameResolvable
 	): Rank | null {
 		if (voteResolvable === null) return null;
 		if (!this.doesVoteExist(voteResolvable)) return null;
 		const vote = this.resolveVote(voteResolvable);
-		const playerID = this.playerService.resolveID(playerResolvable);
+		const publishedNameID = this.publishedNameService.resolveID(publishedNameResolvable);
 
-		if (vote.votedFirstPlayer?.id === playerID) return Ranks.FIRST;
-		if (vote.votedSecondPlayer?.id === playerID) return Ranks.SECOND;
-		if (vote.votedThirdPlayer?.id === playerID) return Ranks.THIRD;
-		
+		if (vote.votedFirstPublishedName?.id === publishedNameID) return Ranks.FIRST;
+		if (vote.votedSecondPublishedName?.id === publishedNameID) return Ranks.SECOND;
+		if (vote.votedThirdPublishedName?.id === publishedNameID) return Ranks.THIRD;
+
 		return null;
 	}
 
 	/**
-	 * Gets the player the given user voted for in the given rank
-	 * @param voterID - The vote resolvable to get the player voted for in the rank.
-	 * @param rank - The rank to get the player voted for in.
-	 * @returns The player the given user voted for in the given rank
+	 * Gets the published name the given user voted for in the given rank.
+	 * @param voterID - The vote resolvable to get the published name voted for in the rank.
+	 * @param rank - The rank to get the published name voted for in.
+	 * @returns The published name the given user voted for in the given rank.
 	 */
-	getPlayerVotedInRank(voterID: VoteID, rank: Rank): Player | null {
+	getPublishedNameVotedInRank(voterID: VoteID, rank: Rank): PublishedName | null {
 		if (!this.voteRepository.doesVoteExist(voterID)) return null;
-		
+
 		const vote = this.voteRepository.getVoteOrThrow(voterID);
 		switch (rank) {
 			case Ranks.FIRST:
-				return vote.votedFirstPlayer;
+				return vote.votedFirstPublishedName;
 			case Ranks.SECOND:
-				return vote.votedSecondPlayer;
+				return vote.votedSecondPublishedName;
 			case Ranks.THIRD:
-				return vote.votedThirdPlayer;
+				return vote.votedThirdPublishedName;
 		}
 	}
 
 	/**
-	 * Has a given voter vote a given player as the given rank, adding or updating their vote.
+	 * Has a given voter vote a given published name as the given rank, adding or updating their vote.
 	 * @param voterResolvable - The user or player who is voting.
-	 * @param playerResolvable - The player being voted on.
-	 * @param rank - The rank the player is being voted for.
+	 * @param publishedNameResolvable - The published name being voted on.
+	 * @param rank - The rank the published name is being voted for.
 	 * @returns The created or updated vote object.
 	 */
-	votePlayerAsRank(
-		voterResolvable: VoteID | PlayerResolvable,
-		playerResolvable: PlayerResolvable,
+	votePublishedNameAsRank(
+		voterResolvable: VoteID,
+		publishedNameResolvable: PublishedNameResolvable,
 		rank: Rank
 	): Vote {
 		const voterID = this.playerService.resolveID(voterResolvable);
 		const existingVote = this.voteRepository.getVoteByVoterID(voterID);
-		const votedPlayerID = this.playerService.resolveID(playerResolvable);
+		const votedPublishedNameID = this.publishedNameService.resolveID(publishedNameResolvable);
 		const missingRanks = this.getMissingRanksOfVote(existingVote);
-		const previousRankOfPlayer = this.getRankOfPlayerInVote(existingVote, playerResolvable);
+		const previousRankOfPublishedName = this.getRankOfPublishedNameInVote(existingVote, publishedNameResolvable);
 		let vote = null;
 
 		switch (rank) {
-			case Ranks.FIRST:					
-				vote = {votedFirstPlayer: playerResolvable};
+			case Ranks.FIRST:
+				vote = {votedFirstPublishedName: publishedNameResolvable};
 				break;
 
 			case Ranks.SECOND:
-				if (missingRanks.has(Ranks.FIRST)) 
-					throw new VoteOutOfOrderError(voterID, votedPlayerID, Ranks.FIRST, rank);
-					
-				vote = {votedSecondPlayer: playerResolvable};
+				if (missingRanks.has(Ranks.FIRST))
+					throw new VoteOutOfOrderError(voterID, votedPublishedNameID, Ranks.FIRST, rank);
+
+				vote = {votedSecondPublishedName: publishedNameResolvable};
 				break;
 
 			case Ranks.THIRD:
-				if (missingRanks.has(Ranks.FIRST)) 
-					throw new VoteOutOfOrderError(voterID, votedPlayerID, Ranks.FIRST, rank);
+				if (missingRanks.has(Ranks.FIRST))
+					throw new VoteOutOfOrderError(voterID, votedPublishedNameID, Ranks.FIRST, rank);
 
-				if (missingRanks.has(Ranks.SECOND)) 
-					throw new VoteOutOfOrderError(voterID, votedPlayerID, Ranks.SECOND, rank);
-				
-				vote = {votedThirdPlayer: playerResolvable};
+				if (missingRanks.has(Ranks.SECOND))
+					throw new VoteOutOfOrderError(voterID, votedPublishedNameID, Ranks.SECOND, rank);
+
+				vote = {votedThirdPublishedName: publishedNameResolvable};
 				break;
-		
+
 			default:
-				throw new InvalidArgumentError(`Expected the rank passed to votePlayerAsRank to be 1st, 2nd, or 3rd, but was ${rank}.`);
+				throw new InvalidArgumentError(`Expected the rank passed to votePublishedNameAsRank to be 1st, 2nd, or 3rd, but was ${rank}.`);
 		}
 
-		if (previousRankOfPlayer !== null) {
-			switch (previousRankOfPlayer) {
+		if (previousRankOfPublishedName !== null) {
+			switch (previousRankOfPublishedName) {
 				case Ranks.FIRST:
 					if (rank === Ranks.SECOND || rank === Ranks.THIRD)
-						throw new VoteOutOfOrderError(voterID, votedPlayerID, previousRankOfPlayer, rank);
+						throw new VoteOutOfOrderError(voterID, votedPublishedNameID, previousRankOfPublishedName, rank);
 					break;
 
 				case Ranks.SECOND:
 					if (rank === Ranks.THIRD)
-						throw new VoteOutOfOrderError(voterID, votedPlayerID, previousRankOfPlayer, rank);
+						throw new VoteOutOfOrderError(voterID, votedPublishedNameID, previousRankOfPublishedName, rank);
 
 					if (rank === Ranks.FIRST)
 						this.voteRepository.updateVote({
 							voter: voterID,
-							votedSecondPlayer: null,
+							votedSecondPublishedName: null,
 						});
 					break;
 
@@ -304,23 +307,22 @@ export class VoteService {
 					if (rank === Ranks.FIRST || rank === Ranks.SECOND)
 						this.voteRepository.updateVote({
 							voter: voterID,
-							votedThirdPlayer: null,
+							votedThirdPublishedName: null,
 						});
 					break;
 			}
 		}
-		
+
 		if (existingVote === null) {
 			this.voteRepository.addVote({voter: voterID});
 		}
 		else {
-			const otherPlayerIDsVoted = this.getPlayerIDsNotVotedInRank(existingVote, rank);
-			if (otherPlayerIDsVoted.has(votedPlayerID)) {
-				const rankVotedIn = this.getRankOfPlayerInVote(existingVote, playerResolvable)!;
-				throw new NameVotedTwiceError(voterID, votedPlayerID, rankVotedIn, rank);
+			const otherPublishedNameIDsVoted = this.getPublishedNameIDsNotVotedInRank(existingVote, rank);
+			if (otherPublishedNameIDsVoted.has(votedPublishedNameID)) {
+				const rankVotedIn = this.getRankOfPublishedNameInVote(existingVote, publishedNameResolvable)!;
+				throw new NameVotedTwiceError(voterID, votedPublishedNameID, rankVotedIn, rank);
 			}
 		}
-		
 
 		const updatedVote = this.voteRepository.updateVote({
 			voter: voterID,
@@ -342,7 +344,7 @@ export class VoteService {
 		this.voteRepository.removeVote(voteID);
 		return deletedVote;
 	}
-	
+
 	/**
 	 * Resets the vote repository, clearing all stored votes.
 	 */
@@ -351,56 +353,57 @@ export class VoteService {
 	}
 
 	/**
-	 * Gets the current points of all players based on the votes
-	 * @returns A map of player IDs to their current points in order of highest to lowest score.
+	 * Gets the current points of every published name entry based on the votes.
+	 * @returns A map of published name IDs to their current points in order of highest to lowest score.
 	 */
-	getPlayerIDToPoints(): Map<PlayerID, number> {
+	getPublishedNameIDToPoints(): Map<PublishedNameID, number> {
 		const votes = this.voteRepository.getVotes();
-		const playerIDToPoints = new Map<PlayerID, number>();
+		const publishedNameIDToPoints = new Map<PublishedNameID, number>();
 
-		const allPlayers = this.playerService.getPlayers();
-		for (const player of allPlayers) {
-			playerIDToPoints.set(player.id, 0);
+		for (const publishedName of this.publishedNameService.getPublishedNames()) {
+			publishedNameIDToPoints.set(publishedName.id, 0);
 		}
 
 		for (const vote of votes) {
-			if (vote.votedFirstPlayer !== null) {
-				const playerID = vote.votedFirstPlayer.id;
-				const previousScore = playerIDToPoints.get(playerID) ?? 0;
-				playerIDToPoints.set(playerID, previousScore + FIRST_PLACE_POINTS);
+			if (vote.votedFirstPublishedName !== null) {
+				const publishedNameID = vote.votedFirstPublishedName.id;
+				const previousScore = publishedNameIDToPoints.get(publishedNameID) ?? 0;
+				publishedNameIDToPoints.set(publishedNameID, previousScore + FIRST_PLACE_POINTS);
 			}
-			
-			if (vote.votedSecondPlayer !== null) {
-				const playerID = vote.votedSecondPlayer.id;
-				const previousScore = playerIDToPoints.get(playerID) ?? 0;
-				playerIDToPoints.set(playerID, previousScore + SECOND_PLACE_POINTS);
+
+			if (vote.votedSecondPublishedName !== null) {
+				const publishedNameID = vote.votedSecondPublishedName.id;
+				const previousScore = publishedNameIDToPoints.get(publishedNameID) ?? 0;
+				publishedNameIDToPoints.set(publishedNameID, previousScore + SECOND_PLACE_POINTS);
 			}
-			
-			if (vote.votedThirdPlayer !== null) {
-				const playerID = vote.votedThirdPlayer.id;
-				const previousScore = playerIDToPoints.get(playerID) ?? 0;
-				playerIDToPoints.set(playerID, previousScore + THIRD_PLACE_POINTS);
+
+			if (vote.votedThirdPublishedName !== null) {
+				const publishedNameID = vote.votedThirdPublishedName.id;
+				const previousScore = publishedNameIDToPoints.get(publishedNameID) ?? 0;
+				publishedNameIDToPoints.set(publishedNameID, previousScore + THIRD_PLACE_POINTS);
 			}
 		}
 
 		return new Map(
-			[...playerIDToPoints.entries()].sort(([ , points1], [ , points2]) =>
+			[...publishedNameIDToPoints.entries()].sort(([ , points1], [ , points2]) =>
 				points2 - points1
 			)
 		);
 	}
 
 	/**
-	 * Gets the placements of the players in the current vote in order of highest to lowest points.
-	 * @returns The placements of the players in the current vote in order of highest to lowest points.
+	 * Gets the placements of the published name entries in the current vote in order of highest to lowest points.
+	 * @returns The placements in order of highest to lowest points.
 	 */
 	getPlacements(): Placement[] {
 		const votes = this.voteRepository.getVotes();
-		const playerIdToVoteInfo = new Map<PlayerID, VoteInfo>();
+		const publishedNames = this.publishedNameService.getPublishedNames();
+		const publishedNameIDToVoteInfo = new Map<PublishedNameID, VoteInfo>();
+		const publishedNameIDToEntry = new Map<PublishedNameID, PublishedName>();
 
-		const playersWithNameEntries = this.playerService.getPlayersWithPublishedName();
-		for (const player of playersWithNameEntries) {
-			playerIdToVoteInfo.set(player.id, {
+		for (const publishedName of publishedNames) {
+			publishedNameIDToEntry.set(publishedName.id, publishedName);
+			publishedNameIDToVoteInfo.set(publishedName.id, {
 				points: 0,
 				firstPlaceVotes: 0,
 				firstPlacePoints: 0,
@@ -412,31 +415,30 @@ export class VoteService {
 		}
 
 		for (const vote of votes) {
-			if (vote.votedFirstPlayer !== null) {
-				const playerID = vote.votedFirstPlayer.id;
-				playerIdToVoteInfo.get(playerID)!.points += FIRST_PLACE_POINTS;
-				playerIdToVoteInfo.get(playerID)!.firstPlaceVotes += 1;
-				playerIdToVoteInfo.get(playerID)!.firstPlacePoints += FIRST_PLACE_POINTS;
+			if (vote.votedFirstPublishedName !== null) {
+				const publishedNameID = vote.votedFirstPublishedName.id;
+				publishedNameIDToVoteInfo.get(publishedNameID)!.points += FIRST_PLACE_POINTS;
+				publishedNameIDToVoteInfo.get(publishedNameID)!.firstPlaceVotes += 1;
+				publishedNameIDToVoteInfo.get(publishedNameID)!.firstPlacePoints += FIRST_PLACE_POINTS;
+			}
 
+			if (vote.votedSecondPublishedName !== null) {
+				const publishedNameID = vote.votedSecondPublishedName.id;
+				publishedNameIDToVoteInfo.get(publishedNameID)!.points += SECOND_PLACE_POINTS;
+				publishedNameIDToVoteInfo.get(publishedNameID)!.secondPlaceVotes += 1;
+				publishedNameIDToVoteInfo.get(publishedNameID)!.secondPlacePoints += SECOND_PLACE_POINTS;
 			}
-			
-			if (vote.votedSecondPlayer !== null) {
-				const playerID = vote.votedSecondPlayer.id;
-				playerIdToVoteInfo.get(playerID)!.points += SECOND_PLACE_POINTS;
-				playerIdToVoteInfo.get(playerID)!.secondPlaceVotes += 1;
-				playerIdToVoteInfo.get(playerID)!.secondPlacePoints += SECOND_PLACE_POINTS;
-			}
-			
-			if (vote.votedThirdPlayer !== null) {
-				const playerID = vote.votedThirdPlayer.id;
-				playerIdToVoteInfo.get(playerID)!.points += THIRD_PLACE_POINTS;
-				playerIdToVoteInfo.get(playerID)!.thirdPlaceVotes += 1;
-				playerIdToVoteInfo.get(playerID)!.thirdPlacePoints += THIRD_PLACE_POINTS;
+
+			if (vote.votedThirdPublishedName !== null) {
+				const publishedNameID = vote.votedThirdPublishedName.id;
+				publishedNameIDToVoteInfo.get(publishedNameID)!.points += THIRD_PLACE_POINTS;
+				publishedNameIDToVoteInfo.get(publishedNameID)!.thirdPlaceVotes += 1;
+				publishedNameIDToVoteInfo.get(publishedNameID)!.thirdPlacePoints += THIRD_PLACE_POINTS;
 			}
 		}
 
-		const sortedPlayerIDToVoteInfo = new Map(
-			[...playerIdToVoteInfo.entries()].sort(([ , {points: score1}], [ , {points: score2}]) =>
+		const sortedPublishedNameIDToVoteInfo = new Map(
+			[...publishedNameIDToVoteInfo.entries()].sort(([ , {points: score1}], [ , {points: score2}]) =>
 				score2 - score1
 			)
 		);
@@ -445,24 +447,25 @@ export class VoteService {
 		let previousPoints: number | null = null;
 		let rank = 1;
 		let index = 0;
-		for (const [playerID, voteInfo] of [...sortedPlayerIDToVoteInfo.entries()]) {
+		for (const [publishedNameID, voteInfo] of [...sortedPublishedNameIDToVoteInfo.entries()]) {
 			if (voteInfo.points === previousPoints) {
 				rank -= 1;
 			}
 			else {
 				rank = index + 1;
 			}
-			
-			const player = this.playerService.resolvePlayer(playerID);
+
+			const publishedName = publishedNameIDToEntry.get(publishedNameID)!;
 			const placement: Placement = {
 				rank: rank,
-				player,
-				name: player.publishedName!,
+				publishedName,
+				player: this.playerService.resolvePlayer(publishedName.playerID),
+				name: publishedName.name,
 				...voteInfo,
 			};
 
 			placements.push(placement);
-			
+
 			previousPoints = voteInfo.points;
 			rank += 1;
 			index += 1;

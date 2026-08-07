@@ -52,7 +52,6 @@ CREATE TABLE IF NOT EXISTS rolePerk (
 CREATE TABLE IF NOT EXISTS player (
 	id TEXT PRIMARY KEY, -- The Discord ID of the user
 	currentName TEXT NOT NULL CHECK (LENGTH(currentName) <= 32),
-	publishedName TEXT,
 	tokens INTEGER NOT NULL,
 	role INTEGER REFERENCES role(id)
 		ON DELETE SET NULL ON UPDATE CASCADE,
@@ -75,13 +74,22 @@ CREATE TABLE IF NOT EXISTS playerPerk (
 	PRIMARY KEY (playerID, perkID)
 );
 
+CREATE TABLE IF NOT EXISTS publishedName (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	playerID TEXT NOT NULL REFERENCES player(id)
+		ON DELETE CASCADE ON UPDATE CASCADE,
+	name TEXT NOT NULL CHECK (LENGTH(name) <= 32),
+	slotNumber INTEGER NOT NULL, -- The stable published name slot this published name occupies for the player (1, 2, 3, 4)
+	UNIQUE (playerID, slotNumber)
+);
+
 CREATE TABLE IF NOT EXISTS vote (
 	voterID TEXT PRIMARY KEY, -- The Discord ID of the user who voted (Could be a non-player)
-	votedFirstPlayerID TEXT REFERENCES player(id)
+	votedFirstPublishedNameID INTEGER REFERENCES publishedName(id)
 		ON DELETE CASCADE ON UPDATE CASCADE,
-	votedSecondPlayerID TEXT REFERENCES player(id)
+	votedSecondPublishedNameID INTEGER REFERENCES publishedName(id)
 		ON DELETE CASCADE ON UPDATE CASCADE,
-	votedThirdPlayerID TEXT REFERENCES player(id)
+	votedThirdPublishedNameID INTEGER REFERENCES publishedName(id)
 		ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -197,6 +205,9 @@ CREATE INDEX IF NOT EXISTS player_role_index ON player(role);
 -- Player Perks
 CREATE INDEX IF NOT EXISTS playerPerk_playerID_index ON playerPerk(playerID);
 CREATE INDEX IF NOT EXISTS playerPerk_perkID_index ON playerPerk(perkID);
+
+-- Published Names
+CREATE INDEX IF NOT EXISTS publishedName_playerID_index ON publishedName(playerID);
 
 -- Votes
 CREATE INDEX IF NOT EXISTS vote_voterID_index ON vote(voterID);

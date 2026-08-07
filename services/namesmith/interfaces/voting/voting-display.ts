@@ -4,20 +4,13 @@ import { regenerateInitialVotingMessage, sendInitialVotingMessage } from "./init
 import { regenerateNameEntryMessage, sendNameEntryMessage } from "./name-entry-message";
 
 export async function sendVotingDisplay() {
-	const { playerService } = getNamesmithServices();
-	const players = playerService.getPlayers();
-	
+	const { publishedNameService } = getNamesmithServices();
+	const publishedNames = publishedNameService.getPublishedNames();
+
 	await sendInitialVotingMessage();
 
-	for (const player of players) {
-		if (player.publishedName === null)
-			continue;
-		
-		const finalizedName = player.publishedName;
-		await sendNameEntryMessage({
-			player: player,
-			name: finalizedName
-		});
+	for (const publishedName of publishedNames) {
+		await sendNameEntryMessage({ publishedName });
 	}
 }
 
@@ -25,21 +18,14 @@ export async function regenerateVotingDisplay() {
 	const regeneratePromises = [
 		logSetup('[INITIAL VOTING MESSAGE]', regenerateInitialVotingMessage())
 	];
-	
-	const { playerService } = getNamesmithServices();
-	const players = playerService.getPlayers();
+
+	const { publishedNameService } = getNamesmithServices();
+	const publishedNames = publishedNameService.getPublishedNames();
 
 	regeneratePromises.push(
-		...players.map(player => {
-			if (player.publishedName === null)
-				return Promise.resolve();
-			
-			const finalizedName = player.publishedName;
-			return logSetup(`[VOTE ENTRY] ${finalizedName}`, regenerateNameEntryMessage({
-				player: player,
-				name: finalizedName
-			}));
-		})
+		...publishedNames.map(publishedName =>
+			logSetup(`[VOTE ENTRY] ${publishedName.name}`, regenerateNameEntryMessage({ publishedName }))
+		)
 	);
 
 	await Promise.all(regeneratePromises);
