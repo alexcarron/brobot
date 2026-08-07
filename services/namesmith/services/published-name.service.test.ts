@@ -224,19 +224,6 @@ describe('PublishedNameService', () => {
 		});
 	});
 
-	describe('finalizeName()', () => {
-		it('sets the current name to the first published name', () => {
-			publishedNameService.publishNameForPlayer(NAMED_PLAYER.id, 'Final');
-			publishedNameService.finalizeNameOfPlayer(NAMED_PLAYER.id);
-			makeSure(publishedNameService.playerRepository.getCurrentName(NAMED_PLAYER.id)).is('Final');
-		});
-
-		it('does nothing when the player has no published name', () => {
-			publishedNameService.finalizeNameOfPlayer(NAMED_PLAYER.id);
-			makeSure(publishedNameService.playerRepository.getCurrentName(NAMED_PLAYER.id)).is('Namey');
-		});
-	});
-
 	describe('reset()', () => {
 		it('clears every published name entry', () => {
 			publishedNameService.publishNameForPlayer(NAMED_PLAYER.id, 'One');

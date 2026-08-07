@@ -344,31 +344,6 @@ export class PublishedNameService {
 	}
 
 	/**
-	 * Sets a player's current name to their first published name. Does nothing if the player has no published name.
-	 * @param playerResolvable - The player whose name is being finalized.
-	 */
-	finalizeNameOfPlayer(playerResolvable: PlayerResolvable): void {
-		const playerID = this.resolvePlayerID(playerResolvable);
-		const publishedName = this.getSolePublishedNameStringOfPlayer(playerID);
-
-		if (publishedName === null || publishedName.length === 0) {
-			logWarning(`finalizeNameOfPlayer: player ${playerID} has no published name to finalize.`);
-			return;
-		}
-
-		this.playerRepository.changeCurrentName(playerID, publishedName);
-	}
-
-	/**
-	 * Sets every player's current name to their first published name.
-	 */
-	finalizeAllNames(): void {
-		for (const player of this.playerRepository.getPlayers()) {
-			this.finalizeNameOfPlayer(player.id);
-		}
-	}
-
-	/**
 	 * Removes a single published name.
 	 * @param publishedNameResolvable - The published name to remove.
 	 */

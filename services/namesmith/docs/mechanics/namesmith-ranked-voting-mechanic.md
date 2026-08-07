@@ -182,18 +182,19 @@ Voting has ended. You can no longer vote on names.
 ```sql
 CREATE TABLE IF NOT EXISTS vote (
 	voterID TEXT PRIMARY KEY, -- The Discord ID of the user who voted
-	playerVotedAsFirst TEXT REFERENCES player(id)
+	votedFirstPublishedNameID INTEGER REFERENCES publishedName(id)
 		ON DELETE CASCADE ON UPDATE CASCADE,
-	playerVotedAsSecond TEXT REFERENCES player(id)
+	votedSecondPublishedNameID INTEGER REFERENCES publishedName(id)
 		ON DELETE CASCADE ON UPDATE CASCADE,
-	playerVotedAsThird TEXT REFERENCES player(id)
+	votedThirdPublishedNameID INTEGER REFERENCES publishedName(id)
 		ON DELETE CASCADE ON UPDATE CASCADE
 );
 ```
 ## Data Logic
 - Whenver a user interacts with the voting system at all a row is created with their discord id as `voterID`
-- If the player has not made any votes all `playerVotedAs` fields will be null
-- When a player votes a name as 1st, the ID of the player who created that name is put in the `playerVotedAsFirst` field
+- If the player has not made any votes all `votedXPublishedNameID` fields will be null
+- Voting is per published name, not per player, and is anonymous - the voter never sees who authored an entry. When a player votes a name as 1st, the ID of that published name entry is put in the `votedFirstPublishedNameID` field
 - The above statement applies to second and third place votes as well
+- Because votes are keyed by published name rather than player, a voter can rank two published names from the same (hidden) author
 - This vote table will be used to view every user's current votes
-- Clearing your votes will set all `playerVotedAs` fields to null
+- Clearing your votes will set all `votedXPublishedNameID` fields to null

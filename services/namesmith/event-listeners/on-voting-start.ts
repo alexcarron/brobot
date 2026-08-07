@@ -4,7 +4,7 @@ import { sendVotingDisplay } from '../interfaces/voting/voting-display';
 
 /**
  * Starts the voting phase of the game by doing the following:
- * - Publishing any names that have not yet been published
+ * - Auto-publishing the current name of any player with no published names
  * - Sending the voting display
  * - Resetting the vote service
  */
@@ -12,7 +12,6 @@ export async function onVotingStart() {
 	const { publishedNameService, voteService } = getNamesmithServices();
 
 	publishedNameService.autoPublishCurrentNames();
-	publishedNameService.finalizeAllNames();
 
 	await clearNamesToVoteOnChannel();
 	await closeTheResultsChannel();
