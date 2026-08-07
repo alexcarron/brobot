@@ -10,16 +10,19 @@ import { AllPublishedNameSlotsUsedError, NameTooLongError } from "../utilities/e
 import { PlayerRepository } from "../repositories/player.repository";
 import { PublishedNameRepository } from "../repositories/published-name.repository";
 import { TransactionRunner } from "../database/transaction-runner";
+import { PlayerService } from "./player.service";
 
 export class PublishedNameService {
 	/**
 	 * @param publishedNameRepository - The repository used for accessing published names.
 	 * @param playerRepository - The repository used for resolving players and their current names.
+	 * @param playerService - The service used to remove a published name's characters from a player's inventory and clear their current name.
 	 * @param transactionRunner - Runs several repository operations inside a single database transaction when they must all succeed together.
 	 */
 	constructor(
 		public publishedNameRepository: PublishedNameRepository,
 		public playerRepository: PlayerRepository,
+		public playerService: PlayerService,
 		public transactionRunner: TransactionRunner,
 	) {}
 
@@ -27,6 +30,7 @@ export class PublishedNameService {
 		return new PublishedNameService(
 			PublishedNameRepository.fromDB(db),
 			PlayerRepository.fromDB(db),
+			PlayerService.fromDB(db),
 			TransactionRunner.fromDB(db),
 		);
 	}
@@ -201,6 +205,7 @@ export class PublishedNameService {
 
 	/**
 	 * Publishes a name for a player into their lowest available published name slot.
+	 * Removes the published name's characters from the player's inventory and empties their current name.
 	 * @param playerResolvable - The player publishing the name.
 	 * @param name - The name to publish. Defaults to the player's current name.
 	 * @returns The created published name, or null if there was no name to publish.
@@ -222,10 +227,17 @@ export class PublishedNameService {
 		if (slotNumber === null)
 			throw new AllPublishedNameSlotsUsedError(player, MAX_PUBLISHED_NAME_SLOTS_PER_PLAYER);
 
-		const publishedName = this.publishedNameRepository.addPublishedName({
-			playerID: player.id,
-			name: nameToPublish,
-			slotNumber,
+		const publishedName = this.transactionRunner.runInTransaction(() => {
+			const publishedName = this.publishedNameRepository.addPublishedName({
+				playerID: player.id,
+				name: nameToPublish,
+				slotNumber,
+			});
+
+			this.playerService.removeCharactersFromInventory(player.id, nameToPublish);
+			this.playerService.changeCurrentName(player.id, '');
+
+			return publishedName;
 		});
 
 		this.triggerPublishNameEvent(player.id, publishedName, 0);
@@ -234,6 +246,7 @@ export class PublishedNameService {
 
 	/**
 	 * Deducts the token cost of the player's next published name and publishes the name into their lowest available published name slot.
+	 * Removes the published name's characters from the player's inventory and empties their current name.
 	 * @param options - The paid publish options.
 	 * @param options.player - The player publishing the name.
 	 * @param options.name - The name to publish.
@@ -261,11 +274,16 @@ export class PublishedNameService {
 		const publishedName = this.transactionRunner.runInTransaction(() => {
 			this.playerRepository.deductTokens(player.id, tokensSpent);
 
-			return this.publishedNameRepository.addPublishedName({
+			const publishedName = this.publishedNameRepository.addPublishedName({
 				playerID: player.id,
 				name,
 				slotNumber,
 			});
+
+			this.playerService.removeCharactersFromInventory(player.id, name);
+			this.playerService.changeCurrentName(player.id, '');
+
+			return publishedName;
 		});
 
 		this.triggerPublishNameEvent(player.id, publishedName, tokensSpent);

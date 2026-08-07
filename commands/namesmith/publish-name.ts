@@ -35,6 +35,7 @@ export const command = new SlashCommand({
 			interaction,
 			message: joinLines(
 				`Are you sure you want to publish your current name, ${toDisplayedName(currentName)}, as your ${toNumericOrdinal(nextPublishedNameSlotNumber)} published name?`,
+				`-# This will remove those characters from your inventory and leave your current name empty.`,
 				costLine,
 				`-# You have ${toAmountOfNoun(availableSlots, 'available published name slot')} remaining.`,
 				isFree ? null : `-# You have ${toAmountOfNoun(tokensOwned, 'token')}.`,
@@ -98,6 +99,7 @@ export const command = new SlashCommand({
 		return await addReplyToInteraction(interaction,
 			`Your current name was published as your ${toNumericOrdinal(slotNumber)} published name:`,
 			`> ${toDisplayedName(currentName)}`,
+			`-# Its characters were removed from your inventory. Your current name is now empty.`,
 			spentLine,
 		);
 	},

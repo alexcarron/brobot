@@ -22,7 +22,7 @@ In Namesmith, your goal is to create the most liked, clever, or creative name po
 
 # Creating Your Name
 1. **Rearrange Your Name**: You can run `/rearrange-name` anywhere to change your current name. You may use any characters you have in your inventory.
-2. **Publish Your Name**: You can run `/publish-name` anywhere to publish your current name into your next available published name slot, locking it in as one of the names shown during voting. Once published, a name is permanent and can't be edited or unpublished. You can hold up to 4 published names at once. Your 1st is free, but your 2nd, 3rd, and 4th cost 250, 500, and 1000 tokens respectively.
+2. **Publish Your Name**: You can run `/publish-name` anywhere to publish your current name into your next available published name slot, locking it in as one of the names shown during voting. Once published, a name is permanent and can't be edited or unpublished. You can hold up to 4 published names at once. Your 1st is free, but your 2nd, 3rd, and 4th cost 250, 500, and 1000 tokens respectively. Publishing removes the published name's characters from your inventory, so your current name becomes empty afterward and you'll need to earn or craft new characters to build your next one.
 
 # Roles and Perks
 1. **Picking a Perk**: Twice a week, new perks will be displayed in #pick-a-perk that you can choose from. During that time, you can press one of the buttons to pick the perk of the ones shown you want to gain permanently. You cannot switch perks or choose more than one.

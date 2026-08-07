@@ -284,7 +284,7 @@ export class PlayerService {
 	 * @param characters - The characters to remove from the inventory.
 	 * @returns The new inventory of the player.
 	 */
-	private removeCharactersFromInventory(
+	removeCharactersFromInventory(
 		playerResolvable: PlayerResolvable,
 		characters: string | string[]
 	): string {
