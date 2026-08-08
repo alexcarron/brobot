@@ -5,6 +5,9 @@ import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
 import { MysteryBoxService } from "./mystery-box.service";
 import { MinimalMysteryBox } from "../types/mystery-box.types";
 import { addMockMysteryBox } from "../mocks/mock-data/mock-mystery-boxes";
+import { addMockPlayer } from "../mocks/mock-data/mock-players";
+import { Player } from "../types/player.types";
+import { makeSure } from "../../../utilities/jest/jest-utils";
 
 describe('MysteryBoxService', () => {
 	let mysteryBoxService: MysteryBoxService;
@@ -87,6 +90,47 @@ describe('MysteryBoxService', () => {
 
 		it('should throw an error if the mystery box with the given ID does not exist', () => {
 			expect(() => mysteryBoxService.getCost(INVALID_MYSTERY_BOX_ID)).toThrow();
+		});
+	});
+
+	describe('getTokenCostOfCheapest()', () => {
+		it('returns the token cost of the cheapest mystery box', () => {
+			addMockMysteryBox(db, { tokenCost: 10 });
+			addMockMysteryBox(db, { tokenCost: 500 });
+
+			makeSure(mysteryBoxService.getTokenCostOfCheapest()).is(10);
+		});
+	});
+
+	describe('canPlayerAffordCheapestMysteryBox()', () => {
+		let SOME_PLAYER: Player;
+
+		beforeEach(() => {
+			const mysteryBoxes = mysteryBoxService.getMysteryBoxes();
+			for (const mysteryBox of mysteryBoxes) {
+				mysteryBoxService.mysteryBoxRepository.removeMysteryBox(mysteryBox.id);
+			}
+			addMockMysteryBox(db, { tokenCost: 100 });
+
+			SOME_PLAYER = addMockPlayer(db, { tokens: 0 });
+		});
+
+		it('returns false when the player has fewer tokens than the cheapest mystery box costs', () => {
+			mysteryBoxService.playerRepository.setTokens(SOME_PLAYER.id, 99);
+
+			makeSure(mysteryBoxService.canPlayerAffordCheapestMysteryBox(SOME_PLAYER.id)).is(false);
+		});
+
+		it('returns true when the player has exactly enough tokens for the cheapest mystery box', () => {
+			mysteryBoxService.playerRepository.setTokens(SOME_PLAYER.id, 100);
+
+			makeSure(mysteryBoxService.canPlayerAffordCheapestMysteryBox(SOME_PLAYER.id)).is(true);
+		});
+
+		it('returns true when the player has more than enough tokens', () => {
+			mysteryBoxService.playerRepository.setTokens(SOME_PLAYER.id, 1000);
+
+			makeSure(mysteryBoxService.canPlayerAffordCheapestMysteryBox(SOME_PLAYER.id)).is(true);
 		});
 	});
 });

@@ -62,4 +62,74 @@ describe('TipService', () => {
 			makeSure(tipService.tipRepository.getViewCount(SOME_PLAYER.id, Tips.HOW_TO_PUBLISH_NAME.key)).is(2);
 		});
 	});
+
+	describe('resolvable support', () => {
+		it('accepts an object-form player resolvable and tip resolvable', () => {
+			tipService.incrementTipViewCountForPlayer({ id: SOME_PLAYER.id }, { key: Tips.HOW_TO_PUBLISH_NAME.key });
+
+			makeSure(tipService.shouldPlayerSeeTip({ id: SOME_PLAYER.id }, { key: Tips.HOW_TO_PUBLISH_NAME.key })).is(true);
+			makeSure(tipService.tipRepository.getViewCount(SOME_PLAYER.id, Tips.HOW_TO_PUBLISH_NAME.key)).is(1);
+		});
+	});
+
+	describe('getAndViewTipIfPlayerShouldSeeIt()', () => {
+		it('returns the tip message and increments the view count when the player should see it', () => {
+			const message = tipService.getAndViewTipIfPlayerShouldSeeIt(SOME_PLAYER.id, Tips.HOW_TO_BUY_MYSTERY_BOX.key);
+
+			makeSure(message).is(Tips.HOW_TO_BUY_MYSTERY_BOX.message);
+			makeSure(tipService.tipRepository.getViewCount(SOME_PLAYER.id, Tips.HOW_TO_BUY_MYSTERY_BOX.key)).is(1);
+		});
+
+		it('returns null and does not increment the view count once the tip is exhausted', () => {
+			for (let i = 0; i < MAX_TIP_VIEW_COUNT; i++) {
+				tipService.incrementTipViewCountForPlayer(SOME_PLAYER.id, Tips.HOW_TO_BUY_MYSTERY_BOX.key);
+			}
+
+			const message = tipService.getAndViewTipIfPlayerShouldSeeIt(SOME_PLAYER.id, Tips.HOW_TO_BUY_MYSTERY_BOX.key);
+
+			makeSure(message).is(null);
+			makeSure(tipService.tipRepository.getViewCount(SOME_PLAYER.id, Tips.HOW_TO_BUY_MYSTERY_BOX.key)).is(MAX_TIP_VIEW_COUNT);
+		});
+	});
+
+	describe('getAndViewFirstTipPlayerShouldSee()', () => {
+		it('returns the first candidate tip\'s message when it should be shown', () => {
+			const message = tipService.getAndViewFirstTipPlayerShouldSee(SOME_PLAYER.id, [
+				Tips.HOW_TO_BUY_MYSTERY_BOX.key,
+				Tips.HOW_TO_PUBLISH_NAME.key,
+			]);
+
+			makeSure(message).is(Tips.HOW_TO_BUY_MYSTERY_BOX.message);
+			makeSure(tipService.tipRepository.getViewCount(SOME_PLAYER.id, Tips.HOW_TO_BUY_MYSTERY_BOX.key)).is(1);
+			makeSure(tipService.tipRepository.getViewCount(SOME_PLAYER.id, Tips.HOW_TO_PUBLISH_NAME.key)).is(0);
+		});
+
+		it('falls through to the next candidate once the first is exhausted', () => {
+			for (let i = 0; i < MAX_TIP_VIEW_COUNT; i++) {
+				tipService.incrementTipViewCountForPlayer(SOME_PLAYER.id, Tips.HOW_TO_BUY_MYSTERY_BOX.key);
+			}
+
+			const message = tipService.getAndViewFirstTipPlayerShouldSee(SOME_PLAYER.id, [
+				Tips.HOW_TO_BUY_MYSTERY_BOX.key,
+				Tips.HOW_TO_PUBLISH_NAME.key,
+			]);
+
+			makeSure(message).is(Tips.HOW_TO_PUBLISH_NAME.message);
+			makeSure(tipService.tipRepository.getViewCount(SOME_PLAYER.id, Tips.HOW_TO_PUBLISH_NAME.key)).is(1);
+		});
+
+		it('returns null when every candidate is exhausted', () => {
+			for (let i = 0; i < MAX_TIP_VIEW_COUNT; i++) {
+				tipService.incrementTipViewCountForPlayer(SOME_PLAYER.id, Tips.HOW_TO_BUY_MYSTERY_BOX.key);
+				tipService.incrementTipViewCountForPlayer(SOME_PLAYER.id, Tips.HOW_TO_PUBLISH_NAME.key);
+			}
+
+			const message = tipService.getAndViewFirstTipPlayerShouldSee(SOME_PLAYER.id, [
+				Tips.HOW_TO_BUY_MYSTERY_BOX.key,
+				Tips.HOW_TO_PUBLISH_NAME.key,
+			]);
+
+			makeSure(message).is(null);
+		});
+	});
 });

@@ -6,7 +6,7 @@ import { joinLines } from "../../../../utilities/string-manipulation-utils";
 const NOT_A_PLAYER_TEXT = `You're not a player, so you can't toggle refill reminders.`;
 const REMINDERS_ENABLED_TEXT = joinLines(
 	`Refill reminders are now on.`, 
-	`You will be DMed here when your refill cooldown expires.`
+	`You will now be DMed when your refill cooldown expires.`
 );
 const REMINDERS_DISABLED_TEXT = joinLines(
 	`Refill reminders are now off.`, 

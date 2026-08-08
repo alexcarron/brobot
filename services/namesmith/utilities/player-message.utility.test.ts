@@ -1,5 +1,6 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
-import { getTokensEarnedFeedback, toBacktickedCharacterList, toDisplayedName, toDisplayOrderedCharacters, toTokenEmojis } from "./player-message.utility";
+import { ids } from "../../../bot-config/discord-ids";
+import { getTokensEarnedFeedback, toBacktickedCharacterList, toDisplayedName, toDisplayOrderedCharacters, toResolvedTipMessage, toTipLine, toTokenEmojis } from "./player-message.utility";
 
 describe('player-message.utility', () => {
 	describe('getTokensEarnedFeedback()', () => {
@@ -34,6 +35,45 @@ describe('player-message.utility', () => {
 			makeSure(
 				getTokensEarnedFeedback(1, { isOneLine: false })
 			).is('**+1 Token**\n🪙')
+		});
+	});
+
+	describe('toResolvedTipMessage()', () => {
+		it('replaces a channel placeholder with a live channel mention for the current environment', () => {
+			const channelID = ids.namesmith.channels.BUY_MYSTERY_BOXES;
+
+			makeSure(toResolvedTipMessage('Go to {{CHANNEL:BUY_MYSTERY_BOXES}} to buy a box.'))
+				.is(`Go to <#${channelID}> to buy a box.`);
+		});
+
+		it('replaces multiple different placeholders in the same message', () => {
+			const buyBoxesChannelID = ids.namesmith.channels.BUY_MYSTERY_BOXES;
+			const claimRefillChannelID = ids.namesmith.channels.CLAIM_REFILL;
+
+			makeSure(toResolvedTipMessage('{{CHANNEL:BUY_MYSTERY_BOXES}} and {{CHANNEL:CLAIM_REFILL}}'))
+				.is(`<#${buyBoxesChannelID}> and <#${claimRefillChannelID}>`);
+		});
+
+		it('leaves a message with no placeholders unchanged', () => {
+			makeSure(toResolvedTipMessage('No placeholders here.')).is('No placeholders here.');
+		});
+	});
+
+	describe('toTipLine()', () => {
+		it('returns null when there is no tip message', () => {
+			makeSure(toTipLine(null)).is(null);
+		});
+
+		it('formats a tip message as a subtext reply line', () => {
+			makeSure(toTipLine('You can craft characters with /craft-characters.'))
+				.is('-# You can craft characters with /craft-characters.');
+		});
+
+		it('resolves channel placeholders inside the formatted line', () => {
+			const channelID = ids.namesmith.channels.CRAFT_CHARACTERS;
+
+			makeSure(toTipLine('Craft characters in {{CHANNEL:CRAFT_CHARACTERS}}.'))
+				.is(`-# Craft characters in <#${channelID}>.`);
 		});
 	});
 

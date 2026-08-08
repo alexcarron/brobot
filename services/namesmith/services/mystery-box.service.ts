@@ -3,8 +3,10 @@ import { DatabaseQuerier } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
 import { CharacterRepository } from "../repositories/character.repository";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";
+import { PlayerRepository } from "../repositories/player.repository";
 import { Character } from "../types/character.types";
 import { MysteryBoxResolvable, MysteryBox } from "../types/mystery-box.types";
+import { PlayerResolvable } from "../types/player.types";
 
 /**
  * Provides methods for interacting with mystery boxes.
@@ -14,16 +16,19 @@ export class MysteryBoxService {
 	 * Constructs a new MysteryBoxService instance.
 	 * @param mysteryBoxRepository - The repository used for accessing mystery boxes.
 	 * @param characterRepository - The repository used for accessing characters.
+	 * @param playerRepository - The repository used for accessing players, for checking token affordability.
 	 */
 	constructor(
 		public mysteryBoxRepository: MysteryBoxRepository,
-		public characterRepository: CharacterRepository
+		public characterRepository: CharacterRepository,
+		public playerRepository: PlayerRepository,
 	) {}
 
 	static fromDB(db: DatabaseQuerier) {
 		return new MysteryBoxService(
 			MysteryBoxRepository.fromDB(db),
-			CharacterRepository.fromDB(db)
+			CharacterRepository.fromDB(db),
+			PlayerRepository.fromDB(db),
 		);
 	}
 
@@ -103,5 +108,24 @@ export class MysteryBoxService {
 
 		const characterValue = getRandomWeightedElement(characterOdds);
 		return this.characterRepository.getCharacterByValueOrThrow(characterValue);
+	}
+
+	/**
+	 * Returns the token cost of the cheapest mystery box currently available.
+	 * @returns The cost, in tokens, of the cheapest mystery box.
+	 */
+	getTokenCostOfCheapest(): number {
+		const costs = this.getMysteryBoxes().map(mysteryBox => mysteryBox.tokenCost);
+		return Math.min(...costs);
+	}
+
+	/**
+	 * Determines whether a player currently has enough tokens to afford the cheapest mystery box.
+	 * @param playerResolvable - The player to check.
+	 * @returns True if the player can afford the cheapest mystery box.
+	 */
+	canPlayerAffordCheapestMysteryBox(playerResolvable: PlayerResolvable): boolean {
+		const playerID = this.playerRepository.resolveID(playerResolvable);
+		return this.playerRepository.getTokens(playerID) >= this.getTokenCostOfCheapest();
 	}
 }

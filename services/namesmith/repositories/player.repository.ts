@@ -90,6 +90,15 @@ export class PlayerRepository {
 		return this.toPlayersFromMinimals(minimalPlayers);
 	}
 
+	/**
+	 * Returns the number of players in the game.
+	 * @returns The number of players.
+	 */
+	getPlayerCount(): number {
+		const count = this.db.getValue("SELECT COUNT(*) FROM player");
+		return Number(count);
+	}
+
 	private getMinimalPlayerByID(playerID: PlayerID): MinimalPlayer | null {
 		const row = this.db.getRow(
 			'SELECT * FROM player WHERE id = ?', playerID

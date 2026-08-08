@@ -42,12 +42,13 @@ export function forcePlayerToSeeTip(
 	timesSeen: number = 1
 ): number {
 	const { tipService, playerService } = getNamesmithServices();
-	const playerID = playerService.resolvePlayer(playerResolvable).id;
-	const tipKey = tipService.tipRepository.resolveKey(tipResolvable);
 
 	for (let timeSeen = 0; timeSeen < timesSeen; timeSeen++) {
-		tipService.incrementTipViewCountForPlayer(playerID, tipKey);
+		tipService.incrementTipViewCountForPlayer(playerResolvable, tipResolvable);
 	}
+
+	const playerID = playerService.resolveID(playerResolvable);
+	const tipKey = tipService.resolveKey(tipResolvable);
 
 	return tipService.tipRepository.getViewCount(playerID, tipKey);
 }

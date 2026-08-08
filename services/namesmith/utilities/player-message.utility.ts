@@ -35,6 +35,47 @@ export function getHowToEarnMoreTokensHint({ hasHiddenQuestsUnlocked }: { hasHid
 	return `-# ${toListOfWords(channelMentions)} to get more`;
 }
 
+const CHANNEL_PLACEHOLDER_PATTERN = /\{\{CHANNEL:(\w+)\}\}/g;
+
+/**
+ * Replaces `{{CHANNEL:KEY}}` placeholders in a tip message with a channel id for the current
+ * environment.
+ * @param rawMessage - The tip message, possibly containing channel placeholders.
+ * @returns The message with every placeholder replaced by a `<#channelID>` mention.
+ */
+export function toResolvedTipMessage(rawMessage: string): string {
+	return rawMessage.replace(CHANNEL_PLACEHOLDER_PATTERN, (_match, channelKey: string) => {
+		if (!(channelKey in ids.namesmith.channels)) {
+			throw new Error(`Invalid channel key "${channelKey}" in tip message: ${rawMessage}`);
+		}
+		
+		const channelID = ids.namesmith.channels[channelKey as keyof typeof ids.namesmith.channels];
+		return `<#${channelID}>`;
+	});
+}
+
+/**
+ * Formats a tip's message as a reply line, or returns null if there's no tip to show.
+ * @param tipMessage - The tip's message, or null if the player shouldn't be shown a tip.
+ * @returns The formatted tip line, or null.
+ * @example
+ * toTipLine('You can craft characters with /craft-characters.') // "-# You can craft characters with /craft-characters."
+ * toTipLine(null) // null
+ */
+export function toTipLine(tipMessage: string | null): string | null {
+	return tipMessage !== null ? `-# ${toResolvedTipMessage(tipMessage)}` : null;
+}
+
+/**
+ * Builds a message telling a player how many tokens they earned, optionally in one line or multiple lines.
+ * @param numTokensEarned - The number of tokens the player earned.
+ * @param options - Options for formatting the message.
+ * @param options.isOneLine - Whether the message should be formatted in one line or multiple lines.
+ * @returns The formatted message telling the player how many tokens they earned.
+ * @example
+ * getTokensEarnedFeedback(3, { isOneLine: true }) // "**+3 Tokens** 🪙🪙🪙"
+ * getTokensEarnedFeedback(10) // "**+10 Tokens**\n🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙"
+ */
 export function getTokensEarnedFeedback(
 	numTokensEarned: number,
 	options: {
@@ -68,6 +109,13 @@ export function toDisplayedDollars(amount: number): string {
 	return `$${toReadableNumber(amount)}`;
 }
 
+/**
+ * Converts a number of tokens into a string of token emojis
+ * @param numTokens - The number of tokens to convert into emojis.
+ * @returns A string of token emojis representing the given number of tokens
+ * @example
+ * toTokenEmojis(3) // "🪙🪙🪙"
+ */
 export function toTokenEmojis(numTokens: number) {
 	const MAX_TOKEN_EMOJIS = 500;
 	const MAX_MONEY_BAG_EMOJIS = 250;

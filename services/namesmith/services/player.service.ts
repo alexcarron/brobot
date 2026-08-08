@@ -64,6 +64,14 @@ export class PlayerService {
 	}
 
 	/**
+	 * Retrieves the number of players in the game.
+	 * @returns The number of players.
+	 */
+	getPlayerCount(): number {
+		return this.playerRepository.getPlayerCount();
+	}
+
+	/**
 	 * Retrieves all players with the given name.
 	 * @param name - The name to search for.
 	 * @returns An array of players with the given name.

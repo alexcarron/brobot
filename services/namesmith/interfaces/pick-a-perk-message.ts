@@ -8,8 +8,10 @@ import { DiscordButtons } from "../../../utilities/discord-interfaces/discord-bu
 import { DiscordButtonDefinition } from '../../../utilities/discord-interfaces/discord-button';
 import { ignoreError } from "../../../utilities/error-utils";
 import { getNamesmithServices } from "../services/get-namesmith-services";
+import { Tips } from "../constants/tips.constants";
+import { TipResolvable } from "../types/tip.types";
 import { sortByAscendingProperty } from "../../../utilities/data-structure-utils";
-import { getPingForAllPlayers, getTokensEarnedFeedback } from "../utilities/player-message.utility";
+import { getPingForAllPlayers, getTokensEarnedFeedback, toTipLine } from "../utilities/player-message.utility";
 import { confirmInteraction } from "../../../utilities/discord-interfaces/discord-interface-utils";
 
 /**
@@ -108,22 +110,39 @@ export function toPerkButton(
 						? `**-${toAmountOfNoun(-freeTokensEarned, 'Token')}**`
 						: null;
 
-					if (freeTokensEarned > 0)
+					const { tipService, mysteryBoxService } = getNamesmithServices();
+
+					if (freeTokensEarned > 0) {
+						const tipCandidates: TipResolvable[] = [];
+						if (mysteryBoxService.canPlayerAffordCheapestMysteryBox(confirmationInteraction.user.id))
+							tipCandidates.push(Tips.HOW_TO_BUY_MYSTERY_BOX.key);
+						tipCandidates.push(Tips.HOW_TO_SEE_PERKS.key);
+
+						const tipMessage = tipService.getAndViewFirstTipPlayerShouldSee(confirmationInteraction.user.id, tipCandidates);
+						const tipLine = toTipLine(tipMessage);
+
 						return await confirmationInteraction.update({
 							content: joinLines(
 								`You now have the "${perk.name}" perk!`,
-								getTokensEarnedFeedback(freeTokensEarned)
+								getTokensEarnedFeedback(freeTokensEarned),
+								tipLine,
 							),
 							components: [],
 						});
-					else
+					}
+					else {
+						const tipMessage = tipService.getAndViewTipIfPlayerShouldSeeIt(confirmationInteraction.user.id, Tips.HOW_TO_SEE_PERKS.key);
+						const tipLine = toTipLine(tipMessage);
+
 						return await confirmationInteraction.update({
 							content: joinLines(
 								lostTokensLine,
-								`You now have the "${perk.name}" perk!`
+								`You now have the "${perk.name}" perk!`,
+								tipLine,
 							),
 							components: [],
 						});
+					}
 				}
 			});
 		},
