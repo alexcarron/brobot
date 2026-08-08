@@ -12,6 +12,7 @@ import { PublishedNameID } from '../types/published-name.types';
 import { QuestID, QuestName } from '../types/quest.types';
 import { Recipe, RecipeID } from '../types/recipe.types';
 import { RoleID, RoleName } from '../types/role.types';
+import { TipKey } from '../types/tip.types';
 import { Trade, TradeID, TradeResolvable } from '../types/trade.types';
 import { Rank, VoteID } from '../types/vote.types';
 import { DayID } from '../types/day.types';
@@ -221,6 +222,21 @@ export class PerkNotFoundError extends ResourceNotFoundError {
 }
 
 /**
+ * Error thrown when a requested namesmith tip is not found.
+ */
+export class TipNotFoundError extends ResourceNotFoundError {
+	declare relevantData: {
+		tipKey?: TipKey
+	}
+	constructor(tipKey: TipKey) {
+		super({
+			message: `Tip with key "${tipKey}" not found.`,
+			relevantData: { tipKey }
+		})
+	}
+}
+
+/**
  * Error thrown when a requested namesmith role is not found.
  */
 export class RoleNotFoundError extends ResourceNotFoundError {
@@ -400,6 +416,22 @@ export class PerkAlreadyExistsError extends ResourceAlreadyExistsError {
 				relevantData: { perkName: perkIDOrName }
 			})
 		}
+	}
+}
+
+/**
+ * Error thrown when a namesmith tip already exists.
+ */
+export class TipAlreadyExistsError extends ResourceAlreadyExistsError {
+	declare relevantData: {
+		tipKey?: TipKey
+	}
+
+	constructor(tipKey: TipKey) {
+		super({
+			message: `Cannot add tip. Tip with key "${tipKey}" already exists.`,
+			relevantData: { tipKey }
+		})
 	}
 }
 

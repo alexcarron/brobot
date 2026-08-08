@@ -11,6 +11,8 @@ import { syncRecipesToDB } from '../static-data-synchronizers/sync-recipes';
 import { syncRolesToDB } from '../static-data-synchronizers/sync-roles';
 import { syncQuestsToDB } from '../static-data-synchronizers/sync-quests';
 import { quests } from './quests';
+import { syncTipsToDB } from '../static-data-synchronizers/sync-tips';
+import { tips } from './tips';
 
 /**
  * Adds the initial data to the database.
@@ -26,4 +28,5 @@ export const addInitialDataToDB = (db: DatabaseQuerier) => {
 	syncPerksToDB(db, perks);
 	syncRolesToDB(db, roles);
 	syncQuestsToDB(db, quests);
+	syncTipsToDB(db, tips);
 }

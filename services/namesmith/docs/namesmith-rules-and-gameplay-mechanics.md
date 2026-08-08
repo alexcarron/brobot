@@ -1,6 +1,9 @@
 # Namesmith Rules and Gameplay Mechanics
+
+Don't want to read the rules? Instantly get started by running `/mine-tokens` in #mine-tokens.
+
 ## Objective
-In Namesmith, your goal is to create the most liked, clever, or creative name possible using the limited set of characters you receive from mystery boxes, crafting, trades, roles, perks, and quests. Your name will be judged by all other players at the end of the month, and the player whose name receives the most votes wins 100 LL Points!
+In Namesmith, your goal is to create the most liked, clever, or creative name possible using the limited set of characters you receive from mystery boxes, crafting, trades, roles, perks, and quests. Your name will be judged by all other players at the end of the month, and the player whose name receives the most votes wins 100 LL Points! Each game also has a theme that is announced when the game starts which you should try to have your name relate to.
 
 # Things You Have
 1. **Inventory**: All of the different characters (letters, numbers, symbols, etc.) that you currently own. This can hold an infinite number of characters. (Use `/see-inventory` to see your own or a given player's current inventory)
@@ -12,7 +15,7 @@ In Namesmith, your goal is to create the most liked, clever, or creative name po
 
 # Earning Tokens
 1. **Mining Tokens**: You can run `/mine-tokens` in #mine-tokens to earn a small amount of tokens. You can spam this as many times as you want since there's no cooldown or limit. It typically awards 1-2 tokens.
-2. **Claiming Refills**: You can run `/claim-refill` in #claim-refill every 2 hours to earn a decent amount of tokens periodically. It typically awards 50-100 tokens, but can vary wildly.
+2. **Claiming Refills**: You can run `/claim-refill` in #claim-refill every 2 hours to earn a decent amount of tokens periodically. It typically awards 50-100 tokens, but can vary wildly. You can also turn on refill reminders to get a direct message when your next refill is ready, using the toggle button on your refill reply or the `/toggle-refill-reminders` command.
 3. **Complete Quests**: You can complete quests listed in #daily-quests and #weekly-quests to receive rewards, which can include tokens, characters, mystery boxes, or perks. Once you complete all daily quests, you will unlock hidden quests in #hidden-quests which give you larger rewards
 
 # Getting Characters

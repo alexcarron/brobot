@@ -49,6 +49,11 @@ CREATE TABLE IF NOT EXISTS rolePerk (
 	PRIMARY KEY (roleID, perkID)
 );
 
+CREATE TABLE IF NOT EXISTS tip (
+	key TEXT PRIMARY KEY,
+	message TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS player (
 	id TEXT PRIMARY KEY, -- The Discord ID of the user
 	currentName TEXT NOT NULL CHECK (LENGTH(currentName) <= 32),
@@ -72,6 +77,15 @@ CREATE TABLE IF NOT EXISTS playerPerk (
 	perkID INTEGER NOT NULL REFERENCES perk(id)
 		ON DELETE CASCADE ON UPDATE CASCADE,
 	PRIMARY KEY (playerID, perkID)
+);
+
+CREATE TABLE IF NOT EXISTS playerTipViewCount (
+	playerID TEXT NOT NULL REFERENCES player(id)
+		ON DELETE CASCADE ON UPDATE CASCADE,
+	tipKey TEXT NOT NULL REFERENCES tip(key)
+		ON DELETE CASCADE ON UPDATE CASCADE,
+	viewCount INTEGER NOT NULL DEFAULT 0,
+	PRIMARY KEY (playerID, tipKey)
 );
 
 CREATE TABLE IF NOT EXISTS publishedName (
@@ -205,6 +219,9 @@ CREATE INDEX IF NOT EXISTS player_role_index ON player(role);
 -- Player Perks
 CREATE INDEX IF NOT EXISTS playerPerk_playerID_index ON playerPerk(playerID);
 CREATE INDEX IF NOT EXISTS playerPerk_perkID_index ON playerPerk(perkID);
+
+-- Player Tip View Counts
+CREATE INDEX IF NOT EXISTS playerTipViewCount_playerID_index ON playerTipViewCount(playerID);
 
 -- Published Names
 CREATE INDEX IF NOT EXISTS publishedName_playerID_index ON publishedName(playerID);
