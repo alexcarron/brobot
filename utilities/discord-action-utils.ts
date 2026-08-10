@@ -752,9 +752,12 @@ export async function changePermissionOnChannel(
 /**
  * Opens a Discord channel to allow everyone to view it but not send messages.
  * @param channel - The channel to be opened for viewing.
+ * @param options - Options for opening the channel.
+ * @param options.isReadOnly - Whether to deny @everyone the ability to send messages in the channel. Defaults to false.
  */
-export async function openChannel(channel: TextChannel): Promise<void> {
+export async function openChannel(channel: TextChannel, options: { isReadOnly?: boolean } = {}): Promise<void> {
 	const everyoneRole = getEveryoneRole(channel.guild);
+	const isReadOnly = options?.isReadOnly ?? false;
 
 	await changePermissionOnChannel({
 		channel: channel,
@@ -762,7 +765,7 @@ export async function openChannel(channel: TextChannel): Promise<void> {
 		// @ts-ignore
 		unsetPermissions: [PermissionFlagsBits.ViewChannel],
 		// @ts-ignore
-		deniedPermissions: [PermissionFlagsBits.SendMessages],
+		deniedPermissions: isReadOnly ? [PermissionFlagsBits.SendMessages] : undefined,
 	});
 }
 

@@ -1,9 +1,11 @@
 import { ids } from "../../bot-config/discord-ids";
 import { SlashCommand } from "../../services/command-creation/slash-command";
+import { Tips } from "../../services/namesmith/constants/tips.constants";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
-import { getTokensEarnedFeedback } from "../../services/namesmith/utilities/player-message.utility";
+import { TipResolvable } from "../../services/namesmith/types/tip.types";
+import { getTokensEarnedFeedback, toTipLine } from "../../services/namesmith/utilities/player-message.utility";
 import { mineTokens } from "../../services/namesmith/workflows/mine-tokens.workflow";
-import { toAmountOfNoun } from "../../utilities/string-manipulation-utils";
+import { joinLines, toAmountOfNoun } from "../../utilities/string-manipulation-utils";
 
 export const command = new SlashCommand({
 	name: "mine-tokens",
@@ -11,6 +13,8 @@ export const command = new SlashCommand({
 	required_servers: [ids.servers.NAMESMITH],
 	required_channels: [ids.namesmith.channels.MINE_TOKENS],
 	execute: function execute(interaction) {
+		const { tipService, playerService, mysteryBoxService } = getNamesmithServices();
+
 		const result = mineTokens({
 			...getNamesmithServices(),
 			playerMining: interaction.user.id,
@@ -21,18 +25,35 @@ export const command = new SlashCommand({
 
 		const { tokensEarned, newTokenCount, hasMineBonusPerk } = result;
 
-		let baseMessage = getTokensEarnedFeedback(tokensEarned, {isOneLine: true}) + `\n`
+		let baseMessage = getTokensEarnedFeedback(tokensEarned, {isOneLine: true});
 
 		if (hasMineBonusPerk) {
 			const baseTokensEarned = tokensEarned - 1;
 			baseMessage =
 				getTokensEarnedFeedback(baseTokensEarned, {isOneLine: true}) + `\n` +
-				'+1 Bonus Token 🪙\n';
+				'+1 Bonus Token 🪙';
 		}
 
-		return (
-			baseMessage +
-			`-# You now have ${toAmountOfNoun(newTokenCount, 'token')}\n`
+		const possibleTipKeys: TipResolvable[] = [];
+
+		const canAffordCheapestMysteryBox = mysteryBoxService.canPlayerAffordCheapestMysteryBox(interaction.user.id);
+		if (canAffordCheapestMysteryBox)
+			possibleTipKeys.push(Tips.HOW_TO_BUY_MYSTERY_BOX.key);
+
+		const hasNeverClaimedRefill = playerService.getLastClaimedRefillTime(interaction.user.id) === null;
+		if (hasNeverClaimedRefill)
+			possibleTipKeys.push(Tips.HOW_TO_CLAIM_REFILL_FOR_MORE_TOKENS.key);
+
+		if (!canAffordCheapestMysteryBox)
+			possibleTipKeys.push(Tips.HOW_TO_EARN_MORE_WITH_QUESTS.key);
+
+		const tipMessage = tipService.getAndViewFirstTipPlayerShouldSee(interaction.user.id, possibleTipKeys);
+		const tipLine = toTipLine(tipMessage);
+
+		return joinLines(
+			baseMessage,
+			`-# You now have ${toAmountOfNoun(newTokenCount, 'token')}`,
+			tipLine,
 		);
 	}
 });

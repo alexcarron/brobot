@@ -3,7 +3,9 @@ import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getInputFromCreatedTextModal, addButtonToMessageContents, waitForButtonPressThen, removeComponentsFromInteractionMessage } from "../../utilities/discord-action-utils";
 import { getCharacterDifferences } from "../../utilities/data-structure-utils";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
-import { toDisplayedName, toDisplayOrderedCharacters } from "../../services/namesmith/utilities/player-message.utility";
+import { Tips } from "../../services/namesmith/constants/tips.constants";
+import { toDisplayedName, toDisplayOrderedCharacters, toTipLine } from "../../services/namesmith/utilities/player-message.utility";
+import { joinLines } from "../../utilities/string-manipulation-utils";
 import { MessageFlags } from "discord.js";
 
 export const command = new SlashCommand({
@@ -17,7 +19,7 @@ export const command = new SlashCommand({
 	execute: async function execute(interaction) {
 		const playerID = interaction.user.id;
 
-		const { playerService, activityLogService } = getNamesmithServices();
+		const { playerService, activityLogService, tipService } = getNamesmithServices();
 		const currentName = playerService.getCurrentName(playerID);
 		const inventory = playerService.getInventory(playerID);
 
@@ -88,9 +90,15 @@ export const command = new SlashCommand({
 			successMessage += `\nYou still have the following unused characters in your inventory:\n> ${toDisplayOrderedCharacters(unusedCharacters)}`;
 		}
 
+		const tipMessage = tipService.getAndViewTipIfPlayerShouldSeeIt(playerID, Tips.HOW_TO_PUBLISH_NAME.key);
+		const tipLine = toTipLine(tipMessage);
+
 		if (interaction.isRepliable()) {
 			await interaction.followUp({
-				content: successMessage,
+				content: joinLines(
+					successMessage, 
+					tipLine
+				),
 				flags: MessageFlags.Ephemeral,
 			});
 		}

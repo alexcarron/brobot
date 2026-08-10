@@ -3,7 +3,10 @@ import { Parameter, ParameterTypes } from "../../services/command-creation/param
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { Perks } from "../../services/namesmith/constants/perks.constants";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
-import { getHowToEarnMoreTokensHint, toDisplayedDollars, toDisplayOrderedCharacters, toTokenEmojis as toTokenEmojis } from "../../services/namesmith/utilities/player-message.utility";
+import { Tips } from "../../services/namesmith/constants/tips.constants";
+import { hasUtilityCharacter } from "../../services/namesmith/utilities/character.utility";
+import { TipResolvable } from "../../services/namesmith/types/tip.types";
+import { getHowToEarnMoreTokensHint, toDisplayedDollars, toDisplayOrderedCharacters, toTipLine, toTokenEmojis as toTokenEmojis } from "../../services/namesmith/utilities/player-message.utility";
 import { getMysteryBoxCharacterPreview, getStaticMysteryBox, getStaticMysteryBoxes } from "../../services/namesmith/utilities/mystery-box.utility";
 import { MAX_AUTOCOMPLETE_OPTION_NAME_LENGTH } from "../../services/command-creation/autocomplete-utils";
 import { buyMysteryBox } from "../../services/namesmith/workflows/buy-mystery-box.workflow";
@@ -116,7 +119,7 @@ export const command = new SlashCommand({
 		Parameters.AMOUNT
 	],
 	required_servers: [ids.servers.NAMESMITH],
-	required_channels: [ids.namesmith.channels.OPEN_MYSTERY_BOXES],
+	required_channels: [ids.namesmith.channels.BUY_MYSTERY_BOXES],
 	execute: async function execute(interaction, {mysteryBox: mysteryBoxIDString, amount: amountString}) {
 		let amount: number = 1;
 		if (amountString !== undefined && Number.isFinite(parseInt(amountString))) {
@@ -125,7 +128,7 @@ export const command = new SlashCommand({
 
 		const mysteryBoxID = parseInt(mysteryBoxIDString);
 		
-		const {mysteryBoxService, playerService, perkService, questService} = getNamesmithServices();
+		const {mysteryBoxService, playerService, perkService, questService, tipService} = getNamesmithServices();
 		let mysteryBoxCost = mysteryBoxService.getCost(mysteryBoxID);
 		perkService.doIfPlayerHas(Perks.DISCOUNT, interaction.user.id, () => {
 			mysteryBoxCost = Math.ceil(mysteryBoxCost * 0.9);
@@ -208,7 +211,18 @@ export const command = new SlashCommand({
 					''
 				)
 				: null;
-	
+
+			const tipCandidates: TipResolvable[] = [Tips.HOW_TO_REARRANGE_NAME.key];
+			
+			if (hasUtilityCharacter(recievedCharacterValues))
+				tipCandidates.push(Tips.HOW_TO_CRAFT_CHARACTERS.key);
+			
+			if (playerService.getPlayerCount() >= 2)
+				tipCandidates.push(Tips.HOW_TO_TRADE.key);
+
+			const tipMessage = tipService.getAndViewFirstTipPlayerShouldSee(interaction.user.id, tipCandidates);
+			const tipLine = toTipLine(tipMessage);
+
 			await addReplyToInteraction(interaction,
 				`You opened a ${mysteryBox.name} mystery box and received:`,
 				`\`\`\`${recievedCharacterValues}\`\`\``,
@@ -217,6 +231,7 @@ export const command = new SlashCommand({
 				luckyRefundLine,
 				`-# You now have ${toAmountOfNoun(newTokenCount, 'token')}`,
 				`-# Your inventory now contains: ${displayedNewInventory}`,
+				tipLine,
 			);
 		}
 	}

@@ -1,8 +1,9 @@
 import { ids } from "../../bot-config/discord-ids";
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { MAX_PUBLISHED_NAME_SLOTS_PER_PLAYER } from "../../services/namesmith/constants/name-publishing.constants";
+import { Tips } from "../../services/namesmith/constants/tips.constants";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
-import { getHowToEarnMoreTokensHint, toDisplayedName } from "../../services/namesmith/utilities/player-message.utility";
+import { getHowToEarnMoreTokensHint, toDisplayedName, toTipLine } from "../../services/namesmith/utilities/player-message.utility";
 import { publishName } from "../../services/namesmith/workflows/publish-name.workflow";
 import { addReplyToInteraction, confirmInteractionWithButtons } from "../../utilities/discord-action-utils";
 import { addSIfPlural, joinLines, toAmountOfNoun, toNumericOrdinal, toReadableNumber } from "../../utilities/string-manipulation-utils";
@@ -12,7 +13,7 @@ export const command = new SlashCommand({
 	description: "Publishes your current name to eventually be automatically submitted for voting",
 	required_servers: [ids.servers.NAMESMITH],
 	execute: async function execute(interaction) {
-		const { playerService, publishedNameService, questService } = getNamesmithServices();
+		const { playerService, publishedNameService, questService, tipService } = getNamesmithServices();
 
 		const playerID = interaction.user.id;
 
@@ -28,15 +29,15 @@ export const command = new SlashCommand({
 
 		const isFree = (nextPublishedNameCost === null || nextPublishedNameCost === 0);
 		const costLine = isFree 
-			? "This will not cost any tokens."
-			: `This will cost you **${toAmountOfNoun(nextPublishedNameCost, 'token')}**.`;
+			? "This will not cost any tokens, but it will permanently take up your first published name slot."
+			: `This will cost you **${toAmountOfNoun(nextPublishedNameCost, 'token')}** and permanently take up your ${toNumericOrdinal(nextPublishedNameSlotNumber)} published name slot.`;
 
 		const didConfirmAction = await confirmInteractionWithButtons({
 			interaction,
 			message: joinLines(
 				`Are you sure you want to publish your current name, ${toDisplayedName(currentName)}, as your ${toNumericOrdinal(nextPublishedNameSlotNumber)} published name?`,
-				`-# This will remove those characters from your inventory and leave your current name empty.`,
 				costLine,
+				`-# This will remove the characters in your name from your inventory and leave your current name empty.`,
 				`-# You have ${toAmountOfNoun(availableSlots, 'available published name slot')} remaining.`,
 				isFree ? null : `-# You have ${toAmountOfNoun(tokensOwned, 'token')}.`,
 			),
@@ -96,11 +97,15 @@ export const command = new SlashCommand({
 			];
 		}
 
+		const tipMessage = tipService.getAndViewTipIfPlayerShouldSeeIt(playerID, Tips.WHAT_IS_THE_PUBLISH_CAP_AND_COST.key);
+		const tipLine = toTipLine(tipMessage);
+
 		return await addReplyToInteraction(interaction,
 			`Your current name was published as your ${toNumericOrdinal(slotNumber)} published name:`,
 			`> ${toDisplayedName(currentName)}`,
 			`-# Its characters were removed from your inventory. Your current name is now empty.`,
 			spentLine,
+			tipLine,
 		);
 	},
 });

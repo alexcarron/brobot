@@ -3,10 +3,14 @@ import { Parameter, ParameterTypes } from "../../services/command-creation/param
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { RecipeService } from "../../services/namesmith/services/recipe.service";
+import { Tips } from "../../services/namesmith/constants/tips.constants";
 import { PlayerID } from "../../services/namesmith/types/player.types";
 import { Recipe, RecipeID } from "../../services/namesmith/types/recipe.types";
+import { TipResolvable } from "../../services/namesmith/types/tip.types";
 import { craftCharacters } from "../../services/namesmith/workflows/craft-characters.workflow";
+import { toTipLine } from "../../services/namesmith/utilities/player-message.utility";
 import { isIntegerString } from "../../utilities/string-checks-utils";
+import { joinLines } from "../../utilities/string-manipulation-utils";
 
 /**
  * Returns the display string for a recipe option in the autocomplete menu.
@@ -193,6 +197,8 @@ export const command = new SlashCommand({
 			return 'You must select a recipe from the autocomplete options to successfully craft characters.';
 		}
 
+		const { playerService, tipService } = getNamesmithServices();
+
 		const result = await craftCharacters({
 			...getNamesmithServices(),
 			player: interaction.user.id,
@@ -209,9 +215,18 @@ export const command = new SlashCommand({
 
 		const {newInventory, craftedCharacters, recipeUsed} = result;
 
-		return (
-			`Successfully crafted ${craftedCharacters} using ${recipeUsed.inputCharacters}\n` +
-			`Your inventory now contains ${newInventory}`
+		const tipCandidates: TipResolvable[] = [];
+		
+		if (playerService.getPlayerCount() >= 2)
+			tipCandidates.push(Tips.HOW_TO_TRADE.key);
+		
+		const tipMessage = tipService.getAndViewFirstTipPlayerShouldSee(interaction.user.id, tipCandidates);
+		const tipLine = toTipLine(tipMessage);
+
+		return joinLines(
+			`Successfully crafted ${craftedCharacters} using ${recipeUsed.inputCharacters}`,
+			`Your inventory now contains ${newInventory}`,
+			tipLine,
 		);
 	}
 });

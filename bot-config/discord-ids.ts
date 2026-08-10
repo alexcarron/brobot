@@ -273,7 +273,7 @@ export const ids = {
 			}
 		},
 		channels: {
-			get OPEN_MYSTERY_BOXES() {
+			get BUY_MYSTERY_BOXES() {
 				return chooseByEnv({
 					development: "1386449685497254137",
 					production: "1384680717879087156",
