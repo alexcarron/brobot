@@ -3,7 +3,7 @@
 Don't want to read the rules? Instantly get started by running `/mine-tokens` in #mine-tokens.
 
 ## Objective
-In Namesmith, your goal is to create the most liked, clever, or creative name possible using the limited set of characters you receive from mystery boxes, crafting, trades, roles, perks, and quests. Your name will be judged by all other players at the end of the month, and the player whose name receives the most votes wins 100 LL Points! Each game also has a theme that is announced when the game starts which you should try to have your name relate to.
+In Namesmith, your goal is to create the most liked, clever, or creative name possible using the limited set of characters you receive from mystery boxes, crafting, trades, roles, perks, and quests. Your name will be judged by all other players at the end of the game, and the player whose name receives the most votes wins 100 LL Points! Each game also has a theme that is announced when the game starts which you should try to have your name relate to.
 
 # Things You Have
 1. **Inventory**: All of the different characters (letters, numbers, symbols, etc.) that you currently own. This can hold an infinite number of characters. (Use `/see-inventory` to see your own or a given player's current inventory)

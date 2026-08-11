@@ -4,6 +4,8 @@ import { getWorkflowResultCreator, provides } from '../workflow-result-creator';
 import { getCharacterDifferences } from '../../../../utilities/data-structure-utils';
 import { getNamesmithServices } from '../../services/get-namesmith-services';
 import { NamesmithError } from '../../utilities/error.utility';
+import { telemetry } from '../../telemetry/telemetry';
+import { EventType } from '../../telemetry/telemetry-event.types';
 
 const result = getWorkflowResultCreator({
 	success: provides<{
@@ -117,6 +119,13 @@ export const acceptTrade = (
 		playerAwaitingResponse: playerAwaitingAcceptance,
 		trade,
 		nameBefore: acceptingPlayerNameBefore,
+	});
+
+	telemetry.track({
+		eventType: EventType.TRADE_RESPONDED,
+		playerID: playerAccepting.id,
+		tradeID: trade.id,
+		outcome: "accepted",
 	});
 
 	return result.success({

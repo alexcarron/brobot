@@ -1,4 +1,6 @@
 import { sendRefillReminderDM } from '../interfaces/refill-reminders/refill-reminder-message';
+import { telemetry } from '../telemetry/telemetry';
+import { EventType } from '../telemetry/telemetry-event.types';
 import { NamesmithEvents, RelevantDataOf } from './namesmith-events';
 
 /**
@@ -10,4 +12,5 @@ export async function onRefillReminder(
 	{ playerID }: RelevantDataOf<typeof NamesmithEvents.RefillReminder>
 ) {
 	await sendRefillReminderDM(playerID);
+	telemetry.track({ eventType: EventType.REMINDER_SENT, playerID, reminderKind: "refillReady" });
 }

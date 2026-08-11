@@ -4,6 +4,8 @@ import { getNamesmithServices } from "../services/get-namesmith-services";
 import { MinimalMysteryBox, MysteryBoxResolvable } from '../types/mystery-box.types';
 import { Player, PlayerResolvable } from "../types/player.types";
 import { getWorkflowResultCreator, provides } from "./workflow-result-creator";
+import { telemetry } from "../telemetry/telemetry";
+import { EventType } from "../telemetry/telemetry-event.types";
 
 const result = getWorkflowResultCreator({
 	success: provides<{
@@ -68,6 +70,14 @@ export const buyMysteryBox = (
 		const mysteryBox = mysteryBoxService.resolveMysteryBox(mysteryBoxResolvable);
 		const player = playerService.resolvePlayer(playerResolvable);
 
+		telemetry.track({
+			eventType: EventType.ACTION_BLOCKED,
+			playerID: playerService.resolveID(playerResolvable),
+			blockedAction: "buyMysteryBox",
+			blockReason: "insufficientTokens",
+			tokensShortBy: tokenCost - player.tokens,
+		});
+
 		return result.failure.playerCantAffordMysteryBox({
 			mysteryBoxName: mysteryBox.name,
 			tokensNeeded: tokenCost - player.tokens,
@@ -104,6 +114,7 @@ export const buyMysteryBox = (
 	});
 
 	const nameBefore = playerService.getCurrentName(playerResolvable);
+	const wasDuplicate = playerService.hasCharacters(playerResolvable, characterValue);
 	playerService.giveCharacters(playerResolvable, receivedCharacterValues);
 
 	// Handle Lucky Refund perk
@@ -121,6 +132,14 @@ export const buyMysteryBox = (
 		tokensSpent: wasRefunded ? 0 : tokenCost,
 		nameBefore,
 		receivedCharacters: receivedCharacterValues,
+	});
+
+	telemetry.track({
+		eventType: EventType.BOX_OPENED,
+		playerID: playerService.resolveID(playerResolvable),
+		mysteryBoxID: mysteryBoxService.resolveMysteryBox(mysteryBoxResolvable).id,
+		characterReceived: characterValue,
+		wasDuplicate,
 	});
 
 	return result.success({

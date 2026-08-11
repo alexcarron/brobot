@@ -4,6 +4,9 @@ import { PlayerService } from "../../services/player.service";
 import { Player, PlayerResolvable } from "../../types/player.types"
 import { Trade } from "../../types/trade.types";
 import { getWorkflowResultCreator, provides } from "../workflow-result-creator";
+import { telemetry } from "../../telemetry/telemetry";
+import { EventType } from "../../telemetry/telemetry-event.types";
+import { getCharacters } from "../../../../utilities/string-checks-utils";
 
 const result = getWorkflowResultCreator({
 	success: provides<{
@@ -88,6 +91,14 @@ export const initiateTrade = (
 		playerInitiatingTrade: initiatingPlayer,
 		recipientPlayer: recipientPlayer,
 		trade
+	});
+
+	telemetry.track({
+		eventType: EventType.TRADE_INITIATED,
+		playerID: playerService.resolveID(initiatingPlayer),
+		tradeID: trade.id,
+		offeredCharacterCount: getCharacters(offeredCharacters).length,
+		requestedCharacterCount: getCharacters(requestedCharacters).length,
 	});
 
 	return result.success({

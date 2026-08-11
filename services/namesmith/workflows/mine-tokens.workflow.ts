@@ -11,6 +11,9 @@ import {
 	isCharacterDiscoveredAtLayer,
 } from "../utilities/mine-tokens.utility";
 import { getWorkflowResultCreator, provides } from "./workflow-result-creator";
+import { telemetry } from "../telemetry/telemetry";
+import { EventType } from "../telemetry/telemetry-event.types";
+import { getRandomUUID } from "../../../utilities/random-utils";
 
 const result = getWorkflowResultCreator({
 	success: provides<{
@@ -31,6 +34,7 @@ const result = getWorkflowResultCreator({
  * Performs a single mine in a player's mining session.
  * @param params - The parameters for the function.
  * @param params.player The player who is mining.
+ * @param params.miningSessionID The id of the mining session this mine belongs to, defaulting to a new session.
  * @param params.currentLayerNumber The layer this mine lands on (e.g. 1 for the first mine).
  * @param params.tokensMinedThisSession The tokens the player has mined so far this mining session.
  * @param params.tokenGainedOverride The number of tokens to give the player on a non-collapsing mine, overriding the randomized value.
@@ -38,8 +42,9 @@ const result = getWorkflowResultCreator({
  * - notAPlayer failure object if the provided player is not a valid player.
  */
 export const mineOneLayer = (
-	{ player, currentLayerNumber, tokensMinedThisSession, tokenGainedOverride }: {
+	{ player, miningSessionID = getRandomUUID(), currentLayerNumber, tokensMinedThisSession, tokenGainedOverride }: {
 		player: PlayerResolvable,
+		miningSessionID?: string,
 		currentLayerNumber: number,
 		tokensMinedThisSession: number,
 		tokenGainedOverride?: number,
@@ -50,6 +55,10 @@ export const mineOneLayer = (
 	if (!playerService.isPlayer(player)) {
 		return result.failure.notAPlayer();
 	}
+
+	const playerID = playerService.resolveID(player);
+	if (currentLayerNumber === 1)
+		telemetry.track({ eventType: EventType.MINE_SESSION_STARTED, playerID, miningSessionID });
 
 	const hasMineBonusPerk = perkService.doesPlayerHave(Perks.MINE_BONUS, player);
 
@@ -63,6 +72,16 @@ export const mineOneLayer = (
 			playerMining: player,
 			tokensEarned: -tokensLost,
 			numLayersDeep: currentLayerNumber,
+		});
+
+		telemetry.track({
+			eventType: EventType.MINE_SESSION_ENDED,
+			playerID,
+			miningSessionID,
+			layersDug: currentLayerNumber - 1,
+			outcome: "collapsed",
+			tokensKept: tokensKeptAfterCollapse,
+			tokensLostToCollapse: tokensLost,
 		});
 
 		return result.success({
@@ -108,6 +127,15 @@ export const mineOneLayer = (
 		tokensEarned: tokensGained,
 		charactersGained: characterDiscovered ?? undefined,
 		numLayersDeep: currentLayerNumber,
+	});
+
+	telemetry.track({
+		eventType: EventType.MINE_LAYER,
+		playerID,
+		miningSessionID,
+		layerNumber: currentLayerNumber,
+		tokensGained,
+		characterGained: characterDiscovered,
 	});
 
 	const newTokenCount = playerService.getTokens(player);

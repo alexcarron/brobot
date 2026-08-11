@@ -2,6 +2,8 @@ import { Trade, TradeResolvable, TradeStatuses } from '../../types/trade.types';
 import { Player, PlayerResolvable } from '../../types/player.types';
 import { getWorkflowResultCreator, provides } from '../workflow-result-creator';
 import { getNamesmithServices } from '../../services/get-namesmith-services';
+import { telemetry } from '../../telemetry/telemetry';
+import { EventType } from '../../telemetry/telemetry-event.types';
 
 const result = getWorkflowResultCreator({
 	success: provides<{
@@ -76,6 +78,13 @@ export const declineTrade = (
 		playerDecliningTrade: playerDeclining,
 		playerAwaitingResponse: playerDeclinedID,
 		trade: tradeResolvable,
+	});
+
+	telemetry.track({
+		eventType: EventType.TRADE_RESPONDED,
+		playerID: playerService.resolveID(playerDeclining),
+		tradeID: trade.id,
+		outcome: "declined",
 	});
 
 	return result.success({

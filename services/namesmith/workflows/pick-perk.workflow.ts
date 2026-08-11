@@ -3,7 +3,8 @@ import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PerkResolvable } from "../types/perk.types";
 import { PlayerResolvable } from "../types/player.types";
 import { getWorkflowResultCreator, provides } from "./workflow-result-creator";
-
+import { telemetry } from "../telemetry/telemetry";
+import { EventType } from "../telemetry/telemetry-event.types";
 
 const result = getWorkflowResultCreator({
 	success: provides<{
@@ -53,6 +54,7 @@ export function pickPerk(
 		return result.failure.playerAlreadyHasPerk();
 	}
 
+	const tokensAtPick = playerService.getTokens(player);
 	perkService.giveToPlayer(pickedPerk, player);
 	playerService.setHasPickedPerk(player, true);
 
@@ -70,8 +72,13 @@ export function pickPerk(
 		tokensEarned: freeTokensEarned,
 	});
 
+	telemetry.track({
+		eventType: EventType.PERK_PICKED,
+		playerID: playerService.resolveID(player),
+		tokensAtPick,
+	});
+
 	return result.success({
 		freeTokensEarned,
 	});
 }
-

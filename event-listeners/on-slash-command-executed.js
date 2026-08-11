@@ -2,6 +2,8 @@ const { ChannelType, Collection, ChatInputCommandInteraction, InteractionRespons
 const { ids } = require("../bot-config/discord-ids");
 const { logError, logInfo } = require("../utilities/logging-utils");
 const { replyToInteraction } = require("../utilities/discord-action-utils");
+const { telemetry } = require("../services/namesmith/telemetry/telemetry");
+const { EventType } = require("../services/namesmith/telemetry/telemetry-event.types");
 
 /**
  * Handles the execution of a slash command.
@@ -205,6 +207,14 @@ const onSlashCommandExecuted = async (interaction) => {
 	// Reset cooldown
 	timestamps.set(interaction.user.id, now);
 	setTimeout(() => timestamps.delete(interaction.user.id), cooldownSeconds);
+
+	if (command.required_servers && command.required_servers.includes(ids.servers.NAMESMITH)) {
+		telemetry.track({
+			eventType: EventType.COMMAND_INVOKED,
+			playerID: interaction.user.id,
+			commandName: interaction.commandName,
+		});
+	}
 
 	// Execute the command
 	try {

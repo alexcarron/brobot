@@ -1,7 +1,9 @@
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { PublishedName, PublishedNameResolvable } from "../../types/published-name.types";
-import { Rank, Ranks, VoteID } from "../../types/vote.types";
+import { Rank, Ranks, RANKS, VoteID } from "../../types/vote.types";
 import { getWorkflowResultCreator, provides } from "../workflow-result-creator";
+import { telemetry } from "../../telemetry/telemetry";
+import { EventType } from "../../telemetry/telemetry-event.types";
 
 const result = getWorkflowResultCreator({
 	success: provides<{
@@ -52,6 +54,12 @@ export function voteName(
 
 	if (previousRankOfPublishedName !== null) {
 		if (previousRankOfPublishedName === rankVotingFor) {
+			telemetry.track({
+				eventType: EventType.ACTION_BLOCKED,
+				playerID: voterUserID,
+				blockedAction: "vote",
+				blockReason: "nameVotedTwice",
+			});
 			return result.failure.repeatedVote({rankToVotedName: previousRankToVotedName});
 		}
 
@@ -81,6 +89,7 @@ export function voteName(
 	switch (rankVotingFor) {
 		case Ranks.SECOND:
 			if (previousMissingRanks.has(Ranks.FIRST)) {
+				telemetry.track({ eventType: EventType.ACTION_BLOCKED, playerID: voterUserID, blockedAction: "vote", blockReason: "voteOutOfOrder" });
 				return result.failure.outOfOrderVote({
 					rankToVotedName: previousRankToVotedName,
 					missingRanks: new Set([Ranks.FIRST]),
@@ -90,12 +99,14 @@ export function voteName(
 
 		case Ranks.THIRD:
 			if (previousMissingRanks.has(Ranks.FIRST)) {
+				telemetry.track({ eventType: EventType.ACTION_BLOCKED, playerID: voterUserID, blockedAction: "vote", blockReason: "voteOutOfOrder" });
 				return result.failure.outOfOrderVote({
 					rankToVotedName: previousRankToVotedName,
 					missingRanks: new Set([Ranks.FIRST, Ranks.SECOND])
 				});
 			}
 			else if (previousMissingRanks.has(Ranks.SECOND)) {
+				telemetry.track({ eventType: EventType.ACTION_BLOCKED, playerID: voterUserID, blockedAction: "vote", blockReason: "voteOutOfOrder" });
 				return result.failure.outOfOrderVote({
 					rankToVotedName: previousRankToVotedName,
 					missingRanks: new Set([Ranks.SECOND])
@@ -109,5 +120,12 @@ export function voteName(
 
 	const rankToVotedName = voteService.getRanksToVotedName(voterUserID);
 	const otherRankToVotedName = voteService.getOtherRanksToVotedName(voterUserID, rankVotingFor);
+
+	telemetry.track({
+		eventType: EventType.VOTE_CAST,
+		playerID: voterUserID,
+		ranksFilled: RANKS.length - missingRanks.size,
+	});
+
 	return result.success({missingRanks, rankToVotedName, otherRankToVotedName, publishedNamePreviouslyInRank, previousRankOfPublishedName});
 }

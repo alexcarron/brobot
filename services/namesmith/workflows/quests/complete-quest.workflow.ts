@@ -14,6 +14,8 @@ import { questCompletionEligibilityChecks } from "./eligibility/quest-completion
 import { refillEligibilityChecks } from "./eligibility/refill.eligibility";
 import { tokenAndInventoryEligibilityChecks } from "./eligibility/token-and-inventory.eligibility";
 import { tradingEligibilityChecks } from "./eligibility/trading.eligibility";
+import { telemetry } from "../../telemetry/telemetry";
+import { EventType } from "../../telemetry/telemetry-event.types";
 
 const questIDToMeetsCriteriaCheck = {
 	...miningEligibilityChecks,
@@ -112,6 +114,12 @@ export function completeQuest(
 		tokensRewarded: tokensRewarded,
 		charactersRewarded: charactersRewarded,
 		nameBefore,
+	});
+
+	telemetry.track({
+		eventType: EventType.QUEST_COMPLETED,
+		playerID: playerService.resolveID(playerResolvable),
+		questID: quest.id,
 	});
 
 	return completeQuestResult.success({

@@ -5,6 +5,8 @@ import { toResurfaceMessageText } from "./resurface-message";
 import { doesUserOwnMiningSessionOfButton, sendMiningSessionFollowUpMessage } from "./mining-session-buttons";
 import { replyToInteraction } from "../../../../utilities/discord-action-utils";
 import { NOT_SESSION_OWNER_MESSAGE } from "./mining-message-lines";
+import { telemetry } from "../../telemetry/telemetry";
+import { EventType } from "../../telemetry/telemetry-event.types";
 
 const RESURFACE_LABEL = `Resurface`;
 
@@ -30,6 +32,16 @@ async function onResurfaceButtonPressed(
 		await replyToInteraction(buttonInteraction, NOT_SESSION_OWNER_MESSAGE);
 		return 
 	}
+
+	telemetry.track({
+		eventType: EventType.MINE_SESSION_ENDED,
+		playerID: userID,
+		miningSessionID: state.sessionID,
+		layersDug: state.currentLayer,
+		outcome: "resurfaced",
+		tokensKept: state.tokensMinedThisSession,
+		tokensLostToCollapse: 0,
+	});
 
 	await sendMiningSessionFollowUpMessage(buttonInteraction, {
 		content: toResurfaceMessageText(state),

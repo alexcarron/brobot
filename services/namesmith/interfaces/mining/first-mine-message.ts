@@ -30,6 +30,7 @@ export function toFirstMineMessageText(
  * Sends the message for a player's first mine.
  * @param params - The parameters for the function.
  * @param params.interaction - The command interaction that started the mining session.
+ * @param params.miningSessionID - The id of the mining session being started.
  * @param params.firstMineResult - The result of the player's first mine.
  * @param params.firstMineResult.tokensGained - The tokens gained from the first mine.
  * @param params.firstMineResult.characterDiscovered - The character discovered from the first mine, if any.
@@ -38,8 +39,9 @@ export function toFirstMineMessageText(
  * @param params.tipLine - An optional tip line to append to the session message.
  */
 export async function sendFirstMineMessage(
-	{ interaction, firstMineResult, tipLine }: {
+	{ interaction, miningSessionID, firstMineResult, tipLine }: {
 		interaction: ChatInputCommandInteraction;
+		miningSessionID: string;
 		firstMineResult: {
 			tokensGained: number;
 			characterDiscovered: string | null;
@@ -52,6 +54,7 @@ export async function sendFirstMineMessage(
 	const userID = interaction.user.id;
 
 	const miningSessionState: MiningSessionState = {
+		sessionID: miningSessionID,
 		currentLayer: 1,
 		tokensMinedThisSession: firstMineResult.tokensGained,
 		charactersFoundThisSession: firstMineResult.characterDiscovered ?? '',

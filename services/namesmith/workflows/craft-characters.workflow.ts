@@ -3,6 +3,8 @@ import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PlayerResolvable } from '../types/player.types';
 import { Recipe, RecipeResolvable } from "../types/recipe.types";
 import { getWorkflowResultCreator, provides } from "./workflow-result-creator";
+import { telemetry } from "../telemetry/telemetry";
+import { EventType } from "../telemetry/telemetry-event.types";
 
 const result = getWorkflowResultCreator({
 	success: provides<{
@@ -47,6 +49,12 @@ export const craftCharacters = (
 		const { missingCharacters } =
 			getCharacterDifferences(recipe.inputCharacters, player.inventory);
 
+		telemetry.track({
+			eventType: EventType.CRAFT_BLOCKED,
+			playerID: playerService.resolveID(playerResolvable),
+			blockReason: "missingRequiredCharacters",
+		});
+
 		return result.failure.missingRequiredCharacters({
 			missingCharacters: missingCharacters.join(''),
 		});
@@ -63,6 +71,14 @@ export const craftCharacters = (
 		playerCrafting: playerResolvable,
 		recipeUsed,
 		nameBefore,
+	});
+
+	telemetry.track({
+		eventType: EventType.CRAFT_COMPLETED,
+		playerID: playerService.resolveID(playerResolvable),
+		recipeID: recipeUsed.id,
+		inputCharacters: recipeUsed.inputCharacters,
+		outputCharacters: craftedCharacters,
 	});
 
 	return result.success({

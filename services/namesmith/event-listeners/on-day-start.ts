@@ -7,6 +7,7 @@ import { sendShownDailyQuestsDisplay } from "../interfaces/quests/daily-quests-d
 import { sendHiddenQuestsMessages } from "../interfaces/quests/hidden-quests-message";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { getTokensEarnedFeedback } from "../utilities/player-message.utility";
+import { telemetry } from '../telemetry/telemetry';
 
 /**
  * Triggers any game events that must occur at the start of each day
@@ -19,6 +20,9 @@ export async function onDayStart() {
 	questService.assignNewShownDailyQuests(today);
 	await sendShownDailyQuestsDisplay();
 	await sendHiddenQuestsMessages();
+
+	telemetry.trackQuestsShown(questService.getCurrentShownDailyQuests(), { areHiddenQuests: false });
+	telemetry.trackQuestsShown(questService.getHiddenShownDailyQuestsToday(), { areHiddenQuests: true });
 
 	logInfo(`Day ${today.id} started at ${today.timeStarted.toISOString()}.`);
 	logInfo(`Daily quests assigned.`);

@@ -3,6 +3,8 @@ import { Player, PlayerResolvable } from '../../types/player.types';
 import { getWorkflowResultCreator, provides } from '../workflow-result-creator';
 import { getCharacterDifferences } from '../../../../utilities/data-structure-utils';
 import { getNamesmithServices } from '../../services/get-namesmith-services';
+import { telemetry } from '../../telemetry/telemetry';
+import { EventType } from '../../telemetry/telemetry-event.types';
 
 const result = getWorkflowResultCreator({
 	success: provides<{
@@ -149,6 +151,13 @@ export const modifyTrade = (
 		playerModifyingTrade: playerModifying,
 		playerAwaitingResponse: otherPlayerID,
 		trade: tradeResolvable,
+	});
+
+	telemetry.track({
+		eventType: EventType.TRADE_RESPONDED,
+		playerID: playerService.resolveID(playerModifying),
+		tradeID: trade.id,
+		outcome: "modified",
 	});
 
 	return result.success({

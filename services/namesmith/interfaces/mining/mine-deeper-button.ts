@@ -37,6 +37,7 @@ async function onMineDeeperButtonPressed(
 
 	const mineResult = mineOneLayer({
 		player: userID,
+		miningSessionID: state.sessionID,
 		currentLayerNumber: state.currentLayer + 1,
 		tokensMinedThisSession: state.tokensMinedThisSession,
 	});

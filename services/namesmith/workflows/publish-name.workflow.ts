@@ -2,6 +2,9 @@ import { MAX_PUBLISHED_NAME_SLOTS_PER_PLAYER } from "../constants/name-publishin
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PlayerResolvable } from "../types/player.types";
 import { getWorkflowResultCreator, provides } from "./workflow-result-creator";
+import { telemetry } from "../telemetry/telemetry";
+import { EventType } from "../telemetry/telemetry-event.types";
+import { getCharacters } from "../../../utilities/string-checks-utils";
 
 const result = getWorkflowResultCreator({
 	success: provides<{
@@ -53,12 +56,27 @@ export const publishName = (
 	}
 
 	if (publishedNameService.isPlayerAtPublishedNameLimit(player)) {
+		telemetry.track({
+			eventType: EventType.ACTION_BLOCKED,
+			playerID: playerService.resolveID(player),
+			blockedAction: "publishName",
+			blockReason: "atPublishedNameLimit",
+		});
+
 		return result.failure.atPublishedNameLimit({ publishedNameLimit: MAX_PUBLISHED_NAME_SLOTS_PER_PLAYER });
 	}
 
 	const tokenCost = publishedNameService.getCostOfNextPublishedNameForPlayer(player) as number;
 	if (!playerService.hasTokens(player, tokenCost)) {
 		const tokensOwned = playerService.getTokens(player);
+
+		telemetry.track({
+			eventType: EventType.ACTION_BLOCKED,
+			playerID: playerService.resolveID(player),
+			blockedAction: "publishName",
+			blockReason: "insufficientTokens",
+			tokensShortBy: tokenCost - tokensOwned,
+		});
 
 		return result.failure.cannotAffordPublishedName({
 			tokenCost,
@@ -74,6 +92,13 @@ export const publishName = (
 
 	activityLogService.logPublishName({
 		playerPublishingName: player,
+	});
+
+	telemetry.track({
+		eventType: EventType.NAME_PUBLISHED,
+		playerID: playerService.resolveID(player),
+		slotNumber: publishedName.slotNumber,
+		nameLength: getCharacters(currentName).length,
 	});
 
 	return result.success({

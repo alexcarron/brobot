@@ -1,6 +1,8 @@
 import { logInfo } from "../../../utilities/logging-utils";
 import { sendPickAPerkMessage } from "../interfaces/pick-a-perk-message";
 import { getNamesmithServices } from "../services/get-namesmith-services";
+import { telemetry } from "../telemetry/telemetry";
+import { EventType } from "../telemetry/telemetry-event.types";
 
 /**
  * Sends a message to the 'Pick A Perk' channel asking the user to choose one of the given perks.
@@ -11,6 +13,8 @@ export async function onPickAPerk() {
 	const threePerks = perkService.offerThreeRandomNewPerks();
 	playerService.resetAllHasPickedPerk();
 	await sendPickAPerkMessage(threePerks);
+
+	telemetry.track({ eventType: EventType.PERK_WINDOW_OPENED });
 
 	logInfo(`Pick a perk message sent.`);
 	logInfo(`hasPickedPerk field reset for all players.`);

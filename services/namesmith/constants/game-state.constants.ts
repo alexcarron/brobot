@@ -27,7 +27,7 @@ export function WEEK_DURATION(): Duration {
 export function BUILD_PHASE_DURATION(): Duration {
 	return chooseByEnv({
 		development: { minutes: 14 },
-		production: { days: DAYS_IN_WEEK },
+		production: { days: DAYS_IN_WEEK * 2 },
 	});
 }
 
@@ -38,7 +38,7 @@ export function BUILD_PHASE_DURATION(): Duration {
 export function VOTE_PHASE_DURATION(): Duration {
 	return chooseByEnv({
 		development: { minutes: 6 },
-		production: { days: 3 },
+		production: { days: 4 },
 	});
 }
 

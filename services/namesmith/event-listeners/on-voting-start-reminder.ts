@@ -1,4 +1,6 @@
 import { sendVotingStartReminderMessage } from '../interfaces/voting/voting-start-reminder-message';
+import { telemetry } from '../telemetry/telemetry';
+import { EventType } from '../telemetry/telemetry-event.types';
 import { NamesmithEvents, RelevantDataOf } from './namesmith-events';
 
 /**
@@ -10,4 +12,5 @@ export async function onVotingStartReminder(
 	{ durationUntilVotingStarts }: RelevantDataOf<typeof NamesmithEvents.VotingStartReminder>
 ) {
 	await sendVotingStartReminderMessage({ durationUntilVotingStarts });
+	telemetry.track({ eventType: EventType.REMINDER_SENT, reminderKind: "finalizeName" });
 }

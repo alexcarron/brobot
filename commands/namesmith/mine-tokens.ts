@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { ids } from "../../bot-config/discord-ids";
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { Tips } from "../../services/namesmith/constants/tips.constants";
@@ -16,8 +17,10 @@ export const command = new SlashCommand({
 	execute: async function execute(interaction) {
 		const { tipService, playerService, mysteryBoxService } = getNamesmithServices();
 
+		const miningSessionID = randomUUID();
 		const result = mineOneLayer({
 			player: interaction.user.id,
+			miningSessionID,
 			currentLayerNumber: 1,
 			tokensMinedThisSession: 0,
 		});
@@ -43,6 +46,7 @@ export const command = new SlashCommand({
 
 		await sendFirstMineMessage({
 			interaction,
+			miningSessionID,
 			firstMineResult: result,
 			tipLine,
 		});
