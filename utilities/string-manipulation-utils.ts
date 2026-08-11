@@ -967,19 +967,20 @@ export function toReadableNumber(number: number | string): string {
     throw new InvalidArgumentError(`Expected a number to be passed to toReadableNumber(), but got ${numString}.`);
   }
   
-  // Split into integer and decimal parts
   const [integerPart, decimalPart] = numString.replace(/^0+/, '').split('.');
   
-  // Add commas to integer part
   const formattedInteger = parseInt(integerPart || '0')
     .toString()
     .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   
-  // If there's a decimal part, remove trailing zeros
   if (decimalPart !== undefined) {
 		const formattedDecimal = decimalPart.replace(/0+$/, '');
 		return `${formattedInteger}.${formattedDecimal}`;
   }
   
   return formattedInteger;
+}
+
+export function toPercentageString(value: number, decimalPlaces: number = 0): string {
+	return `${(value * 100).toFixed(decimalPlaces)}%`;
 }

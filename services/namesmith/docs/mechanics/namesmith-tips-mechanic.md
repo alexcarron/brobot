@@ -49,3 +49,14 @@ Keys `howToBuyMysteryBox` and `howToPublishName` already exist in `constants/tip
 | Key | Trigger and where it attaches | Tip message |
 |---|---|---|
 | `whatIsThePublishCapAndCost` | First `/publish-name` success, on its reply | You can publish up to 4 names in total. Your next one costs 250 tokens, then 500, then 1000. |
+
+### Mining
+
+Mining teaches its own mechanics only after the player's action has already revealed them, never before, so a curious first click into a new mechanic is rewarded with the explanation rather than spoiled by it. Implemented in `interfaces/mining/mining-tip-lines.ts`, called from `mine-deeper-button.ts`, `auto-mine-button.ts`, and nowhere on the very first mine message.
+
+| Key | Trigger and where it attaches | Tip message |
+|---|---|---|
+| `howMiningRiskWorks` | The first few successful "mine deeper" results, manual or auto-mine (competes with `characterOddsImproveWithDepth` for the same line; character discovery wins) | Press "Resurface" anytime to keep the tokens you've mined so far safe. If the mine collapses, you will lose most of them. |
+| `characterOddsImproveWithDepth` | Any mine result where a character was just discovered (first mine, manual deeper mine, or auto-mine) | Your chance to discover a character while mining increases the deeper you go. |
+| `miningHasNoCooldown` | The collapse message, manual or auto-mine (on an auto-mine collapse, competes with `autoMiningRiskKeepsClimbing`, which wins) | Run `/mine-tokens` again anytime to start a new mining session. |
+| `autoMiningRiskKeepsClimbing` | After an auto-mine session ends, either by the player pressing "Stop" or by a collapse during auto-mining — never during the live loop itself, to avoid interrupting it | Auto-mining keeps mining deeper every few seconds, increasing the risk of collapse the longer you let it run. Press "Stop" to stop it. |

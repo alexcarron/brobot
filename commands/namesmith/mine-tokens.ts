@@ -1,44 +1,29 @@
 import { ids } from "../../bot-config/discord-ids";
 import { SlashCommand } from "../../services/command-creation/slash-command";
-import { MINE_BONUS_BONUS_TOKENS } from "../../services/namesmith/constants/perks.constants";
 import { Tips } from "../../services/namesmith/constants/tips.constants";
+import { sendFirstMineMessage } from "../../services/namesmith/interfaces/mining/first-mine-message";
+import { NOT_A_PLAYER_MINING_MESSAGE } from "../../services/namesmith/interfaces/mining/mining-message-lines";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { TipResolvable } from "../../services/namesmith/types/tip.types";
-import { getTokensEarnedFeedback, toDisplayedCharactersInline, toTipLine, toTokenEmojis } from "../../services/namesmith/utilities/player-message.utility";
+import { toTipLine } from "../../services/namesmith/utilities/player-message.utility";
 import { mineOneLayer } from "../../services/namesmith/workflows/mine-tokens.workflow";
-import { joinLines, toAmountOfNoun } from "../../utilities/string-manipulation-utils";
 
 export const command = new SlashCommand({
 	name: "mine-tokens",
 	description: "Mines a small amount of tokens",
 	required_servers: [ids.servers.NAMESMITH],
 	required_channels: [ids.namesmith.channels.MINE_TOKENS],
-	execute: function execute(interaction) {
+	execute: async function execute(interaction) {
 		const { tipService, playerService, mysteryBoxService } = getNamesmithServices();
 
 		const result = mineOneLayer({
 			player: interaction.user.id,
 			currentLayerNumber: 1,
 			tokensMinedThisSession: 0,
-		})
+		});
 
 		if (result.isNotAPlayer())
-			return `You're not a player, so you can't mine tokens.`;
-
-		const { tokensGained, characterDiscovered, newTokenCount, hasMineBonusPerk } = result;
-
-		let baseMessage = getTokensEarnedFeedback(tokensGained, {isOneLine: true});
-
-		if (hasMineBonusPerk) {
-			const baseTokensGained = tokensGained - MINE_BONUS_BONUS_TOKENS;
-			baseMessage =
-				getTokensEarnedFeedback(baseTokensGained, {isOneLine: true}) + `\n` +
-				`+${toAmountOfNoun(MINE_BONUS_BONUS_TOKENS, 'Bonus Token')} ${toTokenEmojis(MINE_BONUS_BONUS_TOKENS)}`;
-		}
-
-		if (characterDiscovered !== null) {
-			baseMessage += `\nYou dug up a character: ${toDisplayedCharactersInline(characterDiscovered)}`;
-		}
+			return NOT_A_PLAYER_MINING_MESSAGE;
 
 		const possibleTipKeys: TipResolvable[] = [];
 
@@ -56,10 +41,10 @@ export const command = new SlashCommand({
 		const tipMessage = tipService.getAndViewFirstTipPlayerShouldSee(interaction.user.id, possibleTipKeys);
 		const tipLine = toTipLine(tipMessage);
 
-		return joinLines(
-			baseMessage,
-			`-# You now have ${toAmountOfNoun(newTokenCount, 'token')}`,
+		await sendFirstMineMessage({
+			interaction,
+			firstMineResult: result,
 			tipLine,
-		);
+		});
 	}
 });

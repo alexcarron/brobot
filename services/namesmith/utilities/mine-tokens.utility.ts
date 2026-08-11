@@ -8,13 +8,13 @@ import {
 	FRACTION_OF_TOKENS_KEPT_ON_COLLAPSE,
 	MIN_TOKENS_FOR_MINING,
 	MINING_BASE_EXPECTED_TOKENS,
-	EXTRA_EXPECTED_TOKENS_PER_LAYER,
+	EXPECTED_TOKENS_GROWTH_RATE_PER_LAYER,
 	FIRST_LAYER_COLLAPSE_CHANCE,
 	FIRST_LAYER_CHARACTER_DISCOVERY_CHANCE,
 } from "../constants/mine-tokens.constants";
 
 /**
- * Gets the chance the mine collapses if a player digs deeper from the given layer.
+ * Gets the chance the mine collapses if a player mines deeper from the given layer.
  * @param layerNumber The layer the player is currently on.
  * @returns The chance of collapse, from 0 to 1.
  */
@@ -27,7 +27,7 @@ export function getCollapseChanceAtLayer(layerNumber: number): number {
 }
 
 /**
- * Determines whether the mine collapses when digging deeper from the given layer.
+ * Determines whether the mine collapses when mining deeper from the given layer.
  * @param layerNumber The layer the player is currently on.
  * @returns Whether the mine collapsed.
  */
@@ -36,12 +36,12 @@ export function doesMineCollapseAtLayer(layerNumber: number): boolean {
 }
 
 /**
- * Gets the expected number of tokens a dig on the given layer will give.
+ * Gets the expected number of tokens a mine on the given layer will give.
  * @param layerNumber The layer being dug.
  * @returns The expected tokens for that layer.
  */
 export function getExpectedTokensAtLayer(layerNumber: number): number {
-	return MINING_BASE_EXPECTED_TOKENS * (1 + EXTRA_EXPECTED_TOKENS_PER_LAYER * (layerNumber - 1));
+	return MINING_BASE_EXPECTED_TOKENS * Math.pow(EXPECTED_TOKENS_GROWTH_RATE_PER_LAYER, layerNumber - 1);
 }
 
 /**

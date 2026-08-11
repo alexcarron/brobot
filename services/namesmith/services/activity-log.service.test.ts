@@ -310,7 +310,7 @@ describe('ActivityLogService', () => {
 			});
 		});
 
-		it('creates a mineTokens activity log with negative tokensDifference when a dig collapses', () => {
+		it('creates a mineTokens activity log with negative tokensDifference when a mine collapses', () => {
 			const activityLog = activityLogService.logMineTokens({
 				playerMining: SOME_PLAYER.id,
 				tokensEarned: -40,

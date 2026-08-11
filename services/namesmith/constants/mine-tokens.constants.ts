@@ -30,12 +30,12 @@ export const BASE_COLLAPSE_CHANCE = 0.05;
 /**
  * How much closer the collapse chance moves toward 100% with each layer past layer 2 in a mining session.
  */
-export const COLLAPSE_CHANCE_DECAY = 0.85;
+export const COLLAPSE_CHANCE_DECAY = 0.9;
 
 /**
- * The factor by which a layer's expected tokens grows for each layer past the first.
+ * The rate at which a layer's expected tokens compounds for each layer past the first.
  */
-export const EXTRA_EXPECTED_TOKENS_PER_LAYER = 0.25;
+export const EXPECTED_TOKENS_GROWTH_RATE_PER_LAYER = 1.18;
 
 /**
  * The chance of discovering a character on the first layer of a mining session.
@@ -66,4 +66,4 @@ export const CHARACTER_DISCOVERY_MYSTERY_BOX_ID = MysteryBoxes.ALL_CHARACTERS.id
 /**
  * How many seconds auto-mine waits between each automatic mine.
  */
-export const AUTO_MINE_INTERVAL_SECONDS = 3.5;
+export const AUTO_MINE_INTERVAL_SECONDS = 4;

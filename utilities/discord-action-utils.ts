@@ -1079,6 +1079,17 @@ export function toMessageEditFromCreateOptions(createOptions: MessageCreateOptio
 }
 
 /**
+ * Narrows a MessageCreateOptions object down to the fields accepted by ButtonInteraction.update(), whose flags type is a stricter subset than MessageCreateOptions.flags.
+ * @param contents - The message contents to narrow.
+ * @returns The content and components accepted by ButtonInteraction.update().
+ */
+export function toButtonUpdateFromMessageCreateOptions(
+	contents: MessageCreateOptions
+): { content: MessageCreateOptions['content']; components: MessageCreateOptions['components'] } {
+	return { content: contents.content, components: contents.components };
+}
+
+/**
  * Converts a MessageCreateOptions object into an InteractionReplyOptions object.
  * @param createOptions - The object to convert.
  * @returns The converted object.

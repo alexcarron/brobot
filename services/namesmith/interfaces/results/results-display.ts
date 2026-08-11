@@ -7,6 +7,7 @@ import { wait } from "../../../../utilities/realtime-utils";
 import { isString } from "../../../../utilities/types/type-guards";
 import { getPlacementMessageContents } from "./placement-message";
 import { getPingForAllPlayers } from "../../utilities/player-message.utility";
+import { DEFAULT_MESSAGE_SEND_DELAY } from "../../constants/interface.constants";
 
 /**
  * Sends the display messages for announcing the winner after voting ends
@@ -59,10 +60,9 @@ async function sendWithDelay(
 	delay: Duration | 0 | string,
 	...lines: string[]
 ) {
-	const DEFAULT_DELAY = {seconds: 5};
 	if (isString(delay)) {
 		lines.unshift(delay);
-		delay = DEFAULT_DELAY;
+		delay = DEFAULT_MESSAGE_SEND_DELAY;
 	}
 	await wait(delay);
 	const resultsChannel = await fetchNamesmithChannel(ids.namesmith.channels.THE_RESULTS);

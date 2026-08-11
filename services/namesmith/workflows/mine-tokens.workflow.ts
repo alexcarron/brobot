@@ -5,6 +5,7 @@ import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PlayerResolvable } from "../types/player.types";
 import {
 	doesMineCollapseAtLayer,
+	getCollapseChanceAtLayer,
 	getRandomTokensGivenForMine,
 	getTokensKeptAfterCollapse,
 	isCharacterDiscoveredAtLayer,
@@ -16,9 +17,11 @@ const result = getWorkflowResultCreator({
 		tokensGained: number,
 		characterDiscovered: string | null,
 		didCollapse: boolean,
+		tokensLostFromCollapse: number | null,
 		tokensKeptAfterCollapse: number | null,
 		newTokenCount: number,
 		hasMineBonusPerk: boolean,
+		collapseChanceNextLayer: number,
 	}>(),
 
 	notAPlayer: null
@@ -66,9 +69,11 @@ export const mineOneLayer = (
 			tokensGained: 0,
 			characterDiscovered: null,
 			didCollapse: true,
+			tokensLostFromCollapse: tokensLost,
 			tokensKeptAfterCollapse,
 			newTokenCount: playerService.getTokens(player),
 			hasMineBonusPerk,
+			collapseChanceNextLayer: getCollapseChanceAtLayer(currentLayerNumber + 1),
 		});
 	}
 
@@ -110,8 +115,10 @@ export const mineOneLayer = (
 		tokensGained,
 		characterDiscovered,
 		didCollapse: false,
+		tokensLostFromCollapse: null,
 		tokensKeptAfterCollapse: null,
 		newTokenCount,
 		hasMineBonusPerk,
+		collapseChanceNextLayer: getCollapseChanceAtLayer(currentLayerNumber + 1),
 	});
 }

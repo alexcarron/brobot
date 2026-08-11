@@ -216,7 +216,7 @@ export class ActivityLogService {
 	 * @param parameters.playerMining - The player who is mining.
 	 * @param parameters.tokensEarned - The number of tokens earned by mining, or negative if a collapse clawed back tokens.
 	 * @param parameters.charactersGained - The characters discovered while mining, if any.
-	 * @param parameters.numLayersDeep - How many layers deep this dig was.
+	 * @param parameters.numLayersDeep - How many layers deep this mine was.
 	 * @returns The created activity log object.
 	 */
 	logMineTokens({ playerMining, tokensEarned, charactersGained, numLayersDeep }: {
