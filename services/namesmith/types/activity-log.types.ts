@@ -39,6 +39,7 @@ export const DBActivityLogType = object.asTransformableType('MinimalActivityLog'
 	currentName: string,
 	charactersGained: string.orNull,
 	charactersLost: string.orNull,
+	numLayersDeep: number.orNull,
 	timeCooldownExpired: DBDate.orNull,
 	involvedPlayerID: string.orNull,
 	involvedRecipeID: number.orNull,
@@ -64,6 +65,7 @@ export type ActivityLog = {
 	currentName: string;
 	charactersGained: string | null;
 	charactersLost: string | null;
+	numLayersDeep: number | null;
 	timeCooldownExpired: Date | null;
 	involvedPlayer: Player | null;
 	involvedRecipe: Recipe | null;
@@ -85,6 +87,7 @@ export type ActivityLogDefinition = {
 	currentName?: string;
 	charactersGained?: string | null;
 	charactersLost?: string | null;
+	numLayersDeep?: number | null;
 	timeCooldownExpired?: Date | null;
 	involvedPlayer?: PlayerResolvable | null;
 	involvedRecipe?: RecipeResolvable | null;

@@ -176,7 +176,7 @@ export class ActivityLogRepository {
 	toPartialDBActivityLog(
 		activityLogDefinition: Partial<ActivityLogDefinition>
 	): Partial<DBActivityLog> {
-		const { id, timeOccurred, player, type, currentTokens, nameChangedFrom, currentName, charactersGained, charactersLost, tokensDifference, timeCooldownExpired, involvedPlayer, involvedRecipe, involvedQuest, involvedTrade, involvedPerk, involvedRole, involvedMysteryBox } = activityLogDefinition;
+		const { id, timeOccurred, player, type, currentTokens, nameChangedFrom, currentName, charactersGained, charactersLost, numLayersDeep, tokensDifference, timeCooldownExpired, involvedPlayer, involvedRecipe, involvedQuest, involvedTrade, involvedPerk, involvedRole, involvedMysteryBox } = activityLogDefinition;
 
 		const playerID = resolveOptional(
 			this.playerRepository.resolveID.bind(this.playerRepository),
@@ -221,6 +221,7 @@ export class ActivityLogRepository {
 			currentName,
 			charactersGained,
 			charactersLost,
+			numLayersDeep,
 			tokensDifference,
 			timeCooldownExpired: DBDate.orNull.orUndefined.fromDomain(timeCooldownExpired),
 			involvedPlayerID,
@@ -314,6 +315,9 @@ export class ActivityLogRepository {
 				: null,
 			charactersLost: charactersLost !== undefined
 				? charactersLost
+				: null,
+			numLayersDeep: activityLogDefinition.numLayersDeep !== undefined
+				? activityLogDefinition.numLayersDeep
 				: null,
 			tokensDifference: tokensDifference ?? 0,
 			timeCooldownExpired: timeCooldownExpired !== undefined

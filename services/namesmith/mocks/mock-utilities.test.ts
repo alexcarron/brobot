@@ -546,6 +546,7 @@ describe("Mock Utilities", () => {
 				currentName: 'CURRENT_NAME',
 				charactersGained: 'CHARACTERS_GAINED',
 				charactersLost: 'CHARACTERS_LOST',
+				numLayersDeep: null,
 				timeCooldownExpired: SOME_TIME.getTime(),
 				involvedPlayerID: SOME_OTHER_PLAYER.id,
 				involvedRecipeID: SOME_RECIPE.id,
@@ -755,7 +756,7 @@ describe("Mock Utilities", () => {
 		it('returns a success result with the correct values', () => {
 			const result = forcePlayerToMineTokens(SOME_PLAYER, 250);
 			makeSure(result.isFailure()).isFalse();
-			makeSure(result.tokensEarned).is(250);
+			makeSure(result.tokensGained).is(250);
 			makeSure(result.newTokenCount).is(SOME_PLAYER.tokens + 250);
 		});
 

@@ -174,6 +174,40 @@ function toWhitespaceVisibleCharacters(characterList: string[]): string {
 }
 
 /**
+ * Formats a set of characters for display in a message, taking up an entire line
+ * @param characters - The characters to format, either as a string or an array of characters.
+ * @returns The characters formatted for display
+ * @example
+ * toDisplayedCharacters('abc ` 123') // "```abc \` 123```"
+ */
+export function toDisplayedCharacters(characters: string | string[]): string {
+	let charactersString = typeof characters === 'string' 
+		? characters 
+		: characters.join('');
+	
+	charactersString = charactersString.replace(/`/g, '\\`');
+
+	return `\`\`\`${charactersString}\`\`\``;
+}
+
+/**
+ * Formats a set of characters for display in a message, inline with other text
+ * @param characters - The characters to format, either as a string or an array of characters.
+ * @returns The characters formatted for inline display
+ * @example
+ * toDisplayedCharactersInline('abc ` 123') // "`abc \` 123`"
+ */
+export function toDisplayedCharactersInline(characters: string | string[]): string {
+	let charactersString = typeof characters === 'string' 
+		? characters 
+		: characters.join('');
+	
+	charactersString = charactersString.replace(/`/g, '\\`');
+
+	return `\`${charactersString}\``;
+}
+
+/**
  * Sorts a set of characters into the order they should be displayed in: letters first, then numbers, then spaces, then everything else alphabetically.
  * Returns plain character data with no markdown added - use this (not `toDisplayOrderedCharacters`) when the result will be processed further (e.g. diffed against another character list) rather than sent directly as message text, since `toDisplayOrderedCharacters` embeds backtick code spans in its output.
  * @param characters - The characters to sort, either as a string or an array of characters.

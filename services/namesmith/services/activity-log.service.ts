@@ -210,20 +210,27 @@ export class ActivityLogService {
 	}
 
 	/**
-	 * Logs a mining activity.
+	 * Logs a mining activity. 
+	 * A collapse is logged with a negative tokensEarned value.
 	 * @param parameters - The parameters which include:
 	 * @param parameters.playerMining - The player who is mining.
-	 * @param parameters.tokensEarned - The number of tokens earned by mining.
+	 * @param parameters.tokensEarned - The number of tokens earned by mining, or negative if a collapse clawed back tokens.
+	 * @param parameters.charactersGained - The characters discovered while mining, if any.
+	 * @param parameters.numLayersDeep - How many layers deep this dig was.
 	 * @returns The created activity log object.
 	 */
-	logMineTokens({ playerMining, tokensEarned }: {
+	logMineTokens({ playerMining, tokensEarned, charactersGained, numLayersDeep }: {
 		playerMining: PlayerResolvable;
 		tokensEarned: number;
+		charactersGained?: string;
+		numLayersDeep?: number;
 	}): ActivityLog {
 		return this.activityLogRepository.addActivityLog({
 			type: ActivityTypes.MINE_TOKENS,
 			player: playerMining,
 			tokensDifference: tokensEarned,
+			charactersGained: charactersGained ?? null,
+			numLayersDeep: numLayersDeep ?? null,
 		});
 	}
 

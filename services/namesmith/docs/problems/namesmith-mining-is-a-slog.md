@@ -33,30 +33,32 @@ Claiming a refill gives an average of 70 tokens (minimum 50) every 2 hours, so a
 
 ## Solution
 
-You run `/mine-tokens` to start digging. Brobot keeps one message updated the whole time. It never sends a second message or a follow up message.
+You run `/mine-tokens` to start mining. Brobot keeps one message updated the whole time. It never sends a second message or a follow up message.
 
-Your first dig is always safe. It gives tokens using the normal mining odds, and the mine cannot collapse on the first dig.
+Your first mine is always safe. It gives tokens using the normal mining odds, and the mine cannot collapse on the first mine of a session.
 
-After that first dig, the message shows how many tokens you have collected, how many layers deep you are, and roughly the risk of collapse (e.g. "-# There is a 1 in x chance of collapse if you dig deeper"). You get two choices: dig one layer deeper, or resurface. (Also auto-dig, see below)
+After that first mine, the message shows how many tokens you have mined, how many layers deep you are, and roughly the risk of collapse (e.g. "-# There is a 1 in x chance of collapse if you mine deeper"). You get two choices: mine one layer deeper, or resurface. (Also auto-mine, see below)
 
-Resurface should be the first option, then digging a layer deeper, then auto-digging. The first mine should not show layer or odds of collapsing information.
+Resurface should be the first option, then mining a layer deeper, then auto-mining. The first mine should not show layer or odds of collapsing information.
 
-Resurface cashes out all your collected tokens and takes you back to the surface. It is always safe. To mine like normal, you dig once and resurface.
+Resurface cashes out all your mined tokens and takes you back to the surface. It is always safe. To mine like normal, you mine once and resurface.
 
-Digging deeper takes you down one more layer, which is one more mine. The deeper you go, the higher the average tokens each dig gives, and the better your chance to discover a character. Discovering a character is rare. It does not happen on most digs. The character you find uses the same odds as a mystery box.
+Mining deeper takes you down one more layer, which is one more mine. The deeper you go, the higher the average tokens each mine gives, and the better your chance to discover a character. Discovering a character is rare. It does not happen on most mines. The character you find uses the same odds as a mystery box.
 
-Every dig past the first has a chance the mine collapses. The deeper you are, the higher that chance. If the mine collapses, you keep only 25 percent of your collected tokens, rounded down, and you go back to the surface.
+Every mine past the first has a chance the mine collapses. The deeper you are, the higher that chance. If the mine collapses, you keep only 25 percent of your mined tokens, rounded down, and you go back to the surface.
 
-You can also let Brobot automatically dig for you. It digs one layer deeper every few seconds and always shows a Stop button, giving you a beat to see what happened and decide whether to stop. It keeps digging until you press Stop or the mine collapses. When you press Stop, it stops and lets you dig deeper or resurface again.
+You can also let Brobot automatically mine for you. It mines one layer deeper every few seconds and always shows a Stop button, giving you a beat to see what happened and decide whether to stop. It keeps mining until you press Stop or the mine collapses. When you press Stop, it stops and lets you mine deeper or resurface again.
 
-Every dig is one separate, random, logged mine, so the mining quests still work. Letting Brobot dig fires mines quickly, so the fast mining quests are easier to hit.
+Every mine is one separate, random, logged mine, so the mining quests still work. Letting Brobot auto-mine fires mines quickly, so the fast mining quests are easier to hit.
 
 ## Terms
 
 - Surface: Where you start. Resurfacing returns you here.
-- Layer: How deep you are. You go one layer deeper with each mine, or button press to dig one layer deeper.
-- Dig deeper: Go down any amount of layers.
-- Resurface: Cashing out all your collected tokens and go back to the surface.
-- Collapse: The mine caving in. You keep only 25 percent of your collected tokens, rounded down.
+- Layer: How deep you are. You go one layer deeper with each mine, or button press to mine one layer deeper.
+- Mine deeper: Go down any amount of layers.
+- Resurface: Cashing out all your mined tokens and go back to the surface.
+- Collapse: The mine caving in. You keep only 25 percent of your mined tokens, rounded down.
 - Mining Session: A set of mines from the first mine at the surface to the mine that led to a collapse.
-- Layer Number: The number of layeres deep a player is.
+- Layer Number: The number of layers deep a player is.
+- Mined Tokens: The tokens accumulated during a mining session.
+- Mined Tokens: The tokens accumulated during a mining sesssion.

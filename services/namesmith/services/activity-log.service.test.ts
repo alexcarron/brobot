@@ -292,6 +292,41 @@ describe('ActivityLogService', () => {
 				})
 			).throws(PlayerNotFoundError);
 		});
+
+		it('persists charactersGained and numLayersDeep when passed', () => {
+			const activityLog = activityLogService.logMineTokens({
+				playerMining: SOME_PLAYER.id,
+				tokensEarned: 5,
+				charactersGained: 'A',
+				numLayersDeep: 3,
+			});
+
+			makeSure(activityLog).hasProperties({
+				player: SOME_PLAYER,
+				type: ActivityTypes.MINE_TOKENS,
+				tokensDifference: 5,
+				charactersGained: 'A',
+				numLayersDeep: 3,
+			});
+		});
+
+		it('creates a mineTokens activity log with negative tokensDifference when a dig collapses', () => {
+			const activityLog = activityLogService.logMineTokens({
+				playerMining: SOME_PLAYER.id,
+				tokensEarned: -40,
+				numLayersDeep: 4,
+			});
+
+			makeSure(activityLog).hasProperties({
+				player: SOME_PLAYER,
+				type: ActivityTypes.MINE_TOKENS,
+				tokensDifference: -40,
+				numLayersDeep: 4,
+			});
+
+			const mineTokensLogs = activityLogService.getMineTokensLogsTodayByPlayer(SOME_PLAYER.id);
+			makeSure(mineTokensLogs.length).is(1);
+		});
 	});
 
 	describe('logClaimRefill()', () => {

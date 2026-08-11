@@ -12,3 +12,8 @@ export const INVESTMENT_PERCENTAGE = 0.02; // 2%
  * The amount of tokens rewarded at the start of each day when a player with the Idle Interest perk does not spend any tokens
  */
 export const IDLE_INTEREST_TOKEN_REWARD = 150;
+
+/**
+ * The amount of extra tokens gained per mine when a player has the Mine Bonus perk.
+ */
+export const MINE_BONUS_BONUS_TOKENS = 1;

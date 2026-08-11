@@ -64,6 +64,6 @@ export const MAX_CHARACTER_DISCOVERY_CHANCE = 0.25;
 export const CHARACTER_DISCOVERY_MYSTERY_BOX_ID = MysteryBoxes.ALL_CHARACTERS.id;
 
 /**
- * How many seconds auto-dig waits between each automatic dig.
+ * How many seconds auto-mine waits between each automatic mine.
  */
-export const AUTO_DIG_INTERVAL_SECONDS = 3.5;
+export const AUTO_MINE_INTERVAL_SECONDS = 3.5;

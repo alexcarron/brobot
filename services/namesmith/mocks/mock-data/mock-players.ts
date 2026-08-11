@@ -5,7 +5,7 @@ import { DatabaseQuerier } from "../../database/database-querier";
 import { asMinimalPlayer, MinimalPlayer, Player, PlayerDefinition, PlayerResolvable } from "../../types/player.types";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { returnIfNotFailure } from "../../utilities/workflow.utility";
-import { mineTokens } from "../../workflows/mine-tokens.workflow";
+import { mineOneLayer } from "../../workflows/mine-tokens.workflow";
 import { claimRefill } from "../../workflows/claim-refill.workflow";
 import { addDays } from "../../../../utilities/date-time-utils";
 import { PlayerRepository } from "../../repositories/player.repository";
@@ -208,19 +208,21 @@ export function forcePlayerToPublishNameInSlot(
 }
 
 /**
- * Forces a player to mine tokens by giving them the input characters and overriding the amount of tokens earned by mining.
+ * Forces a player to mine tokens by overriding the amount of tokens gained on a single, safe first-layer mine.
  * @param playerResolvable - The player resolvable to force to mine tokens.
- * @param tokens - The number of tokens to give the player by overriding the amount of tokens earned by mining.
- * @returns The result of the mineTokens workflow.
+ * @param tokens - The number of tokens to give the player by overriding the amount of tokens gained by mining.
+ * @returns The result of the mineOneLayer workflow.
  */
 export function forcePlayerToMineTokens(
 	playerResolvable: PlayerResolvable,
 	tokens: number
 ) {
 	return returnIfNotFailure(
-		mineTokens({
-			playerMining: playerResolvable,
-			tokenOverride: tokens
+		mineOneLayer({
+			player: playerResolvable,
+			currentLayerNumber: 1,
+			tokensMinedThisSession: 0,
+			tokenGainedOverride: tokens
 		})
 	);
 }

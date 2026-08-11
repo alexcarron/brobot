@@ -1,10 +1,11 @@
 import { ids } from "../../bot-config/discord-ids";
 import { SlashCommand } from "../../services/command-creation/slash-command";
+import { MINE_BONUS_BONUS_TOKENS } from "../../services/namesmith/constants/perks.constants";
 import { Tips } from "../../services/namesmith/constants/tips.constants";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { TipResolvable } from "../../services/namesmith/types/tip.types";
-import { getTokensEarnedFeedback, toTipLine } from "../../services/namesmith/utilities/player-message.utility";
-import { mineTokens } from "../../services/namesmith/workflows/mine-tokens.workflow";
+import { getTokensEarnedFeedback, toDisplayedCharactersInline, toTipLine, toTokenEmojis } from "../../services/namesmith/utilities/player-message.utility";
+import { mineOneLayer } from "../../services/namesmith/workflows/mine-tokens.workflow";
 import { joinLines, toAmountOfNoun } from "../../utilities/string-manipulation-utils";
 
 export const command = new SlashCommand({
@@ -15,23 +16,28 @@ export const command = new SlashCommand({
 	execute: function execute(interaction) {
 		const { tipService, playerService, mysteryBoxService } = getNamesmithServices();
 
-		const result = mineTokens({
-			...getNamesmithServices(),
-			playerMining: interaction.user.id,
+		const result = mineOneLayer({
+			player: interaction.user.id,
+			currentLayerNumber: 1,
+			tokensMinedThisSession: 0,
 		})
 
 		if (result.isNotAPlayer())
 			return `You're not a player, so you can't mine tokens.`;
 
-		const { tokensEarned, newTokenCount, hasMineBonusPerk } = result;
+		const { tokensGained, characterDiscovered, newTokenCount, hasMineBonusPerk } = result;
 
-		let baseMessage = getTokensEarnedFeedback(tokensEarned, {isOneLine: true});
+		let baseMessage = getTokensEarnedFeedback(tokensGained, {isOneLine: true});
 
 		if (hasMineBonusPerk) {
-			const baseTokensEarned = tokensEarned - 1;
+			const baseTokensGained = tokensGained - MINE_BONUS_BONUS_TOKENS;
 			baseMessage =
-				getTokensEarnedFeedback(baseTokensEarned, {isOneLine: true}) + `\n` +
-				'+1 Bonus Token 🪙';
+				getTokensEarnedFeedback(baseTokensGained, {isOneLine: true}) + `\n` +
+				`+${toAmountOfNoun(MINE_BONUS_BONUS_TOKENS, 'Bonus Token')} ${toTokenEmojis(MINE_BONUS_BONUS_TOKENS)}`;
+		}
+
+		if (characterDiscovered !== null) {
+			baseMessage += `\nYou dug up a character: ${toDisplayedCharactersInline(characterDiscovered)}`;
 		}
 
 		const possibleTipKeys: TipResolvable[] = [];

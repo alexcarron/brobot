@@ -6,7 +6,7 @@ import { getNamesmithServices } from "../../services/namesmith/services/get-name
 import { Tips } from "../../services/namesmith/constants/tips.constants";
 import { hasUtilityCharacter } from "../../services/namesmith/utilities/character.utility";
 import { TipResolvable } from "../../services/namesmith/types/tip.types";
-import { getHowToEarnMoreTokensHint, toDisplayedDollars, toDisplayOrderedCharacters, toTipLine, toTokenEmojis as toTokenEmojis } from "../../services/namesmith/utilities/player-message.utility";
+import { getHowToEarnMoreTokensHint, toDisplayedCharacters, toDisplayedDollars, toDisplayOrderedCharacters, toTipLine, toTokenEmojis as toTokenEmojis } from "../../services/namesmith/utilities/player-message.utility";
 import { getMysteryBoxCharacterPreview, getStaticMysteryBox, getStaticMysteryBoxes } from "../../services/namesmith/utilities/mystery-box.utility";
 import { MAX_AUTOCOMPLETE_OPTION_NAME_LENGTH } from "../../services/command-creation/autocomplete-utils";
 import { buyMysteryBox } from "../../services/namesmith/workflows/buy-mystery-box.workflow";
@@ -225,7 +225,7 @@ export const command = new SlashCommand({
 
 			await addReplyToInteraction(interaction,
 				`You opened a ${mysteryBox.name} mystery box and received:`,
-				`\`\`\`${recievedCharacterValues}\`\`\``,
+				toDisplayedCharacters(recievedCharacterValues),
 				luckyDuplicateLine,
 				luckyDoubleLine,
 				luckyRefundLine,
