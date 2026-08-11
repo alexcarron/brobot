@@ -41,7 +41,7 @@ SellValue = (MaxRarity / Rarity) * (
 3. **Confirmation Prompts**
     - Warn before selling rare or high-value characters.
 4. **Token Preview**
-    - Show the exact token yield **before selling**.
+    - Show the exact tokens **before selling**.
 5. **Undo Last Sale**
     - Allow players to revert a recent sell within a limited timeframe.
 6. **Autocomplete & Sorting**

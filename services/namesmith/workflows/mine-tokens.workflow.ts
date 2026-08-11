@@ -1,6 +1,6 @@
 import { addMinutes } from "../../../utilities/date-time-utils";
 import { getAnticipatedRandomNum } from "../../../utilities/random-utils";
-import { MIN_TOKENS_FOR_MINING as MIN_TOKENS_FROM_MINING, MINING_EXPECTED_VALUE as AVERAGE_TOKENS_FROM_MINING } from "../constants/namesmith.constants";
+import { MIN_TOKENS_FOR_MINING, MINING_BASE_EXPECTED_TOKENS } from "../constants/mine-tokens.constants";
 import { Perks } from "../constants/perks.constants";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PlayerResolvable } from "../types/player.types";
@@ -38,8 +38,8 @@ export const mineTokens = (
 
 	// Calculate tokens earned
 	let tokensEarned = Math.round(getAnticipatedRandomNum({
-		expectedValue: AVERAGE_TOKENS_FROM_MINING,
-		minimumValue: MIN_TOKENS_FROM_MINING
+		expectedValue: MINING_BASE_EXPECTED_TOKENS,
+		minimumValue: MIN_TOKENS_FOR_MINING
 	}));
 
 	perkService.doIfPlayerHas(Perks.MINE_BONUS, playerMining, () => {
