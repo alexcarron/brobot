@@ -1,7 +1,8 @@
+import { getMillisecondsOfDuration, toDurationText } from "../../utilities/date-time-utils";
 import { ids } from "../../bot-config/discord-ids";
 import { Parameter, ParameterTypes } from "../../services/command-creation/parameter";
 import { SlashCommand } from "../../services/command-creation/slash-command";
-import { HOURS_BEFORE_VOTING_TO_SEND_REMINDER } from "../../services/namesmith/constants/game-state.constants";
+import { TIME_BEFORE_VOTING_TO_SEND_REMINDER } from "../../services/namesmith/constants/game-state.constants";
 import { NamesmithEvents } from "../../services/namesmith/event-listeners/namesmith-events";
 
 type EventWithoutDataKey = 'PickAPerk' | 'DayStart' | 'StartVoting' | 'EndVoting' | 'WeekStart';
@@ -53,9 +54,16 @@ export const command = new SlashCommand({
 			return `You provided an invalid event key: \`${eventKey}\``;
 
 		if (eventKey === VOTING_START_REMINDER_KEY) {
-			const hours = hoursUntilVotingStarts ?? Math.max(...HOURS_BEFORE_VOTING_TO_SEND_REMINDER);
-			NamesmithEvents.VotingStartReminder.triggerEvent({ hoursUntilVotingStarts: hours });
-			return `Successfully triggered the \`${eventKey}\` Namesmith event for ${hours} hours before voting starts!`;
+			const configuredDurations = TIME_BEFORE_VOTING_TO_SEND_REMINDER();
+			const longestConfiguredDuration = configuredDurations.reduce((longest, duration) =>
+				getMillisecondsOfDuration(duration) > getMillisecondsOfDuration(longest) ? duration : longest
+			);
+			const durationUntilVotingStarts = hoursUntilVotingStarts !== undefined
+				? { hours: hoursUntilVotingStarts }
+				: longestConfiguredDuration;
+
+			NamesmithEvents.VotingStartReminder.triggerEvent({ durationUntilVotingStarts });
+			return `Successfully triggered the \`${eventKey}\` Namesmith event for ${toDurationText(durationUntilVotingStarts)} before voting starts!`;
 		}
 
 		if (eventKey === REFILL_REMINDER_KEY) {

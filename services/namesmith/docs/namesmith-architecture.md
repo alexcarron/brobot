@@ -166,9 +166,10 @@ All handlers are registered in `event-listeners/setup-event-listeners.ts`. Indiv
 
 `GameStateService` computes every event time from a single `startDate` stored in the DB.
 
-- **timeVotingStarts**: `startDate` plus `DAYS_TO_BUILD_NAME` (7).
-- **timeVotingEnds**: `startDate` plus `DAYS_TO_BUILD_NAME` plus `DAYS_TO_VOTE` (10).
-- **timesPickAPerkStarts**: Offsets of 3 and 6 days from each week boundary within the build phase.
+- **timeVotingStarts**: `startDate` plus the build phase duration.
+- **timeVotingEnds**: `timeVotingStarts` plus the vote phase duration
+- **timesPickAPerkStarts**: Offsets from the perk window offsets from week start from each week boundary within the build phase.
+- Every game-state timing constant in `constants/game-state.constants.ts` is a `Duration` chosen via `chooseByEnv`, so the dev bot automatically runs a compressed version of the game loop (minutes instead of days) without touching production values.
 - **timesDayStarts**: One entry per day, from start to vote start.
 - **timesWeekStarts**: One entry per seven day block, from start to vote start.
 

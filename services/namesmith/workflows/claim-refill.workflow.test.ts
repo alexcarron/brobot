@@ -10,9 +10,9 @@ jest.mock('cron', () => ({
   })),
 }));
 
-import { addDays, addHours } from "../../../utilities/date-time-utils";
+import { addDays, addDuration, addHours } from "../../../utilities/date-time-utils";
 import { makeSure } from "../../../utilities/jest/jest-utils";
-import { AVERAGE_TOKENS_FROM_REFILLING, REFILL_COOLDOWN_HOURS } from "../constants/namesmith.constants";
+import { AVERAGE_TOKENS_FROM_REFILLING, REFILL_COOLDOWN_DURATION } from "../constants/namesmith.constants";
 import { Perks } from "../constants/perks.constants";
 import { INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
@@ -55,7 +55,7 @@ describe('claim-tokens.workflow', () => {
 			makeSure(newTokenCount).is(mockPlayer.tokens + AVERAGE_TOKENS_FROM_REFILLING);
 			makeSure(baseTokensEarned).is(AVERAGE_TOKENS_FROM_REFILLING);
 
-			const expectedDate = addHours(new Date(), REFILL_COOLDOWN_HOURS);
+			const expectedDate = addDuration(new Date(), REFILL_COOLDOWN_DURATION);
 			makeSure(nextRefillTime).isCloseToDate(expectedDate);
 			makeSure(tokensFromRefillBonus).is(0);
 			makeSure(tokensFromLuckyDoubleTokens).is(0);

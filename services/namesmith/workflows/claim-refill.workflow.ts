@@ -1,8 +1,8 @@
 
 import { PlayerResolvable } from '../types/player.types';
-import { AVERAGE_TOKENS_FROM_REFILLING, MIN_TOKENS_FROM_REFILLING, REFILL_COOLDOWN_HOURS } from '../constants/namesmith.constants';
+import { AVERAGE_TOKENS_FROM_REFILLING, MIN_TOKENS_FROM_REFILLING, REFILL_COOLDOWN_DURATION } from '../constants/namesmith.constants';
 import { getAnticipatedRandomNum, getRandomBoolean } from '../../../utilities/random-utils';
-import { addHours } from '../../../utilities/date-time-utils';
+import { addDuration, addHours } from '../../../utilities/date-time-utils';
 import { getWorkflowResultCreator, provides } from './workflow-result-creator';
 import { Perks } from '../constants/perks.constants';
 import { getNamesmithServices } from '../services/get-namesmith-services';
@@ -115,7 +115,7 @@ export const claimRefill = (
 	});
 
 	const newTokenCount = playerService.getTokens(playerRefilling);
-	const nextRefillTime = addHours(newLastRefillTime, REFILL_COOLDOWN_HOURS);
+	const nextRefillTime = addDuration(newLastRefillTime, REFILL_COOLDOWN_DURATION);
 
 	if (playerService.hasRefillReminderEnabled(playerRefilling)) {
 		refillReminderService.scheduleReminder(playerService.resolveID(playerRefilling), nextRefillTime);

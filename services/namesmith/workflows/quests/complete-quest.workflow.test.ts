@@ -3,7 +3,7 @@ import { failTest, makeSure, repeatEveryIntervalUntil, repeatOverDuration } from
 import { repeat } from "../../../../utilities/loop-utils";
 import { getBetween, getRandomUUID } from "../../../../utilities/random-utils";
 import { UTILITY_CHARACTERS } from "../../constants/characters.constants";
-import { REFILL_COOLDOWN_HOURS } from "../../constants/namesmith.constants";
+import { REFILL_COOLDOWN_DURATION } from "../../constants/namesmith.constants";
 import { Quests } from "../../constants/quests.constants";
 import { FREEBIE_QUEST_NAME, INVALID_PLAYER_ID, INVALID_QUEST_ID } from "../../constants/test.constants";
 import { DatabaseQuerier } from "../../database/database-querier";
@@ -1225,7 +1225,7 @@ describe('complete-quest.workflow.ts', () => {
 				it('returns a success if the player claimed a refill the moment the cooldown expired', () => {
 					forcePlayerToClaimRefill(SOME_PLAYER);
 
-					jest.setSystemTime(addHours(new Date(), REFILL_COOLDOWN_HOURS));
+					jest.setSystemTime(addDuration(new Date(), REFILL_COOLDOWN_DURATION));
 					forcePlayerToClaimRefill(SOME_PLAYER);
 
 					const result = completeQuest({
@@ -1238,7 +1238,7 @@ describe('complete-quest.workflow.ts', () => {
 				it('returns a success if the player claimed a refill 60 seconds after the cooldown expired', () => {
 					forcePlayerToClaimRefill(SOME_PLAYER);
 
-					jest.setSystemTime(addHours(new Date(), REFILL_COOLDOWN_HOURS));
+					jest.setSystemTime(addDuration(new Date(), REFILL_COOLDOWN_DURATION));
 					jest.setSystemTime(addSeconds(new Date(), 60));
 					forcePlayerToClaimRefill(SOME_PLAYER);
 
@@ -1252,7 +1252,7 @@ describe('complete-quest.workflow.ts', () => {
 				it('returns a failure if the player claimed a refill 61 seconds after the cooldown expired', () => {
 					forcePlayerToClaimRefill(SOME_PLAYER);
 
-					jest.setSystemTime(addHours(new Date(), REFILL_COOLDOWN_HOURS));
+					jest.setSystemTime(addDuration(new Date(), REFILL_COOLDOWN_DURATION));
 					jest.setSystemTime(addSeconds(new Date(), 61));
 					forcePlayerToClaimRefill(SOME_PLAYER);
 

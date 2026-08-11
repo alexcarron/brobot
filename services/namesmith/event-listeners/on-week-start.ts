@@ -1,3 +1,4 @@
+import { logInfo } from "../../../utilities/logging-utils";
 import { sendShownWeeklyQuestsMessages } from "../interfaces/quests/weekly-quests-message";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 
@@ -11,4 +12,7 @@ export async function onWeekStart() {
 	const thisWeek = weekService.addNewWeek(now);
 	questService.assignNewShownWeeklyQuests(thisWeek);
 	await sendShownWeeklyQuestsMessages();
+
+	logInfo(`Week ${thisWeek.id} started at ${thisWeek.timeStarted.toISOString()}.`);
+	logInfo(`Weekly quests assigned.`);
 }

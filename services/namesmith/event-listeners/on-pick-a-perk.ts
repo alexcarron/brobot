@@ -1,3 +1,4 @@
+import { logInfo } from "../../../utilities/logging-utils";
 import { sendPickAPerkMessage } from "../interfaces/pick-a-perk-message";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 
@@ -10,4 +11,7 @@ export async function onPickAPerk() {
 	const threePerks = perkService.offerThreeRandomNewPerks();
 	playerService.resetAllHasPickedPerk();
 	await sendPickAPerkMessage(threePerks);
+
+	logInfo(`Pick a perk message sent.`);
+	logInfo(`hasPickedPerk field reset for all players.`);
 }

@@ -39,10 +39,10 @@ import { GameStateRepository } from "../repositories/game-state.repository";
 import { GameStateService } from "./game-state.service";
 import { PlayerService } from "./player.service";
 import { VoteService } from "./vote.service";
-import { addDays, addHours } from "../../../utilities/date-time-utils";
+import { addDays, addHours, subtractDuration } from "../../../utilities/date-time-utils";
 import { GameIsNotActiveError } from "../utilities/error.utility";
 import { makeSure } from "../../../utilities/jest/jest-utils";
-import { HOURS_BEFORE_VOTING_TO_SEND_REMINDER } from "../constants/game-state.constants";
+import { TIME_BEFORE_VOTING_TO_SEND_REMINDER } from "../constants/game-state.constants";
 
 
 describe('GameStateService', () => {
@@ -81,9 +81,9 @@ describe('GameStateService', () => {
 			const reminders = gameStateService.getTimesVotingStartRemindersSend();
 
 			makeSure(reminders).is(
-				HOURS_BEFORE_VOTING_TO_SEND_REMINDER.map(hoursUntilVotingStarts => ({
-					time: addHours(timeVotingStarts, -hoursUntilVotingStarts),
-					hoursUntilVotingStarts,
+				TIME_BEFORE_VOTING_TO_SEND_REMINDER().map(durationUntilVotingStarts => ({
+					time: subtractDuration(timeVotingStarts, durationUntilVotingStarts),
+					durationUntilVotingStarts,
 				}))
 			);
 		});
@@ -147,7 +147,7 @@ describe('GameStateService', () => {
 			makeSure(gameStateService.computeTimesPickAPerkStarts(
 				startDate,
 				addDays(startDate, 7*4),
-				[3, 6]
+				[{ days: 3 }, { days: 6 }]
 			)).is(expectedDates);
 		});
 	});

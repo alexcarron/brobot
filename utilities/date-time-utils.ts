@@ -147,6 +147,91 @@ export function getMillisecondsOfDuration(duration: Duration): number {
 }
 
 /**
+ * Normalizes a given duration by converting excess units into larger units.
+ * @param duration - The duration to normalize.
+ * @param duration.days - The number of days in the duration.
+ * @param duration.hours - The number of hours in the duration.
+ * @param duration.minutes - The number of minutes in the duration.
+ * @param duration.seconds - The number of seconds in the duration.
+ * @param duration.milliseconds - The number of milliseconds in the duration.
+ * @returns A new duration with each unit normalized to its appropriate range.
+ * @throws An error if any duration value is negative.
+ * @example
+ * const duration = normalizeDuration({
+ * 	days: 2,
+ * 	hours: 27,
+ * 	minutes: 125,
+ * 	seconds: 63,
+ * 	milliseconds: 1500,
+ * });
+ * // { days: 3, hours: 5, minutes: 6, seconds: 4, milliseconds: 500 }
+ */
+export function toNormalizedDuration(duration: Duration): Duration {
+  const days = duration?.days ?? 0;
+  const hours = duration?.hours ?? 0;
+  const minutes = duration?.minutes ?? 0;
+  const seconds = duration?.seconds ?? 0;
+  const milliseconds = duration?.milliseconds ?? 0;
+
+	if (days < 0)
+		throw new Error(`Expected duration days to be 0 or greater, but was ${days}`);
+
+	if (hours < 0)
+		throw new Error(`Expected duration hours to be 0 or greater, but was ${hours}`);
+
+	if (minutes < 0)
+		throw new Error(`Expected duration minutes to be 0 or greater, but was ${minutes}`);
+
+	if (seconds < 0)
+		throw new Error(`Expected duration seconds to be 0 or greater, but was ${seconds}`);
+
+	if (milliseconds < 0)
+		throw new Error(`Expected duration milliseconds to be 0 or greater, but was ${milliseconds}`);
+
+	const totalMilliseconds =
+		days * 24 * 60 * 60 * 1000 +
+		hours * 60 * 60 * 1000 +
+		minutes * 60 * 1000 +
+		seconds * 1000 +
+		milliseconds;
+
+	const normalizedDays = Math.floor(totalMilliseconds / (24 * 60 * 60 * 1000));
+	const normalizedHours = Math.floor(
+		(totalMilliseconds / (60 * 60 * 1000)) % 24,
+	);
+	const normalizedMinutes = Math.floor(
+		(totalMilliseconds / (60 * 1000)) % 60,
+	);
+	const normalizedSeconds = Math.floor(
+		(totalMilliseconds / 1000) % 60,
+	);
+	const normalizedMilliseconds = totalMilliseconds % 1000;
+
+	return {
+		days: normalizedDays,
+		hours: normalizedHours,
+		minutes: normalizedMinutes,
+		seconds: normalizedSeconds,
+		milliseconds: normalizedMilliseconds,
+	};
+}
+
+
+/**
+ * Scales a given duration by a factor
+ * @param duration - The duration to scale.
+ * @param factor - The factor to scale the duration by.
+ * @returns A new duration equal to the given duration multiplied by the given factor.
+ * @example
+ * const weekDuration = scaleDuration({ days: 1 }, 7); // { days: 7 }
+ */
+export function scaleDuration(duration: Duration, factor: number): Duration {
+	const millisecondsOfDuration = getMillisecondsOfDuration(duration);
+	const millisecondsOfFactoredDuration = millisecondsOfDuration * factor;
+	return toNormalizedDuration({ milliseconds: millisecondsOfFactoredDuration })
+}
+
+/**
  * Adds a specified duration to a given Date object.
  * @param date - The Date object to modify.
  * @param duration - The duration to add to the given Date object.
@@ -169,6 +254,32 @@ export function addDuration(
 	newDate.setMinutes((newDate.getMinutes() + (duration?.minutes ?? 0)));
 	newDate.setSeconds((newDate.getSeconds() + (duration?.seconds ?? 0)));
 	newDate.setMilliseconds((newDate.getMilliseconds() + (duration?.milliseconds ?? 0)));
+	return newDate;
+}
+
+/**
+ * Subtracts a specified duration from a given Date object.
+ * @param date - The Date object to modify.
+ * @param duration - The duration to subtract from the given Date object.
+ * @param duration.days - The number of days to subtract from the given Date object.
+ * @param duration.hours - The number of hours to subtract from the given Date object.
+ * @param duration.minutes - The number of minutes to subtract from the given Date object.
+ * @param duration.seconds - The number of seconds to subtract from the given Date object.
+ * @param duration.milliseconds - The number of milliseconds to subtract from the given Date object.
+ * @returns A new Date object with the specified duration subtracted from the original date.
+ * @example
+ * const fiveMinutesEarlier = subtractDuration(new Date(), { minutes: 5 });
+ */
+export function subtractDuration(
+	date: Date,
+	duration: Duration,
+): Date {
+	const newDate = new Date(date.getTime());
+	newDate.setDate((newDate.getDate() - (duration?.days ?? 0)));
+	newDate.setHours((newDate.getHours() - (duration?.hours ?? 0)));
+	newDate.setMinutes((newDate.getMinutes() - (duration?.minutes ?? 0)));
+	newDate.setSeconds((newDate.getSeconds() - (duration?.seconds ?? 0)));
+	newDate.setMilliseconds((newDate.getMilliseconds() - (duration?.milliseconds ?? 0)));
 	return newDate;
 }
 

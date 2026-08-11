@@ -1,15 +1,15 @@
-import { logWarning } from "../../../utilities/logging-utils";
+import { logInfo, logWarning } from "../../../utilities/logging-utils";
 import { GameStateRepository } from "../repositories/game-state.repository";
 import { VoteService } from "./vote.service";
 import { PlayerService } from "./player.service";
 import { RecipeService } from "./recipe.service";
-import { addDays, addHours } from "../../../utilities/date-time-utils";
+import { addDuration, Duration, subtractDuration, toDurationText } from "../../../utilities/date-time-utils";
 import { CronJobScheduler } from "../../../utilities/cron-job-scheduler";
 import { DatabaseQuerier } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
 import { NamesmithEvents } from "../event-listeners/namesmith-events";
 import { GameIsNotActiveError, GameStateInitializationError } from "../utilities/error.utility";
-import { BIWEEKLY_PERK_DAYS_FROM_WEEK_START, DAYS_TO_BUILD_NAME, DAYS_TO_VOTE, HOURS_BEFORE_VOTING_TO_SEND_REMINDER } from "../constants/game-state.constants";
+import { BUILD_PHASE_DURATION, DAY_DURATION, TIME_BEFORE_VOTING_TO_SEND_REMINDER, PERK_WINDOW_OFFSETS_FROM_WEEK_START, VOTE_PHASE_DURATION, WEEK_DURATION } from "../constants/game-state.constants";
 
 /**
  * Provides methods for interacting with the game state.
@@ -71,18 +71,18 @@ export class GameStateService {
 	}
 
 	getTimeVotingStarts(): Date {
-		return addDays(this.getTimeGameStarts(), DAYS_TO_BUILD_NAME);
+		return addDuration(this.getTimeGameStarts(), BUILD_PHASE_DURATION());
 	}
 
 	getTimeVotingEnds(): Date {
-		return addDays(this.getTimeGameStarts(), DAYS_TO_BUILD_NAME + DAYS_TO_VOTE);
+		return addDuration(this.getTimeVotingStarts(), VOTE_PHASE_DURATION());
 	}
 
 	getTimesPickAPerkStarts(): Date[] {
 		return this.computeTimesPickAPerkStarts(
 			this.getTimeGameStarts(),
 			this.getTimeVotingStarts(),
-			BIWEEKLY_PERK_DAYS_FROM_WEEK_START
+			PERK_WINDOW_OFFSETS_FROM_WEEK_START()
 		);
 	}
 
@@ -101,15 +101,15 @@ export class GameStateService {
 	}
 
 	/**
-	 * Returns when each reminder to finalize a name is sent, along with how many hours before voting starts that reminder is.
+	 * Returns when each reminder to finalize a name is sent, along with how long before voting starts that reminder is.
 	 * @returns An entry for each configured reminder, in the order the reminders are configured.
 	 */
-	getTimesVotingStartRemindersSend(): { time: Date; hoursUntilVotingStarts: number }[] {
+	getTimesVotingStartRemindersSend(): { time: Date; durationUntilVotingStarts: Duration }[] {
 		const timeVotingStarts = this.getTimeVotingStarts();
 
-		return HOURS_BEFORE_VOTING_TO_SEND_REMINDER.map(hoursUntilVotingStarts => ({
-			time: addHours(timeVotingStarts, -hoursUntilVotingStarts),
-			hoursUntilVotingStarts,
+		return TIME_BEFORE_VOTING_TO_SEND_REMINDER().map(durationUntilVotingStarts => ({
+			time: subtractDuration(timeVotingStarts, durationUntilVotingStarts),
+			durationUntilVotingStarts,
 		}));
 	}
 
@@ -118,8 +118,8 @@ export class GameStateService {
 	 * @param startDate - The date to set as the start of the game.
 	 */
 	setupTimings(startDate: Date) {
-		const timeVotingStarts = addDays(startDate, DAYS_TO_BUILD_NAME);
-		const timeVotingEnds = addDays(startDate, DAYS_TO_BUILD_NAME + DAYS_TO_VOTE);
+		const timeVotingStarts = addDuration(startDate, BUILD_PHASE_DURATION());
+		const timeVotingEnds = addDuration(timeVotingStarts, VOTE_PHASE_DURATION());
 
 		this.gameStateRepository.setGameState({
 			timeStarted: startDate,
@@ -130,23 +130,23 @@ export class GameStateService {
 
 	/**
 	 * Returns an array of dates representing the start of each week's "pick a perk" phase.
-	 * The dates are calculated based on the given start date and the configured constants for the length of the build name phase and the days offset from the week start.
+	 * The dates are calculated based on the given start date and the configured constants for the length of the build name phase and the offsets from the week start.
 	 * @param startDate - The start date of the game.
 	 * @param endDate - The end date of the game.
-	 * @param pickAPerkDaysFromWeekStart - The days offset from the week start for each "pick a perk" phase.
+	 * @param pickAPerkOffsetsFromWeekStart - The offsets from the week start for each "pick a perk" phase.
 	 * @returns An array of dates representing the start of each week's "pick a perk" phase.
 	 */
 	computeTimesPickAPerkStarts(
 		startDate: Date,
 		endDate: Date,
-		pickAPerkDaysFromWeekStart: number[]
+		pickAPerkOffsetsFromWeekStart: Duration[]
 	): Date[] {
 		const pickAPerkTimes: Date[] = [];
 
 		let currentWeekStart = startDate;
 		while (currentWeekStart < endDate) {
-			for (const daysOffset of pickAPerkDaysFromWeekStart) {
-				const pickAPerkTime = addDays(currentWeekStart, daysOffset);
+			for (const offset of pickAPerkOffsetsFromWeekStart) {
+				const pickAPerkTime = addDuration(currentWeekStart, offset);
 
 				if (pickAPerkTime >= endDate) {
 					return pickAPerkTimes;
@@ -155,7 +155,7 @@ export class GameStateService {
 					pickAPerkTimes.push(pickAPerkTime);
 				}
 			}
-			currentWeekStart = addDays(currentWeekStart, 7);
+			currentWeekStart = addDuration(currentWeekStart, WEEK_DURATION());
 		}
 
 		return pickAPerkTimes;
@@ -176,7 +176,7 @@ export class GameStateService {
 		let currentDayStart = startDate;
 		while (currentDayStart < endDate) {
 			times.push(currentDayStart);
-			currentDayStart = addDays(currentDayStart, 1);
+			currentDayStart = addDuration(currentDayStart, DAY_DURATION());
 		}
 
 		return times;
@@ -196,7 +196,7 @@ export class GameStateService {
 		let currentWeekStart = startDate;
 		while (currentWeekStart < endDate) {
 			times.push(currentWeekStart);
-			currentWeekStart = addDays(currentWeekStart, 7);
+			currentWeekStart = addDuration(currentWeekStart, WEEK_DURATION());
 		}
 
 		return times;
@@ -215,7 +215,7 @@ export class GameStateService {
 			throw new GameStateInitializationError();
 
 		for (const dayStart of dayStarts) {
-			const dayEnd = addDays(dayStart, 1);
+			const dayEnd = addDuration(dayStart, DAY_DURATION());
 
 			if (now >= dayStart && now < dayEnd) {
 				return dayStart;
@@ -238,7 +238,7 @@ export class GameStateService {
 			throw new GameStateInitializationError();
 
 		for (const weekStart of weekStarts) {
-			const weekEnd = addDays(weekStart, 7);
+			const weekEnd = addDuration(weekStart, WEEK_DURATION());
 
 			if (now >= weekStart && now < weekEnd) {
 				return weekStart;
@@ -299,25 +299,31 @@ export class GameStateService {
 			() => NamesmithEvents.EndVoting.triggerEvent({})
 		);
 
-		this.gameEventsScheduler.scheduleTaskAtEachDate("pick a perk", this.getTimesPickAPerkStarts(),
+		const pickAPerkTimes = this.getTimesPickAPerkStarts();
+		this.gameEventsScheduler.scheduleTaskAtEachDate("pick a perk", pickAPerkTimes,
 			() => NamesmithEvents.PickAPerk.triggerEvent({})
 		);
 
-		this.gameEventsScheduler.scheduleTaskAtEachDate("day start", this.getTimesDayStarts(),
+		const dayStartTimes = this.getTimesDayStarts();
+		this.gameEventsScheduler.scheduleTaskAtEachDate("day start", dayStartTimes,
 			() => NamesmithEvents.DayStart.triggerEvent({})
 		);
 
-		this.gameEventsScheduler.scheduleTaskAtEachDate("week start", this.getTimesWeekStarts(),
+		const weekStartTimes = this.getTimesWeekStarts();
+		this.gameEventsScheduler.scheduleTaskAtEachDate("week start", weekStartTimes,
 			() => NamesmithEvents.WeekStart.triggerEvent({})
 		);
 
-		for (const { time, hoursUntilVotingStarts } of this.getTimesVotingStartRemindersSend()) {
+		const votingStartReminders = this.getTimesVotingStartRemindersSend();
+		for (const { time, durationUntilVotingStarts } of votingStartReminders) {
 			this.gameEventsScheduler.scheduleTaskAt(
-				`voting start reminder ${hoursUntilVotingStarts} hours before`,
+				`voting start reminder ${toDurationText(durationUntilVotingStarts)} before`,
 				time,
-				() => NamesmithEvents.VotingStartReminder.triggerEvent({ hoursUntilVotingStarts })
+				() => NamesmithEvents.VotingStartReminder.triggerEvent({ durationUntilVotingStarts })
 			);
 		}
+
+		logInfo(`Game events scheduled: start voting, end voting, ${pickAPerkTimes.length} pick-a-perk, ${dayStartTimes.length} day starts, ${weekStartTimes.length} week starts, ${votingStartReminders.length} voting reminders.`);
 	}
 
 	/**

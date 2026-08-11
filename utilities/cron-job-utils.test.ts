@@ -8,6 +8,7 @@ jest.mock('cron', () => ({
 jest.mock('./logging-utils', () => ({
 	logError: jest.fn(),
 	logWarning: jest.fn(),
+	logInfo: jest.fn(),
 }));
 
 import { CronJob } from "cron";

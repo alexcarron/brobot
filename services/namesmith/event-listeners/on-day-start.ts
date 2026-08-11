@@ -1,5 +1,6 @@
 import { getYesterday } from "../../../utilities/date-time-utils";
 import { dmUser } from "../../../utilities/discord-action-utils";
+import { logInfo } from "../../../utilities/logging-utils";
 import { toAmountOfNoun } from "../../../utilities/string-manipulation-utils";
 import { IDLE_INTEREST_TOKEN_REWARD, INVESTMENT_PERCENTAGE, Perks } from "../constants/perks.constants";
 import { sendShownDailyQuestsDisplay } from "../interfaces/quests/daily-quests-display";
@@ -18,6 +19,9 @@ export async function onDayStart() {
 	questService.assignNewShownDailyQuests(today);
 	await sendShownDailyQuestsDisplay();
 	await sendHiddenQuestsMessages();
+
+	logInfo(`Day ${today.id} started at ${today.timeStarted.toISOString()}.`);
+	logInfo(`Daily quests assigned.`);
 
 	await perkService.doForAllPlayersWithPerk(Perks.INVESTMENT,
 		async (player) => {

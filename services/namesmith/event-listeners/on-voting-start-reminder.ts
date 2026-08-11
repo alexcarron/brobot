@@ -4,10 +4,10 @@ import { NamesmithEvents, RelevantDataOf } from './namesmith-events';
 /**
  * Reminds players to finalize and publish their name before voting starts.
  * @param relevantData - The data of the triggered event.
- * @param relevantData.hoursUntilVotingStarts - How many hours before voting starts this reminder is sent.
+ * @param relevantData.durationUntilVotingStarts - How long before voting starts this reminder is sent.
  */
 export async function onVotingStartReminder(
-	{ hoursUntilVotingStarts }: RelevantDataOf<typeof NamesmithEvents.VotingStartReminder>
+	{ durationUntilVotingStarts }: RelevantDataOf<typeof NamesmithEvents.VotingStartReminder>
 ) {
-	await sendVotingStartReminderMessage({ hoursUntilVotingStarts });
+	await sendVotingStartReminderMessage({ durationUntilVotingStarts });
 }

@@ -1,3 +1,5 @@
+import { Duration } from "../../../utilities/date-time-utils";
+
 /**
  * The name displayed for a player with no current name.
  */
@@ -14,6 +16,6 @@ export const MIN_TOKENS_FROM_REFILLING = 50;
 export const AVERAGE_TOKENS_FROM_REFILLING = 75;
 
 /**
- * The number of hours players must wait between refills.
+ * How long players must wait between refills.
  */
-export const REFILL_COOLDOWN_HOURS = 2;
+export const REFILL_COOLDOWN_DURATION: Duration = { hours: 2 };

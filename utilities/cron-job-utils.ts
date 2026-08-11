@@ -1,5 +1,5 @@
 import { CronJob } from "cron";
-import { logError, logWarning } from "./logging-utils";
+import { logError, logInfo, logWarning } from "./logging-utils";
 
 /**
  * A task that a cron job runs when it fires.
@@ -28,9 +28,13 @@ function toErrorLoggingTask(taskName: string, task: ScheduledTask): () => void {
 			const result = task();
 
 			if (result instanceof Promise) {
-				result.catch((error: unknown) => {
-					logError(`The scheduled task "${taskName}" failed.`, error instanceof Error ? error : undefined);
-				});
+				return result.then(
+					() => logInfo(`Scheduled task "${taskName}" fired.`),
+					(error: unknown) => logError(`The scheduled task "${taskName}" failed.`, error instanceof Error ? error : undefined)
+				);
+			}
+			else {
+				logInfo(`Scheduled task "${taskName}" fired.`);
 			}
 		}
 		catch (error) {
@@ -70,6 +74,7 @@ export function scheduleTaskAt(
 
 	const cronJob = new CronJob(date, toErrorLoggingTask(taskName, task));
 	cronJob.start();
+	logInfo(`Scheduled "${taskName}" to run at ${date.toISOString()}.`);
 	return cronJob;
 }
 

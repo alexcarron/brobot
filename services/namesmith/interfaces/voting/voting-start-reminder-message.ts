@@ -1,6 +1,6 @@
-import { toUnixTimestamp } from "../../../../utilities/date-time-utils";
+import { Duration, getMillisecondsOfDuration, toUnixTimestamp } from "../../../../utilities/date-time-utils";
 import { joinLines } from "../../../../utilities/string-manipulation-utils";
-import { HOURS_BEFORE_VOTING_TO_SEND_REMINDER } from "../../constants/game-state.constants";
+import { TIME_BEFORE_VOTING_TO_SEND_REMINDER } from "../../constants/game-state.constants";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { sendToPublishedNamesChannel } from "../../utilities/discord-action.utility";
 import { getPingForAllPlayers } from "../../utilities/player-message.utility";
@@ -8,17 +8,17 @@ import { getPingForAllPlayers } from "../../utilities/player-message.utility";
 /**
  * Builds the message reminding players to finalize and publish their name before voting starts.
  * @param parameters - An object containing the following parameters:
- * @param parameters.hoursUntilVotingStarts - How many hours before voting starts this reminder is sent.
+ * @param parameters.durationUntilVotingStarts - How long before voting starts this reminder is sent.
  * @returns The contents of the reminder message.
  */
 export function getVotingStartReminderMessage(
-	{ hoursUntilVotingStarts }: { hoursUntilVotingStarts: number }
+	{ durationUntilVotingStarts }: { durationUntilVotingStarts: Duration }
 ): string {
 	const { gameStateService } = getNamesmithServices();
 	const timeVotingStarts = gameStateService.getTimeVotingStarts();
 	const votingStartsTimestamp = `<t:${toUnixTimestamp(timeVotingStarts)}:R>`;
 
-	if (isFinalReminder(hoursUntilVotingStarts)) {
+	if (isFinalReminder(durationUntilVotingStarts)) {
 		return joinLines(
 			getPingForAllPlayers(),
 			`Last chance. Voting starts ${votingStartsTimestamp}.`,
@@ -39,23 +39,27 @@ export function getVotingStartReminderMessage(
 
 /**
  * Determines whether a reminder is the last one players receive before voting starts.
- * @param hoursUntilVotingStarts - How many hours before voting starts the reminder is sent.
+ * @param durationUntilVotingStarts - How long before voting starts the reminder is sent.
  * @returns Whether this is the final reminder.
  */
-function isFinalReminder(hoursUntilVotingStarts: number): boolean {
-	return hoursUntilVotingStarts === Math.min(...HOURS_BEFORE_VOTING_TO_SEND_REMINDER);
+function isFinalReminder(durationUntilVotingStarts: Duration): boolean {
+	const shortestDuration = Math.min(
+		...TIME_BEFORE_VOTING_TO_SEND_REMINDER().map(getMillisecondsOfDuration)
+	);
+
+	return getMillisecondsOfDuration(durationUntilVotingStarts) === shortestDuration;
 }
 
 /**
  * Sends the reminder to finalize and publish a name to the published names channel.
  * @param parameters - An object containing the following parameters:
- * @param parameters.hoursUntilVotingStarts - How many hours before voting starts this reminder is sent.
+ * @param parameters.durationUntilVotingStarts - How long before voting starts this reminder is sent.
  * @returns A promise that resolves once the reminder has been sent.
  */
 export async function sendVotingStartReminderMessage(
-	{ hoursUntilVotingStarts }: { hoursUntilVotingStarts: number }
+	{ durationUntilVotingStarts }: { durationUntilVotingStarts: Duration }
 ): Promise<void> {
 	await sendToPublishedNamesChannel(
-		getVotingStartReminderMessage({ hoursUntilVotingStarts })
+		getVotingStartReminderMessage({ durationUntilVotingStarts })
 	);
 }

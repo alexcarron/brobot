@@ -23,9 +23,9 @@ jest.mock("../../../utilities/discord-action-utils", () => ({
   addButtonToMessageContents: jest.fn(),
 }));
 
-import { addDays, addHours, addSeconds, OLDEST_DATE } from "../../../utilities/date-time-utils";
+import { addDays, addDuration, addSeconds, OLDEST_DATE, subtractDuration } from "../../../utilities/date-time-utils";
 import { makeSure } from "../../../utilities/jest/jest-utils";
-import { REFILL_COOLDOWN_HOURS } from "../constants/namesmith.constants";
+import { REFILL_COOLDOWN_DURATION } from "../constants/namesmith.constants";
 import { INVALID_PLAYER_ID } from "../constants/test.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { PlayerRepository } from "../repositories/player.repository";
@@ -584,7 +584,7 @@ describe('PlayerService', () => {
         lastClaimedRefillTime : YESTERDAY
       });
       const result = playerService.getNextAvailableRefillTime(mockPlayer.id);
-      makeSure(result).isCloseToDate(addHours(YESTERDAY, REFILL_COOLDOWN_HOURS));
+      makeSure(result).isCloseToDate(addDuration(YESTERDAY, REFILL_COOLDOWN_DURATION));
     });
 
     it('should throw an error if the player is not found', () => {
@@ -622,7 +622,7 @@ describe('PlayerService', () => {
 
     it('should return true if the player refilled exactly the cooldown ago', () => {
       const mockPlayer = addMockPlayer(db, {
-        lastClaimedRefillTime : addHours(NOW, -REFILL_COOLDOWN_HOURS)
+        lastClaimedRefillTime : subtractDuration(NOW, REFILL_COOLDOWN_DURATION)
       });
       const result = playerService.canRefill(mockPlayer.id);
       makeSure(result).isTrue();

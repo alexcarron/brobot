@@ -1,3 +1,4 @@
+import { Duration } from "../../../utilities/date-time-utils";
 import { Player } from "../types/player.types";
 import { PublishedName } from "../types/published-name.types";
 
@@ -20,7 +21,7 @@ export const NamesmithEvents = {
 	EndVoting: createEventHandler<{}>(),
 
 	VotingStartReminder: createEventHandler<{
-		hoursUntilVotingStarts: number;
+		durationUntilVotingStarts: Duration;
 	}>(),
 
 	PickAPerk: createEventHandler<{}>(),

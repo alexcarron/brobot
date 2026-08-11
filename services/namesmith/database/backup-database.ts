@@ -1,4 +1,5 @@
 import { logError, logSuccess } from "../../../utilities/logging-utils";
+import { chooseByEnv } from "../../../utilities/environment-utils";
 
 import * as fs from 'fs-extra';
 import * as path from 'path';
@@ -67,12 +68,22 @@ export const createBackup = async (): Promise<void> => {
 };
 
 /**
- * Starts a cron job that runs the backup every hour.
+ * The cron expression the backup job runs on.
+ * @returns The cron expression the backup job runs on.
+ */
+export function BACKUP_CRON_SCHEDULE(): string {
+	return chooseByEnv({
+		development: '*/1 * * * *',
+		production: '6 * * * *',
+	});
+}
+
+/**
+ * Starts a cron job that runs the backup every hour in production, or every minute in development.
  * @returns The scheduled cron job instance.
  */
 export async function startBackupCronJob() {
-  // Schedule: At minute 0 past every hour
-  const task = cron.schedule('6 * * * *', async () => {
+  const task = cron.schedule(BACKUP_CRON_SCHEDULE(), async () => {
     await createBackup();
   });
 
