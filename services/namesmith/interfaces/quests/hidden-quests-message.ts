@@ -3,7 +3,8 @@ import { fetchNamesmithChannel } from "../../utilities/discord-fetch.utility";
 import { ids } from "../../../../bot-config/discord-ids";
 import { ignoreError } from "../../../../utilities/error-utils";
 import { toQuestButton } from "./complete-quest-button";
-import { closeChannel, setNewMessageInChannel } from "../../../../utilities/discord-action-utils";
+import { closeChannel } from "../../../../utilities/discord/permission-utils";
+import { setNewMessageInChannel } from "../../../../utilities/discord/message-utils";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 
 

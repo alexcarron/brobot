@@ -1,8 +1,11 @@
 const { PermissionFlagsBits, ChannelType } = require("discord.js");
 const { Parameter } = require("../../../services/command-creation/parameter");
 const { SlashCommand } = require("../../../services/command-creation/slash-command");
-const { fetchChannelsInCategory, getRequiredStringParam, getGuildOfInteraction, fetchCategory, fetchChannelsOfGuild } = require("../../../utilities/discord-fetch-utils");
-const { deferInteraction, editReplyToInteraction } = require("../../../utilities/discord-action-utils");
+const { fetchChannelsInCategory, fetchCategory } = require("../../../utilities/discord/category-utils");
+const { getRequiredStringParam } = require("../../../utilities/discord/interaction-param-utils");
+const { getGuildOfInteraction } = require("../../../utilities/discord/guild-utils");
+const { fetchChannelsOfGuild } = require("../../../utilities/discord/channel-utils");
+const { deferInteraction, editReplyToInteraction } = require("../../../utilities/discord/interaction-reply-utils");
 const { logInfo, logError } = require("../../../utilities/logging-utils");
 const { throwIfNotError } = require("../../../utilities/error-utils");
 

@@ -1,8 +1,9 @@
 const { Message, ChannelType } = require("discord.js");
 const { ids } = require("../bot-config/discord-ids");
-const { fetchGuild, fetchTextChannel } = require("../utilities/discord-fetch-utils");
+const { fetchGuild } = require("../utilities/discord/guild-utils");
+const { fetchTextChannel } = require("../utilities/discord/channel-utils");
 const { InvalidArgumentError } = require("../utilities/error-utils");
-const { sendMessageInChannel } = require("../utilities/discord-action-utils");
+const { sendMessageInChannel } = require("../utilities/discord/message-utils");
 
 /**
  * Logs a direct message in the DM log channel on the Brobot testing server

@@ -1,13 +1,12 @@
 
-const { deferInteraction } = require('../../utilities/discord-action-utils');
+const { confirmInteractionWithButtons, deferInteraction } = require("../../utilities/discord/interaction-reply-utils");
 const { Parameter } = require("../../services/command-creation/parameter");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { PermissionFlagsBits } = require('discord.js');
 const { LLPointManager } = require('../../services/ll-points/ll-point-manager.js');
 const { findStringStartingWith } = require('../../utilities/string-manipulation-utils');
-const { confirmInteractionWithButtons } = require('../../utilities/discord-action-utils');
 const { logInfo } = require('../../utilities/logging-utils');
-const { getRequiredStringParam, getRequiredNumberParam } = require('../../utilities/discord-fetch-utils.js');
+const { getRequiredNumberParam, getRequiredStringParam } = require("../../utilities/discord/interaction-param-utils");
 const Viewer = require('../../services/ll-points/viewer.js');
 
 

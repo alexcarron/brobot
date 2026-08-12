@@ -1,5 +1,5 @@
 import { ButtonInteraction, ButtonStyle } from "discord.js";
-import { replyToInteraction } from "../../../../utilities/discord-action-utils";
+import { replyToInteraction } from "../../../../utilities/discord/interaction-reply-utils";
 import { toRankEmoji } from "../../utilities/player-message.utility";
 import { clearMyVotes } from "../../workflows/voting/clear-my-votes.workflow";
 import { DiscordButton } from "../../../../utilities/discord-interfaces/discord-button";

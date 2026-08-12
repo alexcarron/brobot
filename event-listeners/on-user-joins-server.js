@@ -1,8 +1,8 @@
 const { ids } = require("../bot-config/discord-ids");
 const { isMemberInNamesmith, onUserJoinsNamesmith } = require("../services/namesmith/event-listeners/on-join-server");
 const { RDMDiscordRole } = require("../services/rapid-discord-mafia/discord-service");
-const { addRoleToMember } = require("../utilities/discord-action-utils");
-const { fetchGuild, fetchRole, fetchRoleByName } = require("../utilities/discord-fetch-utils");
+const { addRoleToMember, fetchRole, fetchRoleByName } = require("../utilities/discord/role-utils");
+const { fetchGuild } = require("../utilities/discord/guild-utils");
 
 /**
  * Handles actions to be taken when a user joins a server.

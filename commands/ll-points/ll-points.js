@@ -3,10 +3,10 @@ const { EmbedBuilder } = require('discord.js');
 const { Parameter } = require("../../services/command-creation/parameter");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { LLPointManager } = require("../../services/ll-points/ll-point-manager.js");
-const { deferInteraction } = require("../../utilities/discord-action-utils");
+const { deferInteraction } = require("../../utilities/discord/interaction-reply-utils");
 const { LLPointTier } = require('../../services/ll-points/ll-point-enums.js');
 const { logInfo } = require('../../utilities/logging-utils');
-const { getStringParamValue } = require('../../utilities/discord-fetch-utils');
+const { getStringParamValue } = require('../../utilities/discord/interaction-param-utils');
 
 
 const Parameters = {

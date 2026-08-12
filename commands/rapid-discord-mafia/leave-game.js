@@ -1,8 +1,7 @@
 const { ids } = require("../../bot-config/discord-ids");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { GameState } = require("../../services/rapid-discord-mafia/game-state-manager.js");
-const { deferInteraction } = require("../../utilities/discord-action-utils");
-const { confirmInteractionWithButtons } = require("../../utilities/discord-action-utils");
+const { confirmInteractionWithButtons, deferInteraction } = require("../../utilities/discord/interaction-reply-utils");
 
 module.exports = new SlashCommand({
 	name: "leave-game",

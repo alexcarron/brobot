@@ -1,5 +1,5 @@
 import { ButtonInteraction, ButtonStyle } from "discord.js";
-import { replyToInteraction } from "../../../../utilities/discord-action-utils";
+import { replyToInteraction } from "../../../../utilities/discord/interaction-reply-utils";
 import { DiscordButtonDefinition } from "../../../../utilities/discord-interfaces/discord-button";
 import { DiscordButtons } from "../../../../utilities/discord-interfaces/discord-buttons";
 import { wait } from "../../../../utilities/realtime-utils";

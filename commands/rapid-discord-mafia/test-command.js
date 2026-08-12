@@ -6,8 +6,8 @@ const { GameManager } = require("../../services/rapid-discord-mafia/game-manager
 const { ids } = require(`../../bot-config/discord-ids`);
 const { TrialVote } = require("../../services/rapid-discord-mafia/vote-manager.js");
 const { GameState } = require("../../services/rapid-discord-mafia/game-state-manager.js");
-const { deferInteraction } = require("../../utilities/discord-action-utils");
-const { getRequiredStringParam, getSubcommandUsed } = require("../../utilities/discord-fetch-utils");
+const { deferInteraction } = require("../../utilities/discord/interaction-reply-utils");
+const { getRequiredStringParam, getSubcommandUsed } = require("../../utilities/discord/interaction-param-utils");
 
 const Subparameters = {
 	PlayerVotingFor: new Parameter({

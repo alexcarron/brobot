@@ -2,7 +2,7 @@ const { PermissionFlagsBits } = require("discord.js");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
 const { ids } = require(`../../bot-config/discord-ids`);
 const { GameManager } = require("../../services/rapid-discord-mafia/game-manager.js");
-const { editReplyToInteraction, deferInteraction } = require("../../utilities/discord-action-utils");
+const { editReplyToInteraction, deferInteraction } = require("../../utilities/discord/interaction-reply-utils");
 
 module.exports = new SlashCommand({
 	name: "load-game",

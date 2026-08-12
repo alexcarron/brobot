@@ -2,8 +2,9 @@ const { SlashCommand } = require('../../services/command-creation/slash-command'
 const { Parameter } = require('../../services/command-creation/parameter');
 const { createNowUnixTimestamp } = require('../../utilities/date-time-utils');
 const Timer = require('../../services/timers/timer.js');
-const { getRequiredStringParam, getIntegerParamValue, getTextChannelOfInteraction } = require('../../utilities/discord-fetch-utils');
-const { deferInteraction } = require('../../utilities/discord-action-utils');
+const { getRequiredStringParam, getIntegerParamValue } = require('../../utilities/discord/interaction-param-utils');
+const { getTextChannelOfInteraction } = require('../../utilities/discord/channel-utils');
+const { deferInteraction } = require('../../utilities/discord/interaction-reply-utils');
 
 const Parameters = {
 	ReasonForTimer: new Parameter({

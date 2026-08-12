@@ -1,7 +1,8 @@
 const { Message, TextChannel } = require("discord.js");
 const cron = require("cron"); // Used to have scheduled functions execute
 const { getRandomElement } = require("../../utilities/data-structure-utils");
-const { fetchGuild, fetchTextChannel } = require("../../utilities/discord-fetch-utils.js");
+const { fetchGuild } = require("../../utilities/discord/guild-utils");
+const { fetchTextChannel } = require("../../utilities/discord/channel-utils");
 const { saveObjectToJsonInGitHub } = require("../../utilities/persistent-storage-utils.js");
 const { logWarning, logInfo } = require("../../utilities/logging-utils");
 const { ids } = require("../../bot-config/discord-ids");

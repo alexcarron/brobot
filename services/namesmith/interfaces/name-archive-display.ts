@@ -1,5 +1,5 @@
 import { ids } from "../../../bot-config/discord-ids";
-import { sendMessageInChannel } from "../../../utilities/discord-action-utils";
+import { sendMessageInChannel } from "../../../utilities/discord/message-utils";
 import { joinLines } from "../../../utilities/string-manipulation-utils";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { Placement, RANKS } from "../types/vote.types";

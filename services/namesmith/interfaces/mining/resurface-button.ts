@@ -3,7 +3,7 @@ import { DiscordButtonDefinition } from "../../../../utilities/discord-interface
 import { MiningSessionState } from "./mining-session-state";
 import { toResurfaceMessageText } from "./resurface-message";
 import { doesUserOwnMiningSessionOfButton, sendMiningSessionFollowUpMessage } from "./mining-session-buttons";
-import { replyToInteraction } from "../../../../utilities/discord-action-utils";
+import { replyToInteraction } from "../../../../utilities/discord/interaction-reply-utils";
 import { NOT_SESSION_OWNER_MESSAGE } from "./mining-message-lines";
 import { telemetry } from "../../telemetry/telemetry";
 import { EventType } from "../../telemetry/telemetry-event.types";

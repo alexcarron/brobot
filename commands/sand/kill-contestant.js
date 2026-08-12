@@ -1,8 +1,10 @@
 const { PermissionFlagsBits } = require("discord.js");
 const { ids } = require("../../bot-config/discord-ids");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
-const { deferInteraction, editReplyToInteraction, removePermissionFromChannel } = require("../../utilities/discord-action-utils");
-const { fetchCategoriesOfGuild, fetchTextChannelsInCategory, getRequiredUserParam } = require("../../utilities/discord-fetch-utils");
+const { deferInteraction, editReplyToInteraction } = require("../../utilities/discord/interaction-reply-utils");
+const { removePermissionFromChannel } = require("../../utilities/discord/permission-utils");
+const { fetchCategoriesOfGuild, fetchTextChannelsInCategory } = require("../../utilities/discord/category-utils");
+const { getRequiredUserParam } = require("../../utilities/discord/interaction-param-utils");
 const { Parameter, ParameterTypes } = require("../../services/command-creation/parameter");
 
 

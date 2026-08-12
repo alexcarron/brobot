@@ -1,6 +1,7 @@
 const { TextChannel } = require("discord.js");
 const cron = require("cron");
-const { fetchGuild, fetchTextChannel } = require("../../utilities/discord-fetch-utils");
+const { fetchGuild } = require("../../utilities/discord/guild-utils");
+const { fetchTextChannel } = require("../../utilities/discord/channel-utils");
 const { saveObjectToJsonInGitHub } = require("../../utilities/persistent-storage-utils");
 
 /**

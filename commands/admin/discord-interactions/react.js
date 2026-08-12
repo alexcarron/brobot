@@ -1,8 +1,11 @@
 const { PermissionFlagsBits } = require("discord.js");
 const { Parameter } = require("../../../services/command-creation/parameter");
 const { SlashCommand } = require("../../../services/command-creation/slash-command");
-const { fetchGuild, fetchMessage, fetchTextChannel, getRequiredStringParam } = require("../../../utilities/discord-fetch-utils");
-const { deferInteraction } = require("../../../utilities/discord-action-utils");
+const { fetchGuild } = require("../../../utilities/discord/guild-utils");
+const { fetchMessage } = require("../../../utilities/discord/message-utils");
+const { fetchTextChannel } = require("../../../utilities/discord/channel-utils");
+const { getRequiredStringParam } = require("../../../utilities/discord/interaction-param-utils");
+const { deferInteraction } = require("../../../utilities/discord/interaction-reply-utils");
 
 const Parameters = {
 	MessageLink: new Parameter({

@@ -5,7 +5,7 @@ import { getAutoMineButton } from "./auto-mine-button";
 import { getMineDeeperButton } from "./mine-deeper-button";
 import { MiningSessionState } from "./mining-session-state";
 import { getResurfaceButton } from "./resurface-button";
-import { toInteractionReplyFromMessageCreateOptions } from "../../../../utilities/discord-action-utils";
+import { toInteractionReplyFromMessageCreateOptions } from "../../../../utilities/discord/message-component-utils";
 
 /**
  * Returns the Resurface, Mine Deeper, and Auto-Mine button definitions, in that order, for the given mining session.

@@ -1,6 +1,6 @@
 import { TextChannel } from "discord.js";
 import { ids } from "../../../../bot-config/discord-ids";
-import { deleteAllMessagesInChannel, setNewMessageInChannel } from "../../../../utilities/discord-action-utils";
+import { deleteAllMessagesInChannel, setNewMessageInChannel } from "../../../../utilities/discord/message-utils";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { fetchNamesmithChannel } from "../../utilities/discord-fetch.utility";
 import { regenerateQuestMessage, sendQuestMessage } from "./quest-message";

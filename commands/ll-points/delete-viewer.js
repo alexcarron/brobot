@@ -2,8 +2,8 @@ const { Parameter } = require('../../services/command-creation/parameter');
 const { SlashCommand } = require('../../services/command-creation/slash-command');
 const { PermissionFlagsBits } = require('discord.js');
 const { LLPointManager } = require('../../services/ll-points/ll-point-manager.js');
-const { deferInteraction } = require('../../utilities/discord-action-utils');
-const { getRequiredStringParam } = require('../../utilities/discord-fetch-utils');
+const { deferInteraction } = require('../../utilities/discord/interaction-reply-utils');
+const { getRequiredStringParam } = require('../../utilities/discord/interaction-param-utils');
 
 const Parameters = {
 	ViewerDeleting: new Parameter({

@@ -1,7 +1,10 @@
 /* eslint-disable jsdoc/require-property-description */
 const { TextChannel, Message, Guild, PermissionFlagsBits, Role } = require("discord.js");
 const { ids } = require("../../bot-config/discord-ids");
-const { fetchGuild, fetchGuildMember, fetchRole, fetchTextChannel } = require("../../utilities/discord-fetch-utils.js");
+const { fetchGuild } = require("../../utilities/discord/guild-utils");
+const { fetchGuildMember } = require("../../utilities/discord/guild-member-utils");
+const { fetchRole } = require("../../utilities/discord/role-utils");
+const { fetchTextChannel } = require("../../utilities/discord/channel-utils");
 /**
  * @typedef {object} RealDiscordService
  * @property {boolean} isMockService

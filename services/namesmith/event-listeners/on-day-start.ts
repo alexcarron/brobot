@@ -1,5 +1,5 @@
 import { getYesterday } from "../../../utilities/date-time-utils";
-import { dmUser } from "../../../utilities/discord-action-utils";
+import { dmUser } from "../../../utilities/discord/message-utils";
 import { logInfo } from "../../../utilities/logging-utils";
 import { toAmountOfNoun } from "../../../utilities/string-manipulation-utils";
 import { IDLE_INTEREST_TOKEN_REWARD, INVESTMENT_PERCENTAGE, Perks } from "../constants/perks.constants";

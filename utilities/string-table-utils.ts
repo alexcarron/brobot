@@ -1,7 +1,7 @@
 import { ids } from "../bot-config/discord-ids";
 import { getDatabase } from "../services/namesmith/database/get-database";
 import { fetchNamesmithChannel } from "../services/namesmith/utilities/discord-fetch.utility";
-import { sendMessageInChannel } from "./discord-action-utils";
+import { sendMessageInChannel } from "./discord/message-utils";
 
 export interface TableOptions {
   /** Alignment per column index: 'left' | 'center' | 'right' (default: 'left') */

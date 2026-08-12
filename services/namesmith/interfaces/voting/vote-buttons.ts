@@ -1,5 +1,5 @@
 import { ButtonInteraction, ButtonStyle } from "discord.js";
-import { replyToInteraction } from "../../../../utilities/discord-action-utils";
+import { replyToInteraction } from "../../../../utilities/discord/interaction-reply-utils";
 import { DiscordButton, DiscordButtonDefinition } from "../../../../utilities/discord-interfaces/discord-button";
 import { PublishedName } from "../../types/published-name.types";
 import { Rank, Ranks } from "../../types/vote.types";

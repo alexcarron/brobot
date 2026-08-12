@@ -1,6 +1,7 @@
 import { ids } from "../../bot-config/discord-ids";
 import { SlashCommand } from "../../services/command-creation/slash-command";
-import { getInputFromCreatedTextModal, addButtonToMessageContents, waitForButtonPressThen, removeComponentsFromInteractionMessage } from "../../utilities/discord-action-utils";
+import { getInputFromCreatedTextModal } from "../../utilities/discord/interaction-reply-utils";
+import { addButtonToMessageContents, waitForButtonPressThen, removeComponentsFromInteractionMessage } from "../../utilities/discord/message-component-utils";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { Tips } from "../../services/namesmith/constants/tips.constants";
 import { toDisplayedName, toDisplayOrderedCharacters, toTipLine } from "../../services/namesmith/utilities/player-message.utility";

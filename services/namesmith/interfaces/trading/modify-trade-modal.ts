@@ -3,7 +3,7 @@ import { showModalWithTextInputs } from "../../../../utilities/discord-interface
 import { Trade, TradeStatuses } from "../../types/trade.types";
 import { Player } from "../../types/player.types";
 import { modifyTrade } from "../../workflows/trading/modify-trade.workflow";
-import { replyToInteraction } from "../../../../utilities/discord-action-utils";
+import { replyToInteraction } from "../../../../utilities/discord/interaction-reply-utils";
 import { sendTradeMessage } from "./trade-message";
 
 /**

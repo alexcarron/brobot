@@ -1,5 +1,5 @@
 import { ids } from "../../../../bot-config/discord-ids";
-import { sendMessageInChannel } from "../../../../utilities/discord-action-utils";
+import { sendMessageInChannel } from "../../../../utilities/discord/message-utils";
 import { Placement } from "../../types/vote.types";
 import { fetchNamesmithChannel } from "../../utilities/discord-fetch.utility";
 import { Duration } from '../../../../utilities/date-time-utils';

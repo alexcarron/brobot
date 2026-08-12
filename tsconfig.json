@@ -1,34 +1,38 @@
 {
-
   "ts-node": {
-    "transpileOnly": true,
-		"swc": true,
-		"esm": true
+    "transpileOnly": true, // Stops typechecking when running ts-node
+		"swc": true // Uses swc to transpile Typescript for speed
   },
   "compilerOptions": {
     "target": "ES2022",
-    "module": "CommonJS",
-    "checkJs": true,
-    "allowJs": true,
+    "module": "node16",
+    "moduleResolution": "node16",
+		
+    "allowJs": true, // Allows .js files to be imported in .ts files
+    "checkJs": true, // Reports errors in .js files
     "noEmit": true, // Prevents tsc from outputting .js files
+		
     "strict": true,
-		"strictNullChecks": true,
     "esModuleInterop": true, // Allow importing CommonJS modules
-    "moduleResolution": "node",
-    "isolatedModules": true,
-    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true, // Checks if .ts are compilable or transpilable indepedently for SWC
+    "forceConsistentCasingInFileNames": true, // Causes errors for incorrect casing for file names
     "skipLibCheck": true, // Skip type checking of library files
 		"resolveJsonModule": true, // Allow importing .json files
-		"types": [ "jest", "mocha" ]
+		"strictNullChecks": true, // null and undefined have their own distinct types
+
+		"types": [ "node", "jest", "mocha" ]
   },
-  "include": ["**/*.js", "**/*.ts", "event-listeners/on-option-selectedTjs", "global.d.ts"],
+  "include": [
+		"**/*.js", 
+		"**/*.ts", 
+		"global.d.ts"
+	],
   "exclude": [
 		"node_modules",
 		"**/*.test.js",
-		"**/__tests__/**",
-		"unused/**",
-		"archived/**",
-	],
-	"module": "ESNext",
-	"type": "module"
+    "**/*.test.ts",
+    "tests",
+    "unused",
+    "archived"
+	]
 }

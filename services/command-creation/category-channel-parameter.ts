@@ -1,7 +1,8 @@
 import { ApplicationCommandOptionChoiceData, AutocompleteInteraction, CategoryChannel, ChatInputCommandInteraction, Guild } from 'discord.js';
 import { Parameter, ParameterTypes } from './parameter';
 import { filterAutocompleteByEnteredValue, getEnteredValue, limitAutocompleteChoices } from './autocomplete-utils';
-import { fetchCategory, getRequiredStringParam } from '../../utilities/discord-fetch-utils';
+import { fetchCategory } from '../../utilities/discord/category-utils';
+import { getRequiredStringParam } from '../../utilities/discord/interaction-param-utils';
 import { getCachedCategoryChannelsOfGuild } from '../../utilities/discord-cache-utils';
 
 /**

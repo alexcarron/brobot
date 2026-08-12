@@ -1,7 +1,7 @@
 const { Parameter } = require("../../services/command-creation/parameter");
 const { ids } = require("../../bot-config/discord-ids");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
-const { deferInteraction, getInputFromCreatedTextModal } = require("../../utilities/discord-action-utils");
+const { deferInteraction, getInputFromCreatedTextModal } = require("../../utilities/discord/interaction-reply-utils");
 
 const Parameters = {
 	Edit: new Parameter({

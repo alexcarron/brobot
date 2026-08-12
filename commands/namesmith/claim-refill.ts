@@ -6,7 +6,7 @@ import { joinLines, toAmountOfNoun } from "../../utilities/string-manipulation-u
 import { claimRefill } from "../../services/namesmith/workflows/claim-refill.workflow";
 import { toUnixTimestamp } from "../../utilities/date-time-utils";
 import { getTokensEarnedFeedback, toTipLine, toTokenEmojis } from "../../services/namesmith/utilities/player-message.utility";
-import { replyToInteraction } from "../../utilities/discord-action-utils";
+import { replyToInteraction } from "../../utilities/discord/interaction-reply-utils";
 import { DiscordButton } from "../../utilities/discord-interfaces/discord-button";
 import { getRefillReminderToggleButton } from "../../services/namesmith/interfaces/refill-reminders/refill-reminder-toggle-button";
 import { TipResolvable } from "../../services/namesmith/types/tip.types";

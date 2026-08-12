@@ -1,8 +1,13 @@
 const { ids } = require("../../bot-config/discord-ids");
 const { ParameterTypes, Parameter } = require("../../services/command-creation/parameter");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
-const { deferInteraction, createChannel, editReplyToInteraction, createEveryoneDenyViewPermission, addPermissionToChannel, memberHasRole } = require("../../utilities/discord-action-utils");
-const { fetchGuild, getUserParamValue, fetchGuildMember, fetchTextChannel, getRequiredStringParam } = require("../../utilities/discord-fetch-utils");
+const { deferInteraction, editReplyToInteraction } = require("../../utilities/discord/interaction-reply-utils");
+const { createChannel, fetchTextChannel } = require("../../utilities/discord/channel-utils");
+const { addPermissionToChannel, createEveryoneDenyViewPermission } = require("../../utilities/discord/permission-utils");
+const { memberHasRole } = require("../../utilities/discord/role-utils");
+const { fetchGuild } = require("../../utilities/discord/guild-utils");
+const { getRequiredStringParam, getUserParamValue } = require("../../utilities/discord/interaction-param-utils");
+const { fetchGuildMember } = require("../../utilities/discord/guild-member-utils");
 const { toListOfWords } = require("../../utilities/string-manipulation-utils");
 const { PermissionNames } = require("../../utilities/constants/discord-permission.constants");
 

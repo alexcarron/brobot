@@ -1,5 +1,5 @@
 import { DiscordAPIError } from "discord.js";
-import { dmUser } from "../../../../utilities/discord-action-utils";
+import { dmUser } from "../../../../utilities/discord/message-utils";
 import { logError } from "../../../../utilities/logging-utils";
 import { ids } from "../../../../bot-config/discord-ids";
 import { sendToNamesmithChannel } from "../../utilities/discord-action.utility";

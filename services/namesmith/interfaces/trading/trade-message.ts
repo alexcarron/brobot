@@ -2,7 +2,7 @@ import { ButtonInteraction } from "discord.js";
 import { ids } from "../../../../bot-config/discord-ids";
 import { Trade } from "../../types/trade.types";
 import { fetchNamesmithChannel } from "../../utilities/discord-fetch.utility";
-import { replyToInteraction } from "../../../../utilities/discord-action-utils";
+import { replyToInteraction } from "../../../../utilities/discord/interaction-reply-utils";
 import { createAcceptTradeButton } from "./accept-trade-button";
 import { createModifyTradeButton } from "./modify-trade-button";
 import { createDeclineTradeButton } from "./decline-trade-buttons";

@@ -2,7 +2,7 @@ import { Interaction } from "discord.js";
 import { Player, PlayerID } from '../types/player.types';
 import { PlayerService } from "../services/player.service";
 import { toNullOnError } from "../../../utilities/error-utils";
-import { fetchUserByUsername } from "../../../utilities/discord-fetch-utils";
+import { fetchUserByUsername } from "../../../utilities/discord/guild-member-utils";
 import { hasProperty } from "../../../utilities/types/type-guards";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 

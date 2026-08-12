@@ -1,8 +1,9 @@
 const { ChannelType, PermissionFlagsBits, ChatInputCommandInteraction, AutocompleteInteraction } = require("discord.js");
 const { ParameterTypes, Parameter } = require("../../../services/command-creation/parameter");
 const { SlashCommand } = require("../../../services/command-creation/slash-command");
-const { deferInteraction, createChannel, editReplyToInteraction } = require("../../../utilities/discord-action-utils");
-const { getStringParamValue, getRequiredIntegerParam, getRequiredStringParam, fetchChannelsOfGuild } = require("../../../utilities/discord-fetch-utils");
+const { deferInteraction, editReplyToInteraction } = require("../../../utilities/discord/interaction-reply-utils");
+const { createChannel, fetchChannelsOfGuild } = require("../../../utilities/discord/channel-utils");
+const { getRequiredIntegerParam, getRequiredStringParam, getStringParamValue } = require("../../../utilities/discord/interaction-param-utils");
 const { incrementEndNumber } = require("../../../utilities/string-manipulation-utils");
 
 const Parameters = {

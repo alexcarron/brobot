@@ -2,8 +2,8 @@ const { SlashCommand } = require('../../services/command-creation/slash-command'
 const { ids } = require(`../../bot-config/discord-ids`);
 const { Parameter } = require('../../services/command-creation/parameter');
 const { PermissionFlagsBits } = require('discord.js');
-const { getRequiredStringParam } = require('../../utilities/discord-fetch-utils');
-const { deferInteraction } = require('../../utilities/discord-action-utils');
+const { getRequiredStringParam } = require('../../utilities/discord/interaction-param-utils');
+const { deferInteraction } = require('../../utilities/discord/interaction-reply-utils');
 
 const Parameters = {
 	Property: new Parameter({

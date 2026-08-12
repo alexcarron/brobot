@@ -1,5 +1,5 @@
 import { ids } from "../../../bot-config/discord-ids";
-import { sendMessageInChannel } from "../../../utilities/discord-action-utils";
+import { sendMessageInChannel } from "../../../utilities/discord/message-utils";
 import { escapeDiscordMarkdown, toNumericOrdinal } from "../../../utilities/string-manipulation-utils";
 import { Player } from "../types/player.types";
 import { PublishedName } from "../types/published-name.types";

@@ -1,5 +1,5 @@
 const { PermissionFlagsBits } = require('discord.js');
-const { deferInteraction } = require('../../../utilities/discord-action-utils');
+const { deferInteraction } = require('../../../utilities/discord/interaction-reply-utils');
 const { SlashCommand } = require('../../../services/command-creation/slash-command');
 
 module.exports = new SlashCommand({

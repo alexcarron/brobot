@@ -1,10 +1,12 @@
 const { Parameter } = require("../../services/command-creation/parameter");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
-const { deferInteraction } = require("../../utilities/discord-action-utils");
+const { deferInteraction } = require("../../utilities/discord/interaction-reply-utils");
 const { ids } = require("../../bot-config/discord-ids");
 const AbilityManager = require("../../services/rapid-discord-mafia/ability-manager.js");
 const { toTitleCase } = require("../../utilities/string-manipulation-utils");
-const { fetchRDMGuild, fetchTextChannel, getRequiredStringParam } = require("../../utilities/discord-fetch-utils.js");
+const { fetchRDMGuild } = require("../../utilities/discord/guild-utils");
+const { fetchTextChannel } = require("../../utilities/discord/channel-utils");
+const { getRequiredStringParam } = require("../../utilities/discord/interaction-param-utils");
 const { AbilityUseCount, AbilityName } = require("../../services/rapid-discord-mafia/ability.js");
 const { Faction } = require("../../services/rapid-discord-mafia/role.js");
 const { AbilityArgType, ArgumentSubtype } = require("../../services/rapid-discord-mafia/arg.js");

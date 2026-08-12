@@ -5,7 +5,7 @@ import { getNamesmithServices } from "../../services/namesmith/services/get-name
 import { getInvalidPlayerMessageOrPlayer } from "../../services/namesmith/utilities/interface.utility";
 import { toDisplayedName } from "../../services/namesmith/utilities/player-message.utility";
 import { fetchPlayerAutocompleteChoices } from "../../services/namesmith/utilities/player.utility";
-import { fetchUser } from "../../utilities/discord-fetch-utils";
+import { fetchUser } from "../../utilities/discord/guild-member-utils";
 import { joinLines } from "../../utilities/string-manipulation-utils";
 import { isString } from "../../utilities/types/type-guards";
 

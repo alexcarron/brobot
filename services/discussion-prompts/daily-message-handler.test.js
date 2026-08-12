@@ -1,5 +1,7 @@
-jest.mock('../../utilities/discord-fetch-utils', () => ({
+jest.mock('../../utilities/discord/channel-utils', () => ({
 	fetchChannel: jest.fn(() => Promise.resolve({ id: 'mockChannelId' })),
+}))
+jest.mock('../../utilities/discord/guild-utils', () => ({
 	fetchGuild: jest.fn(() => Promise.resolve({ id: 'mockGuildId' })),
 	saveObjectToJsonInGitHub: jest.fn(() => Promise.resolve('Saved')),
 }))
@@ -20,7 +22,7 @@ jest.mock('../../bot-config/discord-ids', () => ({
 }));
 
 const DailyMessageHandler = require("./daily-message-handler");
-const { fetchChannel } = require("../../utilities/discord-fetch-utils");
+const { fetchChannel } = require("../../utilities/discord/channel-utils");
 const { TextChannel } = require("discord.js");
 
 describe('DailyMessageHandler', () => {

@@ -19,7 +19,7 @@ jest.mock("../utilities/discord-fetch.utility", () => ({
   ),
 }));
 
-jest.mock("../../../utilities/discord-action-utils", () => ({
+jest.mock("../../../utilities/discord/message-component-utils", () => ({
   addButtonToMessageContents: jest.fn(),
 }));
 

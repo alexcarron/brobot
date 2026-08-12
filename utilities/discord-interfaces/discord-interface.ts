@@ -1,6 +1,6 @@
 import { ComponentBuilder, Message, MessageCreateOptions, TextBasedChannel, TextChannel } from 'discord.js';
-import { deleteAllMessagesInChannel, setChannelMessage, toMessageEditFromCreateOptions } from "../discord-action-utils";
-import { fetchMessageWithComponent } from "../discord-fetch-utils";
+import { deleteAllMessagesInChannel, fetchMessageWithComponent, setChannelMessage } from "../discord/message-utils";
+import { toMessageEditFromCreateOptions } from "../discord/message-component-utils";
 import { InvalidArgumentError } from "../error-utils";
 
 /**

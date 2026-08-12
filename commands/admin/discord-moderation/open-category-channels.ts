@@ -2,8 +2,10 @@ import { PermissionFlagsBits } from "discord.js";
 import { Parameter, ParameterTypes } from "../../../services/command-creation/parameter";
 import { SlashCommand } from "../../../services/command-creation/slash-command";
 import { CategoryChannelParameter, autocompleteCategoryChannelParameter, getCategoryChannelFromInteraction } from "../../../services/command-creation/category-channel-parameter";
-import { editReplyToInteraction, openChannel } from "../../../utilities/discord-action-utils";
-import { getGuildOfInteraction, fetchTextChannelsInCategory } from "../../../utilities/discord-fetch-utils";
+import { editReplyToInteraction } from "../../../utilities/discord/interaction-reply-utils";
+import { openChannel } from "../../../utilities/discord/permission-utils";
+import { getGuildOfInteraction } from "../../../utilities/discord/guild-utils";
+import { fetchTextChannelsInCategory } from "../../../utilities/discord/category-utils";
 
 const Parameters = {
 	Category: CategoryChannelParameter,

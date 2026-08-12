@@ -5,7 +5,7 @@ import { Tips } from "../../services/namesmith/constants/tips.constants";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { getHowToEarnMoreTokensHint, toDisplayedName, toTipLine } from "../../services/namesmith/utilities/player-message.utility";
 import { publishName } from "../../services/namesmith/workflows/publish-name.workflow";
-import { addReplyToInteraction, confirmInteractionWithButtons } from "../../utilities/discord-action-utils";
+import { addReplyToInteraction, confirmInteractionWithButtons } from "../../utilities/discord/interaction-reply-utils";
 import { addSIfPlural, joinLines, toAmountOfNoun, toNumericOrdinal, toReadableNumber } from "../../utilities/string-manipulation-utils";
 
 export const command = new SlashCommand({

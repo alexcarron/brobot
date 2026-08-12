@@ -3,7 +3,7 @@ import { Parameter, ParamNameToType } from "./parameter";
 import { toCamelFromKebabCase } from "../../utilities/string-manipulation-utils";
 import { isString, isStringToStringRecord, isUndefined } from "../../utilities/types/type-guards";
 import { filterAutocompleteByEnteredValue, getEnteredValueOfParameter, getEnteredValueOfParameters, isAutocompleteForParameter, limitAutocompleteChoices, toAutocompleteChoices } from "./autocomplete-utils";
-import { deferInteraction, replyToInteraction } from "../../utilities/discord-action-utils";
+import { deferInteraction, replyToInteraction } from "../../utilities/discord/interaction-reply-utils";
 import { attempt } from "../../utilities/error-utils";
 
 /**

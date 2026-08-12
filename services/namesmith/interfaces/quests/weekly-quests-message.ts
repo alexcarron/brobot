@@ -1,5 +1,5 @@
 import { ids } from "../../../../bot-config/discord-ids";
-import { setNewMessageInChannel } from "../../../../utilities/discord-action-utils";
+import { setNewMessageInChannel } from "../../../../utilities/discord/message-utils";
 import { ignoreError } from "../../../../utilities/error-utils";
 import { logSetup } from "../../../../utilities/logging-utils";
 import { getNamesmithServices } from "../../services/get-namesmith-services";

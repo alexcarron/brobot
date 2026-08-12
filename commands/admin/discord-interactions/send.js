@@ -1,8 +1,8 @@
 const { PermissionFlagsBits } = require("discord.js");
 const { Parameter } = require("../../../services/command-creation/parameter");
 const { SlashCommand } = require("../../../services/command-creation/slash-command");
-const { deferInteraction } = require("../../../utilities/discord-action-utils");
-const { getRequiredStringParam, getRequiredChannelParam } = require("../../../utilities/discord-fetch-utils");
+const { deferInteraction } = require("../../../utilities/discord/interaction-reply-utils");
+const { getRequiredStringParam, getRequiredChannelParam } = require("../../../utilities/discord/interaction-param-utils");
 
 const Parameters = {
 	Channel: new Parameter({

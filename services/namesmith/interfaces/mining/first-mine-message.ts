@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction } from "discord.js";
-import { replyToInteraction } from "../../../../utilities/discord-action-utils";
+import { replyToInteraction } from "../../../../utilities/discord/interaction-reply-utils";
 import { joinLines } from "../../../../utilities/string-manipulation-utils";
 import { toCharacterDiscoveredLines, toTokensGainedLines } from "./mining-message-lines";
 import { getMiningSessionMessageContentsWithButtons } from "./mining-session-buttons";

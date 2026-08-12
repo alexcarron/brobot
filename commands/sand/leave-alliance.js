@@ -1,8 +1,10 @@
 const { ChannelType } = require("discord.js");
 const { ids } = require("../../bot-config/discord-ids");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
-const { deferInteraction, editReplyToInteraction, removePermissionFromChannel } = require("../../utilities/discord-action-utils");
-const { fetchGuild, fetchTextChannel } = require("../../utilities/discord-fetch-utils");
+const { deferInteraction, editReplyToInteraction } = require("../../utilities/discord/interaction-reply-utils");
+const { removePermissionFromChannel } = require("../../utilities/discord/permission-utils");
+const { fetchGuild } = require("../../utilities/discord/guild-utils");
+const { fetchTextChannel } = require("../../utilities/discord/channel-utils");
 
 module.exports = new SlashCommand({
 	name: "leave-alliance",

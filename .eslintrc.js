@@ -17,8 +17,8 @@ module.exports = {
     'plugin:jsdoc/recommended',
     'plugin:jest/recommended',
   ],
+	// JavaScript rules (applies to .js files)
   rules: {
-    // JS rules (apply to JS files)
     'require-await': 'error',
     'no-floating-promise/no-floating-promise': 'error',
     'promise/always-return': 'error',
@@ -33,8 +33,8 @@ module.exports = {
       files: ['**/*.ts', '**/*.tsx'],
       parser: '@typescript-eslint/parser',
 			parserOptions: {
-				project: './tsconfig.json', // <- Required for type-aware rules
-				tsconfigRootDir: __dirname, // Ensure ESLint finds the tsconfig
+				project: './tsconfig.eslint.json',
+				tsconfigRootDir: __dirname,
 				sourceType: 'module',
 			},
       plugins: ['@typescript-eslint'],
@@ -44,19 +44,18 @@ module.exports = {
         'plugin:jsdoc/recommended',
         'plugin:jest/recommended',
       ],
+			// TypeScript rules (applies to .ts files)
       rules: {
-        // TS-specific rules
         '@typescript-eslint/require-await': 'error',
 				'@typescript-eslint/no-empty-object-type': 'off',
         '@typescript-eslint/no-floating-promises': 'error',
 				'@typescript-eslint/no-explicit-any': 'off',
-				'jsdoc/require-param-type': 'off',    // ignore type in @param
-				'jsdoc/require-returns-type': 'off',  // ignore type in @returns
-				'jsdoc/require-jsdoc': 'off',         // ignore missing @jsdoc
+				'jsdoc/require-param-type': 'off',
+				'jsdoc/require-returns-type': 'off',
+				'jsdoc/require-jsdoc': 'off',
 				'jest/expect-expect': 'off',
 				'@typescript-eslint/ban-ts-comment': 'off',
-				"@typescript-eslint/no-unused-expressions": ["error", { "allowTaggedTemplates": true }] // allow tagged template expressions (e.g., for logging)
-        // you can add TS overrides here
+				"@typescript-eslint/no-unused-expressions": ["error", { "allowTaggedTemplates": true }]
       },
     },
     // Test files

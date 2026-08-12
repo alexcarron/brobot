@@ -3,8 +3,10 @@ const { SlashCommand } = require("../../services/command-creation/slash-command"
 const { getCreaturesText, getChildCreaturesText } = require("../../services/evolution-game/creature-formatting-utils");
 const { parseCreaturesFromMessages } = require("../../services/evolution-game/creature-parser");
 const { getEvolutionRoots, getCreatureWithName, getChildCreaturesOf, } = require("../../services/evolution-game/creature-utils");
-const { deferInteraction, editReplyToInteraction } = require("../../utilities/discord-action-utils");
-const { fetchAllMessagesInChannel, getGuildOfInteraction, fetchTextChannel, getTextChannelOfInteraction } = require("../../utilities/discord-fetch-utils");
+const { deferInteraction, editReplyToInteraction } = require("../../utilities/discord/interaction-reply-utils");
+const { fetchAllMessagesInChannel } = require("../../utilities/discord/message-utils");
+const { getGuildOfInteraction } = require("../../utilities/discord/guild-utils");
+const { fetchTextChannel, getTextChannelOfInteraction } = require("../../utilities/discord/channel-utils");
 
 module.exports = new SlashCommand({
 	name: "list-creatures",

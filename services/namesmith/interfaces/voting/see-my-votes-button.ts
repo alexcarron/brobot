@@ -1,6 +1,6 @@
 import { ButtonInteraction, ButtonStyle } from "discord.js";
 import { seeMyVotes } from "../../workflows/voting/see-my-votes.workflow";
-import { replyToInteraction } from "../../../../utilities/discord-action-utils";
+import { replyToInteraction } from "../../../../utilities/discord/interaction-reply-utils";
 import { toRankEmoji } from "../../utilities/player-message.utility";
 
 export function getSeeMyVotesButton() {

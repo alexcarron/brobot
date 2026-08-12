@@ -1,7 +1,9 @@
 const { ids } = require("../../bot-config/discord-ids");
 const { GuildScheduledEventManager, Message, GuildScheduledEventPrivacyLevel, GuildScheduledEventEntityType } = require("discord.js");
 const cron = require("cron");
-const { fetchGuild, fetchUser, fetchTextChannel } = require("../../utilities/discord-fetch-utils.js");
+const { fetchGuild } = require("../../utilities/discord/guild-utils");
+const { fetchUser } = require("../../utilities/discord/guild-member-utils");
+const { fetchTextChannel } = require("../../utilities/discord/channel-utils");
 const { saveObjectToJsonInGitHub } = require("../../utilities/persistent-storage-utils.js");
 const Viewer = require("../ll-points/viewer.js");
 

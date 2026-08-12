@@ -5,7 +5,7 @@ import { throwIfNotError } from "../error-utils";
 import { InteractionWithModalSupport } from "../constants/discord-interface.constants";
 import { logError } from "../logging-utils";
 import { mapToObject } from "../data-structure-utils";
-import { editReplyToInteraction, replyToInteraction } from "../discord-action-utils";
+import { editReplyToInteraction, replyToInteraction } from "../discord/interaction-reply-utils";
 import { DiscordButtons } from "./discord-buttons";
 
 

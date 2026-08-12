@@ -4,7 +4,7 @@ import { SlashCommand } from "../../services/command-creation/slash-command";
 import { sendTradeMessage } from "../../services/namesmith/interfaces/trading/trade-message";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { initiateTrade } from "../../services/namesmith/workflows/trading/initiate-trade.workflow";
-import { replyToInteraction } from "../../utilities/discord-action-utils";
+import { replyToInteraction } from "../../utilities/discord/interaction-reply-utils";
 
 const Parameters = Object.freeze({
 	PLAYER_TRADING_WITH: new Parameter({

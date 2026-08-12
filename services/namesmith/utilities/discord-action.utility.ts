@@ -1,11 +1,7 @@
-import {
-	memberHasRole,
-	setNicknameOfMember,
-	removeRoleFromMember,
-	addRoleToMember,
-	closeChannel,
-	openChannel, deleteAllMessagesInChannel
-} from "../../../utilities/discord-action-utils";
+import { memberHasRole, removeRoleFromMember, addRoleToMember } from "../../../utilities/discord/role-utils";
+import { setNicknameOfMember } from "../../../utilities/discord/guild-member-utils";
+import { closeChannel, openChannel } from "../../../utilities/discord/permission-utils";
+import { deleteAllMessagesInChannel } from "../../../utilities/discord/message-utils";
 import { ids } from "../../../bot-config/discord-ids";
 import {
 	fetchPublishedNamesChannel,

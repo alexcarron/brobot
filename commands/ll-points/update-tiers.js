@@ -1,6 +1,6 @@
 const { PermissionFlagsBits } = require("discord.js");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
-const { deferInteraction } = require("../../utilities/discord-action-utils");
+const { deferInteraction } = require("../../utilities/discord/interaction-reply-utils");
 
 module.exports = new SlashCommand({
 	name: "update-tiers",

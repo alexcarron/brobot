@@ -1,6 +1,6 @@
 const { ids } = require("../../bot-config/discord-ids");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
-const { deferInteraction } = require("../../utilities/discord-action-utils");
+const { deferInteraction } = require("../../utilities/discord/interaction-reply-utils");
 const { GameState } = require("../../services/rapid-discord-mafia/game-state-manager.js");
 const { Announcement } = require("../../services/rapid-discord-mafia/constants/possible-messages.js");
 

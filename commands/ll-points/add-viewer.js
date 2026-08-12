@@ -3,8 +3,8 @@ const Viewer = require('../../services/ll-points/viewer.js');
 const { Parameter } = require('../../services/command-creation/parameter');
 const { SlashCommand } = require('../../services/command-creation/slash-command');
 const { PermissionFlagsBits } = require('discord.js');
-const { deferInteraction } = require('../../utilities/discord-action-utils');
-const { getRequiredUserParam } = require('../../utilities/discord-fetch-utils.js');
+const { deferInteraction } = require('../../utilities/discord/interaction-reply-utils');
+const { getRequiredUserParam } = require('../../utilities/discord/interaction-param-utils');
 
 const Parameters = {
 	ViewerAdding: new Parameter({

@@ -1,5 +1,5 @@
 import { DiscordAPIError } from "discord.js";
-import { dmUser } from "../../../../utilities/discord-action-utils";
+import { dmUser } from "../../../../utilities/discord/message-utils";
 import { toggleRefillReminders } from "../../workflows/toggle-refill-reminders.workflow";
 import { joinLines } from "../../../../utilities/string-manipulation-utils";
 

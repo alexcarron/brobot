@@ -1,7 +1,7 @@
 const { ChannelType, Collection, ChatInputCommandInteraction, InteractionResponse, TextChannel, MessageFlags } = require("discord.js");
 const { ids } = require("../bot-config/discord-ids");
 const { logError, logInfo } = require("../utilities/logging-utils");
-const { replyToInteraction } = require("../utilities/discord-action-utils");
+const { replyToInteraction } = require("../utilities/discord/interaction-reply-utils");
 const { telemetry } = require("../services/namesmith/telemetry/telemetry");
 const { EventType } = require("../services/namesmith/telemetry/telemetry-event.types");
 

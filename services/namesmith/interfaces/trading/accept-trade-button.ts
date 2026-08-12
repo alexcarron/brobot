@@ -2,7 +2,7 @@ import { ButtonInteraction, ButtonStyle } from "discord.js";
 import { Trade } from "../../types/trade.types";
 import { acceptTrade } from "../../workflows/trading/accept-trade.workflow";
 import { handleTradeResponseResult } from "./trade-message";
-import { replyToInteraction } from "../../../../utilities/discord-action-utils";
+import { replyToInteraction } from "../../../../utilities/discord/interaction-reply-utils";
 
 /**
  * Creates a button that, when pressed, will accept a trade request.

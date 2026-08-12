@@ -1,12 +1,13 @@
 const { ids } = require("../../bot-config/discord-ids");
-const { fetchGuild, fetchGuildMember, fetchUser, fetchRole } = require("../../utilities/discord-fetch-utils.js");
-const { addRoleToMember, removeRoleFromMember } = require("../../utilities/discord-action-utils");
+const { fetchGuild } = require("../../utilities/discord/guild-utils");
+const { fetchGuildMember, fetchUser } = require("../../utilities/discord/guild-member-utils");
+const { addRoleToMember, fetchRole, removeRoleFromMember } = require("../../utilities/discord/role-utils");
 const { LLPointTier, LLPointThreshold, LLPointReward, LLPointAccomplishment } = require("./ll-point-enums.js");
 const { logInfo, logError, logSuccess, logWarning } = require("../../utilities/logging-utils");
 const { throwIfNotError } = require("../../utilities/error-utils");
 
 /**
-
+ 
  */
 class Viewer {
 	/**

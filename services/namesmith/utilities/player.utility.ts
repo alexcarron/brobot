@@ -1,4 +1,4 @@
-import { fetchUser } from "../../../utilities/discord-fetch-utils";
+import { fetchUser } from "../../../utilities/discord/guild-member-utils";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { Player } from "../types/player.types";
 

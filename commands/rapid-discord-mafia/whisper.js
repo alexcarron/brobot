@@ -1,9 +1,9 @@
 const { Parameter } = require("../../services/command-creation/parameter");
 const { ids } = require("../../bot-config/discord-ids");
 const { SlashCommand } = require("../../services/command-creation/slash-command");
-const { deferInteraction } = require('../../utilities/discord-action-utils');
+const { deferInteraction } = require('../../utilities/discord/interaction-reply-utils');
 const { GameState } = require("../../services/rapid-discord-mafia/game-state-manager.js");
-const { getRequiredStringParam } = require("../../utilities/discord-fetch-utils");
+const { getRequiredStringParam } = require("../../utilities/discord/interaction-param-utils");
 
 const Parameters = {
 	PlayerWhisperingTo: new Parameter({

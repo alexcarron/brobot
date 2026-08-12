@@ -4,7 +4,7 @@ import { SlashCommand } from "../../services/command-creation/slash-command";
 import { forcePlayerToChangeName } from "../../services/namesmith/mocks/mock-data/mock-players";
 import { getInvalidPlayerMessageOrPlayer } from "../../services/namesmith/utilities/interface.utility";
 import { fetchPlayerAutocompleteChoices } from "../../services/namesmith/utilities/player.utility";
-import { fetchUser } from "../../utilities/discord-fetch-utils";
+import { fetchUser } from "../../utilities/discord/guild-member-utils";
 import { escapeDiscordMarkdown, joinLines } from "../../utilities/string-manipulation-utils";
 import { isString } from "../../utilities/types/type-guards";
 

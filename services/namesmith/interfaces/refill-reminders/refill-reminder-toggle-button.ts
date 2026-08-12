@@ -1,5 +1,6 @@
 import { ButtonInteraction, ButtonStyle } from "discord.js";
-import { addReplyToInteraction, removeComponentsFromButtonInteractionMessage } from "../../../../utilities/discord-action-utils";
+import { addReplyToInteraction } from "../../../../utilities/discord/interaction-reply-utils";
+import { removeComponentsFromButtonInteractionMessage } from "../../../../utilities/discord/message-component-utils";
 import { DiscordButton } from "../../../../utilities/discord-interfaces/discord-button";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { handleToggleRefillReminders } from "./handle-toggle-refill-reminders";

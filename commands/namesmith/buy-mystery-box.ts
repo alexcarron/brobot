@@ -11,7 +11,7 @@ import { getMysteryBoxCharacterPreview, getStaticMysteryBox, getStaticMysteryBox
 import { MAX_AUTOCOMPLETE_OPTION_NAME_LENGTH } from "../../services/command-creation/autocomplete-utils";
 import { buyMysteryBox } from "../../services/namesmith/workflows/buy-mystery-box.workflow";
 import { sortByAscendingProperty } from "../../utilities/data-structure-utils";
-import { addReplyToInteraction } from "../../utilities/discord-action-utils";
+import { addReplyToInteraction } from "../../utilities/discord/interaction-reply-utils";
 import { addSIfPlural, chooseByPlurality, joinLines, toAmountOfNoun, toReadableNumber } from "../../utilities/string-manipulation-utils";
 
 const INVALID_MYSTERY_BOX_AMOUNT = 'INVALID_MYSTERY_BOX_AMOUNT';

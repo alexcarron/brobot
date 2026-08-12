@@ -1,7 +1,8 @@
 const { Parameter } = require('../../../services/command-creation/parameter');
 const { SlashCommand } = require('../../../services/command-creation/slash-command');
-const { deferInteraction } = require('../../../utilities/discord-action-utils');
-const {  getVoiceChannelOfInteraction, getRequiredUserParam } = require('../../../utilities/discord-fetch-utils');
+const { deferInteraction } = require('../../../utilities/discord/interaction-reply-utils');
+const { getVoiceChannelOfInteraction } = require('../../../utilities/discord/voice-channel-utils');
+const { getRequiredUserParam } = require('../../../utilities/discord/interaction-param-utils');
 
 const Parameters = {
 	UnmutedMember: new Parameter({

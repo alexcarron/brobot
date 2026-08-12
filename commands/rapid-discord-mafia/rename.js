@@ -4,8 +4,8 @@ const { SlashCommand } = require('../../services/command-creation/slash-command'
 const { Parameter } = require('../../services/command-creation/parameter');
 const { GameState } = require("../../services/rapid-discord-mafia/game-state-manager.js");
 const { RDMDiscordRole } = require("../../services/rapid-discord-mafia/discord-service.js");
-const { getRequiredStringParam } = require("../../utilities/discord-fetch-utils.js");
-const { deferInteraction } = require("../../utilities/discord-action-utils");
+const { getRequiredStringParam } = require("../../utilities/discord/interaction-param-utils");
+const { deferInteraction } = require("../../utilities/discord/interaction-reply-utils");
 
 module.exports = new SlashCommand({
 	name: "rename",

@@ -1,5 +1,5 @@
 import { ButtonInteraction, ButtonStyle } from "discord.js";
-import { replyToInteraction } from "../../../../utilities/discord-action-utils";
+import { replyToInteraction } from "../../../../utilities/discord/interaction-reply-utils";
 import { DiscordButtonDefinition } from "../../../../utilities/discord-interfaces/discord-button";
 import { joinLines } from "../../../../utilities/string-manipulation-utils";
 import { mineOneLayer } from "../../workflows/mine-tokens.workflow";

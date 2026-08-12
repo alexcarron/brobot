@@ -1,6 +1,8 @@
 import { GuildMember, Guild, TextChannel } from "discord.js";
 import { ids } from "../../../bot-config/discord-ids";
-import { fetchGuild, fetchGuildMember, fetchAllGuildMembers, fetchTextChannel } from "../../../utilities/discord-fetch-utils";
+import { fetchGuild } from "../../../utilities/discord/guild-utils";
+import { fetchGuildMember, fetchAllGuildMembers } from "../../../utilities/discord/guild-member-utils";
+import { fetchTextChannel } from "../../../utilities/discord/channel-utils";
 import { InvalidArgumentError } from "../../../utilities/error-utils";
 
 /**

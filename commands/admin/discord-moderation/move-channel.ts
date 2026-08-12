@@ -1,8 +1,11 @@
 import { ChannelType, PermissionFlagsBits } from "discord.js";
 import { Parameter, ParameterTypes } from "../../../services/command-creation/parameter";
 import { SlashCommand } from "../../../services/command-creation/slash-command";
-import { deferInteraction, moveChannelToCategory, replyToInteraction } from "../../../utilities/discord-action-utils";
-import { fetchCategory, fetchChannelsOfGuild, fetchGuildChannel, getBooleanParamValue, getGuildOfInteraction, getRequiredStringParam, getStringParamValue } from "../../../utilities/discord-fetch-utils";
+import { deferInteraction, replyToInteraction } from "../../../utilities/discord/interaction-reply-utils";
+import { fetchChannelsOfGuild, fetchGuildChannel, moveChannelToCategory } from "../../../utilities/discord/channel-utils";
+import { fetchCategory } from "../../../utilities/discord/category-utils";
+import { getBooleanParamValue, getRequiredStringParam, getStringParamValue } from "../../../utilities/discord/interaction-param-utils";
+import { getGuildOfInteraction } from "../../../utilities/discord/guild-utils";
 
 const NO_CATEGORY_STRING = 'no-category';
 
