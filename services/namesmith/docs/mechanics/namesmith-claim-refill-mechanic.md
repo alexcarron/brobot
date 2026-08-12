@@ -19,7 +19,7 @@ Every player has a field "lastClaimedRefillTime" which can be null or a timestam
 -# You now have 1,134 tokens
 -# Claim your next refill of tokens `in 2 hours`
 ## Failure
-You’ve already claimed your refill!
+You've already claimed your refill!
 Next refill available `in 1 hour 23 minutes`
 In the meantime, you can mine tokens with `/mine` or complete tasks for extra rewards.
 

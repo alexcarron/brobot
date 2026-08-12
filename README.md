@@ -201,7 +201,7 @@ Contains the main entry point and all project-level configuration files.
   * Loads all commands and event listeners
   * Initializes all services
   * Optionally registers commands (`--deploy`, `--deploy-all`)
-* **`build.ts`** Registers BroBot’s slash commands with Discord. Use only when adding, removing, or updating commands, as deployment time is unreliable.
+* **`build.ts`** Registers BroBot's slash commands with Discord. Use only when adding, removing, or updating commands, as deployment time is unreliable.
 * **`LICENSE`** Specifies the licensing terms
 * **`package-lock.json`** Ensures consistent dependency versions across installs
 * **`package.json`** Contains project metadata and dependencies

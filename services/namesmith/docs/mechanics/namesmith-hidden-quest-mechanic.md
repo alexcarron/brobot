@@ -10,7 +10,7 @@ Will be shown as a message in the \#hidden-quest channel
 ## Example
 ```
 # Hidden Quest
-You unlocked today’s hidden quest by completing all daily quests. Read the objective, perform the required actions, and click the "Complete Quest" button to claim your reward
+You unlocked today's hidden quest by completing all daily quests. Read the objective, perform the required actions, and click the "Complete Quest" button to claim your reward
 _ _
 ## Experienced Craftsman
 Craft characters at least five times using at least three different recipes

@@ -54,7 +54,7 @@ Contains service classes that handle business logic and coordinate between repos
 - Acts as the main interface for workflows to interact with game logic
 - Manages communication with Discord where appropriate
 - May access repositories and Discord
-- Should not perform high-level flow orchestration (that’s the responsibility of workflows)
+- Should not perform high-level flow orchestration (that's the responsibility of workflows)
 ## `types/`
 Contains shared TypeScript type definitions used throughout the codebase.
 - Defines consistent types and interfaces for core entities

@@ -9,5 +9,5 @@
 # When NOT to Throw Errors
 1. The situation is part of normal business logic or domain flow
 2. It can be handled locally in a predictable way
-3. You’re controlling flow in expected conditions
-4. You’re inside hot paths / performance-sensitive code
+3. You're controlling flow in expected conditions
+4. You're inside hot paths / performance-sensitive code

@@ -2,7 +2,7 @@
 ## When Players Can Sell
 Players are allowed to sell characters in their inventory or current name at any time.
 ## Tokens Sell Value Principles
-- **Rarity-Based Pricing:** Sell value should correlate directly with the character’s rarity.. The rarer or harder to obtain a character is, the higher its token value.
+- **Rarity-Based Pricing:** Sell value should correlate directly with the character's rarity.. The rarer or harder to obtain a character is, the higher its token value.
 - **Avoid Overpricing:** No character should sell for equal to or more than a mystery box, except in the case of exceptionally rare characters, you likely wouldn't get by opening that mystery box with the money you just got.
 - **Avoid Underpricing:** Selling should always feel meaningful. No character should sell for such a low amount that the action feels pointless. The minimum sale value is 10% of the cheapest mystery box. (Roughly 2 tokens as of now)
 - **Expected Box Value Reference:** The expected value of a mystery box should be roughly 20% of its cost, which serves as a guide for character sale values.
