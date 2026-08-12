@@ -87,6 +87,15 @@ export async function fetchChannelsOfGuild(guild: Guild): Promise<GuildBasedChan
 }
 
 /**
+ * Gets all channels of a guild that are already cached locally.
+ * @param guild - The guild whose cached channels to get.
+ * @returns An array of the guild's cached channels.
+ */
+export function getCachedChannelsOfGuild(guild: Guild): GuildBasedChannel[] {
+	return discordCollectionToArray(guild.channels.cache);
+}
+
+/**
  * Creates a Discord channel in a guild.
  * If the parent category has reached its maximum number of channels, it will create a new category and place the channel within it.
  * @param options - Options for creating the channel.

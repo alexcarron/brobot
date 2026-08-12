@@ -3,7 +3,7 @@ import { Parameter, ParameterTypes } from "../../services/command-creation/param
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { resolveTargetPlayer } from "../../services/namesmith/utilities/interface.utility";
-import { fetchPlayerAutocompleteChoices } from "../../services/namesmith/utilities/player.utility";
+import { getPlayerAutocompleteChoicesFromCache } from "../../services/namesmith/utilities/player.utility";
 import { escapeDiscordMarkdown } from "../../utilities/string-manipulation-utils";
 
 const Parameters = Object.freeze({
@@ -17,7 +17,7 @@ const Parameters = Object.freeze({
 		name: "player",
 		description: "The player to give the inventory to",
 		isRequired: false,
-		autocomplete: fetchPlayerAutocompleteChoices,
+		autocomplete: getPlayerAutocompleteChoicesFromCache,
 	}),
 });
 

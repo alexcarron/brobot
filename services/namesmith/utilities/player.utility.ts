@@ -1,4 +1,4 @@
-import { fetchUser } from "../../../utilities/discord/guild-member-utils";
+import { getCachedUser } from "../../../utilities/discord/guild-member-utils";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { Player } from "../types/player.types";
 
@@ -28,21 +28,17 @@ export const isPlayer = (value: unknown): value is Player => (
 );
 
 /**
- * Fetches all players from the database and returns an array of autocomplete choices.
- * Each autocomplete choice contains the display name of the player and their ID.
- * @returns A promise that resolves to an array of autocomplete choices.
+ * Gets all players from the database and returns an array of autocomplete choices, reading each player's Discord display name from cache instead of fetching.
+ * @returns An array of autocomplete choices.
  */
-export function fetchPlayerAutocompleteChoices() {
+export function getPlayerAutocompleteChoicesFromCache() {
 	const { playerService } = getNamesmithServices();
 	const allPlayers = playerService.playerRepository.getPlayers();
-	return Promise.all(
-		allPlayers.map(async player => {
-			const id = player.id;
-			const user = await fetchUser(id);
-			return {
-				name: `${user.displayName}`,
-				value: id
-			}
-		})
-	);
+	return allPlayers.map(player => {
+		const cachedUser = getCachedUser(player.id);
+		return {
+			name: cachedUser?.displayName ?? player.currentName,
+			value: player.id
+		}
+	});
 }

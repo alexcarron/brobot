@@ -2,7 +2,7 @@ import { ChannelType, PermissionFlagsBits } from "discord.js";
 import { Parameter, ParameterTypes } from "../../../services/command-creation/parameter";
 import { SlashCommand } from "../../../services/command-creation/slash-command";
 import { deferInteraction, replyToInteraction } from "../../../utilities/discord/interaction-reply-utils";
-import { fetchChannelsOfGuild, fetchGuildChannel, moveChannelToCategory } from "../../../utilities/discord/channel-utils";
+import { fetchGuildChannel, getCachedChannelsOfGuild, moveChannelToCategory } from "../../../utilities/discord/channel-utils";
 import { fetchCategory } from "../../../utilities/discord/category-utils";
 import { getBooleanParamValue, getRequiredStringParam, getStringParamValue } from "../../../utilities/discord/interaction-param-utils";
 import { getGuildOfInteraction } from "../../../utilities/discord/guild-utils";
@@ -78,7 +78,7 @@ module.exports = new SlashCommand({
 
 		const enteredValue = focusedParameter.value;
 		const guild = getGuildOfInteraction(interaction);
-		const allChannels = await fetchChannelsOfGuild(guild);
+		const allChannels = getCachedChannelsOfGuild(guild);
 		const thisChannel = interaction.channel;
 
 		if (focusedParameter.name === Parameters.CATEGORY_ID.name) {

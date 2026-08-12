@@ -6,7 +6,7 @@ import { forcePlayerToPublishNameInSlot } from "../../services/namesmith/mocks/m
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { getInvalidPlayerMessageOrPlayer } from "../../services/namesmith/utilities/interface.utility";
 import { toDisplayedName } from "../../services/namesmith/utilities/player-message.utility";
-import { fetchPlayerAutocompleteChoices } from "../../services/namesmith/utilities/player.utility";
+import { getPlayerAutocompleteChoicesFromCache } from "../../services/namesmith/utilities/player.utility";
 import { fetchUser } from "../../utilities/discord/guild-member-utils";
 import { joinLines, toNumericOrdinal } from "../../utilities/string-manipulation-utils";
 import { isString } from "../../utilities/types/type-guards";
@@ -22,7 +22,7 @@ const Parameters = Object.freeze({
 		name: "player",
 		description: "The player to set the published name of",
 		isRequired: false,
-		autocomplete: fetchPlayerAutocompleteChoices,
+		autocomplete: getPlayerAutocompleteChoicesFromCache,
 	}),
 	SLOT: new Parameter({
 		type: ParameterTypes.INTEGER,

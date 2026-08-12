@@ -2,7 +2,7 @@ const { ChannelType, PermissionFlagsBits, ChatInputCommandInteraction, Autocompl
 const { ParameterTypes, Parameter } = require("../../../services/command-creation/parameter");
 const { SlashCommand } = require("../../../services/command-creation/slash-command");
 const { deferInteraction, editReplyToInteraction } = require("../../../utilities/discord/interaction-reply-utils");
-const { createChannel, fetchChannelsOfGuild } = require("../../../utilities/discord/channel-utils");
+const { createChannel, getCachedChannelsOfGuild } = require("../../../utilities/discord/channel-utils");
 const { getRequiredIntegerParam, getRequiredStringParam, getStringParamValue } = require("../../../utilities/discord/interaction-param-utils");
 const { incrementEndNumber } = require("../../../utilities/string-manipulation-utils");
 
@@ -110,7 +110,7 @@ module.exports = new SlashCommand({
 		if (interaction.guild === null)
 			return;
 
-		const allChannels = await fetchChannelsOfGuild(interaction.guild);
+		const allChannels = getCachedChannelsOfGuild(interaction.guild);
 
 
 		const allCategories = allChannels.filter(channel => channel.type === ChannelType.GuildCategory);

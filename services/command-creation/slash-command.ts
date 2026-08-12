@@ -173,7 +173,7 @@ export class SlashCommand<
 
 	/**
 	 * A function which takes a discord.js Interaction that executes when the command is autocompleted.
-	 * Discord fires autocomplete repeatedly as the user types, so avoid making Discord API fetch calls here: use data already cached on the Guild (see `utilities/discord-cache-utils.ts`) instead.
+	 * Discord fires autocomplete repeatedly as the user types, so avoid making Discord API fetch calls here. Use data already cached instead.
 	 */
 	public readonly autocomplete: (interaction: AutocompleteInteraction) => Promise<any>;
 
@@ -316,7 +316,7 @@ export class SlashCommand<
 
 	/**
 	 * Responds to an autocomplete interaction by running each parameter's autocomplete handler.
-	 * Discord fires autocomplete repeatedly as the user types, so autocomplete handlers must not make Discord API fetch calls: use data already cached on the Guild (see `utilities/discord-cache-utils.ts`) instead.
+	 * Discord fires autocomplete repeatedly as the user types, so autocomplete handlers must not make Discord API fetch calls. Use data already cached instead.
 	 * @param interaction - The autocomplete interaction to respond to.
 	 */
 	async handleAutocomplete(interaction: AutocompleteInteraction): Promise<void> {

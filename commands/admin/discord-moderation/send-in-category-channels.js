@@ -5,7 +5,7 @@ const { deferInteraction, editReplyToInteraction } = require("../../../utilities
 const { fetchChannelsInCategory, fetchCategory } = require("../../../utilities/discord/category-utils");
 const { getGuildOfInteraction } = require("../../../utilities/discord/guild-utils");
 const { getRequiredStringParam } = require("../../../utilities/discord/interaction-param-utils");
-const { fetchChannelsOfGuild } = require("../../../utilities/discord/channel-utils");
+const { getCachedChannelsOfGuild } = require("../../../utilities/discord/channel-utils");
 const { wait } = require("../../../utilities/realtime-utils");
 
 const Parameters = {
@@ -70,7 +70,7 @@ module.exports = new SlashCommand({
 		const enteredValue = focusedParameter.value;
 
 		const guild = getGuildOfInteraction(interaction);
-		const allChannels = await fetchChannelsOfGuild(guild);
+		const allChannels = getCachedChannelsOfGuild(guild);
 
 		const allCategories = allChannels.filter(channel => channel.type === ChannelType.GuildCategory);
 

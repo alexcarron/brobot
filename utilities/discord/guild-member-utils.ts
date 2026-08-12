@@ -1,5 +1,6 @@
 import { ChatInputCommandInteraction, Guild, GuildMember, User } from "discord.js";
 import { discordCollectionToArray } from "../data-structure-utils";
+import { logError } from "../logging-utils";
 import { assertClientSetup } from "./client-utils";
 
 /**
@@ -11,6 +12,49 @@ import { assertClientSetup } from "./client-utils";
 export async function fetchUser(userID: string): Promise<User> {
 	assertClientSetup();
 	return await global.client.users.fetch(userID);
+}
+
+const USER_CACHE_REVALIDATION_INTERVAL_MS = 5 * 60 * 1000;
+const userCacheLastRevalidatedAtByID = new Map<string, number>();
+const userCacheRevalidationsInFlightByID = new Map<string, Promise<void>>();
+
+/**
+ * Gets a user that is already cached locally, without making a blocking Discord API call.
+ * If the user is missing from the cache or the cache entry is stale, a background revalidation is started.
+ * @param userID The ID of the user to get from the cache.
+ * @returns The cached User object, or undefined if the user has never been cached.
+ * @throws {Error} If the client is not setup or not ready.
+ */
+export function getCachedUser(userID: string): User | undefined {
+	assertClientSetup();
+	const cachedUser = global.client.users.cache.get(userID);
+	const lastRevalidatedAt = userCacheLastRevalidatedAtByID.get(userID) ?? 0;
+	const isStale = Date.now() - lastRevalidatedAt > USER_CACHE_REVALIDATION_INTERVAL_MS;
+
+	if (cachedUser === undefined || isStale) {
+		revalidateCachedUserInBackground(userID);
+	}
+
+	return cachedUser;
+}
+
+async function revalidateCachedUser(userID: string): Promise<void> {
+	try {
+		await global.client.users.fetch(userID);
+		userCacheLastRevalidatedAtByID.set(userID, Date.now());
+	}
+	catch (error: unknown) {
+		logError(`Failed to revalidate cached user ${userID}`, error instanceof Error ? error : undefined);
+	}
+	finally {
+		userCacheRevalidationsInFlightByID.delete(userID);
+	}
+}
+
+function revalidateCachedUserInBackground(userID: string): void {
+	if (userCacheRevalidationsInFlightByID.has(userID)) return;
+
+	userCacheRevalidationsInFlightByID.set(userID, revalidateCachedUser(userID));
 }
 
 /**

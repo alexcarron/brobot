@@ -2,7 +2,7 @@ const { ChannelType, PermissionFlagsBits } = require("discord.js");
 const { ParameterTypes, Parameter } = require("../../../services/command-creation/parameter");
 const { SlashCommand } = require("../../../services/command-creation/slash-command");
 const { deferInteraction, editReplyToInteraction } = require("../../../utilities/discord/interaction-reply-utils");
-const { fetchChannelsOfGuild, shuffleCategoryChannels } = require("../../../utilities/discord/channel-utils");
+const { getCachedChannelsOfGuild, shuffleCategoryChannels } = require("../../../utilities/discord/channel-utils");
 const { fetchCategory } = require("../../../utilities/discord/category-utils");
 const { getGuildOfInteraction } = require("../../../utilities/discord/guild-utils");
 const { getRequiredStringParam } = require("../../../utilities/discord/interaction-param-utils");
@@ -47,7 +47,7 @@ module.exports = new SlashCommand({
 		const enteredValue = focusedParameter.value;
 
 		const guild = getGuildOfInteraction(interaction);
-		const allChannels = await fetchChannelsOfGuild(guild);
+		const allChannels = getCachedChannelsOfGuild(guild);
 
 		const allCategories = allChannels.filter(channel => channel.type === ChannelType.GuildCategory);
 

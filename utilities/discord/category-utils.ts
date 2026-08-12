@@ -60,6 +60,17 @@ export async function fetchCategoriesOfGuild(guild: Guild): Promise<CategoryChan
 }
 
 /**
+ * Gets all category channels of a guild that are already cached locally.
+ * @param guild - The guild whose cached category channels to get.
+ * @returns An array of the guild's cached category channels.
+ */
+export function getCachedCategoryChannelsOfGuild(guild: Guild): CategoryChannel[] {
+	return discordCollectionToArray(guild.channels.cache).filter(
+		(channel): channel is CategoryChannel => channel.type === ChannelType.GuildCategory
+	);
+}
+
+/**
  * Fetches all the channels in a category.
  * @param guild The guild whose category you want to fetch the channels of.
  * @param categoryID The ID of the category whose channels you want to fetch.

@@ -3,7 +3,7 @@ import { Parameter, ParameterTypes } from './parameter';
 import { filterAutocompleteByEnteredValue, getEnteredValue, limitAutocompleteChoices } from './autocomplete-utils';
 import { fetchCategory } from '../../utilities/discord/category-utils';
 import { getRequiredStringParam } from '../../utilities/discord/interaction-param-utils';
-import { getCachedCategoryChannelsOfGuild } from '../../utilities/discord-cache-utils';
+import { getCachedCategoryChannelsOfGuild } from '../../utilities/discord/category-utils';
 
 /**
  * A reusable category channel parameter.

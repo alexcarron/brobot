@@ -3,7 +3,7 @@ import { Parameter, ParameterTypes } from "../../services/command-creation/param
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { getInvalidPlayerMessageOrPlayer } from "../../services/namesmith/utilities/interface.utility";
-import { fetchPlayerAutocompleteChoices } from "../../services/namesmith/utilities/player.utility";
+import { getPlayerAutocompleteChoicesFromCache } from "../../services/namesmith/utilities/player.utility";
 import { fetchUser } from "../../utilities/discord/guild-member-utils";
 import { escapeDiscordMarkdown, joinLines } from "../../utilities/string-manipulation-utils";
 import { isString } from "../../utilities/types/type-guards";
@@ -14,7 +14,7 @@ const Parameters = Object.freeze({
 		name: "player",
 		description: "The player to see the inventory of",
 		isRequired: false,
-		autocomplete: fetchPlayerAutocompleteChoices,
+		autocomplete: getPlayerAutocompleteChoicesFromCache,
 	}),
 });
 
