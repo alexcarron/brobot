@@ -17,7 +17,7 @@ import { tradingEligibilityChecks } from "./eligibility/trading.eligibility";
 import { telemetry } from "../../telemetry/telemetry";
 import { EventType } from "../../telemetry/telemetry-event.types";
 
-const questIDToMeetsCriteriaCheck = {
+export const questIDToMeetsCriteriaCheck = {
 	...miningEligibilityChecks,
 	...refillEligibilityChecks,
 	...mysteryBoxPurchasingEligibilityChecks,

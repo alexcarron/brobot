@@ -1,4 +1,12 @@
 /**
+ * Removes apostrophes from a string literal type
+ */
+type StripApostrophes<String extends string> =
+  String extends `${infer LeftSide}'${infer RightSide}`
+    ? StripApostrophes<`${LeftSide}${RightSide}`>
+    : String;
+
+/**
  * Converts the seperators of a string literal type to underscores
  */
 type NormalizeSeparators<String extends string> =
@@ -54,7 +62,7 @@ export type UpperSnakeCase<String extends string> =
   Uppercase<
     TrimUnderscores<
 			CollapseUnderscores<
-				InsertUnderscores<NormalizeSeparators<String>>
+				InsertUnderscores<NormalizeSeparators<StripApostrophes<String>>>
 			>
     >
   >;
@@ -67,6 +75,7 @@ export type UpperSnakeCase<String extends string> =
  *  - kebab-case / spaces / dots
  *  - sequences like XMLHttpRequest -> XML_HTTP_REQUEST
  *  - digits (kept and separated properly)
+ *  - apostrophes (removed entirely, e.g. "Miner's Fortune" -> "MINERS_FORTUNE")
  * @param stringValue The string to convert to UPPER_SNAKE_CASE
  * @returns The UPPER_SNAKE_CASE version of the input string
  */
@@ -75,6 +84,8 @@ export function toUpperSnakeCase<
 >(stringValue: StringValue):
 	UpperSnakeCase<StringValue>
 {  return stringValue
+    // Removes apostrophes
+    .replace(/'/g, '')
     // Converts -, ., and spaces to underscores
     .replace(/[-\s.]+/g, '_')
     // put underscore between lowercase/digit and Uppercase: "fooBar" -> "foo_Bar"

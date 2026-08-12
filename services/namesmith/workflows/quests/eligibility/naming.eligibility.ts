@@ -11,7 +11,6 @@ import { MeetsCriteriaParameters, PLAYER_MET_CRITERIA_RESULT, toFailure } from "
  */
 export const namingEligibilityChecks = {
 
-	// Diverse Name
 	[Quests.DIVERSE_NAME.id]: (
 		{quest, player}: MeetsCriteriaParameters,
 		{ publishedNameService }: NamesmithServices
@@ -33,7 +32,6 @@ export const namingEligibilityChecks = {
 		return toFailure(`None of your published names (${listOfPublishedNames}) have at least one letter, one symbol, and one number all in the same name. You must publish a name like that to complete the ${quest.name} quest.`)
 	},
 
-	// Twinsies
 	[Quests.TWINSIES.id]: (
 		{quest, player}: MeetsCriteriaParameters,
 		{ publishedNameService }: NamesmithServices
@@ -54,7 +52,6 @@ export const namingEligibilityChecks = {
 		return PLAYER_MET_CRITERIA_RESULT;
 	},
 
-	// Echoed Name
 	[Quests.ECHOED_NAME.id]: (
 		{quest, player}: MeetsCriteriaParameters,
 		{ activityLogService }: NamesmithServices
@@ -75,10 +72,22 @@ export const namingEligibilityChecks = {
 				return PLAYER_MET_CRITERIA_RESULT;
 		}
 
+		const hasRepeatedNameButNotRearrangedRepeated = changeNameLogs.some(changeNameLog => {
+			const newName = changeNameLog.currentName;
+
+			if (newName === null || newName.length === 0 || newName.length % 2 !== 0)
+				return false;
+
+			const halfLength = newName.length / 2;
+			return newName.slice(0, halfLength) === newName.slice(halfLength);
+		});
+
+		if (hasRepeatedNameButNotRearrangedRepeated)
+			return toFailure(`Your name having repeated characters isn't enough. You must rearrange your name so it becomes two identical copies of your previous name to complete the ${quest.name} quest. For example, if your current name is "Pom", rearrange it directly to "PomPom".`);
+
 		return toFailure(`You have not changed your name into a repeated version of itself. You must do that before you can complete the ${quest.name} quest.`);
 	},
 
-	// Identity Theft
 	[Quests.IDENTITY_THEFT.id]: (
 		{quest, player}: MeetsCriteriaParameters,
 		{ activityLogService }: NamesmithServices
@@ -159,7 +168,6 @@ export const namingEligibilityChecks = {
 		}
 	},
 
-	// Fragile Name
 	[Quests.FRAGILE_NAME.id]: (
 		{quest, player}: MeetsCriteriaParameters,
 		{ activityLogService }: NamesmithServices
@@ -181,7 +189,6 @@ export const namingEligibilityChecks = {
 		);
 	},
 
-	// Even Number Name
 	[Quests.EVEN_NUMBER_NAME.id]: (
 		{quest, player}: MeetsCriteriaParameters,
 		{ activityLogService }: NamesmithServices
@@ -199,7 +206,6 @@ export const namingEligibilityChecks = {
 		return toFailure(`You need to publish a name with an even number to complete the "${quest.name}" quest.`);
 	},
 
-	// Distinct Dozen
 	[Quests.DISTINCT_DOZEN.id]: (
 		{quest, player}: MeetsCriteriaParameters,
 		{activityLogService}: NamesmithServices
@@ -273,7 +279,6 @@ export const namingEligibilityChecks = {
 		return PLAYER_MET_CRITERIA_RESULT;
 	},
 
-	// Silent Server (108)
 	[Quests.SILENT_SERVER.id]: (
 		{quest}: MeetsCriteriaParameters,
 		{activityLogService}: NamesmithServices

@@ -34,5 +34,17 @@ describe('enum-utils', () => {
 				FIRST_AID_KIT: {name: "First Aid Kit", type: "consumable", cost: 20}
 			});
 		});
+
+		it('strips apostrophes from the enum key', () => {
+			const quests = [
+				{name: "Miner's Fortune"},
+			] as const;
+
+			const QuestsEnum = toEnumFromObjects(quests, "name");
+
+			makeSure(QuestsEnum).is({
+				MINERS_FORTUNE: {name: "Miner's Fortune"},
+			});
+		});
 	});
 })

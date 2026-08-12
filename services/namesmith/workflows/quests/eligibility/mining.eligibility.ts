@@ -9,7 +9,6 @@ import { MeetsCriteriaParameters, PLAYER_MET_CRITERIA_RESULT, toFailure } from "
  */
 export const miningEligibilityChecks = {
 
-	// High Yield
 	[Quests.HIGH_YIELD.id]: (
 		{quest, player}: MeetsCriteriaParameters,
 		{activityLogService}: NamesmithServices
@@ -33,7 +32,6 @@ export const miningEligibilityChecks = {
 		return toFailure(`You've only gotten ${maxMineYield} tokens from a single mine at the most. You need to mine at least ${MIN_NUM_TOKENS_NEEDED} tokens at once to complete the "${quest.name}" quest.`);
 	},
 
-	// One Hundred Swings
 	[Quests.ONE_HUNDRED_SWINGS.id]: (
 		{quest, player}: MeetsCriteriaParameters,
 		{activityLogService}: NamesmithServices
@@ -51,7 +49,6 @@ export const miningEligibilityChecks = {
 		return toFailure(`You've only mined ${numTimesMined} times today. You need to mine at least ${NUM_MINES_NEEDED} times to complete the "${quest.name}" quest.`);
 	},
 
-	// Rapid Extraction
 	[Quests.RAPID_EXTRACTION.id]: (
 		{quest, player}: MeetsCriteriaParameters,
 		{activityLogService}: NamesmithServices
@@ -93,7 +90,27 @@ export const miningEligibilityChecks = {
 		return toFailure(`You've only mined 20 times in ${toDurationTextFromSeconds(minTimeRangeSeconds)} at most. You need to mine at least 20 times in ${SECONDS_TIME_RANGE_NEEDED} seconds to complete the "${quest.name}" quest.`);
 	},
 
-	// Lucky Mining Streak
+	[Quests.MINERS_FORTUNE.id]: (
+		{quest, player}: MeetsCriteriaParameters,
+		{activityLogService}: NamesmithServices
+	) => {
+		const NUM_TOKENS_NEEDED = 100;
+		const mineLogs = activityLogService.getMineTokensLogsTodayByPlayer(player);
+
+		if (mineLogs.length <= 0)
+			return toFailure(`You have not mined any tokens yet today. You must mine tokens before you can complete the "${quest.name}" quest.`);
+
+		let totalTokensEarned = 0;
+		for (const mineLog of mineLogs) {
+			totalTokensEarned += mineLog.tokensDifference;
+		}
+
+		if (totalTokensEarned < NUM_TOKENS_NEEDED)
+			return toFailure(`You've only earned ${totalTokensEarned} tokens from mining today. You need to earn at least ${NUM_TOKENS_NEEDED} tokens from mining to complete the "${quest.name}" quest.`);
+
+		return PLAYER_MET_CRITERIA_RESULT;
+	},
+
 	[Quests.LUCKY_MINING_STREAK.id]: (
 		{quest, player}: MeetsCriteriaParameters,
 		{activityLogService}: NamesmithServices
@@ -122,7 +139,6 @@ export const miningEligibilityChecks = {
 			return toFailure(`You never mined ${NUM_TOKEN_YIELD_NEEDED}+ tokens at once today. You need to do that at least once before you can complete the "${quest.name}" quest.`);
 	},
 
-	// Mine Together
 	[Quests.MINE_TOGETHER.id]: (
 		{quest, player}: MeetsCriteriaParameters,
 		{activityLogService, playerService}: NamesmithServices
@@ -184,7 +200,6 @@ export const miningEligibilityChecks = {
 			return toFailure(`You've mined with ${NUM_OTHER_PLAYERS_NEEDED} other player(s) in the span of ${toDurationTextFromSeconds(minTimeRangeSeconds)}. You need to mine with them in the span of ${SECONDS_TIME_RANGE_NEEDED} seconds at most to complete the "${quest.name}" quest.`);
 	},
 
-	// Mining Speedrun
 	[Quests.MINING_SPEEDRUN.id]: (
 		{quest, player}: MeetsCriteriaParameters,
 		{activityLogService}: NamesmithServices
@@ -224,7 +239,6 @@ export const miningEligibilityChecks = {
 		return toFailure(`You have only been mined ${maxTokensEarned} tokens at most in the span of ${SECONDS_TIME_RANGE} seconds. You need to mine ${TOKENS_NEEDED} tokens in that time to complete the "${quest.name}" quest.`);
 	},
 
-	// Collective Mining
 	[Quests.COLLECTIVE_MINING.id]: (
 		{quest, player}: MeetsCriteriaParameters,
 		{activityLogService, playerService}: NamesmithServices
