@@ -1,11 +1,11 @@
 import { ids } from "../../bot-config/discord-ids";
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getInputFromCreatedTextModal, addButtonToMessageContents, waitForButtonPressThen, removeComponentsFromInteractionMessage } from "../../utilities/discord-action-utils";
-import { getCharacterDifferences } from "../../utilities/data-structure-utils";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { Tips } from "../../services/namesmith/constants/tips.constants";
 import { toDisplayedName, toDisplayOrderedCharacters, toTipLine } from "../../services/namesmith/utilities/player-message.utility";
 import { joinLines } from "../../utilities/string-manipulation-utils";
+import { rearrangeName } from "../../services/namesmith/workflows/rearrange-name.workflow";
 import { MessageFlags } from "discord.js";
 
 export const command = new SlashCommand({
@@ -19,9 +19,8 @@ export const command = new SlashCommand({
 	execute: async function execute(interaction) {
 		const playerID = interaction.user.id;
 
-		const { playerService, activityLogService, tipService } = getNamesmithServices();
+		const { playerService, tipService } = getNamesmithServices();
 		const currentName = playerService.getCurrentName(playerID);
-		const inventory = playerService.getInventory(playerID);
 
 		const initialInput = await getInputFromCreatedTextModal({
 			interaction,
@@ -31,25 +30,14 @@ export const command = new SlashCommand({
 
 		if (initialInput === undefined) return;
 
-		let correctlyRearrangedName = false;
 		let newName = initialInput;
+		let result = rearrangeName({ player: playerID, newName });
 
-		while (!correctlyRearrangedName) {
-			const { extraCharacters } = getCharacterDifferences(inventory, newName);
-
-			if (extraCharacters.length === 0) {
-				correctlyRearrangedName = true;
-				break;
-			}
-
-			let message = "";
-
-			if (extraCharacters.length > 0) {
-				message += `\nYou added the following characters which you don't have in your inventory:\n> ${toDisplayOrderedCharacters(extraCharacters)}`;
-			}
+		while (result.isHasExtraCharacters()) {
+			const { extraCharacters } = result;
 
 			const initialMessageText =
-				message +
+				`\nYou added the following characters which you don't have in your inventory:\n> ${toDisplayOrderedCharacters(extraCharacters)}` +
 				"\n\nClick the button to try to rearrange the characters in your name again.";
 
 			const messageContents = addButtonToMessageContents({
@@ -74,16 +62,15 @@ export const command = new SlashCommand({
 			});
 
 			await removeComponentsFromInteractionMessage(interaction, messageWithButton);
+
+			result = rearrangeName({ player: playerID, newName });
 		}
 
-		const nameBefore = playerService.getCurrentName(playerID);
-		playerService.changeCurrentName(playerID, newName);
-		activityLogService.logChangeName({
-			playerChangingName: playerID,
-			nameBefore,
-		});
+		if (result.isNotAPlayer()) {
+			return `You're not a player, so you can't rearrange your name.`;
+		}
 
-		const unusedCharacters = playerService.getUnusedInventoryCharacters(playerID, newName);
+		const { unusedCharacters } = result;
 
 		let successMessage = `Good work. Your name is now ${toDisplayedName(newName)}.`;
 		if (unusedCharacters.length > 0) {
@@ -96,7 +83,7 @@ export const command = new SlashCommand({
 		if (interaction.isRepliable()) {
 			await interaction.followUp({
 				content: joinLines(
-					successMessage, 
+					successMessage,
 					tipLine
 				),
 				flags: MessageFlags.Ephemeral,

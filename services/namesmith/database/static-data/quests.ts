@@ -40,7 +40,7 @@ export const quests = [
 	{
 		id: 6,
 		name: "Echoed Name",
-		description: "Change your current name into a repeated version of itself. For example, from \"Pom\" to \"PomPom\"",
+		description: "Rearrange your current name into a repeated version of itself. For example, from \"Pom\" to \"PomPom\"",
 		recurrence: 'daily',
 		tokensReward: 100,
 		charactersReward: "echo",
@@ -48,7 +48,7 @@ export const quests = [
 	{
 		id: 7,
 		name: "Identity Theft",
-		description: "Change your current name to exactly match another player’s current name. Keep it that way for two hours straight",
+		description: "Change your current name to exactly match another player's current name. Keep it that way for two hours straight",
 		recurrence: 'daily',
 		tokensReward: 350,
 	},
