@@ -25,12 +25,12 @@ export const FIRST_LAYER_COLLAPSE_CHANCE = 0;
  * The chance of collapse on layer 2 of a mining session.
  * Also is the base chance of collapse before the layer-based growth is applied.
  */
-export const BASE_COLLAPSE_CHANCE = 0.05;
+export const BASE_COLLAPSE_CHANCE = 0.04;
 
 /**
  * How much closer the collapse chance moves toward 100% with each layer past layer 2 in a mining session.
  */
-export const COLLAPSE_CHANCE_DECAY = 0.9;
+export const COLLAPSE_CHANCE_DECAY = 0.90;
 
 /**
  * The rate at which a layer's expected tokens compounds for each layer past the first.
