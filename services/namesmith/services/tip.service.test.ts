@@ -1,7 +1,7 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
-import { Tips, MAX_TIP_VIEW_COUNT } from "../constants/tips.constants";
+import { Tips, MAX_TIP_VIEW_COUNT } from "../constants/tip.constants";
 import { Player } from "../types/player.types";
 import { TipService } from "./tip.service";
 

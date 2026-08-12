@@ -13,7 +13,7 @@ The core creative action of the game, forming a clever name, can be completed ve
 
 Shipped as: players can publish up to four names per game (`MAX_PUBLISHED_NAME_SLOTS_PER_PLAYER`), filling slots in order. The first published name is free; the 2nd, 3rd, and 4th cost 250, 500, and 1000 tokens respectively (`PUBLISHED_NAME_SLOT_COSTS`). Once a slot is filled it is permanent and uneditable - there is no player-facing unpublish command, only a developer-only `/set-published-name` override. Voting was reworked so each published name is a separate anonymous entry (not attributed to its player), so a player with multiple published names can have multiple entries in the running independently.
 
-See `services/published-name.service.ts`, `constants/name-publishing.constants.ts`, and `workflows/publish-name.workflow.ts` for the implementation.
+See `services/published-name.service.ts`, `constants/publish-name.constants.ts`, and `workflows/publish-name.workflow.ts` for the implementation.
 
 ## Solutions considered
 

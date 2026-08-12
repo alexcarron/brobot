@@ -1,5 +1,5 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
-import { INVALID_RECIPE_ID } from "../constants/test.constants";
+import { INVALID_RECIPE_ID } from "../constants/testing.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockRecipe } from "../mocks/mock-data/mock-recipes";
 import { Recipe } from "../types/recipe.types";

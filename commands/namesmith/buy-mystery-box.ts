@@ -1,9 +1,9 @@
 import { ids } from "../../bot-config/discord-ids";
 import { Parameter, ParameterTypes } from "../../services/command-creation/parameter";
 import { SlashCommand } from "../../services/command-creation/slash-command";
-import { Perks } from "../../services/namesmith/constants/perks.constants";
+import { Perks } from "../../services/namesmith/constants/perk.constants";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
-import { Tips } from "../../services/namesmith/constants/tips.constants";
+import { Tips } from "../../services/namesmith/constants/tip.constants";
 import { hasUtilityCharacter } from "../../services/namesmith/utilities/character.utility";
 import { TipResolvable } from "../../services/namesmith/types/tip.types";
 import { getHowToEarnMoreTokensHint, toDisplayedCharacters, toDisplayedDollars, toDisplayOrderedCharacters, toTipLine, toTokenEmojis as toTokenEmojis } from "../../services/namesmith/utilities/player-message.utility";

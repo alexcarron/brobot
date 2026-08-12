@@ -1,7 +1,7 @@
 import { ids } from "../../bot-config/discord-ids";
 import { Parameter, ParameterTypes } from "../../services/command-creation/parameter";
 import { SlashCommand } from "../../services/command-creation/slash-command";
-import { MAX_PUBLISHED_NAME_SLOTS_PER_PLAYER } from "../../services/namesmith/constants/name-publishing.constants";
+import { MAX_PUBLISHED_NAME_SLOTS_PER_PLAYER } from "../../services/namesmith/constants/publish-name.constants";
 import { forcePlayerToPublishNameInSlot } from "../../services/namesmith/mocks/mock-data/mock-players";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { getInvalidPlayerMessageOrPlayer } from "../../services/namesmith/utilities/interface.utility";

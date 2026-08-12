@@ -2,7 +2,7 @@ import { makeSure } from "../../../utilities/jest/jest-utils";
 import { VoteRepository } from "../repositories/vote.repository";
 import { PlayerService } from "./player.service";
 import { VoteService } from "./vote.service";
-import { INVALID_PUBLISHED_NAME_ID, INVALID_VOTE_ID } from "../constants/test.constants";
+import { INVALID_PUBLISHED_NAME_ID, INVALID_VOTE_ID } from "../constants/testing.constants";
 import { addMockVote } from "../mocks/mock-data/mock-votes";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { addMockPublishedName } from "../mocks/mock-data/mock-published-names";

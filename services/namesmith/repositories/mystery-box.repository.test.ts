@@ -1,8 +1,8 @@
-import { INVALID_MYSTERY_BOX_ID } from "../constants/test.constants";
+import { INVALID_MYSTERY_BOX_ID } from "../constants/testing.constants";
 import { MysteryBoxAlreadyExistsError, MysteryBoxNotFoundError } from "../utilities/error.utility";
 import { MysteryBoxRepository } from "./mystery-box.repository";
 import { makeSure } from "../../../utilities/jest/jest-utils";
-import { MysteryBoxes } from "../constants/mystery-boxes.constants";
+import { MysteryBoxes } from "../constants/mystery-box.constants";
 
 describe('MysteryBoxRepository', () => {
 	let mysteryBoxRepo: MysteryBoxRepository;

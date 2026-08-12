@@ -1,8 +1,8 @@
 import { toPropertyValues } from "../../../utilities/data-structure-utils";
 import { addDays, addWeeks } from "../../../utilities/date-time-utils";
 import { makeSure } from "../../../utilities/jest/jest-utils";
-import { Quests } from "../constants/quests.constants";
-import { INVALID_QUEST_ID, INVALID_QUEST_NAME } from "../constants/test.constants";
+import { Quests } from "../constants/quest.constants";
+import { INVALID_QUEST_ID, INVALID_QUEST_NAME } from "../constants/testing.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockDay } from "../mocks/mock-data/mock-days";
 import { addMockQuest } from "../mocks/mock-data/mock-quests";

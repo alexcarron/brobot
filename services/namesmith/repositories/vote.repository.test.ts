@@ -1,5 +1,5 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
-import { INVALID_PUBLISHED_NAME_ID, INVALID_VOTE_ID } from "../constants/test.constants";
+import { INVALID_PUBLISHED_NAME_ID, INVALID_VOTE_ID } from "../constants/testing.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPublishedName } from "../mocks/mock-data/mock-published-names";
 import { addMockVote } from "../mocks/mock-data/mock-votes";

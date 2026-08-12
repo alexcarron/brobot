@@ -1,6 +1,6 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
-import { MAX_PUBLISHED_NAME_SLOTS_PER_PLAYER, PUBLISHED_NAME_SLOT_COSTS } from "../constants/name-publishing.constants";
-import { MAX_NAME_LENGTH } from "../constants/player.constants";
+import { MAX_PUBLISHED_NAME_SLOTS_PER_PLAYER, PUBLISHED_NAME_SLOT_COSTS } from "../constants/publish-name.constants";
+import { MAX_NAME_LENGTH } from "../constants/naming.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { NamesmithEvents } from "../event-listeners/namesmith-events";
 import { addMockPlayer, forcePlayerToHaveInventory } from "../mocks/mock-data/mock-players";

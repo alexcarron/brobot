@@ -1,5 +1,5 @@
 import { makeSure, withFakeTimers } from "../../../utilities/jest/jest-utils";
-import { INVALID_DAY_ID } from "../constants/test.constants";
+import { INVALID_DAY_ID } from "../constants/testing.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockDay } from "../mocks/mock-data/mock-days";
 import { Day } from "../types/day.types";

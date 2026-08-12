@@ -1,10 +1,10 @@
 
 import { PlayerResolvable } from '../types/player.types';
-import { AVERAGE_TOKENS_FROM_REFILLING, MIN_TOKENS_FROM_REFILLING, REFILL_COOLDOWN_DURATION } from '../constants/namesmith.constants';
+import { AVERAGE_TOKENS_FROM_REFILLING, MIN_TOKENS_FROM_REFILLING, REFILL_COOLDOWN_DURATION } from '../constants/claim-refill.constants';
 import { getAnticipatedRandomNum, getRandomBoolean } from '../../../utilities/random-utils';
 import { addDuration, addHours } from '../../../utilities/date-time-utils';
 import { getWorkflowResultCreator, provides } from './workflow-result-creator';
-import { Perks } from '../constants/perks.constants';
+import { Perks } from '../constants/perk.constants';
 import { getNamesmithServices } from '../services/get-namesmith-services';
 
 const result = getWorkflowResultCreator({

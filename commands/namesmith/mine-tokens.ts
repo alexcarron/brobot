@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
 import { ids } from "../../bot-config/discord-ids";
 import { SlashCommand } from "../../services/command-creation/slash-command";
-import { Tips } from "../../services/namesmith/constants/tips.constants";
+import { Tips } from "../../services/namesmith/constants/tip.constants";
 import { sendFirstMineMessage } from "../../services/namesmith/interfaces/mining/first-mine-message";
 import { NOT_A_PLAYER_MINING_MESSAGE } from "../../services/namesmith/interfaces/mining/mining-message-lines";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";

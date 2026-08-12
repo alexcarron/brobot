@@ -1,7 +1,7 @@
 import { getMinutesDurationFromTime, toDurationText, toDurationTextFromSeconds } from "../../../../../utilities/date-time-utils";
 import { getNumCharacters } from "../../../../../utilities/string-checks-utils";
 import { toListOfWords } from "../../../../../utilities/string-manipulation-utils";
-import { Quests } from "../../../constants/quests.constants";
+import { Quests } from "../../../constants/quest.constants";
 import { ActivityTypes } from "../../../types/activity-log.types";
 import { NamesmithServices } from "../../../types/namesmith.types";
 import { MeetsCriteriaParameters, PLAYER_MET_CRITERIA_RESULT, toFailure } from "./quest-eligibility";

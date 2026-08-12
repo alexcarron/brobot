@@ -23,7 +23,7 @@
  *   - mocks/mock-data/mock-{plural}.ts
  *   - types/{kebab}.types.ts
  *   - Updated: utilities/error.utility.ts (appends error classes)
- *   - Updated: constants/test.constants.ts (appends test ID constant)
+ *   - Updated: constants/testing.constants.ts (appends test ID constant)
  */
 
 import fs from 'fs';

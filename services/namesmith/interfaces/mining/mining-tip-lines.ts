@@ -1,4 +1,4 @@
-import { Tips } from "../../constants/tips.constants";
+import { Tips } from "../../constants/tip.constants";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { TipResolvable } from "../../types/tip.types";
 import { toTipLine } from "../../utilities/player-message.utility";

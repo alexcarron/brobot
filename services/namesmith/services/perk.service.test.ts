@@ -1,6 +1,6 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
-import { Perks } from "../constants/perks.constants";
-import { INVALID_PERK_ID, INVALID_PERK_NAME } from "../constants/test.constants";
+import { Perks } from "../constants/perk.constants";
+import { INVALID_PERK_ID, INVALID_PERK_NAME } from "../constants/testing.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPerk } from "../mocks/mock-data/mock-perks";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";

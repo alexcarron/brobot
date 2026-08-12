@@ -1,4 +1,4 @@
-import { INVALID_MYSTERY_BOX_ID } from "../constants/test.constants";
+import { INVALID_MYSTERY_BOX_ID } from "../constants/testing.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { CharacterRepository } from "../repositories/character.repository";
 import { MysteryBoxRepository } from "../repositories/mystery-box.repository";

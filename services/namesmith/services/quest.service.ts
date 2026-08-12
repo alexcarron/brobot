@@ -1,7 +1,7 @@
 import { getShuffledArray } from "../../../utilities/data-structure-utils";
 import { chooseRandomly, chooseWithProbability, getRandomElement } from "../../../utilities/random-utils";
 import { isObject } from "../../../utilities/types/type-guards";
-import { HIDDEN_QUEST_TOKEN_MULTIPLIER } from "../constants/quests.constants";
+import { HIDDEN_QUEST_TOKEN_MULTIPLIER } from "../constants/quest.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
 import { QuestRepository } from "../repositories/quest.repository";

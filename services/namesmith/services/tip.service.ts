@@ -3,7 +3,7 @@ import { PlayerRepository } from "../repositories/player.repository";
 import { DatabaseQuerier } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
 import { PlayerResolvable } from "../types/player.types";
-import { MAX_TIP_VIEW_COUNT } from "../constants/tips.constants";
+import { MAX_TIP_VIEW_COUNT } from "../constants/tip.constants";
 import { Tip, TipKey, TipResolvable } from "../types/tip.types";
 
 /**

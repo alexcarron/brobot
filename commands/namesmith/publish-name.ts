@@ -1,7 +1,7 @@
 import { ids } from "../../bot-config/discord-ids";
 import { SlashCommand } from "../../services/command-creation/slash-command";
-import { MAX_PUBLISHED_NAME_SLOTS_PER_PLAYER } from "../../services/namesmith/constants/name-publishing.constants";
-import { Tips } from "../../services/namesmith/constants/tips.constants";
+import { MAX_PUBLISHED_NAME_SLOTS_PER_PLAYER } from "../../services/namesmith/constants/publish-name.constants";
+import { Tips } from "../../services/namesmith/constants/tip.constants";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { getHowToEarnMoreTokensHint, toDisplayedName, toTipLine } from "../../services/namesmith/utilities/player-message.utility";
 import { publishName } from "../../services/namesmith/workflows/publish-name.workflow";

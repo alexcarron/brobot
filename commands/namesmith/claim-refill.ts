@@ -1,7 +1,7 @@
 import { ids } from "../../bot-config/discord-ids";
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
-import { Tips } from "../../services/namesmith/constants/tips.constants";
+import { Tips } from "../../services/namesmith/constants/tip.constants";
 import { joinLines, toAmountOfNoun } from "../../utilities/string-manipulation-utils";
 import { claimRefill } from "../../services/namesmith/workflows/claim-refill.workflow";
 import { toUnixTimestamp } from "../../utilities/date-time-utils";

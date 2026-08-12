@@ -107,4 +107,4 @@ If you're not sure which to use, prefer `setupMockNamesmith()`
 
 # Test Constants
 
-Shared values used across tests live in `constants/test.constants.ts`, never redefined locally inside a `*.test.ts` file. These are mostly the invalid or nonexistent identifiers a test hands to a method to prove it rejects them, such as `INVALID_PLAYER_ID`, `INVALID_PERK_ID`, `INVALID_ROLE_NAME`, and `INVALID_TIP_KEY`.
+Shared values used across tests live in `constants/testing.constants.ts`, never redefined locally inside a `*.test.ts` file. These are mostly the invalid or nonexistent identifiers a test hands to a method to prove it rejects them, such as `INVALID_PLAYER_ID`, `INVALID_PERK_ID`, `INVALID_ROLE_NAME`, and `INVALID_TIP_KEY`.

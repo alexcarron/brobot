@@ -1,5 +1,5 @@
 import { makeSure } from "../../../../utilities/jest/jest-utils";
-import { Tips } from "../../constants/tips.constants";
+import { Tips } from "../../constants/tip.constants";
 import { DatabaseQuerier } from "../../database/database-querier";
 import { Player } from "../../types/player.types";
 import { setupMockNamesmith } from "../mock-setup";

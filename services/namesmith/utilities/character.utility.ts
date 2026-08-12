@@ -1,6 +1,6 @@
 import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { isOneSymbol } from "../../../utilities/string-checks-utils";
-import { UTILITY_CHARACTERS } from "../constants/characters.constants";
+import { UTILITY_CHARACTERS } from "../constants/character.constants";
 
 /**
  * Retrieves the Unicode code point value of a given character.

@@ -5,7 +5,7 @@ import { joinLines } from "../../../../utilities/string-manipulation-utils";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { Quest, QuestRecurrences, RewardTypes } from "../../types/quest.types";
 import { TipResolvable } from "../../types/tip.types";
-import { Tips } from "../../constants/tips.constants";
+import { Tips } from "../../constants/tip.constants";
 import { hasUtilityCharacter } from "../../utilities/character.utility";
 import { toTipLine } from "../../utilities/player-message.utility";
 import { completeQuest } from "../../workflows/quests/complete-quest.workflow";

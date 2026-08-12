@@ -3,7 +3,7 @@ import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getInputFromCreatedTextModal } from "../../utilities/discord/interaction-reply-utils";
 import { addButtonToMessageContents, waitForButtonPressThen, removeComponentsFromInteractionMessage } from "../../utilities/discord/message-component-utils";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
-import { Tips } from "../../services/namesmith/constants/tips.constants";
+import { Tips } from "../../services/namesmith/constants/tip.constants";
 import { toDisplayedName, toDisplayOrderedCharacters, toTipLine } from "../../services/namesmith/utilities/player-message.utility";
 import { joinLines } from "../../utilities/string-manipulation-utils";
 import { rearrangeName } from "../../services/namesmith/workflows/rearrange-name.workflow";

@@ -2,10 +2,10 @@ import { addDays, addDuration, addHours, addMinutes, addSeconds } from "../../..
 import { failTest, makeSure, repeatEveryIntervalUntil, repeatOverDuration } from "../../../../utilities/jest/jest-utils";
 import { repeat } from "../../../../utilities/loop-utils";
 import { getBetween, getRandomUUID } from "../../../../utilities/random-utils";
-import { UTILITY_CHARACTERS } from "../../constants/characters.constants";
-import { REFILL_COOLDOWN_DURATION } from "../../constants/namesmith.constants";
-import { Quests } from "../../constants/quests.constants";
-import { FREEBIE_QUEST_NAME, INVALID_PLAYER_ID, INVALID_QUEST_ID } from "../../constants/test.constants";
+import { UTILITY_CHARACTERS } from "../../constants/character.constants";
+import { REFILL_COOLDOWN_DURATION } from "../../constants/claim-refill.constants";
+import { Quests } from "../../constants/quest.constants";
+import { FREEBIE_QUEST_NAME, INVALID_PLAYER_ID, INVALID_QUEST_ID } from "../../constants/testing.constants";
 import { DatabaseQuerier } from "../../database/database-querier";
 import { getLatestActivityLog } from "../../mocks/mock-data/mock-activity-logs";
 import { forcePlayerToBuyMysteryBox, forcePlayerToBuyNewMysteryBox } from "../../mocks/mock-data/mock-mystery-boxes";

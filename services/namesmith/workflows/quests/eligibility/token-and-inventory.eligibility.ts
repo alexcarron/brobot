@@ -1,6 +1,6 @@
 import { sortByDescendingProperty } from "../../../../../utilities/data-structure-utils";
 import { getNumDistinctCharacters } from "../../../../../utilities/string-checks-utils";
-import { Quests } from "../../../constants/quests.constants";
+import { Quests } from "../../../constants/quest.constants";
 import { NamesmithServices } from "../../../types/namesmith.types";
 import { MeetsCriteriaParameters, PLAYER_MET_CRITERIA_RESULT, toFailure } from "./quest-eligibility";
 

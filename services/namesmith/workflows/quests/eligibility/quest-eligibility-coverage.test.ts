@@ -1,5 +1,5 @@
 import { quests } from "../../../database/static-data/quests";
-import { FREEBIE_QUEST_NAME } from "../../../constants/test.constants";
+import { FREEBIE_QUEST_NAME } from "../../../constants/testing.constants";
 import { questIDToMeetsCriteriaCheck } from "../complete-quest.workflow";
 
 describe('quest eligibility check coverage', () => {

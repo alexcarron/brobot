@@ -1,5 +1,5 @@
 import { joinLines, toAmountOfNoun, toReadableNumber } from "../../../../utilities/string-manipulation-utils";
-import { MINE_BONUS_BONUS_TOKENS } from "../../constants/perks.constants";
+import { MINE_BONUS_BONUS_TOKENS } from "../../constants/perk.constants";
 import { getTokensEarnedFeedback, toDisplayedCharactersInline } from "../../utilities/player-message.utility";
 import { MiningSessionState } from "./mining-session-state";
 

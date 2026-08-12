@@ -8,7 +8,7 @@ import { DiscordButtons } from "../../../utilities/discord-interfaces/discord-bu
 import { DiscordButtonDefinition } from '../../../utilities/discord-interfaces/discord-button';
 import { ignoreError } from "../../../utilities/error-utils";
 import { getNamesmithServices } from "../services/get-namesmith-services";
-import { Tips } from "../constants/tips.constants";
+import { Tips } from "../constants/tip.constants";
 import { TipResolvable } from "../types/tip.types";
 import { sortByAscendingProperty } from "../../../utilities/data-structure-utils";
 import { getPingForAllPlayers, getTokensEarnedFeedback, toTipLine } from "../utilities/player-message.utility";

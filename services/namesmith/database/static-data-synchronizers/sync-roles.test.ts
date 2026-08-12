@@ -1,9 +1,9 @@
 import { makeSure } from "../../../../utilities/jest/jest-utils";
-import { Perks } from "../../constants/perks.constants";
+import { Perks } from "../../constants/perk.constants";
 import { RoleRepository } from "../../repositories/role.repository";
 import { DatabaseQuerier } from "../database-querier";
 import { syncRolesToDB } from "./sync-roles";
-import { INVALID_PERK_NAME } from "../../constants/test.constants";
+import { INVALID_PERK_NAME } from "../../constants/testing.constants";
 import { ignoreError } from "../../../../utilities/error-utils";
 
 describe('sync-roles.ts', () => {

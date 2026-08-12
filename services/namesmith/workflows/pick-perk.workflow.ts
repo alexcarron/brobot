@@ -1,4 +1,4 @@
-import { Perks } from "../constants/perks.constants";
+import { Perks } from "../constants/perk.constants";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PerkResolvable } from "../types/perk.types";
 import { PlayerResolvable } from "../types/player.types";

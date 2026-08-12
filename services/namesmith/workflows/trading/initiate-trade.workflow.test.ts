@@ -1,5 +1,5 @@
 import { makeSure } from "../../../../utilities/jest/jest-utils";
-import { INVALID_PLAYER_ID } from "../../constants/test.constants";
+import { INVALID_PLAYER_ID } from "../../constants/testing.constants";
 import { DatabaseQuerier } from "../../database/database-querier";
 import { getLatestActivityLog } from "../../mocks/mock-data/mock-activity-logs";
 import { addMockPlayer } from "../../mocks/mock-data/mock-players";

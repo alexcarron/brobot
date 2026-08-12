@@ -13,8 +13,7 @@ import {
 import { InvalidArgumentError } from "../../../utilities/error-utils";
 import { GuildMember, TextChannel } from "discord.js";
 import { MessageContentResolvable } from "../../../utilities/types/discord-types";
-import { DISCORD_NICKNAME_FOR_NO_NAME } from "../constants/namesmith.constants";
-import { MAX_NAME_LENGTH } from "../constants/player.constants";
+import { DISCORD_NICKNAME_FOR_NO_NAME, MAX_NAME_LENGTH } from "../constants/naming.constants";
 
 /**
  * Changes a player's current name in Discord.

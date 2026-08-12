@@ -1,4 +1,4 @@
-import { Perks } from "../../constants/perks.constants";
+import { Perks } from "../../constants/perk.constants";
 
 export const roles = [
 	{

@@ -1,6 +1,6 @@
 import { Duration, getSecondsInTime, toDurationText, toDurationTextFromSeconds } from "../../../../../utilities/date-time-utils";
 import { toListOfWords } from "../../../../../utilities/string-manipulation-utils";
-import { Quests } from "../../../constants/quests.constants";
+import { Quests } from "../../../constants/quest.constants";
 import { ActivityTypes } from "../../../types/activity-log.types";
 import { MysteryBoxID, MysteryBoxName } from "../../../types/mystery-box.types";
 import { NamesmithServices } from "../../../types/namesmith.types";

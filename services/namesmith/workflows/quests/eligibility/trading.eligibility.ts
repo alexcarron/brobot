@@ -1,5 +1,5 @@
 import { getNumCharacters } from "../../../../../utilities/string-checks-utils";
-import { Quests } from "../../../constants/quests.constants";
+import { Quests } from "../../../constants/quest.constants";
 import { ActivityTypes } from "../../../types/activity-log.types";
 import { NamesmithServices } from "../../../types/namesmith.types";
 import { PlayerID } from "../../../types/player.types";

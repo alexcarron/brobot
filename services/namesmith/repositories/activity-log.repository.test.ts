@@ -1,6 +1,6 @@
 import { addDays, addHours } from "../../../utilities/date-time-utils";
 import { makeSure } from "../../../utilities/jest/jest-utils";
-import { INVALID_ACTIVITY_LOG_ID, INVALID_PERK_ID, INVALID_PLAYER_ID, INVALID_QUEST_ID, INVALID_RECIPE_ID, INVALID_ROLE_ID, INVALID_TRADE_ID } from "../constants/test.constants";
+import { INVALID_ACTIVITY_LOG_ID, INVALID_PERK_ID, INVALID_PLAYER_ID, INVALID_QUEST_ID, INVALID_RECIPE_ID, INVALID_ROLE_ID, INVALID_TRADE_ID } from "../constants/testing.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockActivityLog } from "../mocks/mock-data/mock-activity-logs";
 import { addMockMysteryBox } from "../mocks/mock-data/mock-mystery-boxes";

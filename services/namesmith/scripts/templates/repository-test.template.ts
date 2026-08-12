@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 export const toRepositoryTestFile = ({ kebabCaseEntity, pascalCaseEntity, rawEntityName, camelCaseEntity, invalidIDConstant, pluralName }: Record<string, string>) =>
 `import { makeSure } from "../../../utilities/jest/jest-utils";
-import { ${invalidIDConstant} } from "../constants/test.constants";
+import { ${invalidIDConstant} } from "../constants/testing.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMock${pascalCaseEntity} } from "../mocks/mock-data/mock-${pluralName}";
 import { ${pascalCaseEntity} } from "../types/${kebabCaseEntity}.types";

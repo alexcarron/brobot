@@ -6,13 +6,13 @@ jest.mock("../utilities/mine-tokens.utility", () => ({
 }));
 
 import { makeSure } from "../../../utilities/jest/jest-utils";
-import { INVALID_PLAYER_ID } from "../constants/test.constants";
+import { INVALID_PLAYER_ID } from "../constants/testing.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { setupMockNamesmith } from "../mocks/mock-setup";
 import { PlayerService } from "../services/player.service";
 import { mineOneLayer } from "./mine-tokens.workflow";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
-import { Perks } from "../constants/perks.constants";
+import { Perks } from "../constants/perk.constants";
 import { Player } from "../types/player.types";
 import { returnIfNotFailure } from "../utilities/workflow.utility";
 import {

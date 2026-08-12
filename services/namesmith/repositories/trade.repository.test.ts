@@ -1,5 +1,5 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
-import { INVALID_TRADE_ID } from "../constants/test.constants";
+import { INVALID_TRADE_ID } from "../constants/testing.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { Trade, TradeStatuses } from '../types/trade.types';
 import { TradeAlreadyExistsError, TradeNotFoundError } from "../utilities/error.utility";

@@ -1,6 +1,6 @@
 import { toEnumFromObjects } from "../../../utilities/enum-utilts";
 import { characters } from "../database/static-data/characters";
-import { MysteryBoxes } from "./mystery-boxes.constants";
+import { MysteryBoxes } from "./mystery-box.constants";
 
 export const Characters = toEnumFromObjects(characters, "value");
 

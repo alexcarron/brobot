@@ -2,7 +2,7 @@ import { InvalidArgumentError } from "../../../../utilities/error-utils";
 import { getRandomNameUUID } from "../../../../utilities/random-utils";
 import { WithAllOptional } from "../../../../utilities/types/generic-types";
 import { isString } from "../../../../utilities/types/type-guards";
-import { MysteryBoxes } from "../../constants/mystery-boxes.constants";
+import { MysteryBoxes } from "../../constants/mystery-box.constants";
 import { DatabaseQuerier } from "../../database/database-querier";
 import { MysteryBoxRepository } from "../../repositories/mystery-box.repository";
 import { getNamesmithServices } from "../../services/get-namesmith-services";

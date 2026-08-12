@@ -8,7 +8,7 @@ Tips are just-in-time onboarding hints that teach a new player how to play witho
 
 Each tip has a key and is attached to a trigger. The trigger is almost always an action the player just took, so the tip is added to the action's existing reply rather than being sent as a separate message.
 
-A tip is shown to a player at most 3 times (`MAX_TIP_VIEW_COUNT` in `constants/tips.constants.ts`), then no longer shows permanently for that player. The count is tracked per player and per tip in the `playerTipViewCount` table, read through `TipService.shouldPlayerSeeTip` and advanced through `TipService.incrementTipViewCountForPlayer`. Tip keys are defined in `constants/tips.constants.ts`.
+A tip is shown to a player at most 3 times (`MAX_TIP_VIEW_COUNT` in `constants/tip.constants.ts`), then no longer shows permanently for that player. The count is tracked per player and per tip in the `playerTipViewCount` table, read through `TipService.shouldPlayerSeeTip` and advanced through `TipService.incrementTipViewCountForPlayer`. Tip keys are defined in `constants/tip.constants.ts`.
 
 ## Message Style
 
@@ -16,7 +16,7 @@ Every tip follows `docs/namesmith-style-guide.md`: second person, present tense,
 
 ## The Tips
 
-Keys `howToBuyMysteryBox` and `howToPublishName` already exist in `constants/tips.constants.ts`. The other keys below are proposed and added as static data in task 4.3. Channel references are shown as `<#CONSTANT>`, standing for `ids.namesmith.channels.CONSTANT`, resolved to a real channel mention at implementation time.
+Keys `howToBuyMysteryBox` and `howToPublishName` already exist in `constants/tip.constants.ts`. The other keys below are proposed and added as static data in task 4.3. Channel references are shown as `<#CONSTANT>`, standing for `ids.namesmith.channels.CONSTANT`, resolved to a real channel mention at implementation time.
 
 ### Core Loop
 

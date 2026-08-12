@@ -1,6 +1,6 @@
 import { logWarning } from "../../../utilities/logging-utils";
-import { PUBLISHED_NAME_SLOT_COSTS, MAX_PUBLISHED_NAME_SLOTS_PER_PLAYER } from "../constants/name-publishing.constants";
-import { MAX_NAME_LENGTH } from "../constants/player.constants";
+import { PUBLISHED_NAME_SLOT_COSTS, MAX_PUBLISHED_NAME_SLOTS_PER_PLAYER } from "../constants/publish-name.constants";
+import { MAX_NAME_LENGTH } from "../constants/naming.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { NamesmithEvents } from "../event-listeners/namesmith-events";
 import { createMockDB } from "../mocks/mock-database";

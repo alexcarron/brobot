@@ -1,5 +1,5 @@
 import { isObject, isStringToNumberRecord } from "../../../utilities/types/type-guards";
-import { MysteryBoxes } from "../constants/mystery-boxes.constants";
+import { MysteryBoxes } from "../constants/mystery-box.constants";
 import { CharacterOdds, MinimalMysteryBox, MysteryBox, MysteryBoxID } from "../types/mystery-box.types";
 
 /**

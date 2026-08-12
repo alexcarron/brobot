@@ -2,7 +2,7 @@ import { CharacterAlreadyExistsError, CharacterNotFoundError } from "../utilitie
 import { CharacterRepository } from "./character.repository";
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { getIDfromCharacterValue } from "../utilities/character.utility";
-import { INVALID_CHARACTER_ID } from "../constants/test.constants";
+import { INVALID_CHARACTER_ID } from "../constants/testing.constants";
 
 describe('CharacterRepository', () => {
 	let characterRepo: CharacterRepository;

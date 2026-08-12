@@ -1,6 +1,6 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
-import { INVALID_PLAYER_ID, INVALID_TIP_KEY } from "../constants/test.constants";
-import { Tips } from "../constants/tips.constants";
+import { INVALID_PLAYER_ID, INVALID_TIP_KEY } from "../constants/testing.constants";
+import { Tips } from "../constants/tip.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { addMockTip } from "../mocks/mock-data/mock-tips";

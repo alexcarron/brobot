@@ -1,7 +1,7 @@
 import { ids } from "../../bot-config/discord-ids";
 import { Parameter, ParameterTypes } from '../../services/command-creation/parameter';
 import { SlashCommand } from "../../services/command-creation/slash-command";
-import { Perks } from "../../services/namesmith/constants/perks.constants";
+import { Perks } from "../../services/namesmith/constants/perk.constants";
 import { forcePlayerToBuyMysteryBox } from "../../services/namesmith/mocks/mock-data/mock-mystery-boxes";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { toDisplayedDollars, toDisplayOrderedCharacters, toTokenEmojis } from "../../services/namesmith/utilities/player-message.utility";

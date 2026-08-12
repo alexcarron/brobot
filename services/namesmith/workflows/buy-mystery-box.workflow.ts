@@ -1,5 +1,5 @@
 import { getRandomBoolean } from "../../../utilities/random-utils";
-import { Perks } from "../constants/perks.constants";
+import { Perks } from "../constants/perk.constants";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { MinimalMysteryBox, MysteryBoxResolvable } from '../types/mystery-box.types';
 import { Player, PlayerResolvable } from "../types/player.types";

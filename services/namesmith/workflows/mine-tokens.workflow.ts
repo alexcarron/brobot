@@ -1,6 +1,6 @@
 import { addMinutes } from "../../../utilities/date-time-utils";
 import { CHARACTER_DISCOVERY_MYSTERY_BOX_ID } from "../constants/mine-tokens.constants";
-import { MINE_BONUS_BONUS_TOKENS, Perks } from "../constants/perks.constants";
+import { MINE_BONUS_BONUS_TOKENS, Perks } from "../constants/perk.constants";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PlayerResolvable } from "../types/player.types";
 import {

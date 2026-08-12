@@ -24,7 +24,7 @@ jest.mock("../../../../utilities/discord/message-component-utils", () => ({
 }));
 
 import { makeSure } from "../../../../utilities/jest/jest-utils";
-import { INVALID_PLAYER_ID, INVALID_TRADE_ID } from "../../constants/test.constants";
+import { INVALID_PLAYER_ID, INVALID_TRADE_ID } from "../../constants/testing.constants";
 import { DatabaseQuerier } from "../../database/database-querier";
 import { getLatestActivityLog } from "../../mocks/mock-data/mock-activity-logs";
 import { addMockPlayer, editMockPlayer } from "../../mocks/mock-data/mock-players";

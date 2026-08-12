@@ -1,4 +1,4 @@
-import { MAX_PUBLISHED_NAME_SLOTS_PER_PLAYER } from "../constants/name-publishing.constants";
+import { MAX_PUBLISHED_NAME_SLOTS_PER_PLAYER } from "../constants/publish-name.constants";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PlayerResolvable } from "../types/player.types";
 import { getWorkflowResultCreator, provides } from "./workflow-result-creator";

@@ -25,8 +25,8 @@ jest.mock("../../../utilities/discord/message-component-utils", () => ({
 
 import { addDays, addDuration, addSeconds, OLDEST_DATE, subtractDuration } from "../../../utilities/date-time-utils";
 import { makeSure } from "../../../utilities/jest/jest-utils";
-import { REFILL_COOLDOWN_DURATION } from "../constants/namesmith.constants";
-import { INVALID_PLAYER_ID } from "../constants/test.constants";
+import { REFILL_COOLDOWN_DURATION } from "../constants/claim-refill.constants";
+import { INVALID_PLAYER_ID } from "../constants/testing.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { PlayerRepository } from "../repositories/player.repository";
 import { resetMemberToNewPlayer } from "../utilities/discord-action.utility";

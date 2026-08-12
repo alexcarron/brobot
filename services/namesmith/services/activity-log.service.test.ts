@@ -1,7 +1,7 @@
 import { addDays, addDuration, addHours, addMilliseconds, addMinutes, getMillisecondsOfDuration, getToday, getYesterday } from "../../../utilities/date-time-utils";
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { getBetween } from "../../../utilities/random-utils";
-import { INVALID_PLAYER_ID } from "../constants/test.constants";
+import { INVALID_PLAYER_ID } from "../constants/testing.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockActivityLog } from "../mocks/mock-data/mock-activity-logs";
 import { addMockMysteryBox, forcePlayerToBuyNewMysteryBox } from "../mocks/mock-data/mock-mystery-boxes";

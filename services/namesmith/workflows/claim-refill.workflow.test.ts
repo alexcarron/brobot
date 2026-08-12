@@ -12,9 +12,9 @@ jest.mock('cron', () => ({
 
 import { addDays, addDuration, addHours } from "../../../utilities/date-time-utils";
 import { makeSure } from "../../../utilities/jest/jest-utils";
-import { AVERAGE_TOKENS_FROM_REFILLING, REFILL_COOLDOWN_DURATION } from "../constants/namesmith.constants";
-import { Perks } from "../constants/perks.constants";
-import { INVALID_PLAYER_ID } from "../constants/test.constants";
+import { AVERAGE_TOKENS_FROM_REFILLING, REFILL_COOLDOWN_DURATION } from "../constants/claim-refill.constants";
+import { Perks } from "../constants/perk.constants";
+import { INVALID_PLAYER_ID } from "../constants/testing.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { getLatestActivityLog } from "../mocks/mock-data/mock-activity-logs";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";

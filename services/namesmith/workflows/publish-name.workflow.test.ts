@@ -3,7 +3,7 @@ import { setupMockNamesmith } from "../mocks/mock-setup";
 import { getNamesmithServices } from "../services/get-namesmith-services";
 import { PlayerService } from "../services/player.service";
 import { PublishedNameService } from "../services/published-name.service";
-import { INVALID_PLAYER_ID } from "../constants/test.constants";
+import { INVALID_PLAYER_ID } from "../constants/testing.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { Player } from "../types/player.types";
 import { makeSure } from "../../../utilities/jest/jest-utils";
@@ -11,7 +11,7 @@ import { addMockPlayer, forcePlayerToChangeName } from "../mocks/mock-data/mock-
 import { returnIfNotFailure } from "../utilities/workflow.utility";
 import { getLatestActivityLog } from "../mocks/mock-data/mock-activity-logs";
 import { ActivityTypes } from "../types/activity-log.types";
-import { MAX_PUBLISHED_NAME_SLOTS_PER_PLAYER, PUBLISHED_NAME_SLOT_COSTS } from "../constants/name-publishing.constants";
+import { MAX_PUBLISHED_NAME_SLOTS_PER_PLAYER, PUBLISHED_NAME_SLOT_COSTS } from "../constants/publish-name.constants";
 
 describe('publish-name.workflow', () => {
 	let playerService: PlayerService;

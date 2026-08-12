@@ -3,7 +3,7 @@ import { Parameter, ParameterTypes } from "../../services/command-creation/param
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { RecipeService } from "../../services/namesmith/services/recipe.service";
-import { Tips } from "../../services/namesmith/constants/tips.constants";
+import { Tips } from "../../services/namesmith/constants/tip.constants";
 import { PlayerID } from "../../services/namesmith/types/player.types";
 import { Recipe, RecipeID } from "../../services/namesmith/types/recipe.types";
 import { TipResolvable } from "../../services/namesmith/types/tip.types";

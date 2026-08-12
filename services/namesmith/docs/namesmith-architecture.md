@@ -245,7 +245,7 @@ The `perk.isBeingOffered` and `perk.wasOffered` DB flags drive the perk-pick UI 
 
 **Services**: `Service.asMock()` constructs a service without `global.namesmith`.
 
-**Test constants**: Player IDs, item IDs, and similar fixed values live in `constants/test.constants.ts`.
+**Test constants**: Player IDs, item IDs, and similar fixed values live in `constants/testing.constants.ts`.
 
 **Prebuilt mocks**: `mocks/all-mocks.ts` exports pre-built mock instances for common test setups.
 

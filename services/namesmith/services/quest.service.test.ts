@@ -3,7 +3,7 @@ import { Quest, QuestID, QuestRecurrences, RewardTypes } from '../types/quest.ty
 import { addMockQuest } from "../mocks/mock-data/mock-quests";
 import { DatabaseQuerier } from "../database/database-querier";
 import { makeSure } from "../../../utilities/jest/jest-utils";
-import { INVALID_PLAYER_ID, INVALID_QUEST_ID, INVALID_QUEST_NAME } from "../constants/test.constants";
+import { INVALID_PLAYER_ID, INVALID_QUEST_ID, INVALID_QUEST_NAME } from "../constants/testing.constants";
 import { PlayerNotFoundError, QuestNotFoundError } from "../utilities/error.utility";
 import { Player } from "../types/player.types";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";

@@ -1,7 +1,7 @@
 import { ids } from "../../bot-config/discord-ids";
 import { Parameter, ParameterTypes } from "../../services/command-creation/parameter";
 import { SlashCommand } from "../../services/command-creation/slash-command";
-import { Perks } from "../../services/namesmith/constants/perks.constants";
+import { Perks } from "../../services/namesmith/constants/perk.constants";
 import { NamesmithEvents } from "../../services/namesmith/event-listeners/namesmith-events";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { resolveTargetPlayer } from "../../services/namesmith/utilities/interface.utility";

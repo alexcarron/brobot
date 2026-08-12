@@ -1,7 +1,7 @@
 import { getCharacters, hasEmoji } from "../../../../../utilities/string-checks-utils";
 import { toListOfWords } from "../../../../../utilities/string-manipulation-utils";
-import { UTILITY_CHARACTERS } from "../../../constants/characters.constants";
-import { Quests } from "../../../constants/quests.constants";
+import { UTILITY_CHARACTERS } from "../../../constants/character.constants";
+import { Quests } from "../../../constants/quest.constants";
 import { ActivityTypes } from "../../../types/activity-log.types";
 import { NamesmithServices } from "../../../types/namesmith.types";
 import { RecipeID } from "../../../types/recipe.types";

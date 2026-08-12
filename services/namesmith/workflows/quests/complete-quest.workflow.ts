@@ -1,7 +1,7 @@
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { PlayerResolvable } from "../../types/player.types";
 import { QuestResolvable, RewardTypes } from "../../types/quest.types";
-import { FREEBIE_QUEST_NAME } from '../../constants/test.constants';
+import { FREEBIE_QUEST_NAME } from '../../constants/testing.constants';
 import { completeQuestResult } from "./complete-quest-result";
 import { PLAYER_MET_CRITERIA_RESULT } from "./eligibility/quest-eligibility";
 import { craftingEligibilityChecks } from "./eligibility/crafting.eligibility";

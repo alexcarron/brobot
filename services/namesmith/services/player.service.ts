@@ -5,12 +5,12 @@ import { Inventory, Player, PlayerID, PlayerResolvable } from '../types/player.t
 import { removeCharactersAsGivenFromEnd, removeMissingCharacters } from "../../../utilities/string-manipulation-utils";
 import { areCharactersInString, getCharacterCounts, getCharacters } from "../../../utilities/string-checks-utils";
 import { sortCharactersForDisplay, toDisplayOrderedCharacters } from "../utilities/player-message.utility";
-import { REFILL_COOLDOWN_DURATION } from "../constants/namesmith.constants";
+import { REFILL_COOLDOWN_DURATION } from "../constants/claim-refill.constants";
 import { addDuration, OLDEST_DATE } from "../../../utilities/date-time-utils";
 import { NamesmithEvents } from "../event-listeners/namesmith-events";
 import { DatabaseQuerier } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
-import { MAX_NAME_LENGTH } from "../constants/player.constants";
+import { MAX_NAME_LENGTH } from "../constants/naming.constants";
 
 /**
  * Provides methods for interacting with players.

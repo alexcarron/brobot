@@ -1,4 +1,4 @@
-import { MysteryBoxes } from "./mystery-boxes.constants";
+import { MysteryBoxes } from "./mystery-box.constants";
 
 /**
  * The minimum number of tokens given to a player when they mine tokens.

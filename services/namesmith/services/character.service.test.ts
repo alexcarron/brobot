@@ -1,4 +1,4 @@
-import { INVALID_CHARACTER_ID } from "../constants/test.constants";
+import { INVALID_CHARACTER_ID } from "../constants/testing.constants";
 import { Character, CharacterID, CharacterValue } from "../types/character.types";
 import { CharacterNotFoundError } from "../utilities/error.utility";
 import { CharacterService } from "./character.service";

@@ -1,7 +1,7 @@
 import { getRandomElement } from "../../../utilities/data-structure-utils";
 import { makeSure } from "../../../utilities/jest/jest-utils";
-import { Perks } from "../constants/perks.constants";
-import { INVALID_PERK_ID } from "../constants/test.constants";
+import { Perks } from "../constants/perk.constants";
+import { INVALID_PERK_ID } from "../constants/testing.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { addMockPlayer } from "../mocks/mock-data/mock-players";
 import { addMockRole } from "../mocks/mock-data/mock-roles";

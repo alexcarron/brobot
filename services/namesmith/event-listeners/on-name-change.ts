@@ -1,7 +1,7 @@
 import { changeDiscordNameOfPlayer } from "../utilities/discord-action.utility";
 import { NamesmithEvents, RelevantDataOf } from "./namesmith-events";
 import { withRapidCallDetector } from '../../../utilities/debug/rapid-call-detector';
-import { RAPID_CALLS_THRESHOLD } from "../constants/debug.constants";
+import { RAPID_CALLS_THRESHOLD_MS } from "../constants/debugging.constants";
 import { logWarning } from "../../../utilities/logging-utils";
 
 /**
@@ -19,7 +19,7 @@ export const onNameChange = withRapidCallDetector(
 		await changeDiscordNameOfPlayer(playerID, newName);
 	},
 	{
-		rapidCallsThreshold: RAPID_CALLS_THRESHOLD,
+		rapidCallsThreshold: RAPID_CALLS_THRESHOLD_MS,
 		onRapidCall: ({timeSinceLastCall, numConsecutiveCalls}) =>
 			logWarning(
 				`The name change event should not be fired in rapid succession. You should refactor your code so the event is fired only after all changes to the current name have been made.\n` +

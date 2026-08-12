@@ -12,7 +12,7 @@ import { isArray, isString } from "../../../utilities/types/type-guards";
 import { isOneSymbol } from "../../../utilities/string-checks-utils";
 import { createMockDB } from "../mocks/mock-database";
 import { DBDate, DBBoolean } from "../utilities/db.utility";
-import { MAX_NAME_LENGTH } from "../constants/player.constants";
+import { MAX_NAME_LENGTH } from "../constants/naming.constants";
 
 /**
  * Provides access to the dynamic player data.

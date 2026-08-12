@@ -2,7 +2,7 @@ import { getYesterday } from "../../../utilities/date-time-utils";
 import { dmUser } from "../../../utilities/discord/message-utils";
 import { logInfo } from "../../../utilities/logging-utils";
 import { toAmountOfNoun } from "../../../utilities/string-manipulation-utils";
-import { IDLE_INTEREST_TOKEN_REWARD, INVESTMENT_PERCENTAGE, Perks } from "../constants/perks.constants";
+import { IDLE_INTEREST_TOKEN_REWARD, INVESTMENT_PERCENTAGE, Perks } from "../constants/perk.constants";
 import { sendShownDailyQuestsDisplay } from "../interfaces/quests/daily-quests-display";
 import { sendHiddenQuestsMessages } from "../interfaces/quests/hidden-quests-message";
 import { getNamesmithServices } from "../services/get-namesmith-services";

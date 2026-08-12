@@ -1,5 +1,5 @@
 import { Duration, getMillisecondsOfDuration, getSecondsInTime, toDurationText, toDurationTextFromSeconds, toDurationTextFromTime } from "../../../../../utilities/date-time-utils";
-import { Quests } from "../../../constants/quests.constants";
+import { Quests } from "../../../constants/quest.constants";
 import { ActivityLog, ActivityTypes } from "../../../types/activity-log.types";
 import { NamesmithServices } from "../../../types/namesmith.types";
 import { MeetsCriteriaParameters, PLAYER_MET_CRITERIA_RESULT, toFailure } from "./quest-eligibility";
