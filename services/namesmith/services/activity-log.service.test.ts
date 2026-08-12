@@ -670,6 +670,34 @@ describe('ActivityLogService', () => {
 		});
 	});
 
+	describe('getLogsWhereNameChangedTodayByPlayer()', () => {
+		it('returns an empty array when the player has not changed names', () => {
+			makeSure(activityLogService.getLogsWhereNameChangedTodayByPlayer(SOME_PLAYER.id)).isEmpty();
+		});
+
+		it('returns logs where the name changed regardless of activity type', () => {
+			addMockActivityLog(db, {
+				timeOccurred: TOMORROW,
+				player: SOME_PLAYER.id,
+				type: ActivityTypes.CHANGE_NAME,
+				nameChangedFrom: 'a',
+			});
+			addMockActivityLog(db, {
+				timeOccurred: TOMORROW,
+				player: SOME_PLAYER.id,
+				type: ActivityTypes.CRAFT_CHARACTERS,
+				nameChangedFrom: 'b',
+			});
+			addMockActivityLog(db, {
+				timeOccurred: TOMORROW,
+				player: SOME_PLAYER.id,
+				type: ActivityTypes.MINE_TOKENS,
+			});
+
+			makeSure(activityLogService.getLogsWhereNameChangedTodayByPlayer(SOME_PLAYER.id)).hasLengthOf(2);
+		});
+	});
+
 	describe('getLogsForOtherPlayersToday()', () => {
 		it('returns an empty array when there are no logs for other players', () => {
 			makeSure(activityLogService.getLogsTodayByPlayersOtherThan(SOME_PLAYER.id)).isEmpty();

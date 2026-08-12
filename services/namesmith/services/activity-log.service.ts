@@ -664,6 +664,20 @@ export class ActivityLogService {
 	}
 
 	/**
+	 * Retrieves all activity logs for a given player where their name changed, ignoring activity type.
+	 * Only retrieves activity logs that occurred today or later.
+	 * @param player - The player to retrieve the activity logs for.
+	 * @returns An array of activity logs for the given player where nameChangedFrom is not null.
+	 */
+	getLogsWhereNameChangedTodayByPlayer(player: PlayerResolvable): ActivityLog[] {
+		const now = new Date();
+		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
+		return this.activityLogRepository
+			.findActivityLogsAfterTimeWhere(startOfToday, { player })
+			.filter(log => log.nameChangedFrom !== null);
+	}
+
+	/**
 	 * Retrieves all activity logs for a given player where the type is publishing a name.
 	 * Only retrieves activity logs that occurred today or later.
 	 * @param player - The player to retrieve the activity logs for.
