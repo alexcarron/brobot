@@ -503,6 +503,7 @@ export const removeCharacterAt = (string: string, index: number): string => {
 
 /**
  * Removes a specific collection of characters from the end of a string until all characters in the given collection are removed.
+ * Works with full Unicode code points, so multi-code-unit characters like certain emojis are treated as single characters rather than being split apart.
  * @param string - The string to remove characters from
  * @param charactersToRemove - The characters to remove from the string
  * @returns The string with all characters removed from the end
@@ -519,11 +520,13 @@ export const removeCharactersAsGivenFromEnd = (
 
 	const characterToCounts = getCharacterCounts(characters);
 
-	for (let index = string.length - 1; index >= 0; index--) {
-		const character = string.charAt(index);
+	const stringCharacters = Array.from(string);
+
+	for (let index = stringCharacters.length - 1; index >= 0; index--) {
+		const character = stringCharacters[index];
 
 		if (characterToCounts.has(character)) {
-			string = removeCharacterAt(string, index);
+			stringCharacters.splice(index, 1);
 
 			characterToCounts.set(character,
 				characterToCounts.get(character)! - 1
@@ -537,10 +540,10 @@ export const removeCharactersAsGivenFromEnd = (
 
 	if (characterToCounts.size > 0)
 		throw new InvalidArgumentError(
-			`charactersToRemove argument, ${charactersToRemove}, contains the following characters that are not in the given string, ${string}: ${Array.from(characterToCounts.keys()).join(', ')}.`
+			`removeCharactersAsGivenFromEnd(): charactersToRemove argument "${charactersToRemove}" contains the following characters that are not in the given string "${string}": ${Array.from(characterToCounts.keys()).join(', ')}.`
 		);
 
-	return string;
+	return stringCharacters.join('');
 }
 
 /**

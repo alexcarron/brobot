@@ -24,6 +24,8 @@ local/
 planning/
 archived/
 *.local*
+TODO.md
+PLAN.md
 
 # Temporary Files for Text To Speech Service
 audioUrl.mp3

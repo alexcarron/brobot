@@ -697,6 +697,38 @@ describe('string-manipulation-utils', () => {
 		it('should throw an error if the given set of characters is more characters than the string', () => {
 			expect(() => removeCharactersAsGivenFromEnd('AABBBAA', 'AAAAA')).toThrow();
 		});
+
+		it('should remove astral-plane emoji characters from the end without splitting their surrogate pairs', () => {
+			expect(removeCharactersAsGivenFromEnd('abc🎁🎁', '🎁🎁')).toBe('abc');
+		});
+
+		it('should not throw a false error when the string and charactersToRemove both contain the same astral-plane emoji', () => {
+			expect(() => removeCharactersAsGivenFromEnd('a🎁b🎁c', '🎁🎁')).not.toThrow();
+		});
+
+		it('should remove a mix of astral-plane emoji and regular characters from the end', () => {
+			expect(removeCharactersAsGivenFromEnd('hi🎁there🎉', '🎉🎁ereth')).toBe('hi');
+		});
+
+		it('should leave an astral-plane emoji untouched if it is not in the given set of characters', () => {
+			expect(removeCharactersAsGivenFromEnd('abc🎁', 'c')).toBe('ab🎁');
+		});
+
+		it('should throw an error naming the astral-plane emoji when it is not present in the string', () => {
+			expect(() => removeCharactersAsGivenFromEnd('abc', '🎁')).toThrow('🎁');
+		});
+
+		it('should remove a single astral-plane emoji from a long string of mixed unicode symbols alongside other matched characters, without falsely reporting the emoji as missing', () => {
+			const inventoryLikeString =
+				'/]ere∂⇔Stretchfrindekqick∧⅔speed⇋⇔↹∞⤡cx✂SpltThe FastestBlue Bonnie2dPlaceadjtll2`.⅔ɗπ>❕ʰ→⑄🪙w3τhyaia!@#$ʊ⇔↻⇋⤡217';
+			const charactersToRemove = 'Bonnie Blue🪙';
+
+			const result = removeCharactersAsGivenFromEnd(inventoryLikeString, charactersToRemove);
+
+			expect(result).not.toContain('🪙');
+			expect(result).not.toContain('Bonnie');
+			expect(result).not.toContain('Blue');
+		});
 	});
 
 	describe('removeMissingCharacters()', () => {
