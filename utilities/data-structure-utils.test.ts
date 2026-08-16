@@ -279,6 +279,26 @@ describe('getCharacterDifferences()', () => {
 			extraCharacters: ['4', '5', '6']
 		});
 	});
+
+	it('should treat a compound emoji made of a base character and a variation selector as a single missing character', () => {
+		const originalString = 'a❤️b';
+		const modifiedString = 'ab';
+		const result = getCharacterDifferences(originalString, modifiedString);
+		expect(result).toEqual({
+			missingCharacters: ['❤️'],
+			extraCharacters: []
+		});
+	});
+
+	it('should treat a compound emoji made of a base character and a variation selector as a single extra character', () => {
+		const originalString = 'ab';
+		const modifiedString = 'a❤️b';
+		const result = getCharacterDifferences(originalString, modifiedString);
+		expect(result).toEqual({
+			missingCharacters: [],
+			extraCharacters: ['❤️']
+		});
+	});
 });
 
 describe('getRandomWeightedElement()', () => {

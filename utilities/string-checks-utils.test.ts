@@ -95,6 +95,21 @@ describe('string-checks-utils', () => {
 			const result = areCharactersInString("ø©", "©helloø");
 			makeSure(result).is(true);
 		});
+
+		it('treats a compound emoji made of a base character and a variation selector as a single character', () => {
+			const result = areCharactersInString("❤️", "hello ❤️ world");
+			makeSure(result).is(true);
+		});
+
+		it('does not match a compound emoji against a string that only has its bare base character', () => {
+			const result = areCharactersInString("❤️", "hello ❤ world");
+			makeSure(result).is(false);
+		});
+
+		it('accepts an array containing a single compound emoji character', () => {
+			const result = areCharactersInString(["❤️", "a"], "a❤️b");
+			makeSure(result).is(true);
+		});
 	});
 
 	describe('getCharacterCounts()', () => {
@@ -150,6 +165,31 @@ describe('string-checks-utils', () => {
 		it('returns a map with character counts for an empty string', () => {
 			const input = '';
 			const expectedOutput = new Map();
+			expect(getCharacterCounts(input)).toEqual(expectedOutput);
+		});
+
+		it('counts a compound emoji made of a base character and a variation selector as a single character', () => {
+			const input = 'a❤️❤️b';
+			const expectedOutput = new Map([
+				['a', 1],
+				['❤️', 2],
+				['b', 1],
+			]);
+			expect(getCharacterCounts(input)).toEqual(expectedOutput);
+		});
+
+		it('counts a zero-width-joiner family emoji sequence as a single character', () => {
+			const input = '👨‍👩‍👧‍👦👨‍👩‍👧‍👦';
+			const expectedOutput = new Map([['👨‍👩‍👧‍👦', 2]]);
+			expect(getCharacterCounts(input)).toEqual(expectedOutput);
+		});
+
+		it('counts characters correctly when given an already-split array of characters', () => {
+			const input = ['a', '❤️', 'a'];
+			const expectedOutput = new Map([
+				['a', 2],
+				['❤️', 1],
+			]);
 			expect(getCharacterCounts(input)).toEqual(expectedOutput);
 		});
 	});

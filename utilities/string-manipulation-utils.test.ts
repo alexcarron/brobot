@@ -16,6 +16,7 @@ import {
 	toAmountOfNoun,
 	toCamelFromKebabCase,
 	joinLines,
+	capitalize,
 	capitalizeFirstLetter,
 	toCamelCase,
 	toIdentifierSegments,
@@ -482,6 +483,18 @@ describe('string-manipulation-utils', () => {
 				'texceedlinewidth',
 			]);
 		});
+
+		it('does not split a compound emoji made of a base character and a variation selector across lines', () => {
+			const text = 'ab❤️cd';
+			const lineWidth = 3;
+			expect(wrapTextByLineWidth(text, lineWidth)).toEqual(['ab❤️', 'cd']);
+		});
+
+		it('does not split a zero-width-joiner family emoji sequence across lines', () => {
+			const text = 'ab👨‍👩‍👧‍👦cd';
+			const lineWidth = 3;
+			expect(wrapTextByLineWidth(text, lineWidth)).toEqual(['ab👨‍👩‍👧‍👦', 'cd']);
+		});
 	});
 
 	describe('removeLinks()', () => {
@@ -532,6 +545,36 @@ describe('string-manipulation-utils', () => {
 		it('should return an empty string if the input is an empty string', () => {
 			const input = '';
 			const expectedOutput = '';
+			expect(removeEmojis(input)).toBe(expectedOutput);
+		});
+
+		it('should remove a compound emoji made of a base character and a variation selector without leaving a stray selector behind', () => {
+			const input = 'I love this ❤️ so much';
+			const expectedOutput = 'I love this  so much';
+			expect(removeEmojis(input)).toBe(expectedOutput);
+		});
+
+		it('should remove a double-exclamation compound emoji used in the mystery-box emoji odds', () => {
+			const input = 'wait‼️what';
+			const expectedOutput = 'waitwhat';
+			expect(removeEmojis(input)).toBe(expectedOutput);
+		});
+
+		it('should remove a zero-width-joiner family emoji sequence without leaving a stray joiner behind', () => {
+			const input = 'our family 👨‍👩‍👧‍👦 is here';
+			const expectedOutput = 'our family  is here';
+			expect(removeEmojis(input)).toBe(expectedOutput);
+		});
+
+		it('should remove a flag emoji made of two regional indicator characters', () => {
+			const input = 'go team 🇺🇸 go';
+			const expectedOutput = 'go team  go';
+			expect(removeEmojis(input)).toBe(expectedOutput);
+		});
+
+		it('should remove an emoji with a skin-tone modifier', () => {
+			const input = 'thumbs up 👍🏽 nice';
+			const expectedOutput = 'thumbs up  nice';
 			expect(removeEmojis(input)).toBe(expectedOutput);
 		});
 	});
@@ -655,6 +698,22 @@ describe('string-manipulation-utils', () => {
 			expect(() => removeCharacterAt('', 0)).toThrow();
 		});
 
+		it('removes a whole astral-plane emoji at an index without leaving a stray surrogate half', () => {
+			expect(removeCharacterAt('a🎁b', 1)).toBe('ab');
+		});
+
+		it('removes a whole compound emoji made of a base character and a variation selector at an index', () => {
+			expect(removeCharacterAt('a❤️b', 1)).toBe('ab');
+		});
+
+		it('removes a whole zero-width-joiner emoji sequence at an index as a single character', () => {
+			expect(removeCharacterAt('a👨‍👩‍👧‍👦b', 1)).toBe('ab');
+		});
+
+		it('throws an error if the index is at the number of graphemes rather than the number of code units', () => {
+			expect(() => removeCharacterAt('a❤️', 2)).toThrow();
+		});
+
 	})
 
 	describe('removeCharactersFromEnd()', () => {
@@ -729,6 +788,22 @@ describe('string-manipulation-utils', () => {
 			expect(result).not.toContain('Bonnie');
 			expect(result).not.toContain('Blue');
 		});
+
+		it('should remove a compound emoji made of a base character and a variation selector as a single character (e.g. mystery-box ❤️ or ‼️)', () => {
+			expect(removeCharactersAsGivenFromEnd('abc❤️', '❤️')).toBe('abc');
+		});
+
+		it('should not leave a stray variation selector behind when the string has a bare base character and the removal set has the compound emoji', () => {
+			expect(removeCharactersAsGivenFromEnd('a❤b❤️', '❤️')).toBe('a❤b');
+		});
+
+		it('should remove a zero-width-joiner family emoji sequence as a single character', () => {
+			expect(removeCharactersAsGivenFromEnd('team👨‍👩‍👧‍👦', '👨‍👩‍👧‍👦')).toBe('team');
+		});
+
+		it('should treat a standalone combining mark from the mystery-box IPA set (with no preceding base character to attach to) as its own single character', () => {
+			expect(removeCharactersAsGivenFromEnd('̃abc', '̃')).toBe('abc');
+		});
 	});
 
 	describe('removeMissingCharacters()', () => {
@@ -762,6 +837,14 @@ describe('string-manipulation-utils', () => {
 
 		it('should handle unique unicode characters', () => {
 			makeSure(removeMissingCharacters(' ❌•╹≠∪', '❌λ ∪∩')).is(' ❌∪');
+		});
+
+		it('should treat a compound emoji made of a base character and a variation selector as a single character', () => {
+			makeSure(removeMissingCharacters('a❤️b', 'ab')).is('ab');
+		});
+
+		it('should not remove a compound emoji when it is present in both strings', () => {
+			makeSure(removeMissingCharacters('a❤️b', 'ab❤️')).is('a❤️b');
 		});
 	});
 
@@ -869,6 +952,40 @@ describe('string-manipulation-utils', () => {
 		it('should capitalize a single letter string', () => {
 			makeSure(capitalizeFirstLetter('a')).is('A');
 		});
+
+		it('should keep a compound emoji made of a base character and a variation selector whole when it is the first character', () => {
+			makeSure(capitalizeFirstLetter('❤️hello')).is('❤️hello');
+		});
+
+		it('should keep a zero-width-joiner emoji sequence whole when it is the first character', () => {
+			makeSure(capitalizeFirstLetter('👨‍👩‍👧‍👦hello')).is('👨‍👩‍👧‍👦hello');
+		});
+	});
+
+	describe('capitalize()', () => {
+		it('should capitalize the first letter of a string', () => {
+			makeSure(capitalize('hello')).is('Hello');
+		});
+
+		it('should preserve the rest of the string as-is', () => {
+			makeSure(capitalize('hello WORLD')).is('Hello WORLD');
+		});
+
+		it('should uppercase a single letter string', () => {
+			makeSure(capitalize('a')).is('A');
+		});
+
+		it('should work with empty strings', () => {
+			makeSure(capitalize('')).is('');
+		});
+
+		it('should keep a compound emoji made of a base character and a variation selector whole when it is the first character', () => {
+			makeSure(capitalize('❤️hello')).is('❤️hello');
+		});
+
+		it('should keep a zero-width-joiner emoji sequence whole when it is the first character', () => {
+			makeSure(capitalize('👨‍👩‍👧‍👦hello')).is('👨‍👩‍👧‍👦hello');
+		});
 	});
 
 	describe('truncateText()', () => {
@@ -886,6 +1003,18 @@ describe('string-manipulation-utils', () => {
 			makeSure(
 				truncateText('A sentence with a lot of characters', 10, '—')
 			).is('A sentenc—');
+		});
+
+		it('does not cut a compound emoji made of a base character and a variation selector in half when truncating', () => {
+			makeSure(truncateText('abc❤️def', 4, '')).is('abc❤️');
+		});
+
+		it('does not cut a zero-width-joiner family emoji sequence in half when truncating', () => {
+			makeSure(truncateText('ab👨‍👩‍👧‍👦cd', 3, '')).is('ab👨‍👩‍👧‍👦');
+		});
+
+		it('leaves text alone when it is exactly at the character (not code unit) limit, even with compound emoji', () => {
+			makeSure(truncateText('a❤️b', 3, '')).is('a❤️b');
 		});
 	});
 
@@ -908,6 +1037,12 @@ describe('string-manipulation-utils', () => {
 
 		it('sorts a string with special characters', () => {
 			makeSure(sortCharacters('!@#')).is('!#@');
+		});
+
+		it('keeps a compound emoji made of a base character and a variation selector whole while sorting', () => {
+			const result = sortCharacters('b❤️a');
+			expect(result).toContain('❤️');
+			expect(result.length).toBe(4);
 		});
 	});
 

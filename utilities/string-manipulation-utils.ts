@@ -1,7 +1,7 @@
 import { getCharacterDifferences } from "./data-structure-utils";
 import { getMondayOfThisWeek, getSundayOfThisWeek } from "./date-time-utils";
 import { InvalidArgumentError } from "./error-utils";
-import { getCharacterCounts } from "./string-checks-utils";
+import { getCharacterCounts, getCharacters } from "./string-checks-utils";
 import { ToCamelCase } from './types/casing-types';
 
 /**
@@ -345,44 +345,42 @@ export const wrapTextByLineWidth = (text: string, lineWidth: number): string[] =
 		throw new Error('lineWidth must be a positive number.');
 
 	const lines: string[] = [];
-	let currentText = text.replace(/[^\S\r\n]+/g, ' ');
-	currentText = currentText.trim();
-	if (currentText.length === 0) return [];
+	const normalizedText = text.replace(/[^\S\r\n]+/g, ' ').trim();
+	if (normalizedText.length === 0) return [];
+
+	let currentCharacters = getCharacters(normalizedText);
 
 	// While there is more text to wrap
-	while (currentText.length > lineWidth) {
-		let newLine = currentText.substring(0, lineWidth);
+	while (currentCharacters.length > lineWidth) {
+		const newLineCharacters = currentCharacters.slice(0, lineWidth);
 
-		let lineEndIndex = newLine.length;
-		let lineEndCharacter = currentText.charAt(lineEndIndex);
+		let lineEndIndex = newLineCharacters.length;
+		let lineEndCharacter = currentCharacters[lineEndIndex] ?? '';
 
 		// If there is no space at the end of the line, go back until we find one
 		while (lineEndIndex >= 0 && /\s/.test(lineEndCharacter) === false) {
 			lineEndIndex -= 1;
-			lineEndCharacter = currentText.charAt(lineEndIndex);
+			lineEndCharacter = currentCharacters[lineEndIndex] ?? '';
 		}
 
 		let nextLineStartIndex = lineEndIndex + 1;
 
 		// If no space was found, go to the end of the line and dont attempt to trim off a space
 		if (lineEndIndex < 0) {
-			lineEndIndex = newLine.length;
+			lineEndIndex = newLineCharacters.length;
 			nextLineStartIndex = lineEndIndex;
 		}
 
-		// Trim the line to the last space
-		newLine = newLine.substring(0, lineEndIndex);
-
-		// Trim any accidental surrounding whitespace (optional, keeps lines clean)
-		newLine = newLine.trim();
+		// Trim the line to the last space, and any accidental surrounding whitespace
+		const newLine = currentCharacters.slice(0, lineEndIndex).join('').trim();
 
 		// Trim the current text to remove the line we just processed
-		currentText = currentText.substring(nextLineStartIndex);
+		currentCharacters = currentCharacters.slice(nextLineStartIndex);
 		lines.push(newLine);
 	}
 
 	// Adds the last line
-	lines.push(currentText);
+	lines.push(currentCharacters.join(''));
 
 	return lines;
 }
@@ -402,7 +400,8 @@ export const removeLinks = (string: string): string => {
  * @returns The string with all emojis removed
  */
 export const removeEmojis = (string: string): string => {
-	return string.replace(/(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/g, '');
+	const emojiSequenceRegex = /(?:\p{Extended_Pictographic}(?:\p{Emoji_Modifier})?(?:\ufe0f)?(?:\u200d\p{Extended_Pictographic}(?:\p{Emoji_Modifier})?(?:\ufe0f)?)*|\p{Regional_Indicator}{2}|\u00a9|\u00ae|[\u2000-\u3300])/gu;
+	return string.replace(emojiSequenceRegex, '');
 }
 
 /**
@@ -493,17 +492,19 @@ export const removeCharacterAt = (string: string, index: number): string => {
 			`index must be an integer, but got ${index}.`
 		);
 
-	if (index < 0 || index >= string.length)
+	const characters = getCharacters(string);
+
+	if (index < 0 || index >= characters.length)
 		throw new InvalidArgumentError(
-			`index must be between 0 and ${string.length - 1}, but got ${index}.`
+			`index must be between 0 and ${characters.length - 1}, but got ${index}.`
 		);
 
-	return string.slice(0, index) + string.slice(index + 1);
+	characters.splice(index, 1);
+	return characters.join('');
 }
 
 /**
  * Removes a specific collection of characters from the end of a string until all characters in the given collection are removed.
- * Works with full Unicode code points, so multi-code-unit characters like certain emojis are treated as single characters rather than being split apart.
  * @param string - The string to remove characters from
  * @param charactersToRemove - The characters to remove from the string
  * @returns The string with all characters removed from the end
@@ -520,7 +521,7 @@ export const removeCharactersAsGivenFromEnd = (
 
 	const characterToCounts = getCharacterCounts(characters);
 
-	const stringCharacters = Array.from(string);
+	const stringCharacters = getCharacters(string);
 
 	for (let index = stringCharacters.length - 1; index >= 0; index--) {
 		const character = stringCharacters[index];
@@ -672,10 +673,12 @@ export function toAmountOfNoun(amount: number, text: string) {
  * capitalize('hello'); // 'Hello'
  */
 export function capitalize(text: string) {
-	if (text.length === 0) return text;
-	if (text.length === 1) return text.toUpperCase();
+	const characters = getCharacters(text);
 
-	return text.charAt(0).toUpperCase() + text.slice(1);
+	if (characters.length === 0) return text;
+	if (characters.length === 1) return text.toUpperCase();
+
+	return characters[0].toUpperCase() + characters.slice(1).join('');
 }
 
 /**
@@ -707,7 +710,11 @@ export function joinLines(
  * capitalizeFirstLetter('hello'); // 'Hello'
  */
 export function capitalizeFirstLetter(string: string) {
-	return string.charAt(0).toUpperCase() + string.slice(1);
+	const characters = getCharacters(string);
+
+	if (characters.length === 0) return string;
+
+	return characters[0].toUpperCase() + characters.slice(1).join('');
 }
 
 /**
@@ -723,15 +730,22 @@ export function truncateText(
 	maxLength: number,
 	overflowSuffix: string = '...'
 ): string {
-	if (text.length <= maxLength)
+	const characters = getCharacters(text);
+
+	if (characters.length <= maxLength)
 		return text;
 
 	const truncatedLength = maxLength - overflowSuffix.length;
-	return `${text.slice(0, truncatedLength)}${overflowSuffix}`;
+	return `${characters.slice(0, truncatedLength).join('')}${overflowSuffix}`;
 }
 
+/**
+ * Sorts the characters of a string alphabetically by their default string ordering.
+ * @param string - The string whose characters to sort.
+ * @returns The string with its characters sorted.
+ */
 export function sortCharacters(string: string): string {
-	return [...string].sort().join('');
+	return getCharacters(string).sort().join('');
 }
 
 /**

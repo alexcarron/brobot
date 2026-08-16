@@ -1,6 +1,7 @@
 import { Collection } from "discord.js";
 import { InvalidArgumentError } from "./error-utils";
 import { isStringToUnknownRecord, isArray } from "./types/type-guards";
+import { getCharacters } from "./string-checks-utils";
 
 /**
  * Sets a nested property in an object.
@@ -226,9 +227,8 @@ export const getCharacterDifferences = (
 	if (typeof originalString !== 'string' || typeof differentString !== 'string') {
 		throw new TypeError('Both the original and modified strings arguments must be strings.');
 	}
-	// Check if extra or missing characters
-	const sortedOriginalString = [...originalString].sort();
-	const sortedModifiedString = [...differentString].sort();
+	const sortedOriginalString = getCharacters(originalString).sort();
+	const sortedModifiedString = getCharacters(differentString).sort();
 
 	let originalCharacterIndex = 0;
 	let newCharacterIndex = 0;
@@ -254,8 +254,6 @@ export const getCharacterDifferences = (
 		else {
 			const originalCharacter = sortedOriginalString[originalCharacterIndex];
 			const newCharacter = sortedModifiedString[newCharacterIndex];
-			// ab efjjklllmnop
-			// abcefj  lll
 
 			if (originalCharacter === newCharacter) {
 				originalCharacterIndex += 1;

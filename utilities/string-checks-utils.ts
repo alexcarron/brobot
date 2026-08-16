@@ -3,14 +3,16 @@ import GraphemeSplitter from "grapheme-splitter";
 
 /**
  * Creates a Map where each key is a character from the given string and each value is the number of times that character appears in the string.
- * @param string - The string to count the characters of.
+ * @param string - The string, or an already-split array of characters, to count the characters of.
  * @returns A Map where each key is a character from the given string and each value is the number of times that character appears in the string.
  */
 export const getCharacterCounts = (
 	string: string | string[]
 ): Map<string, number> => {
+	const characters = typeof string === 'string' ? getCharacters(string) : string;
+
 	const characterToCount = new Map();
-	for (const character of string) {
+	for (const character of characters) {
 		if (characterToCount.has(character)) {
 			const currentCount = characterToCount.get(character);
 			characterToCount.set(character, currentCount + 1);
@@ -34,11 +36,11 @@ export const areCharactersInString = (
 ) => {
 	let charactersArray: string[];
 	if (typeof characters === "string") {
-		charactersArray = characters.split("");
+		charactersArray = getCharacters(characters);
 	}
 	else {
 		const allItemsAreCharacters = characters.every((character) =>
-			character.length === 1
+			isOneSymbol(character)
 		);
 		if (!allItemsAreCharacters) {
 			throw new InvalidArgumentError(
