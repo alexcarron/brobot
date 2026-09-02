@@ -5,6 +5,7 @@ import { getGameContext, getGameFileNameFromGameID } from "./telemetry-game-cont
 import { TELEMETRY_GAMES_DIRECTORY } from "./telemetry.constants";
 import { EventType, TelemetryRecord, TelemetryTrackingDetails } from "./telemetry-event.types";
 import { Quest } from "../types/quest.types";
+import { recordPlayerNameIfKnown } from "./player-name-registry";
 
 const isRunningUnderJest = process.env.JEST_WORKER_ID !== undefined || process.env.NODE_ENV === "test";
 
@@ -35,6 +36,9 @@ function track(trackingDetails: TelemetryTrackingDetails): void {
 		};
 
 		appendLine(getGameFileNameFromGameID(record.gameID), JSON.stringify(record));
+
+		if (record.playerID !== undefined)
+			recordPlayerNameIfKnown(record.playerID);
 	}
 	catch (error) {
 		swallowRecordingError(error);
