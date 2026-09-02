@@ -2,6 +2,8 @@ import { getNamesmithServices } from "../services/get-namesmith-services";
 import { Player, PlayerResolvable } from "../types/player.types";
 import { Role, RoleResolvable } from "../types/role.types";
 import { getWorkflowResultCreator, provides } from "./workflow-result-creator";
+import { telemetry } from "../telemetry/telemetry";
+import { EventType } from "../telemetry/telemetry-event.types";
 
 
 const result = getWorkflowResultCreator({
@@ -26,7 +28,7 @@ const result = getWorkflowResultCreator({
  * @returns A workflow success object if the role was assigned successfully, or a workflow failure object if the role was not assigned successfully.
  */
 export function chooseRole(
-	{player, role}: {
+	{player, role: roleResolvable}: {
 		player: PlayerResolvable,
 		role: RoleResolvable
 	}
@@ -37,7 +39,7 @@ export function chooseRole(
 		return result.failure.notAPlayer();
 	}
 
-	if (!roleService.isRole(role)) {
+	if (!roleService.isRole(roleResolvable)) {
 		return result.failure.roleDoesNotExist();
 	}
 
@@ -48,9 +50,17 @@ export function chooseRole(
 		});
 	}
 
-	roleService.setPlayerRole(role, player);
+	roleService.setPlayerRole(roleResolvable, player);
 
-	activityLogService.logChooseRole({player, role})
+	activityLogService.logChooseRole({player, role: roleResolvable})
+
+	const role = roleService.resolveRole(roleResolvable);
+	telemetry.track({
+		eventType: EventType.ROLE_CHOSEN,
+		playerID: playerService.resolveID(player),
+		roleID: role.id,
+		roleName: role.name,
+	});
 
 	return result.success({
 		player: playerService.resolvePlayer(player),

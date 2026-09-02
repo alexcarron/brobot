@@ -30,7 +30,7 @@ describe('date-time-utils', () => {
 
 	describe('toCronExpression()', () => {
 		it('should return a valid CRON expression for a valid Date object', () => {
-			const date = new Date('2022-01-01T12:30:45.000Z');
+			const date = new Date(2022, 0, 1, 6, 30, 45);
 			const expected = '45 30 6 1 0 6';
 			makeSure(toCronExpression(date)).toBe(expected);
 		});
@@ -210,36 +210,37 @@ describe('date-time-utils', () => {
 
 	describe('toNormalizedDate()', () => {
 		it('returns the date with a time of 0:00:00.000', () => {
-			const date = new Date('2022-01-01T18:12:42.172Z');
-			const expected = new Date('2022-01-01T06:00:00.000Z');
-			makeSure(toNormalizedDate(date).toISOString()).is(expected.toISOString());
+			const date = new Date(2022, 0, 1, 18, 12, 42, 172);
+			const expected = new Date(2022, 0, 1);
+			makeSure(toNormalizedDate(date).getTime()).is(expected.getTime());
 		});
 	})
 
 	describe('getMondayOfThisWeek()', () => {
 		it('should return the date of the Monday of the week that the given date falls in', () => {
-			const date = new Date('2025-12-25T05:32:00.000Z');
-			const expected = new Date('2025-12-22T06:00:00.000Z');
-			makeSure(getMondayOfThisWeek(date).toISOString()).is(expected.toISOString());
+			const date = new Date(2025, 11, 25, 5, 32);
+			const expected = new Date(2025, 11, 22);
+			makeSure(getMondayOfThisWeek(date).getTime()).is(expected.getTime());
 		});
 
 		it('should return itself if the given date is a Monday', () => {
-			const date = new Date('2025-12-22T07:00:00.000Z');
-			const expected = new Date('2025-12-22T06:00:00.000Z');
-			makeSure(getMondayOfThisWeek(date).toISOString()).is(expected.toISOString());
+			const date = new Date(2025, 11, 22, 7, 0);
+			const expected = new Date(2025, 11, 22);
+			makeSure(getMondayOfThisWeek(date).getTime()).is(expected.getTime());
 		});
 	});
 
 	describe('getSundayOfThisWeek()', () => {
 		it('should return the date of the Sunday of the week that the given date falls in', () => {
-			const date = new Date('2025-12-25T05:32:00.000Z');
-			const expected = new Date('2025-12-28T06:00:00.000Z');
-			makeSure(getSundayOfThisWeek(date).toISOString()).is(expected.toISOString());
+			const date = new Date(2025, 11, 25, 5, 32);
+			const expected = new Date(2025, 11, 28);
+			makeSure(getSundayOfThisWeek(date).getTime()).is(expected.getTime());
 		});
 
 		it('should return itself if the given date is a Sunday', () => {
-			const date = new Date('2025-12-28T06:00:00.000Z');
-			makeSure(getSundayOfThisWeek(date).toISOString()).is(date.toISOString());
+			const date = new Date(2025, 11, 28, 6, 0);
+			const expected = new Date(2025, 11, 28);
+			makeSure(getSundayOfThisWeek(date).getTime()).is(expected.getTime());
 		});
 	});
 

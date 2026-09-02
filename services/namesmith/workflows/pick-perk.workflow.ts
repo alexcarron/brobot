@@ -27,7 +27,7 @@ const result = getWorkflowResultCreator({
  * @returns A result indicating if the perk was successfully picked or not.
  */
 export function pickPerk(
-	{player, pickedPerk, ignoreAlreadyPickedPerk, ignoreAlreadyHasPerk}: {
+	{player, pickedPerk: pickedPerkResolvable, ignoreAlreadyPickedPerk, ignoreAlreadyHasPerk}: {
 		player: PlayerResolvable,
 		pickedPerk: PerkResolvable,
 		ignoreAlreadyPickedPerk?: boolean,
@@ -42,7 +42,7 @@ export function pickPerk(
 		return result.failure.notAPlayer();
 	}
 
-	if (!perkService.isPerk(pickedPerk)) {
+	if (!perkService.isPerk(pickedPerkResolvable)) {
 		return result.failure.perkDoesNotExist();
 	}
 
@@ -50,17 +50,18 @@ export function pickPerk(
 		return result.failure.perkAlreadyChosen();
 	}
 
-	if (perkService.doesPlayerHave(pickedPerk, player) && !ignoreAlreadyHasPerk) {
+	if (perkService.doesPlayerHave(pickedPerkResolvable, player) && !ignoreAlreadyHasPerk) {
 		return result.failure.playerAlreadyHasPerk();
 	}
 
 	const tokensAtPick = playerService.getTokens(player);
-	perkService.giveToPlayer(pickedPerk, player);
+	const pickedPerk = perkService.resolvePerk(pickedPerkResolvable);
+	perkService.giveToPlayer(pickedPerkResolvable, player);
 	playerService.setHasPickedPerk(player, true);
 
 	// Handle Free Tokens perk
 	let freeTokensEarned = 0;
-	const pickedPerkID = perkService.resolveID(pickedPerk);
+	const pickedPerkID = perkService.resolveID(pickedPerkResolvable);
 	if (pickedPerkID === Perks.FREE_TOKENS.id) {
 		freeTokensEarned = 500;
 		playerService.giveTokens(player, freeTokensEarned);
@@ -68,7 +69,7 @@ export function pickPerk(
 
 	activityLogService.logPickPerk({
 		player,
-		perk: pickedPerk,
+		perk: pickedPerkResolvable,
 		tokensEarned: freeTokensEarned,
 	});
 
@@ -76,6 +77,8 @@ export function pickPerk(
 		eventType: EventType.PERK_PICKED,
 		playerID: playerService.resolveID(player),
 		tokensAtPick,
+		perkID: pickedPerk.id,
+		perkName: pickedPerk.name,
 	});
 
 	return result.success({

@@ -6,6 +6,8 @@ import { addDuration, addHours } from '../../../utilities/date-time-utils';
 import { getWorkflowResultCreator, provides } from './workflow-result-creator';
 import { Perks } from '../constants/perk.constants';
 import { getNamesmithServices } from '../services/get-namesmith-services';
+import { telemetry } from '../telemetry/telemetry';
+import { EventType } from '../telemetry/telemetry-event.types';
 
 const result = getWorkflowResultCreator({
 	success: provides<{
@@ -116,6 +118,13 @@ export const claimRefill = (
 
 	const newTokenCount = playerService.getTokens(playerRefilling);
 	const nextRefillTime = addDuration(newLastRefillTime, REFILL_COOLDOWN_DURATION);
+
+	telemetry.track({
+		eventType: EventType.REFILL_CLAIMED,
+		playerID: playerService.resolveID(playerRefilling),
+		baseTokensEarned,
+		totalTokensEarned,
+	});
 
 	if (playerService.hasRefillReminderEnabled(playerRefilling)) {
 		refillReminderService.scheduleReminder(playerService.resolveID(playerRefilling), nextRefillTime);

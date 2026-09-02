@@ -61,4 +61,3 @@ Every mine is one separate, random, logged mine, so the mining quests still work
 - Mining Session: A set of mines from the first mine at the surface to the mine that led to a collapse.
 - Layer Number: The number of layers deep a player is.
 - Mined Tokens: The tokens accumulated during a mining session.
-- Mined Tokens: The tokens accumulated during a mining sesssion.

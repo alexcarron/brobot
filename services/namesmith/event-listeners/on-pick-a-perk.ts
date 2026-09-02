@@ -14,7 +14,11 @@ export async function onPickAPerk() {
 	playerService.resetAllHasPickedPerk();
 	await sendPickAPerkMessage(threePerks);
 
-	telemetry.track({ eventType: EventType.PERK_WINDOW_OPENED });
+	telemetry.track({
+		eventType: EventType.PERK_WINDOW_OPENED,
+		offeredPerkIDs: threePerks.map(perk => perk.id),
+		offeredPerkNames: threePerks.map(perk => perk.name),
+	});
 
 	logInfo(`Pick a perk message sent.`);
 	logInfo(`hasPickedPerk field reset for all players.`);

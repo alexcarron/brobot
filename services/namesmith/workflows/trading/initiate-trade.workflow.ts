@@ -99,6 +99,8 @@ export const initiateTrade = (
 		tradeID: trade.id,
 		offeredCharacterCount: getCharacters(offeredCharacters).length,
 		requestedCharacterCount: getCharacters(requestedCharacters).length,
+		offeredCharacters,
+		requestedCharacters,
 	});
 
 	return result.success({

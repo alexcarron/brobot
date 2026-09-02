@@ -7,8 +7,10 @@ export const EventType = toEnumFromStrings(
 	"commandInvoked",
 	"namePublished",
 	"voteCast",
+	"roleChosen",
 	"perkWindowOpened",
 	"perkPicked",
+	"refillClaimed",
 	"reminderSent",
 	"actionBlocked",
 	"mineSessionStarted",
@@ -35,10 +37,12 @@ export type GamePhase = "build" | "vote" | "ended";
  */
 export type TelemetryDetailsByType = {
 	commandInvoked: { commandName: string };
-	namePublished: { slotNumber: number; nameLength: number };
-	voteCast: { ranksFilled: number };
-	perkWindowOpened: Record<never, never>;
-	perkPicked: { tokensAtPick: number };
+	namePublished: { slotNumber: number; nameLength: number; uniqueCharacterCount: number; tokenCost: number };
+	voteCast: { ranksFilled: number; votedPublishedNameID: number; rank: number };
+	roleChosen: { roleID: number; roleName: string };
+	perkWindowOpened: { offeredPerkIDs: number[]; offeredPerkNames: string[] };
+	perkPicked: { tokensAtPick: number; perkID: number; perkName: string };
+	refillClaimed: { baseTokensEarned: number; totalTokensEarned: number };
 	reminderSent: { reminderKind: "finalizeName" | "refillReady" };
 	actionBlocked: { blockedAction: string; blockReason: string; tokensShortBy?: number };
 	mineSessionStarted: { miningSessionID: string };
@@ -47,7 +51,7 @@ export type TelemetryDetailsByType = {
 	boxOpened: { mysteryBoxID: number; characterReceived: string; wasDuplicate: boolean };
 	craftCompleted: { recipeID: number; inputCharacters: string; outputCharacters: string };
 	craftBlocked: { blockReason: string };
-	tradeInitiated: { tradeID: number; offeredCharacterCount: number; requestedCharacterCount: number };
+	tradeInitiated: { tradeID: number; offeredCharacterCount: number; requestedCharacterCount: number; offeredCharacters: string; requestedCharacters: string };
 	tradeResponded: { tradeID: number; outcome: "accepted" | "declined" | "modified" };
 	questShown: { questID: number; isHiddenQuest: boolean };
 	questCompleted: { questID: number };

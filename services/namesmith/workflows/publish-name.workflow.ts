@@ -99,6 +99,8 @@ export const publishName = (
 		playerID: playerService.resolveID(player),
 		slotNumber: publishedName.slotNumber,
 		nameLength: getCharacters(currentName).length,
+		uniqueCharacterCount: new Set(getCharacters(currentName)).size,
+		tokenCost,
 	});
 
 	return result.success({

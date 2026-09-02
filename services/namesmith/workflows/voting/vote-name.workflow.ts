@@ -42,7 +42,7 @@ export function voteName(
 		rankVotingFor: Rank
 	}
 ) {
-	const {voteService, gameStateService} = getNamesmithServices();
+	const {voteService, gameStateService, publishedNameService} = getNamesmithServices();
 
 	if (!gameStateService.isVotingOpen())
 		return result.failure.votingClosed();
@@ -125,6 +125,8 @@ export function voteName(
 		eventType: EventType.VOTE_CAST,
 		playerID: voterUserID,
 		ranksFilled: RANKS.length - missingRanks.size,
+		votedPublishedNameID: publishedNameService.resolveID(votedPublishedNameResolvable),
+		rank: RANKS.indexOf(rankVotingFor) + 1,
 	});
 
 	return result.success({missingRanks, rankToVotedName, otherRankToVotedName, publishedNamePreviouslyInRank, previousRankOfPublishedName});
