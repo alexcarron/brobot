@@ -35,7 +35,9 @@
 		"create-repo": "node -r ts-node/register services/namesmith/scripts/create-repository.ts",
 		"create-repository": "npm run create-repo",
 		"reset-namesmith-db": "node -r ts-node/register services/namesmith/scripts/reset-database.ts",
-		"analyze-telemetry": "node -r ts-node/register services/namesmith/telemetry/analysis/analyze-telemetry.ts"
+		"analyze-telemetry": "node -r ts-node/register services/namesmith/telemetry/analysis/analyze-telemetry.ts",
+		"analyze-telemetry:full": "node -r ts-node/register services/namesmith/telemetry/analysis/analyze-telemetry-full.ts",
+		"analyze-telemetry:fun": "node -r ts-node/register services/namesmith/telemetry/analysis/analyze-telemetry-fun.ts"
 	},
 	"dependencies": {
 		"@discordjs/builders": "^1.6.5",
