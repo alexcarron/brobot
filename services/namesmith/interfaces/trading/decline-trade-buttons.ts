@@ -43,7 +43,7 @@ export function createDeclineTradeButton(
 			const {playerDeclined, playerDeclining} = declineResult;
 
 			await buttonInteraction.reply(
-				`❌ <@${playerDeclined.id}>, <@${playerDeclining.id}> has declined this trade`
+				`<@${playerDeclined.id}>, <@${playerDeclining.id}> has declined this trade.`
 			);
 		}
 	}

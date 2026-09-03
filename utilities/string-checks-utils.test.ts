@@ -1,6 +1,6 @@
 import { inspect } from "util";
 import { makeSure } from "./jest/jest-utils";
-import { areCharactersInString, getCharacterCounts, getNumDistinctCharacters, hasEmoji, hasLetter, hasNumber, hasSpace, hasSymbol, isIntegerString, isMultiLine, isOneSymbol, isUnicodeCodePoint } from "./string-checks-utils";
+import { areCharactersInString, getCharacterCounts, getNumUniqueCharacters, hasEmoji, hasLetter, hasNumber, hasSpace, hasSymbol, isIntegerString, isMultiLine, isOneSymbol, isUnicodeCodePoint } from "./string-checks-utils";
 
 describe('string-checks-utils', () => {
 	describe('areCharactersInString()', () => {
@@ -714,21 +714,21 @@ describe('string-checks-utils', () => {
 		});
 	});
 
-	describe('getNumDistinctCharacters()', () => {
-		it('returns the number of distinct characters in a string', () => {
-			makeSure(getNumDistinctCharacters('Hello, world!')).is(10);
+	describe('getNumUniqueCharacters()', () => {
+		it('returns the number of unique characters in a string', () => {
+			makeSure(getNumUniqueCharacters('Hello, world!')).is(10);
 		});
 
 		it('returns the amount of non-repeating emojis', () => {
-			makeSure(getNumDistinctCharacters('🔥🔥👨👩‍👩‍👧‍👦👩‍👩‍👧‍👦🔥😀👍🏻👩🏽‍👩🏾‍👦🏿‍👦🏻😀😀👍🏻')).is(6);
+			makeSure(getNumUniqueCharacters('🔥🔥👨👩‍👩‍👧‍👦👩‍👩‍👧‍👦🔥😀👍🏻👩🏽‍👩🏾‍👦🏿‍👦🏻😀😀👍🏻')).is(6);
 		});
 
 		it('returns 0 for an empty string', () => {
-			makeSure(getNumDistinctCharacters('')).is(0);
+			makeSure(getNumUniqueCharacters('')).is(0);
 		});
 
 		it('works for special unicode characters', () => {
-			makeSure(getNumDistinctCharacters('©©øøéééααααββββγγγγ||||𝑒𝑒𝑒τττττℛℛℛℛ∫∫∫∫🇺🇸🇺🇸🇺🇸🇺🇸🇺🇸🇺🇸🇺🇸🇺🇸')).is(12);
+			makeSure(getNumUniqueCharacters('©©øøéééααααββββγγγγ||||𝑒𝑒𝑒τττττℛℛℛℛ∫∫∫∫🇺🇸🇺🇸🇺🇸🇺🇸🇺🇸🇺🇸🇺🇸🇺🇸')).is(12);
 		});
 	});
 });

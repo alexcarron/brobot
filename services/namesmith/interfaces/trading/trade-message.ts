@@ -12,6 +12,7 @@ import { acceptTrade } from "../../workflows/trading/accept-trade.workflow";
 import { declineTrade } from "../../workflows/trading/decline-trade.workflow";
 import { DiscordButtons } from "../../../../utilities/discord-interfaces/discord-buttons";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
+import { toDisplayedCharactersInline } from "../../utilities/player-message.utility";
 
 /**
  * Creates a new trade message with the given properties.
@@ -34,8 +35,8 @@ export function createTradeMessage(
 
 	const messageContents =
 		`## <@${playerAwaitingResponseFrom.id}>, <@${playerWaitingForResponse.id}> has requested the following trade:\n` +
-		`:arrow_right: **You give them** ${requestedCharacters}\n` +
-		`:arrow_left: **You receive** ${offeredCharacters}\n\n`
+		`**You give**\n> ${toDisplayedCharactersInline(requestedCharacters)}\n` +
+		`**You receive**\n> ${toDisplayedCharactersInline(offeredCharacters)}`
 
 	const acceptButton = createAcceptTradeButton({trade});
 	const declineButton =  createDeclineTradeButton({trade})

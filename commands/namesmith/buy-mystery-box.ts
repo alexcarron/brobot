@@ -6,7 +6,7 @@ import { getNamesmithServices } from "../../services/namesmith/services/get-name
 import { Tips } from "../../services/namesmith/constants/tip.constants";
 import { hasUtilityCharacter } from "../../services/namesmith/utilities/character.utility";
 import { TipResolvable } from "../../services/namesmith/types/tip.types";
-import { getHowToEarnMoreTokensHint, toDisplayedCharacters, toDisplayedDollars, toDisplayOrderedCharacters, toTipLine, toTokenEmojis as toTokenEmojis } from "../../services/namesmith/utilities/player-message.utility";
+import { getHowToEarnMoreTokensHint, toNewCurrentTokensSubtext as toNewCurrentTokensSubtext, toDisplayedCharacters, toDisplayedDollars, toTipLine, toTokenEmojis as toTokenEmojis, toDisplayedInventoryInline, toNewCurrentInventorySubtext } from "../../services/namesmith/utilities/player-message.utility";
 import { getMysteryBoxCharacterPreview, getStaticMysteryBox, getStaticMysteryBoxes } from "../../services/namesmith/utilities/mystery-box.utility";
 import { MAX_AUTOCOMPLETE_OPTION_NAME_LENGTH } from "../../services/command-creation/autocomplete-utils";
 import { buyMysteryBox } from "../../services/namesmith/workflows/buy-mystery-box.workflow";
@@ -187,7 +187,7 @@ export const command = new SlashCommand({
 	
 			const { receivedCharacterValues: recievedCharacterValues, mysteryBox, tokenCost, player, wasRefunded, gotDuplicate, gotAnotherCharacter } = result;
 			const newTokenCount = player.tokens;
-			const displayedNewInventory = toDisplayOrderedCharacters(player.inventory);
+			const displayedNewInventory = toDisplayedInventoryInline(player.inventory);
 	
 			const luckyRefundLine = (wasRefunded)
 				? joinLines(
@@ -229,8 +229,8 @@ export const command = new SlashCommand({
 				luckyDuplicateLine,
 				luckyDoubleLine,
 				luckyRefundLine,
-				`-# You now have ${toAmountOfNoun(newTokenCount, 'token')}`,
-				`-# Your inventory now contains: ${displayedNewInventory}`,
+				toNewCurrentTokensSubtext(newTokenCount),
+				toNewCurrentInventorySubtext(displayedNewInventory),
 				tipLine,
 			);
 		}

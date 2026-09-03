@@ -3,6 +3,7 @@ import { Trade } from "../../types/trade.types";
 import { acceptTrade } from "../../workflows/trading/accept-trade.workflow";
 import { handleTradeResponseResult } from "./trade-message";
 import { replyToInteraction } from "../../../../utilities/discord/interaction-reply-utils";
+import { toDisplayedCharactersInline } from "../../utilities/player-message.utility";
 
 /**
  * Creates a button that, when pressed, will accept a trade request.
@@ -43,17 +44,17 @@ export function createAcceptTradeButton(
 				const { player, missingCharacters } = acceptResult;
 
 				return await replyToInteraction(buttonInteraction,
-					`<@${player.id}> no longer has ${missingCharacters.length} characters needed for this trade:\n` +
-					missingCharacters
+					`<@${player.id}> no longer has the characters needed for this trade:\n` +
+					`> ${toDisplayedCharactersInline(missingCharacters)}`
 				);
 			}
 
 			trade = acceptResult.trade;
 
 			await buttonInteraction.reply(
-				`✅ This trade has been successfully executed\n` +
-				`<@${initiatingPlayer.id}> has received ${trade.requestedCharacters} from <@${recipientPlayer.id}>\n` +
-				`<@${recipientPlayer.id}> has received ${trade.offeredCharacters} from <@${initiatingPlayer.id}>`
+				`This trade has been executed.\n` +
+				`<@${initiatingPlayer.id}> received\n> ${toDisplayedCharactersInline(trade.requestedCharacters)}\n` +
+				`<@${recipientPlayer.id}> received\n> ${toDisplayedCharactersInline(trade.offeredCharacters)}`
 			);
 		}
 	}

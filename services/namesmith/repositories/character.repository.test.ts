@@ -70,16 +70,17 @@ describe('CharacterRepository', () => {
 
 	describe('addCharacter()', () => {
 		it('should add a character to the database', () => {
-			const character  = characterRepo.addCharacter({ id: 1009, value: '❌', rarity: 1 });
+			const id = getIDfromCharacterValue('❌');
+			const character  = characterRepo.addCharacter({ id, value: '❌', rarity: 1 });
 			makeSure(character).is({
-				id: 1009,
+				id,
 				value: '❌',
 				rarity: 1
 			})
 
 			const resolvedCharacter = characterRepo.getCharacterByID(character.id);
 			makeSure(resolvedCharacter).is({
-				id: 1009,
+				id,
 				value: '❌',
 				rarity: 1
 			})
@@ -110,16 +111,17 @@ describe('CharacterRepository', () => {
 
 	describe('addCharacterIfNotExists()', () => {
 		it('should add a character to the database if it does not already exist', () => {
-			const character = characterRepo.addCharacterIfNotExists({ id: 1009, value: '❌', rarity: 1 });
+			const id = getIDfromCharacterValue('❌');
+			const character = characterRepo.addCharacterIfNotExists({ id, value: '❌', rarity: 1 });
 			makeSure(character).is({
-				id: 1009,
+				id,
 				value: '❌',
 				rarity: 1
 			});
 
 			const resolvedCharacter = characterRepo.getCharacterByID(character.id);
 			makeSure(resolvedCharacter).is({
-				id: 1009,
+				id,
 				value: '❌',
 				rarity: 1
 			})

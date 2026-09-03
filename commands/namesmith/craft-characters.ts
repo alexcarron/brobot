@@ -8,7 +8,7 @@ import { PlayerID } from "../../services/namesmith/types/player.types";
 import { Recipe, RecipeID } from "../../services/namesmith/types/recipe.types";
 import { TipResolvable } from "../../services/namesmith/types/tip.types";
 import { craftCharacters } from "../../services/namesmith/workflows/craft-characters.workflow";
-import { toTipLine } from "../../services/namesmith/utilities/player-message.utility";
+import { toNewCurrentInventorySubtext, toTipLine } from "../../services/namesmith/utilities/player-message.utility";
 import { isIntegerString } from "../../utilities/string-checks-utils";
 import { joinLines } from "../../utilities/string-manipulation-utils";
 
@@ -225,7 +225,7 @@ export const command = new SlashCommand({
 
 		return joinLines(
 			`Successfully crafted ${craftedCharacters} using ${recipeUsed.inputCharacters}`,
-			`Your inventory now contains ${newInventory}`,
+			toNewCurrentInventorySubtext(newInventory),
 			tipLine,
 		);
 	}

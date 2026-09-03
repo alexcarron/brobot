@@ -3,7 +3,7 @@ import { SlashCommand } from "../../services/command-creation/slash-command";
 import { MAX_PUBLISHED_NAME_SLOTS_PER_PLAYER } from "../../services/namesmith/constants/publish-name.constants";
 import { Tips } from "../../services/namesmith/constants/tip.constants";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
-import { getHowToEarnMoreTokensHint, toDisplayedName, toTipLine } from "../../services/namesmith/utilities/player-message.utility";
+import { getHowToEarnMoreTokensHint, toDisplayedName, toNewCurrentTokensSubtext, toTipLine } from "../../services/namesmith/utilities/player-message.utility";
 import { publishName } from "../../services/namesmith/workflows/publish-name.workflow";
 import { addReplyToInteraction, confirmInteractionWithButtons } from "../../utilities/discord/interaction-reply-utils";
 import { addSIfPlural, joinLines, toAmountOfNoun, toNumericOrdinal, toReadableNumber } from "../../utilities/string-manipulation-utils";
@@ -93,7 +93,7 @@ export const command = new SlashCommand({
 		if (tokensSpent > 0) {
 			spentLine = [
 				`-# This published name cost ${toAmountOfNoun(tokensSpent, 'token')}.`,
-				`-# You now have ${toAmountOfNoun(tokensRemaining, 'token')}.`
+				toNewCurrentTokensSubtext(tokensRemaining),
 			];
 		}
 

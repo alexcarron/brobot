@@ -3,11 +3,6 @@ import { ExtractType, number, object, string, strings } from '../../../utilities
 import { Override } from "../../../utilities/types/generic-types";
 import { Player, PlayerResolvable } from "./player.types";
 
-
-/**
- * Status values object (runtime) and derived type (compile-time).
- * Single source of truth.
- */
 export const TradeStatuses = toEnumFromStrings(
 	'awaitingRecipient',
 	'awaitingInitiator',

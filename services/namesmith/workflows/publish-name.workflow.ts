@@ -4,7 +4,7 @@ import { PlayerResolvable } from "../types/player.types";
 import { getWorkflowResultCreator, provides } from "./workflow-result-creator";
 import { telemetry } from "../telemetry/telemetry";
 import { EventType } from "../telemetry/telemetry-event.types";
-import { getCharacters } from "../../../utilities/string-checks-utils";
+import { getCharacters, getNumUniqueCharacters } from "../../../utilities/string-checks-utils";
 
 const result = getWorkflowResultCreator({
 	success: provides<{
@@ -99,7 +99,7 @@ export const publishName = (
 		playerID: playerService.resolveID(player),
 		slotNumber: publishedName.slotNumber,
 		nameLength: getCharacters(currentName).length,
-		uniqueCharacterCount: new Set(getCharacters(currentName)).size,
+		uniqueCharacterCount: getNumUniqueCharacters(currentName),
 		tokenCost,
 	});
 

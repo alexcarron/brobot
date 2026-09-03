@@ -292,6 +292,13 @@ export const ids = {
 					production: "1384681948156399727",
 				});
 			},
+			// TODO: replace with the real channel IDs once #sell-characters is created in both the dev and production Discord servers.
+			get SELL_CHARACTERS() {
+				return chooseByEnv({
+					development: "0",
+					production: "0",
+				});
+			},
 			get CHOOSE_A_ROLE() {
 				return chooseByEnv({
 					development: "1428831757398052895",

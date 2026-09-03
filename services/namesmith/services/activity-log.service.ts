@@ -303,6 +303,27 @@ export class ActivityLogService {
 		});
 	}
 
+	/**
+	 * Logs a character selling activity.
+	 * @param parameters - The parameters which include:
+	 * @param parameters.playerSelling - The player who is selling characters.
+	 * @param parameters.charactersSold - The characters that were sold.
+	 * @param parameters.tokensEarned - The number of tokens earned from selling the characters.
+	 * @returns The created activity log object.
+	 */
+	logSellCharacters({ playerSelling, charactersSold, tokensEarned }: {
+		playerSelling: PlayerResolvable;
+		charactersSold: string;
+		tokensEarned: number;
+	}): ActivityLog {
+		return this.activityLogRepository.addActivityLog({
+			type: ActivityTypes.SELL_CHARACTERS,
+			player: playerSelling,
+			tokensDifference: tokensEarned,
+			charactersLost: charactersSold,
+		});
+	}
+
 	logChooseRole({ player, role, tokensEarned, }: {
 		player: PlayerResolvable;
 		role: RoleResolvable;

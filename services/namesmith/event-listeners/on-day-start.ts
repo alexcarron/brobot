@@ -1,12 +1,11 @@
 import { getYesterday } from "../../../utilities/date-time-utils";
 import { dmUser } from "../../../utilities/discord/message-utils";
 import { logInfo } from "../../../utilities/logging-utils";
-import { toAmountOfNoun } from "../../../utilities/string-manipulation-utils";
 import { IDLE_INTEREST_TOKEN_REWARD, INVESTMENT_PERCENTAGE, Perks } from "../constants/perk.constants";
 import { sendShownDailyQuestsDisplay } from "../interfaces/quests/daily-quests-display";
 import { sendHiddenQuestsMessages } from "../interfaces/quests/hidden-quests-message";
 import { getNamesmithServices } from "../services/get-namesmith-services";
-import { getTokensEarnedFeedback } from "../utilities/player-message.utility";
+import { getTokensEarnedFeedback, toNewCurrentTokensSubtext } from "../utilities/player-message.utility";
 import { telemetry } from '../telemetry/telemetry';
 
 /**
@@ -36,7 +35,7 @@ export async function onDayStart() {
 			await dmUser(player.id,
 				`Here's your daily interest from the Investment perk!`,
 				getTokensEarnedFeedback(tokensInterest),
-				`-# You now have ${toAmountOfNoun(tokensAfter, 'token')}.`
+				toNewCurrentTokensSubtext(tokensAfter)
 			);
 		}
 	);
@@ -50,7 +49,7 @@ export async function onDayStart() {
 			await dmUser(player.id,
 				`Here's your daily tokens from the Hoarding Bonus perk! You earn a token for each character in your inventory.`,
 				getTokensEarnedFeedback(tokensBonus),
-				`-# You now have ${toAmountOfNoun(tokensAfter, 'token')}.`
+				toNewCurrentTokensSubtext(tokensAfter)
 			);
 		}
 	);
@@ -68,7 +67,7 @@ export async function onDayStart() {
 				await dmUser(player.id,
 					`Here's your daily tokens from the Idle Interest perk for not spending any tokens yesterday!`,
 					getTokensEarnedFeedback(tokens),
-					`-# You now have ${toAmountOfNoun(tokensAfter, 'token')}.`
+					toNewCurrentTokensSubtext(tokensAfter)
 				);
 			}
 		}

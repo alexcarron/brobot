@@ -253,11 +253,19 @@ export function getNumCharacters(string: string): number {
 }
 
 /**
- * Determines the number of distinct characters in a given string.
- * @param string - The string to check.
- * @returns The number of distinct characters in the string.
+ * Splits a given string into a Set of its unique characters, taking into account Unicode graphemes.
+ * @param string - The string to split.
+ * @returns A Set of the string's unique characters.
  */
-export function getNumDistinctCharacters(string: string): number {
-	const characters = getCharacters(string);
-	return new Set(characters).size;
+export function getSetOfCharacters(string: string): Set<string> {
+	return new Set(getCharacters(string));
+}
+
+/**
+ * Determines the number of unique characters in a given string.
+ * @param string - The string to check.
+ * @returns The number of unique characters in the string.
+ */
+export function getNumUniqueCharacters(string: string): number {
+	return getSetOfCharacters(string).size;
 }

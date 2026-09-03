@@ -1,5 +1,5 @@
 import { NamesmithDependencies, NamesmithDependencyClasses } from "../types/namesmith.types";
-import { createRepositoriesFromDB, createServicesFromDB } from "../utilities/dependency.utility";
+import { createRepositoriesFromDB, createServicesFromDB } from "../utilities/dependencies.utility";
 import { createMockDB } from "./mock-database";
 
 /**

@@ -1,5 +1,5 @@
 import { getHoursInTime, toDurationTextFromTime } from "../../../../../utilities/date-time-utils";
-import { getNumDistinctCharacters, hasLetter, hasNumber, hasSymbol } from "../../../../../utilities/string-checks-utils";
+import { getNumUniqueCharacters, hasLetter, hasNumber, hasSymbol } from "../../../../../utilities/string-checks-utils";
 import { toListOfWords } from "../../../../../utilities/string-manipulation-utils";
 import { Quests } from "../../../constants/quest.constants";
 import { NamesmithServices } from "../../../types/namesmith.types";
@@ -218,7 +218,7 @@ export const namingEligibilityChecks = {
 
 		let maxCharacters = 0;
 		for (const publishNameLog of publishNameLogs) {
-			const numCharacters = getNumDistinctCharacters(publishNameLog.currentName);
+			const numCharacters = getNumUniqueCharacters(publishNameLog.currentName);
 
 			if (numCharacters >= NUM_REQUIRED_UNQIUE_CHARACTERS)
 				return PLAYER_MET_CRITERIA_RESULT;

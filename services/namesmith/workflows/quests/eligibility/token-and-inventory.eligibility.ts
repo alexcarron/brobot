@@ -1,5 +1,5 @@
 import { sortByDescendingProperty } from "../../../../../utilities/data-structure-utils";
-import { getNumDistinctCharacters } from "../../../../../utilities/string-checks-utils";
+import { getNumUniqueCharacters } from "../../../../../utilities/string-checks-utils";
 import { Quests } from "../../../constants/quest.constants";
 import { NamesmithServices } from "../../../types/namesmith.types";
 import { MeetsCriteriaParameters, PLAYER_MET_CRITERIA_RESULT, toFailure } from "./quest-eligibility";
@@ -100,7 +100,7 @@ export const tokenAndInventoryEligibilityChecks = {
 		{quest, player}: MeetsCriteriaParameters,
 	) => {
 		const NUM_DISTINCT_CHARACTERS_NEEDED = 35;
-		const numDistinctCharacters = getNumDistinctCharacters(player.inventory);
+		const numDistinctCharacters = getNumUniqueCharacters(player.inventory);
 
 		if (numDistinctCharacters >= NUM_DISTINCT_CHARACTERS_NEEDED)
 			return PLAYER_MET_CRITERIA_RESULT;
@@ -112,7 +112,7 @@ export const tokenAndInventoryEligibilityChecks = {
 		{quest, player}: MeetsCriteriaParameters,
 	) => {
 		const NUM_DISTINCT_CHARACTERS_NEEDED = 100;
-		const numDistinctCharacters = getNumDistinctCharacters(player.inventory);
+		const numDistinctCharacters = getNumUniqueCharacters(player.inventory);
 
 		if (numDistinctCharacters >= NUM_DISTINCT_CHARACTERS_NEEDED)
 			return PLAYER_MET_CRITERIA_RESULT;

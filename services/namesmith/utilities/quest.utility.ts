@@ -1,10 +1,7 @@
 import { CharacterReward, Reward, TokenReward } from "../types/quest.types";
 
 /**
- * Factory utilities for creating typed rewards.
- *
- * Each method returns a fully-formed `Reward` variant so callers
- * never need to remember the underlying object shape.
+ * Creates a typed reward object for quests.
  * @example
  * const rewardsForQuest: Reward[] = {
  * 	createReward.tokens(100),
@@ -15,7 +12,7 @@ export const createReward = {
 	/**
 	 * Create a token-based reward.
 	 * @param numTokens - Number of tokens to grant.
-	 * @returns A reward object of type `"tokens"`.
+	 * @returns A tokens type reward object.
 	 */
 	tokens: (numTokens: number): TokenReward => ({
 		type: 'tokens',
@@ -25,7 +22,7 @@ export const createReward = {
 	/**
 	 * Create a character-based reward.
 	 * @param characters - Characters to add to the player's inventory.
-	 * @returns A reward object of type `"characters"`.
+	 * @returns A characters type reward object.
 	 */
 	characters: (characters: string): CharacterReward => ({
 		type: 'characters',
@@ -34,8 +31,7 @@ export const createReward = {
 } as const;
 
 /**
- * Utility functions for checking if a reward is of a certain type.
- * Used for type narrowing a reward object.
+ * Checks if a reward is a certain type for type narrowing.
  * @example
  * function handleReward(reward: Reward) {
  * 	if (isReward.tokens(reward)) {

@@ -4,6 +4,7 @@ import { Rank, Ranks, RANKS, VoteID } from "../../types/vote.types";
 import { getWorkflowResultCreator, provides } from "../workflow-result-creator";
 import { telemetry } from "../../telemetry/telemetry";
 import { EventType } from "../../telemetry/telemetry-event.types";
+import { toRankNumber } from "../../utilities/vote.utility";
 
 const result = getWorkflowResultCreator({
 	success: provides<{
@@ -126,7 +127,7 @@ export function voteName(
 		playerID: voterUserID,
 		ranksFilled: RANKS.length - missingRanks.size,
 		votedPublishedNameID: publishedNameService.resolveID(votedPublishedNameResolvable),
-		rank: RANKS.indexOf(rankVotingFor) + 1,
+		rank: toRankNumber(rankVotingFor),
 	});
 
 	return result.success({missingRanks, rankToVotedName, otherRankToVotedName, publishedNamePreviouslyInRank, previousRankOfPublishedName});

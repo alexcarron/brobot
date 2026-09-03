@@ -4,7 +4,7 @@ import { SlashCommand } from "../../services/command-creation/slash-command";
 import { Perks } from "../../services/namesmith/constants/perk.constants";
 import { forcePlayerToBuyMysteryBox } from "../../services/namesmith/mocks/mock-data/mock-mystery-boxes";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
-import { toDisplayedDollars, toDisplayOrderedCharacters, toTokenEmojis } from "../../services/namesmith/utilities/player-message.utility";
+import { toDisplayedDollars, toDisplayOrderedCharacters, toNewCurrentInventorySubtext, toNewCurrentTokensSubtext, toTokenEmojis } from "../../services/namesmith/utilities/player-message.utility";
 import { sortByAscendingProperty } from "../../utilities/data-structure-utils";
 import { joinLines, toAmountOfNoun } from "../../utilities/string-manipulation-utils";
 import { isNotNullable } from "../../utilities/types/type-guards";
@@ -106,8 +106,8 @@ export const command = new SlashCommand({
 			luckyDuplicateLine,
 			luckyDoubleLine,
 			luckyRefundLine,
-			`-# You now have ${toAmountOfNoun(newTokenCount, 'token')}`,
-			`-# Your inventory now contains: ${displayedNewInventory}`,
+			toNewCurrentTokensSubtext(newTokenCount),
+			toNewCurrentInventorySubtext(displayedNewInventory),
 		);
 	}
 });

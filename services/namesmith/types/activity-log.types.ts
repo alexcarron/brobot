@@ -23,6 +23,7 @@ export const ActivityTypes = toEnumFromStrings(
 	'completeQuest',
 	'chooseRole',
 	'pickPerk',
+	'sellCharacters',
 );
 
 export type ActivityType = ValuesOf<typeof ActivityTypes>;

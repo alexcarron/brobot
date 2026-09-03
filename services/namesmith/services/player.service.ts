@@ -11,6 +11,7 @@ import { NamesmithEvents } from "../event-listeners/namesmith-events";
 import { DatabaseQuerier } from "../database/database-querier";
 import { createMockDB } from "../mocks/mock-database";
 import { MAX_NAME_LENGTH } from "../constants/naming.constants";
+import { TransactionRunner } from "../database/transaction-runner";
 
 /**
  * Provides methods for interacting with players.
@@ -19,14 +20,17 @@ export class PlayerService {
 	/**
 	 * Constructs a new PlayerService instance.
 	 * @param playerRepository - The repository used for accessing players.
+	 * @param transactionRunner - Runs several repository operations inside a single database transaction when they must all succeed together.
 	 */
 	constructor(
 		public playerRepository: PlayerRepository,
+		public transactionRunner: TransactionRunner,
 	) {}
 
 	static fromDB(db: DatabaseQuerier) {
 		return new PlayerService(
 			PlayerRepository.fromDB(db),
+			TransactionRunner.fromDB(db),
 		);
 	}
 
@@ -379,6 +383,53 @@ export class PlayerService {
 		const newName = nameWithRemovedCharacters + charactersGiving;
 
 		ignoreError(() => this.changeCurrentName(player, newName));
+	}
+
+	/**
+	 * Removes characters from a player's inventory and name, and gives them tokens in exchange, as a single atomic transaction.
+	 * @param playerResolvable - The player resolvable whose characters and tokens are being modified.
+	 * @param parameters - An object containing
+	 * @param parameters.charactersTaken - The characters to remove from the inventory and name.
+	 * @param parameters.tokensGiven - The number of tokens to give in exchange.
+	 * @returns The player's new inventory and token count after the exchange.
+	 */
+	takeCharactersAndGiveTokens(
+		playerResolvable: PlayerResolvable,
+		{ charactersTaken, tokensGiven }: {
+			charactersTaken: string | string[],
+			tokensGiven: number,
+		}
+	): { newInventory: string, newTokenCount: number } {
+		return this.transactionRunner.runInTransaction(() => {
+			this.removeCharacters(playerResolvable, charactersTaken);
+			const newTokenCount = this.giveTokens(playerResolvable, tokensGiven);
+			const newInventory = this.getInventory(playerResolvable);
+			return { newInventory, newTokenCount };
+		});
+	}
+
+	/**
+	 * Gives characters to a player's inventory and name, and takes tokens from them in exchange, as a single atomic transaction.
+	 * @param playerResolvable - The player resolvable whose characters and tokens are being modified.
+	 * @param parameters - An object containing
+	 * @param parameters.charactersGiven - The characters to add to the inventory and name.
+	 * @param parameters.tokensTaken - The number of tokens to take in exchange.
+	 * @returns The player's new inventory and token count after the exchange.
+	 */
+	giveCharactersAndTakeTokens(
+		playerResolvable: PlayerResolvable,
+		{ charactersGiven, tokensTaken }: {
+			charactersGiven: string | string[],
+			tokensTaken: number,
+		}
+	): { newInventory: string, newTokenCount: number } {
+		return this.transactionRunner.runInTransaction(() => {
+			this.giveCharacters(playerResolvable, charactersGiven);
+			this.takeTokens(playerResolvable, tokensTaken);
+			const newInventory = this.getInventory(playerResolvable);
+			const newTokenCount = this.getTokens(playerResolvable);
+			return { newInventory, newTokenCount };
+		});
 	}
 
 	/**

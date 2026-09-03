@@ -1,5 +1,4 @@
 import { logSetup } from "../../../utilities/logging-utils";
-// import { logSetup } from "../../../utilities/logging-utils";
 import { setupDatabase } from "../database/setup-database";
 import { regenerateChooseARoleMessage } from "../interfaces/choose-a-role-message";
 import { regeneratePickAPerkMessage } from "../interfaces/pick-a-perk-message";
@@ -9,16 +8,8 @@ import { regenerateShownWeeklyQuestsMessages } from "../interfaces/quests/weekly
 import { regenerateAllTradeMessages } from "../interfaces/trading/trade-message";
 import { regenerateVotingDisplay } from "../interfaces/voting/voting-display";
 import { getNamesmithServices } from "../services/get-namesmith-services";
-// import { regenerateChooseARoleMessage } from "../interfaces/choose-a-role-message";
-// import { regeneratePickAPerkMessage } from "../interfaces/pick-a-perk-message";
-// import { regenerateShownDailyQuestsDisplay } from "../interfaces/quests/daily-quests-display";
-// import { regenerateHiddenQuestsMessages } from "../interfaces/quests/hidden-quests-message";
-// import { regenerateShownWeeklyQuestsMessages } from "../interfaces/quests/weekly-quests-message";
-// import { regenerateAllTradeMessages } from "../interfaces/trading/trade-message";
-// import { regenerateVotingDisplay } from "../interfaces/voting/voting-display";
-// import { getNamesmithServices } from "../services/get-namesmith-services";
 import { NamesmithDependencies } from "../types/namesmith.types";
-import { createRepositoriesFromDB, createServicesFromDB } from "../utilities/dependency.utility";
+import { createRepositoriesFromDB, createServicesFromDB } from "../utilities/dependencies.utility";
 import { setupEventListeners } from "./setup-event-listeners";
 
 /**

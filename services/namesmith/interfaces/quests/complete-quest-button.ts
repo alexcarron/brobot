@@ -10,7 +10,7 @@ import { hasUtilityCharacter } from "../../utilities/character.utility";
 import { toTipLine } from "../../utilities/player-message.utility";
 import { completeQuest } from "../../workflows/quests/complete-quest.workflow";
 import { toRewardBulletPoint } from "./quest-message";
-import { revealHiddenQuestToPlayer } from "../../utilities/hidden-quest.utility";
+import { revealHiddenQuestChannelToPlayer } from "../../utilities/hidden-quest.utility";
 import { ids } from "../../../../bot-config/discord-ids";
 
 /**
@@ -77,7 +77,7 @@ export function toQuestButton(quest: Quest) {
 				questService.isHiddenQuestUnlockedForPlayer(buttonInteraction.user.id) &&
 				!questService.isHiddenQuest(quest.id)
 			) {
-				await revealHiddenQuestToPlayer(buttonInteraction.user.id);
+				await revealHiddenQuestChannelToPlayer(buttonInteraction.user.id);
 				const hiddenChannelId = ids.namesmith.channels.HIDDEN_QUESTS;
 				hiddenQuestLines = [
 					`_ _`,

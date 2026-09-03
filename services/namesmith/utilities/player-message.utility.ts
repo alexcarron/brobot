@@ -126,6 +126,14 @@ export function toTokenEmojis(numTokens: number) {
 	return `${'💰'.repeat(numMoneyBagEmojis)}${'🪙'.repeat(numTokenEmojis)}`;
 }
 
+export function toDisplayedTokensInline(numTokens: number): string {
+	return `**${toAmountOfNoun(numTokens, 'Token')}**`;
+}
+
+export function toNewCurrentTokensSubtext(numTokens: number): string {
+	return `-# You now have ${toAmountOfNoun(numTokens, 'token')}.`;
+}
+
 /**
  * Formats a list of characters for display in a message as individual backtick-wrapped code spans.
  * @param characters - The characters to format, either as a string or an array of characters.
@@ -190,21 +198,12 @@ export function toDisplayedCharacters(characters: string | string[]): string {
 	return `\`\`\`${charactersString}\`\`\``;
 }
 
-/**
- * Formats a set of characters for display in a message, inline with other text
- * @param characters - The characters to format, either as a string or an array of characters.
- * @returns The characters formatted for inline display
- * @example
- * toDisplayedCharactersInline('abc ` 123') // "`abc \` 123`"
- */
-export function toDisplayedCharactersInline(characters: string | string[]): string {
-	let charactersString = typeof characters === 'string' 
-		? characters 
-		: characters.join('');
-	
-	charactersString = charactersString.replace(/`/g, '\\`');
+export function toDisplayedInventoryInline(characters: string | string[]): string {
+	return toDisplayOrderedCharacters(characters);
+}
 
-	return `\`${charactersString}\``;
+export function toNewCurrentInventorySubtext(characters: string | string[]): string {
+	return `-# Your inventory now contains ${toDisplayedInventoryInline(characters)}.`;
 }
 
 /**
@@ -235,12 +234,25 @@ export function sortCharactersForDisplay(characters: string | string[]): string[
 }
 
 /**
- * Sorts a set of characters into display order (see `sortCharactersForDisplay`) and joins them into a single display string, wrapping whitespace runs in backticks so they remain visible.
+ * Formats characters into a display string, wrapping whitespace runs in backticks so they remain visible.
  * @param characters - The characters to sort, either as a string or an array of characters.
  * @returns The characters in display order, joined into a single string.
  */
 export function toDisplayOrderedCharacters(characters: string | string[]): string {
 	return toWhitespaceVisibleCharacters(sortCharactersForDisplay(characters));
+}
+
+/**
+ * Formats characters to be displayed inline with other text in a message
+ * @param characters - The characters to format, either as a string or an array of characters.
+ * @returns The characters formatted for inline display
+ * @example
+ * toDisplayedCharactersInline('abc ` 123') // "`abc \` 123`"
+ */
+export function toDisplayedCharactersInline(characters: string | string[]): string {
+	const characterList = typeof characters === 'string' ? getCharacters(characters) : characters;
+
+	return toWhitespaceVisibleCharacters(characterList);
 }
 
 const NO_NAME_PLACEHOLDER = '*[No name]*';

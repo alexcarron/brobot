@@ -5,7 +5,7 @@ import { Tips } from "../../services/namesmith/constants/tip.constants";
 import { joinLines, toAmountOfNoun } from "../../utilities/string-manipulation-utils";
 import { claimRefill } from "../../services/namesmith/workflows/claim-refill.workflow";
 import { toUnixTimestamp } from "../../utilities/date-time-utils";
-import { getTokensEarnedFeedback, toTipLine, toTokenEmojis } from "../../services/namesmith/utilities/player-message.utility";
+import { getTokensEarnedFeedback, toNewCurrentTokensSubtext, toTipLine, toTokenEmojis } from "../../services/namesmith/utilities/player-message.utility";
 import { replyToInteraction } from "../../utilities/discord/interaction-reply-utils";
 import { DiscordButton } from "../../utilities/discord-interfaces/discord-button";
 import { getRefillReminderToggleButton } from "../../services/namesmith/interfaces/refill-reminders/refill-reminder-toggle-button";
@@ -86,7 +86,7 @@ export const command = new SlashCommand({
 				luckyDoubleTokensLine,
 				refillBonusLine,
 				``,
-				`-# You now have ${toAmountOfNoun(newTokenCount, 'token')}`,
+				toNewCurrentTokensSubtext(newTokenCount),
 				`-# Claim your next refill of tokens <t:${toUnixTimestamp(nextRefillTime)}:R>`,
 				tipLine1,
 				tipLine2,
