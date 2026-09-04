@@ -6,7 +6,7 @@ import { DatabaseQuerier } from "../database/database-querier";
 import { addMockActivityLog } from "../mocks/mock-data/mock-activity-logs";
 import { addMockMysteryBox, forcePlayerToBuyNewMysteryBox } from "../mocks/mock-data/mock-mystery-boxes";
 import { addMockPerk } from "../mocks/mock-data/mock-perks";
-import { addMockPlayer, forcePlayerToChangeName, forcePlayerToMineTokens } from '../mocks/mock-data/mock-players';
+import { addMockPlayer, forcePlayerToRearrangeName, forcePlayerToMineTokens } from '../mocks/mock-data/mock-players';
 import { addMockQuest } from "../mocks/mock-data/mock-quests";
 import { addMockRecipe, forcePlayerToCraftRecipe } from "../mocks/mock-data/mock-recipes";
 import { addMockRole } from "../mocks/mock-data/mock-roles";
@@ -75,13 +75,13 @@ describe('ActivityLogService', () => {
 		SOME_MYSTERY_BOX = addMockMysteryBox(db);
 	});
 
-	describe('logChangeName()', () => {
+	describe('logRearrangeName()', () => {
 		it('creates a new activity log for changing names', () => {
-			const activityLog = activityLogService.logChangeName({ playerChangingName: SOME_PLAYER.id, nameBefore: 'SOME_NAME' });
+			const activityLog = activityLogService.logRearrangeName({ playerRearrangingName: SOME_PLAYER.id, nameBefore: 'SOME_NAME' });
 
 			makeSure(activityLog).hasProperties({
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				nameChangedFrom: 'SOME_NAME',
 				currentName: SOME_PLAYER.currentName,
 				currentTokens: SOME_PLAYER.tokens,
@@ -644,29 +644,29 @@ describe('ActivityLogService', () => {
 		});
 	});
 
-	describe('getChangeNameLogsForPlayerToday()', () => {
+	describe('getRearrangeNameLogsForPlayerToday()', () => {
 		it('returns an empty array when the player has not changed names', () => {
-			makeSure(activityLogService.getChangeNameLogsTodayByPlayer(SOME_PLAYER.id)).isEmpty();
+			makeSure(activityLogService.getRearrangeNameLogsTodayByPlayer(SOME_PLAYER.id)).isEmpty();
 		});
 
 		it('returns the change name logs for a player', () => {
 			addMockActivityLog(db, {
 				timeOccurred: YESTERDAY,
 				player: SOME_PLAYER.id,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 			});
 			addMockActivityLog(db, {
 				timeOccurred: TOMORROW,
 				player: SOME_PLAYER.id,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 			});
 			addMockActivityLog(db, {
 				timeOccurred: TOMORROW,
 				player: SOME_PLAYER.id,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 			});
 
-			makeSure(activityLogService.getChangeNameLogsTodayByPlayer(SOME_PLAYER.id)).hasLengthOf(2);
+			makeSure(activityLogService.getRearrangeNameLogsTodayByPlayer(SOME_PLAYER.id)).hasLengthOf(2);
 		});
 	});
 
@@ -679,7 +679,7 @@ describe('ActivityLogService', () => {
 			addMockActivityLog(db, {
 				timeOccurred: TOMORROW,
 				player: SOME_PLAYER.id,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				nameChangedFrom: 'a',
 			});
 			addMockActivityLog(db, {
@@ -707,17 +707,17 @@ describe('ActivityLogService', () => {
 			const IGNORED_LOG = addMockActivityLog(db, {
 				timeOccurred: TOMORROW,
 				player: SOME_PLAYER.id,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 			});
 			addMockActivityLog(db, {
 				timeOccurred: TOMORROW,
 				player: OTHER_PLAYER.id,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 			});
 			addMockActivityLog(db, {
 				timeOccurred: TOMORROW,
 				player: OTHER_PLAYER.id,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 			});
 
 			const returnedLogs = activityLogService.getLogsTodayByPlayersOtherThan(SOME_PLAYER.id);
@@ -729,22 +729,22 @@ describe('ActivityLogService', () => {
 			addMockActivityLog(db, {
 				timeOccurred: YESTERDAY,
 				player: SOME_PLAYER.id,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 			});
 			addMockActivityLog(db, {
 				timeOccurred: YESTERDAY,
 				player: OTHER_PLAYER.id,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 			});
 			addMockActivityLog(db, {
 				timeOccurred: TOMORROW,
 				player: SOME_PLAYER.id,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 			});
 			const EXPECTED_ACTIVITY_LOG = addMockActivityLog(db, {
 				timeOccurred: TOMORROW,
 				player: OTHER_PLAYER.id,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 			});
 
 			const returnedLogs = activityLogService.getLogsTodayByPlayersOtherThan(SOME_PLAYER.id);
@@ -789,7 +789,7 @@ describe('ActivityLogService', () => {
 
 		it('returns two intervals when the player changed their name once explcitly', () => {
 			jest.setSystemTime(IN_BETWEEN_TIMES[0]);
-			forcePlayerToChangeName(SOME_PLAYER.id, 'new name');
+			forcePlayerToRearrangeName(SOME_PLAYER.id, 'new name');
 
 			jest.setSystemTime(RIGHT_BEFORE_END_OF_DAY);
 			const nameIntervals = activityLogService.getNameIntervalsOfPlayerToday(SOME_PLAYER.id);
@@ -810,10 +810,10 @@ describe('ActivityLogService', () => {
 
 		it('returns three intervals when the player changed their name twice explcitly', () => {
 			jest.setSystemTime(IN_BETWEEN_TIMES[0]);
-			forcePlayerToChangeName(SOME_PLAYER.id, 'new name');
+			forcePlayerToRearrangeName(SOME_PLAYER.id, 'new name');
 
 			jest.setSystemTime(IN_BETWEEN_TIMES[1]);
-			forcePlayerToChangeName(SOME_PLAYER.id, 'new name 2');
+			forcePlayerToRearrangeName(SOME_PLAYER.id, 'new name 2');
 
 			jest.setSystemTime(RIGHT_BEFORE_END_OF_DAY);
 			const nameIntervals = activityLogService.getNameIntervalsOfPlayerToday(SOME_PLAYER.id);
@@ -892,10 +892,10 @@ describe('ActivityLogService', () => {
 
 		it('combined intervals where the player changed their name to the same name', () => {
 			jest.setSystemTime(IN_BETWEEN_TIMES[0]);
-			forcePlayerToChangeName(SOME_PLAYER.id, 'new name');
+			forcePlayerToRearrangeName(SOME_PLAYER.id, 'new name');
 
 			jest.setSystemTime(IN_BETWEEN_TIMES[1]);
-			forcePlayerToChangeName(SOME_PLAYER.id, 'new name');
+			forcePlayerToRearrangeName(SOME_PLAYER.id, 'new name');
 
 			jest.setSystemTime(RIGHT_BEFORE_END_OF_DAY);
 			const nameIntervals = activityLogService.getNameIntervalsOfPlayerToday(SOME_PLAYER.id);
@@ -982,7 +982,7 @@ describe('ActivityLogService', () => {
 
 		it('returns three key-value pairs with one name interval when the player changes their name twice', () => {
 			jest.setSystemTime(IN_BETWEEN_TIMES[0]);
-			forcePlayerToChangeName(SOME_PLAYER.id, 'new name');
+			forcePlayerToRearrangeName(SOME_PLAYER.id, 'new name');
 
 			jest.setSystemTime(IN_BETWEEN_TIMES[1]);
 			forcePlayerToBuyNewMysteryBox(SOME_PLAYER.id, {
@@ -1061,8 +1061,8 @@ describe('ActivityLogService', () => {
 
 		it('returns all the player\'s pervious names and current name if they changed it twice explicitly', () => {
 			const NAMED_PLAYER = addMockPlayer(db, {currentName: 'Name'});
-			forcePlayerToChangeName(NAMED_PLAYER.id, 'Name2');
-			forcePlayerToChangeName(NAMED_PLAYER.id, 'Name3');
+			forcePlayerToRearrangeName(NAMED_PLAYER.id, 'Name2');
+			forcePlayerToRearrangeName(NAMED_PLAYER.id, 'Name3');
 
 			const names = activityLogService.getNamesOfPlayerToday(NAMED_PLAYER);
 
@@ -1075,7 +1075,7 @@ describe('ActivityLogService', () => {
 			forcePlayerToBuyNewMysteryBox(NAMED_PLAYER.id,
 				{ characterOdds: { "2": 1 } }
 			);
-			forcePlayerToChangeName(NAMED_PLAYER.id, 'Name3');
+			forcePlayerToRearrangeName(NAMED_PLAYER.id, 'Name3');
 			forcePlayerToMineTokens(NAMED_PLAYER, 100);
 
 			const names = activityLogService.getNamesOfPlayerToday(NAMED_PLAYER);
@@ -1086,16 +1086,16 @@ describe('ActivityLogService', () => {
 
 		it('does not return duplicates if the player changed their name back and forth to the same one', () => {
 			const NAMED_PLAYER = addMockPlayer(db, {currentName: 'Name'});
-			forcePlayerToChangeName(NAMED_PLAYER.id, 'Name');
-			forcePlayerToChangeName(NAMED_PLAYER.id, 'Name2');
-			forcePlayerToChangeName(NAMED_PLAYER.id, 'Name');
-			forcePlayerToChangeName(NAMED_PLAYER.id, 'Name');
-			forcePlayerToChangeName(NAMED_PLAYER.id, 'Name3');
-			forcePlayerToChangeName(NAMED_PLAYER.id, 'Name');
-			forcePlayerToChangeName(NAMED_PLAYER.id, 'Name3');
-			forcePlayerToChangeName(NAMED_PLAYER.id, 'Name3');
-			forcePlayerToChangeName(NAMED_PLAYER.id, 'Name2');
-			forcePlayerToChangeName(NAMED_PLAYER.id, 'Name');
+			forcePlayerToRearrangeName(NAMED_PLAYER.id, 'Name');
+			forcePlayerToRearrangeName(NAMED_PLAYER.id, 'Name2');
+			forcePlayerToRearrangeName(NAMED_PLAYER.id, 'Name');
+			forcePlayerToRearrangeName(NAMED_PLAYER.id, 'Name');
+			forcePlayerToRearrangeName(NAMED_PLAYER.id, 'Name3');
+			forcePlayerToRearrangeName(NAMED_PLAYER.id, 'Name');
+			forcePlayerToRearrangeName(NAMED_PLAYER.id, 'Name3');
+			forcePlayerToRearrangeName(NAMED_PLAYER.id, 'Name3');
+			forcePlayerToRearrangeName(NAMED_PLAYER.id, 'Name2');
+			forcePlayerToRearrangeName(NAMED_PLAYER.id, 'Name');
 
 			const names = activityLogService.getNamesOfPlayerToday(NAMED_PLAYER);
 
@@ -1108,8 +1108,8 @@ describe('ActivityLogService', () => {
 			jest.setSystemTime(addDays(new Date(), -2));
 
 			const NAMED_PLAYER = addMockPlayer(db, {currentName: 'Name'});
-			forcePlayerToChangeName(NAMED_PLAYER.id, 'Name2');
-			forcePlayerToChangeName(NAMED_PLAYER.id, 'Name3');
+			forcePlayerToRearrangeName(NAMED_PLAYER.id, 'Name2');
+			forcePlayerToRearrangeName(NAMED_PLAYER.id, 'Name3');
 
 			jest.setSystemTime(addDays(new Date(), 2));
 			const names = activityLogService.getNamesOfPlayerToday(NAMED_PLAYER);
@@ -1145,11 +1145,11 @@ describe('ActivityLogService', () => {
 
 			for (let numHours = 10; numHours >= 1; numHours--) {
 				jest.setSystemTime(addHours(START_TIME, numHours));
-				forcePlayerToChangeName(player1.id, `player1${numHours}`);
+				forcePlayerToRearrangeName(player1.id, `player1${numHours}`);
 				jest.setSystemTime(
 					addMinutes(START_TIME, getBetween(1, 59))
 				);
-				forcePlayerToChangeName(player2.id, `player2${numHours}`);
+				forcePlayerToRearrangeName(player2.id, `player2${numHours}`);
 			}
 
 			const nameIntervals = activityLogService.getNameIntervalsToday();
@@ -1369,7 +1369,7 @@ describe('ActivityLogService', () => {
 		it('returns negative infinity when there are no logs for the player and activity type', () => {
 			makeSure(activityLogService.getMaxTokensEarnedFromLogThisWeek({
 				byPlayer: SOME_PLAYER.id,
-				ofType: ActivityTypes.CHANGE_NAME
+				ofType: ActivityTypes.REARRANGE_NAME
 			})).is(0);
 		});
 
@@ -1441,19 +1441,19 @@ describe('ActivityLogService', () => {
 		it('returns zero when there are no logs for the player and activity type', () => {
 			makeSure(activityLogService.getNumLogsDoneThisWeek({
 				byPlayer: SOME_PLAYER.id,
-				ofType: ActivityTypes.CHANGE_NAME
+				ofType: ActivityTypes.REARRANGE_NAME
 			})).is(0);
 		});
 
 		it('returns one when there is one log for the player and activity type', () => {
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME
+				type: ActivityTypes.REARRANGE_NAME
 			});
 
 			makeSure(activityLogService.getNumLogsDoneThisWeek({
 				byPlayer: SOME_PLAYER.id,
-				ofType: ActivityTypes.CHANGE_NAME
+				ofType: ActivityTypes.REARRANGE_NAME
 			})).is(1);
 		});
 
@@ -1461,7 +1461,7 @@ describe('ActivityLogService', () => {
 			for (let i = 0; i < 5; i++) {
 				addMockActivityLog(db, {
 					player: SOME_PLAYER,
-					type: ActivityTypes.CHANGE_NAME
+					type: ActivityTypes.REARRANGE_NAME
 				});
 			}
 
@@ -1475,29 +1475,29 @@ describe('ActivityLogService', () => {
 			for (let i = 0; i < 3; i++) {
 				addMockActivityLog(db, {
 					player: OTHER_PLAYER,
-					type: ActivityTypes.CHANGE_NAME
+					type: ActivityTypes.REARRANGE_NAME
 				});
 			}
 
 			makeSure(activityLogService.getNumLogsDoneThisWeek({
 				byPlayer: SOME_PLAYER.id,
-				ofType: ActivityTypes.CHANGE_NAME
+				ofType: ActivityTypes.REARRANGE_NAME
 			})).is(5);
 		});
 	});
 
 	describe('didPlayerDoLogOfTypeThisWeek()', () => {
 		it('returns false when the player has not done a log of the given activity type this week', () => {
-			makeSure(activityLogService.didPlayerDoLogOfTypeThisWeek(SOME_PLAYER.id, ActivityTypes.CHANGE_NAME)).is(false);
+			makeSure(activityLogService.didPlayerDoLogOfTypeThisWeek(SOME_PLAYER.id, ActivityTypes.REARRANGE_NAME)).is(false);
 		});
 
 		it('returns true when the player has done a log of the given activity type this week', () => {
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME
+				type: ActivityTypes.REARRANGE_NAME
 			});
 
-			makeSure(activityLogService.didPlayerDoLogOfTypeThisWeek(SOME_PLAYER.id, ActivityTypes.CHANGE_NAME)).is(true);
+			makeSure(activityLogService.didPlayerDoLogOfTypeThisWeek(SOME_PLAYER.id, ActivityTypes.REARRANGE_NAME)).is(true);
 		});
 	});
 
@@ -1505,7 +1505,7 @@ describe('ActivityLogService', () => {
 		it('returns zero when there are no logs for the player and activity type', () => {
 			makeSure(activityLogService.getMaxLogsDoneThisWeek({
 				byPlayer: SOME_PLAYER.id,
-				ofType: ActivityTypes.CHANGE_NAME,
+				ofType: ActivityTypes.REARRANGE_NAME,
 				inTimeSpan: {days: 2},
 			})).is(0);
 		});
@@ -1513,12 +1513,12 @@ describe('ActivityLogService', () => {
 		it('returns one when there is one log for the player and activity type', () => {
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME
+				type: ActivityTypes.REARRANGE_NAME
 			});
 
 			makeSure(activityLogService.getMaxLogsDoneThisWeek({
 				byPlayer: SOME_PLAYER.id,
-				ofType: ActivityTypes.CHANGE_NAME,
+				ofType: ActivityTypes.REARRANGE_NAME,
 				inTimeSpan: {days: 7},
 			})).is(1);
 		});
@@ -1526,35 +1526,35 @@ describe('ActivityLogService', () => {
 		it('returns one if logs are always farther apart than time span', () => {			
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addDays(START_OF_WEEK, 1)
 			});
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addDays(START_OF_WEEK, 2)
 			});
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addDays(START_OF_WEEK, 4)
 			});
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addDays(START_OF_WEEK, 5)
 			});
 
 			makeSure(activityLogService.getMaxLogsDoneThisWeek({
 				byPlayer: SOME_PLAYER.id,
-				ofType: ActivityTypes.CHANGE_NAME,
+				ofType: ActivityTypes.REARRANGE_NAME,
 				inTimeSpan: {hours: 20},
 			})).is(1);
 		});
 
 		it('returns the largest number of activity logs of a given type a player has done in the given time span', () => {
 			const SOME_TIME_SPAN = {days: 2};
-			const SOME_ACTIVITY_TYPE = ActivityTypes.CHANGE_NAME;
+			const SOME_ACTIVITY_TYPE = ActivityTypes.REARRANGE_NAME;
 
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
@@ -1587,22 +1587,22 @@ describe('ActivityLogService', () => {
 		it('ignores logs not done by player and not of given type', () => {
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addHours(START_OF_WEEK, 1)
 			});
 			addMockActivityLog(db, {
 				player: OTHER_PLAYER, // Different player
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addHours(START_OF_WEEK, 2)
 			});
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addHours(START_OF_WEEK, 3)
 			});
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addHours(START_OF_WEEK, 12)
 			});
 			addMockActivityLog(db, {
@@ -1612,13 +1612,13 @@ describe('ActivityLogService', () => {
 			});
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addHours(START_OF_WEEK, 14)
 			});
 			
 			makeSure(activityLogService.getMaxLogsDoneThisWeek({
 				byPlayer: SOME_PLAYER.id,
-				ofType: ActivityTypes.CHANGE_NAME,
+				ofType: ActivityTypes.REARRANGE_NAME,
 				inTimeSpan: {hours: 4}
 			})).is(2);
 		});
@@ -1628,7 +1628,7 @@ describe('ActivityLogService', () => {
 		it('returns null if player has not any activity logs', () => {
 			makeSure(activityLogService.getMinTimeOfNumLogsDoneThisWeek(2, {
 				byPlayer: SOME_PLAYER.id,
-				ofType: ActivityTypes.CHANGE_NAME
+				ofType: ActivityTypes.REARRANGE_NAME
 			})).isNull();
 		});
 
@@ -1636,97 +1636,97 @@ describe('ActivityLogService', () => {
 			for (let i = 0; i < 5; i++) {
 				addMockActivityLog(db, {
 					player: SOME_PLAYER,
-					type: ActivityTypes.CHANGE_NAME
+					type: ActivityTypes.REARRANGE_NAME
 				});
 			}
 
 			makeSure(activityLogService.getMinTimeOfNumLogsDoneThisWeek(6, {
 				byPlayer: SOME_PLAYER.id,
-				ofType: ActivityTypes.CHANGE_NAME
+				ofType: ActivityTypes.REARRANGE_NAME
 			})).isNull();
 		});
 
 		it('returns time between first and last log if player has done given number of activity logs', () => {
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: START_OF_WEEK,
 			});
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addMilliseconds(START_OF_WEEK, 1),
 			});
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addMilliseconds(START_OF_WEEK, 10),
 			});
 
 			makeSure(activityLogService.getMinTimeOfNumLogsDoneThisWeek(3, {
 				byPlayer: SOME_PLAYER.id,
-				ofType: ActivityTypes.CHANGE_NAME
+				ofType: ActivityTypes.REARRANGE_NAME
 			})).is(10);
 		});
 
 		it('returns the smallest number of milliseconds between logs if given number is two', () => {
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: START_OF_WEEK,
 			});
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addMilliseconds(START_OF_WEEK, 1),
 			});
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addMilliseconds(START_OF_WEEK, 10),
 			});
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addMilliseconds(START_OF_WEEK, 100),
 			});
 
 			makeSure(activityLogService.getMinTimeOfNumLogsDoneThisWeek(2, {
 				byPlayer: SOME_PLAYER.id,
-				ofType: ActivityTypes.CHANGE_NAME
+				ofType: ActivityTypes.REARRANGE_NAME
 			})).is(1);
 		});
 
 		it('returns the smallest number of milliseconds between two logs if given number is three', () => {
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: START_OF_WEEK,
 			});
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addMilliseconds(START_OF_WEEK, 10),
 			});
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addMilliseconds(START_OF_WEEK, 100),
 			});
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addMilliseconds(START_OF_WEEK, 101),
 			});
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addMilliseconds(START_OF_WEEK, 1101),
 			});
 
 			makeSure(activityLogService.getMinTimeOfNumLogsDoneThisWeek(3, {
 				byPlayer: SOME_PLAYER.id,
-				ofType: ActivityTypes.CHANGE_NAME
+				ofType: ActivityTypes.REARRANGE_NAME
 			})).is(91);
 		});
 	});
@@ -1821,7 +1821,7 @@ describe('ActivityLogService', () => {
 	describe('getMaxPlayersDoingLogsThisWeek()', () => {
 		it('returns null if player has not any activity logs', () => {
 			makeSure(activityLogService.getMaxPlayersDoingLogsThisWeek({
-				ofType: ActivityTypes.CHANGE_NAME,
+				ofType: ActivityTypes.REARRANGE_NAME,
 				inTimeSpan: {days: 2},
 			})).isEmpty();
 		});
@@ -1829,27 +1829,27 @@ describe('ActivityLogService', () => {
 		it('returns the only players doing logs if they did it in the given time span', () => {
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[0],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 			});
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[1],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 			});
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[2],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 			});
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[3],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 			});
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[4],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 			});
 
 			makeSure(activityLogService.getMaxPlayersDoingLogsThisWeek({
-				ofType: ActivityTypes.CHANGE_NAME,
+				ofType: ActivityTypes.REARRANGE_NAME,
 				inTimeSpan: {days: 2},
 			})).containsOnly(
 				FIVE_DIFFERENT_PLAYERS[0],
@@ -1863,32 +1863,32 @@ describe('ActivityLogService', () => {
 		it('returns the two different players that have done a given activity type in the given time span', () => {
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[0],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: START_OF_WEEK,
 			});
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[1],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addMilliseconds(START_OF_WEEK, 10),
 			});
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[2],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addMilliseconds(START_OF_WEEK, 20),
 			});
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[3],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addMilliseconds(START_OF_WEEK, 35),
 			});
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[4],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addMilliseconds(START_OF_WEEK, 45),
 			});
 
 			makeSure(activityLogService.getMaxPlayersDoingLogsThisWeek({
-				ofType: ActivityTypes.CHANGE_NAME,
+				ofType: ActivityTypes.REARRANGE_NAME,
 				inTimeSpan: {milliseconds: 20},
 			})).containsOnly(
 				FIVE_DIFFERENT_PLAYERS[0],
@@ -1900,42 +1900,42 @@ describe('ActivityLogService', () => {
 		it('does not include duplicate players if the same player did multiple logs in the time span', () => {
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[0],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: START_OF_WEEK,
 			});
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[1],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addMilliseconds(START_OF_WEEK, 10),
 			});
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[0],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addMilliseconds(START_OF_WEEK, 20),
 			});
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[2],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addMilliseconds(START_OF_WEEK, 30),
 			});
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[1],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addMilliseconds(START_OF_WEEK, 30),
 			});
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[3],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addMilliseconds(START_OF_WEEK, 1000),
 			});
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[4],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addMilliseconds(START_OF_WEEK, 2000),
 			});
 
 			makeSure(activityLogService.getMaxPlayersDoingLogsThisWeek({
-				ofType: ActivityTypes.CHANGE_NAME,
+				ofType: ActivityTypes.REARRANGE_NAME,
 				inTimeSpan: {milliseconds: 30},
 			})).containsOnly(
 				FIVE_DIFFERENT_PLAYERS[0],
@@ -1948,36 +1948,36 @@ describe('ActivityLogService', () => {
 			// many players produce a larger max window earlier
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[0],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: START_OF_WEEK,
 			});
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[1],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addMilliseconds(START_OF_WEEK, 10),
 			});
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[2],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addMilliseconds(START_OF_WEEK, 20),
 			});
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[3],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addMilliseconds(START_OF_WEEK, 30),
 			});
 
 			// required player logs much later alone
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[4],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addMilliseconds(START_OF_WEEK, 1000),
 			});
 
 			// overall max window (without requirement) would be players 0-3,
 			// but when requiring player 4 we must only consider windows that include them.
 			makeSure(activityLogService.getMaxPlayersDoingLogsThisWeek({
-				ofType: ActivityTypes.CHANGE_NAME,
+				ofType: ActivityTypes.REARRANGE_NAME,
 				inTimeSpan: {milliseconds: 30},
 				withPlayer: FIVE_DIFFERENT_PLAYERS[4],
 			})).containsOnly(
@@ -1989,34 +1989,34 @@ describe('ActivityLogService', () => {
 			// big group earlier
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[0],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: START_OF_WEEK,
 			});
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[1],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addMilliseconds(START_OF_WEEK, 10),
 			});
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[2],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addMilliseconds(START_OF_WEEK, 20),
 			});
 
 			// the required pair close together later (this is the only window that contains both)
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[3],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addMilliseconds(START_OF_WEEK, 1000),
 			});
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[4],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addMilliseconds(START_OF_WEEK, 1010),
 			});
 
 			makeSure(activityLogService.getMaxPlayersDoingLogsThisWeek({
-				ofType: ActivityTypes.CHANGE_NAME,
+				ofType: ActivityTypes.REARRANGE_NAME,
 				inTimeSpan: {milliseconds: 50},
 				withPlayers: [FIVE_DIFFERENT_PLAYERS[3], FIVE_DIFFERENT_PLAYERS[4]],
 			})).containsOnly(
@@ -2029,17 +2029,17 @@ describe('ActivityLogService', () => {
 			// some logs but not from the required player
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[0],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: START_OF_WEEK,
 			});
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[1],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addMilliseconds(START_OF_WEEK, 10),
 			});
 
 			makeSure(activityLogService.getMaxPlayersDoingLogsThisWeek({
-				ofType: ActivityTypes.CHANGE_NAME,
+				ofType: ActivityTypes.REARRANGE_NAME,
 				inTimeSpan: {milliseconds: 50},
 				withPlayer: FIVE_DIFFERENT_PLAYERS[4],
 			})).isEmpty();
@@ -2050,22 +2050,22 @@ describe('ActivityLogService', () => {
 			// they should remain counted because of the second log
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[0],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: START_OF_WEEK,
 			});
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[1],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addMilliseconds(START_OF_WEEK, 10),
 			});
 			addMockActivityLog(db, {
 				player: FIVE_DIFFERENT_PLAYERS[0],
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addMilliseconds(START_OF_WEEK, 20),
 			});
 
 			makeSure(activityLogService.getMaxPlayersDoingLogsThisWeek({
-				ofType: ActivityTypes.CHANGE_NAME,
+				ofType: ActivityTypes.REARRANGE_NAME,
 				inTimeSpan: {milliseconds: 20},
 			})).containsOnly(
 				FIVE_DIFFERENT_PLAYERS[0],
@@ -2166,7 +2166,7 @@ describe('ActivityLogService', () => {
 			jest.useFakeTimers({ now: addDays(START_OF_WEEK, 3) });
 			makeSure(activityLogService.getMaxTimeOfNoLogsDoneThisWeek({
 				byPlayer: SOME_PLAYER.id,
-				ofType: ActivityTypes.CHANGE_NAME
+				ofType: ActivityTypes.REARRANGE_NAME
 			})).isEqualTo(getMillisecondsOfDuration({days: 3}));
 			jest.useRealTimers();
 		});
@@ -2174,27 +2174,27 @@ describe('ActivityLogService', () => {
 		it('returns time from log to start of week if player has one activity log late', () => {
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addDays(START_OF_WEEK, 5),
 			});
 
 			makeSure(activityLogService.getMaxTimeOfNoLogsDoneThisWeek({
 				byPlayer: SOME_PLAYER.id,
-				ofType: ActivityTypes.CHANGE_NAME
+				ofType: ActivityTypes.REARRANGE_NAME
 			})).isEqualTo(getMillisecondsOfDuration({days: 5}));
 		});
 
 		it('returns time from log to now if player has one activity log early', () => {
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addDays(START_OF_WEEK, 1),
 			});
 
 			jest.useFakeTimers({ now: addDays(START_OF_WEEK, 3) });
 			makeSure(activityLogService.getMaxTimeOfNoLogsDoneThisWeek({
 				byPlayer: SOME_PLAYER.id,
-				ofType: ActivityTypes.CHANGE_NAME
+				ofType: ActivityTypes.REARRANGE_NAME
 			})).isEqualTo(getMillisecondsOfDuration({days: 2}));
 			jest.useRealTimers();
 		});
@@ -2202,50 +2202,50 @@ describe('ActivityLogService', () => {
 		it('returns time from log to start of week if it ends up being the longest time', () => {
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addDays(START_OF_WEEK, 5),
 			});
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addDays(START_OF_WEEK, 6),
 			});
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addDays(START_OF_WEEK, 6),
 			});
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addDays(START_OF_WEEK, 7),
 			});
 
 			makeSure(activityLogService.getMaxTimeOfNoLogsDoneThisWeek({
 				byPlayer: SOME_PLAYER.id,
-				ofType: ActivityTypes.CHANGE_NAME
+				ofType: ActivityTypes.REARRANGE_NAME
 			})).isEqualTo(getMillisecondsOfDuration({days: 5}));
 		});
 
 		it('returns time from log to end of week if it ends up being the longest time', () => {
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addDays(START_OF_WEEK, 1),
 			});
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addDays(START_OF_WEEK, 2),
 			});
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addDays(START_OF_WEEK, 3),
 			});
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addDays(START_OF_WEEK, 4),
 			});
 
@@ -2253,7 +2253,7 @@ describe('ActivityLogService', () => {
 
 			makeSure(activityLogService.getMaxTimeOfNoLogsDoneThisWeek({
 				byPlayer: SOME_PLAYER.id,
-				ofType: ActivityTypes.CHANGE_NAME
+				ofType: ActivityTypes.REARRANGE_NAME
 			})).isEqualTo(getMillisecondsOfDuration({days: 2}));
 			jest.useRealTimers();
 		});
@@ -2261,17 +2261,17 @@ describe('ActivityLogService', () => {
 		it('returns time between farthest apart logs', () => {
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addDays(START_OF_WEEK, 1),
 			});
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addDays(START_OF_WEEK, 2),
 			});
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addDays(START_OF_WEEK, 5),
 			});
 
@@ -2279,7 +2279,7 @@ describe('ActivityLogService', () => {
 
 			makeSure(activityLogService.getMaxTimeOfNoLogsDoneThisWeek({
 				byPlayer: SOME_PLAYER.id,
-				ofType: ActivityTypes.CHANGE_NAME
+				ofType: ActivityTypes.REARRANGE_NAME
 			})).isEqualTo(getMillisecondsOfDuration({days: 3}));
 			jest.useRealTimers();
 		});
@@ -2308,7 +2308,7 @@ describe('ActivityLogService', () => {
 			});
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addHours(START_OF_WEEK, 2)
 			});
 
@@ -2333,12 +2333,12 @@ describe('ActivityLogService', () => {
 		it('returns correct array of activity logs when player has two activity logs of type change name', () => {
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addHours(START_OF_WEEK, 1)
 			});
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addHours(START_OF_WEEK, 2)
 			});
 
@@ -2369,7 +2369,7 @@ describe('ActivityLogService', () => {
 			});
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addHours(START_OF_WEEK, 2),
 				involvedPlayer: SOME_PLAYER,
 			});
@@ -2395,12 +2395,12 @@ describe('ActivityLogService', () => {
 		it('returns correct array of activity logs when player has two activity logs of type change name', () => {
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addHours(START_OF_WEEK, 1)
 			});
 			addMockActivityLog(db, {
 				player: SOME_PLAYER,
-				type: ActivityTypes.CHANGE_NAME,
+				type: ActivityTypes.REARRANGE_NAME,
 				timeOccurred: addHours(START_OF_WEEK, 2)
 			});
 

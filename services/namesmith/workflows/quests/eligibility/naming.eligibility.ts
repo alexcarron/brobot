@@ -56,14 +56,14 @@ export const namingEligibilityChecks = {
 		{quest, player}: MeetsCriteriaParameters,
 		{ activityLogService }: NamesmithServices
 	) => {
-		const changeNameLogs = activityLogService.getChangeNameLogsTodayByPlayer(player);
+		const rearrangeNameLogs = activityLogService.getRearrangeNameLogsTodayByPlayer(player);
 
-		if (changeNameLogs.length <= 0)
+		if (rearrangeNameLogs.length <= 0)
 			return toFailure(`You have not changed your name yet. Your name must be changed before you can complete the ${quest.name} quest.`);
 
-		for (const changeNameLog of changeNameLogs) {
-			const previousName = changeNameLog.nameChangedFrom;
-			const newName = changeNameLog.currentName;
+		for (const rearrangeNameLog of rearrangeNameLogs) {
+			const previousName = rearrangeNameLog.nameChangedFrom;
+			const newName = rearrangeNameLog.currentName;
 
 			if (previousName === null || newName === null)
 				continue;
@@ -72,8 +72,8 @@ export const namingEligibilityChecks = {
 				return PLAYER_MET_CRITERIA_RESULT;
 		}
 
-		const hasRepeatedNameButNotRearrangedRepeated = changeNameLogs.some(changeNameLog => {
-			const newName = changeNameLog.currentName;
+		const hasRepeatedNameButNotRearrangedRepeated = rearrangeNameLogs.some(rearrangeNameLog => {
+			const newName = rearrangeNameLog.currentName;
 
 			if (newName === null || newName.length === 0 || newName.length % 2 !== 0)
 				return false;

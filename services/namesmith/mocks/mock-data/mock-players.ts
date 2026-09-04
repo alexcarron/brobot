@@ -147,7 +147,7 @@ export function forcePlayerToHaveInventory(playerResolvable: PlayerResolvable, i
  * @param newName - The new name to force the player to change to.
  * @returns The resolved player after the name has been changed.
  */
-export function forcePlayerToChangeName(
+export function forcePlayerToRearrangeName(
 	playerResolvable: PlayerResolvable,
 	newName: string
 ): Player {
@@ -158,8 +158,8 @@ export function forcePlayerToChangeName(
 	playerService.setInventory(playerResolvable, currentInventory + newName);
 	playerService.changeCurrentName(playerResolvable, newName);
 
-	activityLogService.logChangeName({
-		playerChangingName: playerResolvable,
+	activityLogService.logRearrangeName({
+		playerRearrangingName: playerResolvable,
 		nameBefore,
 	});
 	return playerService.resolvePlayer(playerResolvable);

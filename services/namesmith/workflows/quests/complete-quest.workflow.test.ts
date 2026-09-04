@@ -10,7 +10,7 @@ import { DatabaseQuerier } from "../../database/database-querier";
 import { getLatestActivityLog } from "../../mocks/mock-data/mock-activity-logs";
 import { forcePlayerToBuyMysteryBox, forcePlayerToBuyNewMysteryBox } from "../../mocks/mock-data/mock-mystery-boxes";
 import { addMockPerk, forcePlayerToPickNewPerk, forcePlayerToPickPerk } from "../../mocks/mock-data/mock-perks";
-import { addMockPlayer, forcePlayerToChangeName, forcePlayerToClaimRefill, forcePlayerToHaveInventory, forcePlayerToMineTokens, forcePlayerToPublishName } from '../../mocks/mock-data/mock-players';
+import { addMockPlayer, forcePlayerToRearrangeName, forcePlayerToClaimRefill, forcePlayerToHaveInventory, forcePlayerToMineTokens, forcePlayerToPublishName } from '../../mocks/mock-data/mock-players';
 import { addMockQuest, forcePlayerToCompleteNewQuest, forcePlayerToCompleteQuest } from "../../mocks/mock-data/mock-quests";
 import { addMockRecipe, forcePlayerToCraftRecipe, forcePlayerToCraftNewRecipe } from '../../mocks/mock-data/mock-recipes';
 import { addMockRole } from "../../mocks/mock-data/mock-roles";
@@ -460,8 +460,8 @@ describe('complete-quest.workflow.ts', () => {
 
 			describe('Echoed Name Quest', () => {
 				it('returns success for Echoed Name quest if player has changed their name to a repeated version of itself', () => {
-					forcePlayerToChangeName(SOME_PLAYER, 'Echo');
-					forcePlayerToChangeName(SOME_PLAYER, 'EchoEcho');
+					forcePlayerToRearrangeName(SOME_PLAYER, 'Echo');
+					forcePlayerToRearrangeName(SOME_PLAYER, 'EchoEcho');
 
 					makeSure(
 						completeQuest({
@@ -472,8 +472,8 @@ describe('complete-quest.workflow.ts', () => {
 				});
 
 				it('returns failure for Echoed Name quest if player has not changed their name to a repeated version of itself', () => {
-					forcePlayerToChangeName(SOME_PLAYER, 'Echo');
-					forcePlayerToChangeName(SOME_PLAYER, 'Echo Echo');
+					forcePlayerToRearrangeName(SOME_PLAYER, 'Echo');
+					forcePlayerToRearrangeName(SOME_PLAYER, 'Echo Echo');
 
 					makeSure(
 						completeQuest({
@@ -541,12 +541,12 @@ describe('complete-quest.workflow.ts', () => {
 
 				it('returns a success when the player and other player has changed their name to the same name without changing it again for exactly 2 hours', () => {
 					jest.setSystemTime(BEFORE_TWO_HOUR_INTERVAL);
-					forcePlayerToChangeName(NAMED_PLAYER, "Shared Name");
-					forcePlayerToChangeName(OTHER_NAMED_PLAYER, "Shared Name");
+					forcePlayerToRearrangeName(NAMED_PLAYER, "Shared Name");
+					forcePlayerToRearrangeName(OTHER_NAMED_PLAYER, "Shared Name");
 
 					jest.setSystemTime(AFTER_TWO_HOUR_INTERVAL);
-					forcePlayerToChangeName(NAMED_PLAYER, "Player Name");
-					forcePlayerToChangeName(OTHER_NAMED_PLAYER, "Other Player Name");
+					forcePlayerToRearrangeName(NAMED_PLAYER, "Player Name");
+					forcePlayerToRearrangeName(OTHER_NAMED_PLAYER, "Other Player Name");
 
 					makeSure(
 						completeQuest({
@@ -558,14 +558,14 @@ describe('complete-quest.workflow.ts', () => {
 
 				it('returns a failure when the player and other player has changed their name to the same name without changing it again for 1 hour and 59 minutes hours', () => {
 					jest.setSystemTime(BEFORE_TWO_HOUR_INTERVAL);
-					forcePlayerToChangeName(NAMED_PLAYER, "Shared Name");
-					forcePlayerToChangeName(OTHER_NAMED_PLAYER, "Shared Name");
+					forcePlayerToRearrangeName(NAMED_PLAYER, "Shared Name");
+					forcePlayerToRearrangeName(OTHER_NAMED_PLAYER, "Shared Name");
 
 					jest.setSystemTime(
 						addMinutes(AFTER_TWO_HOUR_INTERVAL, -1)
 					);
-					forcePlayerToChangeName(NAMED_PLAYER, "Player Name");
-					forcePlayerToChangeName(OTHER_NAMED_PLAYER, "Other Player Name");
+					forcePlayerToRearrangeName(NAMED_PLAYER, "Player Name");
+					forcePlayerToRearrangeName(OTHER_NAMED_PLAYER, "Other Player Name");
 
 					makeSure(
 						completeQuest({
@@ -605,7 +605,7 @@ describe('complete-quest.workflow.ts', () => {
 							continue;
 
 						jest.setSystemTime(addHours(NOW, numLoop));
-						forcePlayerToChangeName(SOME_PLAYER, `Name ${numLoop}`);
+						forcePlayerToRearrangeName(SOME_PLAYER, `Name ${numLoop}`);
 					}
 
 					makeSure(
@@ -626,7 +626,7 @@ describe('complete-quest.workflow.ts', () => {
 							timeToChange = addMinutes(timeToChange, -1);
 
 						jest.setSystemTime(timeToChange);
-						forcePlayerToChangeName(SOME_PLAYER, `Name ${numLoop}`);
+						forcePlayerToRearrangeName(SOME_PLAYER, `Name ${numLoop}`);
 					}
 
 					makeSure(
@@ -1461,7 +1461,7 @@ describe('complete-quest.workflow.ts', () => {
 
 			describe('Familiar Face Quest', () => {
 				it('returns a success if the player got a character from a mystery box already in their name', () => {
-					forcePlayerToChangeName(SOME_PLAYER, 'abcdefghijklmnopqrstuvwxyz');
+					forcePlayerToRearrangeName(SOME_PLAYER, 'abcdefghijklmnopqrstuvwxyz');
 					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
 						characterOdds: {'a': 1}
 					});
@@ -1474,7 +1474,7 @@ describe('complete-quest.workflow.ts', () => {
 				});
 
 				it('returns a failure if the player got a character from a mystery box not already in their name', () => {
-					forcePlayerToChangeName(SOME_PLAYER, 'bcdefghijklmnopqrstuvwxyz');
+					forcePlayerToRearrangeName(SOME_PLAYER, 'bcdefghijklmnopqrstuvwxyz');
 					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
 						characterOdds: {'a': 1}
 					});
@@ -2652,7 +2652,7 @@ describe('complete-quest.workflow.ts', () => {
 				});
 				
 				it('returns success when the player name is one of their perk names', () => {
-					forcePlayerToChangeName(PLAYER_WITH_PERKS, PERK1.name);
+					forcePlayerToRearrangeName(PLAYER_WITH_PERKS, PERK1.name);
 					const result = completeQuest({
 						playerResolvable: PLAYER_WITH_PERKS,
 						questResolvable: Quests.PERK_PRIDE
@@ -2661,7 +2661,7 @@ describe('complete-quest.workflow.ts', () => {
 				});
 				
 				it('returns success when the player name contains one of their perk names', () => {
-					forcePlayerToChangeName(PLAYER_WITH_PERKS, `In between ${PERK1.name} characters`);
+					forcePlayerToRearrangeName(PLAYER_WITH_PERKS, `In between ${PERK1.name} characters`);
 					const result = completeQuest({
 						playerResolvable: PLAYER_WITH_PERKS,
 						questResolvable: Quests.PERK_PRIDE
@@ -2670,7 +2670,7 @@ describe('complete-quest.workflow.ts', () => {
 				});
 
 				it('returns failure when the player name does not contain any of their perk names', () => {
-					forcePlayerToChangeName(PLAYER_WITH_PERKS, 'new name');
+					forcePlayerToRearrangeName(PLAYER_WITH_PERKS, 'new name');
 					const result = completeQuest({
 						playerResolvable: PLAYER_WITH_PERKS,
 						questResolvable: Quests.PERK_PRIDE
@@ -2689,7 +2689,7 @@ describe('complete-quest.workflow.ts', () => {
 				});
 				
 				it('returns success when the player name is their role name', () => {
-					forcePlayerToChangeName(SOME_PLAYER, SOME_ROLE.name);
+					forcePlayerToRearrangeName(SOME_PLAYER, SOME_ROLE.name);
 					const result = completeQuest({
 						playerResolvable: SOME_PLAYER,
 						questResolvable: Quests.ROLE_CALL
@@ -2698,7 +2698,7 @@ describe('complete-quest.workflow.ts', () => {
 				});
 				
 				it('returns success when the player name contains their role name', () => {
-					forcePlayerToChangeName(SOME_PLAYER, `In between ${SOME_ROLE.name} characters`);
+					forcePlayerToRearrangeName(SOME_PLAYER, `In between ${SOME_ROLE.name} characters`);
 					const result = completeQuest({
 						playerResolvable: SOME_PLAYER,
 						questResolvable: Quests.ROLE_CALL
@@ -2707,7 +2707,7 @@ describe('complete-quest.workflow.ts', () => {
 				});
 
 				it('returns failure when the player name does not contain their role name', () => {
-					forcePlayerToChangeName(SOME_PLAYER, 'new name');
+					forcePlayerToRearrangeName(SOME_PLAYER, 'new name');
 					const result = completeQuest({
 						playerResolvable: SOME_PLAYER,
 						questResolvable: Quests.ROLE_CALL
@@ -3520,7 +3520,7 @@ describe('complete-quest.workflow.ts', () => {
 
 			describe('Rightmost Quest', () => {
 				it('returns success when player has received the rightmost character of their name from a mystery box', () => {
-					forcePlayerToChangeName(SOME_PLAYER, 'abcdefg');
+					forcePlayerToRearrangeName(SOME_PLAYER, 'abcdefg');
 					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
 						characterOdds: {'g': 1}
 					});
@@ -3533,15 +3533,15 @@ describe('complete-quest.workflow.ts', () => {
 				});
 
 				it('returns success when player has bought multiple mystery boxes and one contains the rightmost character', () => {
-					forcePlayerToChangeName(SOME_PLAYER, 'hello');
+					forcePlayerToRearrangeName(SOME_PLAYER, 'hello');
 					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
 						characterOdds: {'a': 1}
 					});
-					forcePlayerToChangeName(SOME_PLAYER, 'hello');
+					forcePlayerToRearrangeName(SOME_PLAYER, 'hello');
 					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
 						characterOdds: {'b': 1}
 					});
-					forcePlayerToChangeName(SOME_PLAYER, 'hello');
+					forcePlayerToRearrangeName(SOME_PLAYER, 'hello');
 					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
 						characterOdds: {'o': 1}
 					});
@@ -3554,7 +3554,7 @@ describe('complete-quest.workflow.ts', () => {
 				});
 
 				it('returns failure when player has not bought any mystery boxes', () => {
-					forcePlayerToChangeName(SOME_PLAYER, 'testname');
+					forcePlayerToRearrangeName(SOME_PLAYER, 'testname');
 
 					const result = completeQuest({
 						playerResolvable: SOME_PLAYER.id,
@@ -3564,15 +3564,15 @@ describe('complete-quest.workflow.ts', () => {
 				});
 
 				it('returns failure when player has bought mystery boxes but none contain the rightmost character', () => {
-					forcePlayerToChangeName(SOME_PLAYER, 'abcdefg');
+					forcePlayerToRearrangeName(SOME_PLAYER, 'abcdefg');
 					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
 						characterOdds: {'a': 1}
 					});
-					forcePlayerToChangeName(SOME_PLAYER, 'abcdefg');
+					forcePlayerToRearrangeName(SOME_PLAYER, 'abcdefg');
 					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
 						characterOdds: {'b': 1}
 					});
-					forcePlayerToChangeName(SOME_PLAYER, 'abcdefg');
+					forcePlayerToRearrangeName(SOME_PLAYER, 'abcdefg');
 					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
 						characterOdds: {'c': 1}
 					});
@@ -3829,7 +3829,7 @@ describe('complete-quest.workflow.ts', () => {
 
 			describe('Priced Right Quest', () => {
 				it('returns success when the player bought a mystery box and their name contains the box price', () => {
-					forcePlayerToChangeName(SOME_PLAYER, 'My price is 50 tokens');
+					forcePlayerToRearrangeName(SOME_PLAYER, 'My price is 50 tokens');
 					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
 						tokenCost: 50
 					});
@@ -3842,7 +3842,7 @@ describe('complete-quest.workflow.ts', () => {
 				});
 
 				it('returns success when the player bought a mystery box where the price is exactly the name', () => {
-					forcePlayerToChangeName(SOME_PLAYER, '100');
+					forcePlayerToRearrangeName(SOME_PLAYER, '100');
 					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
 						tokenCost: 100
 					});
@@ -3855,7 +3855,7 @@ describe('complete-quest.workflow.ts', () => {
 				});
 
 				it('returns success when the player bought multiple boxes and one matches their name price', () => {
-					forcePlayerToChangeName(SOME_PLAYER, 'Box costs 75 tokens');
+					forcePlayerToRearrangeName(SOME_PLAYER, 'Box costs 75 tokens');
 					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
 						tokenCost: 50
 					});
@@ -3874,7 +3874,7 @@ describe('complete-quest.workflow.ts', () => {
 				});
 
 				it('returns failure when the player bought a mystery box but the price is not in their name', () => {
-					forcePlayerToChangeName(SOME_PLAYER, 'My name has no price');
+					forcePlayerToRearrangeName(SOME_PLAYER, 'My name has no price');
 					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
 						tokenCost: 50
 					});
@@ -3887,7 +3887,7 @@ describe('complete-quest.workflow.ts', () => {
 				});
 
 				it('returns failure when the player bought boxes but never with a matching name price', () => {
-					forcePlayerToChangeName(SOME_PLAYER, 'Price 123');
+					forcePlayerToRearrangeName(SOME_PLAYER, 'Price 123');
 					forcePlayerToBuyNewMysteryBox(SOME_PLAYER, {
 						tokenCost: 50
 					});
@@ -3903,7 +3903,7 @@ describe('complete-quest.workflow.ts', () => {
 				});
 
 				it('returns failure when the player has not bought any mystery boxes', () => {
-					forcePlayerToChangeName(SOME_PLAYER, 'Some name');
+					forcePlayerToRearrangeName(SOME_PLAYER, 'Some name');
 
 					const result = completeQuest({
 						playerResolvable: SOME_PLAYER.id,
@@ -5002,7 +5002,7 @@ describe('complete-quest.workflow.ts', () => {
 
 		describe('Name Match Quest', () => {
 			it('returns success when player completed a quest while their name contained the quest name', () => {
-				forcePlayerToChangeName(SOME_PLAYER, 'I love Celestial quest');
+				forcePlayerToRearrangeName(SOME_PLAYER, 'I love Celestial quest');
 				forcePlayerToCompleteNewQuest(SOME_PLAYER, {name: 'Celestial'});
 
 				const result = completeQuest({
@@ -5013,7 +5013,7 @@ describe('complete-quest.workflow.ts', () => {
 			});
 
 			it('returns success when player name exactly matches the quest name', () => {
-				forcePlayerToChangeName(SOME_PLAYER, 'Celestial');
+				forcePlayerToRearrangeName(SOME_PLAYER, 'Celestial');
 				forcePlayerToCompleteNewQuest(SOME_PLAYER, {name: 'Celestial'});
 
 				const result = completeQuest({
@@ -5024,7 +5024,7 @@ describe('complete-quest.workflow.ts', () => {
 			});
 
 			it('returns success with case-insensitive matching', () => {
-				forcePlayerToChangeName(SOME_PLAYER, 'I did CELESTE THE QUEST today');
+				forcePlayerToRearrangeName(SOME_PLAYER, 'I did CELESTE THE QUEST today');
 				forcePlayerToCompleteNewQuest(SOME_PLAYER, {name: 'cEleste'});
 
 				const result = completeQuest({
@@ -5035,13 +5035,13 @@ describe('complete-quest.workflow.ts', () => {
 			});
 
 			it('returns success when player completed multiple quests and one matches', () => {
-				forcePlayerToChangeName(SOME_PLAYER, 'doing quests');
+				forcePlayerToRearrangeName(SOME_PLAYER, 'doing quests');
 				forcePlayerToCompleteNewQuest(SOME_PLAYER);
 
-				forcePlayerToChangeName(SOME_PLAYER, 'Outer Space time');
+				forcePlayerToRearrangeName(SOME_PLAYER, 'Outer Space time');
 				forcePlayerToCompleteNewQuest(SOME_PLAYER, {name: 'Space'});
 
-				forcePlayerToChangeName(SOME_PLAYER, 'another name');
+				forcePlayerToRearrangeName(SOME_PLAYER, 'another name');
 				forcePlayerToCompleteNewQuest(SOME_PLAYER);
 
 				const result = completeQuest({
@@ -5052,9 +5052,9 @@ describe('complete-quest.workflow.ts', () => {
 			});
 
 			it('returns success when player changed name after completing quest but name matched during completion', () => {
-				forcePlayerToChangeName(SOME_PLAYER, 'Coalitionists quest');
+				forcePlayerToRearrangeName(SOME_PLAYER, 'Coalitionists quest');
 				forcePlayerToCompleteNewQuest(SOME_PLAYER, {name: 'Coalitionists'});
-				forcePlayerToChangeName(SOME_PLAYER, 'different name now');
+				forcePlayerToRearrangeName(SOME_PLAYER, 'different name now');
 
 				const result = completeQuest({
 					playerResolvable: SOME_PLAYER.id,
@@ -5064,7 +5064,7 @@ describe('complete-quest.workflow.ts', () => {
 			});
 
 			it('returns failure when player completed quests but name never contained any quest name', () => {
-				forcePlayerToChangeName(SOME_PLAYER, 'my unique name');
+				forcePlayerToRearrangeName(SOME_PLAYER, 'my unique name');
 				forcePlayerToCompleteNewQuest(SOME_PLAYER);
 				forcePlayerToCompleteNewQuest(SOME_PLAYER, {name: 'another unique name'});
 
@@ -5076,7 +5076,7 @@ describe('complete-quest.workflow.ts', () => {
 			});
 
 			it('returns failure when player name contains part of quest name but not the full name', () => {
-				forcePlayerToChangeName(SOME_PLAYER, 'Gold quest');
+				forcePlayerToRearrangeName(SOME_PLAYER, 'Gold quest');
 				forcePlayerToCompleteNewQuest(SOME_PLAYER, {name: 'Gold Ticket'});
 
 				const result = completeQuest({
@@ -5087,7 +5087,7 @@ describe('complete-quest.workflow.ts', () => {
 			});
 
 			it('returns failure when player has not completed any quests this week', () => {
-				forcePlayerToChangeName(SOME_PLAYER, 'Speed Mine');
+				forcePlayerToRearrangeName(SOME_PLAYER, 'Speed Mine');
 
 				const result = completeQuest({
 					playerResolvable: SOME_PLAYER.id,
@@ -5454,7 +5454,7 @@ describe('complete-quest.workflow.ts', () => {
 		describe('Perk Name Quest', () => {
 			it('returns success when player picked a perk while their current name contains the perk name', () => {
 				const perk = addMockPerk(db, { name: 'Celestial' });
-				forcePlayerToChangeName(SOME_PLAYER, 'I love Celestial perks');
+				forcePlayerToRearrangeName(SOME_PLAYER, 'I love Celestial perks');
 				forcePlayerToPickPerk(SOME_PLAYER, perk);
 
 				const result = completeQuest({
@@ -5466,7 +5466,7 @@ describe('complete-quest.workflow.ts', () => {
 
 			it('returns success when the current name exactly matches the perk name', () => {
 				const perk = addMockPerk(db, { name: 'Lunar' });
-				forcePlayerToChangeName(SOME_PLAYER, 'Lunar');
+				forcePlayerToRearrangeName(SOME_PLAYER, 'Lunar');
 				forcePlayerToPickPerk(SOME_PLAYER, perk);
 
 				const result = completeQuest({
@@ -5481,13 +5481,13 @@ describe('complete-quest.workflow.ts', () => {
 				const perk2 = addMockPerk(db, { name: 'Beta' });
 				const perk3 = addMockPerk(db, { name: 'Gamma' });
 
-				forcePlayerToChangeName(SOME_PLAYER, 'other name');
+				forcePlayerToRearrangeName(SOME_PLAYER, 'other name');
 				forcePlayerToPickPerk(SOME_PLAYER, perk1);
 
-				forcePlayerToChangeName(SOME_PLAYER, 'I choose Beta now');
+				forcePlayerToRearrangeName(SOME_PLAYER, 'I choose Beta now');
 				forcePlayerToPickPerk(SOME_PLAYER, perk2);
 
-				forcePlayerToChangeName(SOME_PLAYER, 'different');
+				forcePlayerToRearrangeName(SOME_PLAYER, 'different');
 				forcePlayerToPickPerk(SOME_PLAYER, perk3);
 
 				const result = completeQuest({
@@ -5499,7 +5499,7 @@ describe('complete-quest.workflow.ts', () => {
 
 			it('returns failure when player picked a perk but their current name does not contain the perk name', () => {
 				const perk = addMockPerk(db, { name: 'Celestial' });
-				forcePlayerToChangeName(SOME_PLAYER, 'My unique name');
+				forcePlayerToRearrangeName(SOME_PLAYER, 'My unique name');
 				forcePlayerToPickPerk(SOME_PLAYER, perk);
 
 				const result = completeQuest({
@@ -5714,11 +5714,11 @@ describe('complete-quest.workflow.ts', () => {
 			});
 
 			it('returns success when no player changed their name for exactly 8 hours this week', () => {
-				forcePlayerToChangeName(SOME_PLAYER, 'First change');
+				forcePlayerToRearrangeName(SOME_PLAYER, 'First change');
 
 				jest.setSystemTime(addHours(new Date(), 8));
 
-				forcePlayerToChangeName(SOME_OTHER_PLAYER, 'Second change');
+				forcePlayerToRearrangeName(SOME_OTHER_PLAYER, 'Second change');
 
 				const result = completeQuest({
 					playerResolvable: SOME_PLAYER.id,
@@ -5728,11 +5728,11 @@ describe('complete-quest.workflow.ts', () => {
 			});
 
 			it('returns success when no player changed their name for more than 8 hours this week', () => {
-				forcePlayerToChangeName(SOME_PLAYER, 'First change');
+				forcePlayerToRearrangeName(SOME_PLAYER, 'First change');
 
 				jest.setSystemTime(addHours(new Date(), 12));
 
-				forcePlayerToChangeName(SOME_OTHER_PLAYER, 'Second change');
+				forcePlayerToRearrangeName(SOME_OTHER_PLAYER, 'Second change');
 
 				const result = completeQuest({
 					playerResolvable: SOME_PLAYER.id,
@@ -5742,16 +5742,16 @@ describe('complete-quest.workflow.ts', () => {
 			});
 
 			it('returns success when there are multiple gaps and one is at least 8 hours', () => {
-				forcePlayerToChangeName(SOME_PLAYER, 'First');
+				forcePlayerToRearrangeName(SOME_PLAYER, 'First');
 				jest.setSystemTime(addHours(new Date(), 4));
 
-				forcePlayerToChangeName(SOME_OTHER_PLAYER, 'Second');
+				forcePlayerToRearrangeName(SOME_OTHER_PLAYER, 'Second');
 				jest.setSystemTime(addHours(new Date(), 8));
 
-				forcePlayerToChangeName(THREE_DIFFERENT_PLAYERS[0], 'Third');
+				forcePlayerToRearrangeName(THREE_DIFFERENT_PLAYERS[0], 'Third');
 				jest.setSystemTime(addHours(new Date(), 2));
 
-				forcePlayerToChangeName(THREE_DIFFERENT_PLAYERS[1], 'Fourth');
+				forcePlayerToRearrangeName(THREE_DIFFERENT_PLAYERS[1], 'Fourth');
 
 				const result = completeQuest({
 					playerResolvable: SOME_PLAYER.id,
@@ -5761,10 +5761,10 @@ describe('complete-quest.workflow.ts', () => {
 			});
 
 			it('returns success when the gap from last change to now is at least 8 hours', () => {
-				forcePlayerToChangeName(SOME_PLAYER, 'First change');
+				forcePlayerToRearrangeName(SOME_PLAYER, 'First change');
 				jest.setSystemTime(addHours(new Date(), 4));
 
-				forcePlayerToChangeName(SOME_OTHER_PLAYER, 'Last change');
+				forcePlayerToRearrangeName(SOME_OTHER_PLAYER, 'Last change');
 				jest.setSystemTime(addHours(new Date(), 8));
 
 				const result = completeQuest({
@@ -5775,11 +5775,11 @@ describe('complete-quest.workflow.ts', () => {
 			});
 
 			it('returns failure when the longest gap is only 7 hours and 59 minutes', () => {
-				forcePlayerToChangeName(SOME_PLAYER, 'First change');
+				forcePlayerToRearrangeName(SOME_PLAYER, 'First change');
 
 				jest.setSystemTime(addMinutes(addHours(new Date(), 7), 59));
 
-				forcePlayerToChangeName(SOME_OTHER_PLAYER, 'Second change');
+				forcePlayerToRearrangeName(SOME_OTHER_PLAYER, 'Second change');
 
 				const result = completeQuest({
 					playerResolvable: SOME_PLAYER.id,
@@ -5789,16 +5789,16 @@ describe('complete-quest.workflow.ts', () => {
 			});
 
 			it('returns failure when players change names frequently with no 8-hour gap', () => {
-				forcePlayerToChangeName(SOME_PLAYER, 'Change 1');
+				forcePlayerToRearrangeName(SOME_PLAYER, 'Change 1');
 				jest.setSystemTime(addHours(new Date(), 3));
 
-				forcePlayerToChangeName(SOME_OTHER_PLAYER, 'Change 2');
+				forcePlayerToRearrangeName(SOME_OTHER_PLAYER, 'Change 2');
 				jest.setSystemTime(addHours(new Date(), 4));
 
-				forcePlayerToChangeName(THREE_DIFFERENT_PLAYERS[0], 'Change 3');
+				forcePlayerToRearrangeName(THREE_DIFFERENT_PLAYERS[0], 'Change 3');
 				jest.setSystemTime(addHours(new Date(), 2));
 
-				forcePlayerToChangeName(THREE_DIFFERENT_PLAYERS[1], 'Change 4');
+				forcePlayerToRearrangeName(THREE_DIFFERENT_PLAYERS[1], 'Change 4');
 
 				const result = completeQuest({
 					playerResolvable: SOME_PLAYER.id,

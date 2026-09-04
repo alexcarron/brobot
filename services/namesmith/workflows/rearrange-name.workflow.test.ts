@@ -75,7 +75,7 @@ describe('rearrange-name.workflow', () => {
 
 			const activityLog = getLatestActivityLog(db);
 			makeSure(activityLog.player.id).is(player.id);
-			makeSure(activityLog.type).is(ActivityTypes.CHANGE_NAME);
+			makeSure(activityLog.type).is(ActivityTypes.REARRANGE_NAME);
 			makeSure(activityLog.nameChangedFrom).is('abc');
 			makeSure(activityLog.currentName).is('cab');
 		});

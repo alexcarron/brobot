@@ -47,8 +47,8 @@ export const rearrangeName = (
 	const nameBefore = playerService.getCurrentName(playerResolvable);
 	playerService.changeCurrentName(playerResolvable, newName);
 
-	activityLogService.logChangeName({
-		playerChangingName: playerResolvable,
+	activityLogService.logRearrangeName({
+		playerRearrangingName: playerResolvable,
 		nameBefore,
 	});
 

@@ -70,7 +70,7 @@ export function forcePlayerToPublishName(
 
 Use this when the state you're setting up must satisfy invariants a service enforces (e.g. a player's inventory must actually contain the characters of a name before that name can be published, or a cooldown must be expired before a refill can be claimed), or when you're setting up state that spans several systems the way a real player action would.
 
-Examples: `forcePlayerToHaveInventory`, `forcePlayerToChangeName`, `forcePlayerToPublishName`, `forcePlayerToPublishNameInSlot`, `forcePlayerToMineTokens`, `forcePlayerToClaimRefill`, `forcePlayerToCraftRecipe`, `forcePlayerToInitiateTrade`, `forcePlayerToAcceptNewTrade`, `forcePlayerToBuyNewMysteryBox`.
+Examples: `forcePlayerToHaveInventory`, `forcePlayerToRearrangeName`, `forcePlayerToPublishName`, `forcePlayerToPublishNameInSlot`, `forcePlayerToMineTokens`, `forcePlayerToClaimRefill`, `forcePlayerToCraftRecipe`, `forcePlayerToInitiateTrade`, `forcePlayerToAcceptNewTrade`, `forcePlayerToBuyNewMysteryBox`.
 
 # Choosing How to Construct the Service Under Test
 

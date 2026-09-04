@@ -37,13 +37,13 @@ export class ActivityLogService {
 		return ActivityLogService.fromDB(db);
 	}
 
-	logChangeName({ playerChangingName, nameBefore }: {
-		playerChangingName: PlayerResolvable;
+	logRearrangeName({ playerRearrangingName, nameBefore }: {
+		playerRearrangingName: PlayerResolvable;
 		nameBefore: string;
 	}): ActivityLog {
 		return this.activityLogRepository.addActivityLog({
-			type: ActivityTypes.CHANGE_NAME,
-			player: playerChangingName,
+			type: ActivityTypes.REARRANGE_NAME,
+			player: playerRearrangingName,
 			nameChangedFrom: nameBefore,
 		});
 	}
@@ -670,17 +670,17 @@ export class ActivityLogService {
 	}
 
 	/**
-	 * Retrieves all activity logs for a given player where the type is changing name.
+	 * Retrieves all activity logs for a given player where the type is rearranging name.
 	 * Only retrieves activity logs that occurred today or later.
 	 * @param player - The player to retrieve the activity logs for.
 	 * @returns An array of activity logs for the given player.
 	 */
-	getChangeNameLogsTodayByPlayer(player: PlayerResolvable): ActivityLog[] {
+	getRearrangeNameLogsTodayByPlayer(player: PlayerResolvable): ActivityLog[] {
 		const now = new Date();
 		const startOfToday = this.gameStateService.getStartOfTodayOrThrow(now);
 		return this.activityLogRepository.findActivityLogsAfterTimeWhere(startOfToday, {
 			player: player,
-			type: ActivityTypes.CHANGE_NAME,
+			type: ActivityTypes.REARRANGE_NAME,
 		});
 	}
 

@@ -1,7 +1,7 @@
 import { ids } from "../../bot-config/discord-ids";
 import { Parameter, ParameterTypes } from "../../services/command-creation/parameter";
 import { SlashCommand } from "../../services/command-creation/slash-command";
-import { forcePlayerToChangeName } from "../../services/namesmith/mocks/mock-data/mock-players";
+import { forcePlayerToRearrangeName } from "../../services/namesmith/mocks/mock-data/mock-players";
 import { getInvalidPlayerMessageOrPlayer } from "../../services/namesmith/utilities/interface.utility";
 import { getPlayerAutocompleteChoicesFromCache } from "../../services/namesmith/utilities/player.utility";
 import { fetchUser } from "../../utilities/discord/guild-member-utils";
@@ -38,7 +38,7 @@ export const command = new SlashCommand({
 
 		const player = messageOrPlayer;
 		const user = await fetchUser(player.id);
-		forcePlayerToChangeName(player.id, currentName);
+		forcePlayerToRearrangeName(player.id, currentName);
 
 		let firstPart = `${user}'s current name has been set to: `;
 		if (interaction.user.id === player.id)

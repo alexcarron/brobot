@@ -7,7 +7,7 @@ import { INVALID_PLAYER_ID } from "../constants/testing.constants";
 import { DatabaseQuerier } from "../database/database-querier";
 import { Player } from "../types/player.types";
 import { makeSure } from "../../../utilities/jest/jest-utils";
-import { addMockPlayer, forcePlayerToChangeName } from "../mocks/mock-data/mock-players";
+import { addMockPlayer, forcePlayerToRearrangeName } from "../mocks/mock-data/mock-players";
 import { returnIfNotFailure } from "../utilities/workflow.utility";
 import { getLatestActivityLog } from "../mocks/mock-data/mock-activity-logs";
 import { ActivityTypes } from "../types/activity-log.types";
@@ -47,18 +47,18 @@ describe('publish-name.workflow', () => {
 		it('fails with nameAlreadyPublished when the same current name is already an entry', () => {
 			returnIfNotFailure(publishName({ player: NAMED_PLAYER.id }));
 
-			forcePlayerToChangeName(NAMED_PLAYER.id, 'Namey');
+			forcePlayerToRearrangeName(NAMED_PLAYER.id, 'Namey');
 			const result = publishName({ player: NAMED_PLAYER.id });
 			makeSure(result.isNameAlreadyPublished()).isTrue();
 		});
 
 		it('fails with atPublishedNameLimit once all published name slots are used', () => {
 			for (let slotNumber = 1; slotNumber <= MAX_PUBLISHED_NAME_SLOTS_PER_PLAYER; slotNumber++) {
-				forcePlayerToChangeName(NAMED_PLAYER.id, `Name ${slotNumber}`);
+				forcePlayerToRearrangeName(NAMED_PLAYER.id, `Name ${slotNumber}`);
 				returnIfNotFailure(publishName({ player: NAMED_PLAYER.id }));
 			}
 
-			forcePlayerToChangeName(NAMED_PLAYER.id, 'One Too Many');
+			forcePlayerToRearrangeName(NAMED_PLAYER.id, 'One Too Many');
 			const result = publishName({ player: NAMED_PLAYER.id });
 			makeSure(result.isAtPublishedNameLimit()).isTrue();
 		});
@@ -69,7 +69,7 @@ describe('publish-name.workflow', () => {
 
 			returnIfNotFailure(publishName({ player: brokePlayer.id }));
 
-			forcePlayerToChangeName(brokePlayer.id, 'Second');
+			forcePlayerToRearrangeName(brokePlayer.id, 'Second');
 			const result = publishName({ player: brokePlayer.id });
 
 			makeSure(result.isCannotAffordPublishedName()).isTrue();
@@ -91,7 +91,7 @@ describe('publish-name.workflow', () => {
 		it('deducts exactly the published name cost and creates the published name for a paid published name', () => {
 			returnIfNotFailure(publishName({ player: NAMED_PLAYER.id }));
 
-			forcePlayerToChangeName(NAMED_PLAYER.id, 'Second');
+			forcePlayerToRearrangeName(NAMED_PLAYER.id, 'Second');
 			const result = returnIfNotFailure(publishName({ player: NAMED_PLAYER.id }));
 
 			const secondPublishedNameCost = PUBLISHED_NAME_SLOT_COSTS[1];

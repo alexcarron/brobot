@@ -10,7 +10,7 @@ import { MysteryBox, MysteryBoxResolvable } from "./mystery-box.types";
 import { Role, RoleResolvable } from "./role.types";
 
 export const ActivityTypes = toEnumFromStrings(
-	'changeName',
+	'rearrangeName',
 	'publishName',
 	'mineTokens',
 	'claimRefill',
