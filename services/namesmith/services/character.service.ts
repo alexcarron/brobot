@@ -7,8 +7,10 @@ import { getCharacters } from "../../../utilities/string-checks-utils";
 import { MysteryBoxService } from "./mystery-box.service";
 import {
 	getCheapestCostForCharacter,
-	getSellValueForCharacter,
+	getSellValueFromRarity,
+	getSellValueFromRarityScale,
 } from "../utilities/character-economy.utility";
+import { CHEAPEST_MYSERTY_BOX_ID } from "../constants/sell-characters.constants";
 
 /**
  * Provides methods for interacting with characters.
@@ -54,14 +56,31 @@ export class CharacterService {
 	}
 
 	/**
+	 * Returns the factor that a character's rarity is multiplied by to get its sell value.
+	 * @returns The sell value scale.
+	 */
+	getSellValueFromRarityScale(): number {
+		const characters = this.characterRepository.getCharacters();
+		const cheapestMysteryBox = this.mysteryBoxService.getMysteryBoxes()
+			.find(mysteryBox => mysteryBox.id === CHEAPEST_MYSERTY_BOX_ID);
+
+		if (cheapestMysteryBox === undefined)
+			throw new Error("Cannot compute a character sell value without the cheapest mystery box.");
+
+		return getSellValueFromRarityScale({ characters, cheapestMysteryBox: cheapestMysteryBox });
+	}
+
+	/**
 	 * Returns the number of tokens a player receives for selling a single character.
 	 * @param characterResolvable - The character being sold.
 	 * @returns The sell value, in tokens, of the character.
 	 */
 	getSellValue(characterResolvable: CharacterResolvable): number {
 		const character = this.resolveCharacter(characterResolvable);
-		const mysteryBoxes = this.mysteryBoxService.getMysteryBoxes();
-		return getSellValueForCharacter({ character, mysteryBoxes });
+		return getSellValueFromRarity({
+			rarity: character.rarity,
+			sellValueScale: this.getSellValueFromRarityScale(),
+		});
 	}
 
 	/**
@@ -71,10 +90,13 @@ export class CharacterService {
 	 */
 	getSellValueOfCharacters(characters: string): number {
 		const characterValues = getCharacters(characters);
+		const sellValueScale = this.getSellValueFromRarityScale();
 
 		let totalSellValue = 0;
-		for (const characterValue of characterValues)
-			totalSellValue += this.getSellValue(characterValue);
+		for (const characterValue of characterValues) {
+			const character = this.resolveCharacter(characterValue);
+			totalSellValue += getSellValueFromRarity({ rarity: character.rarity, sellValueScale });
+		}
 
 		return totalSellValue;
 	}

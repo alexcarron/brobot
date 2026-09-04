@@ -3,18 +3,13 @@
 ## When Players Can Sell
 Players are allowed to sell characters in their inventory at any time, in any game phase, via the `/sell-characters` command.
 
-## Implemented Sell Value Formula
-The original suggested formula in this doc (rarity-ratio based) was superseded during implementation by a formula based on each character's actual cheapest acquisition cost, so the no-profit-loop guarantee holds by construction instead of by tuning. See `utilities/character-economy.utility.ts` for the implementation and `docs/namesmith-final-update-requirements.local.md` for the full design rationale.
+## Sell Value Formula
+Sell value is comes from a character's rarity, normalized so the most common character has a rarity of 1. The "All Characters" mystery box's odds are derived from rarity.
 
 For a character `C`:
-- `cheapestBoxCost(C)` = the lowest expected token cost to obtain `C` by repeatedly buying any single mystery box that offers it, computed from that box's token cost and `C`'s share of the box's total character weight.
-- `miningCost(C)` = the expected token cost to obtain `C` via mining, derived from the long-run expected tokens and characters discovered per mining session, scaled by `C`'s weight in the "All Characters" mystery box (mining draws from the same odds table).
-- `cheapestCost(C) = min(cheapestBoxCost(C), miningCost(C))`.
-- `sellValue(C) = clamp(floor(0.5 * cheapestCost(C)), minSellValue, ∞)`.
-- `minSellValue = floor(0.1 * cheapestMysteryBoxCost)` (still ~2 tokens today).
-- Characters that only exist as recipe outputs (never obtainable via a box or mining) sell for `minSellValue`, since no real acquisition cost can be computed for them.
-
-The `0.5` fraction (`SELL_VALUE_FRACTION_OF_CHEAPEST_COST` in `constants/sell-characters.constants.ts`) is what guarantees selling is never as profitable as obtaining a character, for both the box-buying and mining paths at once. A dedicated test (`character-economy.utility.test.ts`) asserts this holds for every character in static data.
+- `sellValue(C) = max(minimumSellValue, floor(sellValueScale * rarity(C)))`.
+- `minimumSellValue = 1`
+- `sellValueScale` is a single factor computed from the "All Characters" box so that the expected sell value of a character gotten from that box equals 0.5 times the box's price.
 
 ## How to Sell
 - Use the `/sell-characters` command with `characters-selling` (autocomplete restricted to characters actually in the player's inventory) and an optional `amount` to sell multiples of a single character without retyping it.

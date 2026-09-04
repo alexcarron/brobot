@@ -6,6 +6,7 @@ import { toDisplayedCharactersInline, toNewCurrentInventorySubtext, toNewCurrent
 
 export const NOT_A_PLAYER_UNDO_FEEDBACK = `You're not a player, so this can't be undone.`;
 export const CANNOT_AFFORD_UNDO_FEEDBACK = `You no longer have enough tokens to undo this.`;
+
 export const UNDO_SELL_CHARACTERS_CONFIRMATION_FEEDBACK = (
 	{ charactersSold, newInventory, newTokenCount }: {
 		charactersSold: string,
@@ -17,6 +18,8 @@ export const UNDO_SELL_CHARACTERS_CONFIRMATION_FEEDBACK = (
 	toNewCurrentInventorySubtext(newInventory),
 	toNewCurrentTokensSubtext(newTokenCount),
 );
+
+export const UNDO_SELL_CHARACTERS_BUTTON_LABEL = `Undo`;
 
 function getUndoConfirmationText(
 	{ charactersSold, newInventory, newTokenCount }: {

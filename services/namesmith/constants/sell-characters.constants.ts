@@ -1,4 +1,13 @@
-/** Stays below 1 so selling can is not as profitable as obtaining the character in the first place. */
-export const SELL_VALUE_FRACTION_OF_CHEAPEST_COST = 0.5;
+import { MysteryBoxes } from "./mystery-box.constants";
 
-export const MIN_SELL_VALUE_FRACTION_OF_CHEAPEST_BOX = 0.1;
+/**
+ * The fraction of the cheapest mystery box's price that the expected character of that box is able to sell for.
+ */
+export const SELL_VALUE_FRACTION_OF_CHEAPEST_BOX = 0.5;
+
+/**
+ * The fewest tokens any character can sell for.
+ */
+export const MINIMUM_SELL_VALUE = 1;
+
+export const CHEAPEST_MYSERTY_BOX_ID = MysteryBoxes.ALL_CHARACTERS.id;

@@ -127,7 +127,7 @@ export function toTokenEmojis(numTokens: number) {
 }
 
 export function toDisplayedTokensInline(numTokens: number): string {
-	return `**${toAmountOfNoun(numTokens, 'Token')}**`;
+	return `**${toAmountOfNoun(numTokens, 'token')}**`;
 }
 
 export function toNewCurrentTokensSubtext(numTokens: number): string {
@@ -195,7 +195,7 @@ export function toDisplayedCharacters(characters: string | string[]): string {
 	
 	charactersString = charactersString.replace(/`/g, '\\`');
 
-	return `\`\`\`${charactersString}\`\`\``;
+	return `> ${charactersString}`;
 }
 
 export function toDisplayedInventoryInline(characters: string | string[]): string {
@@ -207,8 +207,7 @@ export function toNewCurrentInventorySubtext(characters: string | string[]): str
 }
 
 /**
- * Sorts a set of characters into the order they should be displayed in: letters first, then numbers, then spaces, then everything else alphabetically.
- * Returns plain character data with no markdown added - use this (not `toDisplayOrderedCharacters`) when the result will be processed further (e.g. diffed against another character list) rather than sent directly as message text, since `toDisplayOrderedCharacters` embeds backtick code spans in its output.
+ * Formats characters into a sorted displayed text: letters first, then numbers, then spaces, then everything else alphabetically.
  * @param characters - The characters to sort, either as a string or an array of characters.
  * @returns The characters in display order.
  */

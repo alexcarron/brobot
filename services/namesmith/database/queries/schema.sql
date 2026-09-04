@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS gameState (
 CREATE TABLE IF NOT EXISTS character (
 	id INTEGER PRIMARY KEY, -- The unicode code point of the character
 	value TEXT NOT NULL, -- The literal text character value
-	rarity INTEGER NOT NULL
+	rarity REAL NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS mysteryBox (

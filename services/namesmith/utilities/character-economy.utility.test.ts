@@ -1,6 +1,8 @@
 import { makeSure } from "../../../utilities/jest/jest-utils";
 import { characters } from "../database/static-data/characters";
 import { mysteryBoxes } from "../database/static-data/mystery-boxes";
+import { MysteryBoxes } from "../constants/mystery-box.constants";
+import { MINIMUM_SELL_VALUE } from "../constants/sell-characters.constants";
 import {
 	getCheapestBoxCostForCharacter,
 	getCheapestCostForCharacter,
@@ -8,11 +10,24 @@ import {
 	getExpectedTokensPerCharacterFromMining,
 	getExpectedTokensPerMiningSession,
 	getMiningSessionSurvivalProbabilityAtLayer,
-	getMinimumSellValue,
-	getSellValueForCharacter,
+	getSellValueFromRarity,
+	getSellValueFromRarityScale,
 	getTotalWeightOfBox,
 	getUnitCostOfCharacterInBox,
 } from "./character-economy.utility";
+
+const referenceBox = mysteryBoxes.find(
+	mysteryBox => mysteryBox.id === MysteryBoxes.ALL_CHARACTERS.id
+)!;
+const sellValueScale = getSellValueFromRarityScale({ characters, cheapestMysteryBox: referenceBox });
+const rarityByCharacterValue = new Map(
+	characters.map(character => [character.value, character.rarity])
+);
+const getSellValueOfCharacterValue = (characterValue: string) =>
+	getSellValueFromRarity({
+		rarity: rarityByCharacterValue.get(characterValue)!,
+		sellValueScale,
+	});
 
 describe('character-economy.utility', () => {
 	describe('getMiningSessionSurvivalProbabilityAtLayer()', () => {
@@ -99,18 +114,7 @@ describe('character-economy.utility', () => {
 		});
 	});
 
-	describe('getMinimumSellValue()', () => {
-		it('should be 10% of the cheapest box cost, floored', () => {
-			const boxes = [
-				{ id: 1, name: 'A', tokenCost: 25, characterOdds: {} },
-				{ id: 2, name: 'B', tokenCost: 50, characterOdds: {} },
-			];
-
-			makeSure(getMinimumSellValue(boxes)).is(2);
-		});
-	});
-
-	describe('getCheapestCostForCharacter() and getSellValueForCharacter() on real static data', () => {
+	describe('getCheapestCostForCharacter() on real static data', () => {
 		it('should compute a real cheapest cost for every character present in a mystery box', () => {
 			for (const character of characters) {
 				const cheapestCost = getCheapestCostForCharacter({ character, mysteryBoxes: [...mysteryBoxes] });
@@ -120,23 +124,38 @@ describe('character-economy.utility', () => {
 					makeSure(cheapestCost).isGreaterThan(0);
 			}
 		});
+	});
 
-		it('should never let a character sell for at or above its cheapest real cost', () => {
+	describe('getSellValueFromRarity() on real static data', () => {
+		it('should never sell a character below the minimum sell value', () => {
 			for (const character of characters) {
-				const cheapestCost = getCheapestCostForCharacter({ character, mysteryBoxes: [...mysteryBoxes] });
-				const sellValue = getSellValueForCharacter({ character, mysteryBoxes: [...mysteryBoxes] });
-
-				if (cheapestCost !== null)
-					makeSure(sellValue).isLessThan(cheapestCost);
+				const sellValue = getSellValueFromRarity({ rarity: character.rarity, sellValueScale });
+				makeSure(sellValue).isGreaterThanOrEqualTo(MINIMUM_SELL_VALUE);
 			}
 		});
 
-		it('should never sell a character below the minimum sell value', () => {
-			const minimumSellValue = getMinimumSellValue([...mysteryBoxes]);
+		it('should never sell a rarer character for less than a more common one', () => {
+			const raritiesLowToHigh = characters
+				.map(character => character.rarity)
+				.sort((a, b) => a - b);
 
-			for (const character of characters) {
-				const sellValue = getSellValueForCharacter({ character, mysteryBoxes: [...mysteryBoxes] });
-				makeSure(sellValue).isGreaterThanOrEqualTo(minimumSellValue);
+			let previousSellValue = -Infinity;
+			for (const rarity of raritiesLowToHigh) {
+				const sellValue = getSellValueFromRarity({ rarity, sellValueScale });
+				makeSure(sellValue).isGreaterThanOrEqualTo(previousSellValue);
+				previousSellValue = sellValue;
+			}
+		});
+
+		it('should keep every box a net loss to buy and resell, so buying boxes to sell the results can never profit', () => {
+			for (const mysteryBox of mysteryBoxes) {
+				const totalWeight = getTotalWeightOfBox(mysteryBox);
+
+				let expectedSellValuePerDraw = 0;
+				for (const [characterValue, weight] of Object.entries(mysteryBox.characterOdds))
+					expectedSellValuePerDraw += (weight / totalWeight) * getSellValueOfCharacterValue(characterValue);
+
+				makeSure(expectedSellValuePerDraw).isLessThan(mysteryBox.tokenCost);
 			}
 		});
 	});

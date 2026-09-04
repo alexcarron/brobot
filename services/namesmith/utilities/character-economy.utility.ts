@@ -2,8 +2,8 @@ import { Character } from "../types/character.types";
 import { MysteryBox } from "../types/mystery-box.types";
 import { CHARACTER_DISCOVERY_MYSTERY_BOX_ID } from "../constants/mine-tokens.constants";
 import {
-	MIN_SELL_VALUE_FRACTION_OF_CHEAPEST_BOX,
-	SELL_VALUE_FRACTION_OF_CHEAPEST_COST,
+	MINIMUM_SELL_VALUE,
+	SELL_VALUE_FRACTION_OF_CHEAPEST_BOX,
 } from "../constants/sell-characters.constants";
 import {
 	getCharacterDiscoveryChanceAtLayer,
@@ -112,19 +112,28 @@ export function getCheapestCostForCharacter(
 	return Math.min(...costs);
 }
 
-export function getMinimumSellValue(mysteryBoxes: MysteryBox[]): number {
-	const cheapestMysteryBoxCost = Math.min(...mysteryBoxes.map(mysteryBox => mysteryBox.tokenCost));
-	return Math.floor(MIN_SELL_VALUE_FRACTION_OF_CHEAPEST_BOX * cheapestMysteryBoxCost);
+export function getSellValueFromRarityScale(
+	{ characters, cheapestMysteryBox }: { characters: Character[], cheapestMysteryBox: MysteryBox }
+): number {
+	const rarityByCharacterValue = new Map(
+		characters.map(character => [character.value, character.rarity])
+	);
+
+	let totalWeight = 0;
+	let weightTimesRaritySum = 0;
+	for (const [characterValue, weight] of Object.entries(cheapestMysteryBox.characterOdds)) {
+		const rarity = rarityByCharacterValue.get(characterValue);
+		if (rarity === undefined) continue;
+		totalWeight += weight;
+		weightTimesRaritySum += weight * rarity;
+	}
+	if (weightTimesRaritySum === 0) return 0;
+
+	return SELL_VALUE_FRACTION_OF_CHEAPEST_BOX * cheapestMysteryBox.tokenCost * totalWeight / weightTimesRaritySum;
 }
 
-export function getSellValueForCharacter(
-	{ character, mysteryBoxes }: { character: Character, mysteryBoxes: MysteryBox[] }
+export function getSellValueFromRarity(
+	{ rarity, sellValueScale }: { rarity: number, sellValueScale: number }
 ): number {
-	const minimumSellValue = getMinimumSellValue(mysteryBoxes);
-
-	const cheapestCost = getCheapestCostForCharacter({ character, mysteryBoxes });
-	if (cheapestCost === null) return minimumSellValue;
-
-	const sellValue = Math.floor(SELL_VALUE_FRACTION_OF_CHEAPEST_COST * cheapestCost);
-	return Math.max(sellValue, minimumSellValue);
+	return Math.max(MINIMUM_SELL_VALUE, Math.floor(sellValueScale * rarity));
 }
