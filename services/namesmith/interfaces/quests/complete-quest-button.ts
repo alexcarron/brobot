@@ -13,6 +13,15 @@ import { toRewardBulletPoint } from "./quest-message";
 import { revealHiddenQuestChannelToPlayer } from "../../utilities/hidden-quest.utility";
 import { ids } from "../../../../bot-config/discord-ids";
 
+const COMPLETE_QUEST_LABEL = `Complete Quest`;
+const NOT_A_PLAYER_FEEDBACK = `You are not a player, so you cannot complete a quest.`;
+const QUEST_DOES_NOT_EXIST_FEEDBACK = `This quest no longer exists, so you cannot complete it.`;
+const ALREADY_COMPLETED_QUEST_FEEDBACK = `You already completed this quest! You cannot claim the rewards again.`;
+const HIDDEN_QUEST_NOT_UNLOCKED_FEEDBACK = `You have not yet unlocked the hidden quests yet. Complete all visible daily quests to unlock it!`;
+const QUEST_CRITERIA_NOT_DEFINED_FEEDBACK = (questName: string) => `The criteria for completing the ${questName} quest has not been defined yet! Alert the host and please try again later.`;
+const QUEST_COMPLETED_FEEDBACK = (questName: string) => `You have successfully completed the ${questName} quest!`;
+const HIDDEN_QUEST_UNLOCKED_FEEDBACK = (hiddenChannelID: string) => `You successfully completed all daily quests and unlocked today's hidden quest! See it in <#${hiddenChannelID}>.`;
+
 /**
  * Creates a message with details about the given quest and a button to complete it.
  * @param quest - The quest to create a message for.
@@ -29,7 +38,7 @@ export function toQuestButton(quest: Quest) {
 			`${quest.description}`,
 			...rewards.map(toRewardBulletPoint),
 		),
-		label: 'Complete Quest',
+		label: COMPLETE_QUEST_LABEL,
 		id: `complete-quest-button-${quest.id}`,
 		style: ButtonStyle.Secondary,
 		onButtonPressed: async (buttonInteraction) => {
@@ -39,27 +48,17 @@ export function toQuestButton(quest: Quest) {
 			});
 
 			if (result.isNotAPlayer())
-				return await replyToInteraction(buttonInteraction,
-					'You are not a player, so you cannot complete a quest.'
-				);
+				return await replyToInteraction(buttonInteraction, NOT_A_PLAYER_FEEDBACK);
 			else if (result.isQuestDoesNotExist())
-				return await replyToInteraction(buttonInteraction,
-					`This quest no longer exists, so you cannot complete it.`
-				);
+				return await replyToInteraction(buttonInteraction, QUEST_DOES_NOT_EXIST_FEEDBACK);
 			else if (result.isAlreadyCompletedQuest())
-				return await replyToInteraction(buttonInteraction,
-					`You already completed this quest! You cannot claim the rewards again.`
-				);
+				return await replyToInteraction(buttonInteraction, ALREADY_COMPLETED_QUEST_FEEDBACK);
 			else if (result.isHiddenQuestNotUnlocked()) {
-				return await replyToInteraction(buttonInteraction,
-					`You have not yet unlocked the hidden quests yet. Complete all visible daily quests to unlock it!`
-				);
+				return await replyToInteraction(buttonInteraction, HIDDEN_QUEST_NOT_UNLOCKED_FEEDBACK);
 			}
 			else if (result.isQuestCriteriaNotDefined()) {
 				const { questName } = result;
-				return await replyToInteraction(buttonInteraction,
-					`The criteria for completing the ${questName} quest has not been defined yet! Alert the host and please try again later.`
-				);
+				return await replyToInteraction(buttonInteraction, QUEST_CRITERIA_NOT_DEFINED_FEEDBACK(questName));
 			}
 			else if (result.isQuestCriteriaNotMet()) {
 				const { userFeedback } = result;
@@ -67,7 +66,7 @@ export function toQuestButton(quest: Quest) {
 			}
 
 			const baseCompletionLines = [
-				`You have successfully completed the ${quest.name} quest!`,
+				QUEST_COMPLETED_FEEDBACK(quest.name),
 				...rewards.map(toRewardBulletPoint),
 			];
 			let hiddenQuestLines: string[] = [];
@@ -81,7 +80,7 @@ export function toQuestButton(quest: Quest) {
 				const hiddenChannelId = ids.namesmith.channels.HIDDEN_QUESTS;
 				hiddenQuestLines = [
 					`_ _`,
-					`You successfully completed all daily quests and unlocked today's hidden quest! See it in <#${hiddenChannelId}>.`
+					HIDDEN_QUEST_UNLOCKED_FEEDBACK(hiddenChannelId),
 				];
 			}
 			

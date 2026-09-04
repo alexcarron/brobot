@@ -6,6 +6,27 @@ import { Placement, RANKS } from "../types/vote.types";
 import { fetchNamesmithChannel, fetchNamesmithGuild } from "../utilities/discord-fetch.utility";
 import { toRankEmoji } from "../utilities/player-message.utility";
 
+const NAME_ARCHIVE_TEXT = (
+	{guildName, theme, placements}: {
+		guildName: string;
+		theme: string | null;
+		placements: Placement[];
+	}
+) => {
+	let themeLine = undefined;
+	if (theme) themeLine = `The theme was **${theme}**.`;
+
+	return joinLines(
+		`# ${guildName}`,
+		themeLine,
+		...placements.map(({rank, player, name}) =>
+			rank <= 3
+				? `> ${toRankEmoji(RANKS[rank - 1])} <@${player.id}> ${name}`
+				: `>        <@${player.id}> ${name}`
+		)
+	)
+};
+
 function getNameArchiveMessageContents(
 	{guildName, theme, placements}: {
 		guildName: string;
@@ -13,18 +34,7 @@ function getNameArchiveMessageContents(
 		placements: Placement[];
 	}
 ): string {
-	let themeLine = undefined;
-	if (theme) themeLine = `The theme was **${theme}**.`;
-	
-	return joinLines(
-		`# ${guildName}`,
-		themeLine,
-		...placements.map(({rank, player, name}) =>
-			rank <= 3 
-				? `> ${toRankEmoji(RANKS[rank - 1])} <@${player.id}> ${name}`
-				: `>        <@${player.id}> ${name}`
-		)
-	)
+	return NAME_ARCHIVE_TEXT({guildName, theme, placements});
 }
 
 /**

@@ -14,6 +14,23 @@ import { sortByAscendingProperty } from "../../../utilities/data-structure-utils
 import { getPingForAllPlayers, getTokensEarnedFeedback, toTipLine } from "../utilities/player-message.utility";
 import { confirmInteraction } from "../../../utilities/discord-interfaces/discord-interface-utils";
 
+const PICK_A_PERK_HEADER_TEXT = '# Pick a Perk';
+const PICK_A_PERK_DESCRIPTION_TEXT = 'Choose one of the three perks below to gain a unique, permanent enhancement to your Namesmith gameplay.';
+const PICK_A_PERK_WARNING_TEXT = '-# ⚠️ **Warning**: Once you pick a perk, you CANNOT change it. The choice is permanent.';
+export const PERK_BULLET_POINT_TEXT = (perk: Perk) =>
+	`- **${perk.name}**: ${perk.description}`;
+const GET_PERK_LABEL = (perk: Perk) => `Get ${perk.name} Perk`;
+const PICK_PERK_CONFIRM_PROMPT_TEXT = (perk: Perk) => `Are you sure you want to pick the ${perk.name} perk? You will NOT be able to switch perks after choosing one.`;
+const LOCK_IN_PERK_LABEL = (perk: Perk) => `Lock In ${perk.name} Perk`;
+const CANCEL_LABEL = `Cancel`;
+const PICK_PERK_CANCELLED_FEEDBACK = (perk: Perk) => `Cancelled picking the ${perk.name} perk.`;
+const NOT_A_PLAYER_FEEDBACK = 'You are not a player, so you cannot pick a perk.';
+const PERK_DOES_NOT_EXIST_FEEDBACK = (perk: Perk) => `The perk "${perk.name}" does not exist, so you cannot pick it.`;
+const PERK_ALREADY_CHOSEN_FEEDBACK = `You already picked a perk. You cannot switch perks after picking one.`;
+const PLAYER_ALREADY_HAS_PERK_FEEDBACK = (perk: Perk) => `You already have the "${perk.name}" perk. You cannot have two of the same perk.`;
+const LOST_TOKENS_TEXT = (freeTokensEarned: number) => `**-${toAmountOfNoun(-freeTokensEarned, 'Token')}**`;
+const PICK_PERK_SUCCESS_FEEDBACK = (perk: Perk) => `You now have the "${perk.name}" perk!`;
+
 /**
  * Generates a messaeg that prompts the user to pick a perk.
  * @param services - An object containing the necessary services to generate the message.
@@ -28,12 +45,12 @@ export function createPickAPerkMessage(
 	threePerks = sortByAscendingProperty(threePerks, 'id');
 
 	const message = joinLines(
-		'# Pick a Perk',
+		PICK_A_PERK_HEADER_TEXT,
 		getPingForAllPlayers(),
-		'Choose one of the three perks below to gain a unique, permanent enhancement to your Namesmith gameplay.',
-		threePerks.map(toPerkBulletPoint),
+		PICK_A_PERK_DESCRIPTION_TEXT,
+		threePerks.map(PERK_BULLET_POINT_TEXT),
 		'',
-		'-# ⚠️ **Warning**: Once you pick a perk, you CANNOT change it. The choice is permanent.',
+		PICK_A_PERK_WARNING_TEXT,
 	);
 
 	return new DiscordButtons({
@@ -43,9 +60,6 @@ export function createPickAPerkMessage(
 		),
 	});
 }
-
-export const toPerkBulletPoint = (perk: Perk) =>
-	`- **${perk.name}**: ${perk.description}`;
 
 /**
  * Converts a Perk object to a DiscordButtonDefinition.
@@ -63,15 +77,15 @@ export function toPerkButton(
 ): DiscordButtonDefinition {
 	return {
 		id: `pick-a-perk-button-${perk.id}`,
-		label: `Get ${perk.name} Perk`,
+		label: GET_PERK_LABEL(perk),
 		style: ButtonStyle.Secondary,
 		onButtonPressed: async (buttonInteraction) => {
 			await confirmInteraction({
 				interactionToConfirm: buttonInteraction,
-				confirmPromptText: `Are you sure you want to pick the ${perk.name} perk? You will NOT be able to switch perks after choosing one.`,
-				confirmButtonText: `Lock In ${perk.name} Perk`,
-				cancelButtonText: `Cancel`,
-				onCancel: `Cancelled picking the ${perk.name} perk.`,
+				confirmPromptText: PICK_PERK_CONFIRM_PROMPT_TEXT(perk),
+				confirmButtonText: LOCK_IN_PERK_LABEL(perk),
+				cancelButtonText: CANCEL_LABEL,
+				onCancel: PICK_PERK_CANCELLED_FEEDBACK(perk),
 				onConfirm: async (confirmationInteraction) => {
 					const result = pickPerk({
 						player: confirmationInteraction.user.id,
@@ -80,26 +94,26 @@ export function toPerkButton(
 
 					if (result.isNotAPlayer())
 						return await confirmationInteraction.update({
-							content: 'You are not a player, so you cannot pick a perk.',
+							content: NOT_A_PLAYER_FEEDBACK,
 							components: [],
 						});
 
 					if (result.isPerkDoesNotExist())
 						return await confirmationInteraction.update({
-							content: `The perk "${perk.name}" does not exist, so you cannot pick it.`,
+							content: PERK_DOES_NOT_EXIST_FEEDBACK(perk),
 							components: [],
 						});
 
 					if (result.isPerkAlreadyChosen()) {
 						return await confirmationInteraction.update({
-							content: `You already picked a perk. You cannot switch perks after picking one.`,
+							content: PERK_ALREADY_CHOSEN_FEEDBACK,
 							components: [],
 						});
 					}
 
 					if (result.isPlayerAlreadyHasPerk()) {
 						return await confirmationInteraction.update({
-							content: `You already have the "${perk.name}" perk. You cannot have two of the same perk.`,
+							content: PLAYER_ALREADY_HAS_PERK_FEEDBACK(perk),
 							components: [],
 						});
 					}
@@ -107,7 +121,7 @@ export function toPerkButton(
 					const {freeTokensEarned} = result;
 
 					const lostTokensLine = (freeTokensEarned < 0)
-						? `**-${toAmountOfNoun(-freeTokensEarned, 'Token')}**`
+						? LOST_TOKENS_TEXT(freeTokensEarned)
 						: null;
 
 					const { tipService, mysteryBoxService } = getNamesmithServices();
@@ -123,7 +137,7 @@ export function toPerkButton(
 
 						return await confirmationInteraction.update({
 							content: joinLines(
-								`You now have the "${perk.name}" perk!`,
+								PICK_PERK_SUCCESS_FEEDBACK(perk),
 								getTokensEarnedFeedback(freeTokensEarned),
 								tipLine,
 							),
@@ -137,7 +151,7 @@ export function toPerkButton(
 						return await confirmationInteraction.update({
 							content: joinLines(
 								lostTokensLine,
-								`You now have the "${perk.name}" perk!`,
+								PICK_PERK_SUCCESS_FEEDBACK(perk),
 								tipLine,
 							),
 							components: [],

@@ -5,7 +5,7 @@ import { joinLines } from "../../../../utilities/string-manipulation-utils";
 import { mineOneLayer } from "../../workflows/mine-tokens.workflow";
 import { toMineDeeperMessageText } from "./deeper-mine-message";
 import { getCollapseTipLine, getDeeperMineTipLine } from "./mining-tip-lines";
-import { NOT_A_PLAYER_MINING_MESSAGE, NOT_SESSION_OWNER_MESSAGE, toCollapseMessageText } from "./mining-message-lines";
+import { NOT_A_PLAYER_MINING_FEEDBACK, NOT_SESSION_OWNER_FEEDBACK, toCollapseMessageText } from "./mining-message-lines";
 import { doesUserOwnMiningSessionOfButton, getMiningSessionMessageContentsWithButtons, sendMiningSessionFollowUpMessage } from "./mining-session-buttons";
 import { MiningSessionState } from "./mining-session-state";
 
@@ -31,7 +31,7 @@ async function onMineDeeperButtonPressed(
 	buttonInteraction: ButtonInteraction, userID: string, state: MiningSessionState
 ): Promise<void> {
 	if (!doesUserOwnMiningSessionOfButton(userID, buttonInteraction))  {
-		await replyToInteraction(buttonInteraction, NOT_SESSION_OWNER_MESSAGE);
+		await replyToInteraction(buttonInteraction, NOT_SESSION_OWNER_FEEDBACK);
 		return 
 	}
 
@@ -44,7 +44,7 @@ async function onMineDeeperButtonPressed(
 
 	if (mineResult.isNotAPlayer()) {
 		await sendMiningSessionFollowUpMessage(buttonInteraction, {
-			content: NOT_A_PLAYER_MINING_MESSAGE,
+			content: NOT_A_PLAYER_MINING_FEEDBACK,
 			components: [],
 		});
 		return;

@@ -5,6 +5,22 @@ import { Player } from "../types/player.types";
 import { PublishedName } from "../types/published-name.types";
 import { fetchNamesmithChannel } from "../utilities/discord-fetch.utility";
 
+const PUBLISHED_NAME_PAID_TEXT = (
+	{playerID, name, slotOrdinal, tokensSpent}: {
+		playerID: string;
+		name: string;
+		slotOrdinal: string;
+		tokensSpent: number;
+	}
+) => `<@${playerID}> paid ${tokensSpent} tokens to publish **${name}** as their ${slotOrdinal} published name`;
+const PUBLISHED_NAME_FREE_TEXT = (
+	{playerID, name, slotOrdinal}: {
+		playerID: string;
+		name: string;
+		slotOrdinal: string;
+	}
+) => `<@${playerID}> published the name **${name}** as their ${slotOrdinal} published name`;
+
 /**
  * Sends a message to the 'published names' channel when a player publishes a name.
  * The message states which published name slot was filled, and whether the player paid tokens to publish it.
@@ -24,8 +40,8 @@ export async function sendPublishedNameMessage({player, publishedName, tokensSpe
 	const slotOrdinal = toNumericOrdinal(publishedName.slotNumber);
 
 	const message = tokensSpent > 0
-		? `<@${player.id}> paid ${tokensSpent} tokens to publish **${name}** as their ${slotOrdinal} published name`
-		: `<@${player.id}> published the name **${name}** as their ${slotOrdinal} published name`;
+		? PUBLISHED_NAME_PAID_TEXT({playerID: player.id, name, slotOrdinal, tokensSpent})
+		: PUBLISHED_NAME_FREE_TEXT({playerID: player.id, name, slotOrdinal});
 
 	await sendMessageInChannel(publishedNamesChannel, message);
 }

@@ -2,7 +2,7 @@ import { ButtonInteraction, ButtonStyle } from "discord.js";
 import { DiscordButtonDefinition } from "../../../../utilities/discord-interfaces/discord-button";
 import { doesUserOwnMiningSessionOfButton } from "./mining-session-buttons";
 import { replyToInteraction } from "../../../../utilities/discord/interaction-reply-utils";
-import { NOT_SESSION_OWNER_MESSAGE } from "./mining-message-lines";
+import { NOT_SESSION_OWNER_FEEDBACK } from "./mining-message-lines";
 import { STOP_AUTO_MINE_BUTTON_LABEL } from "./mining-button-labels";
 
 export type AutoMineState = {
@@ -30,7 +30,7 @@ async function onStopAutoMineButtonPressed(
 	buttonInteraction: ButtonInteraction, userID: string, autoMineState: AutoMineState
 ): Promise<void> {
 	if (!doesUserOwnMiningSessionOfButton(userID, buttonInteraction)) {
-		await replyToInteraction(buttonInteraction, NOT_SESSION_OWNER_MESSAGE);
+		await replyToInteraction(buttonInteraction, NOT_SESSION_OWNER_FEEDBACK);
 		return 
 	}
 

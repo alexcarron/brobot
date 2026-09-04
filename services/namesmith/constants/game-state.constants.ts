@@ -7,7 +7,7 @@ import { chooseByEnv } from "../../../utilities/environment-utils";
  */
 export function DAY_DURATION(): Duration {
 	return chooseByEnv({
-		development: { seconds: 20 },
+		development: { minutes: 20 },
 		production: { days: 1 },
 	});
 }
@@ -26,7 +26,7 @@ export function WEEK_DURATION(): Duration {
  */
 export function BUILD_PHASE_DURATION(): Duration {
 	return chooseByEnv({
-		development: { minutes: 14 },
+		development: { hours: 14 },
 		production: { days: DAYS_IN_WEEK * 2 },
 	});
 }
@@ -37,7 +37,7 @@ export function BUILD_PHASE_DURATION(): Duration {
  */
 export function VOTE_PHASE_DURATION(): Duration {
 	return chooseByEnv({
-		development: { minutes: 6 },
+		development: { hours: 6 },
 		production: { days: 4 },
 	});
 }
@@ -49,7 +49,7 @@ export function VOTE_PHASE_DURATION(): Duration {
  */
 export function PERK_WINDOW_OFFSETS_FROM_WEEK_START(): Duration[] {
 	return chooseByEnv({
-		development: [{ seconds: 60 }, { seconds: 120 }],
+		development: [{ minutes: 60 }, { minutes: 120 }],
 		production: [{ days: 3 }, { days: 6 }],
 	});
 }
@@ -61,7 +61,7 @@ export function PERK_WINDOW_OFFSETS_FROM_WEEK_START(): Duration[] {
  */
 export function TIME_BEFORE_VOTING_TO_SEND_REMINDER(): Duration[] {
 	return chooseByEnv({
-		development: [{ minutes: 6 }, { seconds: 72 }],
+		development: [{ hours: 6 }, { minutes: 72 }],
 		production: [{ hours: 48 }, { hours: 6 }],
 	});
 }

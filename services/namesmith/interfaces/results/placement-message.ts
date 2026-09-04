@@ -2,21 +2,21 @@ import { addSIfPlural, escapeDiscordMarkdown, joinLines, toNumericOrdinal } from
 import { Placement, Rank, RANKS, Ranks } from "../../types/vote.types";
 import { toRankEmoji } from "../../utilities/player-message.utility";
 
-function getNormalPlacementMessageContents(placement: Placement) {
+const NORMAL_PLACEMENT_TEXT = (placement: Placement) => {
 	const rankOrdinal = toNumericOrdinal(placement.rank);
 	const totalPoints = placement.points;
 	const name = placement.name;
 	const playerID = placement.player.id;
 	const rankVotes = extractRankVotes(placement);
 
-	const rankVoteParts = rankVotes.map(({ rank, votes }) => 
+	const rankVoteParts = rankVotes.map(({ rank, votes }) =>
 		`${toRankEmoji(rank)} x${votes}`
 	);
 
 	const rankVotesLine = rankVoteParts.length > 0
 		? `> ${rankVoteParts.join('   ')}`
 		: null;
-		
+
 	return joinLines(
 		`_ _`,
 		`**${rankOrdinal} (${totalPoints} ${addSIfPlural('pt', totalPoints)})**`,
@@ -24,9 +24,9 @@ function getNormalPlacementMessageContents(placement: Placement) {
 		rankVotesLine,
 		`-# Created by <@${playerID}>`,
 	)
-}
+};
 
-function getTop3PlacementMessageContents(placement: Placement) {
+const TOP_3_PLACEMENT_TEXT = (placement: Placement) => {
 	const rank = placement.rank;
 	const rankOrdinal = toNumericOrdinal(placement.rank);
 	const totalPoints = placement.points;
@@ -34,7 +34,7 @@ function getTop3PlacementMessageContents(placement: Placement) {
 	const playerID = placement.player.id;
 	const rankVotes = extractRankVotes(placement);
 
-	const rankVoteLines = rankVotes.map(({ rank, votes, points }) => 
+	const rankVoteLines = rankVotes.map(({ rank, votes, points }) =>
 		`> ${toRankEmoji(rank)} x${votes} (${points} ${addSIfPlural('pt', points)})`
 	);
 
@@ -47,13 +47,13 @@ function getTop3PlacementMessageContents(placement: Placement) {
 		``,
 		`-# Created by <@${playerID}>`,
 	)
-}
+};
 
 export function getPlacementMessageContents(placement: Placement) {
 	if (placement.rank <= 3) {
-		return getTop3PlacementMessageContents(placement);
+		return TOP_3_PLACEMENT_TEXT(placement);
 	}
-	return getNormalPlacementMessageContents(placement);
+	return NORMAL_PLACEMENT_TEXT(placement);
 }
 
 type RankVote = { rank: Rank; votes: number; points: number };

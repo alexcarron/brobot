@@ -3,6 +3,11 @@ import { Trade } from "../../types/trade.types";
 import { handleTradeResponseResult } from "./trade-message";
 import { declineTrade } from "../../workflows/trading/decline-trade.workflow";
 
+export const DECLINE_TRADE_LABEL = "Decline";
+export const TRADE_DECLINED_FEEDBACK = (
+	{ playerDeclinedID, playerDecliningID }: { playerDeclinedID: string, playerDecliningID: string }
+) => `<@${playerDeclinedID}>, <@${playerDecliningID}> has declined this trade.`;
+
 /**
  * Creates a button that, when pressed, will decline a trade request.
  * @param parameters - An object containing the following parameters:
@@ -20,7 +25,7 @@ export function createDeclineTradeButton(
 
 	return {
 		id: `trade-decline-${id}`,
-		label: "Decline",
+		label: DECLINE_TRADE_LABEL,
 		style: ButtonStyle.Danger,
 		onButtonPressed: async (buttonInteraction: ButtonInteraction) => {
 			const userID = buttonInteraction.user.id;
@@ -43,7 +48,7 @@ export function createDeclineTradeButton(
 			const {playerDeclined, playerDeclining} = declineResult;
 
 			await buttonInteraction.reply(
-				`<@${playerDeclined.id}>, <@${playerDeclining.id}> has declined this trade.`
+				TRADE_DECLINED_FEEDBACK({ playerDeclinedID: playerDeclined.id, playerDecliningID: playerDeclining.id })
 			);
 		}
 	}

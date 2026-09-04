@@ -10,9 +10,31 @@ import { Rank, Ranks } from "../../types/vote.types";
 import { PublishedName } from "../../types/published-name.types";
 import { confirmInteraction } from "../../../../utilities/discord-interfaces/discord-interface-utils";
 
+export const CLEAR_MY_VOTES_LABEL = `Clear My Votes`;
+export const NO_VOTES_TO_DELETE_FEEDBACK = `You have not voted yet. You have no votes to delete.`;
+export const CONFIRM_DELETE_VOTES_FEEDBACK = (rankToVotedName: Map<Rank, string>) => joinLines(
+	`Are you sure you want to delete your current votes?`,
+	[...rankToVotedName.entries()].map(([rank, name]) =>
+		`> ${toRankEmoji(rank)} ${rank} – ${escapeDiscordMarkdown(name)}`
+	),
+);
+export const DELETE_VOTES_LABEL = `Delete Votes`;
+export const KEEP_VOTES_LABEL = `Keep Votes`;
+export const CANCEL_DELETE_VOTES_FEEDBACK = (rankToVotedName: Map<Rank, string>) => joinLines(
+	`Your votes have not been deleted. Your current votes are still the following:`,
+	'>>> ' + [...rankToVotedName.entries()].map(([rank, name]) =>
+		`${toRankEmoji(rank)} ${rank} – ${escapeDiscordMarkdown(name)}`
+	),
+);
+export const DELETED_ALL_VOTES_FEEDBACK = `You have deleted all your votes.`;
+export const UNDO_DELETE_VOTES_LABEL = `Undo`;
+export const VOTING_ENDED_CANNOT_CHANGE_VOTES_FEEDBACK = `Voting has ended. You can no longer change your votes.`;
+export const FAILED_TO_UNDO_VOTE_FEEDBACK = `Failed to undo your vote for this name. Please contact the host.`;
+export const RECOVERED_DELETED_VOTES_FEEDBACK = `You have recovered your previously deleted votes:`;
+
 export function getClearMyVotesButton() {
 	return {
-		label: 'Clear My Votes',
+		label: CLEAR_MY_VOTES_LABEL,
 		style: ButtonStyle.Danger,
 		id: `clear-my-votes-button`,
 		onButtonPressed: onClearMyVotesButtonPressed,
@@ -26,27 +48,17 @@ async function onClearMyVotesButtonPressed(buttonInteraction: ButtonInteraction)
 	const rankToVotedName = voteService.getRanksToVotedName(voterUserID);
 
 	if (rankToVotedName.size === 0)
-		return await replyToInteraction(buttonInteraction, `You have not voted yet. You have no votes to delete.`);
-	
+		return await replyToInteraction(buttonInteraction, NO_VOTES_TO_DELETE_FEEDBACK);
+
 	await confirmInteraction({
 		interactionToConfirm: buttonInteraction,
-		confirmPromptText: joinLines(
-			`Are you sure you want to delete your current votes?`,
-			[...rankToVotedName.entries()].map(([rank, name]) => 
-				`> ${toRankEmoji(rank)} ${rank} – ${escapeDiscordMarkdown(name)}`
-			),
-		),
-		confirmButtonText: `Delete Votes`,
+		confirmPromptText: CONFIRM_DELETE_VOTES_FEEDBACK(rankToVotedName),
+		confirmButtonText: DELETE_VOTES_LABEL,
 		confirmButtonStyle: ButtonStyle.Danger,
-		cancelButtonText: `Keep Votes`,
+		cancelButtonText: KEEP_VOTES_LABEL,
 		cancelButtonStyle: ButtonStyle.Secondary,
 		onConfirm: onConfirmDeleteVotes,
-		onCancel: joinLines(
-			`Your votes have not been deleted. Your current votes are still the following:`,
-			'>>> ' + [...rankToVotedName.entries()].map(([rank, name]) => 
-				`${toRankEmoji(rank)} ${rank} – ${escapeDiscordMarkdown(name)}`
-			),
-		),
+		onCancel: CANCEL_DELETE_VOTES_FEEDBACK(rankToVotedName),
 	});
 }
 
@@ -57,8 +69,8 @@ async function onConfirmDeleteVotes(buttonInteraction: ButtonInteraction) {
 	const {rankToVotedPublishedName} = result;
 
 	const deleteConfirmationMessage = new DiscordButton({
-		promptText: `You have deleted all your votes.`,
-		label: 'Undo',
+		promptText: DELETED_ALL_VOTES_FEEDBACK,
+		label: UNDO_DELETE_VOTES_LABEL,
 		style: ButtonStyle.Secondary,
 		id: `undo-delete-votes-${voterUserID}`,
 		onButtonPressed: async (buttonInteraction) => {
@@ -97,21 +109,19 @@ async function onUndoDeleteVotesButtonPressed(
 		});
 
 		if (undoVoteResult.isVotingClosed())
-			return await replyToInteraction(buttonInteraction, 'Voting has ended. You can no longer change your votes.');
+			return await replyToInteraction(buttonInteraction, VOTING_ENDED_CANNOT_CHANGE_VOTES_FEEDBACK);
 
 		if (undoVoteResult.isFailure()) {
-			return await replyToInteraction(buttonInteraction,
-				`Failed to undo your vote for this name. Please contact the host.`
-			);
+			return await replyToInteraction(buttonInteraction, FAILED_TO_UNDO_VOTE_FEEDBACK);
 		}
 
 		const {rankToVotedName: newRankToVotedName} = undoVoteResult;
 		rankToVotedName = newRankToVotedName;
 	}
 
-	return await replyToInteraction(buttonInteraction, 
-		`You have recovered your previously deleted votes:`,
-		[...rankToVotedName.entries()].map(([rank, name]) => 
+	return await replyToInteraction(buttonInteraction,
+		RECOVERED_DELETED_VOTES_FEEDBACK,
+		[...rankToVotedName.entries()].map(([rank, name]) =>
 			`> ${toRankEmoji(rank)} ${rank} – ${escapeDiscordMarkdown(name)}`
 		),
 	);

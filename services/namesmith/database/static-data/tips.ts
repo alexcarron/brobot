@@ -1,7 +1,7 @@
 import { toPercentageString } from "../../../../utilities/string-manipulation-utils";
 import { AUTO_MINE_INTERVAL_SECONDS, CHARACTER_DISCOVERY_CHANCE_INCREMENT_PER_LAYER, FRACTION_OF_TOKENS_KEPT_ON_COLLAPSE } from "../../constants/mine-tokens.constants";
 import { MAX_PUBLISHED_NAME_SLOTS_PER_PLAYER, PUBLISHED_NAME_SLOT_COSTS } from "../../constants/publish-name.constants";
-import { AUTO_MINE_BUTTON_LABEL, STOP_AUTO_MINE_BUTTON_LABEL } from "../../interfaces/mining/mining-button-labels";
+import { AUTO_MINE_BUTTON_LABEL, STOP_AUTO_MINE_BUTTON_LABEL } from "../../interfaces/mine-tokens/mining-button-labels";
 import { TipDefinition } from "../../types/tip.types";
 
 export const tips = [

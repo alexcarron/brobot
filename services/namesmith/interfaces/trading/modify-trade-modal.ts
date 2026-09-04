@@ -6,6 +6,31 @@ import { modifyTrade } from "../../workflows/trading/modify-trade.workflow";
 import { replyToInteraction } from "../../../../utilities/discord/interaction-reply-utils";
 import { sendTradeMessage } from "./trade-message";
 
+export const MODIFY_TRADE_MODAL_TITLE_LABEL = "Modify this trade request";
+export const GIVING_CHARACTERS_INPUT_LABEL = (
+	{ otherPlayerName }: { otherPlayerName: string }
+) => `Giving ${otherPlayerName}:`;
+export const RECEIVING_CHARACTERS_INPUT_LABEL = (
+	{ otherPlayerName }: { otherPlayerName: string }
+) => `Getting from ${otherPlayerName}`;
+export const NOT_A_PLAYER_MODIFY_FEEDBACK = `You're not a player, so you can't modify trades.`;
+export const TRADE_DOES_NOT_EXIST_MODIFY_FEEDBACK = `You cannot modify a trade that does not exist.`;
+export const TRADE_ALREADY_RESPONDED_TO_MODIFY_FEEDBACK = (
+	{ tradeStatus }: { tradeStatus: string }
+) => `You cannot modify a trade that has already been ${tradeStatus}.`;
+export const TRADE_AWAITING_DIFFERENT_PLAYER_MODIFY_FEEDBACK = (
+	{ playerAwaitingTradeID }: { playerAwaitingTradeID: string }
+) => `This trade is awaiting a response from <@${playerAwaitingTradeID}>, so you cannot modify it.`;
+export const MISSING_CHARACTERS_SELF_MODIFY_FEEDBACK = (
+	{ missingCharacters }: { missingCharacters: string }
+) => `You are missing ${missingCharacters.length} required characters for this trade\n${missingCharacters}`;
+export const MISSING_CHARACTERS_OTHER_MODIFY_FEEDBACK = (
+	{ playerID, missingCharacters }: { playerID: string, missingCharacters: string }
+) => `<@${playerID}> is missing ${missingCharacters.length} required characters for this trade\n${missingCharacters}`;
+export const TRADE_MODIFIED_FEEDBACK = (
+	{ otherPlayerID }: { otherPlayerID: string }
+) => `You modified <@${otherPlayerID}>'s trade request to the following trade.`;
+
 /**
  * Shows a modal to modify a trade request.
  * @param parameters - An object containing the following parameters:
@@ -26,18 +51,18 @@ export async function showModifyTradeModal(
 ) {
 	await showModalWithTextInputs({
 		interaction: buttonInteraction,
-		title: "Modify this trade request",
+		title: MODIFY_TRADE_MODAL_TITLE_LABEL,
 		textInputs: [
 			{
 				id: "givenCharacters",
-				label: `Giving ${otherPlayer.currentName}:`,
+				label: GIVING_CHARACTERS_INPUT_LABEL({ otherPlayerName: otherPlayer.currentName }),
 				initialValue: trade.status === TradeStatuses.AWAITING_RECIPIENT
 					? trade.requestedCharacters
 					: trade.offeredCharacters
 			},
 			{
 				id: "receivedCharacters",
-				label: `Getting from ${otherPlayer.currentName}`,
+				label: RECEIVING_CHARACTERS_INPUT_LABEL({ otherPlayerName: otherPlayer.currentName }),
 				initialValue: trade.status === TradeStatuses.AWAITING_RECIPIENT
 					? trade.offeredCharacters
 					: trade.requestedCharacters
@@ -79,27 +104,23 @@ async function onSubmitModifyTradeModal(
 	const modifyResult = modifyTrade({playerModifying, trade, charactersGiving, charactersReceiving});
 
 	if (modifyResult.isNotAPlayer()) {
-		return await replyToInteraction(modalSubmitInteraction,
-			`You're not a player, so you can't modify trades.`
-		);
+		return await replyToInteraction(modalSubmitInteraction, NOT_A_PLAYER_MODIFY_FEEDBACK);
 	}
 	else if (modifyResult.isTradeDoesNotExist()) {
-		return await replyToInteraction(modalSubmitInteraction,
-			`You cannot modify a trade that does not exist.`
-		);
+		return await replyToInteraction(modalSubmitInteraction, TRADE_DOES_NOT_EXIST_MODIFY_FEEDBACK);
 	}
 	else if (modifyResult.isTradeAlreadyRespondedTo()) {
 		const { trade } = modifyResult;
 
 		return await replyToInteraction(modalSubmitInteraction,
-			`You cannot modify a trade that has already been ${trade.status}.`
+			TRADE_ALREADY_RESPONDED_TO_MODIFY_FEEDBACK({ tradeStatus: trade.status })
 		);
 	}
 	else if (modifyResult.isTradeAwaitingDifferentPlayer()) {
 		const { playerAwaitingTrade } = modifyResult;
 
 		return await replyToInteraction(modalSubmitInteraction,
-			`This trade is awaiting a response from <@${playerAwaitingTrade.id}>, so you cannot modify it.`
+			TRADE_AWAITING_DIFFERENT_PLAYER_MODIFY_FEEDBACK({ playerAwaitingTradeID: playerAwaitingTrade.id })
 		);
 	}
 	else if (modifyResult.isPlayerMissingCharacters()) {
@@ -107,14 +128,12 @@ async function onSubmitModifyTradeModal(
 
 		if (player.id === playerModifying.id) {
 			return await replyToInteraction(modalSubmitInteraction,
-				`You are missing ${missingCharacters.length} required characters for this trade\n` +
-				missingCharacters
+				MISSING_CHARACTERS_SELF_MODIFY_FEEDBACK({ missingCharacters })
 			);
 		}
 		else {
 			return await replyToInteraction(modalSubmitInteraction,
-				`<@${player.id}> is missing ${missingCharacters.length} required characters for this trade\n` +
-				missingCharacters
+				MISSING_CHARACTERS_OTHER_MODIFY_FEEDBACK({ playerID: player.id, missingCharacters })
 			);
 		}
 	}
@@ -123,7 +142,7 @@ async function onSubmitModifyTradeModal(
 	const { otherPlayer } = modifyResult;
 
 	await replyToInteraction(modalSubmitInteraction,
-		`You modified <@${otherPlayer.id}>'s trade request to the following trade.`
+		TRADE_MODIFIED_FEEDBACK({ otherPlayerID: otherPlayer.id })
 	);
 	await sendTradeMessage({trade})
 }

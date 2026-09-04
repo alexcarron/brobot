@@ -9,6 +9,11 @@ import { getPlacementMessageContents } from "./placement-message";
 import { getPingForAllPlayers } from "../../utilities/player-message.utility";
 import { DEFAULT_MESSAGE_SEND_DELAY } from "../../constants/interface.constants";
 
+const RESULTS_HEADER_TEXT = `# The Results`;
+const VOTING_ENDED_TEXT = `Voting has ended. Each name now has a total score.`;
+const RANKINGS_REVEAL_ORDER_TEXT = `You will NOW see the final rankings revealed from last place to 1st place.`;
+const PREPARING_FINAL_STANDINGS_TEXT = `Preparing final standings…`;
+
 /**
  * Sends the display messages for announcing the winner after voting ends
  * @param parameters - An object containing the following parameters:
@@ -18,13 +23,13 @@ export async function sendResultsDisplay(
 	{placements}: {
 		placements: Placement[];
 }) {
-	await sendWithDelay(`# The Results`);
+	await sendWithDelay(RESULTS_HEADER_TEXT);
 	await sendWithDelay(
 		getPingForAllPlayers(),
-		`Voting has ended. Each name now has a total score.`
+		VOTING_ENDED_TEXT
 	);
-	await sendWithDelay(`You will NOW see the final rankings revealed from last place to 1st place.`);
-	await sendWithDelay(`Preparing final standings…`);
+	await sendWithDelay(RANKINGS_REVEAL_ORDER_TEXT);
+	await sendWithDelay(PREPARING_FINAL_STANDINGS_TEXT);
 
 	for (const placement of placements.reverse()) {
 		let delay = {seconds: 10};

@@ -9,35 +9,31 @@ import { getPingForAllPlayers } from "../../utilities/player-message.utility";
 import { getClearMyVotesButton } from "./clear-my-votes-button";
 import { getSeeMyVotesButton } from "./see-my-votes-button";
 
+export const INITIAL_VOTING_TEXT = (
+	{ voteEndDate, theme }: { voteEndDate: Date, theme: string | null }
+) => joinLines(
+	getPingForAllPlayers(),
+	`The game has ended.`,
+	``,
+	theme ? [`The theme players had to follow was **${theme}**.`, ``] : undefined,
+	`Now you can vote on the players' published names.`,
+	``,
+	`Select your top three favorite names using the buttons below each name:`,
+	`🥇 **Vote 1st** (Your favorite)`,
+	`🥈 **Vote 2nd** (Your next favorite)`,
+	`🥉 **Vote 3rd** (Your third next favorite)`,
+	``,
+	`You can vote for just one or two names, but it's recommend you vote for your top 3.`,
+	`-# Voting ends <t:${toUnixTimestamp(voteEndDate)}:R>`,
+);
+
 export function getInitialVotingMessage() {
 	const {gameStateService} = getNamesmithServices();
 	const voteEndDate = gameStateService.getTimeVotingEnds();
 	const theme = gameStateService.getTheme();
 
-	let themeSection = undefined;
-	if (theme) {
-		themeSection = [
-			`The theme players had to follow was **${theme}**.`,
-			``,
-		];
-	}
-
 	const initialVotingMessage = new DiscordButtons({
-		promptText: joinLines(
-			getPingForAllPlayers(),
-			`The game has ended.`,
-			``,
-			themeSection,
-			`Now you can vote on the players' published names.`,
-			``,
-			`Select your top three favorite names using the buttons below each name:`,
-			`🥇 **Vote 1st** (Your favorite)`,
-			`🥈 **Vote 2nd** (Your next favorite)`,
-			`🥉 **Vote 3rd** (Your third next favorite)`,
-			``,
-			`You can vote for just one or two names, but it's recommend you vote for your top 3.`,
-			`-# Voting ends <t:${toUnixTimestamp(voteEndDate)}:R>`,
-		),
+		promptText: INITIAL_VOTING_TEXT({ voteEndDate, theme }),
 		buttons: [
 			getSeeMyVotesButton(),
 			getClearMyVotesButton(),

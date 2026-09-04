@@ -16,15 +16,15 @@ const result = getWorkflowResultCreator({
 
 	notAPlayer: null,
 	missingCharacters: provides<{ missingCharacters: string }>(),
-	invalidAmountUsage: null,
+	invalidUsageOfAmountParameter: null,
 });
 
 /**
- * If amount is given, charactersSelling must name exactly one distinct character; the sale then repeats that character amount times instead of using charactersSelling literally.
- * @param root0 - The sale details.
- * @param root0.player - The player selling characters.
- * @param root0.charactersSelling - The characters to sell.
- * @param root0.amount - If given, sell this many of the single character named in charactersSelling instead of using charactersSelling literally.
+ * Sells characters from a player's inventory for tokens.
+ * @param options - The options for selling characters.
+ * @param options.player - The player selling characters.
+ * @param options.charactersSelling - The characters to sell.
+ * @param options.amount - The amount of the single character named in charactersSelling to sell or undefined to sell all characters in charactersSelling.
  * @returns The result of the sale.
  */
 export const sellCharacters = (
@@ -50,7 +50,7 @@ export const sellCharacters = (
 			blockReason: "amountRequiresExactlyOneDistinctCharacter",
 		});
 
-		return result.failure.invalidAmountUsage();
+		return result.failure.invalidUsageOfAmountParameter();
 	}
 
 	const charactersToSell = amount !== undefined
@@ -111,6 +111,14 @@ const undoResult = getWorkflowResultCreator({
 	cannotAffordUndo: null,
 });
 
+/**
+ * Undoes selling characters from a player's inventory, returning the characters and taking back the tokens earned from the sale.
+ * @param options - The options for undoing the sale.
+ * @param options.player - The player undoing the sale.
+ * @param options.charactersSold - The characters that were sold.
+ * @param options.tokensEarned - The tokens that were earned from the sale. 
+ * @returns The result of the undo operation.
+ */
 export const undoSellCharacters = (
 	{ player: playerResolvable, charactersSold, tokensEarned }: {
 		player: PlayerResolvable;
@@ -123,12 +131,29 @@ export const undoSellCharacters = (
 	if (!playerService.isPlayer(playerResolvable))
 		return undoResult.failure.notAPlayer();
 
-	if (!playerService.hasTokens(playerResolvable, tokensEarned))
+	const playerID = playerService.resolveID(playerResolvable);
+
+	if (!playerService.hasTokens(playerResolvable, tokensEarned)) {
+		telemetry.track({
+			eventType: EventType.ACTION_BLOCKED,
+			playerID,
+			blockedAction: "undoSellCharacters",
+			blockReason: "cannotAffordUndo",
+		});
+
 		return undoResult.failure.cannotAffordUndo();
+	}
 
 	const { newInventory, newTokenCount } = playerService.giveCharactersAndTakeTokens(playerResolvable, {
 		charactersGiven: charactersSold,
 		tokensTaken: tokensEarned,
+	});
+
+	telemetry.track({
+		eventType: EventType.CHARACTERS_SOLD_UNDONE,
+		playerID,
+		charactersSold,
+		tokensEarned,
 	});
 
 	return undoResult.success({ newInventory, newTokenCount });

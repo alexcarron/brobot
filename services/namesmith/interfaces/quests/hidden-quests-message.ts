@@ -7,6 +7,8 @@ import { closeChannel } from "../../../../utilities/discord/permission-utils";
 import { setNewMessageInChannel } from "../../../../utilities/discord/message-utils";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 
+const HIDDEN_QUESTS_HEADER_TEXT = `# Hidden Quests`;
+const HIDDEN_QUESTS_INTRO_TEXT = `You unlocked today's hidden quest by completing all daily quests. Read the objective, perform the required actions, and click the "Complete Quest" button to claim your reward`;
 
 /**
  * Sends the initial hidden quest introduction message to the hidden quest channel and the hidden quest messages.
@@ -21,8 +23,8 @@ export async function sendHiddenQuestsMessages(): Promise<void> {
 	await closeChannel(hiddenChannel);
 
 	await setNewMessageInChannel(hiddenChannel,
-		`# Hidden Quests`,
-		`You unlocked today's hidden quest by completing all daily quests. Read the objective, perform the required actions, and click the "Complete Quest" button to claim your reward`,
+		HIDDEN_QUESTS_HEADER_TEXT,
+		HIDDEN_QUESTS_INTRO_TEXT,
 	);
 
 	for (const quest of hiddenQuests) {

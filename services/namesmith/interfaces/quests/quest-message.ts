@@ -7,6 +7,11 @@ import { ignoreError } from "../../../../utilities/error-utils";
 import { toQuestButton } from "./complete-quest-button";
 import { toBacktickedCharacterList } from "../../utilities/player-message.utility";
 
+const TOKENS_REWARD_BULLET_TEXT = (numTokens: number) => `- :coin: +${numTokens} Tokens`;
+const CHARACTERS_REWARD_BULLET_TEXT = (
+	{ numCharacters, charactersString }: { numCharacters: number, charactersString: string }
+) => `- :symbols: +${numCharacters} Characters: ${charactersString}`;
+
 /**
  * Creates a bullet point string for the given reward.
  * @param reward - The reward to create a bullet point for.
@@ -14,13 +19,12 @@ import { toBacktickedCharacterList } from "../../utilities/player-message.utilit
  */
 export function toRewardBulletPoint(reward: Reward): string {
 	if (isReward.tokens(reward)) {
-		return `- :coin: +${reward.numTokens} Tokens`;
+		return TOKENS_REWARD_BULLET_TEXT(reward.numTokens);
 	}
 	else if (isReward.characters(reward)) {
-		// Should form a string like: `a` `b` `c` `d` `\``
 		const charactersString = toBacktickedCharacterList(reward.characters, ' ');
 
-		return `- :symbols: +${reward.characters.length} Characters: ${charactersString}`;
+		return CHARACTERS_REWARD_BULLET_TEXT({ numCharacters: reward.characters.length, charactersString });
 	}
 	else {
 		throw new NamesmithError(

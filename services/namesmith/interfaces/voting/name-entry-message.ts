@@ -6,13 +6,15 @@ import { PublishedName } from "../../types/published-name.types";
 import { ignoreError } from "../../../../utilities/error-utils";
 import { toDisplayedName } from "../../utilities/player-message.utility";
 
+export const NAME_ENTRY_TEXT = (publishedName: PublishedName) => `_ _\n${toDisplayedName(publishedName.name)}`;
+
 export function createNameEntryInterface(
 	{ publishedName }: {
 		publishedName: PublishedName
 	}
 ): DiscordButtons {
 	return new DiscordButtons({
-		promptText: `_ _\n${toDisplayedName(publishedName.name)}`,
+		promptText: NAME_ENTRY_TEXT(publishedName),
 		buttons: [
 			getVote1stButton({publishedName}),
 			getVote2ndButton({publishedName}),

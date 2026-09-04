@@ -6,6 +6,9 @@ import { fetchNamesmithChannel } from "../../utilities/discord-fetch.utility";
 import { regenerateQuestMessage, sendQuestMessage } from "./quest-message";
 import { getPingForAllPlayers } from "../../utilities/player-message.utility";
 
+const DAILY_QUESTS_HEADER_TEXT = `# Daily Quests`;
+const DAILY_QUESTS_INTRO_TEXT = `The following are short, fun challenges you can complete for quick rewards! Do what the quest asks, and click the "Complete Quest" button to claim your reward!`;
+
 /**
  * Sends a message to the quests channel containing the daily quests.
  * @returns A promise that resolves when the message has been sent.
@@ -19,9 +22,9 @@ export async function sendShownDailyQuestsDisplay(): Promise<void> {
 
 async function sendInitialShownDailyQuestsMessage(questChannel: TextChannel) {
 	await setNewMessageInChannel(questChannel,
-		'# Daily Quests',
+		DAILY_QUESTS_HEADER_TEXT,
 		getPingForAllPlayers(),
-		'The following are short, fun challenges you can complete for quick rewards! Do what the quest asks, and click the "Complete Quest" button to claim your reward!',
+		DAILY_QUESTS_INTRO_TEXT,
 	);
 }
 

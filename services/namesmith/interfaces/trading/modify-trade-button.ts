@@ -4,6 +4,8 @@ import { handleTradeResponseResult } from "./trade-message";
 import { checkIfPlayerCanModifyTrade } from "../../workflows/trading/modify-trade.workflow";
 import { showModifyTradeModal } from "./modify-trade-modal";
 
+export const MODIFY_TRADE_LABEL = "Modify";
+
 /**
  * Creates a button that, when pressed, will modify a trade request.
  * @param parameters - An object containing the following parameters:
@@ -21,7 +23,7 @@ export function createModifyTradeButton(
 
 	return {
 		id: `trade-modify-${id}`,
-		label: "Modify",
+		label: MODIFY_TRADE_LABEL,
 		style: ButtonStyle.Secondary,
 		onButtonPressed: async (buttonInteraction: ButtonInteraction) => {
 			const userID = buttonInteraction.user.id;

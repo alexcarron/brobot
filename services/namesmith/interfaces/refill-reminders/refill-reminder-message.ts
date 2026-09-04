@@ -6,15 +6,21 @@ import { sendToNamesmithChannel } from "../../utilities/discord-action.utility";
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { joinLines } from "../../../../utilities/string-manipulation-utils";
 
+export const REFILL_READY_TEXT = joinLines(
+	`Your refill is ready.`,
+	`Claim it with \`/claim-refill\`.`
+);
+export const REFILL_REMINDER_AUTO_DISABLED_NOTICE_TEXT = (playerID: string) => joinLines(
+	`<@${playerID}> Your refill reminders have been turned off because Brobot couldn't DM you.`,
+	`Enable direct messages from server members and toggle your reminders back on if you want them again.`
+);
+
 /**
  * Builds the DM sent to a player when their refill cooldown expires.
  * @returns The contents of the reminder DM.
  */
 export function getRefillReminderDMText(): string {
-	return joinLines(
-		`Your refill is ready.`,
-		`Claim it with \`/claim-refill\`.`
-	);
+	return REFILL_READY_TEXT;
 }
 
 /**
@@ -23,10 +29,7 @@ export function getRefillReminderDMText(): string {
  * @returns The contents of the notice.
  */
 export function getRefillReminderAutoDisabledNoticeText(playerID: string): string {
-	return joinLines(
-		`<@${playerID}> Your refill reminders have been turned off because Brobot couldn't DM you.`,
-		`Enable direct messages from server members and toggle your reminders back on if you want them again.`
-	);
+	return REFILL_REMINDER_AUTO_DISABLED_NOTICE_TEXT(playerID);
 }
 
 /**

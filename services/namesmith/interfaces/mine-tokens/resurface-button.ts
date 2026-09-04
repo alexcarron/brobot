@@ -4,7 +4,7 @@ import { MiningSessionState } from "./mining-session-state";
 import { toResurfaceMessageText } from "./resurface-message";
 import { doesUserOwnMiningSessionOfButton, sendMiningSessionFollowUpMessage } from "./mining-session-buttons";
 import { replyToInteraction } from "../../../../utilities/discord/interaction-reply-utils";
-import { NOT_SESSION_OWNER_MESSAGE } from "./mining-message-lines";
+import { NOT_SESSION_OWNER_FEEDBACK } from "./mining-message-lines";
 import { telemetry } from "../../telemetry/telemetry";
 import { EventType } from "../../telemetry/telemetry-event.types";
 
@@ -29,7 +29,7 @@ async function onResurfaceButtonPressed(
 	buttonInteraction: ButtonInteraction, userID: string, state: MiningSessionState
 ): Promise<void> {
 	if (!doesUserOwnMiningSessionOfButton(userID, buttonInteraction)) {
-		await replyToInteraction(buttonInteraction, NOT_SESSION_OWNER_MESSAGE);
+		await replyToInteraction(buttonInteraction, NOT_SESSION_OWNER_FEEDBACK);
 		return 
 	}
 

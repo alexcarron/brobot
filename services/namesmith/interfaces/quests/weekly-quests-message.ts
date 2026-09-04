@@ -8,6 +8,9 @@ import { fetchNamesmithChannel } from "../../utilities/discord-fetch.utility";
 import { toQuestButton } from "./complete-quest-button";
 import { getPingForAllPlayers } from "../../utilities/player-message.utility";
 
+const WEEKLY_QUESTS_HEADER_TEXT = `# Weekly Quests`;
+const WEEKLY_QUESTS_INTRO_TEXT = `Every week, 3-4 weekly quests are shown here for you to complete. These quests take longer and require more effort than daily quests, but they grant higher rewards. Do what the quest asks and click the "Complete Quest" button to claim your reward!`;
+
 /**
  * Sends a message to the quests channel containing the daily quests.
  * @returns A promise that resolves when the message has been sent.
@@ -19,9 +22,9 @@ export async function sendShownWeeklyQuestsMessages(): Promise<void> {
 	const shownWeeklyQuestsChannel = await fetchNamesmithChannel(ids.namesmith.channels.WEEKLY_QUESTS);
 
 	await setNewMessageInChannel(shownWeeklyQuestsChannel,
-		'# Weekly Quests',
+		WEEKLY_QUESTS_HEADER_TEXT,
 		getPingForAllPlayers(),
-		'Every week, 3-4 weekly quests are shown here for you to complete. These quests take longer and require more effort than daily quests, but they grant higher rewards. Do what the quest asks and click the "Complete Quest" button to claim your reward!',
+		WEEKLY_QUESTS_INTRO_TEXT,
 	);
 
 	for (const quest of shownWeeklyQuests) {

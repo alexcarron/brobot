@@ -3,16 +3,16 @@ import { dmUser } from "../../../../utilities/discord/message-utils";
 import { toggleRefillReminders } from "../../workflows/toggle-refill-reminders.workflow";
 import { joinLines } from "../../../../utilities/string-manipulation-utils";
 
-const NOT_A_PLAYER_TEXT = `You're not a player, so you can't toggle refill reminders.`;
-const REMINDERS_ENABLED_TEXT = joinLines(
+const NOT_A_PLAYER_FEEDBACK = `You're not a player, so you can't toggle refill reminders.`;
+const REMINDERS_ENABLED_FEEDBACK = joinLines(
 	`Refill reminders are now on.`, 
 	`You will now be DMed when your refill cooldown expires.`
 );
-const REMINDERS_DISABLED_TEXT = joinLines(
+const REMINDERS_DISABLED_FEEDBACK = joinLines(
 	`Refill reminders are now off.`, 
 	`You will no longer be DMed when your refill cooldown expires.`
 );
-const REMINDERS_COULD_NOT_BE_ENABLED_TEXT = joinLines(
+const REMINDERS_COULD_NOT_BE_ENABLED_FEEDBACK = joinLines(
 	`Refill reminders couldn't be enabled because Brobot can't DM you.`, 
 	`Enable direct messages from server members and try again.`
 );
@@ -30,17 +30,17 @@ export async function handleToggleRefillReminders(userID: string): Promise<strin
 	const toggleResult = toggleRefillReminders({ playerID: userID });
 
 	if (toggleResult.isNotAPlayer()) {
-		return NOT_A_PLAYER_TEXT;
+		return NOT_A_PLAYER_FEEDBACK;
 	}
 
 	const { enabled } = toggleResult;
 
 	if (!enabled) {
-		return REMINDERS_DISABLED_TEXT;
+		return REMINDERS_DISABLED_FEEDBACK;
 	}
 
 	try {
-		await dmUser(userID, REMINDERS_ENABLED_TEXT);
+		await dmUser(userID, REMINDERS_ENABLED_FEEDBACK);
 	}
 	catch (error) {
 		if (
@@ -51,11 +51,11 @@ export async function handleToggleRefillReminders(userID: string): Promise<strin
 			)
 		) {
 			toggleRefillReminders({ playerID: userID });
-			return REMINDERS_COULD_NOT_BE_ENABLED_TEXT;
+			return REMINDERS_COULD_NOT_BE_ENABLED_FEEDBACK;
 		}
 
 		throw error;
 	}
 
-	return REMINDERS_ENABLED_TEXT;
+	return REMINDERS_ENABLED_FEEDBACK;
 }

@@ -5,6 +5,24 @@ import { handleTradeResponseResult } from "./trade-message";
 import { replyToInteraction } from "../../../../utilities/discord/interaction-reply-utils";
 import { toDisplayedCharactersInline } from "../../utilities/player-message.utility";
 
+export const ACCEPT_TRADE_LABEL = "Accept";
+export const ACCEPT_TRADE_MISSING_CHARACTERS_FEEDBACK = (
+	{ playerID, missingCharacters }: { playerID: string, missingCharacters: string }
+) =>
+	`<@${playerID}> no longer has the characters needed for this trade:\n` +
+	`> ${toDisplayedCharactersInline(missingCharacters)}`;
+export const TRADE_EXECUTED_FEEDBACK = (
+	{ initiatingPlayerID, recipientPlayerID, requestedCharacters, offeredCharacters }: {
+		initiatingPlayerID: string,
+		recipientPlayerID: string,
+		requestedCharacters: string,
+		offeredCharacters: string,
+	}
+) =>
+	`This trade has been executed.\n` +
+	`<@${initiatingPlayerID}> received\n> ${toDisplayedCharactersInline(requestedCharacters)}\n` +
+	`<@${recipientPlayerID}> received\n> ${toDisplayedCharactersInline(offeredCharacters)}`;
+
 /**
  * Creates a button that, when pressed, will accept a trade request.
  * @param parameters - An object containing the following parameters:
@@ -22,7 +40,7 @@ export function createAcceptTradeButton(
 
 	return {
 		id: `trade-accept-${id}`,
-		label: "Accept",
+		label: ACCEPT_TRADE_LABEL,
 		style: ButtonStyle.Success,
 		onButtonPressed: async (buttonInteraction: ButtonInteraction) => {
 			const userID = buttonInteraction.user.id;
@@ -44,17 +62,19 @@ export function createAcceptTradeButton(
 				const { player, missingCharacters } = acceptResult;
 
 				return await replyToInteraction(buttonInteraction,
-					`<@${player.id}> no longer has the characters needed for this trade:\n` +
-					`> ${toDisplayedCharactersInline(missingCharacters)}`
+					ACCEPT_TRADE_MISSING_CHARACTERS_FEEDBACK({ playerID: player.id, missingCharacters })
 				);
 			}
 
 			trade = acceptResult.trade;
 
 			await buttonInteraction.reply(
-				`This trade has been executed.\n` +
-				`<@${initiatingPlayer.id}> received\n> ${toDisplayedCharactersInline(trade.requestedCharacters)}\n` +
-				`<@${recipientPlayer.id}> received\n> ${toDisplayedCharactersInline(trade.offeredCharacters)}`
+				TRADE_EXECUTED_FEEDBACK({
+					initiatingPlayerID: initiatingPlayer.id,
+					recipientPlayerID: recipientPlayer.id,
+					requestedCharacters: trade.requestedCharacters,
+					offeredCharacters: trade.offeredCharacters,
+				})
 			);
 		}
 	}

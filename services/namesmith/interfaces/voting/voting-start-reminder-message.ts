@@ -5,6 +5,22 @@ import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { sendToPublishedNamesChannel } from "../../utilities/discord-action.utility";
 import { getPingForAllPlayers } from "../../utilities/player-message.utility";
 
+export const VOTING_START_FINAL_REMINDER_TEXT = (votingStartsTimestamp: string) => joinLines(
+	getPingForAllPlayers(),
+	`Last chance. Voting starts ${votingStartsTimestamp}.`,
+	`Publish your final name now with \`/publish-name\`.`,
+	``,
+	`-# Your current name will be published for you when voting starts if you haven't published one.`,
+);
+
+export const VOTING_START_REMINDER_TEXT = (votingStartsTimestamp: string) => joinLines(
+	getPingForAllPlayers(),
+	`Voting starts ${votingStartsTimestamp}.`,
+	`Publish your name with \`/publish-name\` before then.`,
+	``,
+	`-# Your current name will be published for you when voting starts if you haven't published one.`,
+);
+
 /**
  * Builds the message reminding players to finalize and publish their name before voting starts.
  * @param parameters - An object containing the following parameters:
@@ -18,23 +34,10 @@ export function getVotingStartReminderMessage(
 	const timeVotingStarts = gameStateService.getTimeVotingStarts();
 	const votingStartsTimestamp = `<t:${toUnixTimestamp(timeVotingStarts)}:R>`;
 
-	if (isFinalReminder(durationUntilVotingStarts)) {
-		return joinLines(
-			getPingForAllPlayers(),
-			`Last chance. Voting starts ${votingStartsTimestamp}.`,
-			`Publish your final name now with \`/publish-name\`.`,
-			``,
-			`-# Your current name will be published for you when voting starts if you haven't published one.`,
-		);
-	}
+	if (isFinalReminder(durationUntilVotingStarts))
+		return VOTING_START_FINAL_REMINDER_TEXT(votingStartsTimestamp);
 
-	return joinLines(
-		getPingForAllPlayers(),
-		`Voting starts ${votingStartsTimestamp}.`,
-		`Publish your name with \`/publish-name\` before then.`,
-		``,
-		`-# Your current name will be published for you when voting starts if you haven't published one.`,
-	);
+	return VOTING_START_REMINDER_TEXT(votingStartsTimestamp);
 }
 
 /**

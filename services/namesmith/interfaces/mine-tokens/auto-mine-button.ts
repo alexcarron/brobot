@@ -12,7 +12,7 @@ import { getAutoMineStoppedTipLine, getCollapseTipLine, getDeeperMineTipLine } f
 import { doesUserOwnMiningSessionOfButton, getMiningSessionMessageContentsWithButtons, sendMiningSessionFollowUpMessage } from "./mining-session-buttons";
 import { MiningSessionState } from "./mining-session-state";
 import { AutoMineState, getStopButton } from "./stop-auto-mine-button";
-import { NOT_SESSION_OWNER_MESSAGE, toCollapseMessageText } from "./mining-message-lines";
+import { NOT_SESSION_OWNER_FEEDBACK, toCollapseMessageText } from "./mining-message-lines";
 import { AUTO_MINE_BUTTON_LABEL } from "./mining-button-labels";
 
 /**
@@ -34,7 +34,7 @@ async function onAutoMineButtonPressed(
 	buttonInteraction: ButtonInteraction, userID: string, state: MiningSessionState
 ): Promise<void> {
 	if (!doesUserOwnMiningSessionOfButton(userID, buttonInteraction)) {
-		await replyToInteraction(buttonInteraction, NOT_SESSION_OWNER_MESSAGE);
+		await replyToInteraction(buttonInteraction, NOT_SESSION_OWNER_FEEDBACK);
 		return 
 	}
 

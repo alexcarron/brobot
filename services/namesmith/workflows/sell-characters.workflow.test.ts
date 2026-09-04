@@ -71,7 +71,7 @@ describe('sell-characters.workflow', () => {
 
 			const result = sellCharacters({ player, charactersSelling: 'ab', amount: 2 });
 
-			makeSure(result.isInvalidAmountUsage()).isTrue();
+			makeSure(result.isInvalidUsageOfAmountParameter()).isTrue();
 		});
 
 		it('should fail with missingCharacters if the player does not have the characters being sold', () => {

@@ -6,7 +6,7 @@ import { getPlayerAutocompleteChoicesFromCache } from "../../services/namesmith/
 import { fetchUser } from "../../utilities/discord/guild-member-utils";
 import { joinLines } from "../../utilities/string-manipulation-utils";
 import { getInvalidPlayerMessageOrPlayer } from "../../services/namesmith/utilities/interface.utility";
-import { toPerkBulletPoint } from "../../services/namesmith/interfaces/pick-a-perk-message";
+import { PERK_BULLET_POINT_TEXT } from "../../services/namesmith/interfaces/pick-a-perk-message";
 import { isString } from "../../utilities/types/type-guards";
 
 const Parameters = Object.freeze({
@@ -40,7 +40,7 @@ export const command = new SlashCommand({
 			firstLine = `Your current perks are the following:`;
 
 		const perkStrings = perks.map((perk) => {
-			return toPerkBulletPoint(perk);
+			return PERK_BULLET_POINT_TEXT(perk);
 		});
 
 		return joinLines(

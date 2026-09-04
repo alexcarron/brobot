@@ -14,6 +14,30 @@ import { DiscordButtons } from "../../../../utilities/discord-interfaces/discord
 import { getNamesmithServices } from "../../services/get-namesmith-services";
 import { toDisplayedCharactersInline } from "../../utilities/player-message.utility";
 
+export const TRADE_REQUEST_TEXT = (
+	{ playerAwaitingResponseFromID, playerWaitingForResponseID, requestedCharacters, offeredCharacters }: {
+		playerAwaitingResponseFromID: string,
+		playerWaitingForResponseID: string,
+		requestedCharacters: string,
+		offeredCharacters: string,
+	}
+) =>
+	`## <@${playerAwaitingResponseFromID}>, <@${playerWaitingForResponseID}> has requested the following trade:\n` +
+	`**You give**\n> ${toDisplayedCharactersInline(requestedCharacters)}\n` +
+	`**You receive**\n> ${toDisplayedCharactersInline(offeredCharacters)}`;
+export const TRADE_RESPONSE_NOT_A_PLAYER_FEEDBACK = (
+	{ responseType }: { responseType: 'accept' | 'decline' | 'modify' }
+) => `You're not a player, so you can't ${responseType} a trade.`;
+export const TRADE_RESPONSE_DOES_NOT_EXIST_FEEDBACK = (
+	{ responseType }: { responseType: 'accept' | 'decline' | 'modify' }
+) => `You can't ${responseType} a trade that does not exist`;
+export const TRADE_RESPONSE_ALREADY_RESPONDED_TO_FEEDBACK = (
+	{ responseType, tradeStatus }: { responseType: 'accept' | 'decline' | 'modify', tradeStatus: string }
+) => `This trade is already ${tradeStatus} so you can't ${responseType} it.`;
+export const TRADE_RESPONSE_AWAITING_DIFFERENT_PLAYER_FEEDBACK = (
+	{ responseType, playerAwaitingTradeID }: { responseType: 'accept' | 'decline' | 'modify', playerAwaitingTradeID: string }
+) => `This trade is awaiting <@${playerAwaitingTradeID}>'s response so you can't ${responseType} it.`;
+
 /**
  * Creates a new trade message with the given properties.
  * @param parameters - An object containing the parameters for the trade message.
@@ -33,10 +57,12 @@ export function createTradeMessage(
 	const playerWaitingForResponse = tradeService.getPlayerWaitingForResponse(trade)!;
 	const playerAwaitingResponseFrom = tradeService.getPlayerAwaitingResponseFrom(trade)!;
 
-	const messageContents =
-		`## <@${playerAwaitingResponseFrom.id}>, <@${playerWaitingForResponse.id}> has requested the following trade:\n` +
-		`**You give**\n> ${toDisplayedCharactersInline(requestedCharacters)}\n` +
-		`**You receive**\n> ${toDisplayedCharactersInline(offeredCharacters)}`
+	const messageContents = TRADE_REQUEST_TEXT({
+		playerAwaitingResponseFromID: playerAwaitingResponseFrom.id,
+		playerWaitingForResponseID: playerWaitingForResponse.id,
+		requestedCharacters,
+		offeredCharacters,
+	});
 
 	const acceptButton = createAcceptTradeButton({trade});
 	const declineButton =  createDeclineTradeButton({trade})
@@ -144,14 +170,14 @@ export async function handleTradeResponseResult<
 > {
 	if (result.isNotAPlayer()) {
 		await replyToInteraction(buttonInteraction,
-			`You're not a player, so you can't ${responseType} a trade.`
+			TRADE_RESPONSE_NOT_A_PLAYER_FEEDBACK({ responseType })
 		);
 
 		return null;
 	}
 	else if (result.isTradeDoesNotExist()) {
 		await replyToInteraction(buttonInteraction,
-			`You can't ${responseType} a trade that does not exist`
+			TRADE_RESPONSE_DOES_NOT_EXIST_FEEDBACK({ responseType })
 		);
 		return null;
 	}
@@ -159,7 +185,7 @@ export async function handleTradeResponseResult<
 		const { trade } = result;
 
 		await replyToInteraction(buttonInteraction,
-			`This trade is already ${trade.status} so you can't ${responseType} it.`
+			TRADE_RESPONSE_ALREADY_RESPONDED_TO_FEEDBACK({ responseType, tradeStatus: trade.status })
 		);
 		return null;
 	}
@@ -167,7 +193,7 @@ export async function handleTradeResponseResult<
 		const { playerAwaitingTrade } = result;
 
 		await replyToInteraction(buttonInteraction,
-			`This trade is awaiting <@${playerAwaitingTrade.id}>'s response so you can't ${responseType} it.`
+			TRADE_RESPONSE_AWAITING_DIFFERENT_PLAYER_FEEDBACK({ responseType, playerAwaitingTradeID: playerAwaitingTrade.id })
 		);
 		return null;
 	}

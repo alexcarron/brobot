@@ -3,9 +3,27 @@ import { MINE_BONUS_BONUS_TOKENS } from "../../constants/perk.constants";
 import { getTokensEarnedFeedback, toDisplayedCharactersInline } from "../../utilities/player-message.utility";
 import { MiningSessionState } from "./mining-session-state";
 
-export const NOT_A_PLAYER_MINING_MESSAGE = `You're not a player, so you can't mine tokens.`;
-export const NOT_SESSION_OWNER_MESSAGE = `This isn't your mining session.`;
-const MINE_COLLAPSE_MESSAGE = `The mine collapsed.`;
+export const NOT_A_PLAYER_MINING_FEEDBACK = `You're not a player, so you can't mine tokens.`;
+export const NOT_SESSION_OWNER_FEEDBACK = `This isn't your mining session.`;
+export const MINE_COLLAPSE_FEEDBACK = `The mine collapsed.`;
+export const BONUS_TOKENS_GAINED_TEXT = `+${toAmountOfNoun(MINE_BONUS_BONUS_TOKENS, 'Bonus Token')}`;
+export const CHARACTER_DISCOVERED_TEXT = (characterDiscovered: string) =>
+	`**Lucky!** You mined a character: ${toDisplayedCharactersInline(characterDiscovered)}`;
+export const MINED_TOKENS_COUNT_TEXT = (tokensMinedThisSession: number) =>
+	`-# You have mined ${toAmountOfNoun(tokensMinedThisSession, 'token')}`;
+export const LAYER_DEPTH_AND_COLLAPSE_CHANCE_TEXT = (
+	{ currentLayer, collapseChanceNextLayer }: { currentLayer: number, collapseChanceNextLayer: number }
+) => {
+	const oddsOfCollapse = Math.ceil(1 / collapseChanceNextLayer);
+	return `-# You have reached **layer ${toReadableNumber(currentLayer)}** with a **1 in ${oddsOfCollapse} chance** of collapsing`;
+};
+export const LOST_ONE_TOKEN_TEXT = `-# You lost **1 token**`;
+export const LOST_ALL_TOKENS_TEXT = (tokenLostFromCollapse: number) =>
+	`-# You lost all **${toAmountOfNoun(tokenLostFromCollapse, 'token')}**`;
+export const LOST_SOME_TOKENS_TEXT = (tokenLostFromCollapse: number) =>
+	`-# You lost ${toAmountOfNoun(tokenLostFromCollapse, 'token')}`;
+export const KEPT_SOME_TOKENS_TEXT = (tokensKeptAfterCollapse: number) =>
+	`-# You only kept **${toAmountOfNoun(tokensKeptAfterCollapse, 'token')}**`;
 
 /**
  * Builds the lines reporting the tokens gained from a single mine, including a bonus line if the player has the mine bonus perk.
@@ -24,7 +42,7 @@ export function toTokensGainedLines(
 	const baseTokensGained = tokensGained - MINE_BONUS_BONUS_TOKENS;
 	return [
 		getTokensEarnedFeedback(baseTokensGained, { isOneLine: true }),
-		`+${toAmountOfNoun(MINE_BONUS_BONUS_TOKENS, 'Bonus Token')}`,
+		BONUS_TOKENS_GAINED_TEXT,
 	];
 }
 
@@ -35,18 +53,15 @@ export function toTokensGainedLines(
  */
 export function toCharacterDiscoveredLines(characterDiscovered: string | null): string | null {
 	if (characterDiscovered === null) return null;
-	return joinLines(
-		`**Lucky!** You mined a character: ${toDisplayedCharactersInline(characterDiscovered)}`
-	);
+	return joinLines(CHARACTER_DISCOVERED_TEXT(characterDiscovered));
 }
 
 function toMinedTokensLine(tokensMinedThisSession: number): string {
-	return `-# You have mined ${toAmountOfNoun(tokensMinedThisSession, 'token')}`;
+	return MINED_TOKENS_COUNT_TEXT(tokensMinedThisSession);
 }
 
 function toLayerDepthAndCollapseChanceLine(currentLayer: number, collapseChanceNextLayer: number): string {
-	const oddsOfCollapse = Math.ceil(1 / collapseChanceNextLayer);
-	return `-# You have reached **layer ${toReadableNumber(currentLayer)}** with a **1 in ${oddsOfCollapse} chance** of collapsing`;
+	return LAYER_DEPTH_AND_COLLAPSE_CHANCE_TEXT({ currentLayer, collapseChanceNextLayer });
 }
 
 /**
@@ -58,22 +73,22 @@ function toLayerDepthAndCollapseChanceLine(currentLayer: number, collapseChanceN
 export function toCollapseMessageText(tokenLostFromCollapse: number, tokensKeptAfterCollapse: number): string {
 	if (tokenLostFromCollapse === 1) {
 		return joinLines(
-			MINE_COLLAPSE_MESSAGE,
-			`-# You lost **1 token**`,
+			MINE_COLLAPSE_FEEDBACK,
+			LOST_ONE_TOKEN_TEXT,
 		);
 	}
 
 	if (tokensKeptAfterCollapse <= 0) {
 		return joinLines(
-			MINE_COLLAPSE_MESSAGE,
-			`-# You lost all **${toAmountOfNoun(tokenLostFromCollapse, 'token')}**`,
+			MINE_COLLAPSE_FEEDBACK,
+			LOST_ALL_TOKENS_TEXT(tokenLostFromCollapse),
 		);
 	}
-	
+
 	return joinLines(
-		MINE_COLLAPSE_MESSAGE,
-		`-# You lost ${toAmountOfNoun(tokenLostFromCollapse, 'token')}`,
-		`-# You only kept **${toAmountOfNoun(tokensKeptAfterCollapse, 'token')}**`,
+		MINE_COLLAPSE_FEEDBACK,
+		LOST_SOME_TOKENS_TEXT(tokenLostFromCollapse),
+		KEPT_SOME_TOKENS_TEXT(tokensKeptAfterCollapse),
 	);
 }
 

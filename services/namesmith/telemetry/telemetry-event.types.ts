@@ -24,6 +24,7 @@ export const EventType = toEnumFromStrings(
 	"questShown",
 	"questCompleted",
 	"charactersSold",
+	"charactersSoldUndone",
 );
 
 export type EventTypeValue = ValuesOf<typeof EventType>;
@@ -57,6 +58,7 @@ export type TelemetryDetailsByType = {
 	questShown: { questID: number; isHiddenQuest: boolean };
 	questCompleted: { questID: number };
 	charactersSold: { charactersSold: string; tokensEarned: number };
+	charactersSoldUndone: { charactersSold: string; tokensEarned: number };
 };
 
 /**
