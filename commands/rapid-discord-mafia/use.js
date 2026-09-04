@@ -96,9 +96,7 @@ module.exports = new SlashCommand({
 		// Get player from user or player name argument
 		if (isTest) {
 			const player_name = getRequiredStringParam(interaction, "player-name");
-			console.log({player_name});
 			player = global.game_manager.player_manager.get(player_name);
-			console.log(player);
 		}
 		else {
 			player = global.game_manager.player_manager.getPlayerFromId(interaction.user.id);
@@ -149,8 +147,6 @@ module.exports = new SlashCommand({
 					const ability_arguments_str = getRequiredStringParam(interaction, "ability-arguments");
 
 					const ability_arguments = ability_arguments_str.split(", ").map(str => str.split(": "));
-
-					console.log({ability_arguments, ability_arguments_str});
 
 					const ability_argument = ability_arguments.find(arg => {
 						const arg_name = arg[0];
@@ -270,7 +266,6 @@ module.exports = new SlashCommand({
 							ability_arg.subtypes.includes(ArgumentSubtype.NON_MAFIA) &&
 							global.game_manager.role_manager.getRole(player.role).faction === Faction.MAFIA
 						) {
-							console.log(player.name);
 							return false;
 						}
 
@@ -278,7 +273,6 @@ module.exports = new SlashCommand({
 							ability_arg.subtypes.includes(ArgumentSubtype.NOT_SELF) &&
 							player.name === player_using_command.name
 						) {
-							console.log(player.name);
 							return false;
 						}
 
@@ -286,7 +280,6 @@ module.exports = new SlashCommand({
 							ability_arg.subtypes.includes(ArgumentSubtype.CERTAIN_PLAYERS) &&
 							!player_using_command.players_can_use_on.includes(player.name)
 						) {
-							console.log(player.name);
 							return false;
 						}
 

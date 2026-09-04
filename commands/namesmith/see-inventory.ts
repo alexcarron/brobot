@@ -5,7 +5,7 @@ import { getNamesmithServices } from "../../services/namesmith/services/get-name
 import { getInvalidPlayerMessageOrPlayer } from "../../services/namesmith/utilities/interface.utility";
 import { getPlayerAutocompleteChoicesFromCache } from "../../services/namesmith/utilities/player.utility";
 import { fetchUser } from "../../utilities/discord/guild-member-utils";
-import { escapeDiscordMarkdown, joinLines } from "../../utilities/string-manipulation-utils";
+import { joinLines } from "../../utilities/string-manipulation-utils";
 import { isString } from "../../utilities/types/type-guards";
 
 const Parameters = Object.freeze({
@@ -40,7 +40,7 @@ export const command = new SlashCommand({
 
 		return joinLines(
 			firstLine,
-			`> ${escapeDiscordMarkdown(inventory)}_ _`,
+			`> ${inventory}_ _`,
 		);
 	}
 })

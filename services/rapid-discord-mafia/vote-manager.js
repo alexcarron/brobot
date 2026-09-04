@@ -107,8 +107,8 @@ class VoteManager {
 	addVoteForPlayer(player_voting, player_voting_for) {
 		player_voting.resetInactivity();
 
-		let curr_votes = this.votes;
-		let max_voters_count = this.game_manager.player_manager.getAlivePlayers().filter(
+		const curr_votes = this.votes;
+		const max_voters_count = this.game_manager.player_manager.getAlivePlayers().filter(
 			/**
 			 * Filters out players that can't vote
 			 * @param {Player} player The player
@@ -176,8 +176,8 @@ class VoteManager {
 	 * @returns {string} feedback for vote
 	 */
 	addVoteForTrialOutcome(player_voting, trial_outcome) {
-		let curr_votes = this.game_manager.trial_votes;
-		let max_voters_count = this.game_manager.player_manager.getAlivePlayers().filter(
+		const curr_votes = this.game_manager.trial_votes;
+		const max_voters_count = this.game_manager.player_manager.getAlivePlayers().filter(
 			/**
 			 * Filters out players that can't vote
 			 * @param {Player} player The player
@@ -239,10 +239,10 @@ class VoteManager {
 			/**
 			 * @type {{[vote: string]: number}}
 			 */
-			let vote_counts = {};
+			const vote_counts = {};
 
-			for (let voter in player_votes) {
-				let vote = player_votes[voter];
+			for (const voter in player_votes) {
+				const vote = player_votes[voter];
 
 				if (
 					vote.toLowerCase() == TrialVote.ABSTAIN.toLowerCase() ||

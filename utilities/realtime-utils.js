@@ -71,18 +71,4 @@ const wait = (duration) => {
 	);
 }
 
-/**
- * Logs how many milliseconds have elapse  with a custom message.
- * @param {string} message The message to be logged.
- * @param {Function} asyncFunction The function to be called.
- * @param {...*} args The arguments to be passed to the function.
- * @returns {Promise<void>} A promise that resolves after the function has been called.
- */
-const logFunctionDuration = async (message, asyncFunction, ...args) => {
-	const startTime = performance.now();
-	await asyncFunction(...args);
-	const endTime = performance.now();
-	console.log(`${message}: ${Math.round(endTime - startTime)}ms`);
-}
-
-module.exports = { wait, logFunctionDuration };
+module.exports = { wait };

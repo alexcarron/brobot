@@ -1,4 +1,5 @@
 import { Duration } from "../../../utilities/date-time-utils";
+import { logError } from "../../../utilities/logging-utils";
 import { Player } from "../types/player.types";
 import { PublishedName } from "../types/published-name.types";
 
@@ -72,7 +73,7 @@ function createEventHandler<
 		for (const handler of handlers) {
 			const result = handler(relevantData)
 			if (result instanceof Promise)
-				result.catch(console.error);
+				result.catch(error => logError("Namesmith event handler failed.", error instanceof Error ? error : undefined));
 		}
 	};
 

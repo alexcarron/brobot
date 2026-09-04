@@ -140,9 +140,7 @@ module.exports = new SlashCommand({
 				interaction.editReply("Attemping to start sign-ups. Once sign-ups is over, use the command `/startgame` to begin the game.");
 			}
 
-			console.time("Game.reset()");
 			await GameManager.reset();
-			console.timeEnd("Game.reset()");
 
 			global.game_manager.startSignUps();
 
@@ -156,7 +154,7 @@ module.exports = new SlashCommand({
 
 			// await delete_chnls_command.execute(interaction, ["1031365761320624132"], true);
 
-			for (let player_name of player_names) {
+			for (const player_name of player_names) {
 				// @ts-ignore
 				interaction.args = [ids.users.LL, player_name, true];
 				// @ts-ignore
@@ -171,7 +169,7 @@ module.exports = new SlashCommand({
 		}
 		else {
 			let command;
-			let command_name = getSubcommandUsed(interaction);
+			const command_name = getSubcommandUsed(interaction);
 
 			try {
 				command = require(`./${command_name}.js`);

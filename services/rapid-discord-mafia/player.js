@@ -428,7 +428,7 @@ class RDMPlayer {
 
 		try {
 			if (!this.isMockPlayer) {
-				let ghost_role = await fetchRoleByName((await fetchRDMGuild()), RDMDiscordRole.GHOSTS),
+				const ghost_role = await fetchRoleByName((await fetchRDMGuild()), RDMDiscordRole.GHOSTS),
 					living_role = await fetchRoleByName((await fetchRDMGuild()), RDMDiscordRole.LIVING),
 					player_guild_member = await fetchGuildMember((await fetchRDMGuild()), this.id);
 

@@ -669,7 +669,7 @@ class AbilityManager {
 		// Check if valid arguments
 		for (const ability_arg of ability.args) {
 			const arg_name = ability_arg.name;
-			let arg_param_value = arg_values[arg_name];
+			const arg_param_value = arg_values[arg_name];
 
 			const isValidArg = this.game_manager.isValidArgValue(player, ability_arg, arg_param_value);
 

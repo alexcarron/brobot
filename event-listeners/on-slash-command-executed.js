@@ -17,7 +17,7 @@ const onSlashCommandExecuted = async (interaction) => {
 	const command = global.commands.get(interaction.commandName);
 
 	if (command === undefined) {
-		console.error(`No command matching ${interaction.commandName} was found.`);
+		logError(`No command matching ${interaction.commandName} was found.`);
 		return;
 	}
 

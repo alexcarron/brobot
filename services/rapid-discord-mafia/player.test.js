@@ -25,14 +25,14 @@ describe('Player', () => {
 		it('SHOULD remove kidnapped affect entry from affected_by property of player given a night and day has passed', async () => {
 			expect(mock_game.isMockGame).toBe(true);
 
-			let mafioso_name = RoleName.MAFIOSO
-			let mafioso_player = await mock_game.addPlayerToGame(mafioso_name);
+			const mafioso_name = RoleName.MAFIOSO
+			const mafioso_player = await mock_game.addPlayerToGame(mafioso_name);
 
-			let kidnapper_name = RoleName.KINDAPPER
-			let kidnapper_player = await mock_game.addPlayerToGame(kidnapper_name);
+			const kidnapper_name = RoleName.KINDAPPER
+			const kidnapper_player = await mock_game.addPlayerToGame(kidnapper_name);
 
-			let doctor_name = RoleName.DOCTOR;
-			let doctor_player = await mock_game.addPlayerToGame(doctor_name);
+			const doctor_name = RoleName.DOCTOR;
+			const doctor_player = await mock_game.addPlayerToGame(doctor_name);
 
 			const role_identifiers = RoleIdentifier.convertIdentifierStrings([
 				RoleName.DOCTOR,

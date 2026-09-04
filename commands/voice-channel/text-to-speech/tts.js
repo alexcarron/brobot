@@ -106,7 +106,6 @@ module.exports = new SlashCommand({
 
 		const subcommand_name = interaction.options.getSubcommand();
 
-		console.log({subcommand_name});
 		if (subcommand_name === Parameters.Say.name) {
 			message = getStringParamValue(interaction, Subparameters.Message.name) || "Nothing";
 			name = getStringParamValue(interaction, Subparameters.Name.name);

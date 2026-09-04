@@ -40,10 +40,10 @@ module.exports = new SlashCommand({
 	execute: async function(interaction) {
 		await deferInteraction(interaction);
 
-		let viewer_name = getRequiredStringParam(interaction, Parameters.ViewerName.name);
-		let viewer = global.LLPointManager.getViewerByName(viewer_name);
+		const viewer_name = getRequiredStringParam(interaction, Parameters.ViewerName.name);
+		const viewer = global.LLPointManager.getViewerByName(viewer_name);
 
-		let
+		const
 			accomplishment = getRequiredStringParam(interaction, Parameters.Accomplishment.name),
 			game_name = getStringParamValue(interaction, Parameters.ThingParticipatedIn.name) || undefined;
 
@@ -63,9 +63,9 @@ module.exports = new SlashCommand({
 		if (result_msg !== "Success")
 			return await interaction.editReply(result_msg);
 
-		let current_ll_points = global.LLPointManager.viewers.get(viewer_name).ll_points;
+		const current_ll_points = global.LLPointManager.viewers.get(viewer_name).ll_points;
 		// @ts-ignore
-		let accomplishment_key = Object.keys(LLPointAccomplishment).find(key => LLPointAccomplishment[key] === accomplishment);
+		const accomplishment_key = Object.keys(LLPointAccomplishment).find(key => LLPointAccomplishment[key] === accomplishment);
 
 		if (accomplishment_key === undefined)
 			return await interaction.editReply(`The accomplishment, **${accomplishment}**, doesn't exist.`);

@@ -43,7 +43,7 @@ channelsToMessages
 	 * Removes channel entries with no messages from channelsToMessage map
 	 */
 	removeEmptyChannelsFromMap() {
-    for (let [channelName, messages] of Object.entries(this.channelsToMessages)) {
+    for (const [channelName, messages] of Object.entries(this.channelsToMessages)) {
       if (messages.length === 0) {
 				delete this.channelsToMessages[channelName];
       }

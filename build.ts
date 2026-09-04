@@ -1,7 +1,7 @@
 import { initialBotStatus } from "./bot-config/bot-status";
 import { setupClient } from "./bot-config/setup-client";
 import { setupAndDeployCommands } from "./bot-config/setup-commands";
-import { logInfo, logSuccess } from "./utilities/logging-utils";
+import { logInfo, logSuccess, logError } from "./utilities/logging-utils";
 
 const GUILD_COMMANDS_ONLY_OPTIONS = [
 	'--without-global-commands',
@@ -60,4 +60,4 @@ const buildBrobot = async () => {
 
 buildBrobot()
 	.then(() => logSuccess("Bot built."))
-	.catch(error => console.error(error));
+	.catch(error => logError("Failed to build bot.", error));

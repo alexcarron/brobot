@@ -676,9 +676,9 @@ describe('GameManager', () => {
 	// ^ getDeathMessages
 	describe('getDeathMessages', () => {
 		it('SHOULD announce cause of death from Mafia and Fool when killed by both in the same night', async () => {
-			let mafioso_player = await mock_game.addPlayerToGame(RoleName.MAFIOSO);
-			let fool_player = await mock_game.addPlayerToGame(RoleName.FOOL);
-			let townie_player = await mock_game.addPlayerToGame(RoleName.TOWNIE);
+			const mafioso_player = await mock_game.addPlayerToGame(RoleName.MAFIOSO);
+			const fool_player = await mock_game.addPlayerToGame(RoleName.FOOL);
+			const townie_player = await mock_game.addPlayerToGame(RoleName.TOWNIE);
 
 			const role_identifiers = RoleIdentifier.convertIdentifierStrings([
 				RoleName.TOWNIE,

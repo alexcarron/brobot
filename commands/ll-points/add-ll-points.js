@@ -53,7 +53,7 @@ module.exports = new SlashCommand({
 
 		await global.LLPointManager.viewers.get(viewer_name).addLLPoints(added_points);
 		await global.LLPointManager.updateDatabase();
-		let current_ll_points = await global.LLPointManager.viewers.get(viewer_name).ll_points;
+		const current_ll_points = await global.LLPointManager.viewers.get(viewer_name).ll_points;
 
 		await interaction.editReply(
 			`Giving **${viewer_name}** \`${added_points}\` LL Point(s)...\n` +

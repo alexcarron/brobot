@@ -9,6 +9,7 @@ const { wait } = require("../../../utilities/realtime-utils.js");
 const { saveObjectToJsonInGitHub } = require("../../../utilities/persistent-storage-utils.js");
 const Event = require("../../../services/discord-events/event.js");
 const { LLPointTier } = require("../../../services/ll-points/ll-point-enums.js");
+const { logError } = require("../../../utilities/logging-utils");
 
 module.exports = new SlashCommand({
 	name: "host-event",
@@ -204,7 +205,7 @@ module.exports = new SlashCommand({
 			"Sunday": 0,
 		};
 		const week_day_select_options = []
-		for (let week_day of Object.keys(week_days)) {
+		for (const week_day of Object.keys(week_days)) {
 			week_day_select_options.push(
 				new StringSelectMenuOptionBuilder()
 					.setLabel(week_day)
@@ -221,7 +222,7 @@ module.exports = new SlashCommand({
 
 		const time_select_options = [];
 		for (let hour = 0; hour < 24; hour++) {
-			let am_or_pm = hour < 12 ? "AM" : "PM";
+			const am_or_pm = hour < 12 ? "AM" : "PM";
 			let twelve_hour = hour % 12;
 			if (twelve_hour === 0) twelve_hour = 12;
 
@@ -280,7 +281,7 @@ module.exports = new SlashCommand({
 					chosen_time = parseInt(date_time_confirmation_interaction.values[0]);
 					choseTime = true;
 
-					let am_or_pm = chosen_time < 12 ? "AM" : "PM";
+					const am_or_pm = chosen_time < 12 ? "AM" : "PM";
 					let twelve_hour = chosen_time % 12;
 					if (twelve_hour === 0) twelve_hour = 12;
 
@@ -293,7 +294,7 @@ module.exports = new SlashCommand({
 				}
 			}
 			catch(error) {
-				console.error(error);
+				logError("Failed to receive date/time selection in time.", error instanceof Error ? error : undefined);
 				await date_time_message_sent.edit({ content: `\`Response not recieved in time\``, components: [] });
 				return undefined;
 			}
@@ -416,7 +417,7 @@ module.exports = new SlashCommand({
 				}
 			}
 			catch(error) {
-				console.error(error);
+				logError("Failed to receive ping role selection in time.", error instanceof Error ? error : undefined);
 				await ping_role_message_sent.edit({ content: `\`Response not recieved in time\``, components: [] });
 				return undefined;
 			}

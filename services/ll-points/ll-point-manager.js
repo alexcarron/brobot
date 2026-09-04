@@ -31,8 +31,8 @@ class LLPointManager {
 	 * and the values are objects with the properties that the Viewer class accepts in its constructor.
 	 */
 	setViewers(viewers_obj) {
-		for (let name in viewers_obj) {
-			let viewer_properties = viewers_obj[name];
+		for (const name in viewers_obj) {
+			const viewer_properties = viewers_obj[name];
 			this.addViewer(new Viewer(viewer_properties));
 		}
 	}
@@ -88,7 +88,7 @@ class LLPointManager {
 	 * @param {User} viewer_user - The user whose information to use when creating the new viewer.
 	 */
 	addViewerFromUser(viewer_user) {
-		let new_viewer = new Viewer({
+		const new_viewer = new Viewer({
 			name: viewer_user.username,
 			ll_points: 0,
 			user_id: viewer_user.id,

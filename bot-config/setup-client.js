@@ -26,7 +26,7 @@ const setupClient = async () => {
 	});
 
 	const { DISCORD_TOKEN } = require('./token');
-	let token = DISCORD_TOKEN;
+	const token = DISCORD_TOKEN;
 
 	await client.login(token);
 

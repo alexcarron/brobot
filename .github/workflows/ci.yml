@@ -14,11 +14,11 @@ jobs:
     steps:
       # Clone repository code into workspace
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Install Node.js
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22'
 
@@ -40,11 +40,14 @@ jobs:
       - name: Install Node.js project dependencies
         run: npm ci
 
+      # Pull requests get the same fast checks as the local pre-commit hook.
+      # Direct pushes get the same strict, uncached checks as the local pre-push hook,
+      # since a push can bypass the local hook (e.g. --no-verify) and this is the last gate before main.
       - name: Run linter to check code quality
-        run: npm run lint
+        run: ${{ github.event_name == 'push' && 'npm run lint:ci' || 'npm run lint' }}
 
       - name: Run type checker
-        run: npm run typecheck
+        run: ${{ github.event_name == 'push' && 'npm run typecheck:ci' || 'npm run typecheck' }}
 
       - name: Run unit tests
-        run: npm test
+        run: ${{ github.event_name == 'push' && 'npm run test:ci' || 'npm test' }}

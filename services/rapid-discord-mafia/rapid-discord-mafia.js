@@ -61,7 +61,7 @@ class RapidDiscordMafia {
 	 */
 	static async startMockGameWithRoles(mock_game, roles_in_game) {
 		roles_in_game.forEach(async role_name => {
-			let name = role_name;
+			const name = role_name;
 			let num_players_with_role = 1;
 			let player_name = name;
 

@@ -3,9 +3,9 @@ import { Parameter, ParameterTypes } from "../../services/command-creation/param
 import { SlashCommand } from "../../services/command-creation/slash-command";
 import { getNamesmithServices } from "../../services/namesmith/services/get-namesmith-services";
 import { sellCharacters } from "../../services/namesmith/workflows/sell-characters.workflow";
-import { getSellCharactersConfirmationDiscordButton, INVALID_USAGE_OF_AMOUNT_PARAMETER_FEEDBACK, MISSING_CHARACTERS_FEEDBACK, NOT_A_PLAYER_FEEDBACK } from "../../services/namesmith/interfaces/sell-characters/sell-characters-message";
+import { EMPTY_INVENTORY_FEEDBACK, getSellCharactersConfirmationDiscordButton, INVALID_USAGE_OF_AMOUNT_PARAMETER_FEEDBACK, MISSING_CHARACTERS_FEEDBACK, NOT_A_PLAYER_FEEDBACK } from "../../services/namesmith/interfaces/sell-characters/sell-characters-message";
 import { getSetOfCharacters } from "../../utilities/string-checks-utils";
-import { toDisplayedDollars } from "../../services/namesmith/utilities/player-message.utility";
+import { sortCharactersForDisplay, toDisplayedDollars } from "../../services/namesmith/utilities/player-message.utility";
 import { replyToInteraction } from "../../utilities/discord/interaction-reply-utils";
 
 const Parameters = Object.freeze({
@@ -18,29 +18,48 @@ const Parameters = Object.freeze({
 
 			if (!playerService.isPlayer(user.id)) {
 				return [{
-					name: `You're not a player, so you can't sell characters.`,
+					name: NOT_A_PLAYER_FEEDBACK,
 					value: "",
 				}];
 			}
 
-			const inventory = playerService.getDisplayedInventory(user.id);
+			const inventory = playerService.getInventory(user.id);
 			const distinctInventoryCharacters = Array.from(getSetOfCharacters(inventory));
 
-			const matchingCharacters = enteredValue === ''
-				? distinctInventoryCharacters
-				: distinctInventoryCharacters.filter(character => character.includes(enteredValue));
+			if (distinctInventoryCharacters.length === 0) {
+				return [{
+					name: EMPTY_INVENTORY_FEEDBACK,
+					value: "",
+				}];
+			}
 
-			const autocompleteOptions = matchingCharacters.map(character => ({
+			const distinctInventoryCharactersSortedBySellValue = sortCharactersForDisplay(distinctInventoryCharacters)
+				.sort((character1, character2) =>
+					characterService.getSellValue(character2) - characterService.getSellValue(character1)
+				);
+
+			const matchingInventoryCharacters = enteredValue === ''
+				? distinctInventoryCharactersSortedBySellValue
+				: distinctInventoryCharactersSortedBySellValue.filter(character => character.includes(enteredValue));
+
+			const matchingInventoryCharacterOptions = matchingInventoryCharacters.map(character => ({
 				name: `${character} - ${toDisplayedDollars(characterService.getSellValue(character))}`,
 				value: character,
 			}));
 
-			const firstAutocompleteOption = {
-				name: enteredValue,
+			const hasTypedComboNotAlreadySuggested =
+				enteredValue !== '' &&
+				!distinctInventoryCharacters.includes(enteredValue);
+
+			if (!hasTypedComboNotAlreadySuggested)
+				return matchingInventoryCharacterOptions;
+
+			const typedComboOption = {
+				name: `Sell "${enteredValue}" exactly as typed`,
 				value: enteredValue,
 			};
 
-			return [firstAutocompleteOption, ...autocompleteOptions];
+			return [typedComboOption, ...matchingInventoryCharacterOptions];
 		},
 	}),
 	AMOUNT: new Parameter({
@@ -82,9 +101,9 @@ export const command = new SlashCommand({
 		}
 
 		const { charactersSold, tokensEarned, newTokenCount } = result;
-		
-		const confirmationMessage = getSellCharactersConfirmationDiscordButton({ 
-			charactersSold, tokensEarned, newTokenCount, playerID 
+
+		const confirmationMessage = getSellCharactersConfirmationDiscordButton({
+			charactersSold, tokensEarned, newTokenCount, playerID
 		});
 
 		await replyToInteraction(interaction, confirmationMessage.getMessageContents());

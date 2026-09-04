@@ -1178,8 +1178,6 @@ describe('string-manipulation-utils', () => {
 				new Date(2022, 4, 25, 4, 0),
 			];
 
-			console.log(toConciseReadableDates(dates));
-
 			makeSure(toConciseReadableDates(dates)).is(joinLines(
 				'May 9-15 2022 — Thu 12 (8:00, 9:12, 11:00) • Fri 13 (9:30, 1PM) • Sat 14 (11:00) • Sun 15 (1PM)',
 				'May 16-22 2022 — Mon 16 (3:15PM) • Tue 17 (4PM) • Wed 18 (5:30PM) • Thu 19 (7PM) • Fri 20 (8:30PM) • Sat 21 (10PM) • Sun 22 (11:30PM)',

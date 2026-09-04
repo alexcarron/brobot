@@ -34,7 +34,7 @@ const parseCreature = (text) => {
 		const rawEvolvedMatch = evolvedMatch[1].trim();
 
     // Normalize and tokenize the line
-    let candidates = rawEvolvedMatch
+    const candidates = rawEvolvedMatch
       .replace(/(?:Hybrid|Hybryd|Hy\w*d) of/i, '') // Remove leading 'Hybrid of' if present
 			.split(/\s*(?:(?:, and )|,|\/|&|\sand\s)\s*/i) // Split on commas, slashes, and 'and'
 			.map(s => s.trim()) // Trim whitespace from each name

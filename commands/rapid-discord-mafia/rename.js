@@ -22,14 +22,14 @@ module.exports = new SlashCommand({
 	execute: async function execute(interaction) {
 		await deferInteraction(interaction);
 
-		let player_id = interaction.user.id;
-		let old_player = global.game_manager.player_manager.getPlayerFromId(player_id);
+		const player_id = interaction.user.id;
+		const old_player = global.game_manager.player_manager.getPlayerFromId(player_id);
 
 		if (old_player === undefined)
 			return await interaction.editReply("You are not in the game.");
 
-		let old_player_name = old_player.name;
-		let new_player_name = getRequiredStringParam(interaction, "name");
+		const old_player_name = old_player.name;
+		const new_player_name = getRequiredStringParam(interaction, "name");
 
 
 		if ( global.game_manager.state !== GameState.SIGN_UP ) {

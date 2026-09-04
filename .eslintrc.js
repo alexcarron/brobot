@@ -26,8 +26,25 @@ module.exports = {
     'jsdoc/require-jsdoc': 'off',
     'jsdoc/check-param-names': ['error', { checkDestructured: false }],
     'jsdoc/valid-types': 'off',
+    'no-console': 'error',
+    'prefer-const': 'error',
+    'no-var': 'error',
   },
   overrides: [
+    // Files whose entire purpose is writing to the console
+    {
+      files: [
+        'utilities/logging-utils.ts',
+        'utilities/logging-utils.test.ts',
+        'utilities/jest/**',
+        'utilities/debug/rapid-call-detector.ts',
+        'services/namesmith/scripts/**',
+        'services/namesmith/telemetry/analysis/**',
+      ],
+      rules: {
+        'no-console': 'off',
+      },
+    },
     // TypeScript files
     {
       files: ['**/*.ts', '**/*.tsx'],

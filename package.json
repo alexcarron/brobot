@@ -7,10 +7,10 @@
 	"scripts": {
 		"prepare": "husky",
 		"lint:fast": "eslint \"**/*.{ts,tsx,js,jsx}\" --ignore-path .gitignore --cache --cache-location .eslintcache --max-warnings=0",
-		"lint:full": "eslint . --ignore-path .gitignore --cache --cache-location .eslintcache --config .eslintrc.full.cjs",
+		"lint:ci": "eslint \"**/*.{ts,tsx,js,jsx}\" --ignore-path .gitignore --max-warnings=0",
 		"lint": "npm run lint:fast",
 		"typecheck:fast": "tsc --noEmit --incremental -p tsconfig.build.json",
-		"typecheck:ci": "tsc --noEmit -b tsconfig.build.json",
+		"typecheck:ci": "tsc -b --force tsconfig.build.json",
 		"typecheck": "npm run typecheck:fast",
 		"test:dev": "jest --maxWorkers=50% --silent",
 		"test:ci": "jest --runInBand --silent",

@@ -11,8 +11,8 @@ const { sendMessageInChannel } = require("../utilities/discord/message-utils");
  * @returns {Promise<void>}
  */
 const onDmRecieved = async (message) => {
-	let brobotServer = await fetchGuild(ids.servers.brobot_testing);
-	let dmChannel = await fetchTextChannel(brobotServer, ids.brobot_test_server.channels.dm_log);
+	const brobotServer = await fetchGuild(ids.servers.brobot_testing);
+	const dmChannel = await fetchTextChannel(brobotServer, ids.brobot_test_server.channels.dm_log);
 	let recipient_message;
 	const channelSentIn = message.channel;
 

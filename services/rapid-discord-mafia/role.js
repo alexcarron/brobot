@@ -163,15 +163,16 @@ class Role {
 		let
 			role_info_msg = "",
 			abilities_msg = "", // Optional
-			immunities_msg = "", // Optional
-			special_notes_msg = this.notes ? `\n## Notes\n${this.notes}\n` : ""; // Optional
+			immunities_msg = ""; // Optional
+
+		const special_notes_msg = this.notes ? `\n## Notes\n${this.notes}\n` : ""; // Optional
 
 		// Create abilities message
 		if (this.abilities && this.abilities.length > 0) {
 			abilities_msg = `\n## Abilities`;
 
 			// Build ability message
-			for (let ability of this.abilities) {
+			for (const ability of this.abilities) {
 				abilities_msg += ability.toString();
 			}
 		}

@@ -27,7 +27,7 @@ module.exports = new SlashCommand({
 
 		const viewer_name = getRequiredStringParam(interaction, Parameters.ViewerDeleting.name);
 
-		let existing_viewer = await global.LLPointManager.getViewerByName(viewer_name);
+		const existing_viewer = await global.LLPointManager.getViewerByName(viewer_name);
 
 		if (!existing_viewer) {
 			return await interaction.editReply(`The viewer, **${viewer_name}**, doesn't exist in the database.`);

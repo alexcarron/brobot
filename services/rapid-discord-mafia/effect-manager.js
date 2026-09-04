@@ -288,7 +288,7 @@ class EffectManager {
 				/**
 				 * @type {(Record<string, any> & {name: string})[]}
 				 */
-				let players_seen_visiting = [];
+				const players_seen_visiting = [];
 
 				game.player_manager.getPlayerList().forEach(
 					/**

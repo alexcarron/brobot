@@ -315,7 +315,7 @@ class PlayerManager {
 			);
 
 			if ( protection_affects_on_target.length > 0 ) {
-				for (let protection_affect of protection_affects_on_target) {
+				for (const protection_affect of protection_affects_on_target) {
 					const protecter_player = this.get(protection_affect.by);
 					protecter_player.addFeedback(Feedback.PROTECTED_AN_ATTACKED_PLAYER);
 
@@ -448,7 +448,7 @@ class PlayerManager {
 	 */
 	removeManipulationEffectsFromPlayer(player) {
 		if (player.affected_by) {
-			for (let [index, affect] of player.affected_by.entries()) {
+			for (const [index, affect] of player.affected_by.entries()) {
 				const ability_affected_by = this.game_manager.ability_manager.getAbility(affect.name);
 
 				if (ability_affected_by.type === AbilityType.MANIPULATION) {

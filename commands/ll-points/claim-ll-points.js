@@ -25,10 +25,10 @@ module.exports = new SlashCommand({
 	execute: async function(interaction) {
 		await deferInteraction(interaction);
 
-		let viewer_id = interaction.user.id;
+		const viewer_id = interaction.user.id;
 		let viewer = await global.LLPointManager.getViewerById(viewer_id);
 
-		let accomplishment = getRequiredStringParam(interaction, Parameters.Accomplishment.name);
+		const accomplishment = getRequiredStringParam(interaction, Parameters.Accomplishment.name);
 
 		if (!viewer) {
 			if (

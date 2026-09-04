@@ -6,6 +6,7 @@ const { fetchMessage } = require("../../../utilities/discord/message-utils");
 const { fetchTextChannel } = require("../../../utilities/discord/channel-utils");
 const { getRequiredStringParam } = require("../../../utilities/discord/interaction-param-utils");
 const { deferInteraction } = require("../../../utilities/discord/interaction-reply-utils");
+const { logError } = require("../../../utilities/logging-utils");
 
 const Parameters = {
 	MessageLink: new Parameter({
@@ -49,7 +50,7 @@ module.exports = new SlashCommand({
 		const message = await fetchMessage(channel, message_id);
 
 		try {
-			message.react(reaction_str).catch(console.error);
+			message.react(reaction_str).catch(error => logError(`Failed to react to message with ${reaction_str}.`, error));
 			interaction.editReply(`Reacted to ${message_link} with ${reaction_str}`);
 		}
 		catch {

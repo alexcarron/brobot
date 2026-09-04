@@ -51,12 +51,12 @@ class Viewer {
 	getTier() {
 		let tier = LLPointTier.VIEWER;
 
-		for (let key in LLPointTier) {
+		for (const key in LLPointTier) {
 			/**
 			 * @type {keyof typeof LLPointThreshold}
 			 */
 			const tier_key = /** @type {keyof typeof LLPointThreshold} */ (key);
-			let tier_threshold = LLPointThreshold[tier_key];
+			const tier_threshold = LLPointThreshold[tier_key];
 
 			if (this.ll_points >= tier_threshold) {
 				// @ts-ignore
@@ -132,13 +132,13 @@ class Viewer {
 	 */
 	async giveReward(accomplishment, game_name=undefined) {
 
-		let accomplishments = Object.values(LLPointAccomplishment);
+		const accomplishments = Object.values(LLPointAccomplishment);
 		// @ts-ignore
 		if (!accomplishments.includes(accomplishment)) {
 			logWarning(`No accomplishment called ${accomplishment}. Choose between: ${accomplishments.join(", ")}`);
 			return `Error: No accomplishment called ${accomplishment}`;
 		}
-		let accomplishment_key =
+		const accomplishment_key =
 			Object.keys(LLPointAccomplishment)
 				.find(
 					// @ts-ignore
@@ -209,8 +209,8 @@ class Viewer {
 	 */
 	async addLLPoints(amount) {
 		this.ll_points += amount;
-		let old_tier = this.tier;
-		let new_tier = this.getTier();
+		const old_tier = this.tier;
+		const new_tier = this.getTier();
 
 		if (new_tier !== old_tier) {
 			this.tier = new_tier;

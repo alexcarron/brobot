@@ -142,10 +142,10 @@ const loadObjectFromJsonInGitHub = async (jsonFileName) => {
 
 	// Convert the base64 encoded string to a normal string
 	// https://docs.github.com/en/rest/reference/repos#get-repository-content
-	let objectString = Buffer.from(file.content, 'base64').toString();
+	const objectString = Buffer.from(file.content, 'base64').toString();
 
 	// Parse the string into an object
-	let object = JSON.parse(objectString);
+	const object = JSON.parse(objectString);
 
 	return object;
 };

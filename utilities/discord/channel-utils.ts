@@ -11,7 +11,7 @@ import {
 } from "discord.js";
 import { discordCollectionToArray, getShuffledArray } from "../data-structure-utils";
 import { InvalidArgumentTypeError } from "../error-utils";
-import { logInfo } from "../logging-utils";
+import { logInfo, logError } from "../logging-utils";
 import { incrementEndNumber } from "../string-manipulation-utils";
 import { CategoryChannel } from "discord.js";
 import { createCategory, fetchCategory, fetchChannelsInCategory } from "./category-utils";
@@ -262,7 +262,7 @@ export async function shuffleCategoryChannels(guild: Guild, category: CategoryCh
 			await shuffledChannels[i].setPosition(category.position + i + 1);
 			// The +1 is arbitrary: sometimes Discord expects category itself to be position 0
 		} catch (error) {
-			console.error(`Failed to set position for ${shuffledChannels[i].name}`, error);
+			logError(`Failed to set position for ${shuffledChannels[i].name}`, error instanceof Error ? error : undefined);
 		}
 	}
 	await guild.channels.setPositions(
@@ -272,5 +272,5 @@ export async function shuffleCategoryChannels(guild: Guild, category: CategoryCh
 		}))
 	);
 
-	console.log("Channels reordered inside category.");
+	logInfo("Channels reordered inside category.");
 }

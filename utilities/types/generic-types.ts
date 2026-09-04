@@ -11,7 +11,6 @@ export type ErrorClass<ErrorType extends Error = Error> = Class<ErrorType>;
  * Represents a value that is either true or false if known, otherwise null meaning unknown
  * @example
  * let isPublic: BooleanIfKnown = null;
-
  * if (player.location === 'town')
  *   isPublic = true;
  */

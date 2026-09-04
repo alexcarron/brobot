@@ -40,7 +40,7 @@ const command = new SlashCommand({
 				 */
 				async function(viewer_name) {
 					if (noSpecifiedUser) {
-						let viewer = await global.LLPointManager.getViewerById(interaction.user.id);
+						const viewer = await global.LLPointManager.getViewerById(interaction.user.id);
 						if (viewer)
 							return viewer;
 					}

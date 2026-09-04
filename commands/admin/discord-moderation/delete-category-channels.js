@@ -37,7 +37,6 @@ module.exports = new SlashCommand({
 		const numChannels = categoryChannels.length;
 
 		for (const channel of categoryChannels) {
-			console.log(channel);
 			try {
 				await channel.delete();
 				logInfo(`Deleted ${channel.name}`);

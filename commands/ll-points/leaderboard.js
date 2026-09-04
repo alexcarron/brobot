@@ -12,10 +12,10 @@ module.exports = new SlashCommand({
 	execute: async function(interaction) {
 		await deferInteraction(interaction);
 
-		let viewers = Object.fromEntries(global.LLPointManager.viewers);
+		const viewers = Object.fromEntries(global.LLPointManager.viewers);
 		const VIEWERS_PER_PAGE = 25;
 		const NUM_PAGES = Math.ceil(Object.keys(viewers).length / VIEWERS_PER_PAGE);
-		let current_page = 1;
+		const current_page = 1;
 		/**
 		 * @type {Viewer[][]}
 		 */
@@ -56,8 +56,8 @@ module.exports = new SlashCommand({
 
 			// Add each viewer to the leaderboard embed
 			let embed_description = "";
-			for (let index in page) {
-				let viewer = page[index];
+			for (const index in page) {
+				const viewer = page[index];
 				const rank = parseInt(index) + (currentPageNumber-1)*VIEWERS_PER_PAGE + 1;
 				const username = viewer.name;
 				const ll_points = viewer.ll_points;

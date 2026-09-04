@@ -1,4 +1,5 @@
 const { AutocompleteInteraction } = require("discord.js");
+const { logError } = require("../utilities/logging-utils");
 
 /**
  * Handles an interaction that is a slash command autocomplete request.
@@ -9,7 +10,7 @@ const onSlashCommandAutocomplete = async function(interaction) {
 	const command = global.commands.get(interaction.commandName);
 
 	if (!command) {
-		console.error(`No command matching ${interaction.commandName} was found.`);
+		logError(`No command matching ${interaction.commandName} was found.`);
 		return;
 	}
 
@@ -17,7 +18,7 @@ const onSlashCommandAutocomplete = async function(interaction) {
 		await command.handleAutocomplete(interaction);
 	}
 	catch (error) {
-		console.error(error);
+		logError(`Failed to handle autocomplete for ${interaction.commandName}.`, error instanceof Error ? error : undefined);
 	}
 }
 

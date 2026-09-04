@@ -25,17 +25,14 @@ module.exports = new SlashCommand({
 		const allMessages = await fetchAllMessagesInChannel(evolutionsChannel);
 
 		const creatures = parseCreaturesFromMessages(allMessages);
-		console.log(creatures);
 
 		const evolutionRoots = getEvolutionRoots(creatures);
 
 		let fullMessage = '';
 		for (const headingCreatureNames of evolutionRoots) {
-			console.log({headingCreatureNames});
 			const headingCreatures = headingCreatureNames.map(name =>
 				getCreatureWithName(name, creatures)
 			);
-			console.log({headingCreatures});
 			const rootMessage = `## ${getCreaturesText(headingCreatures)}\n`;
 
 			const children = getChildCreaturesOf(headingCreatureNames, creatures);

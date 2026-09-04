@@ -1,6 +1,6 @@
 import { initialBotStatus } from "./bot-config/bot-status";
 import { setupEventListeners } from './event-listeners/event-listener-setup';
-import { logInfo, logSetup } from './utilities/logging-utils';
+import { logInfo, logSetup, logError } from './utilities/logging-utils';
 import { Events } from 'discord.js';
 import { onClientReady } from './bot-config/on-ready.js';
 import { setupAndDeployCommands, setupCommands } from "./bot-config/setup-commands";
@@ -67,4 +67,4 @@ const startBrobot = async () => {
 }
 
 logSetup("Starting Brobot", startBrobot)
-	.catch(console.error);
+	.catch(error => logError("Failed to start Brobot.", error instanceof Error ? error : undefined));
