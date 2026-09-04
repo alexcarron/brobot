@@ -131,7 +131,7 @@ export function toDisplayedTokensInline(numTokens: number): string {
 }
 
 export function toNewCurrentTokensSubtext(numTokens: number): string {
-	return `-# You now have ${toAmountOfNoun(numTokens, 'token')}.`;
+	return `-# You now have ${toAmountOfNoun(numTokens, 'token')}`;
 }
 
 /**
@@ -152,9 +152,19 @@ export function toBacktickedCharacterList(
 		.join(separator);
 }
 
+const DISCORD_MARKDOWN_CHARACTERS_PATTERN = /[_*~`<|()[\]{}#+\\]|(-#)/g;
+
 /**
- * Joins an ordered list of characters into a single display string, wrapping each consecutive run of whitespace characters in a single backtick code span so it remains visible instead of blending into normal spacing.
- * Each run gets its own code span rather than each character getting its own, since adjacent single-character code spans containing only whitespace don't render reliably in Discord.
+ * Escapes every character a player's inventory can legitimately contain that Discord would otherwise interpret as markdown formatting (e.g. a literal backtick, underscore, or asterisk character).
+ * @param text - The raw, unescaped text to escape.
+ * @returns The text with every Discord markdown character escaped.
+ */
+function escapeDiscordMarkdownCharacters(text: string): string {
+	return text.replace(DISCORD_MARKDOWN_CHARACTERS_PATTERN, match => `\\${match}`);
+}
+
+/**
+ * Formats characters into a single display string, wrapping each consecutive whitespace characters in a inline code span so its visible.
  * @param characterList - The characters to join, in the order they should be displayed.
  * @returns The characters joined into a single display string.
  */
@@ -176,7 +186,12 @@ function toWhitespaceVisibleCharacters(characterList: string[]): string {
 	return runs
 		.map(run => {
 			const runText = run.characters.join("");
-			return run.isWhitespace ? `\`${runText}\`` : runText;
+
+			if (run.isWhitespace) {
+				return `\`${runText}\``;
+			}
+
+			return escapeDiscordMarkdownCharacters(runText);
 		})
 		.join("");
 }
@@ -203,7 +218,7 @@ export function toDisplayedInventoryInline(characters: string | string[]): strin
 }
 
 export function toNewCurrentInventorySubtext(characters: string | string[]): string {
-	return `-# Your inventory now contains ${toDisplayedInventoryInline(characters)}.`;
+	return `-# Your inventory now contains ${toDisplayedInventoryInline(characters)}`;
 }
 
 /**

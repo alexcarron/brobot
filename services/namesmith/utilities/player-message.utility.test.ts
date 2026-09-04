@@ -124,7 +124,7 @@ describe('player-message.utility', () => {
 
 	describe('toDisplayOrderedCharacters()', () => {
 		it('should order letters first, then numbers, then spaces, then everything else alphabetically', () => {
-			makeSure(toDisplayOrderedCharacters("4b!!3 c6a#")).is("abc346` `!!#");
+			makeSure(toDisplayOrderedCharacters("4b!!3 c6a#")).is("abc346` `!!\\#");
 		});
 
 		it('should split a string argument into individual characters', () => {

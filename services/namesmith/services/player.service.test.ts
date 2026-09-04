@@ -694,7 +694,7 @@ describe('PlayerService', () => {
 				inventory: "4b!!3 c6a#",
 			});
 			const result = playerService.getDisplayedInventory(mockPlayer.id);
-			makeSure(result).is("abc346` `!!#");
+			makeSure(result).is("abc346` `!!\\#");
 		});
 
 		it('should keep multi-codepoint characters intact when sorting', () => {
